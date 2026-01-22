@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G-Credit UX Design Directions | Visual Exploration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: #fafafa;
+            color: #323130;
+            line-height: 1.5;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #e1dfdd;
+            padding: 24px 32px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #0078D4;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: #605e5c;
+        }
+
+        .container {
+            max-width: 1920px;
+            margin: 0 auto;
+            padding: 48px 32px;
+        }
+
+        .intro {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            margin-bottom: 48px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+
+        .intro h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #323130;
+        }
+
+        .intro p {
+            font-size: 14px;
+            color: #605e5c;
+            margin-bottom: 12px;
+        }
+
+        .evaluation-criteria {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .criteria-item {
+            background: #f3f2f1;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #0078D4;
+        }
+
+        .criteria-item strong {
+            color: #323130;
+            font-size: 14px;
+        }
+
+        .criteria-item span {
+            display: block;
+            font-size: 12px;
+            color: #605e5c;
+            margin-top: 4px;
+        }
+
+        .direction-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 48px;
+        }
+
+        .direction-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .direction-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.16);
+        }
+
+        .direction-header {
+            padding: 24px;
+            border-bottom: 1px solid #edebe9;
+        }
+
+        .direction-header h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #323130;
+            margin-bottom: 8px;
+        }
+
+        .direction-header .subtitle {
+            font-size: 14px;
+            color: #605e5c;
+            margin-bottom: 16px;
+        }
+
+        .direction-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            background: #e6f3ff;
+            color: #0078D4;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .mockup-container {
+            background: #fafafa;
+            padding: 24px;
+            min-height: 600px;
+        }
+
+        /* Direction 1: Corporate Classic */
+        .direction-1 .mockup {
+            display: flex;
+            gap: 24px;
+            height: 600px;
+        }
+
+        .direction-1 .sidebar {
+            width: 256px;
+            background: #323130;
+            border-radius: 8px;
+            padding: 24px 16px;
+            color: white;
+        }
+
+        .direction-1 .nav-item {
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 14px;
+        }
+
+        .direction-1 .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .direction-1 .nav-item.active {
+            background: #0078D4;
+        }
+
+        .direction-1 .main-content {
+            flex: 1;
+            background: white;
+            border-radius: 8px;
+            padding: 32px;
+            overflow-y: auto;
+        }
+
+        .direction-1 .badge-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .direction-1 .badge-card {
+            background: white;
+            border: 1px solid #edebe9;
+            border-radius: 8px;
+            padding: 24px;
+            text-align: center;
+            transition: box-shadow 0.2s, transform 0.2s;
+            cursor: pointer;
+        }
+
+        .direction-1 .badge-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
+        }
+
+        .badge-image {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0078D4, #2B88D8);
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .badge-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #323130;
+            margin-bottom: 4px;
+        }
+
+        .badge-issuer {
+            font-size: 12px;
+            color: #605e5c;
+        }
+
+        /* Direction 2: Modern Minimal */
+        .direction-2 .mockup {
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .direction-2 .top-nav {
+            background: white;
+            border-bottom: 1px solid #e1dfdd;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .direction-2 .nav-links {
+            display: flex;
+            gap: 32px;
+        }
+
+        .direction-2 .nav-link {
+            font-size: 14px;
+            color: #605e5c;
+            cursor: pointer;
+            padding-bottom: 16px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .direction-2 .nav-link:hover,
+        .direction-2 .nav-link.active {
+            color: #0078D4;
+            border-bottom-color: #0078D4;
+        }
+
+        .direction-2 .content-area {
+            flex: 1;
+            padding: 64px 32px;
+            overflow-y: auto;
+        }
+
+        .direction-2 .badge-list {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .direction-2 .badge-item {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 24px;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .direction-2 .badge-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transform: translateX(4px);
+        }
+
+        .direction-2 .badge-image {
+            width: 80px;
+            height: 80px;
+            flex-shrink: 0;
+        }
+
+        .direction-2 .badge-info {
+            flex: 1;
+        }
+
+        /* Direction 3: Celebration Focus */
+        .direction-3 .mockup {
+            height: 600px;
+            background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
+            padding: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .direction-3 .celebration-card {
+            background: white;
+            border-radius: 16px;
+            padding: 48px;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 16px 32px rgba(0,0,0,0.16);
+            position: relative;
+            z-index: 2;
+        }
+
+        .direction-3 .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #FFB900;
+            border-radius: 50%;
+            animation: fall 3s infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(600px) rotate(360deg); opacity: 0; }
+        }
+
+        .direction-3 .badge-large {
+            width: 160px;
+            height: 160px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, #0078D4, #107C10);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+            box-shadow: 0 8px 24px rgba(0,120,212,0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .direction-3 h2 {
+            font-size: 32px;
+            color: #0078D4;
+            margin-bottom: 16px;
+        }
+
+        .direction-3 .message {
+            background: #f3f2f1;
+            border-left: 4px solid #FFB900;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 24px 0;
+            font-style: italic;
+            color: #605e5c;
+        }
+
+        /* Direction 4: Data Dense */
+        .direction-4 .mockup {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 16px;
+            height: 600px;
+        }
+
+        .direction-4 .sidebar-compact {
+            background: white;
+            border-radius: 8px;
+            padding: 16px 12px;
+            overflow-y: auto;
+        }
+
+        .direction-4 .nav-compact {
+            font-size: 12px;
+            padding: 8px 12px;
+            margin-bottom: 4px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .direction-4 .nav-compact:hover {
+            background: #f3f2f1;
+        }
+
+        .direction-4 .dashboard {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .direction-4 .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .direction-4 .stat-card {
+            background: #f3f2f1;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .direction-4 .stat-number {
+            font-size: 24px;
+            font-weight: 600;
+            color: #0078D4;
+        }
+
+        .direction-4 .stat-label {
+            font-size: 11px;
+            color: #605e5c;
+            margin-top: 4px;
+        }
+
+        .direction-4 .badge-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .direction-4 .badge-table th {
+            text-align: left;
+            padding: 12px 8px;
+            border-bottom: 2px solid #edebe9;
+            color: #323130;
+            font-weight: 600;
+        }
+
+        .direction-4 .badge-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #f3f2f1;
+        }
+
+        .direction-4 .badge-table tr:hover {
+            background: #fafafa;
+        }
+
+        /* Direction 5: Timeline Story */
+        .direction-5 .mockup {
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .direction-5 .header-clean {
+            background: white;
+            padding: 24px 32px;
+            border-bottom: 1px solid #edebe9;
+        }
+
+        .direction-5 .timeline {
+            flex: 1;
+            padding: 48px 32px;
+            overflow-y: auto;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .direction-5 .timeline-item {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 48px;
+            position: relative;
+        }
+
+        .direction-5 .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 40px;
+            top: 80px;
+            bottom: -48px;
+            width: 2px;
+            background: #edebe9;
+        }
+
+        .direction-5 .timeline-item:last-child::before {
+            display: none;
+        }
+
+        .direction-5 .timeline-badge {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0078D4, #2B88D8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(0,120,212,0.3);
+        }
+
+        .direction-5 .timeline-content {
+            flex: 1;
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .direction-5 .timeline-date {
+            font-size: 12px;
+            color: #0078D4;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        /* Direction 6: Card Gallery */
+        .direction-6 .mockup {
+            height: 600px;
+            overflow-y: auto;
+            padding: 48px 24px;
+        }
+
+        .direction-6 .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .direction-6 .gallery-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .direction-6 .gallery-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 32px rgba(0,0,0,0.2);
+        }
+
+        .direction-6 .gallery-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #0078D4, #107C10);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+        }
+
+        .direction-6 .gallery-content {
+            padding: 24px;
+        }
+
+        .direction-6 .gallery-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .direction-6 .gallery-meta {
+            font-size: 12px;
+            color: #605e5c;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 16px;
+        }
+
+        .recommendation {
+            background: #e6f3ff;
+            border-left: 4px solid #0078D4;
+            padding: 24px;
+            border-radius: 8px;
+            margin-top: 48px;
+        }
+
+        .recommendation h3 {
+            color: #0078D4;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        .recommendation p {
+            color: #323130;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .footer {
+            background: white;
+            border-top: 1px solid #e1dfdd;
+            padding: 24px 32px;
+            text-align: center;
+            color: #605e5c;
+            font-size: 12px;
+            margin-top: 48px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 G-Credit Design Direction Mockups</h1>
+        <p>Explore 6 visual design approaches for the G-Credit credentialing platform</p>
+    </div>
+
+    <div class="container">
+        <div class="intro">
+            <h2>Design Direction Exploration</h2>
+            <p>Below are 6 different design direction variations, each exploring a unique visual approach for G-Credit. These mockups demonstrate how our established design foundation (Microsoft Fluent-inspired colors, typography, and spacing) can be applied in different ways to create distinct user experiences.</p>
+            <p><strong>As you review each direction, consider:</strong></p>
+            
+            <div class="evaluation-criteria">
+                <div class="criteria-item">
+                    <strong>✅ Layout Intuitiveness</strong>
+                    <span>Does the information hierarchy match your priorities?</span>
+                </div>
+                <div class="criteria-item">
+                    <strong>✅ Interaction Style</strong>
+                    <span>Does the interaction style fit the core experience?</span>
+                </div>
+                <div class="criteria-item">
+                    <strong>✅ Visual Weight</strong>
+                    <span>Does the visual density feel right for your brand?</span>
+                </div>
+                <div class="criteria-item">
+                    <strong>✅ Navigation Approach</strong>
+                    <span>Does the navigation pattern match user expectations?</span>
+                </div>
+                <div class="criteria-item">
+                    <strong>✅ Component Usage</strong>
+                    <span>How well do components support user journeys?</span>
+                </div>
+                <div class="criteria-item">
+                    <strong>✅ Brand Alignment</strong>
+                    <span>Which direction best supports emotional goals?</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="direction-grid">
+            <!-- Direction 1: Corporate Classic -->
+            <div class="direction-card direction-1">
+                <div class="direction-header">
+                    <h3>Direction 1: Corporate Classic</h3>
+                    <p class="subtitle">Traditional enterprise application with fixed sidebar navigation</p>
+                    <div class="direction-tags">
+                        <span class="tag">Sidebar Navigation</span>
+                        <span class="tag">Standard Elevation</span>
+                        <span class="tag">Professional</span>
+                        <span class="tag">Familiar</span>
+                    </div>
+                </div>
+                <div class="mockup-container">
+                    <div class="mockup">
+                        <div class="sidebar">
+                            <div style="font-weight: 600; font-size: 16px; margin-bottom: 24px; color: #fff;">G-Credit</div>
+                            <div class="nav-item active">🏠 My Badges</div>
+                            <div class="nav-item">📩 Claim Badge</div>
+                            <div class="nav-item">📤 Share</div>
+                            <div class="nav-item">⚙️ Settings</div>
+                        </div>
+                        <div class="main-content">
+                            <h2 style="font-size: 28px; font-weight: 600; margin-bottom: 8px;">My Badge Wallet</h2>
+                            <p style="color: #605e5c; font-size: 14px; margin-bottom: 24px;">You have 12 badges earned</p>
+                            <div class="badge-grid">
+                                <div class="badge-card">
+                                    <div class="badge-image">🐍</div>
+                                    <div class="badge-title">Python Pro</div>
+                                    <div class="badge-issuer">Microsoft Learn</div>
+                                </div>
+                                <div class="badge-card">
+                                    <div class="badge-image">☁️</div>
+                                    <div class="badge-title">Azure Certified</div>
+                                    <div class="badge-issuer">Microsoft</div>
+                                </div>
+                                <div class="badge-card">
+                                    <div class="badge-image">📊</div>
+                                    <div class="badge-title">Data Analysis</div>
+                                    <div class="badge-issuer">Internal Training</div>
+                                </div>
+                                <div class="badge-card">
+                                    <div class="badge-image">🔒</div>
+                                    <div class="badge-title">Security+</div>
+                                    <div class="badge-issuer">CompTIA</div>
+                                </div>
+                                <div class="badge-card">
+                                    <div class="badge-image">🎨</div>
+                                    <div class="badge-title">UX Design</div>
+                                    <div class="badge-issuer">Design Team</div>
+                                </div>
+                                <div class="badge-card">
+                                    <div class="badge-image">🚀</div>
+                                    <div class="badge-title">Leadership</div>
+                                    <div class="badge-issuer">HR Department</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Direction 2: Modern Minimal -->
+            <div class="direction-card direction-2">
+                <div class="direction-header">
+                    <h3>Direction 2: Modern Minimal</h3>
+                    <p class="subtitle">Clean, spacious layout with top navigation and generous whitespace</p>
+                    <div class="direction-tags">
+                        <span class="tag">Top Navigation</span>
+                        <span class="tag">Light Shadows</span>
+                        <span class="tag">Spacious</span>
+                        <span class="tag">Contemporary</span>
+                    </div>
+                </div>
+                <div class="mockup-container">
+                    <div class="mockup">
+                        <div class="top-nav">
+                            <div style="font-weight: 600; font-size: 18px; color: #0078D4;">G-Credit</div>
+                            <div class="nav-links">
+                                <div class="nav-link active">Badges</div>
+                                <div class="nav-link">Claim</div>
+                                <div class="nav-link">Share</div>
+                                <div class="nav-link">Profile</div>
+                            </div>
+                        </div>
+                        <div class="content-area">
+                            <div class="badge-list">
+                                <h1 style="font-size: 42px; font-weight: 600; margin-bottom: 32px;">Your Achievements</h1>
+                                <div class="badge-item">
+                                    <div class="badge-image">🐍</div>
+                                    <div class="badge-info">
+                                        <div class="badge-title">Python Programming Professional</div>
+                                        <div style="font-size: 12px; color: #605e5c; margin-top: 4px;">Issued by Microsoft Learn · January 15, 2026</div>
+                                    </div>
+                                    <button style="background: #0078D4; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Share</button>
+                                </div>
+                                <div class="badge-item">
+                                    <div class="badge-image">☁️</div>
+                                    <div class="badge-info">
+                                        <div class="badge-title">Azure Solutions Architect Expert</div>
+                                        <div style="font-size: 12px; color: #605e5c; margin-top: 4px;">Issued by Microsoft · December 20, 2025</div>
+                                    </div>
+                                    <button style="background: #0078D4; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Share</button>
+                                </div>
+                                <div class="badge-item">
+                                    <div class="badge-image">📊</div>
+                                    <div class="badge-info">
+                                        <div class="badge-title">Data Analytics Fundamentals</div>
+                                        <div style="font-size: 12px; color: #605e5c; margin-top: 4px;">Issued by Internal Training · November 5, 2025</div>
+                                    </div>
+                                    <button style="background: #0078D4; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Share</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Direction 3: Celebration Focus -->
+            <div class="direction-card direction-3">
+                <div class="direction-header">
+                    <h3>Direction 3: Celebration Focus</h3>
+                    <p class="subtitle">Emphasizes celebration moments with prominent badge display and animations</p>
+                    <div class="direction-tags">
+                        <span class="tag">Celebration Centric</span>
+                        <span class="tag">Emotional</span>
+                        <span class="tag">Large Imagery</span>
+                        <span class="tag">Joyful</span>
+                    </div>
+                </div>
+                <div class="mockup-container">
+                    <div class="mockup">
+                        <div class="confetti" style="left: 20%; animation-delay: 0s;"></div>
+                        <div class="confetti" style="left: 40%; animation-delay: 0.5s;"></div>
+                        <div class="confetti" style="left: 60%; animation-delay: 1s;"></div>
+                        <div class="confetti" style="left: 80%; animation-delay: 1.5s;"></div>
+                        
+                        <div class="celebration-card">
+                            <div class="badge-large">🎉</div>
+                            <h2>Congratulations, LegendZhu!</h2>
+                            <p style="font-size: 18px; color: #323130; margin-bottom: 24px;">You've earned the <strong>Python Pro</strong> badge!</p>
+                            <div class="message">
+                                "Fantastic work on mastering Python! Your dedication to continuous learning is inspiring. Keep up the excellent work!"
+                                <div style="margin-top: 8px; font-size: 12px; color: #323130; font-weight: 600;">— Wei Zhang, CTO</div>
+                            </div>
+                            <button style="background: #0078D4; color: white; border: none; padding: 12px 32px; border-radius: 4px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 16px;">Share to LinkedIn</button>
+                            <div style="display: flex; gap: 8px; margin-top: 12px;">
+                                <button style="flex: 1; background: #f3f2f1; color: #323130; border: none; padding: 10px; border-radius: 4px; cursor: pointer;">View Wallet</button>
+                                <button style="flex: 1; background: #f3f2f1; color: #323130; border: none; padding: 10px; border-radius: 4px; cursor: pointer;">Download</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Direction 4: Data Dense -->
+            <div class="direction-card direction-4">
+                <div class="direction-header">
+                    <h3>Direction 4: Data Dense Dashboard</h3>
+                    <p class="subtitle">Efficiency-focused with compact layout and data visualization</p>
+                    <div class="direction-tags">
+                        <span class="tag">Compact Layout</span>
+                        <span class="tag">Data Rich</span>
+                        <span class="tag">Dashboard Style</span>
+                        <span class="tag">Efficient</span>
+                    </div>
+                </div>
+                <div class="mockup-container">
+                    <div class="mockup">
+                        <div class="sidebar-compact">
+                            <div style="font-weight: 600; margin-bottom: 16px; color: #0078D4;">G-Credit</div>
+                            <div class="nav-compact" style="background: #f3f2f1;">📊 Dashboard</div>
+                            <div class="nav-compact">🏆 Badges</div>
+                            <div class="nav-compact">👥 Team</div>
+                            <div class="nav-compact">📈 Analytics</div>
+                            <div class="nav-compact">⚙️ Settings</div>
+                        </div>
+                        <div class="dashboard">
+                            <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 24px;">Badge Dashboard</h2>
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-number">24</div>
+                                    <div class="stat-label">TOTAL BADGES</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number">12</div>
+                                    <div class="stat-label">THIS YEAR</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number">85%</div>
+                                    <div class="stat-label">SKILL COVERAGE</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number">8</div>
+                                    <div class="stat-label">SHARED</div>
+                                </div>
+                            </div>
+                            <h3 style="font-size: 16px; font-weight: 600; margin: 24px 0 16px;">Recent Badges</h3>
+                            <table class="badge-table">
+                                <thead>
+                                    <tr>
+                                        <th>Badge</th>
+                                        <th>Issuer</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>🐍 Python Pro</strong></td>
+                                        <td>Microsoft Learn</td>
+                                        <td>Jan 15, 2026</td>
+                                        <td><span style="background: #dff6dd; color: #107c10; padding: 4px 8px; border-radius: 4px; font-size: 11px;">PUBLIC</span></td>
+                                        <td><button style="background: none; border: none; color: #0078D4; cursor: pointer; font-size: 11px;">Share</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>☁️ Azure Certified</strong></td>
+                                        <td>Microsoft</td>
+                                        <td>Dec 20, 2025</td>
+                                        <td><span style="background: #dff6dd; color: #107c10; padding: 4px 8px; border-radius: 4px; font-size: 11px;">PUBLIC</span></td>
+                                        <td><button style="background: none; border: none; color: #0078D4; cursor: pointer; font-size: 11px;">Share</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>📊 Data Analysis</strong></td>
+                                        <td>Internal Training</td>
+                                        <td>Nov 5, 2025</td>
+                                        <td><span style="background: #f3f2f1; color: #605e5c; padding: 4px 8px; border-radius: 4px; font-size: 11px;">INTERNAL</span></td>
+                                        <td><button style="background: none; border: none; color: #0078D4; cursor: pointer; font-size: 11px;">Share</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>🔒 Security+</strong></td>
+                                        <td>CompTIA</td>
+                                        <td>Oct 12, 2025</td>
+                                        <td><span style="background: #dff6dd; color: #107c10; padding: 4px 8px; border-radius: 4px; font-size: 11px;">PUBLIC</span></td>
+                                        <td><button style="background: none; border: none; color: #0078D4; cursor: pointer; font-size: 11px;">Share</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Direction 5: Timeline Story -->
+            <div class="direction-card direction-5">
+                <div class="direction-header">
+                    <h3>Direction 5: Timeline Story</h3>
+                    <p class="subtitle">Narrative-driven timeline layout emphasizing learning journey</p>
+                    <div class="direction-tags">
+                        <span class="tag">Timeline View</span>
+                        <span class="tag">Narrative</span>
+                        <span class="tag">Story-driven</span>
+                        <span class="tag">Growth Focus</span>
+                    </div>
+                </div>
+                <div class="mockup-container">
+                    <div class="mockup">
+                        <div class="header-clean">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h2 style="font-size: 28px; font-weight: 600;">Your Learning Journey</h2>
+                                <button style="background: #0078D4; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">+ Claim Badge</button>
+                            </div>
+                        </div>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-badge">🐍</div>
+                                <div class="timeline-content">
+                                    <div class="timeline-date">JANUARY 2026</div>
+                                    <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">Python Programming Professional</h3>
+                                    <p style="font-size: 14px; color: #605e5c; margin-bottom: 12px;">Issued by Microsoft Learn</p>
+                                    <p style="font-size: 14px; color: #323130; line-height: 1.6;">Demonstrated advanced Python programming skills including object-oriented design, data structures, and real-world application development.</p>
+                                    <div style="margin-top: 16px;">
+                                        <button style="background: #0078D4; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 8px;">Share</button>
+                                        <button style="background: #f3f2f1; color: #323130; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">View Details</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-badge">☁️</div>
+                                <div class="timeline-content">
+                                    <div class="timeline-date">DECEMBER 2025</div>
+                                    <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">Azure Solutions Architect</h3>
+                                    <p style="font-size: 14px; color: #605e5c; margin-bottom: 12px;">Issued by Microsoft</p>
+                                    <p style="font-size: 14px; color: #323130; line-height: 1.6;">Achieved expertise in designing cloud solutions on Microsoft Azure platform, including architecture, security, and scalability.</p>
+                                    <div style="margin-top: 16px;">
+                                        <button style="background: #0078D4; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 8px;">Share</button>
+                                        <button style="background: #f3f2f1; color: #323130; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">View Details</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-badge">📊</div>
+                                <div class="timeline-content">
+                                    <div class="timeline-date">NOVEMBER 2025</div>
+                                    <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">Data Analytics Fundamentals</h3>
+                                    <p style="font-size: 14px; color: #605e5c;">Issued by Internal Training Department</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Direction 6: Card Gallery -->
+            <div class="direction-card direction-6">
+                <div class="direction-header">
+                    <h3>Direction 6: Card Gallery</h3>
+                    <p class="subtitle">Visual showcase with large badge cards and minimal navigation</p>
+                    <div class="direction-tags">
+                        <span class="tag">Visual Focus</span>
+                        <span class="tag">Large Cards</span>
+                        <span class="tag">Gallery Style</span>
+                        <span class="tag">Showcase</span>
+                    </div>
+                </div>
+                <div class="mockup-container">
+                    <div class="mockup">
+                        <div style="text-align: center; margin-bottom: 32px;">
+                            <h1 style="font-size: 42px; font-weight: 600; margin-bottom: 8px;">Badge Gallery</h1>
+                            <p style="color: #605e5c;">Showcase your achievements</p>
+                        </div>
+                        <div class="gallery-grid">
+                            <div class="gallery-card">
+                                <div class="gallery-image">🐍</div>
+                                <div class="gallery-content">
+                                    <div class="gallery-title">Python Programming Professional</div>
+                                    <p style="font-size: 12px; color: #605e5c; margin-top: 8px;">Advanced Python skills certification covering OOP, data structures, and application development.</p>
+                                    <div class="gallery-meta">
+                                        <span>Microsoft Learn</span>
+                                        <span>Jan 2026</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="gallery-card">
+                                <div class="gallery-image">☁️</div>
+                                <div class="gallery-content">
+                                    <div class="gallery-title">Azure Solutions Architect</div>
+                                    <p style="font-size: 12px; color: #605e5c; margin-top: 8px;">Expert-level cloud architecture certification for Microsoft Azure platform.</p>
+                                    <div class="gallery-meta">
+                                        <span>Microsoft</span>
+                                        <span>Dec 2025</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="gallery-card">
+                                <div class="gallery-image">📊</div>
+                                <div class="gallery-content">
+                                    <div class="gallery-title">Data Analytics Fundamentals</div>
+                                    <p style="font-size: 12px; color: #605e5c; margin-top: 8px;">Core data analysis skills including visualization and statistical methods.</p>
+                                    <div class="gallery-meta">
+                                        <span>Internal Training</span>
+                                        <span>Nov 2025</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="gallery-card">
+                                <div class="gallery-image">🔒</div>
+                                <div class="gallery-content">
+                                    <div class="gallery-title">Security+ Certification</div>
+                                    <p style="font-size: 12px; color: #605e5c; margin-top: 8px;">Comprehensive cybersecurity certification covering threat analysis and risk management.</p>
+                                    <div class="gallery-meta">
+                                        <span>CompTIA</span>
+                                        <span>Oct 2025</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="gallery-card">
+                                <div class="gallery-image">🎨</div>
+                                <div class="gallery-content">
+                                    <div class="gallery-title">UX Design Principles</div>
+                                    <p style="font-size: 12px; color: #605e5c; margin-top: 8px;">User experience design fundamentals and best practices.</p>
+                                    <div class="gallery-meta">
+                                        <span>Design Team</span>
+                                        <span>Sep 2025</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="gallery-card">
+                                <div class="gallery-image">🚀</div>
+                                <div class="gallery-content">
+                                    <div class="gallery-title">Leadership Excellence</div>
+                                    <p style="font-size: 12px; color: #605e5c; margin-top: 8px;">Management and leadership skills development program.</p>
+                                    <div class="gallery-meta">
+                                        <span>HR Department</span>
+                                        <span>Aug 2025</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="recommendation">
+            <h3>🎯 Recommended Design Direction</h3>
+            <p><strong>Based on G-Credit's goals and priorities, I recommend considering a hybrid approach:</strong></p>
+            <p style="margin-top: 12px;"><strong>Primary: Direction 5 (Timeline Story)</strong> for the main badge wallet view - emphasizes learning journey and narrative, aligning with "Recognition-First Design" principle and growth visualization.</p>
+            <p style="margin-top: 8px;"><strong>Secondary: Direction 3 (Celebration Focus)</strong> for the badge claiming success page - maximizes emotional impact of recognition moments with prominent celebration elements.</p>
+            <p style="margin-top: 8px;"><strong>Navigation: Direction 1 (Corporate Classic)</strong> sidebar approach for consistent enterprise-style navigation, familiar to employees.</p>
+            <p style="margin-top: 16px;">This combination delivers: <strong>Professional navigation</strong> + <strong>Story-driven wallet view</strong> + <strong>Celebratory claiming experience</strong> = Comprehensive credentialing platform that feels both trustworthy and joyful.</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>G-Credit UX Design Directions | Created with Microsoft Fluent-inspired design foundation</p>
+        <p style="margin-top: 8px;">Review these mockups and provide feedback on your preferred direction(s)</p>
+    </div>
+</body>
+</html>

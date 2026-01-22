@@ -325,8 +325,3 @@ Building internally allows us to combine **Credly-level credibility**, **Accredi
 This system is **not just a tool**, but a **capability platform**:
 > It turns learning, contribution, and growth into **credible digital signals** that power talent development, mobility, and organizational intelligence.
 
-If你愿意，下一步我也可以帮你：
-- ✅ 拆成 PRD（user stories + acceptance criteria）  
-- ✅ 输出系统架构图（Mermaid / draw.io）  
-- ✅ 对齐 Azure / Microsoft 内部技术栈  
-- ✅ 定义 badge governance & taxonomy 模板  

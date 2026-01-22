@@ -51,5 +51,7 @@ desktop.ini
 .cache/
 
 # Output directories
-_bmad-output/
 *.bak
+
+# Claude Code files
+.claude/

@@ -1,38 +1,340 @@
-# G-Credit
+# G-Credit - Enterprise Internal Digital Credentialing System
 
-BMAD (Business Model Agent Development) 框架项目
+[![Status](https://img.shields.io/badge/Status-Implementation%20Ready-green)]()
+[![Phase](https://img.shields.io/badge/Phase-MVP%20Development-blue)]()
+[![Planning](https://img.shields.io/badge/Planning-Complete-success)]()
+[![Score](https://img.shields.io/badge/Readiness%20Score-10%2F10-brightgreen)]()
 
-## 项目简介
+> **G-Credit** is an enterprise-grade internal digital badging platform designed to securely recognize, verify, and analyze employee skills and achievements. Compliant with Open Badges 2.0 standards, it aims to replace fragmented certificate management and reduce dependency on external platforms.
 
-这是一个基于Agent的开发框架，包含多个专业领域的智能助手和工作流。
+---
 
-## 项目结构
+## 📋 Project Overview
 
-- `_bmad/` - BMAD框架核心配置和模块
-  - `_config/` - 配置文件和清单
-  - `_memory/` - 记忆和状态管理
-  - `bmb/` - 构建器模块
-  - `bmgd/` - 游戏开发模块
-  - `bmm/` - 主模块
-  - `cis/` - 创新策略模块
-  - `core/` - 核心功能模块
-- `_bmad-output/` - 输出产物目录
-- `docs/` - 文档目录
+**Project Name:** G-Credit  
+**Project Type:** Enterprise Internal Platform (Greenfield Development)  
+**Domain:** HR Tech / Learning & Development / Digital Credentials  
+**Current Status:** Planning Complete → Ready for Implementation  
+**Last Updated:** 2026-01-22
 
-## 快速开始
+### 🎯 Core Objectives
 
-```bash
-# 克隆项目
-git clone https://github.com/YOUR_USERNAME/G-Credit.git
+1. ✅ Create a culture of recognition & continuous learning
+2. ✅ Provide trusted, verifiable proof of skills (Open Badges 2.0 compliant)
+3. ✅ Enable workforce skill visibility and analytics
+4. ✅ Automate recognition workflows
+5. ✅ Retain full control of employee data and branding
+6. ✅ Reduce long-term platform costs (vs. SaaS alternatives like Credly, Accredible)
 
-# 进入项目目录
-cd G-Credit
+---
+
+## 🏗️ Technical Architecture
+
+### Architecture Pattern
+- **Architecture Style:** Modular Monolith
+- **Deployment Strategy:** Separate Frontend/Backend Deployment (Monorepo)
+- **Cloud Platform:** Microsoft Azure
+- **Standards Compliance:** Open Badges 2.0 (IMS Global / 1EdTech)
+
+### Technology Stack
+
+#### Frontend (`gcredit-web`)
+- **Framework:** React 18 + TypeScript 5
+- **Build Tool:** Vite 5
+- **UI Framework:** Tailwind CSS 3.x + Shadcn/ui
+- **State Management:** TanStack Query v5 + Zustand
+- **Routing:** React Router v6
+- **Form Handling:** React Hook Form + Zod
+
+#### Backend (`gcredit-api`)
+- **Framework:** NestJS 10 + TypeScript 5
+- **Runtime:** Node.js 20 LTS
+- **Database:** PostgreSQL 16
+- **ORM:** Prisma 5
+- **Authentication:** Passport.js + JWT
+- **Queue:** Bull (Redis-backed)
+
+#### Azure Cloud Services
+- **Compute:** Azure App Service (Frontend + Backend)
+- **Database:** Azure Database for PostgreSQL Flexible Server
+- **Storage:** Azure Blob Storage (Badge images, evidence files)
+- **Identity:** Azure AD (Entra ID) OAuth 2.0 SSO
+- **Secrets:** Azure Key Vault
+- **Monitoring:** Azure Application Insights
+- **Caching:** Azure Cache for Redis
+
+---
+
+## 🚀 Core Features
+
+### Badge Management & Design
+- Template-based badge creation (metadata, criteria, skills taxonomy)
+- Badge catalog with search and categorization
+- Visual designer for badge images and branding
+- Optional expiration and renewal policies
+- Approval and governance workflows
+
+### Issuance Workflows
+- Manual single/bulk CSV issuance
+- Automated triggers via LMS course completion
+- Manager nomination and approval workflows
+- Role-based issuing permissions (RBAC)
+
+### Verification & Standards Compliance
+- Open Badges 2.0 compliant badge assertions
+- Public verification pages (unique URLs)
+- Immutable metadata (issuer, recipient, date, criteria)
+- JSON-LD exportable assertions
+- Baked Badge PNG support
+- Revocation capabilities with reason tracking
+
+### Employee Experience
+- Personal badge wallet/profile
+- Badge claiming workflow (manual or auto-accept)
+- Privacy controls (public/private per badge)
+- Social sharing (LinkedIn, email, personal websites)
+- Badge download and export
+
+### Analytics & Insights
+- Admin dashboards (issuance trends, claim rates, share rates)
+- Organizational skill inventory
+- Department and role-based skill distribution
+- Program effectiveness metrics
+- Exportable reports for HR planning
+
+### System Integrations
+- Azure AD (Entra ID) SSO authentication
+- HRIS employee directory sync
+- LMS Webhook consumption (automated issuance)
+- Microsoft Teams notifications and bot
+- Outlook email notifications
+- LinkedIn sharing integration
+- RESTful APIs (external system access)
+
+---
+
+## 📊 Project Status
+
+### ✅ Completed Phases (Phase 1-3)
+
+| Document | Status | Details |
+|----------|--------|---------|
+| **Product Brief** | ✅ Complete | Business needs and core capabilities defined |
+| **PRD** | ✅ Complete | 33 Functional Requirements + 22 Non-Functional Requirements |
+| **Architecture Document** | ✅ Complete | 5,406 lines, 12 architectural decisions, 16 components |
+| **UX Design Specification** | ✅ Complete | 3,314 lines, 22 screens, 7 user flows |
+| **UX Wireframes** | ✅ Complete | 10 screens (6 desktop + 4 mobile), 206 elements |
+| **Epics & Stories** | ✅ Complete | 14 epics, 85 user stories, 100% requirements coverage |
+| **Implementation Readiness Review** | ✅ Complete | 10/10 score (zero critical gaps) |
+
+### 🎯 Current Phase (Phase 4 - Implementation)
+
+**Next Actions:**
+1. **Sprint Planning** - Break down 85 stories into 2-week sprints
+2. **Sprint 0: Infrastructure Setup** - Initialize Monorepo, PostgreSQL, Azure services configuration
+3. **Sprint 1-6: MVP Development** - Core backend, frontend, integration testing
+
+---
+
+## 📁 Project Structure
+
+```
+CODE/
+├── _bmad/                          # BMAD Framework (v6.0.0-alpha.23)
+│   ├── _config/                    # Framework configuration and manifests
+│   │   ├── manifest.yaml           # Main manifest
+│   │   ├── agent-manifest.csv      # Agent manifest
+│   │   └── agents/                 # Agent customization configs
+│   ├── _memory/                    # Memory and state management
+│   ├── core/                       # Core functionality module
+│   ├── bmb/                        # BMad Builder - Builder module
+│   ├── bmm/                        # BMad Method - Main methodology module
+│   ├── bmgd/                       # BMad Game Dev - Game development module
+│   └── cis/                        # Creative Innovation Strategies module
+│
+├── _bmad-output/                   # Generated artifacts directory
+│   ├── planning-artifacts/         # ✅ Planning Complete
+│   │   ├── architecture.md         # 185 KB, 5,406 lines
+│   │   ├── ux-design-specification.md  # 137 KB, 3,314 lines
+│   │   ├── epics.md                # 122 KB, 14 epics, 85 stories
+│   │   └── implementation-readiness-report-2026-01-22.md
+│   ├── excalidraw-diagrams/        # ✅ Wireframes (10 screens, 206 elements)
+│   └── implementation-artifacts/   # 🔄 Ready for Sprint artifacts
+│
+├── MD_FromCopilot/                 # Source documents
+│   ├── product-brief.md            # Product brief
+│   └── PRD.md                      # Product Requirements Document
+│
+├── docs/                           # Project knowledge base
+├── project-context.md              # Project context (single source of truth)
+└── README.md                       # This file
 ```
 
-## 贡献
+**Expected Monorepo Structure (To Be Implemented):**
+```
+├── gcredit-web/                    # Frontend (Vite + React 18)
+│   ├── src/features/               # Feature modules
+│   ├── src/shared/                 # Shared components
+│   └── tests/                      # Frontend tests
+│
+└── gcredit-api/                    # Backend (NestJS 10)
+    ├── src/modules/                # NestJS modules
+    ├── prisma/                     # Prisma schema and migrations
+    └── test/                       # Backend tests
+```
 
-欢迎提交Issue和Pull Request
+---
 
-## 许可证
+## 🎨 BMAD Framework
 
-待定
+This project uses the **BMAD (Business Model Agent Development) Framework** v6.0.0-alpha.23 for development management:
+
+### BMAD Modules
+
+1. **Core** - Core configuration and base functionality
+2. **BMM (BMad Method)** - Main methodology module, including:
+   - Analyst
+   - Architect
+   - Developer (Dev)
+   - Product Manager (PM)
+   - Scrum Master (SM)
+   - Test Engineer (TEA)
+   - UX Designer
+   - Tech Writer
+   - Quick Flow Solo Dev
+
+3. **BMB (BMad Builder)** - Builder module:
+   - Agent Builder
+   - Module Builder
+   - Workflow Builder
+
+4. **CIS (Creative Innovation Strategies)** - Innovation strategy module:
+   - Brainstorming Coach
+   - Creative Problem Solver
+   - Design Thinking Coach
+   - Innovation Strategist
+   - Presentation Master
+   - Storyteller
+
+5. **BMGD (BMad Game Dev)** - Game development module (available)
+
+---
+
+## 📈 Success Metrics (KPIs)
+
+| Metric | Target |
+|--------|--------|
+| **Adoption Rate** | 60% employee profile activation in first 6 months |
+| **Engagement** | 40% badge claim rate |
+| **Sharing Rate** | 25% social sharing rate |
+| **Program Impact** | 80% participation in badged learning programs |
+| **Verification** | 500+ external verifications/month |
+| **Cost Savings** | 50% reduction vs. external platform licensing by year 2 |
+
+---
+
+## 🔐 Compliance & Security
+
+- **Data Privacy:** GDPR-compliant, user-controlled visibility
+- **Security:** TLS encryption, RBAC, audit logs
+- **Standards:** Open Badges 2.0 JSON-LD format
+- **Data Residency:** Enterprise cloud (Azure, preferred region)
+
+---
+
+## 📅 Roadmap
+
+| Phase | Duration | Deliverables | Status |
+|-------|----------|--------------|--------|
+| Phase 1 - Discovery | 4-6 weeks | PRD, Product Brief, KPIs | ✅ Complete |
+| Phase 2 - Design & Architecture | 4 weeks | Architecture doc, UX Design, Wireframes | ✅ Complete |
+| Phase 3 - MVP Development | 8-12 weeks | Working MVP | 🔄 Next - Sprint 0 starting |
+| Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ Pending |
+| Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
+| Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
+
+---
+
+## 👥 Key Stakeholders
+
+- **Product Owner:** HR / L&D Leadership
+- **Engineering:** Internal IT / Platform Team
+- **Key Users:** HR Admins, Learning Program Managers, Employees
+- **Integration Partners:** LMS vendor, HRIS team, IT Security
+
+---
+
+## 🚦 Known Risks & Mitigations
+
+| Risk | Mitigation |
+|------|------------|
+| Low adoption | Pilot with popular program, communication campaign |
+| Integration complexity | Phased approach, start with webhooks |
+| Badge credibility | Align with industry-recognized programs |
+| Data privacy concerns | User-controlled visibility, transparent policies |
+| Platform lock-in | Open Badges standard ensures portability |
+
+---
+
+## 🛠️ Development Setup (To Be Implemented)
+
+```bash
+# Clone repository
+git clone https://github.com/YOUR_ORG/g-credit.git
+cd g-credit
+
+# Install frontend dependencies
+cd gcredit-web
+npm install
+
+# Install backend dependencies
+cd ../gcredit-api
+npm install
+
+# Setup database
+npx prisma migrate dev
+
+# Configure environment variables
+cp .env.example .env
+# Edit .env file to configure Azure service connections
+
+# Start development server
+npm run dev
+```
+
+---
+
+## 📚 Key Documents
+
+- [Project Context](./project-context.md) - Single source of truth
+- [Product Brief](./MD_FromCopilot/product-brief.md) - Business requirements
+- [PRD](./MD_FromCopilot/PRD.md) - Product Requirements Document
+- [Architecture Document](./_bmad-output/planning-artifacts/architecture.md) - Technical architecture
+- [UX Design Specification](./_bmad-output/planning-artifacts/ux-design-specification.md) - User experience design
+- [Epics & Stories](./_bmad-output/planning-artifacts/epics.md) - Implementation breakdown
+- [Implementation Readiness Report](./_bmad-output/planning-artifacts/implementation-readiness-report-2026-01-22.md) - Readiness assessment
+
+---
+
+## 🤝 Contributing
+
+This project is currently in internal development. For contributions, please contact the project owner.
+
+---
+
+## 📄 License
+
+Internal Enterprise Project - All Rights Reserved
+
+---
+
+## 📞 Contact
+
+**Project Owner:** LegendZhu  
+**Development Team:** Internal IT / Platform Team  
+**BMAD Framework Version:** 6.0.0-alpha.23  
+
+---
+
+**Last Updated:** 2026-01-22  
+**Status:** Planning Complete, Ready for Implementation 🚀
