@@ -1,10 +1,12 @@
 ---
 stepsCompleted: [1, 2, 3, 4]
 status: 'implementation-ready'
-note: 'All 14 epics with 85 detailed user stories completed, validated, and approved. Ready for Implementation Readiness Review and Sprint Planning.'
-lastUpdated: '2026-01-22'
+note: 'All 14 epics with 85 detailed user stories completed, validated, and approved. Phased implementation strategy aligned (2026-01-23). Ready for Sprint Planning.'
+lastUpdated: '2026-01-23'
 validationSummary: 'Party Mode validation completed with Architect, UX Designer, and PM. Stories updated with: integration verification stories, simplified visual designer, empty state criteria, performance optimization, rate limiting, Service Bus infrastructure, schema design document, and workflow clarifications. Final validation passed all 6 checks: FR coverage (33/33), architecture compliance, story quality, epic structure, epic independence, and dependency validation.'
 finalValidationDate: '2026-01-22'
+phasedStrategyAlignmentDate: '2026-01-23'
+phasedStrategyNote: 'Epic 1 simplified to Phase 1 minimal Azure services (PostgreSQL + Blob Storage). Epic 13 (Azure AD SSO) moved to Phase 3. Architecture, UX Design, and Epics now fully aligned.'
 totalEpics: 14
 totalStories: 85
 inputDocuments:
@@ -107,26 +109,29 @@ This document provides the complete epic and story breakdown for G-Credit (Inter
 - Frontend: React 18+ with TypeScript and Vite build tooling
 - Backend: NestJS 10+ with Node.js 20 LTS
 - Database: PostgreSQL 16 with Prisma 5 ORM
-- Cloud: Azure-native deployment (App Service, PostgreSQL, Blob Storage, Service Bus)
-- Authentication: Azure AD OAuth 2.0 via Passport.js
+- Cloud: Azure-native deployment (phased approach)
+  - Phase 1: PostgreSQL Flexible Server + Blob Storage
+  - Phase 2: Add App Service deployment
+  - Phase 3: Add Service Bus, Redis, Key Vault, Application Insights
+- Authentication: 
+  - Phase 1-2: JWT with Passport Local Strategy
+  - Phase 3: Azure AD OAuth 2.0 via Passport.js (optional)
 - API Documentation: Auto-generated Swagger/OpenAPI documentation
 - Testing: Vitest (frontend), Jest (backend), Playwright (E2E)
 - Starter Template: Project initialization using Vite for frontend and NestJS CLI for backend
 - Open Badges 2.0 data model with JSONB storage in PostgreSQL
 
 **Infrastructure Requirements:**
-- Azure Resource Group and networking setup
-- Azure PostgreSQL Flexible Server with private endpoint
-- Azure Blob Storage for badge images and evidence files
-- Azure Service Bus for async operations and events
-- Azure Application Insights for monitoring
-- GitHub Actions or Azure DevOps for CI/CD
-- Docker containers for local development
+- Phase 1 (MVP): Azure Resource Group, PostgreSQL Flexible Server, Blob Storage
+- Phase 2 (Pilot): Add App Service deployment, CI/CD pipelines
+- Phase 3 (Production): Add Service Bus, Application Insights, Key Vault, Private Endpoints
+- Docker containers for local development (optional)
 
 **Integration Architecture:**
-- Azure AD Graph API for user authentication and profile data
+- Phase 1-2: JWT-based authentication with email/password
+- Phase 3: Azure AD Graph API for user authentication and profile data (optional)
 - Webhook ingestion API for LMS/HRIS events
-- Microsoft Graph API for Teams and Outlook notifications
+- Microsoft Graph API for Teams and Outlook notifications (Phase 3)
 - LinkedIn OAuth API for badge sharing
 - Public verification API (unauthenticated)
 
@@ -135,15 +140,16 @@ This document provides the complete epic and story breakdown for G-Credit (Inter
 - JSONB fields for flexible metadata storage
 - Soft-delete pattern for badge revocations
 - Audit trail tables for compliance
-- Redis cache for frequently accessed data
+- Phase 3: Redis cache for frequently accessed data
 
 **Security Architecture:**
 - Four RBAC roles: Admin, Issuer, Manager, Employee
-- JWT-based stateless authentication
+- JWT-based stateless authentication (Phase 1-2)
 - API key authentication for external integrations
 - Public endpoint exception handling for verification pages
-- Rate limiting and DDoS protection via Azure Front Door
-- Secrets management via Azure Key Vault
+- Rate limiting and DDoS protection (Phase 3)
+- Phase 1-2: Secrets in .env file (not committed)
+- Phase 3: Secrets management via Azure Key Vault
 
 ### FR Coverage Map
 
@@ -175,7 +181,7 @@ This document provides the complete epic and story breakdown for G-Credit (Inter
 | FR24 | Provide department/role-based skill views | Epic 12 |
 | FR25 | Calculate program effectiveness metrics | Epic 12 |
 | FR26 | Enable exportable reports | Epic 12 |
-| FR27 | Integrate Azure AD for SSO | Epic 13 (Phase 2) |
+| FR27 | Integrate Azure AD for SSO | Epic 13 (Phase 3) |
 | FR28 | Sync employee directory from HRIS | Epic 10 |
 | FR29 | Consume LMS webhooks | Epic 10 |
 | FR30 | Send Teams notifications | Epic 7, Epic 10 |
@@ -196,11 +202,12 @@ This document provides the complete epic and story breakdown for G-Credit (Inter
 **Acceptance Criteria:**
 - React 18+ project initialized with Vite and TypeScript
 - NestJS 10+ backend initialized with Prisma ORM
-- Azure Resource Group created with networking configured
-- PostgreSQL 16 Flexible Server provisioned
+- Azure Resource Group created (Phase 1 minimal setup)
+- PostgreSQL 16 Flexible Server provisioned (Burstable B1ms tier)
+- Azure Blob Storage configured for badge images
 - CI/CD pipeline established (GitHub Actions or Azure DevOps)
-- Azure Application Insights monitoring active
-- Azure Service Bus configured for async processing
+- Basic health monitoring endpoints implemented (/health, /ready)
+- Phase 3: Application Insights and Service Bus deferred
 
 ---
 
@@ -289,10 +296,12 @@ This document provides the complete epic and story breakdown for G-Credit (Inter
 **Acceptance Criteria:**
 - CSV upload with template validation working
 - Bulk issuance preview UI implemented
-- Asynchronous batch processing operational
+- Batch processing operational (Phase 1: 50 badges synchronous, Phase 3: 1000+ async)
 - Progress tracking and error reporting functional
 - Bulk notification sending working (email)
 - Audit log entries for bulk operations created
+**Phase 1 Limitation:** 50 badges per upload (synchronous processing), user must wait 2-3 minutes
+**Phase 3 Upgrade:** Unlimited badges with Azure Service Bus async processing
 
 ---
 
@@ -318,7 +327,8 @@ This document provides the complete epic and story breakdown for G-Credit (Inter
 - Automatic badge issuance on webhook receipt working
 - HRIS employee directory sync implemented
 - Retry logic for failed webhook deliveries working
-- Azure Service Bus integration for async processing
+- Phase 1-2: Synchronous webhook processing (simple, fast MVP)
+- Phase 3: Azure Service Bus integration for async processing and scale
 
 ---
 
@@ -348,17 +358,17 @@ This document provides the complete epic and story breakdown for G-Credit (Inter
 
 ---
 
-### Epic 13: Enterprise SSO Integration (Phase 2)
+### Epic 13: Enterprise SSO Integration (Phase 3)
 **Value:** Enable seamless enterprise authentication with Azure AD for enhanced security
-**Description:** Integrate Azure AD (Entra ID) OAuth 2.0 for single sign-on, migrate existing JWT users to Azure AD, synchronize user profiles with Graph API, and maintain backward compatibility during transition. This epic represents Phase 2 after team gains experience with Phase 1 authentication.
+**Description:** Integrate Azure AD (Entra ID) OAuth 2.0 for single sign-on, migrate existing JWT users to Azure AD, synchronize user profiles with Graph API, and maintain backward compatibility during transition. This epic represents Phase 3 after team gains production experience with Phase 1 JWT authentication and Phase 2 deployment.
 **Acceptance Criteria:**
 - Azure AD OAuth 2.0 authentication flow working
 - User profile sync with Azure AD Graph API implemented
 - Migration path from JWT to Azure AD completed
-- Backward compatibility maintained during transition
+- Backward compatibility maintained during transition (both JWT and Azure AD supported)
 - Azure AD group-based RBAC mapping working
 - Enterprise security audit compliance verified
-**Note:** Phase 2 authentication strategy - implemented after team gains experience with simpler JWT auth
+**Note:** Phase 3 authentication strategy - implemented after team gains experience with simpler JWT auth and validates MVP with pilot users
 
 ---
 
@@ -451,24 +461,33 @@ So that **I can define data models and perform database operations**.
 
 ---
 
-#### Story 1.4: 建立Azure Resource Group和网络配置
+#### Story 1.4: 配置Phase 1 Azure基础资源
 
 As a **DevOps Engineer**,  
-I want **to provision Azure Resource Group and configure networking for the G-Credit application**,  
-So that **all Azure resources are organized and accessible**.
+I want **to provision Phase 1 minimal Azure resources (PostgreSQL + Blob Storage only)**,  
+So that **the development team can start building MVP without infrastructure complexity**.
 
 **Acceptance Criteria:**
 
 **Given** I have Azure CLI installed and authenticated  
-**When** I run the infrastructure provisioning script  
+**When** I run the Phase 1 infrastructure provisioning script  
 **Then** Azure Resource Group is created in the specified region  
-**And** Virtual Network (VNet) is configured with appropriate subnets  
-**And** Network Security Groups (NSG) are configured with basic rules  
-**And** Azure PostgreSQL Flexible Server is provisioned with private endpoint  
-**And** Azure Blob Storage account is created for badge images  
-**And** Azure Service Bus namespace is provisioned for async messaging  
-**And** All resource tags are applied (project: G-Credit, environment: dev)  
-**And** Infrastructure-as-Code (IaC) scripts are committed to repository
+**And** Azure PostgreSQL Flexible Server (Burstable B1ms tier) is provisioned  
+**And** PostgreSQL public access is enabled for development (Phase 3 will use private endpoint)  
+**And** PostgreSQL firewall rules allow Azure services and developer IPs  
+**And** SSL/TLS connection is enforced on PostgreSQL  
+**And** Azure Blob Storage account (Standard LRS) is created  
+**And** Blob Storage container 'badges' is created with public read access  
+**And** Blob Storage container 'evidence' is created with private access  
+**And** Connection strings are saved to .env.example template (not committed)  
+**And** All resource tags are applied (project: G-Credit, environment: dev, phase: 1)  
+**And** Infrastructure-as-Code (IaC) scripts are committed to repository  
+
+**Phase 3 Deferred:**
+- Virtual Network and Private Endpoints (simplified for MVP)
+- Network Security Groups (simplified for MVP)
+- Azure Service Bus (no async processing in Phase 1)
+- Azure Key Vault (use .env file in Phase 1)
 
 ---
 
@@ -494,10 +513,10 @@ So that **code changes are automatically tested and deployed**.
 
 ---
 
-#### Story 1.6: 实现健康检查端点和监控
+#### Story 1.6: 实现健康检查端点和基础日志
 
 As a **SRE/DevOps Engineer**,  
-I want **to implement health check endpoints and configure Azure Application Insights monitoring**,  
+I want **to implement health check endpoints and structured logging for Phase 1 monitoring**,  
 So that **I can track application health and performance metrics**.
 
 **Acceptance Criteria:**
@@ -516,13 +535,15 @@ So that **I can track application health and performance metrics**.
 
 ---
 
-#### Story 1.7: 配置Azure Service Bus消息队列
+#### Story 1.7: 配置Azure Service Bus消息队列 (Phase 3 Deferred)
+
+**Note:** This story is deferred to Phase 3. Phase 1 MVP uses synchronous processing for all operations (badge issuance, email notifications). Service Bus is added in Phase 3 when async processing becomes necessary for scale.
 
 As a **Developer**,  
 I want **to set up Azure Service Bus with queues and monitoring**,  
 So that **async processing infrastructure is ready for bulk operations and webhooks**.
 
-**Acceptance Criteria:**
+**Phase 3 Acceptance Criteria:**
 
 **Given** Azure Resource Group exists  
 **When** Azure Service Bus namespace is provisioned  
@@ -1596,15 +1617,36 @@ So that **I can verify all data is correct before issuing badges**.
 
 ---
 
-#### Story 8.4: 实现异步批量处理
+#### Story 8.4: 实现批量处理 (Phase 1: Synchronous, Phase 3: Async)
+
+**Phase 1 Implementation (MVP):**
+
+As an **Issuer**,  
+I want **to issue up to 50 badges in a single batch**,  
+So that **I can award badges to small groups efficiently**.
+
+**Phase 1 Acceptance Criteria:**
+
+**Given** Issuer confirms bulk issuance (max 50 badges)  
+**When** "Confirm and Issue" button is clicked  
+**Then** Frontend shows "Processing..." spinner  
+**And** Backend processes all 50 badges synchronously (loop through CSV rows)  
+**And** Each badge issuance creates BadgeAssertion record  
+**And** Each badge sends notification email  
+**And** Processing completes in 2-3 minutes (acceptable for 50 badges)  
+**And** Frontend shows success message with count: "50 badges issued successfully"  
+**And** Failed issuances are logged and reported separately  
+**And** Audit log entry created for batch operation  
+
+**Phase 3 Upgrade (Async Processing):**
 
 As an **Issuer**,  
 I want **bulk issuance to process in background without timeout**,  
 So that **I can issue 1000+ badges without waiting or errors**.
 
-**Acceptance Criteria:**
+**Phase 3 Acceptance Criteria:**
 
-**Given** Issuer confirms bulk issuance  
+**Given** Issuer confirms bulk issuance (unlimited)  
 **When** "Confirm and Issue" button is clicked  
 **Then** Batch job is created with unique jobId and status QUEUED  
 **And** Job record stores: jobId, issuerId, totalCount, processedCount, failedCount, status, createdAt  
@@ -1951,13 +1993,15 @@ So that **temporary failures don't result in lost badge issuances**.
 
 ---
 
-#### Story 10.6: 集成Azure Service Bus异步处理
+#### Story 10.6: 集成Azure Service Bus异步处理 (Phase 3 Optional)
+
+**Note:** This story is optional for Phase 1-2 MVP. Synchronous webhook processing is sufficient for pilot scale. Service Bus is added in Phase 3 for production scale and resilience.
 
 As a **Developer**,  
 I want **to process webhook events asynchronously via Azure Service Bus**,  
 So that **webhook responses are fast and processing is resilient**.
 
-**Acceptance Criteria:**
+**Phase 3 Acceptance Criteria:**
 
 **Given** Webhook event is received and validated  
 **When** Event is accepted (202 response sent)  
@@ -2296,7 +2340,7 @@ So that **I can share insights with leadership and use data for HR planning**.
 
 ---
 
-### Epic 13: Enterprise SSO Integration (Phase 2)
+### Epic 13: Enterprise SSO Integration (Phase 3)
 
 **Epic Goal:** Enable seamless enterprise authentication with Azure AD for enhanced security
 
@@ -2305,7 +2349,7 @@ So that **I can share insights with leadership and use data for HR planning**.
 - FR10: Enforce role-based issuing permissions (Azure AD group mapping)
 - NFR1: Azure AD SSO with role-based access control
 
-**Note:** Phase 2 authentication strategy - implemented after team gains experience with simpler JWT auth
+**Note:** Phase 3 authentication strategy - implemented after team gains production experience with Phase 1 JWT auth and validates MVP with pilot users
 
 ---
 

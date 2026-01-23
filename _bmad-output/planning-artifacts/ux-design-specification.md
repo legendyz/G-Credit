@@ -135,8 +135,10 @@ The heart of G-Credit's user experience is the **badge claiming moment**—when 
 - **First Impression:** For most employees, claiming their first badge defines their perception of G-Credit
 
 **The Core Loop:**
-1. Employee receives notification (Teams/Email): "🎉 You earned [Badge Name]!"
-2. One-click navigation to claim page (auto-authenticated via Azure AD SSO)
+1. Employee receives notification (Email): "🎉 You earned [Badge Name]!"
+2. One-click navigation to claim page (token-based pre-authentication via magic link)
+   - Phase 1-2: Email contains unique claim URL with embedded token (no login required)
+   - Phase 3: Optional Azure AD SSO for enterprise users
 3. Badge preview with criteria met and issuer information
 4. Single "Claim Badge" button
 5. Celebration animation with congratulatory message
@@ -171,7 +173,9 @@ The heart of G-Credit's user experience is the **badge claiming moment**—when 
 - Enterprise employees primarily work on desktop computers
 - Admin functions (batch issuance, analytics dashboards) require larger screens
 - MVP resources focused on core functionality, not cross-platform polish
-- Azure AD SSO works seamlessly on desktop browsers
+- Token-based magic link authentication works seamlessly across all devices
+  - Phase 1-2: Email magic links (no login required, mobile-friendly)
+  - Phase 3: Azure AD SSO option added for desktop enterprise users
 
 ### Effortless Interactions
 
@@ -180,12 +184,15 @@ These interactions must require **zero cognitive load**—users should complete 
 **1. ✨ Badge Claiming (Core)**
 - **User Goal:** Claim earned badge and add to wallet
 - **Zero-Friction Flow:**
-  - Teams notification link → Auto-authenticated claim page (no login prompt)
+  - Email magic link → Auto-authenticated claim page via token (no login prompt)
   - Badge information pre-displayed (no loading states)
   - Single "Claim Badge" button (no forms, no additional clicks)
   - Immediate visual feedback (celebration animation)
   - Auto-redirected to wallet with sharing options
-- **Technical Enablers:** Azure AD SSO, pre-cached badge data, optimistic UI updates
+- **Technical Enablers:** Token-based pre-authentication (JWT magic links), pre-cached badge data, optimistic UI updates
+  - Phase 1-2: Email contains unique claim URL with 24-hour token
+  - Phase 3: Azure AD SSO added as optional authentication method for enterprise users
+  - Cross-device friendly: Works on mobile without enterprise login
 
 **2. ✨ Privacy Control**
 - **User Goal:** Control who can see each badge

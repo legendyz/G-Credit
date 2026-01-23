@@ -14,8 +14,8 @@
 **Project Name:** G-Credit  
 **Project Type:** Enterprise Internal Platform (Greenfield Development)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
-**Current Status:** Planning Complete → Ready for Implementation  
-**Last Updated:** 2026-01-22
+**Current Status:** Sprint 0 - Infrastructure Setup (In Progress)  
+**Last Updated:** 2026-01-23
 
 ### 🎯 Core Objectives
 
@@ -129,10 +129,29 @@
 
 ### 🎯 Current Phase (Phase 4 - Implementation)
 
-**Next Actions:**
-1. **Sprint Planning** - Break down 85 stories into 2-week sprints
-2. **Sprint 0: Infrastructure Setup** - Initialize Monorepo, PostgreSQL, Azure services configuration
-3. **Sprint 1-6: MVP Development** - Core backend, frontend, integration testing
+**Current Sprint:** Sprint 0 - Infrastructure Setup  
+**Sprint Duration:** 2026-01-23 → 2026-02-05 (2 weeks)  
+**Sprint Goal:** Build minimal Phase 1 infrastructure for "Hello World" frontend and backend
+
+**Sprint 0 Progress:**
+- 🔄 Frontend React project initialization
+- 🔄 Backend NestJS API setup
+- 🔄 Azure PostgreSQL database configuration
+- 🔄 Azure Blob Storage integration
+- 🔄 Git repository and documentation
+
+**Sprint 0 Success Criteria:**
+- ✅ Frontend React app running with basic UI
+- ✅ Backend NestJS API running, /health returns 200
+- ✅ Azure PostgreSQL connected, User table created
+- ✅ Azure Blob Storage upload/download working
+- ✅ Code committed to Git
+- ✅ Complete local development guide in README
+
+**Next Sprints:**
+- **Sprint 1-2:** Authentication & User Management (Epic 2)
+- **Sprint 3-4:** Badge Template & Issuance (Epic 3-4)
+- **Sprint 5-6:** Verification & Employee Wallet (Epic 5-6)
 
 ---
 
@@ -154,12 +173,23 @@ CODE/
 │
 ├── _bmad-output/                   # Generated artifacts directory
 │   ├── planning-artifacts/         # ✅ Planning Complete
-│   │   ├── architecture.md         # 185 KB, 5,406 lines
-│   │   ├── ux-design-specification.md  # 137 KB, 3,314 lines
+│   │   ├── architecture.md         # 185 KB, 5,406 lines, 12 decisions
+│   │   ├── ux-design-specification.md  # 137 KB, 3,314 lines, 22 screens
 │   │   ├── epics.md                # 122 KB, 14 epics, 85 stories
-│   │   └── implementation-readiness-report-2026-01-22.md
+│   │   ├── implementation-readiness-report-2026-01-22.md  # 10/10 score
+│   │   └── bmm-workflow-status.yaml
 │   ├── excalidraw-diagrams/        # ✅ Wireframes (10 screens, 206 elements)
-│   └── implementation-artifacts/   # 🔄 Ready for Sprint artifacts
+│   │   ├── wireframe-gcredit-mvp-20260122.excalidraw
+│   │   └── theme.json
+│   └── implementation-artifacts/   # 🔄 Sprint 0 In Progress
+│       └── sprint-0-backlog.md     # Sprint 0 detailed plan (1,515 lines)
+│
+├── .github/                        # GitHub configuration
+│   └── agents/                     # GitHub Copilot Agents (25 custom agents)
+│       ├── bmd-custom-bmm-*.agent.md        # BMM method agents
+│       ├── bmd-custom-bmb-*.agent.md        # BMB builder agents
+│       ├── bmd-custom-cis-*.agent.md        # CIS innovation agents
+│       └── bmd-custom-bmgd-*.agent.md       # BMGD game dev agents
 │
 ├── MD_FromCopilot/                 # Source documents
 │   ├── product-brief.md            # Product brief
@@ -188,6 +218,29 @@ CODE/
 ## 🎨 BMAD Framework
 
 This project uses the **BMAD (Business Model Agent Development) Framework** v6.0.0-alpha.23 for development management:
+
+### GitHub Copilot Agents
+
+**25 Custom Agents** integrated via `.github/agents/` for enhanced AI-assisted development:
+
+**BMM (Method) Agents (9):**
+- Analyst, Architect, Developer, Product Manager
+- Scrum Master, Test Engineer, UX Designer, Tech Writer
+- Quick Flow Solo Dev
+
+**BMB (Builder) Agents (3):**
+- Agent Builder, Module Builder, Workflow Builder
+
+**CIS (Innovation) Agents (6):**
+- Brainstorming Coach, Creative Problem Solver, Design Thinking Coach
+- Innovation Strategist, Presentation Master, Storyteller
+
+**BMGD (Game Dev) Agents (6):**
+- Game Architect, Game Designer, Game Dev, Game QA
+- Game Scrum Master, Game Solo Dev
+
+**Core Agent (1):**
+- BMAD Master (central orchestrator)
 
 ### BMAD Modules
 
@@ -248,7 +301,11 @@ This project uses the **BMAD (Business Model Agent Development) Framework** v6.0
 |-------|----------|--------------|--------|
 | Phase 1 - Discovery | 4-6 weeks | PRD, Product Brief, KPIs | ✅ Complete |
 | Phase 2 - Design & Architecture | 4 weeks | Architecture doc, UX Design, Wireframes | ✅ Complete |
-| Phase 3 - MVP Development | 8-12 weeks | Working MVP | 🔄 Next - Sprint 0 starting |
+| **Phase 3 - MVP Development** | **8-12 weeks** | **Working MVP** | **🔄 In Progress** |
+| → Sprint 0 | 2 weeks | Infrastructure Setup | 🔄 In Progress (2026-01-23 → 02-05) |
+| → Sprint 1-2 | 4 weeks | Auth & User Management | ⏳ Planned |
+| → Sprint 3-4 | 4 weeks | Badge Templates & Issuance | ⏳ Planned |
+| → Sprint 5-6 | 4 weeks | Verification & Wallet | ⏳ Planned |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ Pending |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
@@ -306,13 +363,17 @@ npm run dev
 
 ## 📚 Key Documents
 
+**Planning Documents (Complete):**
 - [Project Context](./project-context.md) - Single source of truth
 - [Product Brief](./MD_FromCopilot/product-brief.md) - Business requirements
-- [PRD](./MD_FromCopilot/PRD.md) - Product Requirements Document
-- [Architecture Document](./_bmad-output/planning-artifacts/architecture.md) - Technical architecture
-- [UX Design Specification](./_bmad-output/planning-artifacts/ux-design-specification.md) - User experience design
-- [Epics & Stories](./_bmad-output/planning-artifacts/epics.md) - Implementation breakdown
-- [Implementation Readiness Report](./_bmad-output/planning-artifacts/implementation-readiness-report-2026-01-22.md) - Readiness assessment
+- [PRD](./MD_FromCopilot/PRD.md) - Product Requirements Document (33 FRs, 22 NFRs)
+- [Architecture Document](./_bmad-output/planning-artifacts/architecture.md) - Technical architecture (5,406 lines)
+- [UX Design Specification](./_bmad-output/planning-artifacts/ux-design-specification.md) - User experience design (3,314 lines)
+- [Epics & Stories](./_bmad-output/planning-artifacts/epics.md) - Implementation breakdown (14 epics, 85 stories)
+- [Implementation Readiness Report](./_bmad-output/planning-artifacts/implementation-readiness-report-2026-01-22.md) - Readiness assessment (10/10)
+
+**Implementation Documents (In Progress):**
+- [Sprint 0 Backlog](./_bmad-output/implementation-artifacts/sprint-0-backlog.md) - Infrastructure setup plan (1,515 lines)
 
 ---
 
@@ -336,5 +397,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Last Updated:** 2026-01-22  
-**Status:** Planning Complete, Ready for Implementation 🚀
+**Last Updated:** 2026-01-23  
+**Status:** Sprint 0 In Progress - Infrastructure Setup 🚀  
+**Sprint Progress:** See [Sprint 0 Backlog](./_bmad-output/implementation-artifacts/sprint-0-backlog.md) for detailed tasks and progress tracking.

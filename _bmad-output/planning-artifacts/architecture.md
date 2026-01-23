@@ -507,28 +507,27 @@ gcredit-api/
 
 ### Azure Deployment Architecture
 
-**Frontend:**
-- **Azure Static Web Apps** - Optimized for React SPAs, built-in CDN
-- **Azure CDN** - Global asset distribution for badge images
+**Phase 1 (MVP Development - Week 1-6):**
+- **Azure Database for PostgreSQL - Flexible Server (Burstable B1ms)** - Shared team database
+- **Azure Blob Storage (Standard, LRS)** - Badge image storage
+- **Local Development** - Frontend (Vite) + Backend (NestJS) run on developer laptops
 
-**Backend:**
-- **Azure App Service** - Managed Node.js hosting with auto-scaling
-- **Azure Container Instances** - Docker deployment option
+**Phase 2 (Pilot Launch - Week 7-8):**
+- **Azure App Service (Basic B1)** - Deploy frontend + backend as single service
+- **PostgreSQL (Burstable B1ms)** - Same database, may upgrade if needed
+- **Blob Storage (Standard)** - Same storage, already populated with images
+- **GitHub Actions** - CI/CD pipeline for automated deployment
 
-**Database:**
-- **Azure Database for PostgreSQL - Flexible Server** - Managed PostgreSQL with backup
-
-**Storage:**
-- **Azure Blob Storage** - Badge images, evidence files
-
-**Messaging:**
-- **Azure Service Bus** - Event-driven integration
-
-**Identity:**
-- **Azure AD (Entra ID)** - SSO authentication
-
-**Monitoring:**
-- **Azure Application Insights** - APM, logging, and analytics
+**Phase 3 (Production Rollout - Week 10-12):**
+- **Frontend:** Azure Static Web Apps OR App Service Standard S1 with CDN
+- **Backend:** Azure App Service Standard S1 with auto-scaling
+- **Database:** PostgreSQL General Purpose D2s with backup and high availability
+- **Storage:** Azure Blob Storage with CDN integration for global delivery
+- **Caching:** Azure Cache for Redis (Basic C0)
+- **Identity:** Azure AD (Entra ID) SSO + email/password fallback
+- **Monitoring:** Azure Application Insights for APM and logging
+- **Messaging:** Azure Service Bus (Basic) for async job processing
+- **Secrets:** Azure Key Vault for secure credential management
 
 ### Why This Stack Wins for Your Team
 
@@ -561,19 +560,337 @@ All 12 core architectural decisions below have been made collaboratively and are
 
 **Important Decisions (Shape Architecture):**
 These decisions define the system's scalability, security, and maintainability characteristics. They were chosen based on:
-- Team skill level (beginner-friendly technologies)
+- Team skill level (intermediate-level, no extensive cloud experience)
 - Industry best practices (2024/2025 Stack Overflow and State of JS surveys)
 - Azure cloud-native requirements
 - Open Badges 2.0 compliance needs
-- Phased MVP-to-production roadmap
+- Phased MVP-to-production roadmap with incremental complexity
 
 **Deferred Decisions (Post-MVP):**
 The following decisions have been deferred to Phase 2 or later to reduce MVP complexity:
 - Advanced caching with Redis (defer to Phase 2)
+- Azure AD SSO integration (defer to Phase 3, use email/password for MVP)
 - Microservices decomposition (MVP uses modular monolith)
 - Multi-region deployment (start with single Azure region)
 - Advanced analytics with dedicated data warehouse (MVP uses PostgreSQL analytics queries)
+- Application Insights comprehensive monitoring (defer to Pilot phase)
 - Mobile native apps (Phase 3, MVP is responsive web)
+
+---
+
+## Phased Implementation Strategy (Risk-Reduced Approach)
+
+### Philosophy: Incremental Azure Adoption
+
+Given the team's intermediate skill level and limited cloud infrastructure experience, we adopt a **three-phase Azure service adoption strategy** to:
+1. ✅ Minimize initial infrastructure complexity and setup time
+2. ✅ Prove business value quickly (working MVP in 6 weeks)
+3. ✅ Learn Azure services incrementally when ready
+4. ✅ Avoid project delays due to infrastructure debugging
+5. ✅ Enable smooth migration path to full production architecture
+
+### Phase 1: MVP Development (Week 1-6) - Minimal Azure Services
+
+**Goal:** Build working badge issuance system with 50-user pilot capability
+
+**Azure Services Used:**
+- ✅ **Azure Database for PostgreSQL - Flexible Server (Burstable B1ms tier)**
+  - 1 vCore, 2GB RAM, 32GB storage
+  - **Cost:** ~$20/month
+  - **Why now:** Shared team database, zero local installation, production-ready from start
+  
+- ✅ **Azure Blob Storage (Standard tier, LRS replication)**
+  - Hot access tier
+  - **Cost:** ~$0.10/month (100 badge images = 10MB)
+  - **Why now:** Badge images are core product functionality, must persist across deployments
+
+**Azure Services SKIPPED (Simplified Alternatives):**
+- ❌ **Azure AD / Entra ID** → Use Passport.js Local Strategy (email/password)
+  - **Why skip:** Reduces authentication complexity, faster development
+  - **Migration path:** Phase 3 will add Azure AD as additional auth provider
+  
+- ❌ **Azure Cache for Redis** → Direct PostgreSQL queries only
+  - **Why skip:** MVP traffic doesn't justify caching complexity
+  - **Migration path:** Phase 2 adds Redis when performance optimization needed
+  
+- ❌ **Azure Key Vault** → Use `.env` file (NOT committed to git)
+  - **Why skip:** Fewer moving parts during development
+  - **Migration path:** Pilot phase migrates secrets to Key Vault
+  
+- ❌ **Azure Application Insights** → Use console.log and basic monitoring
+  - **Why skip:** Premature optimization, adds debugging complexity
+  - **Migration path:** Pilot phase adds Application Insights for production monitoring
+  
+- ❌ **Azure Service Bus** → Synchronous processing (no background jobs yet)
+  - **Why skip:** MVP scale allows synchronous email/notification sending
+  - **Migration path:** Phase 2 adds async processing when bulk operations needed
+
+**Development Environment:**
+- Local development: Vite dev server (frontend) + NestJS dev server (backend)
+- Remote database: Azure PostgreSQL (shared team database)
+- Remote storage: Azure Blob Storage (badge images)
+- Authentication: Simple JWT tokens with email/password
+- File uploads: Direct to Azure Blob Storage via `@azure/storage-blob` SDK
+
+**Monthly Cost:** ~$20
+
+**Setup Time:** 40 minutes (PostgreSQL + Blob Storage)
+
+**Team Learning Curve:** 2 Azure services only (PostgreSQL connection string + Blob Storage upload)
+
+---
+
+### Phase 2: Pilot Launch (Week 7-8) - Add Deployment Infrastructure
+
+**Goal:** Deploy working MVP to Azure for 50-user internal pilot
+
+**Azure Services ADDED:**
+- ✅ **Azure App Service (Basic B1 tier)** - Deploy frontend + backend
+  - **Cost:** ~$13/month
+  - **Why now:** Need public URL for pilot users to access system
+  
+**Azure Services UPGRADED:**
+- ✅ **PostgreSQL** - May upgrade to General Purpose D2s if pilot shows performance needs
+  - **Cost:** Stays at B1ms (~$20/month) unless upgrade needed
+
+**Azure Services STILL SKIPPED:**
+- ❌ Azure AD (still using email/password)
+- ❌ Redis (synchronous processing sufficient for 50 users)
+- ❌ Key Vault (can defer to Phase 3)
+- ❌ Application Insights (basic App Service logging sufficient)
+
+**Deployment Strategy:**
+- GitHub Actions pipeline: Build → Test → Deploy to App Service
+- Same PostgreSQL database as development (no migration needed)
+- Same Blob Storage container (badge images already there)
+- Environment variables via App Service Configuration
+
+**Monthly Cost:** ~$35
+
+**Setup Time:** 2-3 hours (CI/CD pipeline + App Service configuration)
+
+---
+
+### Phase 3: Production Rollout (Week 10-12) - Full Azure Suite
+
+**Goal:** Enterprise-ready platform for company-wide deployment (500-5000 users)
+
+**Azure Services ADDED:**
+- ✅ **Azure AD (Entra ID)** - SSO authentication
+  - Passport Azure AD strategy added alongside email/password
+  - **Cost:** Included in Azure AD subscription
+  
+- ✅ **Azure Cache for Redis (Basic C0 tier)** - Performance optimization
+  - Badge template caching, session storage
+  - **Cost:** ~$20/month
+  
+- ✅ **Azure Key Vault** - Secrets management
+  - Database passwords, JWT secrets, API keys
+  - **Cost:** ~$5/month (1000 operations)
+  
+- ✅ **Azure Application Insights** - Production monitoring
+  - Performance tracking, error logging, custom metrics
+  - **Cost:** ~$25/month (5GB data ingestion)
+  
+- ✅ **Azure Service Bus (Basic tier)** - Async job processing
+  - Bulk issuance processing, email queue, webhook delivery
+  - **Cost:** ~$10/month
+
+**Azure Services UPGRADED:**
+- ✅ **PostgreSQL** → General Purpose D2s (2 vCore, 8GB RAM)
+  - **Cost:** ~$150/month
+  
+- ✅ **App Service** → Standard S1 (better SLA, auto-scaling)
+  - **Cost:** ~$70/month
+  
+- ✅ **Blob Storage** → Add CDN for global badge image delivery
+  - **Cost:** ~$5/month base + bandwidth
+
+**Monthly Cost:** ~$285
+
+**Migration Effort:**
+- Azure AD integration: 1 week (new auth provider, user migration strategy)
+- Redis caching: 3 days (add cache layer, identify cache targets)
+- Key Vault: 2 days (migrate secrets, update deployment pipeline)
+- Application Insights: 2 days (instrument code, configure dashboards)
+- Service Bus: 1 week (refactor bulk operations to async)
+
+---
+
+### Cost Comparison Summary
+
+| Phase | Azure Services | Monthly Cost | Purpose |
+|-------|---------------|--------------|----------|
+| **Phase 1: MVP Dev** | PostgreSQL + Blob Storage | **$20** | Prove business value fast |
+| **Phase 2: Pilot** | + App Service | **$35** | Internal 50-user pilot |
+| **Phase 3: Production** | Full Azure Suite | **$285** | Enterprise-ready platform |
+
+**Total Investment to Validation:** $20/month × 2 months = **$40** before committing to full infrastructure
+
+---
+
+### Why This Strategy Reduces Risk
+
+**1. Fast Time-to-Value**
+   - Working MVP in 6 weeks (vs. 10-12 weeks with full Azure setup)
+   - Stakeholders see progress weekly, not monthly
+   - Early user feedback validates product direction
+
+**2. Incremental Learning**
+   - Week 1-6: Learn 2 services (PostgreSQL, Blob Storage)
+   - Week 7-8: Learn deployment (App Service, CI/CD)
+   - Week 10-12: Learn advanced services (Redis, Key Vault, etc.)
+   - Team masters one layer before adding next
+
+**3. Validation Before Investment**
+   - Spend $40 to validate badge issuance works
+   - Only invest $285/month AFTER pilot proves value
+   - Avoid "sunk cost" if pilot reveals wrong approach
+
+**4. Smooth Migration Path**
+   - Each phase adds services without breaking existing code
+   - No "big bang" migration, no downtime
+   - Can pause at any phase if business priorities change
+
+**5. Team Confidence**
+   - Early wins build team morale
+   - Each phase demonstrates mastery before adding complexity
+   - Reduces "overwhelmed by Azure" syndrome
+
+---
+
+### Authentication Strategy Across Phases
+
+**Phase 1 & 2 (MVP + Pilot): Email/Password Authentication**
+
+```typescript
+// backend: src/modules/auth/strategies/local.strategy.ts
+import { Strategy } from 'passport-local';
+import { PassportStrategy } from '@nestjs/passport';
+
+@Injectable()
+export class LocalStrategy extends PassportStrategy(Strategy) {
+  constructor(private authService: AuthService) {
+    super({ usernameField: 'email' });
+  }
+
+  async validate(email: string, password: string) {
+    const user = await this.authService.validateUser(email, password);
+    if (!user) throw new UnauthorizedException();
+    return user;
+  }
+}
+
+// Password hashing with bcrypt
+import * as bcrypt from 'bcrypt';
+
+const saltRounds = 10;
+const hashedPassword = await bcrypt.hash(plainPassword, saltRounds);
+const isMatch = await bcrypt.compare(plainPassword, hashedPassword);
+```
+
+**Phase 3 (Production): Add Azure AD Alongside Email/Password**
+
+```typescript
+// backend: src/modules/auth/strategies/azure-ad.strategy.ts
+import { BearerStrategy } from 'passport-azure-ad';
+import { PassportStrategy } from '@nestjs/passport';
+
+@Injectable()
+export class AzureAdStrategy extends PassportStrategy(BearerStrategy, 'azure-ad') {
+  constructor() {
+    super({
+      identityMetadata: `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}/v2.0/.well-known/openid-configuration`,
+      clientID: process.env.AZURE_CLIENT_ID,
+      validateIssuer: true,
+      loggingLevel: 'info',
+      passReqToCallback: false,
+    });
+  }
+
+  async validate(payload: any) {
+    // Map Azure AD user to internal user model
+    return {
+      email: payload.upn || payload.email,
+      name: payload.name,
+      roles: this.mapAzureAdRoles(payload.roles),
+    };
+  }
+}
+
+// Both strategies coexist - users can choose login method
+@Controller('auth')
+export class AuthController {
+  @Post('login/email')
+  @UseGuards(LocalAuthGuard)
+  async loginEmail(@Request() req) {
+    return this.authService.login(req.user);
+  }
+
+  @Post('login/azure')
+  @UseGuards(AzureAdAuthGuard)
+  async loginAzureAd(@Request() req) {
+    return this.authService.login(req.user);
+  }
+}
+```
+
+**Migration Strategy:**
+- Phase 1-2: All users use email/password
+- Phase 3: New users can choose Azure AD or email/password
+- Phase 3+: Gradually migrate existing users to Azure AD
+- Long-term: Deprecate email/password once all users migrated
+
+---
+
+### File Upload Strategy Across Phases
+
+**All Phases: Azure Blob Storage from Day 1**
+
+```typescript
+// backend: src/modules/storage/storage.service.ts
+import { BlobServiceClient } from '@azure/storage-blob';
+
+@Injectable()
+export class StorageService {
+  private blobServiceClient: BlobServiceClient;
+  
+  constructor() {
+    const connectionString = `DefaultEndpointsProtocol=https;AccountName=${process.env.AZURE_STORAGE_ACCOUNT};AccountKey=${process.env.AZURE_STORAGE_KEY}`;
+    this.blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
+  }
+  
+  async uploadBadgeImage(file: Express.Multer.File): Promise<string> {
+    const containerClient = this.blobServiceClient.getContainerClient('badges');
+    const filename = `${Date.now()}-${file.originalname}`;
+    const blockBlobClient = containerClient.getBlockBlobClient(filename);
+    
+    await blockBlobClient.uploadData(file.buffer, {
+      blobHTTPHeaders: { blobContentType: file.mimetype }
+    });
+    
+    return blockBlobClient.url; // https://gcreditdevstorage.blob.core.windows.net/badges/image.png
+  }
+}
+
+// frontend: Badge upload component
+const handleUpload = async (file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const response = await api.post('/badges/upload', formData);
+  setBadgeImageUrl(response.data.url); // Store Azure Blob URL in database
+};
+```
+
+**Why Blob Storage from Day 1:**
+- ✅ Badge images are core product functionality (not optional)
+- ✅ Local file storage breaks on deployment (files lost on restart)
+- ✅ Cost is negligible ($0.10/month for MVP)
+- ✅ No migration needed between phases
+- ✅ Production-ready architecture from start
+
+---
 
 ---
 
@@ -611,37 +928,68 @@ If scale demands it in Phase 3+, can migrate to schema separation or microservic
 
 #### Decision 1.2: Caching Strategy
 
-**Decision:** Phased Caching Approach
-- **Phase 1 (MVP):** No application caching + Azure CDN for public verification pages
-- **Phase 2:** Add Redis distributed cache for badge templates and user sessions
+**Decision:** Phased Caching Approach - No Redis Until Phase 3
+- **Phase 1-2 (MVP + Pilot):** No application caching, direct PostgreSQL queries
+- **Phase 3 (Production):** Add Redis distributed cache for performance optimization
 
 **Rationale:**
-- **MVP Simplicity:** Reduces learning curve by deferring Redis setup
-- **CDN for Public Pages:** Azure Static Web Apps provides built-in CDN for verification pages (global performance without backend complexity)
-- **Phase 2 Redis:** Once team is comfortable with core architecture, add Redis for:
-  - Badge template caching (read-heavy, rarely updated)
-  - Session storage (distributed sessions across App Service instances)
-  - Bull job queue backing store (already requires Redis)
+- **MVP Simplicity:** Team learns core architecture without distributed caching complexity
+- **Sufficient Performance:** 50-100 pilot users don't require caching (PostgreSQL handles queries easily)
+- **Database Optimization First:** Focus on proper indexes and query optimization
+- **Deferred Learning:** Team masters PostgreSQL, NestJS, React before adding Redis layer
+- **Cost Savings:** Save $20/month during development and pilot phases
 
 **Implementation:**
 
-**Phase 1 MVP:**
-- No Redis, all queries hit PostgreSQL
-- Public verification pages served via Azure Static Web Apps CDN
-- PostgreSQL query optimization with proper indexes
+**Phase 1-2 (MVP + Pilot):**
+- No Redis installation or configuration
+- All queries hit PostgreSQL directly
+- PostgreSQL query optimization:
+  - Proper indexes on frequently queried columns (badge_id, user_id, status)
+  - EXPLAIN ANALYZE to identify slow queries
+  - Consider materialized views for complex analytics queries
+- Acceptable response times for pilot scale (<100ms for most queries)
 
-**Phase 2:**
-- **Cache:** Azure Cache for Redis (Basic tier for dev, Standard for prod)
+**Phase 3 (Production Rollout):**
+- **Cache:** Azure Cache for Redis (Basic C0 tier - 250MB)
+- **Cost:** ~$20/month
 - **Use Cases:**
-  - Badge templates (TTL: 1 hour)
-  - User profile data (TTL: 30 minutes)
-  - Analytics aggregations (TTL: 15 minutes)
-- **NestJS Integration:** `@nestjs/cache-manager` with Redis store
+  - Badge template catalog (read-heavy, updated rarely)
+    - Key: `badge:template:{id}`, TTL: 1 hour
+  - User profile data with role information
+    - Key: `user:profile:{id}`, TTL: 30 minutes
+  - Public verification page data (most frequent read)
+    - Key: `badge:assertion:{id}`, TTL: 24 hours
+  - Analytics dashboard aggregations
+    - Key: `analytics:{metric}:{date}`, TTL: 15 minutes
+- **NestJS Integration:** 
+  ```typescript
+  import { CacheModule } from '@nestjs/cache-manager';
+  import * as redisStore from 'cache-manager-redis-store';
+  
+  CacheModule.register({
+    store: redisStore,
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT,
+    password: process.env.REDIS_PASSWORD,
+    ttl: 3600, // default TTL 1 hour
+  })
+  ```
+- **Migration Strategy:**
+  - Add cache layer without changing existing code
+  - Cache-aside pattern (check cache → query DB → populate cache)
+  - Monitor cache hit rate, adjust TTLs based on data
 
 **Affects:**
-- API response times (Phase 1: acceptable for MVP, Phase 2: optimized)
-- Infrastructure costs (Phase 1: lower, Phase 2: +Redis cost)
-- System complexity (Phase 1: simpler, Phase 2: distributed cache patterns)
+- API response times:
+  - Phase 1-2: 50-200ms (acceptable for pilot)
+  - Phase 3: 10-50ms (production-optimized)
+- Infrastructure costs:
+  - Phase 1-2: $20/month (PostgreSQL + Blob only)
+  - Phase 3: $40/month (+Redis)
+- System complexity:
+  - Phase 1-2: Simple direct queries
+  - Phase 3: Cache invalidation and consistency management
 
 ---
 
