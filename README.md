@@ -14,8 +14,9 @@
 **Project Name:** G-Credit  
 **Project Type:** Enterprise Internal Platform (Greenfield Development)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
-**Current Status:** Sprint 0 - Infrastructure Setup (In Progress)  
-**Last Updated:** 2026-01-23
+**Current Status:** Sprint 1 - JWT Authentication & User Management (Ready to Start)  
+**Sprint 0 Status:** ✅ Complete (100%, 9.5h/10h estimated, committed 2026-01-24)  
+**Last Updated:** 2026-01-24
 
 ### 🎯 Core Objectives
 
@@ -39,18 +40,18 @@
 ### Technology Stack
 
 #### Frontend (`gcredit-web`)
-- **Framework:** React 18 + TypeScript 5
-- **Build Tool:** Vite 5
-- **UI Framework:** Tailwind CSS 3.x + Shadcn/ui
+- **Framework:** React 18.3.1 + TypeScript 5.9.3
+- **Build Tool:** Vite 7.2.4
+- **UI Framework:** Tailwind CSS 4.1.18 + Shadcn/ui
 - **State Management:** TanStack Query v5 + Zustand
 - **Routing:** React Router v6
 - **Form Handling:** React Hook Form + Zod
 
 #### Backend (`gcredit-api`)
-- **Framework:** NestJS 10 + TypeScript 5
-- **Runtime:** Node.js 20 LTS
-- **Database:** PostgreSQL 16
-- **ORM:** Prisma 5
+- **Framework:** NestJS 11.0.16 + TypeScript 5.7.3
+- **Runtime:** Node.js 20.20.0 LTS
+- **Database:** PostgreSQL 16 (Azure Flexible Server B1ms)
+- **ORM:** Prisma 6.19.2 ⚠️ **Version Locked** (Prisma 7 has breaking changes)
 - **Authentication:** Passport.js + JWT
 - **Queue:** Bull (Redis-backed)
 
@@ -129,28 +130,31 @@
 
 ### 🎯 Current Phase (Phase 4 - Implementation)
 
-**Current Sprint:** Sprint 0 - Infrastructure Setup  
-**Sprint Duration:** 2026-01-23 → 2026-02-05 (2 weeks)  
-**Sprint Goal:** Build minimal Phase 1 infrastructure for "Hello World" frontend and backend
+**Current Sprint:** Sprint 1 - JWT Authentication & User Management  
+**Sprint Duration:** 2026-01-27 → 2026-02-09 (2 weeks)  
+**Sprint Goal:** Complete Epic 2 - JWT authentication, user management, Azure AD SSO
 
-**Sprint 0 Progress:**
-- 🔄 Frontend React project initialization
-- 🔄 Backend NestJS API setup
-- 🔄 Azure PostgreSQL database configuration
-- 🔄 Azure Blob Storage integration
-- 🔄 Git repository and documentation
+**✅ Sprint 0 Completed (2026-01-24):**
+- ✅ Frontend React 18.3.1 + Vite 7.2.4 + Tailwind CSS 4.1.18 + Shadcn/ui (3h)
+- ✅ Backend NestJS 11.0.16 + TypeScript 5.7.3 (2h)
+- ✅ Azure PostgreSQL connected, Prisma 6.19.2 User table + migrations (3.5h)
+- ✅ Azure Blob Storage: 2 containers (badges public, evidence private) (2h)
+- ✅ Git repository + project documentation (1h)
+- **Total: 9.5h / 10h estimated (95% accuracy)**
+- **Commits:** 6 commits pushed to main branch
 
-**Sprint 0 Success Criteria:**
-- ✅ Frontend React app running with basic UI
-- ✅ Backend NestJS API running, /health returns 200
-- ✅ Azure PostgreSQL connected, User table created
-- ✅ Azure Blob Storage upload/download working
-- ✅ Code committed to Git
-- ✅ Complete local development guide in README
+**Sprint 1 Stories (21h estimated):**
+- Story 2.1: Enhanced User data model (3h)
+- Story 2.2: JWT authentication service (3h)
+- Story 2.3: Auth controllers & guards (3h)
+- Story 2.4: Password management (3h)
+- Story 2.5: Session management (3h)
+- Story 2.6: Azure AD SSO integration (4h)
+- Story 2.7: User profile API (2h)
 
 **Next Sprints:**
-- **Sprint 1-2:** Authentication & User Management (Epic 2)
-- **Sprint 3-4:** Badge Template & Issuance (Epic 3-4)
+- **Sprint 2:** Badge Template & Issuance Foundation (Epic 3, part 1)
+- **Sprint 3-4:** Badge Template & Issuance Complete (Epic 3-4)
 - **Sprint 5-6:** Verification & Employee Wallet (Epic 5-6)
 
 ---
@@ -181,8 +185,10 @@ CODE/
 │   ├── excalidraw-diagrams/        # ✅ Wireframes (10 screens, 206 elements)
 │   │   ├── wireframe-gcredit-mvp-20260122.excalidraw
 │   │   └── theme.json
-│   └── implementation-artifacts/   # 🔄 Sprint 0 In Progress
-│       └── sprint-0-backlog.md     # Sprint 0 detailed plan (1,515 lines)
+│   └── implementation-artifacts/   # 🔄 Sprint 1 Ready to Start
+│       ├── sprint-0-backlog.md     # Sprint 0 detailed plan (1,867 lines)
+│       ├── sprint-0-retrospective.md  # Sprint 0 lessons learned (12,000+ words)
+│       └── sprint-1-backlog.md     # Sprint 1 detailed plan (1,312 lines, 7 stories)
 │
 ├── .github/                        # GitHub configuration
 │   └── agents/                     # GitHub Copilot Agents (25 custom agents)
@@ -302,8 +308,9 @@ This project uses the **BMAD (Business Model Agent Development) Framework** v6.0
 | Phase 1 - Discovery | 4-6 weeks | PRD, Product Brief, KPIs | ✅ Complete |
 | Phase 2 - Design & Architecture | 4 weeks | Architecture doc, UX Design, Wireframes | ✅ Complete |
 | **Phase 3 - MVP Development** | **8-12 weeks** | **Working MVP** | **🔄 In Progress** |
-| → Sprint 0 | 2 weeks | Infrastructure Setup | 🔄 In Progress (2026-01-23 → 02-05) |
-| → Sprint 1-2 | 4 weeks | Auth & User Management | ⏳ Planned |
+| → Sprint 0 | 2 weeks | Infrastructure Setup | ✅ Complete (2026-01-23 → 01-24, 9.5h/10h) |
+| → Sprint 1 | 2 weeks | JWT Auth & User Management (Epic 2) | 🔄 Ready to Start (2026-01-27 → 02-09, 21h) |
+| → Sprint 2 | 2 weeks | Badge Template Foundation | ⏳ Planned |
 | → Sprint 3-4 | 4 weeks | Badge Templates & Issuance | ⏳ Planned |
 | → Sprint 5-6 | 4 weeks | Verification & Wallet | ⏳ Planned |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ Pending |
@@ -373,7 +380,9 @@ npm run dev
 - [Implementation Readiness Report](./_bmad-output/planning-artifacts/implementation-readiness-report-2026-01-22.md) - Readiness assessment (10/10)
 
 **Implementation Documents (In Progress):**
-- [Sprint 0 Backlog](./_bmad-output/implementation-artifacts/sprint-0-backlog.md) - Infrastructure setup plan (1,515 lines)
+- [Sprint 0 Backlog](./_bmad-output/implementation-artifacts/sprint-0-backlog.md) - Infrastructure setup plan (1,867 lines, ✅ Complete)
+- [Sprint 0 Retrospective](./_bmad-output/implementation-artifacts/sprint-0-retrospective.md) - Lessons learned (12,000+ words, 8 action items)
+- [Sprint 1 Backlog](./_bmad-output/implementation-artifacts/sprint-1-backlog.md) - JWT Auth & User Management (1,312 lines, 7 stories, 21h)
 
 ---
 
@@ -397,6 +406,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Last Updated:** 2026-01-23  
-**Status:** Sprint 0 In Progress - Infrastructure Setup 🚀  
-**Sprint Progress:** See [Sprint 0 Backlog](./_bmad-output/implementation-artifacts/sprint-0-backlog.md) for detailed tasks and progress tracking.
+**Last Updated:** 2026-01-24  
+**Status:** Sprint 1 Ready to Start - JWT Authentication & User Management 🚀  
+**Sprint 0:** ✅ Complete (9.5h/10h) - See [Sprint 0 Retrospective](./_bmad-output/implementation-artifacts/sprint-0-retrospective.md) for lessons learned  
+**Sprint 1:** See [Sprint 1 Backlog](./_bmad-output/implementation-artifacts/sprint-1-backlog.md) for detailed tasks (7 stories, 21h estimated)
