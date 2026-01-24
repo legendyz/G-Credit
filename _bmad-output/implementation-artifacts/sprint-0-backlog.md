@@ -492,21 +492,45 @@ mkdir backend
    nest new . --package-manager npm
    
    # 安装依赖（自动执行）
-   ```
-
-3. **安装Prisma ORM (10分钟):**
-   ```powershell
-   # 安装 Prisma CLI（开发依赖）和 Prisma Client（运行时依赖）
-   npm install -D prisma
-   npm install @prisma/client
    
-   # 初始化Prisma
-   npx prisma init
+   # ⚠️ 重要：删除 NestJS 创建的 .git 目录（避免 Git submodule 问题）
+   Remove-Item -Recurse -Force .git
+   ```
+   
+   **说明：** `nest new` 会在 backend/ 目录创建独立的 Git 仓库。由于我们使用根目录的 Git，需要删除 backend/.git 以避免 Git 将其视为 submodule。
+
+3. **安装Prisma ORM (15分钟):**
+   
+   **⚠️ 重要：锁定 Prisma 6 版本**
+   
+   默认 `npm install prisma` 会安装 Prisma 7（2026年1月），但 Prisma 7 有 breaking changes（不支持 schema.prisma 中的 `url = env("DATABASE_URL")` 语法）。为了稳定性，强烈建议使用 Prisma 6：
+   
+   ```powershell
+   # 安装 Prisma 6（锁定版本）
+   npm install -D prisma@6
+   npm install @prisma/client@6
+   
+   # 初始化Prisma（使用本地版本，避免 npx 缓存问题）
+   node_modules\.bin\prisma init
    ```
    
    **这会创建：**
    - `prisma/schema.prisma` - 数据模型定义
    - `.env` - 环境变量文件
+   - `prisma.config.ts` - 配置文件（Prisma 6 不需要，可以忽略或删除）
+   
+   **如果误安装了 Prisma 7：**
+   ```powershell
+   # 卸载 Prisma 7
+   npm uninstall prisma @prisma/client
+   
+   # 重新安装 Prisma 6
+   npm install -D prisma@6
+   npm install @prisma/client@6
+   
+   # 删除 Prisma 7 的配置文件（如果存在）
+   Remove-Item prisma.config.ts
+   ```
 
 4. **配置项目结构 (20分钟):**
    
@@ -928,9 +952,64 @@ mkdir backend
 - ✅ PrismaService和PrismaModule在src/common/目录
 
 **Troubleshooting:**
-- **连接超时：** 检查Azure防火墙规则，确保你的IP地址在允许列表
-- **SSL错误：** 确保连接字符串包含 `?sslmode=require`
-- **Migration失败：** 检查DATABASE_URL是否正确，密码是否有特殊字符需要URL编码
+
+**问题 1：Prisma 版本冲突**
+- **症状**：`prisma.config.ts:12:5 - error TS2322: Type 'string | undefined' is not assignable to type 'string'`
+- **原因**：误安装了 Prisma 7，但项目使用 Prisma 6 语法
+- **解决**：
+  ```powershell
+  npm uninstall prisma @prisma/client
+  npm install -D prisma@6
+  npm install @prisma/client@6
+  Remove-Item prisma.config.ts  # 删除 Prisma 7 配置文件
+  ```
+
+**问题 2：npx prisma 命令使用错误版本**
+- **症状**：`npx prisma --version` 显示 Prisma 7.x
+- **原因**：npx 使用了全局缓存的 Prisma
+- **解决**：使用本地安装的版本
+  ```powershell
+  node_modules\.bin\prisma --version
+  node_modules\.bin\prisma migrate dev --name init
+  ```
+
+**问题 3：VS Code Prisma 扩展提示升级**
+- **症状**：VS Code 提示 "datasource URL is not supported in Prisma 7"
+- **解决**：配置工作区使用 Prisma 6
+  ```json
+  // backend/.vscode/settings.json
+  {
+    "prisma.prismaVersion": "6.x.x"
+  }
+  ```
+  或重新加载 VS Code 窗口（Ctrl+Shift+P → "Reload Window"）
+
+**问题 4：连接超时**
+- **症状**：Migration 失败，连接超时
+- **原因**：Azure 防火墙规则未添加当前 IP
+- **解决**：
+  - Azure Portal → PostgreSQL Server → Networking
+  - Firewall rules → Add current client IP
+  - 或添加 0.0.0.0-255.255.255.255（开发环境，允许所有 IP）
+
+**问题 5：SSL 错误**
+- **症状**：`Error: SSL connection required`
+- **原因**：连接字符串缺少 SSL 参数
+- **解决**：确保连接字符串包含 `?sslmode=require`
+
+**问题 6：Migration 失败 - 密码特殊字符**
+- **症状**：连接失败或语法错误
+- **原因**：密码包含特殊字符（如 @, #, !, %）未进行 URL 编码
+- **解决**：URL 编码特殊字符
+  - `@` → `%40`
+  - `!` → `%21`
+  - `#` → `%23`
+  - 或使用简单密码（字母+数字+基本符号）
+
+**问题 7：Git submodule 错误**
+- **症状**：`git add backend/` 报错 "does not have a commit checked out"
+- **原因**：backend/.git 目录存在
+- **解决**：`Remove-Item -Recurse -Force backend\.git`
 
 ---
 
@@ -1619,7 +1698,125 @@ npm install
 
 ---
 
-## 📞 Support & Communication
+## � 实际开发经验总结（2026年1月）
+
+### ✅ 已验证的最佳实践
+
+**1. 技术栈版本锁定**
+- **NestJS**: 11.0.16（自动安装最新版，比预期的 10.x 更新，兼容性良好）
+- **Prisma**: **必须使用 6.x**（截至2026年1月，Prisma 7.x 有 breaking changes）
+- **React**: 18.3.1
+- **Node.js**: 20.20.0 LTS
+
+**2. 目录结构改进**
+```
+backend/src/
+├── modules/         # 业务模块（按 Epic 组织）
+├── common/          # ✅ 推荐：共享服务（PrismaService, guards, interceptors）
+│   ├── prisma.service.ts
+│   └── prisma.module.ts
+└── config/          # 配置服务
+```
+**原因**: `common/` 比 `prisma/` 更灵活，未来可以添加其他共享服务。
+
+**3. 健康检查端点设计**
+- **`GET /health`**: Liveness probe（简单检查应用存活）
+  ```json
+  { "status": "ok", "timestamp": "2026-01-24T..." }
+  ```
+- **`GET /ready`**: Readiness probe（检查依赖服务）
+  ```json
+  { "database": "connected", "storage": "pending" }
+  ```
+**原因**: 符合 Kubernetes/云原生最佳实践，分离关注点。
+
+**4. Git 工作流**
+- ⚠️ **重要**: `nest new .` 会创建 `.git`，导致 submodule 问题
+- **解决**: 创建项目后立即删除 `backend/.git`
+- **Commit 频率**: 每完成一个 Story 提交一次（包含完整功能）
+
+**5. Prisma 命令执行**
+- ❌ 避免使用 `npx prisma`（可能使用全局缓存的错误版本）
+- ✅ 使用 `node_modules\.bin\prisma`（确保使用本地安装的版本）
+- ✅ 或配置 npm scripts:
+  ```json
+  "scripts": {
+    "prisma": "prisma",
+    "prisma:studio": "prisma studio"
+  }
+  ```
+
+### ⚠️ 常见陷阱与解决方案
+
+**陷阱 1: Prisma 版本自动升级**
+- **问题**: `npm install prisma` 默认安装 Prisma 7
+- **症状**: TypeScript 编译错误，提示 `prisma.config.ts` 类型问题
+- **预防**: 始终指定版本 `npm install -D prisma@6`
+
+**陷阱 2: .env 文件泄露**
+- **问题**: `.env` 包含密码，可能被 commit
+- **预防**: 
+  - 创建 `.env.example` 模板
+  - 验证 `.gitignore` 包含 `.env`
+  - 使用 `git status` 检查暂存文件
+
+**陷阱 3: Azure 防火墙配置**
+- **问题**: 开发时 IP 地址经常变化，导致连接失败
+- **解决**: 开发环境使用 `0.0.0.0-255.255.255.255`（允许所有 IP）
+- **生产环境**: 必须限制为特定 IP 或使用 Private Endpoint
+
+**陷阱 4: 密码特殊字符**
+- **问题**: 数据库密码包含 `@`, `!`, `#` 等字符导致连接失败
+- **解决**: 
+  - 使用简单密码（开发环境）
+  - 或进行 URL 编码（`!` → `%21`）
+
+### 📊 实际工作量统计
+
+**Story 1.1 (前端)**: 3小时实际 vs 2小时估计 (+50%)
+- **原因**: Tailwind CSS v4 + Shadcn/ui 配置问题
+
+**Story 1.2 (后端)**: 2小时实际 vs 2小时估计 (准确)
+- **亮点**: NestJS 11 开箱即用，配置顺畅
+
+**Story 1.3 (数据库)**: 3.5小时实际 vs 3小时估计 (+17%)
+- **原因**: Prisma 7 降级到 Prisma 6（1小时额外）
+- **经验**: 未来项目需提前锁定版本
+
+**总计**: 8.5小时实际 vs 7小时估计 (+21% buffer)
+
+### 🔧 推荐的开发工具配置
+
+**VS Code 扩展:**
+- Prisma (配置 `"prisma.prismaVersion": "6.x.x"`)
+- ESLint
+- Prettier
+- TypeScript and JavaScript Language Features
+
+**package.json scripts 增强:**
+```json
+{
+  "scripts": {
+    "dev": "npm run start:dev",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "db:push": "prisma db push",
+    "db:seed": "ts-node prisma/seed.ts"
+  }
+}
+```
+
+### 💡 给其他开发者的建议
+
+1. **严格按照文档版本安装依赖**，不要用 `@latest`
+2. **每完成一个 Task 就测试**，不要等到 Story 结束
+3. **遇到问题先查 Troubleshooting 部分**，90% 的问题有答案
+4. **commit 前检查 `git status`**，确保不泄露 `.env`
+5. **保持 NestJS dev server 运行**，watch 模式自动重载
+
+---
+
+## �📞 Support & Communication
 
 **Scrum Master:** 通过GitHub Issues提问，标签 `[Sprint 0]`
 
