@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './common/prisma.module';
+import { StorageModule } from './common/storage.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { PrismaModule } from './common/prisma.module';
       envFilePath: '.env',
     }),
     PrismaModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [AppService],
