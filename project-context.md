@@ -4,8 +4,9 @@
 **Project Name:** G-Credit  
 **Project Type:** Enterprise Internal Platform (Greenfield)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
-**Status:** Planning Complete (PRD + Architecture + UX + Epics) → Implementation Ready  
-**Last Updated:** 2026-01-22
+**License:** MIT License (Open Source)  
+**Status:** Sprint 0 in Progress - Story 1.1 Complete (Frontend)  
+**Last Updated:** 2026-01-23
 
 ---
 
@@ -19,11 +20,12 @@ Build an internal digital credentialing (badging) platform to securely recognize
 
 - **Product Brief:** `MD_FromCopilot/product-brief.md` ✅ COMPLETE
 - **PRD:** `MD_FromCopilot/PRD.md` ✅ COMPLETE (33 FRs, 22 NFRs)
-- **Architecture:** `_bmad-output/planning-artifacts/architecture.md` ✅ COMPLETE (5,406 lines, 12 decisions)
+- **Architecture:** `_bmad-output/planning-artifacts/architecture.md` ✅ COMPLETE (5,406 lines, 12 decisions, Phased Azure Strategy)
 - **UX Design Specification:** `_bmad-output/planning-artifacts/ux-design-specification.md` ✅ COMPLETE (3,314 lines, 22 screens)
 - **UX Wireframes:** `_bmad-output/excalidraw-diagrams/wireframe-gcredit-mvp-20260122.excalidraw` ✅ COMPLETE (10 screens: 6 desktop + 4 mobile)
 - **Epics & Stories:** `_bmad-output/planning-artifacts/epics.md` ✅ COMPLETE (14 epics, 85 stories, 100% FR coverage)
 - **Implementation Readiness Review:** `_bmad-output/planning-artifacts/implementation-readiness-report-2026-01-22.md` ✅ COMPLETE (Score: 10/10)
+- **Sprint 0 Backlog:** `_bmad-output/implementation-artifacts/sprint-0-backlog.md` 🔄 IN PROGRESS (Story 1.1 ✅, Story 1.2-1.5 TODO)
 
 ---
 
@@ -253,24 +255,26 @@ CODE/
 
 ### 🎯 Current Phase (Phase 4 - Implementation)
 
-7. 📊 **Sprint Planning** (NEXT - Use `.sm` command to switch to Scrum Master)
-   - Break down 85 stories into 2-week sprints
-   - Estimate story points for each story
-   - Define Sprint 1 scope (typically 2-3 epics for MVP)
-   - Set sprint goals and acceptance criteria
-   - Create sprint backlog
+7. ✅ **Sprint Planning** (DONE - 2026-01-23)
+   - Sprint 0 plan created (2 weeks, 28 hours capacity)
+   - 5 core stories + 3 bonus stories defined
+   - Solo developer, 业余时间, realistic velocity
 
-8. 🚀 **Sprint 0: Infrastructure Setup** (After Sprint Planning)
-   - Initialize monorepo (`npm create vite`, `nest new`)
-   - Set up PostgreSQL 16 database (Docker or Azure)
-   - Configure Azure services (AD authentication, Blob Storage, Key Vault)
-   - Establish CI/CD pipelines (GitHub Actions)
-   - Set up development environment and team onboarding
+8. 🔄 **Sprint 0: Infrastructure Setup** (IN PROGRESS - Started 2026-01-23)
+   - ✅ Story 1.1: Frontend initialization (React 18 + Vite + TypeScript + Tailwind CSS + Shadcn/ui) - COMPLETE
+   - ⏭️ Story 1.2: Backend initialization (NestJS 10 + Prisma) - TODO
+   - ⏭️ Story 1.3: Azure PostgreSQL configuration - TODO
+   - ⏭️ Story 1.4: Azure Blob Storage configuration - TODO
+   - ⏭️ Story 1.5: README documentation - TODO
+   - **Progress:** 30% (3h / 10h core work completed)
+   - **Sprint End:** 2026-02-05
 
-9. 🏃 **Sprint 1-6: MVP Development** (Following Sprint Plan)
-   - Sprint 1-2: Core backend (Prisma schema, auth, badges/assertions modules)
-   - Sprint 3-4: Core frontend (routing, badges feature, wallet)
-   - Sprint 5-6: Integration, testing, and pilot preparation
+9. 🏃 **Sprint 1-N: MVP Development** (After Sprint 0)
+   - Epic 2: JWT Authentication & User Management
+   - Epic 3: Badge Template Management
+   - Epic 4: Assertion Issuance
+   - Epic 5: Badge Wallet & Viewing
+   - Target: 6-week MVP (50-user pilot)
 
 ---
 

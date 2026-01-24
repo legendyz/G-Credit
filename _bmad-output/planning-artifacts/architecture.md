@@ -4,6 +4,7 @@ workflowType: 'architecture'
 lastStep: 8
 status: 'complete'
 completedAt: '2026-01-22'
+license: 'MIT'
 inputDocuments: 
   - "MD_FromCopilot/product-brief.md"
   - "MD_FromCopilot/PRD.md"

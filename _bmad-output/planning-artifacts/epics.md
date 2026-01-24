@@ -1,6 +1,7 @@
 ---
 stepsCompleted: [1, 2, 3, 4]
 status: 'implementation-ready'
+license: 'MIT'
 note: 'All 14 epics with 85 detailed user stories completed, validated, and approved. Phased implementation strategy aligned (2026-01-23). Ready for Sprint Planning.'
 lastUpdated: '2026-01-23'
 validationSummary: 'Party Mode validation completed with Architect, UX Designer, and PM. Stories updated with: integration verification stories, simplified visual designer, empty state criteria, performance optimization, rate limiting, Service Bus infrastructure, schema design document, and workflow clarifications. Final validation passed all 6 checks: FR coverage (33/33), architecture compliance, story quality, epic structure, epic independence, and dependency validation.'

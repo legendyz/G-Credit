@@ -206,10 +206,12 @@ mkdir backend
    ```powershell
    # 安装Tailwind及依赖
    npm install -D tailwindcss postcss autoprefixer
-   npx tailwindcss init -p
+   
+   # 重要：Tailwind CSS v4+ 需要额外的 PostCSS 插件
+   npm install -D @tailwindcss/postcss
    ```
    
-   **配置 `tailwind.config.js`:**
+   **手动创建 `tailwind.config.js`（如果 npx tailwindcss init -p 失败）:**
    ```javascript
    /** @type {import('tailwindcss').Config} */
    export default {
@@ -224,28 +226,122 @@ mkdir backend
    }
    ```
    
+   **手动创建 `postcss.config.js`:**
+   ```javascript
+   export default {
+     plugins: {
+       '@tailwindcss/postcss': {},
+       autoprefixer: {},
+     },
+   }
+   ```
+   
    **更新 `src/index.css`:**
    ```css
    @tailwind base;
    @tailwind components;
    @tailwind utilities;
    ```
+   
+   **⚠️ 常见问题排查：**
+   - 如果浏览器报错 "tailwindcss directly as a PostCSS plugin"：确认已安装 `@tailwindcss/postcss`
+   - 如果 `npx tailwindcss init -p` 报错：手动创建上述两个配置文件即可
 
 3. **安装Shadcn/ui (20分钟):**
-   ```powershell
-   # 安装shadcn/ui CLI
-   npx shadcn-ui@latest init
    
-   # 选择配置：
-   # - Style: Default
-   # - Base color: Slate
-   # - CSS variables: Yes
+   **⚠️ 重要：先配置路径别名，否则 Shadcn 安装会失败！**
    
-   # 安装常用组件
-   npx shadcn-ui@latest add button
-   npx shadcn-ui@latest add card
-   npx shadcn-ui@latest add input
+   **步骤 3.1: 配置 TypeScript 路径别名**
+   
+   编辑 `tsconfig.json`，添加 `compilerOptions`：
+   ```json
+   {
+     "files": [],
+     "references": [
+       { "path": "./tsconfig.app.json" },
+       { "path": "./tsconfig.node.json" }
+     ],
+     "compilerOptions": {
+       "baseUrl": ".",
+       "paths": {
+         "@/*": ["./src/*"]
+       }
+     }
+   }
    ```
+   
+   编辑 `tsconfig.app.json`，在 `compilerOptions` 中添加路径映射：
+   ```json
+   {
+     "compilerOptions": {
+       // ... 其他配置保持不变 ...
+       "jsx": "react-jsx",
+
+       /* Path Mapping */
+       "baseUrl": ".",
+       "paths": {
+         "@/*": ["./src/*"]
+       },
+
+       /* Linting */
+       "strict": true,
+       // ... 其他配置 ...
+     }
+   }
+   ```
+   
+   **步骤 3.2: 配置 Vite 路径别名**
+   
+   编辑 `vite.config.ts`：
+   ```typescript
+   import { defineConfig } from 'vite'
+   import react from '@vitejs/plugin-react'
+   import path from 'path'
+
+   export default defineConfig({
+     plugins: [react()],
+     resolve: {
+       alias: {
+         '@': path.resolve(__dirname, './src'),
+       },
+     },
+   })
+   ```
+   
+   **步骤 3.3: 初始化 Shadcn**
+   
+   ```powershell
+   # 注意：使用 shadcn（不是 shadcn-ui，后者已弃用）
+   npx shadcn@latest init
+   
+   # 交互式提示：
+   # - Which color would you like to use as base color? 
+   #   选择: Slate (用方向键↓移动，回车确认)
+   
+   # 会自动完成以下操作：
+   # ✅ 创建 components.json
+   # ✅ 更新 src/index.css 添加 CSS 变量
+   # ✅ 安装依赖
+   # ✅ 创建 src/lib/utils.ts
+   ```
+   
+   **步骤 3.4: 安装常用组件**
+   
+   ```powershell
+   # 安装 button 组件
+   npx shadcn@latest add button
+   
+   # 安装 card 组件
+   npx shadcn@latest add card
+   
+   # 安装 input 组件
+   npx shadcn@latest add input
+   ```
+   
+   **⚠️ 常见问题排查：**
+   - 如果报错 "No import alias found"：确认 tsconfig.json 和 vite.config.ts 已配置路径别名
+   - 如果提示安装 shadcn-ui：拒绝，改用 `npx shadcn@latest` 命令
+   - 如果 npm 报错 "ENOENT npm directory"：运行 `mkdir C:\Users\你的用户名\AppData\Roaming\npm`
 
 4. **配置ESLint和Prettier (15分钟):**
    ```powershell
@@ -265,7 +361,9 @@ mkdir backend
 
 5. **创建Hello World页面 (20分钟):**
    
-   **更新 `src/App.tsx`:**
+   **步骤 5.1: 更新 `src/App.tsx`**
+   
+   替换整个文件内容为：
    ```tsx
    import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
    import { Button } from '@/components/ui/button';
@@ -295,32 +393,72 @@ mkdir backend
    
    export default App;
    ```
+   
+   **步骤 5.2: 修复 `src/index.css` 问题（重要！）**
+   
+   Shadcn 初始化后的 `src/index.css` 文件开头可能有问题导入，需要检查并修复：
+   
+   ```powershell
+   # 打开 src/index.css 检查前几行
+   cat src\index.css
+   ```
+   
+   **如果看到 `@import "tw-animate-css";` 这一行，必须删除它！**
+   
+   正确的 `src/index.css` 开头应该是：
+   ```css
+   @plugin "tailwindcss-animate";
+
+   @custom-variant dark (&:is(.dark *));
+
+   @tailwind base;
+   @tailwind components;
+   @tailwind utilities;
+   
+   /* 后面是 Shadcn 添加的 CSS 变量，保持不变 */
+   ```
+   
+   **⚠️ 常见错误：** 如果不删除 `@import "tw-animate-css";`，会报错：
+   ```
+   ENOENT: no such file or directory, open 'C:\...\tw-animate-css'
+   ```
 
 6. **测试运行 (10分钟):**
    ```powershell
    npm run dev
    ```
    
-   **验证：** 浏览器打开 http://localhost:5173，看到G-Credit卡片
+   **期望结果：**
+   - ✅ 终端显示：`VITE v7.x.x ready in XXX ms`
+   - ✅ 显示：`Local: http://localhost:5173/`
+   - ✅ 浏览器打开后看到漂亮的 G-Credit 卡片
+   - ✅ 卡片有圆角、阴影、Slate 配色
+   - ✅ "Coming Soon" 按钮有 hover 效果
 
 7. **提交代码 (10分钟):**
    ```powershell
    git add .
-   git commit -m "feat: initialize frontend with Vite, React 18, TypeScript, Tailwind CSS"
+   git commit -m "feat: initialize frontend with Vite, React 18, TypeScript, Tailwind CSS, Shadcn/ui"
    git push origin main
    ```
 
 **Definition of Done:**
 - ✅ `npm run dev` 启动成功，无报错
-- ✅ 浏览器显示G-Credit欢迎页面
+- ✅ 浏览器显示G-Credit欢迎页面，包含：
+  - 🎓 标题 "G-Credit"
+  - "Internal Digital Credentialing System" 描述
+  - "Sprint 0 - Infrastructure Setup in Progress" 状态文本
+  - "Coming Soon" 按钮（可点击，有 hover 效果）
 - ✅ Hot reload工作正常（修改代码自动刷新）
 - ✅ TypeScript编译无错误
 - ✅ 代码提交到Git main分支
 
 **Troubleshooting:**
+- 如果报错 `ENOENT: tw-animate-css`：删除 `src/index.css` 中的 `@import "tw-animate-css";` 行
+- 如果组件导入报错 `Cannot find module '@/components/ui/card'`：确认已运行 `npx shadcn@latest add card button`
+- 如果 Tailwind 样式不生效（页面无样式）：检查 `postcss.config.js` 是否包含 `@tailwindcss/postcss` 插件
 - 如果npm install慢：使用国内镜像 `npm config set registry https://registry.npmmirror.com`
 - 如果端口5173被占用：Vite会自动使用5174等其他端口
-- 如果Shadcn/ui安装失败：先跳过，后续Sprint再添加
 
 ---
 
@@ -358,8 +496,9 @@ mkdir backend
 
 3. **安装Prisma ORM (10分钟):**
    ```powershell
-   npm install prisma @prisma/client
+   # 安装 Prisma CLI（开发依赖）和 Prisma Client（运行时依赖）
    npm install -D prisma
+   npm install @prisma/client
    
    # 初始化Prisma
    npx prisma init
@@ -370,6 +509,12 @@ mkdir backend
    - `.env` - 环境变量文件
 
 4. **配置项目结构 (20分钟):**
+   
+   **安装配置模块：**
+   ```powershell
+   # 安装 NestJS 配置模块（用于环境变量管理）
+   npm install @nestjs/config
+   ```
    
    **创建模块目录：**
    ```powershell
@@ -1228,7 +1373,7 @@ mkdir backend
    
    ## License
    
-   Internal use only - Proprietary
+   MIT License
    \`\`\`
 
 2. **创建Frontend README (15分钟):**
