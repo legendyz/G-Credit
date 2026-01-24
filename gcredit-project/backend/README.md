@@ -267,7 +267,9 @@ npm run start:prod
 ## 📚 Documentation
 
 - [Main README](../README.md)
-- [Sprint 0 Backlog](../../_bmad-output/implementation-artifacts/sprint-0-backlog.md)
+- [Sprint 0 Backlog](../../_bmad-output/implementation-artifacts/sprint-0-backlog.md) ✅ Complete
+- [Sprint 0 Retrospective](../../_bmad-output/implementation-artifacts/sprint-0-retrospective.md) ✅ Complete  
+- [Sprint 1 Backlog](../../_bmad-output/implementation-artifacts/sprint-1-backlog.md) 🚀 Ready
 - [Architecture Document](../../_bmad-output/planning-artifacts/architecture.md)
 - [NestJS Documentation](https://docs.nestjs.com/)
 - [Prisma Documentation](https://www.prisma.io/docs/)
@@ -278,5 +280,5 @@ MIT
 
 ---
 
-**Version:** 0.1.0 (Sprint 0)  
+**Version:** 0.2.0 (Sprint 0 Complete, Sprint 1 Ready to Start)  
 **Last Updated:** 2026-01-24

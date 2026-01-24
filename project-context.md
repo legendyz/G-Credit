@@ -5,7 +5,8 @@
 **Project Type:** Enterprise Internal Platform (Greenfield)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
 **License:** MIT License (Open Source)  
-**Status:** ✅ Sprint 0 Complete (100%) - Ready for Sprint 1  
+**Status:** 🔄 Sprint 1 - JWT Authentication & User Management (Ready to Start)  
+**Sprint 0:** ✅ Complete (100%, 9.5h/10h, committed 2026-01-24)  
 **Last Updated:** 2026-01-24
 
 ---
@@ -27,6 +28,7 @@ Build an internal digital credentialing (badging) platform to securely recognize
 - **Implementation Readiness Review:** `_bmad-output/planning-artifacts/implementation-readiness-report-2026-01-22.md` ✅ COMPLETE (Score: 10/10)
 - **Sprint 0 Backlog:** `_bmad-output/implementation-artifacts/sprint-0-backlog.md` ✅ COMPLETE (All 5 stories delivered)
 - **Sprint 0 Retrospective:** `_bmad-output/implementation-artifacts/sprint-0-retrospective.md` ✅ COMPLETE (Lessons learned & action items)
+- **Sprint 1 Backlog:** `_bmad-output/implementation-artifacts/sprint-1-backlog.md` 🔄 READY (7 stories, 21h estimated, Epic 2 complete)
 
 ---
 
@@ -160,12 +162,14 @@ Build an internal digital credentialing (badging) platform to securely recognize
 |-------|----------|--------------|--------|
 | Phase 1 - Discovery | 4-6 weeks | PRD, Product Brief, KPIs | ✅ COMPLETE |
 | Phase 2 - Design & Architecture | 4 weeks | Architecture doc, UX Design, Wireframes | ✅ COMPLETE (Architecture + UX Spec + 10 Wireframe Screens) |
-| Phase 3 - MVP Development | 8-12 weeks | Working MVP (core issuance) | 🔄 NEXT - Sprint 0 starting |
+| Phase 3 - MVP Development | 8-12 weeks | Working MVP (core issuance) | 🔄 IN PROGRESS - Sprint 1 (JWT Auth) |
+| → Sprint 0 | 2 weeks | Infrastructure Setup | ✅ COMPLETE (2026-01-23→01-24, 9.5h/10h) |
+| → Sprint 1 | 2 weeks | JWT Auth & User Management (Epic 2) | 🔄 READY TO START (2026-01-27→02-09, 21h) |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ Pending |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
 
-**Current Status:** ✅ Sprint 0 Infrastructure Complete → All systems operational (frontend, backend, database, storage) → Ready for Sprint 1 (Authentication & User Management)
+**Current Status:** ✅ Sprint 0 Infrastructure Complete (100%) → 🔄 Sprint 1 Ready to Start → JWT Authentication & User Management (Epic 2, 7 stories, 21h)
 
 ---
 
@@ -279,10 +283,13 @@ CODE/
    - **Completion:** 100% (5/5 core stories)
    - **Retrospective:** Key learnings documented in sprint-0-retrospective.md
 
-9. ⏭️ **Sprint 1: JWT Authentication & User Management** (NEXT - Starting Soon)
-   - Epic 2 Stories: User registration, login, JWT tokens, auth guards
-   - Estimated: 2 weeks (15-20 hours)
-   - Prerequisites: Review Sprint 0 retrospective action items (AI-1, AI-2, AI-3)
+9. 🔄 **Sprint 1: JWT Authentication & User Management** (READY TO START - 2026-01-27)
+   - **Duration:** 2 weeks (2026-01-27 → 2026-02-09)
+   - **Stories:** 7 stories from Epic 2 (2.1-2.7)
+   - **Estimated:** 21 hours total
+   - **Scope:** Enhanced User model, JWT service, auth controllers/guards, password management, sessions, Azure AD SSO, user profile API
+   - **Prerequisites:** ✅ Sprint 0 retrospective reviewed, action items identified (AI-1 through AI-8)
+   - **Backlog:** See `sprint-1-backlog.md` for detailed task breakdown
    
 10. 🔜 **Sprint 2-N: MVP Development** (After Sprint 1)
    - Epic 3: Badge Template Management
