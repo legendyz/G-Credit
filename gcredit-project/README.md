@@ -4,9 +4,9 @@
 
 ## 📊 Project Status
 
-**Current Sprint:** Sprint 0 (Infrastructure Setup) ✅  
-**Sprint Duration:** 2026-01-23 → 2026-02-05  
-**Progress:** 🟢 90% Complete  
+**Current Sprint:** Sprint 1 (JWT Authentication & User Management) 🚀  
+**Sprint Duration:** 2026-01-27 → 2026-02-09  
+**Progress:** ✅ Sprint 0 Complete (100%) | 🟡 Sprint 1 Ready to Start  
 **License:** MIT
 
 ## 🚀 Tech Stack
@@ -256,10 +256,16 @@ Remove-Item -Recurse -Force backend\.git
 
 ## 📚 Documentation
 
-- [Sprint 0 Backlog](../_bmad-output/implementation-artifacts/sprint-0-backlog.md)
+**Sprint Documentation:**
+- [Sprint 0 Backlog](../_bmad-output/implementation-artifacts/sprint-0-backlog.md) ✅ Complete
+- [Sprint 0 Retrospective](../_bmad-output/implementation-artifacts/sprint-0-retrospective.md) ✅ Complete
+- [Sprint 1 Backlog](../_bmad-output/implementation-artifacts/sprint-1-backlog.md) 🚀 Ready
+
+**Planning Documentation:**
 - [Architecture Document](../_bmad-output/planning-artifacts/architecture.md)
-- [API Documentation](./backend/README.md) (TBD)
 - [Epics Overview](../_bmad-output/planning-artifacts/epics.md)
+- [Project Context](../project-context.md) (Single Source of Truth)
+- [API Documentation](./backend/README.md)
 
 ## 🧪 Testing
 
@@ -292,20 +298,25 @@ Remove-Item -Recurse -Force backend\.git
 
 ## 🚧 Sprint Roadmap
 
-### ✅ Sprint 0: Infrastructure Setup (Current)
-- Frontend initialization (React + Vite + Tailwind + Shadcn/ui)
-- Backend initialization (NestJS + Prisma + ConfigModule)
-- Azure PostgreSQL integration
-- Azure Blob Storage integration
-- Health check endpoints
-- README documentation
+### ✅ Sprint 0: Infrastructure Setup (Complete - 2026-01-23 to 2026-01-24)
+- ✅ Frontend initialization (React 18.3.1 + Vite 7.2.4 + Tailwind 4.1.18 + Shadcn/ui)
+- ✅ Backend initialization (NestJS 11.0.16 + Prisma 6.19.2 + ConfigModule)
+- ✅ Azure PostgreSQL Flexible Server (B1ms, gcredit-dev-db-lz)
+- ✅ Azure Blob Storage (gcreditdevstoragelz, 2 containers)
+- ✅ Health check endpoints (/health, /ready)
+- ✅ Comprehensive README documentation
+- **Actual Time:** 9.5h / 10h estimated (95% accuracy)
+- **Retrospective:** Lessons learned documented
 
-### 📅 Sprint 1: Authentication (Next)
-- User registration and login
-- JWT token generation and validation
-- Password hashing (bcrypt)
-- Auth guards and decorators
-- Login/Register pages
+### 🚀 Sprint 1: JWT Authentication & User Management (Current - 2026-01-27 to 2026-02-09)
+- User data model with RBAC roles (Admin, Issuer, Manager, Employee)
+- User registration with password validation
+- JWT login authentication (access + refresh tokens)
+- RBAC role permissions system
+- Session management and logout
+- Password reset via email
+- User profile management page
+- **Estimated Time:** 21 hours (7 stories from Epic 2)
 
 ### 📅 Future Sprints
 - Badge Template CRUD
@@ -330,4 +341,4 @@ For issues and questions:
 ---
 
 **Last Updated:** 2026-01-24  
-**Version:** 0.1.0 (Sprint 0)
+**Version:** 0.2.0 (Sprint 0 Complete, Sprint 1 Planning Complete)
