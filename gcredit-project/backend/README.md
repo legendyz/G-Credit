@@ -1,98 +1,282 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# G-Credit Backend API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS-based REST API for the G-Credit digital credentialing system.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🚀 Tech Stack
 
-## Description
+- **NestJS** 11.0.16 - Progressive Node.js framework
+- **TypeScript** 5.7.3 - Strict mode enabled
+- **Prisma** 6.19.2 - Next-generation ORM
+- **PostgreSQL** 16 - Azure Flexible Server
+- **Azure Blob Storage** - Badge and evidence file storage
+- **@nestjs/config** - Environment configuration
+- **Jest** - Testing framework
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 📋 Prerequisites
 
-## Project setup
+- Node.js 20.20.0 LTS
+- npm 10+
+- Azure PostgreSQL Flexible Server
+- Azure Blob Storage Account
+
+## ⚡ Quick Start
+
+### 1. Install Dependencies
 
 ```bash
-$ npm install
+npm install
 ```
 
-## Compile and run the project
+### 2. Configure Environment
+
+Copy `.env.example` to `.env` and configure:
+
+```env
+DATABASE_URL="postgresql://username:password@host:5432/postgres?sslmode=require"
+AZURE_STORAGE_CONNECTION_STRING="DefaultEndpointsProtocol=https;..."
+AZURE_STORAGE_ACCOUNT_NAME="your-storage-account"
+AZURE_STORAGE_CONTAINER_BADGES="badges"
+AZURE_STORAGE_CONTAINER_EVIDENCE="evidence"
+JWT_SECRET="your-secret-key"
+JWT_EXPIRES_IN="7d"
+PORT=3000
+NODE_ENV="development"
+```
+
+### 3. Run Database Migrations
+
+**Important:** Use local Prisma (not npx) to avoid version conflicts:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+node_modules\.bin\prisma migrate dev
 ```
 
-## Run tests
+### 4. Start Development Server
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run start:dev
 ```
 
-## Deployment
+Server will start at **http://localhost:3000**
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## 🛠️ Available Scripts
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+| Script | Description |
+|--------|-------------|
+| `npm run start:dev` | Start in watch mode (auto-reload) |
+| `npm run start` | Start in production mode |
+| `npm run build` | Build for production |
+| `npm run lint` | Run ESLint |
+| `npm run test` | Run unit tests |
+| `npm run test:e2e` | Run end-to-end tests |
+| `npm run test:cov` | Run tests with coverage |
+
+## 🗄️ Prisma Commands
+
+**Always use local Prisma to avoid version conflicts:**
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# Create and apply migration
+node_modules\.bin\prisma migrate dev --name <migration-name>
+
+# Open Prisma Studio (database GUI)
+node_modules\.bin\prisma studio
+
+# Regenerate Prisma Client
+node_modules\.bin\prisma generate
+
+# Push schema without creating migration (dev only)
+node_modules\.bin\prisma db push
+
+# Reset database (warning: deletes all data!)
+node_modules\.bin\prisma migrate reset
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## 📡 API Endpoints
 
-## Resources
+### Health Check Endpoints
 
-Check out a few resources that may come in handy when working with NestJS:
+**GET /health** - Liveness probe
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-01-24T..."
+}
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+**GET /ready** - Readiness probe
+```json
+{
+  "database": "connected",
+  "storage": "connected"
+}
+```
 
-## Support
+### Future Endpoints (Sprint 1+)
+- POST /auth/register
+- POST /auth/login
+- GET /badges
+- POST /badges
+- ... (TBD)
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## 🗂️ Project Structure
 
-## Stay in touch
+```
+backend/
+├── src/
+│   ├── modules/              # Feature modules (organized by Epic)
+│   │   └── (empty for now)
+│   ├── common/               # Shared services and utilities
+│   │   ├── prisma.service.ts
+│   │   ├── prisma.module.ts
+│   │   ├── storage.service.ts
+│   │   └── storage.module.ts
+│   ├── config/               # Configuration services
+│   ├── app.controller.ts     # Root controller (health checks)
+│   ├── app.module.ts         # Root module
+│   ├── app.service.ts        # Root service
+│   └── main.ts               # Application entry point
+│
+├── prisma/
+│   ├── schema.prisma         # Database schema definition
+│   └── migrations/           # Migration history
+│       └── 20260124035055_init/  # Initial migration (User model)
+│
+├── test/                     # E2E tests
+├── .env                      # Environment variables (not in Git)
+├── .env.example              # Environment template
+├── .gitignore
+├── nest-cli.json             # NestJS CLI configuration
+├── package.json
+├── tsconfig.json             # TypeScript configuration (strict mode)
+└── README.md                 # This file
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## 🗃️ Database Schema
 
-## License
+### User Model
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```prisma
+enum UserRole {
+  ADMIN
+  ISSUER
+  MANAGER
+  EMPLOYEE
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      UserRole @default(EMPLOYEE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+```
+
+## 🔧 Configuration
+
+### Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `DATABASE_URL` | PostgreSQL connection string | ✅ Yes |
+| `AZURE_STORAGE_CONNECTION_STRING` | Azure Storage connection | ✅ Yes |
+| `AZURE_STORAGE_ACCOUNT_NAME` | Storage account name | ✅ Yes |
+| `AZURE_STORAGE_CONTAINER_BADGES` | Badges container name | ✅ Yes |
+| `AZURE_STORAGE_CONTAINER_EVIDENCE` | Evidence container name | ✅ Yes |
+| `JWT_SECRET` | JWT signing secret | ✅ Yes |
+| `JWT_EXPIRES_IN` | Token expiration time | No (default: 7d) |
+| `PORT` | Server port | No (default: 3000) |
+| `NODE_ENV` | Environment (development/production) | No |
+
+### TypeScript Configuration
+
+Strict mode is enabled for better type safety:
+- `strictNullChecks: true`
+- `noImplicitAny: true`
+- `strictBindCallApply: true`
+- `noFallthroughCasesInSwitch: true`
+
+## 🐛 Common Issues & Solutions
+
+### Issue 1: Prisma Version Conflicts
+
+**Symptom:** TypeScript errors about `prisma.config.ts`
+
+**Solution:**
+```bash
+npm uninstall prisma @prisma/client
+npm install -D prisma@6
+npm install @prisma/client@6
+Remove-Item prisma.config.ts  # If exists
+```
+
+### Issue 2: Database Connection Fails
+
+**Symptoms:** Migration fails, connection timeout
+
+**Solutions:**
+- Verify Azure firewall rules allow your IP
+- Check connection string includes `?sslmode=require`
+- Ensure password doesn't have unencoded special characters
+
+### Issue 3: npx prisma Uses Wrong Version
+
+**Symptom:** `npx prisma --version` shows Prisma 7
+
+**Solution:** Always use local installation:
+```bash
+node_modules\.bin\prisma --version
+```
+
+## 🧪 Testing
+
+```bash
+# Unit tests
+npm run test
+
+# E2E tests
+npm run test:e2e
+
+# Test coverage
+npm run test:cov
+```
+
+## 📦 Production Build
+
+```bash
+# Build
+npm run build
+
+# Run production server
+npm run start:prod
+```
+
+## 🔐 Security Notes
+
+- Never commit `.env` file
+- Change `JWT_SECRET` in production
+- Use strong passwords for Azure resources
+- Restrict Azure firewall rules in production
+- Enable Azure Private Endpoint for production database
+
+## 📚 Documentation
+
+- [Main README](../README.md)
+- [Sprint 0 Backlog](../../_bmad-output/implementation-artifacts/sprint-0-backlog.md)
+- [Architecture Document](../../_bmad-output/planning-artifacts/architecture.md)
+- [NestJS Documentation](https://docs.nestjs.com/)
+- [Prisma Documentation](https://www.prisma.io/docs/)
+
+## 📝 License
+
+MIT
+
+---
+
+**Version:** 0.1.0 (Sprint 0)  
+**Last Updated:** 2026-01-24
