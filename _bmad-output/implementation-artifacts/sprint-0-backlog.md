@@ -774,7 +774,7 @@ mkdir backend
 
 6. **配置Prisma Service (30分钟):**
    
-   **创建 `src/prisma/prisma.service.ts`:**
+   **创建 `src/common/prisma.service.ts`:**
    ```typescript
    import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
    import { PrismaClient } from '@prisma/client';
@@ -795,7 +795,7 @@ mkdir backend
    }
    ```
    
-   **创建 `src/prisma/prisma.module.ts`:**
+   **创建 `src/common/prisma.module.ts`:**
    ```typescript
    import { Module, Global } from '@nestjs/common';
    import { PrismaService } from './prisma.service';
@@ -812,7 +812,7 @@ mkdir backend
    ```typescript
    import { Module } from '@nestjs/common';
    import { ConfigModule } from '@nestjs/config';
-   import { PrismaModule } from './prisma/prisma.module';
+   import { PrismaModule } from './common/prisma.module';
    import { AppController } from './app.controller';
    import { AppService } from './app.service';
    
@@ -836,7 +836,7 @@ mkdir backend
    ```typescript
    import { Controller, Get } from '@nestjs/common';
    import { AppService } from './app.service';
-   import { PrismaService } from './prisma/prisma.service';
+   import { PrismaService } from './common/prisma.service';
    
    @Controller()
    export class AppController {
@@ -845,61 +845,68 @@ mkdir backend
        private readonly prisma: PrismaService,
      ) {}
    
-     @Get('health')
-     async getHealth() {
-       let dbStatus = 'disconnected';
-       try {
-         await this.prisma.$queryRaw`SELECT 1`;
-         dbStatus = 'connected';
-       } catch (error) {
-         dbStatus = 'error';
-       }
+     @Get()
+     getHello(): string {
+       return this.appService.getHello();
+     }
    
+     @Get('health')
+     getHealth() {
        return {
          status: 'ok',
          timestamp: new Date().toISOString(),
-         service: 'gcredit-api',
-         version: '0.1.0',
-         database: dbStatus,
        };
      }
    
      @Get('ready')
      async getReady() {
+       let databaseStatus = 'disconnected';
+       
        try {
          await this.prisma.$queryRaw`SELECT 1`;
-         return {
-           status: 'ready',
-           database: 'connected',
-         };
+         databaseStatus = 'connected';
        } catch (error) {
-         return {
-           status: 'not ready',
-           database: 'disconnected',
-           error: error.message,
-         };
+         databaseStatus = 'error';
        }
+   
+       return {
+         database: databaseStatus,
+         storage: 'pending',
+       };
      }
    }
    ```
+   
+   **说明：**
+   - `/health` - Liveness probe（简单检查应用是否存活）
+   - `/ready` - Readiness probe（检查依赖服务状态，如数据库、存储）
 
 8. **测试数据库连接 (10分钟):**
    ```powershell
    npm run start:dev
    ```
    
-   **验证：** 访问 http://localhost:3000/health
+   **验证 1：** 访问 http://localhost:3000/health
    
    **期望输出：**
    ```json
    {
      "status": "ok",
-     "timestamp": "2026-01-23T...",
-     "service": "gcredit-api",
-     "version": "0.1.0",
-     "database": "connected"
+     "timestamp": "2026-01-24T..."
    }
    ```
+   
+   **验证 2：** 访问 http://localhost:3000/ready
+   
+   **期望输出：**
+   ```json
+   {
+     "database": "connected",
+     "storage": "pending"
+   }
+   ```
+   
+   **控制台应显示：** `✅ Database connected successfully`
 
 9. **提交代码 (10分钟):**
    ```powershell
@@ -912,10 +919,13 @@ mkdir backend
 **Definition of Done:**
 - ✅ Azure PostgreSQL Flexible Server部署成功
 - ✅ Prisma连接到Azure数据库
-- ✅ User表创建成功
-- ✅ /health endpoint显示database: "connected"
+- ✅ User表创建成功（含UserRole枚举）
+- ✅ /health endpoint返回status: "ok"
+- ✅ /ready endpoint显示database: "connected"
+- ✅ 控制台输出"✅ Database connected successfully"
 - ✅ Prisma Studio能打开并显示users表
 - ✅ .env.example已创建，.env在.gitignore中
+- ✅ PrismaService和PrismaModule在src/common/目录
 
 **Troubleshooting:**
 - **连接超时：** 检查Azure防火墙规则，确保你的IP地址在允许列表
