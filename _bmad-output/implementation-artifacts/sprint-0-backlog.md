@@ -1696,6 +1696,29 @@ rm package-lock.json
 npm install
 ```
 
+**6. npm audit安全漏洞（lodash Prototype Pollution）：**
+- **问题**: `@nestjs/config` 依赖的 lodash 4.x 存在已知漏洞
+- **风险级别**: Moderate（中等）
+- **漏洞类型**: Prototype Pollution in `_.unset` and `_.omit` functions
+- **修复建议**: `npm audit fix --force` 会降级 `@nestjs/config` 到 v1.1.5（破坏性变更）
+- **Sprint 0决策**: 
+  - ✅ **暂时接受此风险**（开发环境，非生产代码）
+  - 原型污染在后端开发环境中风险较低
+  - 等待 NestJS 团队更新依赖后自然解决
+  - 在 Sprint 1 开始前重新评估
+- **监控策略**: 
+  - 定期检查 `npm audit`
+  - 关注 NestJS 和 lodash 更新
+  - 生产部署前必须重新评估和修复
+
+**7. Git submodule问题：**
+- **问题**: `nest new .` 创建 `.git` 导致 Git 将 backend 视为 submodule
+- **症状**: `git add backend/` 失败，提示 "does not have a commit checked out"
+- **解决**: 删除 `backend/.git` 目录
+  ```powershell
+  Remove-Item -Recurse -Force backend\.git
+  ```
+
 ---
 
 ## � 实际开发经验总结（2026年1月）
