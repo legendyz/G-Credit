@@ -5,8 +5,8 @@
 **Project Type:** Enterprise Internal Platform (Greenfield)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
 **License:** MIT License (Open Source)  
-**Status:** Sprint 0 in Progress - Story 1.1 Complete (Frontend)  
-**Last Updated:** 2026-01-23
+**Status:** ✅ Sprint 0 Complete (100%) - Ready for Sprint 1  
+**Last Updated:** 2026-01-24
 
 ---
 
@@ -25,7 +25,8 @@ Build an internal digital credentialing (badging) platform to securely recognize
 - **UX Wireframes:** `_bmad-output/excalidraw-diagrams/wireframe-gcredit-mvp-20260122.excalidraw` ✅ COMPLETE (10 screens: 6 desktop + 4 mobile)
 - **Epics & Stories:** `_bmad-output/planning-artifacts/epics.md` ✅ COMPLETE (14 epics, 85 stories, 100% FR coverage)
 - **Implementation Readiness Review:** `_bmad-output/planning-artifacts/implementation-readiness-report-2026-01-22.md` ✅ COMPLETE (Score: 10/10)
-- **Sprint 0 Backlog:** `_bmad-output/implementation-artifacts/sprint-0-backlog.md` 🔄 IN PROGRESS (Story 1.1 ✅, Story 1.2-1.5 TODO)
+- **Sprint 0 Backlog:** `_bmad-output/implementation-artifacts/sprint-0-backlog.md` ✅ COMPLETE (All 5 stories delivered)
+- **Sprint 0 Retrospective:** `_bmad-output/implementation-artifacts/sprint-0-retrospective.md` ✅ COMPLETE (Lessons learned & action items)
 
 ---
 
@@ -59,35 +60,35 @@ Build an internal digital credentialing (badging) platform to securely recognize
 ## Technical Stack (Finalized)
 
 ### Core Technologies
-- **Architecture Pattern:** Modular Monolith (monorepo: `gcredit-web` + `gcredit-api`)
-- **Language:** TypeScript 5 (unified frontend + backend)
-- **Runtime:** Node.js 20 LTS
-- **Database:** PostgreSQL 16
-- **ORM:** Prisma 5
+- **Architecture Pattern:** Modular Monolith (monorepo: `frontend` + `backend`)
+- **Language:** TypeScript 5.9.3 (frontend) / 5.7.3 (backend)
+- **Runtime:** Node.js 20.20.0 LTS
+- **Database:** PostgreSQL 16 (Azure Flexible Server)
+- **ORM:** Prisma 6.19.2 ⚠️ **Version locked** (Prisma 7 has breaking changes)
 
 ### Frontend Stack
-- **Framework:** React 18 (with Concurrent Features)
-- **Build Tool:** Vite 5 (instant HMR, optimized production builds)
-- **UI Framework:** Tailwind CSS 3.x + Shadcn/ui components
-- **State Management:** TanStack Query v5 (server state) + Zustand (client state)
-- **Routing:** React Router v6
-- **Form Handling:** React Hook Form + Zod validation
+- **Framework:** React 18.3.1 (with Concurrent Features)
+- **Build Tool:** Vite 7.2.4 (instant HMR, optimized production builds)
+- **UI Framework:** Tailwind CSS 4.1.18 + @tailwindcss/postcss + Shadcn/ui components
+- **State Management:** TanStack Query v5 (server state) + Zustand (client state) - *to be added Sprint 1+*
+- **Routing:** React Router v6 - *to be added Sprint 1+*
+- **Form Handling:** React Hook Form + Zod validation - *to be added Sprint 1+*
 
 ### Backend Stack
-- **Framework:** NestJS 10 (enterprise-grade Node.js)
-- **API Design:** RESTful with standard response wrapper `{data, meta}`
-- **Authentication:** Passport.js + JWT (Azure AD integration)
-- **Job Queue:** Bull (Redis-backed async processing)
-- **Validation:** Class-validator + Class-transformer
+- **Framework:** NestJS 11.0.16 (enterprise-grade Node.js)
+- **API Design:** RESTful with standard response wrapper `{data, meta}` - *to be implemented Sprint 1+*
+- **Authentication:** Passport.js + JWT (Azure AD integration) - *to be added Sprint 1+*
+- **Job Queue:** Bull (Redis-backed async processing) - *to be added Sprint 2+*
+- **Validation:** Class-validator + Class-transformer - *to be added Sprint 1+*
 
 ### Azure Cloud Services
-- **Compute:** Azure App Service (frontend + backend)
-- **Database:** Azure Database for PostgreSQL Flexible Server
-- **Storage:** Azure Blob Storage (badge images, evidence files, user uploads)
-- **Identity:** Azure AD (Entra ID) OAuth 2.0 SSO
-- **Secrets:** Azure Key Vault (API keys, connection strings)
-- **Monitoring:** Azure Application Insights (telemetry, logs, alerts)
-- **Caching:** Azure Cache for Redis (job queues, future session storage)
+- **Compute:** Azure App Service (frontend + backend) - *to be configured Sprint 1+*
+- **Database:** ✅ Azure Database for PostgreSQL Flexible Server (B1ms, gcredit-dev-db-lz)
+- **Storage:** ✅ Azure Blob Storage (gcreditdevstoragelz, containers: badges [public], evidence [private])
+- **Identity:** Azure AD (Entra ID) OAuth 2.0 SSO - *to be integrated Sprint 1+*
+- **Secrets:** Azure Key Vault (API keys, connection strings) - *to be added Sprint 2+*
+- **Monitoring:** Azure Application Insights (telemetry, logs, alerts) - *to be added Sprint 2+*
+- **Caching:** Azure Cache for Redis (job queues, future session storage) - *to be added Sprint 2+*
 
 ### Standards & Compliance
 - **Digital Credentials:** Open Badges 2.0 JSON-LD format
@@ -164,7 +165,7 @@ Build an internal digital credentialing (badging) platform to securely recognize
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
 
-**Current Status:** All Planning Phases Complete (PRD + Architecture + UX + Epics & Stories) → Implementation Readiness Score: 10/10 → Ready for Sprint Planning
+**Current Status:** ✅ Sprint 0 Infrastructure Complete → All systems operational (frontend, backend, database, storage) → Ready for Sprint 1 (Authentication & User Management)
 
 ---
 
@@ -186,6 +187,14 @@ Build an internal digital credentialing (badging) platform to securely recognize
 | Badge credibility | Align with industry-recognized programs |
 | Data privacy concerns | User-controlled visibility, transparent policies |
 | Platform lock-in alternatives | Open Badges standard ensures portability |
+
+## Known Technical Issues & Technical Debt
+
+| Issue | Severity | Status | Plan |
+|-------|----------|--------|------|
+| **lodash Prototype Pollution vulnerability** | Moderate | ⚠️ Accepted Risk | Deferred to Sprint 1. Dependency of @nestjs/config. Fix requires breaking change (downgrade to v1.1.5). Development environment only, low exploit risk. Will re-evaluate before Sprint 1 starts. |
+| **Prisma version locked at 6.x** | Low | 🔒 Intentional | Prisma 7 has breaking changes (prisma.config.ts requirement). Upgrade deferred to post-MVP. Current version stable and meets all requirements. |
+| **Dependency version drift risk** | Medium | 📋 Process Improvement | Sprint 0 revealed planning docs had outdated versions. Action: All future sprint docs must specify exact versions. Version manifest template to be created. |
 
 ---
 
@@ -260,21 +269,26 @@ CODE/
    - 5 core stories + 3 bonus stories defined
    - Solo developer, 业余时间, realistic velocity
 
-8. 🔄 **Sprint 0: Infrastructure Setup** (IN PROGRESS - Started 2026-01-23)
-   - ✅ Story 1.1: Frontend initialization (React 18 + Vite + TypeScript + Tailwind CSS + Shadcn/ui) - COMPLETE
-   - ⏭️ Story 1.2: Backend initialization (NestJS 10 + Prisma) - TODO
-   - ⏭️ Story 1.3: Azure PostgreSQL configuration - TODO
-   - ⏭️ Story 1.4: Azure Blob Storage configuration - TODO
-   - ⏭️ Story 1.5: README documentation - TODO
-   - **Progress:** 30% (3h / 10h core work completed)
-   - **Sprint End:** 2026-02-05
+8. ✅ **Sprint 0: Infrastructure Setup** (COMPLETE - 2026-01-23 to 2026-01-24)
+   - ✅ Story 1.1: Frontend initialization (React 18.3.1 + Vite 7.2.4 + TypeScript 5.9.3 + Tailwind CSS 4.1.18 + Shadcn/ui)
+   - ✅ Story 1.2: Backend initialization (NestJS 11.0.16 + Prisma 6.19.2 + TypeScript 5.7.3)
+   - ✅ Story 1.3: Azure PostgreSQL Flexible Server (B1ms, gcredit-dev-db-lz)
+   - ✅ Story 1.4: Azure Blob Storage (gcreditdevstoragelz, 2 containers)
+   - ✅ Story 1.5: Comprehensive README documentation (root + backend)
+   - **Actual Time:** 9.5h / 10h estimated (95% accuracy)
+   - **Completion:** 100% (5/5 core stories)
+   - **Retrospective:** Key learnings documented in sprint-0-retrospective.md
 
-9. 🏃 **Sprint 1-N: MVP Development** (After Sprint 0)
-   - Epic 2: JWT Authentication & User Management
+9. ⏭️ **Sprint 1: JWT Authentication & User Management** (NEXT - Starting Soon)
+   - Epic 2 Stories: User registration, login, JWT tokens, auth guards
+   - Estimated: 2 weeks (15-20 hours)
+   - Prerequisites: Review Sprint 0 retrospective action items (AI-1, AI-2, AI-3)
+   
+10. 🔜 **Sprint 2-N: MVP Development** (After Sprint 1)
    - Epic 3: Badge Template Management
    - Epic 4: Assertion Issuance
    - Epic 5: Badge Wallet & Viewing
-   - Target: 6-week MVP (50-user pilot)
+   - Target: 6-week MVP total (50-user pilot)
 
 ---
 
