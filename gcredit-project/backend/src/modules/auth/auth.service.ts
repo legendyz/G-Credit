@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../common/prisma.service';
 import { RegisterDto } from './dto/register.dto';
@@ -31,14 +32,14 @@ export class AuthService {
     // 2. Hash password with bcrypt (10 salt rounds)
     const passwordHash = await bcrypt.hash(dto.password, 10);
 
-    // 3. Create user with default EMPLOYEE role
+    // 3. Create user with specified role or default EMPLOYEE role
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
         passwordHash,
         firstName: dto.firstName,
         lastName: dto.lastName,
-        role: 'EMPLOYEE', // Default role from Story 2.1
+        role: (dto.role as UserRole) || UserRole.EMPLOYEE, // Use provided role or default to EMPLOYEE
       },
     });
 

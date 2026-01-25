@@ -1,4 +1,4 @@
-import { IsEmail, IsString, MinLength, Matches } from 'class-validator';
+import { IsEmail, IsString, MinLength, Matches, IsOptional, IsIn } from 'class-validator';
 
 export class RegisterDto {
   @IsEmail({}, { message: 'Invalid email format' })
@@ -18,4 +18,11 @@ export class RegisterDto {
   @IsString()
   @MinLength(1, { message: 'Last name is required' })
   lastName: string;
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['ADMIN', 'ISSUER', 'MANAGER', 'EMPLOYEE'], {
+    message: 'Role must be one of: ADMIN, ISSUER, MANAGER, EMPLOYEE',
+  })
+  role?: string;
 }
