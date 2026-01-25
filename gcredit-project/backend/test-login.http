@@ -1,0 +1,54 @@
+### Story 2.3 - JWT Login Tests
+
+### Test 1: Valid Login (existing user from Story 2.2)
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "alice.smith@gcredit.com",
+  "password": "SecurePass123"
+}
+
+### Test 2: Invalid Password
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "alice.smith@gcredit.com",
+  "password": "WrongPassword123"
+}
+
+### Test 3: Non-existent User
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "nonexistent@gcredit.com",
+  "password": "SomePassword123"
+}
+
+### Test 4: Invalid Email Format
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "not-an-email",
+  "password": "SecurePass123"
+}
+
+### Test 5: Missing Password
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "alice.smith@gcredit.com"
+}
+
+### Test 6: Empty Credentials
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "",
+  "password": ""
+}

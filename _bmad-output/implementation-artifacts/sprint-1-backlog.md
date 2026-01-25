@@ -1390,4 +1390,84 @@ git push origin main
 
 ---
 
+## 📌 Future Requirements (Deferred from Sprint 1)
+
+### **FR-001: Enterprise Email OAuth2 Integration**
+**Created:** 2026-01-25  
+**Priority:** Medium (for enterprise deployment)  
+**Category:** Production Security Enhancement  
+**Estimated Effort:** 2-3 hours
+
+**Background:**
+During Sprint 1 Story 2.5 (Password Reset via Email) development, we investigated implementing OAuth2 authentication for Outlook email sending to support enterprise environments. After research, we discovered that:
+- Personal Microsoft accounts (outlook.com, hotmail.com) do **not** have Azure Active Directory access
+- OAuth2 "Client Credentials Flow" requires Azure AD (enterprise/school accounts only)
+- Personal accounts can only use "Authorization Code Flow" (requires user login)
+- Current development uses console output mode (no real email sending)
+
+**Decision:**
+Deferred OAuth2 implementation to focus on core Sprint 1 authentication features. Current EmailService supports dual mode (dev console output / production SMTP with app password), which is sufficient for MVP demonstration.
+
+**Alternative Solution for Testing/Demo:**
+For real email testing during development or demonstrations, **use Gmail with App Password** (recommended):
+- ✅ Quick setup: 10-15 minutes
+- ✅ No code changes needed (EmailService already supports SMTP)
+- ✅ Works with personal accounts (no Azure AD required)
+- ✅ Suitable for MVP/demo environments
+- Configuration template available: `backend/.env.email-test`
+- Setup guide: `backend/EMAIL_SETUP_QUICK.md`
+
+**Steps to enable Gmail testing:**
+1. Enable 2-Step Verification in Google Account
+2. Generate App Password at https://myaccount.google.com/apppasswords
+3. Copy `.env.email-test` to `.env` with your Gmail credentials
+4. Set `NODE_ENV=production` in `.env`
+5. Restart backend and run `test-email-real.ps1`
+
+**Future Requirements:**
+When deploying to enterprise environment with Microsoft 365 accounts (which have Azure AD):
+
+1. **Implement OAuth2 Client Credentials Flow:**
+   - Register app in Azure Portal (Microsoft Entra ID)
+   - Configure API permissions: `Mail.Send`, `offline_access`
+   - Obtain tenant admin consent
+   - Create OAuth2TokenService to manage token lifecycle
+   - Modify EmailService to support OAuth2 authentication
+   - Implement token caching and automatic refresh
+
+2. **Technical Dependencies:**
+   - `@azure/identity` or `@azure/msal-node` (OAuth2 client library)
+   - Azure AD application registration
+   - Client ID, Client Secret, Tenant ID configuration
+   - Update .env with OAuth2 credentials
+
+3. **Configuration:**
+   ```env
+   EMAIL_AUTH_METHOD=oauth2  # or 'password' for app password
+   AZURE_TENANT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+   AZURE_CLIENT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+   AZURE_CLIENT_SECRET=your-client-secret
+   ```
+
+4. **Code Changes:**
+   - New file: `src/common/oauth2-token.service.ts`
+   - Update: `src/common/email.service.ts` (add OAuth2 support)
+   - Update: `src/common/common.module.ts` (inject OAuth2TokenService)
+   - Test script: `test-oauth2-email.ps1`
+
+**References:**
+- Microsoft Docs: [Authenticate IMAP/POP/SMTP using OAuth](https://learn.microsoft.com/en-us/exchange/client-developer/legacy-protocols/how-to-authenticate-an-imap-pop-smtp-application-by-using-oauth)
+- SMTP with OAuth2: `smtp-mail.outlook.com:587`
+- Scope: `https://outlook.office365.com/.default`
+
+**Suggested Implementation Timeline:**
+- Target: Sprint 8+ (Pre-production preparation)
+- Or: When enterprise Microsoft 365 account becomes available
+- Alternative: Use SendGrid/AWS SES for production (simpler than OAuth2)
+
+**Status:** 🔮 Future / Not Started  
+**Owner:** TBD (when enterprise deployment planned)
+
+---
+
 **Good luck with Sprint 1! 🚀 See you at the Sprint 1 retrospective!**

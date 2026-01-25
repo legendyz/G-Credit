@@ -2,6 +2,9 @@ import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 import { PrismaService } from './common/prisma.service';
 import { StorageService } from './common/storage.service';
+import { Public } from './common/decorators/public.decorator';
+import { Roles } from './common/decorators/roles.decorator';
+import { CurrentUser } from './common/decorators/current-user.decorator';
 
 @Controller()
 export class AppController {
@@ -11,11 +14,13 @@ export class AppController {
     private readonly storage: StorageService,
   ) {}
 
+  @Public()
   @Get()
   getHello(): string {
     return this.appService.getHello();
   }
 
+  @Public()
   @Get('health')
   getHealth() {
     return {
@@ -24,6 +29,7 @@ export class AppController {
     };
   }
 
+  @Public()
   @Get('ready')
   async getReady() {
     let databaseStatus = 'disconnected';
@@ -49,6 +55,72 @@ export class AppController {
     return {
       database: databaseStatus,
       storage: storageStatus,
+    };
+  }
+
+  // RBAC Test Endpoints
+
+  /**
+   * Profile endpoint - Accessible by all authenticated users
+   */
+  @Get('profile')
+  @Roles('EMPLOYEE', 'MANAGER', 'ISSUER', 'ADMIN')
+  getProfile(@CurrentUser() user: any) {
+    return {
+      message: 'Profile access granted',
+      user: {
+        userId: user.userId,
+        email: user.email,
+        role: user.role,
+      },
+    };
+  }
+
+  /**
+   * Admin-only endpoint - Accessible by ADMIN role only
+   */
+  @Get('admin-only')
+  @Roles('ADMIN')
+  adminRoute(@CurrentUser() user: any) {
+    return {
+      message: 'Admin access granted',
+      user: {
+        userId: user.userId,
+        email: user.email,
+        role: user.role,
+      },
+    };
+  }
+
+  /**
+   * Issuer endpoint - Accessible by ISSUER and ADMIN roles
+   */
+  @Get('issuer-only')
+  @Roles('ISSUER', 'ADMIN')
+  issuerRoute(@CurrentUser() user: any) {
+    return {
+      message: 'Issuer access granted',
+      user: {
+        userId: user.userId,
+        email: user.email,
+        role: user.role,
+      },
+    };
+  }
+
+  /**
+   * Manager endpoint - Accessible by MANAGER and ADMIN roles
+   */
+  @Get('manager-only')
+  @Roles('MANAGER', 'ADMIN')
+  managerRoute(@CurrentUser() user: any) {
+    return {
+      message: 'Manager access granted',
+      user: {
+        userId: user.userId,
+        email: user.email,
+        role: user.role,
+      },
     };
   }
 }

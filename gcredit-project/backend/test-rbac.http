@@ -1,0 +1,127 @@
+### RBAC Test Suite
+### Test role-based access control with different user roles
+
+@baseUrl = http://localhost:3000
+
+### Test 1: Login as EMPLOYEE (Alice)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "alice.smith@gcredit.com",
+  "password": "SecurePass123!"
+}
+
+### Test 2: Employee accesses profile (should succeed - 200)
+GET {{baseUrl}}/profile
+Authorization: Bearer {{EMPLOYEE_TOKEN}}
+
+### Test 3: Employee tries admin endpoint (should fail - 403)
+GET {{baseUrl}}/admin-only
+Authorization: Bearer {{EMPLOYEE_TOKEN}}
+
+### Test 4: Employee tries issuer endpoint (should fail - 403)
+GET {{baseUrl}}/issuer-only
+Authorization: Bearer {{EMPLOYEE_TOKEN}}
+
+### Test 5: Login as ADMIN
+# Note: Need to create ADMIN user first
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "admin@gcredit.com",
+  "password": "AdminPass123!",
+  "firstName": "System",
+  "lastName": "Admin",
+  "role": "ADMIN"
+}
+
+### Test 6: Login as ADMIN
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@gcredit.com",
+  "password": "AdminPass123!"
+}
+
+### Test 7: Admin accesses admin endpoint (should succeed - 200)
+GET {{baseUrl}}/admin-only
+Authorization: Bearer {{ADMIN_TOKEN}}
+
+### Test 8: Admin accesses profile (should succeed - 200)
+GET {{baseUrl}}/profile
+Authorization: Bearer {{ADMIN_TOKEN}}
+
+### Test 9: Admin accesses issuer endpoint (should succeed - 200, admin can access everything)
+GET {{baseUrl}}/issuer-only
+Authorization: Bearer {{ADMIN_TOKEN}}
+
+### Test 10: Access protected endpoint without token (should fail - 401)
+GET {{baseUrl}}/profile
+
+### Test 11: Access public endpoint (should succeed - 200)
+GET {{baseUrl}}/health
+
+### Test 12: Create ISSUER user
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "issuer@gcredit.com",
+  "password": "IssuerPass123!",
+  "firstName": "Badge",
+  "lastName": "Issuer",
+  "role": "ISSUER"
+}
+
+### Test 13: Login as ISSUER
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "issuer@gcredit.com",
+  "password": "IssuerPass123!"
+}
+
+### Test 14: Issuer accesses issuer endpoint (should succeed - 200)
+GET {{baseUrl}}/issuer-only
+Authorization: Bearer {{ISSUER_TOKEN}}
+
+### Test 15: Issuer tries admin endpoint (should fail - 403)
+GET {{baseUrl}}/admin-only
+Authorization: Bearer {{ISSUER_TOKEN}}
+
+### Test 16: Create MANAGER user
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "manager@gcredit.com",
+  "password": "ManagerPass123!",
+  "firstName": "Team",
+  "lastName": "Manager",
+  "role": "MANAGER"
+}
+
+### Test 17: Login as MANAGER
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "manager@gcredit.com",
+  "password": "ManagerPass123!"
+}
+
+### Test 18: Manager accesses manager endpoint (should succeed - 200)
+GET {{baseUrl}}/manager-only
+Authorization: Bearer {{MANAGER_TOKEN}}
+
+### Test 19: Manager tries admin endpoint (should fail - 403)
+GET {{baseUrl}}/admin-only
+Authorization: Bearer {{MANAGER_TOKEN}}
+
+### Test 20: Manager tries issuer endpoint (should fail - 403)
+GET {{baseUrl}}/issuer-only
+Authorization: Bearer {{MANAGER_TOKEN}}

@@ -18,13 +18,50 @@ enum UserRole {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String?
-  role      UserRole @default(EMPLOYEE)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  firstName     String?
+  lastName      String?
+  role          UserRole  @default(EMPLOYEE)
+  isActive      Boolean   @default(true)
+  emailVerified Boolean   @default(false)
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
+  passwordResetTokens PasswordResetToken[]
+  refreshTokens       RefreshToken[]
+
+  @@index([email])
+  @@index([role])
   @@map("users")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  used      Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique @db.Text
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  isRevoked Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+  @@map("refresh_tokens")
 }
