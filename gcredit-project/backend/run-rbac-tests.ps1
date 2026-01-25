@@ -34,14 +34,23 @@ function Invoke-ApiTest {
             Method = $Method
             Headers = $headers
             ErrorAction = "Stop"
+            UseBasicParsing = $true
         }
 
         if ($Body) {
             $params["Body"] = ($Body | ConvertTo-Json)
         }
 
-        $response = Invoke-RestMethod @params
-        $statusCode = 200 # Default for successful responses
+        # Use Invoke-WebRequest to get actual status code
+        $webResponse = Invoke-WebRequest @params
+        $statusCode = $webResponse.StatusCode
+        
+        # Try to parse as JSON, but handle plain text responses
+        try {
+            $response = $webResponse.Content | ConvertFrom-Json
+        } catch {
+            $response = $webResponse.Content
+        }
 
         if ($statusCode -eq $ExpectedStatus) {
             Write-Host "✅ PASS" -ForegroundColor Green -NoNewline
