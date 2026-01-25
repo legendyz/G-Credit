@@ -3,6 +3,7 @@ import {
   ConflictException,
   UnauthorizedException,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -13,6 +14,8 @@ import { PrismaService } from '../../common/prisma.service';
 import { EmailService } from '../../common/email.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -305,5 +308,124 @@ export class AuthService {
 
     // Always return success (even if token not found - already logged out)
     return { message: 'Logged out successfully' };
+  }
+
+  /**
+   * Get user profile
+   * 
+   * Returns current user's profile information.
+   */
+  async getProfile(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true,
+        emailVerified: true,
+        lastLoginAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
+  /**
+   * Update user profile
+   * 
+   * Allows users to update their firstName and lastName.
+   */
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    // Verify user exists
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Update profile
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        firstName: dto.firstName !== undefined ? dto.firstName : user.firstName,
+        lastName: dto.lastName !== undefined ? dto.lastName : user.lastName,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true,
+        emailVerified: true,
+        lastLoginAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    console.log(`[AUDIT] Profile updated: ${user.email} (${userId})`);
+
+    return updatedUser;
+  }
+
+  /**
+   * Change password
+   * 
+   * Allows users to change their password after verifying current password.
+   */
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    // 1. Get user with password hash
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // 2. Verify current password
+    const isCurrentPasswordValid = await bcrypt.compare(
+      dto.currentPassword,
+      user.passwordHash,
+    );
+
+    if (!isCurrentPasswordValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    // 3. Check if new password is different from current
+    const isSamePassword = await bcrypt.compare(
+      dto.newPassword,
+      user.passwordHash,
+    );
+
+    if (isSamePassword) {
+      throw new BadRequestException('New password must be different from current password');
+    }
+
+    // 4. Hash new password
+    const newPasswordHash = await bcrypt.hash(dto.newPassword, 10);
+
+    // 5. Update password
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: newPasswordHash },
+    });
+
+    console.log(`[AUDIT] Password changed: ${user.email} (${userId})`);
+
+    return { message: 'Password changed successfully' };
   }
 }
