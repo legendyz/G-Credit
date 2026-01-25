@@ -196,7 +196,7 @@ Build an internal digital credentialing (badging) platform to securely recognize
 
 | Issue | Severity | Status | Plan |
 |-------|----------|--------|------|
-| **lodash Prototype Pollution vulnerability** | Moderate | ⚠️ Accepted Risk | Deferred to Sprint 1. Dependency of @nestjs/config. Fix requires breaking change (downgrade to v1.1.5). Development environment only, low exploit risk. Will re-evaluate before Sprint 1 starts. |
+| **lodash Prototype Pollution vulnerability** | Moderate | ✅ Risk Accepted (ADR-002) | **Decision:** Accept risk for MVP development (Sprint 1-7). Development environment only, CVSS 6.5 (Medium), no external exposure. **Re-evaluate:** Before production deployment (Sprint 8+). See [ADR-002](docs/decisions/002-lodash-security-risk-acceptance.md) for full analysis. |
 | **Prisma version locked at 6.x** | Low | 🔒 Intentional | Prisma 7 has breaking changes (prisma.config.ts requirement). Upgrade deferred to post-MVP. Current version stable and meets all requirements. |
 | **Dependency version drift risk** | Medium | 📋 Process Improvement | Sprint 0 revealed planning docs had outdated versions. Action: All future sprint docs must specify exact versions. Version manifest template to be created. |
 

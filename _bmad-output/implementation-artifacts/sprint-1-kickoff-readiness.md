@@ -63,6 +63,11 @@
 - No external traffic to dev database
 - Re-evaluate before production deployment
 
+**DECISION MADE:** ✅ Option A - Risk Accepted (2026-01-25)
+- **Reference:** [ADR-002](../../docs/decisions/002-lodash-security-risk-acceptance.md)
+- **Valid Until:** Sprint 8 (pre-production) or severity escalation
+- **Monitoring:** Weekly vulnerability check, bi-weekly dependency check
+
 **Impact if Skipped:** Security risk remains undocumented. May fail security audits later.
 
 ---

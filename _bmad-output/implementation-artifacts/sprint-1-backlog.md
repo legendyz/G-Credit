@@ -65,10 +65,13 @@ npm install react-router-dom@6.21.1
 ```
 
 ### **Known Security Issues (From Sprint 0)**
-- ⚠️ **lodash Prototype Pollution Vulnerability:** 2 moderate severity issues in `@nestjs/config` dependency
-  - **Status:** Risk accepted for MVP development (AI-2 decision pending)
-  - **Fix:** `npm audit fix --force` requires breaking change (downgrade @nestjs/config@1.1.5)
-  - **Re-evaluation:** Before production deployment (Sprint 8+)
+- ✅ **lodash Prototype Pollution Vulnerability:** 2 moderate severity issues in `@nestjs/config` dependency
+  - **Status:** ✅ Risk Accepted (ADR-002, decided 2026-01-25)
+  - **Decision:** Accept risk for MVP development (Sprint 1-7), isolated dev environment
+  - **CVSS Score:** 6.5 (Medium) - Low exploit risk in current context
+  - **Fix Available:** `npm audit fix --force` (breaking change: downgrade @nestjs/config 3.2.3→1.1.5)
+  - **Re-evaluation:** Before production deployment (Sprint 8+) or severity escalation
+  - **Reference:** [ADR-002](../../docs/decisions/002-lodash-security-risk-acceptance.md)
 
 ### **Version Management Best Practices (Learned from Sprint 0)**
 1. ✅ **Use exact versions** in package.json (no `^` or `~` for critical packages)
