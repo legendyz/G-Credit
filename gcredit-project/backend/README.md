@@ -94,13 +94,89 @@ node_modules\.bin\prisma migrate reset
 
 ## 📡 API Endpoints
 
+### Authentication Endpoints (Sprint 1 ✅)
+
+**POST /auth/register** - User registration
+```json
+{
+  "email": "user@example.com",
+  "password": "SecurePass123",
+  "firstName": "John",
+  "lastName": "Doe",
+  "role": "EMPLOYEE"
+}
+```
+
+**POST /auth/login** - JWT login
+```json
+{
+  "email": "user@example.com",
+  "password": "SecurePass123"
+}
+```
+Response:
+```json
+{
+  "accessToken": "eyJhbGc...",
+  "refreshToken": "eyJhbGc...",
+  "user": { "id": "...", "email": "...", "role": "..." }
+}
+```
+
+**POST /auth/request-reset** - Request password reset
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**POST /auth/reset-password** - Reset password
+```json
+{
+  "token": "reset-token-from-email",
+  "newPassword": "NewSecurePass123"
+}
+```
+
+**POST /auth/refresh** - Refresh access token
+```json
+{
+  "refreshToken": "eyJhbGc..."
+}
+```
+
+**POST /auth/logout** - Logout (revoke refresh token)
+```json
+{
+  "refreshToken": "eyJhbGc..."
+}
+```
+
+**GET /auth/profile** - Get user profile (requires authentication)
+
+**PATCH /auth/profile** - Update user profile (requires authentication)
+```json
+{
+  "firstName": "Jane",
+  "lastName": "Smith"
+}
+```
+
+**POST /auth/change-password** - Change password (requires authentication)
+```json
+{
+  "currentPassword": "OldPass123",
+  "newPassword": "NewSecurePass123"
+}
+```
+
 ### Health Check Endpoints
 
 **GET /health** - Liveness probe
 ```json
 {
   "status": "ok",
-  "timestamp": "2026-01-24T..."
+  "timestamp": "2026-01-25T..."
 }
 ```
 
@@ -112,12 +188,16 @@ node_modules\.bin\prisma migrate reset
 }
 ```
 
-### Future Endpoints (Sprint 1+)
-- POST /auth/register
-- POST /auth/login
-- GET /badges
-- POST /badges
-- ... (TBD)
+### Test Endpoints (Development Only)
+- GET /profile - Test protected route (all authenticated users)
+- GET /admin-only - Test admin role
+- GET /issuer-only - Test issuer role
+- GET /manager-only - Test manager role
+
+### Coming in Sprint 2
+- Badge Template Management (CRUD)
+- Badge Catalog
+- Badge Criteria Definition
 
 ## 🗂️ Project Structure
 

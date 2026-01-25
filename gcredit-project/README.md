@@ -4,9 +4,10 @@
 
 ## 📊 Project Status
 
-**Current Sprint:** Sprint 1 (JWT Authentication & User Management) 🚀  
-**Sprint Duration:** 2026-01-27 → 2026-02-09  
-**Progress:** ✅ Sprint 0 Complete (100%) | 🟡 Sprint 1 Ready to Start  
+**Current Sprint:** Sprint 2 (Badge Template Management) 🔜  
+**Sprint 1:** ✅ Complete (100%, 21h/21h, 2026-01-25)  
+**Sprint 0:** ✅ Complete (100%, 9.5h/10h, 2026-01-24)  
+**Version:** v0.1.0 (Authentication Module)  
 **License:** MIT
 
 ## 🚀 Tech Stack

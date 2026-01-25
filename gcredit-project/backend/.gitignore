@@ -48,6 +48,11 @@ lerna-debug.log*
 .temp
 .tmp
 
+# Test reports and artifacts
+sprint-*-test-report-*.txt
+test-report-*.txt
+*.test-results/
+
 # Runtime data
 pids
 *.pid
