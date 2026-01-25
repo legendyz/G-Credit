@@ -1,9 +1,9 @@
 # G-Credit - Enterprise Internal Digital Credentialing System
 
-[![Status](https://img.shields.io/badge/Status-Implementation%20Ready-green)]()
+[![Status](https://img.shields.io/badge/Status-Sprint%202%20Planning-blue)]()
 [![Phase](https://img.shields.io/badge/Phase-MVP%20Development-blue)]()
-[![Planning](https://img.shields.io/badge/Planning-Complete-success)]()
-[![Score](https://img.shields.io/badge/Readiness%20Score-10%2F10-brightgreen)]()
+[![Sprint0](https://img.shields.io/badge/Sprint%200-Complete%20(95%25)-success)]()
+[![Sprint1](https://img.shields.io/badge/Sprint%201-Complete%20(100%25)-brightgreen)]()
 
 > **G-Credit** is an enterprise-grade internal digital badging platform designed to securely recognize, verify, and analyze employee skills and achievements. Compliant with Open Badges 2.0 standards, it aims to replace fragmented certificate management and reduce dependency on external platforms.
 
@@ -131,32 +131,41 @@
 
 ### 🎯 Current Phase (Phase 4 - Implementation)
 
-**Current Sprint:** Sprint 1 - JWT Authentication & User Management  
-**Sprint Duration:** 2026-01-27 → 2026-02-09 (2 weeks)  
-**Sprint Goal:** Complete Epic 2 - JWT authentication, user management, Azure AD SSO
+**Current Sprint:** Sprint 2 - Badge Template Management (Planning)  
+**Status:** Sprint 1 Complete ✅ | Sprint 2 Ready to Start 🔜
 
 **✅ Sprint 0 Completed (2026-01-24):**
-- ✅ Frontend React 18.3.1 + Vite 7.2.4 + Tailwind CSS 4.1.18 + Shadcn/ui (3h)
-- ✅ Backend NestJS 11.0.16 + TypeScript 5.7.3 (2h)
-- ✅ Azure PostgreSQL connected, Prisma 6.19.2 User table + migrations (3.5h)
-- ✅ Azure Blob Storage: 2 containers (badges public, evidence private) (2h)
-- ✅ Git repository + project documentation (1h)
+- ✅ Frontend React 19.2.3 + Vite 7.3.1 + Tailwind CSS 4.1.18 + Shadcn/ui
+- ✅ Backend NestJS 11.1.12 + Prisma 6.19.2 + TypeScript 5.9.3
+- ✅ Azure PostgreSQL Flexible Server (B1ms)
+- ✅ Azure Blob Storage (2 containers: badges, evidence)
+- ✅ Comprehensive documentation
 - **Total: 9.5h / 10h estimated (95% accuracy)**
-- **Commits:** 6 commits pushed to main branch
+- **Commits:** 6 commits
 
-**Sprint 1 Stories (21h estimated):**
-- Story 2.1: Enhanced User data model (3h)
-- Story 2.2: JWT authentication service (3h)
-- Story 2.3: Auth controllers & guards (3h)
-- Story 2.4: Password management (3h)
-- Story 2.5: Session management (3h)
-- Story 2.6: Azure AD SSO integration (4h)
-- Story 2.7: User profile API (2h)
+**✅ Sprint 1 Completed (2026-01-25):**
+- ✅ Story 2.1: Enhanced User data model (2h)
+- ✅ Story 2.2: User registration with validation (3h)
+- ✅ Story 2.3: JWT dual-token authentication (4h)
+- ✅ Story 2.4: RBAC with 4 roles (3h)
+- ✅ Story 2.5: Password reset via email (4h)
+- ✅ Story 2.6: User profile management (3h)
+- ✅ Story 2.7: Session management and logout (2h)
+- ⏸️ Story 2.8: Azure AD SSO (deferred to Sprint 8+)
+- **Total: 21h / 21h estimated (100% accuracy - perfect!)**
+- **Commits:** 10 feature commits
+- **Testing:** 40/40 tests passed (100%)
+- **Deliverables:**
+  - 14 API endpoints (6 public, 8 protected)
+  - 3 database models (User, PasswordResetToken, RefreshToken)
+  - Complete authentication & authorization system
+  - JWT tokens, bcrypt, RBAC, token revocation
 
-**Next Sprints:**
-- **Sprint 2:** Badge Template & Issuance Foundation (Epic 3, part 1)
-- **Sprint 3-4:** Badge Template & Issuance Complete (Epic 3-4)
-- **Sprint 5-6:** Verification & Employee Wallet (Epic 5-6)
+**🔜 Next Sprints:**
+- **Sprint 2:** Badge Template Management (Epic 3) - CRUD, catalog, criteria
+- **Sprint 3:** Badge Issuance Foundation (Epic 4) - Single/bulk issuance
+- **Sprint 4-5:** Employee Wallet & Verification (Epic 5-6)
+- **Sprint 6-7:** Analytics & Integrations
 
 ---
 
@@ -309,11 +318,12 @@ This project uses the **BMAD (Business Model Agent Development) Framework** v6.0
 | Phase 1 - Discovery | 4-6 weeks | PRD, Product Brief, KPIs | ✅ Complete |
 | Phase 2 - Design & Architecture | 4 weeks | Architecture doc, UX Design, Wireframes | ✅ Complete |
 | **Phase 3 - MVP Development** | **8-12 weeks** | **Working MVP** | **🔄 In Progress** |
-| → Sprint 0 | 2 weeks | Infrastructure Setup | ✅ Complete (2026-01-23 → 01-24, 9.5h/10h) |
-| → Sprint 1 | 2 weeks | JWT Auth & User Management (Epic 2) | 🔄 Ready to Start (2026-01-27 → 02-09, 21h) |
-| → Sprint 2 | 2 weeks | Badge Template Foundation | ⏳ Planned |
-| → Sprint 3-4 | 4 weeks | Badge Templates & Issuance | ⏳ Planned |
-| → Sprint 5-6 | 4 weeks | Verification & Wallet | ⏳ Planned |
+| → Sprint 0 | 1 day | Infrastructure Setup | ✅ Complete (2026-01-24, 9.5h/10h, 95%) |
+| → Sprint 1 | 1 day | JWT Auth & User Management (Epic 2) | ✅ Complete (2026-01-25, 21h/21h, 100%) |
+| → Sprint 2 | TBD | Badge Template Management (Epic 3) | 🔜 Planning |
+| → Sprint 3 | TBD | Badge Issuance (Epic 4) | ⏳ Planned |
+| → Sprint 4-5 | TBD | Verification & Wallet (Epic 5-6) | ⏳ Planned |
+| → Sprint 6-7 | TBD | Analytics & Integrations | ⏳ Planned |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ Pending |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
@@ -380,10 +390,13 @@ npm run dev
 - [Epics & Stories](./_bmad-output/planning-artifacts/epics.md) - Implementation breakdown (14 epics, 85 stories)
 - [Implementation Readiness Report](./_bmad-output/planning-artifacts/implementation-readiness-report-2026-01-22.md) - Readiness assessment (10/10)
 
-**Implementation Documents (In Progress):**
-- [Sprint 0 Backlog](./_bmad-output/implementation-artifacts/sprint-0-backlog.md) - Infrastructure setup plan (1,867 lines, ✅ Complete)
-- [Sprint 0 Retrospective](./_bmad-output/implementation-artifacts/sprint-0-retrospective.md) - Lessons learned (12,000+ words, 8 action items)
-- [Sprint 1 Backlog](./_bmad-output/implementation-artifacts/sprint-1-backlog.md) - JWT Auth & User Management (1,312 lines, 7 stories, 21h)
+**Implementation Documents:**
+- [Implementation Artifacts Index](./_bmad-output/implementation-artifacts/INDEX.md) - Complete index of all sprint docs
+- [Sprint 0 Backlog](./_bmad-output/implementation-artifacts/sprint-0-backlog.md) - Infrastructure setup (✅ Complete)
+- [Sprint 0 Retrospective](./_bmad-output/implementation-artifacts/sprint-0-retrospective.md) - Lessons learned (8 action items)
+- [Sprint 1 Backlog](./_bmad-output/implementation-artifacts/sprint-1-backlog.md) - Authentication & user management (✅ Complete)
+- [Sprint 1 Retrospective](./_bmad-output/implementation-artifacts/sprint-1-retrospective.md) - Technical review (100% test pass)
+- [Architectural Decisions](./_bmad-output/implementation-artifacts/decisions/) - ADR records
 
 ---
 
@@ -407,7 +420,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Last Updated:** 2026-01-24  
-**Status:** Sprint 1 Ready to Start - JWT Authentication & User Management 🚀  
-**Sprint 0:** ✅ Complete (9.5h/10h) - See [Sprint 0 Retrospective](./_bmad-output/implementation-artifacts/sprint-0-retrospective.md) for lessons learned  
-**Sprint 1:** See [Sprint 1 Backlog](./_bmad-output/implementation-artifacts/sprint-1-backlog.md) for detailed tasks (7 stories, 21h estimated)
+**Last Updated:** 2026-01-25  
+**Status:** Sprint 2 Planning - Badge Template Management 🔜  
+**Sprint 0:** ✅ Complete (9.5h/10h, 95%) - [Retrospective](./_bmad-output/implementation-artifacts/sprint-0-retrospective.md)  
+**Sprint 1:** ✅ Complete (21h/21h, 100%) - [Retrospective](./_bmad-output/implementation-artifacts/sprint-1-retrospective.md)  
+**Sprint 2:** See [Implementation Artifacts](./_bmad-output/implementation-artifacts/) for upcoming sprint planning
