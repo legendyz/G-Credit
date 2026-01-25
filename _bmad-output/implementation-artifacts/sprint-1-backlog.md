@@ -12,7 +12,83 @@
 
 ---
 
-## 📋 Sprint Overview
+## � Technology Version Manifest
+
+> **Purpose:** Explicit version tracking to avoid Sprint 0 issues (Prisma 7→6, NestJS 10→11 version drift)  
+> **Last Verified:** 2026-01-25 (Sprint 1 Kickoff Preparation)  
+> **Action Item:** AI-1 from Sprint 0 Retrospective
+
+### **Frontend Stack (Actual Versions from Sprint 0)**
+- **React:** `18.3.1` ✅ Installed & Verified
+- **Vite:** `7.2.4` ✅ Installed & Verified
+- **TypeScript:** `5.9.3` ✅ Installed & Verified
+- **Tailwind CSS:** `4.1.18` + `@tailwindcss/postcss@4.1.18` ✅ Installed & Verified
+- **Shadcn/ui:** Components installed (Button, Card, etc.) ✅
+- **Node.js:** `20.20.0 LTS` ✅ Runtime Environment
+
+### **Backend Stack (Actual Versions from Sprint 0)**
+- **NestJS:** `11.0.16` ✅ Installed & Verified (NOT 10.x as originally planned)
+- **TypeScript:** `5.7.3` ✅ Installed & Verified
+- **Prisma:** `6.19.2` 🔒 **VERSION LOCKED** (Prisma 7 has breaking changes, see Sprint 0 Retrospective)
+- **Node.js:** `20.20.0 LTS` ✅ Runtime Environment
+- **npm:** `10.8.2` ✅ Package Manager
+
+### **Azure Infrastructure (Deployed & Operational)**
+- **PostgreSQL:** Azure Flexible Server B1ms, PostgreSQL 16 ✅
+  - Database: `gcredit-dev-db-lz`
+  - Connection: Verified via Prisma Studio
+- **Blob Storage:** Azure Storage Account Standard LRS ✅
+  - Account: `gcreditdevstoragelz`
+  - Containers: `badges` (public), `evidence` (private)
+
+### **Sprint 1 New Dependencies (To Be Installed)**
+
+#### **Backend Authentication Packages:**
+```bash
+# Install exact versions to avoid conflicts
+npm install @nestjs/jwt@10.2.0 @nestjs/passport@10.0.3
+npm install passport@0.7.0 passport-jwt@4.0.1 passport-local@1.0.0
+npm install bcrypt@5.1.1
+npm install @types/passport-jwt@4.0.1 @types/passport-local@1.1.0 @types/bcrypt@5.0.2 --save-dev
+
+# Email (Story 2.5 - defer if complex)
+npm install nodemailer@6.9.9
+npm install @types/nodemailer@6.4.14 --save-dev
+```
+
+#### **Frontend State Management (Story 2.7):**
+```bash
+# Install exact versions
+npm install @tanstack/react-query@5.17.9
+npm install zustand@4.4.7
+npm install react-router-dom@6.21.1
+```
+
+### **Known Security Issues (From Sprint 0)**
+- ⚠️ **lodash Prototype Pollution Vulnerability:** 2 moderate severity issues in `@nestjs/config` dependency
+  - **Status:** Risk accepted for MVP development (AI-2 decision pending)
+  - **Fix:** `npm audit fix --force` requires breaking change (downgrade @nestjs/config@1.1.5)
+  - **Re-evaluation:** Before production deployment (Sprint 8+)
+
+### **Version Management Best Practices (Learned from Sprint 0)**
+1. ✅ **Use exact versions** in package.json (no `^` or `~` for critical packages)
+2. ✅ **Lock Prisma at 6.19.2** until post-MVP (Sprint 10+)
+3. ✅ **Test all npm installs** in dev environment before committing
+4. ✅ **Document version choices** when deviating from latest stable
+5. ✅ **Use local binaries** (`node_modules\.bin\prisma`) instead of `npx` to avoid cache issues
+
+### **Compatibility Matrix**
+| Package | Version | Compatible With | Notes |
+|---------|---------|-----------------|-------|
+| Prisma | 6.19.2 | NestJS 10-11, PostgreSQL 12-16 | ✅ Stable, locked |
+| NestJS | 11.0.16 | Node.js 18-20, Prisma 5-6 | ✅ Latest LTS |
+| React | 18.3.1 | Node.js 18-20, Vite 5-7 | ✅ Latest stable |
+| Vite | 7.2.4 | React 18, Node.js 18-20 | ✅ Latest stable |
+| Tailwind | 4.1.18 | Vite 7, PostCSS 8 | ✅ v4 new architecture |
+
+---
+
+## �📋 Sprint Overview
 
 ### Sprint Goal Statement
 By the end of Sprint 1, the G-Credit system will have a fully functional authentication system where users can register, login with JWT tokens, access features based on their roles (Admin/Issuer/Manager/Employee), reset passwords, manage their profiles, and securely log out. This provides the security foundation required for all subsequent badge management features.
