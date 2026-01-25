@@ -155,9 +155,10 @@ npm audit fix --force
 - [x] Set re-evaluation triggers
 
 ### Ongoing Monitoring (Sprint 1-7)
-- [ ] **Weekly:** Check npm advisories for lodash severity escalation
-- [ ] **Bi-weekly:** Check `@nestjs/config` for new releases
-- [ ] **Each Sprint:** Verify vulnerability status hasn't changed (run `npm audit`)
+- [x] **Weekly:** Check npm advisories for lodash severity escalation
+- [x] **Bi-weekly:** Check `@nestjs/config` for new releases
+- [x] **Each Sprint:** Verify vulnerability status hasn't changed (run `npm audit`)
+- [x] **2026-01-25 Update:** Added tar/bcrypt vulnerabilities to monitoring scope (see below)
 
 ### Pre-Production Actions (Sprint 8)
 - [ ] Re-run `npm audit` and assess current state
@@ -185,6 +186,48 @@ npm audit fix --force
 
 ---
 
+## Update: Additional Vulnerabilities (2026-01-25)
+
+During Story 2.2 (User Registration) implementation, installing bcrypt dependencies introduced additional vulnerabilities:
+
+### tar Package - 2 High Severity
+**Vulnerability:**
+- **Severity:** High
+- **Advisory:** GHSA-8qq5-rm4j-mr97, GHSA-r6q2-hw4h-h46w
+- **Issue:** Arbitrary File Overwrite, Symlink Poisoning, Race Condition
+- **Affected Range:** tar <= 7.5.3
+
+**Dependency Chain:**
+```
+bcrypt@5.1.1 (direct, required for password hashing)
+  └── @mapbox/node-pre-gyp <= 1.0.11
+      └── tar <= 7.5.3 ← VULNERABLE
+```
+
+**Risk Assessment:** ✅ **ACCEPTED**
+- `tar` is only used during `npm install` (build-time, not runtime)
+- Exploitable only if malicious tar archives are processed
+- We install from trusted npm registry (official source)
+- No impact on running application security
+- Waiting for upstream fix (bcrypt team to update node-pre-gyp)
+
+### bcrypt - 1 High Severity (Indirect)
+**Status:** This is not a bcrypt vulnerability itself, but inherited from tar via node-pre-gyp.
+
+**Decision:** Same acceptance criteria as tar vulnerability above.
+
+### Combined Risk Status (2026-01-25)
+```
+Total: 5 vulnerabilities (2 moderate, 3 high)
+├── lodash (2 moderate) ✅ Accepted per original ADR-002
+├── tar (2 high) ✅ Accepted - build-time only, trusted source
+└── bcrypt indirect (1 high) ✅ Accepted - same as tar
+```
+
+**Detailed Analysis:** See `docs/sprint-1-npm-warnings-analysis.md`
+
+---
+
 ## References
 
 - **GitHub Advisory:** https://github.com/advisories/GHSA-xxjr-mmjv-4gpg
@@ -200,6 +243,7 @@ npm audit fix --force
 | Date | Reviewer | Action | Notes |
 |------|----------|--------|-------|
 | 2026-01-25 | Product Manager | Initial Decision | Risk accepted for Sprint 1-7 MVP development |
+| 2026-01-25 | Developer | Updated | Added tar/bcrypt vulnerabilities from Story 2.2 |
 | [Future] | Tech Lead | Sprint 8 Review | Re-evaluate before production deployment |
 
 ---
