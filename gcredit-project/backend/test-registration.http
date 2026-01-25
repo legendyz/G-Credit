@@ -1,0 +1,55 @@
+### Story 2.2 - User Registration Tests
+
+### Test 1: Valid Registration
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "email": "john.doe@gcredit.com",
+  "password": "SecurePass123",
+  "firstName": "John",
+  "lastName": "Doe"
+}
+
+### Test 2: Duplicate Email (should return 409)
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "email": "john.doe@gcredit.com",
+  "password": "AnotherPass123",
+  "firstName": "Jane",
+  "lastName": "Smith"
+}
+
+### Test 3: Weak Password (should return 400)
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "email": "jane.doe@gcredit.com",
+  "password": "weak",
+  "firstName": "Jane",
+  "lastName": "Doe"
+}
+
+### Test 4: Invalid Email Format (should return 400)
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "email": "not-an-email",
+  "password": "SecurePass123",
+  "firstName": "Test",
+  "lastName": "User"
+}
+
+### Test 5: Missing Required Field (should return 400)
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@gcredit.com",
+  "password": "SecurePass123",
+  "lastName": "User"
+}
