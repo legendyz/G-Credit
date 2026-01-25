@@ -40,15 +40,15 @@
 ### Technology Stack
 
 #### Frontend (`gcredit-web`)
-- **Framework:** React 18.3.1 + TypeScript 5.9.3
-- **Build Tool:** Vite 7.2.4
+- **Framework:** React 19.2.3 + TypeScript 5.9.3
+- **Build Tool:** Vite 7.3.1
 - **UI Framework:** Tailwind CSS 4.1.18 + Shadcn/ui
 - **State Management:** TanStack Query v5 + Zustand
 - **Routing:** React Router v6
 - **Form Handling:** React Hook Form + Zod
 
 #### Backend (`gcredit-api`)
-- **Framework:** NestJS 11.0.16 + TypeScript 5.7.3
+- **Framework:** NestJS 11.1.12 (Core), 11.0.16 (CLI) + TypeScript 5.9.3
 - **Runtime:** Node.js 20.20.0 LTS
 - **Database:** PostgreSQL 16 (Azure Flexible Server B1ms)
 - **ORM:** Prisma 6.19.2 ⚠️ **Version Locked** (Prisma 7 has breaking changes)

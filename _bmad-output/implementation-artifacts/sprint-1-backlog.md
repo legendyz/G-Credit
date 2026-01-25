@@ -19,16 +19,18 @@
 > **Action Item:** AI-1 from Sprint 0 Retrospective
 
 ### **Frontend Stack (Actual Versions from Sprint 0)**
-- **React:** `18.3.1` ✅ Installed & Verified
-- **Vite:** `7.2.4` ✅ Installed & Verified
+- **React:** `19.2.3` ✅ Installed & Verified (⚠️ Updated from 18.3.1 during Sprint 0)
+- **Vite:** `7.3.1` ✅ Installed & Verified (⚠️ Updated from 7.2.4)
 - **TypeScript:** `5.9.3` ✅ Installed & Verified
 - **Tailwind CSS:** `4.1.18` + `@tailwindcss/postcss@4.1.18` ✅ Installed & Verified
 - **Shadcn/ui:** Components installed (Button, Card, etc.) ✅
 - **Node.js:** `20.20.0 LTS` ✅ Runtime Environment
 
 ### **Backend Stack (Actual Versions from Sprint 0)**
-- **NestJS:** `11.0.16` ✅ Installed & Verified (NOT 10.x as originally planned)
-- **TypeScript:** `5.7.3` ✅ Installed & Verified
+- **NestJS Core:** `11.1.12` ✅ Installed & Verified (⚠️ Updated from 11.0.16)
+- **NestJS CLI:** `11.0.16` ✅ Installed & Verified
+- **@nestjs/config:** `4.0.2` ✅ Installed & Verified (⚠️ Updated from 3.2.3, lodash still present)
+- **TypeScript:** `5.9.3` ✅ Installed & Verified (Backend uses same as frontend)
 - **Prisma:** `6.19.2` 🔒 **VERSION LOCKED** (Prisma 7 has breaking changes, see Sprint 0 Retrospective)
 - **Node.js:** `20.20.0 LTS` ✅ Runtime Environment
 - **npm:** `10.8.2` ✅ Package Manager

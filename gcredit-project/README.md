@@ -12,17 +12,17 @@
 ## 🚀 Tech Stack
 
 ### Frontend
-- **React** 18.3.1
+- **React** 19.2.3
 - **TypeScript** 5.9.3 (strict mode)
-- **Vite** 7.2.4
+- **Vite** 7.3.1
 - **Tailwind CSS** 4.1.18
 - **Shadcn/ui** components
 - **React Router** (TBD in Sprint 1)
 
 ### Backend
-- **NestJS** 11.0.16
-- **TypeScript** 5.7.3 (strict mode)
-- **Prisma** 6.19.2 ORM
+- **NestJS** 11.1.12 (Core), 11.0.16 (CLI)
+- **TypeScript** 5.9.3 (strict mode)
+- **Prisma** 6.19.2 ORM 🔒 Version Locked
 - **PostgreSQL** 16
 - **JWT** Authentication (TBD in Sprint 1)
 

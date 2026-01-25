@@ -63,21 +63,21 @@ Build an internal digital credentialing (badging) platform to securely recognize
 
 ### Core Technologies
 - **Architecture Pattern:** Modular Monolith (monorepo: `frontend` + `backend`)
-- **Language:** TypeScript 5.9.3 (frontend) / 5.7.3 (backend)
+- **Language:** TypeScript 5.9.3 (both frontend and backend)
 - **Runtime:** Node.js 20.20.0 LTS
 - **Database:** PostgreSQL 16 (Azure Flexible Server)
 - **ORM:** Prisma 6.19.2 ⚠️ **Version locked** (Prisma 7 has breaking changes)
 
 ### Frontend Stack
-- **Framework:** React 18.3.1 (with Concurrent Features)
-- **Build Tool:** Vite 7.2.4 (instant HMR, optimized production builds)
+- **Framework:** React 19.2.3 (with Concurrent Features)
+- **Build Tool:** Vite 7.3.1 (instant HMR, optimized production builds)
 - **UI Framework:** Tailwind CSS 4.1.18 + @tailwindcss/postcss + Shadcn/ui components
 - **State Management:** TanStack Query v5 (server state) + Zustand (client state) - *to be added Sprint 1+*
 - **Routing:** React Router v6 - *to be added Sprint 1+*
 - **Form Handling:** React Hook Form + Zod validation - *to be added Sprint 1+*
 
 ### Backend Stack
-- **Framework:** NestJS 11.0.16 (enterprise-grade Node.js)
+- **Framework:** NestJS 11.1.12 (Core), 11.0.16 (CLI) (enterprise-grade Node.js)
 - **API Design:** RESTful with standard response wrapper `{data, meta}` - *to be implemented Sprint 1+*
 - **Authentication:** Passport.js + JWT (Azure AD integration) - *to be added Sprint 1+*
 - **Job Queue:** Bull (Redis-backed async processing) - *to be added Sprint 2+*
