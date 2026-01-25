@@ -2,12 +2,15 @@ import {
   Injectable,
   ConflictException,
   UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserRole } from '@prisma/client';
+import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../common/prisma.service';
+import { EmailService } from '../../common/email.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 
@@ -17,6 +20,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private config: ConfigService,
+    private emailService: EmailService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -103,12 +107,111 @@ export class AuthService {
     console.log(`[AUDIT] Successful login: ${user.email} (${user.id})`);
 
     // 8. Return tokens and user profile (without password hash)
-    const { passwordHash: _, ...userProfile } = user;
+    const { passwordHash: _, ...userProfile} = user;
     
     return {
       accessToken,
       refreshToken,
       user: userProfile,
     };
+  }
+
+  /**
+   * Request password reset
+   * 
+   * Generates a secure reset token and sends email to user.
+   * Does not reveal whether email exists (security best practice).
+   */
+  async requestPasswordReset(email: string): Promise<{ message: string }> {
+    // 1. Find user by email
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    // Don't reveal if email exists (security best practice)
+    if (!user) {
+      // Still return success message
+      return {
+        message:
+          'If the email exists in our system, you will receive a password reset link',
+      };
+    }
+
+    // 2. Generate secure random token (32 bytes = 64 hex characters)
+    const token = randomBytes(32).toString('hex');
+
+    // 3. Calculate expiration (1 hour from now)
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+    // 4. Store token in database
+    await this.prisma.passwordResetToken.create({
+      data: {
+        token,
+        userId: user.id,
+        expiresAt,
+      },
+    });
+
+    // 5. Send reset email
+    try {
+      await this.emailService.sendPasswordReset(user.email, token);
+      console.log(`[AUDIT] Password reset requested: ${user.email}`);
+    } catch (error) {
+      console.error(`[ERROR] Failed to send reset email: ${error.message}`);
+      // Don't throw error - still return success to prevent email enumeration
+    }
+
+    return {
+      message:
+        'If the email exists in our system, you will receive a password reset link',
+    };
+  }
+
+  /**
+   * Reset password with token
+   * 
+   * Validates token and updates user's password.
+   */
+  async resetPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    // 1. Find token in database
+    const resetToken = await this.prisma.passwordResetToken.findUnique({
+      where: { token },
+      include: { user: true },
+    });
+
+    // Validate token exists and is not used
+    if (!resetToken || resetToken.used) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    // Validate token has not expired
+    if (resetToken.expiresAt < new Date()) {
+      throw new BadRequestException('Reset token has expired');
+    }
+
+    // 2. Hash new password
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    // 3. Update user password
+    await this.prisma.user.update({
+      where: { id: resetToken.userId },
+      data: { passwordHash },
+    });
+
+    // 4. Mark token as used
+    await this.prisma.passwordResetToken.update({
+      where: { id: resetToken.id },
+      data: { used: true },
+    });
+
+    // 5. Log password reset
+    console.log(
+      `[AUDIT] Password reset completed: ${resetToken.user.email} (${resetToken.userId})`,
+    );
+
+    return { message: 'Password has been reset successfully' };
   }
 }
