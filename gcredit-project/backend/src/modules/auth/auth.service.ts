@@ -97,16 +97,26 @@ export class AuthService {
       } as any,
     );
 
-    // 6. Update lastLoginAt timestamp
+    // 6. Store refresh token in database (7 days expiration)
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    await this.prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: user.id,
+        expiresAt,
+      },
+    });
+
+    // 7. Update lastLoginAt timestamp
     await this.prisma.user.update({
       where: { id: user.id },
       data: { lastLoginAt: new Date() },
     });
 
-    // 7. Log successful login
+    // 8. Log successful login
     console.log(`[AUDIT] Successful login: ${user.email} (${user.id})`);
 
-    // 8. Return tokens and user profile (without password hash)
+    // 9. Return tokens and user profile (without password hash)
     const { passwordHash: _, ...userProfile} = user;
     
     return {
@@ -213,5 +223,87 @@ export class AuthService {
     );
 
     return { message: 'Password has been reset successfully' };
+  }
+
+  /**
+   * Refresh access token using refresh token
+   * 
+   * Validates refresh token and issues new access token.
+   */
+  async refreshAccessToken(refreshToken: string) {
+    // 1. Verify refresh token JWT signature
+    let payload;
+    try {
+      payload = this.jwtService.verify(refreshToken, {
+        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+      });
+    } catch (error) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    // 2. Check if token exists in database and is not revoked
+    const tokenRecord = await this.prisma.refreshToken.findUnique({
+      where: { token: refreshToken },
+      include: { user: true },
+    });
+
+    if (!tokenRecord) {
+      throw new UnauthorizedException('Refresh token not found');
+    }
+
+    if (tokenRecord.isRevoked) {
+      throw new UnauthorizedException('Refresh token has been revoked');
+    }
+
+    if (tokenRecord.expiresAt < new Date()) {
+      throw new UnauthorizedException('Refresh token has expired');
+    }
+
+    // 3. Check if user is still active
+    if (!tokenRecord.user.isActive) {
+      throw new UnauthorizedException('Account is inactive');
+    }
+
+    // 4. Generate new access token
+    const newPayload = {
+      sub: tokenRecord.user.id,
+      email: tokenRecord.user.email,
+      role: tokenRecord.user.role,
+    };
+
+    const accessToken = this.jwtService.sign(newPayload);
+
+    console.log(`[AUDIT] Token refreshed: ${tokenRecord.user.email}`);
+
+    return { accessToken };
+  }
+
+  /**
+   * Logout user by revoking refresh token
+   * 
+   * Marks the refresh token as revoked in the database.
+   */
+  async logout(refreshToken: string): Promise<{ message: string }> {
+    if (!refreshToken) {
+      throw new BadRequestException('Refresh token is required');
+    }
+
+    // Find and revoke the refresh token
+    const tokenRecord = await this.prisma.refreshToken.findUnique({
+      where: { token: refreshToken },
+      include: { user: true },
+    });
+
+    if (tokenRecord) {
+      await this.prisma.refreshToken.update({
+        where: { id: tokenRecord.id },
+        data: { isRevoked: true },
+      });
+
+      console.log(`[AUDIT] User logged out: ${tokenRecord.user.email}`);
+    }
+
+    // Always return success (even if token not found - already logged out)
+    return { message: 'Logged out successfully' };
   }
 }
