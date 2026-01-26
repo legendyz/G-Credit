@@ -4,10 +4,11 @@
 
 ## 📊 Project Status
 
-**Current Sprint:** Sprint 2 (Badge Template Management) 🔜  
+**Current Sprint:** Sprint 3 (Badge Issuance) 🔜  
+**Sprint 2:** ✅ Complete (100%, 29h/32h, 2026-01-31)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, 2026-01-25)  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, 2026-01-24)  
-**Version:** v0.1.0 (Authentication Module)  
+**Version:** v0.2.0 (Badge Template Management)  
 **License:** MIT
 
 ## 🚀 Tech Stack
