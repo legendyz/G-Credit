@@ -3,13 +3,14 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../common/prisma.service';
 import { BlobStorageService } from '../common/services/blob-storage.service';
 import {
   CreateBadgeTemplateDto,
   UpdateBadgeTemplateDto,
 } from './dto/badge-template.dto';
-import { BadgeStatus } from '@prisma/client';
+import { QueryBadgeTemplatesDto } from './dto/query-badge-template.dto';
+import { BadgeStatus, Prisma } from '@prisma/client';
 
 @Injectable()
 export class BadgeTemplatesService {
@@ -66,35 +67,88 @@ export class BadgeTemplatesService {
   }
 
   /**
-   * Get all badge templates with filters
+   * Get all badge templates with advanced filters and pagination
    */
-  async findAll(status?: BadgeStatus, category?: string) {
-    const where: any = {};
+  async findAll(query: QueryBadgeTemplatesDto, onlyActive: boolean = false) {
+    const {
+      page = 1,
+      limit = 10,
+      status,
+      category,
+      skillId,
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = query;
 
-    if (status) {
+    const skip = (page - 1) * limit;
+
+    // Build where clause
+    const where: Prisma.BadgeTemplateWhereInput = {};
+
+    // Status filter (override with onlyActive if true)
+    if (onlyActive) {
+      where.status = BadgeStatus.ACTIVE;
+    } else if (status) {
       where.status = status;
     }
 
+    // Category filter
     if (category) {
       where.category = category;
     }
 
-    return this.prisma.badgeTemplate.findMany({
-      where,
-      include: {
-        creator: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
+    // Skill ID filter (check if array contains the skillId)
+    if (skillId) {
+      where.skillIds = {
+        has: skillId,
+      };
+    }
+
+    // Search filter (name or description)
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    // Execute query with pagination
+    const [data, total] = await Promise.all([
+      this.prisma.badgeTemplate.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { [sortBy]: sortOrder },
+        include: {
+          creator: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              role: true,
+            },
           },
         },
+      }),
+      this.prisma.badgeTemplate.count({ where }),
+    ]);
+
+    // Calculate pagination metadata
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    };
   }
 
   /**
@@ -231,7 +285,7 @@ export class BadgeTemplatesService {
     });
 
     if (skills.length !== skillIds.length) {
-      const foundIds = skills.map((s) => s.id);
+      const foundIds = skills.map((s: { id: string }) => s.id);
       const missingIds = skillIds.filter((id) => !foundIds.includes(id));
       throw new BadRequestException(
         `Invalid skill IDs: ${missingIds.join(', ')}`,

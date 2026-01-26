@@ -30,9 +30,13 @@ import {
   UpdateBadgeTemplateDto,
   BadgeTemplateResponseDto,
 } from './dto/badge-template.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
+import {
+  QueryBadgeTemplatesDto,
+  PaginatedBadgeTemplatesResponseDto,
+} from './dto/query-badge-template.dto';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole, BadgeStatus } from '@prisma/client';
 
 @ApiTags('Badge Templates')
@@ -43,19 +47,40 @@ export class BadgeTemplatesController {
   ) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get all badge templates with optional filters' })
-  @ApiQuery({ name: 'status', required: false, enum: BadgeStatus })
-  @ApiQuery({ name: 'category', required: false, type: String })
+  @ApiOperation({
+    summary: 'Get all badge templates with filters and pagination',
+    description:
+      'Public endpoint for listing badge templates. Returns only ACTIVE templates by default.',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Returns badge templates list',
-    type: [BadgeTemplateResponseDto],
+    description: 'Returns paginated badge templates list',
+    type: PaginatedBadgeTemplatesResponseDto,
   })
-  async findAll(
-    @Query('status') status?: BadgeStatus,
-    @Query('category') category?: string,
-  ) {
-    return this.badgeTemplatesService.findAll(status, category);
+  async findAll(@Query() query: QueryBadgeTemplatesDto) {
+    // Public endpoint: only show ACTIVE templates
+    return this.badgeTemplatesService.findAll(query, true);
+  }
+
+  @Get('all')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.ISSUER)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get all badge templates including drafts (Admin/Issuer only)',
+    description:
+      'Admin endpoint for managing templates. Returns templates in all statuses.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns paginated badge templates list',
+    type: PaginatedBadgeTemplatesResponseDto,
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin/Issuer only' })
+  async findAllAdmin(@Query() query: QueryBadgeTemplatesDto) {
+    // Admin endpoint: show all statuses
+    return this.badgeTemplatesService.findAll(query, false);
   }
 
   @Get(':id')

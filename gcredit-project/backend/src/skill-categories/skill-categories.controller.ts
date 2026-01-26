@@ -24,9 +24,9 @@ import {
   UpdateSkillCategoryDto,
   SkillCategoryResponseDto,
 } from './dto/skill-category.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 
 @ApiTags('Skill Categories')

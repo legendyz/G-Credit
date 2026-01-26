@@ -4,7 +4,7 @@ import {
   BadRequestException,
   ConflictException,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../common/prisma.service';
 import { CreateSkillDto, UpdateSkillDto } from './dto/skill.dto';
 import { Prisma } from '@prisma/client';
 
