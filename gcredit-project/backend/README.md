@@ -610,4 +610,5 @@ MIT
 
 **Version:** 0.2.0 (Sprint 2 Complete - Badge Template Management)  
 **Last Updated:** 2026-01-26  
-**Branch:** sprint-2/epic-3-badge-templates (Ready to merge to main)
+**Branch:** main  
+**Release:** [v0.2.0](https://github.com/legendyz/G-Credit/releases/tag/v0.2.0) - Released 2026-01-26
