@@ -8,6 +8,7 @@ import { StorageModule } from './common/storage.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { SkillCategoriesModule } from './skill-categories/skill-categories.module';
 import { SkillsModule } from './skills/skills.module';
+import { BadgeTemplatesModule } from './badge-templates/badge-templates.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 
@@ -22,6 +23,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     AuthModule,
     SkillCategoriesModule,
     SkillsModule,
+    BadgeTemplatesModule,
   ],
   controllers: [AppController],
   providers: [
