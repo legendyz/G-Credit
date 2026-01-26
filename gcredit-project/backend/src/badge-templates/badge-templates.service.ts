@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { BlobStorageService } from '../common/services/blob-storage.service';
+import { IssuanceCriteriaValidatorService } from '../common/services/issuance-criteria-validator.service';
 import {
   CreateBadgeTemplateDto,
   UpdateBadgeTemplateDto,
@@ -17,6 +18,7 @@ export class BadgeTemplatesService {
   constructor(
     private prisma: PrismaService,
     private blobStorage: BlobStorageService,
+    private criteriaValidator: IssuanceCriteriaValidatorService,
   ) {}
 
   /**
@@ -29,6 +31,11 @@ export class BadgeTemplatesService {
   ) {
     // Verify all skillIds exist
     await this.validateSkillIds(createDto.skillIds);
+
+    // Validate issuance criteria if provided
+    if (createDto.issuanceCriteria) {
+      this.criteriaValidator.validate(createDto.issuanceCriteria);
+    }
 
     let imageUrl: string | null = null;
 
@@ -45,7 +52,9 @@ export class BadgeTemplatesService {
         imageUrl,
         category: createDto.category,
         skillIds: createDto.skillIds,
-        issuanceCriteria: createDto.issuanceCriteria,
+        issuanceCriteria: createDto.issuanceCriteria
+          ? JSON.parse(JSON.stringify(createDto.issuanceCriteria))
+          : null,
         validityPeriod: createDto.validityPeriod,
         status: BadgeStatus.DRAFT,
         createdBy: userId,
@@ -221,6 +230,11 @@ export class BadgeTemplatesService {
       await this.validateSkillIds(updateDto.skillIds);
     }
 
+    // Validate issuance criteria if provided
+    if (updateDto.issuanceCriteria) {
+      this.criteriaValidator.validate(updateDto.issuanceCriteria);
+    }
+
     let imageUrl = existing.imageUrl;
 
     // Handle image upload
@@ -240,12 +254,21 @@ export class BadgeTemplatesService {
     }
 
     // Update template
+    const updateData: any = {
+      ...updateDto,
+      imageUrl,
+    };
+
+    // Convert IssuanceCriteriaDto to plain JSON if present
+    if (updateDto.issuanceCriteria) {
+      updateData.issuanceCriteria = JSON.parse(
+        JSON.stringify(updateDto.issuanceCriteria),
+      );
+    }
+
     const updated = await this.prisma.badgeTemplate.update({
       where: { id },
-      data: {
-        ...updateDto,
-        imageUrl,
-      },
+      data: updateData,
       include: {
         creator: {
           select: {
@@ -313,5 +336,26 @@ export class BadgeTemplatesService {
         `Invalid skill IDs: ${missingIds.join(', ')}`,
       );
     }
+  }
+
+  /**
+   * Get all available issuance criteria templates
+   */
+  getCriteriaTemplates() {
+    return {
+      templates: this.criteriaValidator.getTemplates(),
+      keys: this.criteriaValidator.getTemplateKeys(),
+    };
+  }
+
+  /**
+   * Get a specific issuance criteria template by key
+   */
+  getCriteriaTemplate(key: string) {
+    const template = this.criteriaValidator.getTemplate(key);
+    if (!template) {
+      throw new NotFoundException(`Template with key '${key}' not found`);
+    }
+    return template;
   }
 }

@@ -37,14 +37,13 @@ import {
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
+import { Public } from '../common/decorators/public.decorator';
 import { UserRole, BadgeStatus } from '@prisma/client';
 
 @ApiTags('Badge Templates')
 @Controller('badge-templates')
 export class BadgeTemplatesController {
-  constructor(
-    private readonly badgeTemplatesService: BadgeTemplatesService,
-  ) {}
+  constructor(private readonly badgeTemplatesService: BadgeTemplatesService) {}
 
   @Get()
   @ApiOperation({
@@ -81,6 +80,36 @@ export class BadgeTemplatesController {
   async findAllAdmin(@Query() query: QueryBadgeTemplatesDto) {
     // Admin endpoint: show all statuses
     return this.badgeTemplatesService.findAll(query, false);
+  }
+
+  @Public()
+  @Get('criteria-templates')
+  @ApiOperation({
+    summary: 'Get issuance criteria templates',
+    description:
+      'Returns predefined templates for common issuance criteria scenarios',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns all available criteria templates',
+  })
+  getCriteriaTemplates() {
+    return this.badgeTemplatesService.getCriteriaTemplates();
+  }
+
+  @Public()
+  @Get('criteria-templates/:key')
+  @ApiOperation({
+    summary: 'Get a specific issuance criteria template by key',
+    description: 'Returns a predefined template for the specified key',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns the requested criteria template',
+  })
+  @ApiResponse({ status: 404, description: 'Template not found' })
+  getCriteriaTemplate(@Param('key') key: string) {
+    return this.badgeTemplatesService.getCriteriaTemplate(key);
   }
 
   @Get(':id')
@@ -144,11 +173,7 @@ export class BadgeTemplatesController {
     @UploadedFile() image: Express.Multer.File,
     @Request() req: any,
   ) {
-    return this.badgeTemplatesService.create(
-      createDto,
-      req.user.userId,
-      image,
-    );
+    return this.badgeTemplatesService.create(createDto, req.user.userId, image);
   }
 
   @Patch(':id')

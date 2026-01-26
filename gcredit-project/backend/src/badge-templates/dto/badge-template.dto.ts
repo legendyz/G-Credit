@@ -9,9 +9,12 @@ import {
   Length,
   MaxLength,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { BadgeStatus } from '@prisma/client';
+import { IssuanceCriteriaDto } from './issuance-criteria.dto';
 
 export class CreateBadgeTemplateDto {
   @ApiProperty({
@@ -41,7 +44,8 @@ export class CreateBadgeTemplateDto {
   })
   @IsString()
   @IsEnum(['achievement', 'skill', 'certification', 'participation'], {
-    message: 'Category must be one of: achievement, skill, certification, participation',
+    message:
+      'Category must be one of: achievement, skill, certification, participation',
   })
   category: string;
 
@@ -56,16 +60,20 @@ export class CreateBadgeTemplateDto {
 
   @ApiProperty({
     example: {
-      type: 'exam_score',
+      type: 'auto_exam_score',
       conditions: [
         { field: 'examId', operator: '==', value: 'ts-advanced' },
         { field: 'score', operator: '>=', value: 90 },
       ],
+      logicOperator: 'all',
+      description: 'Complete TypeScript exam with 90%+ score',
     },
-    description: '颁发标准（JSON格式）',
+    description: '颁发标准（结构化）',
+    type: IssuanceCriteriaDto,
   })
-  @IsObject()
-  issuanceCriteria: Record<string, any>;
+  @ValidateNested()
+  @Type(() => IssuanceCriteriaDto)
+  issuanceCriteria: IssuanceCriteriaDto;
 
   @ApiPropertyOptional({
     example: 365,
@@ -117,14 +125,20 @@ export class UpdateBadgeTemplateDto {
 
   @ApiPropertyOptional({
     example: {
-      type: 'exam_score',
-      conditions: [],
+      type: 'auto_exam_score',
+      conditions: [
+        { field: 'examId', operator: '==', value: 'ts-advanced' },
+        { field: 'score', operator: '>=', value: 90 },
+      ],
+      logicOperator: 'all',
     },
-    description: '颁发标准（JSON格式）',
+    description: '颁发标准（结构化）',
+    type: IssuanceCriteriaDto,
   })
   @IsOptional()
-  @IsObject()
-  issuanceCriteria?: Record<string, any>;
+  @ValidateNested()
+  @Type(() => IssuanceCriteriaDto)
+  issuanceCriteria?: IssuanceCriteriaDto;
 
   @ApiPropertyOptional({
     example: 365,
@@ -155,7 +169,9 @@ export class BadgeTemplateResponseDto {
   @ApiPropertyOptional({ example: '完成TypeScript高级课程并通过考试后获得' })
   description: string | null;
 
-  @ApiPropertyOptional({ example: 'https://gcreditdevstoragelz.blob.core.windows.net/badges/...' })
+  @ApiPropertyOptional({
+    example: 'https://gcreditdevstoragelz.blob.core.windows.net/badges/...',
+  })
   imageUrl: string | null;
 
   @ApiProperty({ example: 'skill' })
