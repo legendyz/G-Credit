@@ -58,16 +58,21 @@
 
 ### Week 1: 数据模型与核心API（2026-01-27 至 01-31）
 
-**Day 1（周一，1月27日）- Azure配置 + Story 3.1启动**
-- ⏰ 上午（1-1.5h）
-  - [ ] Azure Blob Storage配置
-  - [ ] 运行连接测试脚本
-  - [ ] 验证图片上传功能
-- ⏰ 下午（2-2.5h）
+**Day 1（周一，1月27日）- Azure验证 + Story 3.1启动**
+- ⏰ 上午（0.5h）
+  - [ ] ✅ 验证Azure Blob Storage配置（Sprint 0已创建）
+  - [ ] ✅ 运行测试脚本确认连接
+  - [ ] ✅ 确认badges和evidence容器可用
+  - 📝 **注意：** Sprint 0已创建 `gcreditdevstoragelz`，无需重复创建！
+- ⏰ 下午（2.5-3h）
   - [ ] Task 3.1.1: 设计BadgeTemplate模型（1.5h）
-  - [ ] Task 3.1.2: 设计SkillCategory模型（开始，1h）
-- 📊 **预计完成：** 3.5-4小时
-- 🎯 **交付：** Azure配置完成，数据模型设计50%
+  - [ ] Task 3.1.2: 设计SkillCategory模型（开始，1-1.5h）
+- 📊 **预计完成：** 3-3.5小时
+- 🎯 **交付：** Azure验证通过，数据模型设计50%
+
+**参考文档：**
+- Azure验证指南：[`sprint-2-azure-setup-guide.md`](./sprint-2-azure-setup-guide.md)
+- 资源清单：[`docs/infrastructure-inventory.md`](../../docs/infrastructure-inventory.md)
 
 **Day 2（周二，1月28日）- Story 3.1完成 + Story 3.6启动**
 - ⏰ 全天（3.5-4h）
@@ -83,21 +88,21 @@
 - ⏰ 全天（3.5-4h）
   - [ ] Task 3.6.2: 分类CRUD API（2.5h）
   - [ ] Task 3.6.3: 技能管理API（1h）
-  - [ ] Task 3.2.1: Azure Blob配置代码（开始，0.5h）
+  - [ ] Task 3.2.1: Azure Blob配置代码（0.5h）- 仅验证性代码
 - 📊 **预计完成：** 3.5-4小时
 - 🎯 **交付：** Story 3.6完成，自定义分类管理API就绪
 
 **Day 4（周四，1月30日）- Story 3.2开发**
 - ⏰ 全天（3.5-4h）
-  - [ ] Task 3.2.1: Azure Blob配置完成（1h）
   - [ ] Task 3.2.2: 图片上传Service（2h）
   - [ ] Task 3.2.3: DTO和验证（0.5h）
+  - [ ] Task 3.2.4: Controller和Service（开始，1h）
 - 📊 **预计完成：** 3.5小时
 - 🎯 **交付：** 图片上传功能完成80%
 
 **Day 5（周五，1月31日）- Story 3.2完成 + Story 3.3启动**
 - ⏰ 全天（3-3.5h）
-  - [ ] Task 3.2.4: Controller和Service完成（1.5h）
+  - [ ] Task 3.2.4: Controller和Service完成（1h）
   - [ ] Story 3.2集成测试（0.5h）
   - [ ] Task 3.3.1: 查询DTO（0.5h）
   - [ ] Task 3.3.2: 公开查询接口（开始，1h）
@@ -106,8 +111,8 @@
 
 **Week 1总结：**
 - 完成Stories: 3.1, 3.6, 3.2, 3.3（部分）
-- 累计时间: ~17-19小时
-- Azure集成：✅ 完成
+- 累计时间: ~16.5-18.5小时（Azure时间减少1h）
+- Azure集成：✅ 完成（验证方式，快速简洁）
 - 数据模型：✅ 完成
 
 ---

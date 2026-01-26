@@ -233,14 +233,18 @@ const skillCategories = [
 
 ### 技术任务
 
-**Task 3.2.1: 配置Azure Blob Storage**（1.5小时）
+**Task 3.2.1: 验证Azure Blob配置**（0.5小时）
+
+> ⚠️ **注意：Sprint 0已创建Azure资源，无需重复创建！**  
+> 详见 [`docs/infrastructure-inventory.md`](../../docs/infrastructure-inventory.md)
+
 ```typescript
 // backend/src/config/azure-blob.config.ts
 import { BlobServiceClient } from '@azure/storage-blob';
 
 export const azureBlobConfig = {
   connectionString: process.env.AZURE_STORAGE_CONNECTION_STRING,
-  containerName: 'badge-images',
+  containerName: process.env.AZURE_STORAGE_CONTAINER_BADGES, // 'badges'
 };
 
 export const getBlobServiceClient = () => {
@@ -250,11 +254,23 @@ export const getBlobServiceClient = () => {
 };
 ```
 
-**环境变量：**
+**环境变量（Sprint 0已配置）：**
 ```env
-AZURE_STORAGE_CONNECTION_STRING=your_connection_string
-AZURE_STORAGE_ACCOUNT_NAME=gcreditdev
+# Sprint 0已创建 - 位于backend/.env
+AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=https;AccountName=gcreditdevstoragelz;...
+AZURE_STORAGE_ACCOUNT_NAME=gcreditdevstoragelz
+AZURE_STORAGE_CONTAINER_BADGES=badges
+AZURE_STORAGE_CONTAINER_EVIDENCE=evidence
 ```
+
+**验证步骤：**
+1. 确认`.env`文件包含上述配置
+2. 运行测试脚本：`npx ts-node scripts/test-azure-blob.ts`
+3. 验证成功后继续Task 3.2.2
+
+**参考文档：**
+- Azure验证指南：[`sprint-2-azure-setup-guide.md`](./sprint-2-azure-setup-guide.md)
+- Sprint 0资源清单：[`infrastructure-inventory.md`](../../docs/infrastructure-inventory.md)
 
 **Task 3.2.2: 创建图片上传Service**（2小时）
 ```typescript

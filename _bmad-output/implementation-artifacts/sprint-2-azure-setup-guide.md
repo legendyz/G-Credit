@@ -1,123 +1,251 @@
-# Azure Blob Storage 配置指南 - Sprint 2
+# Azure Blob Storage 验证指南 - Sprint 2
 
-**目标：** 为G-Credit徽章图片存储配置Azure Blob Storage  
-**预计时间：** 30-45分钟  
+**目标：** 验证Sprint 0创建的Azure Blob Storage资源可用于Sprint 2  
+**预计时间：** 15-20分钟  
 **执行时间：** 2026-01-27 Day 1 上午
+
+---
+
+## ⚠️ 重要说明
+
+**Sprint 0已创建Azure资源，无需重复创建！**
+
+在Sprint 0（2026-01-24）中，我们已经创建了：
+- ✅ **Storage Account:** `gcreditdevstoragelz`
+- ✅ **Container:** `badges` (公开访问)
+- ✅ **Container:** `evidence` (私有)
+- ✅ **Connection String:** 已配置在 `.env` 文件中
+
+**Sprint 2策略：** 复用现有资源，验证可用性即可。
+
+**参考文档：** `docs/infrastructure-inventory.md` 查看完整资源清单
 
 ---
 
 ## 📋 前提条件
 
 - [x] Azure订阅账号（已确认）
-- [ ] Azure Portal访问权限
-- [ ] 具备创建资源的权限
-- [ ] 开发环境已就绪
+- [x] Sprint 0已创建Storage Account
+- [x] 开发环境已就绪
+- [x] `.env` 文件已配置
 
 ---
 
-## 1️⃣ 创建Storage Account（15分钟）
+## 1️⃣ 验证环境变量配置（3分钟）
 
-### 步骤 1.1: 登录Azure Portal
+### 步骤 1.1: 检查 `.env` 文件
+
+**文件位置：** `gcredit-project/backend/.env`
+
+**确认以下配置存在：**
+```env
+# Azure Blob Storage (Sprint 0已配置)
+AZURE_STORAGE_CONNECTION_STRING="DefaultEndpointsProtocol=https;AccountName=gcreditdevstoragelz;AccountKey=***;EndpointSuffix=core.windows.net"
+AZURE_STORAGE_ACCOUNT_NAME="gcreditdevstoragelz"
+AZURE_STORAGE_CONTAINER_BADGES="badges"
+AZURE_STORAGE_CONTAINER_EVIDENCE="evidence"
 ```
-访问：https://portal.azure.com
-登录你的Azure账号
-```
 
-### 步骤 1.2: 创建Storage Account
-
-**导航：**
-```
-Home → Create a resource → Storage account
-```
-
-**配置参数：**
-
-| 参数 | 推荐值 | 说明 |
-|-----|--------|------|
-| **Subscription** | 你的订阅名 | 使用现有订阅 |
-| **Resource Group** | `rg-gcredit-dev` | 新建或使用现有 |
-| **Storage Account Name** | `gcreditdev` | 全局唯一，3-24字符，仅小写字母和数字 |
-| **Region** | `East Asia` 或 `Southeast Asia` | 选择离你最近的区域 |
-| **Performance** | `Standard` | 足够用，成本低 |
-| **Redundancy** | `LRS (Locally Redundant)` | 开发环境用LRS即可 |
-
-**高级设置：**
-- [ ] Minimum TLS version: `TLS 1.2`
-- [ ] Allow Blob public access: `Enabled` ✅ **重要**
-- [ ] Enable storage account key access: `Enabled`
-
-**点击：** Review + Create → Create
-
-**等待部署：** 约2-3分钟
+**⚠️ 如果缺失：**
+- 从 `.env.example` 复制模板
+- 联系团队获取Connection String
+- 或登录Azure Portal重新获取
 
 ---
 
-## 2️⃣ 创建Blob Container（5分钟）
+## 2️⃣ 验证Azure资源存在（可选，5分钟）
 
-### 步骤 2.1: 进入Storage Account
-```
-部署完成后 → Go to resource
-```
+### 步骤 2.1: 登录Azure Portal（可选）
 
-### 步骤 2.2: 创建Container
+**仅在需要确认时执行：**
+1. 访问：https://portal.azure.com
+2. 搜索 "Storage accounts"
+3. 找到 `gcreditdevstoragelz`
+4. 确认状态为 "Available"
+
+### 步骤 2.2: 确认Containers（可选）
 
 **导航：**
 ```
-左侧菜单 → Data storage → Containers → + Container
+Storage Account → Data storage → Containers
 ```
 
-**配置：**
-- **Name:** `badge-images`
-- **Public access level:** `Blob (anonymous read access for blobs only)`
-  - ⚠️ 这样图片URL可以直接访问，无需SAS令牌
+**应该看到：**
+- ✅ `badges` (Public access: Blob)
+- ✅ `evidence` (Public access: Private)
 
-**点击：** Create
-
-### 步骤 2.3: （可选）创建其他Container
-如果需要：
-- `evidence-files` - 未来存储证据文件
-- `user-avatars` - 未来存储用户头像
+**如果Container不存在：**
+- 参考原始指南创建（见文档末尾"附录A"）
+- 但通常不需要，Sprint 0已创建
 
 ---
 
-## 3️⃣ 获取Connection String（5分钟）
+## 3️⃣ 运行测试脚本验证（10分钟）
 
-### 步骤 3.1: 获取连接字符串
+### 步骤 3.1: 确认SDK已安装
 
-**导航：**
-```
-Storage Account → Security + networking → Access keys
-```
-
-**显示密钥：**
-- 点击 `Show keys`
-- 复制 **key1** 的 **Connection string**
-
-**格式示例：**
-```
-DefaultEndpointsProtocol=https;AccountName=gcreditdev;AccountKey=xxxxx==;EndpointSuffix=core.windows.net
-```
-
-### 步骤 3.2: 保存到环境变量
-
-**Windows（PowerShell）：**
-```powershell
-# 临时设置（当前会话）
-$env:AZURE_STORAGE_CONNECTION_STRING = "你的连接字符串"
-
-# 永久设置（用户环境变量）
-[System.Environment]::SetEnvironmentVariable(
-    "AZURE_STORAGE_CONNECTION_STRING",
-    "你的连接字符串",
-    "User"
-)
-
-# 验证
-$env:AZURE_STORAGE_CONNECTION_STRING
-```
-
-**Linux/Mac：**
+**检查：**
 ```bash
+cd gcredit-project/backend
+npm list @azure/storage-blob
+```
+
+**预期输出：**
+```
+@azure/storage-blob@12.30.0
+```
+
+**如果未安装：**
+```bash
+npm install @azure/storage-blob
+```
+
+### 步骤 3.2: 运行测试脚本
+
+**测试脚本位置：** `backend/scripts/test-azure-blob.ts`
+
+**执行测试：**
+```bash
+cd gcredit-project/backend
+npx ts-node scripts/test-azure-blob.ts
+```
+
+**预期输出（成功）：**
+```
+🔍 Testing Azure Blob Storage connection...
+
+✅ Connection string found
+✅ BlobServiceClient created
+✅ Container client created for: badges
+✅ Container exists: true
+
+📤 Testing file upload...
+✅ Test file uploaded: test-1769409043542.txt
+📍 URL: https://gcreditdevstoragelz.blob.core.windows.net/badges/test-1769409043542.txt
+✅ Downloaded content: "Hello from G-Credit Sprint 2!"
+✅ Test file deleted
+
+🎉 All tests passed! Azure Blob Storage is ready for Sprint 2.
+```
+
+**如果测试失败：**
+- 检查`.env`文件配置
+- 确认Connection String正确
+- 查看错误消息并参考故障排查部分
+
+---
+
+## ✅ 验收检查清单
+
+完成以下检查后，Sprint 2可以开始：
+
+- [ ] `.env`文件包含所有Azure配置
+- [ ] 环境变量已正确加载
+- [ ] `@azure/storage-blob` SDK已安装
+- [ ] 测试脚本运行成功
+- [ ] 可以成功上传和下载文件
+- [ ] 文件URL可公开访问（badges container）
+
+---
+
+## 🔧 故障排查
+
+### 问题1: 连接失败
+**错误：** `getaddrinfo ENOTFOUND gcreditdevstoragelz.blob.core.windows.net`
+
+**解决：**
+- 检查网络连接
+- 确认Storage Account名称正确（`gcreditdevstoragelz`）
+- 检查Connection String是否完整
+
+### 问题2: Container不存在
+**错误：** `Container 'badges' does not exist`
+
+**解决：**
+- 登录Azure Portal确认Container已创建
+- 如果不存在，参考附录A创建
+- 检查环境变量`AZURE_STORAGE_CONTAINER_BADGES`是否为"badges"
+
+### 问题3: 权限错误
+**错误：** `AuthorizationPermissionMismatch`
+
+**解决：**
+- 重新生成Access Key
+- 确认使用的是正确的Connection String
+- 检查Container的访问级别
+
+### 问题4: 图片无法访问
+**错误：** 404 或 403
+
+**解决：**
+- 确认Container的Public access level设置为`Blob`
+- 检查URL格式：`https://{account}.blob.core.windows.net/{container}/{blob}`
+- 验证Blob是否存在
+
+---
+
+## 📊 Sprint 2使用说明
+
+### Container使用策略
+
+**badges container（Sprint 2-7使用）：**
+```
+badges/
+├── template-{uuid}.png        - 徽章模板图片（Sprint 2）
+├── issued-{badgeId}.png       - 已颁发徽章（Sprint 3+）
+└── custom-{userId}-{name}.png - 自定义图片（未来）
+```
+
+**文件命名规范：**
+- 模板图片：`template-` 前缀
+- 已颁发：`issued-` 前缀
+- 使用UUID确保唯一性
+
+**代码中使用：**
+```typescript
+// 总是使用环境变量
+const containerName = process.env.AZURE_STORAGE_CONTAINER_BADGES; // 'badges'
+
+// 文件命名示例
+const fileName = `template-${uuid()}-${originalName}`;
+```
+
+---
+
+## 🔗 相关文档
+
+- **资源清单：** `docs/infrastructure-inventory.md`
+- **Sprint 0 Backlog：** `_bmad-output/implementation-artifacts/sprint-0-backlog.md` (Story 1.4)
+- **Sprint 2 Backlog：** `_bmad-output/implementation-artifacts/sprint-2-backlog.md`
+
+---
+
+## 附录A: Container创建指南（紧急情况）
+
+**仅在Container真的不存在时使用：**
+
+### 创建badges Container
+
+1. 登录Azure Portal
+2. 找到 `gcreditdevstoragelz`
+3. 左侧菜单 → Data storage → Containers
+4. 点击 + Container
+5. 配置：
+   - Name: `badges`
+   - Public access level: **Blob (anonymous read access for blobs only)**
+6. 点击 Create
+
+### 创建evidence Container
+
+1. 同上步骤1-4
+2. 配置：
+   - Name: `evidence`
+   - Public access level: **Private (no anonymous access)**
+3. 点击 Create
+
+---
+
+**验证完成后，返回Sprint 2 Kick-off文档继续Story 3.1！** 🚀
 # 添加到 ~/.bashrc 或 ~/.zshrc
 export AZURE_STORAGE_CONNECTION_STRING="你的连接字符串"
 
