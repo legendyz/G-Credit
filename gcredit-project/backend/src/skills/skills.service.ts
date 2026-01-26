@@ -16,9 +16,7 @@ export class SkillsService {
    * Get all skills with optional category filter
    */
   async findAll(categoryId?: string) {
-    const where: Prisma.SkillWhereInput = categoryId
-      ? { categoryId }
-      : {};
+    const where: Prisma.SkillWhereInput = categoryId ? { categoryId } : {};
 
     return this.prisma.skill.findMany({
       where,
@@ -78,7 +76,7 @@ export class SkillsService {
 
     if (existing) {
       throw new ConflictException(
-        `Skill "${name}" already exists in this category`
+        `Skill "${name}" already exists in this category`,
       );
     }
 
@@ -122,7 +120,7 @@ export class SkillsService {
 
       if (existing) {
         throw new ConflictException(
-          `Skill "${updateDto.name}" already exists in this category`
+          `Skill "${updateDto.name}" already exists in this category`,
         );
       }
     }

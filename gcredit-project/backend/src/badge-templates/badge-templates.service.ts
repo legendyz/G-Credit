@@ -41,7 +41,13 @@ export class BadgeTemplatesService {
 
     // Upload image if provided
     if (imageFile) {
-      imageUrl = await this.blobStorage.uploadImage(imageFile, 'templates');
+      const uploadResult = await this.blobStorage.uploadImage(imageFile, 'templates', false);
+      imageUrl = uploadResult.url;
+      
+      // Log image metadata and suggestions
+      if (uploadResult.metadata.suggestions) {
+        console.log(`Image optimization suggestions: ${uploadResult.metadata.suggestions.join('; ')}`);
+      }
     }
 
     // Create badge template
@@ -250,7 +256,13 @@ export class BadgeTemplatesService {
       }
 
       // Upload new image
-      imageUrl = await this.blobStorage.uploadImage(imageFile, 'templates');
+      const uploadResult = await this.blobStorage.uploadImage(imageFile, 'templates', false);
+      imageUrl = uploadResult.url;
+      
+      // Log image metadata and suggestions
+      if (uploadResult.metadata.suggestions) {
+        console.log(`Image optimization suggestions: ${uploadResult.metadata.suggestions.join('; ')}`);
+      }
     }
 
     // Update template

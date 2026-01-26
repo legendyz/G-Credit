@@ -5,7 +5,7 @@ import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 /**
  * JWT Authentication Guard
- * 
+ *
  * Validates JWT tokens on protected routes.
  * Public routes marked with @Public() decorator are excluded.
  */

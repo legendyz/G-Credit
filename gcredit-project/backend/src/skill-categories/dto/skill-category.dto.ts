@@ -16,13 +16,19 @@ export class CreateSkillCategoryDto {
   @MaxLength(100)
   name: string;
 
-  @ApiPropertyOptional({ example: 'Frontend Development', description: '英文名称' })
+  @ApiPropertyOptional({
+    example: 'Frontend Development',
+    description: '英文名称',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(100)
   nameEn?: string;
 
-  @ApiPropertyOptional({ example: 'React、Vue、Angular等现代前端框架', description: '分类描述' })
+  @ApiPropertyOptional({
+    example: 'React、Vue、Angular等现代前端框架',
+    description: '分类描述',
+  })
   @IsOptional()
   @IsString()
   description?: string;
@@ -42,19 +48,28 @@ export class CreateSkillCategoryDto {
 }
 
 export class UpdateSkillCategoryDto {
-  @ApiPropertyOptional({ example: '前端开发', description: '技能分类名称（中文）' })
+  @ApiPropertyOptional({
+    example: '前端开发',
+    description: '技能分类名称（中文）',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(100)
   name?: string;
 
-  @ApiPropertyOptional({ example: 'Frontend Development', description: '英文名称' })
+  @ApiPropertyOptional({
+    example: 'Frontend Development',
+    description: '英文名称',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(100)
   nameEn?: string;
 
-  @ApiPropertyOptional({ example: 'React、Vue、Angular等现代前端框架', description: '分类描述' })
+  @ApiPropertyOptional({
+    example: 'React、Vue、Angular等现代前端框架',
+    description: '分类描述',
+  })
   @IsOptional()
   @IsString()
   description?: string;

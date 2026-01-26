@@ -20,7 +20,10 @@ export class CreateSkillDto {
   @MaxLength(100)
   name: string;
 
-  @ApiPropertyOptional({ example: 'React 18+ with Hooks and Context', description: '技能描述' })
+  @ApiPropertyOptional({
+    example: 'React 18+ with Hooks and Context',
+    description: '技能描述',
+  })
   @IsOptional()
   @IsString()
   description?: string;
@@ -49,7 +52,10 @@ export class UpdateSkillDto {
   @MaxLength(100)
   name?: string;
 
-  @ApiPropertyOptional({ example: 'React 18+ with Hooks and Context', description: '技能描述' })
+  @ApiPropertyOptional({
+    example: 'React 18+ with Hooks and Context',
+    description: '技能描述',
+  })
   @IsOptional()
   @IsString()
   description?: string;

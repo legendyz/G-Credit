@@ -34,7 +34,7 @@ export class AppController {
   async getReady() {
     let databaseStatus = 'disconnected';
     let storageStatus = 'disconnected';
-    
+
     try {
       await this.prisma.$queryRaw`SELECT 1`;
       databaseStatus = 'connected';

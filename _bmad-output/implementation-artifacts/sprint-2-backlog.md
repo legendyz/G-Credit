@@ -3,19 +3,54 @@
 **Sprint周期：** 2026-01-27 至 2026-02-07（10个工作日）  
 **Sprint目标：** 建立完整的数字徽章模板管理系统，支持灵活的技能分类体系和Azure Blob图片存储  
 **总工作量：** 32-33小时  
-**状态：** ✅ Approved - Ready to Start
+**状态：** 🔄 In Progress (3.5/6 stories complete, ~58%)
+
+**开始时间：** 2026-01-26  
+**实际进度：** 4 stories完成，用时约3小时（vs 估算21-22h，效率提升7-8倍）
+
+---
+
+## Sprint 2 Progress Tracker
+
+### 已完成 Stories ✅
+- ✅ **Story 3.1** - 徽章模板与技能分类数据模型（实际：30min / 估算：5-6h）
+  - Commit: 1dbe124
+  - 完成时间：2026-01-26
+- ✅ **Story 3.6** - 自定义技能分类管理（实际：40min / 估算：4-5h）
+  - Commit: 01fc160
+  - 完成时间：2026-01-26
+- ✅ **Story 3.2** - 创建徽章模板API + Azure Blob集成（实际：50min / 估算：6-7h）
+  - Commit: dbad53e
+  - 完成时间：2026-01-26
+- ✅ **Story 3.3** - 查询徽章模板API（实际：30min / 估算：3-4h）
+  - Commit: a64f932
+  - 完成时间：2026-01-26
+  - 包括：安全文档（docs/security-notes.md）
+
+### 进行中 Stories 🔄
+- ⏸️ 无
+
+### 待开始 Stories ⏸️
+- ⏸️ **Story 3.4** - 徽章目录与搜索优化（估算：4-5h）
+- ⏸️ **Story 3.5** - 颁发标准定义（估算：3-4h）
+
+### 效率分析 📊
+- **完成率：** 67% (4/6 stories)
+- **时间使用：** ~3h / 估算 21-22h (14% 时间使用率)
+- **效率提升：** ~7-8倍
+- **剩余工作量：** 7-9h 估算 → 预计实际 1-1.5h
 
 ---
 
 ## Sprint 2 Scope Summary
 
 ### 核心Stories（Epic 3）
-- **Story 3.1** - 徽章模板与技能分类数据模型（5-6h）
-- **Story 3.2** - 创建徽章模板API + Azure Blob集成（6-7h）
-- **Story 3.3** - 查询徽章模板API（3-4h）
-- **Story 3.4** - 徽章目录与搜索优化（4-5h）
-- **Story 3.5** - 颁发标准定义（3-4h）
-- **Story 3.6** - 自定义技能分类管理（4-5h）
+- **Story 3.1** - 徽章模板与技能分类数据模型（5-6h）✅
+- **Story 3.2** - 创建徽章模板API + Azure Blob集成（6-7h）✅
+- **Story 3.3** - 查询徽章模板API（3-4h）✅
+- **Story 3.4** - 徽章目录与搜索优化（4-5h）⏸️
+- **Story 3.5** - 颁发标准定义（3-4h）⏸️
+- **Story 3.6** - 自定义技能分类管理（4-5h）✅
 
 ### Enhancements
 - **Enhancement 1** - Azure Blob图片完整管理（2-3h）
@@ -239,7 +274,7 @@ const skillCategories = [
 > 详见 [`docs/infrastructure-inventory.md`](../../docs/infrastructure-inventory.md)
 
 ```typescript
-// backend/src/config/azure-blob.config.ts
+// gcredit-project/backend/src/config/azure-blob.config.ts
 import { BlobServiceClient } from '@azure/storage-blob';
 
 export const azureBlobConfig = {
@@ -256,7 +291,7 @@ export const getBlobServiceClient = () => {
 
 **环境变量（Sprint 0已配置）：**
 ```env
-# Sprint 0已创建 - 位于backend/.env
+# Sprint 0已创建 - 位于 gcredit-project/backend/.env
 AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=https;AccountName=gcreditdevstoragelz;...
 AZURE_STORAGE_ACCOUNT_NAME=gcreditdevstoragelz
 AZURE_STORAGE_CONTAINER_BADGES=badges
@@ -273,8 +308,11 @@ AZURE_STORAGE_CONTAINER_EVIDENCE=evidence
 - Sprint 0资源清单：[`infrastructure-inventory.md`](../../docs/infrastructure-inventory.md)
 
 **Task 3.2.2: 创建图片上传Service**（2小时）
+
+⚠️ **路径说明：** Service放在 `src/common/services/` 因为它是跨模块共享的基础设施
+
 ```typescript
-// backend/src/common/services/blob-storage.service.ts
+// gcredit-project/backend/src/common/services/blob-storage.service.ts
 @Injectable()
 export class BlobStorageService {
   private containerClient: ContainerClient;
@@ -320,8 +358,11 @@ export class BlobStorageService {
 ```
 
 **Task 3.2.3: 创建DTO和验证**（1小时）
+
+⚠️ **路径说明：** `badge-templates/` 是平级功能模块（Sprint 2新模式），不在 `modules/` 下
+
 ```typescript
-// backend/src/badge-templates/dto/create-badge-template.dto.ts
+// gcredit-project/backend/src/badge-templates/dto/create-badge-template.dto.ts
 export class CreateBadgeTemplateDto {
   @IsString()
   @Length(3, 100)
@@ -351,8 +392,17 @@ export class CreateBadgeTemplateDto {
 ```
 
 **Task 3.2.4: 实现Controller和Service**（1.5小时）
+
+⚠️ **Import路径规范：**
 ```typescript
-// backend/src/badge-templates/badge-templates.controller.ts
+// Guards和Decorators从 '../common/' 导入
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+```
+
+```typescript
+// gcredit-project/backend/src/badge-templates/badge-templates.controller.ts
 @Controller('admin/badge-templates')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
@@ -368,7 +418,11 @@ export class BadgeTemplatesController {
   }
 }
 
-// backend/src/badge-templates/badge-templates.service.ts
+// gcredit-project/backend/src/badge-templates/badge-templates.service.ts
+// ⚠️ PrismaService从 '../common/' 导入:
+// import { PrismaService } from '../common/prisma.service';
+// import { BlobStorageService } from '../common/services/blob-storage.service';
+
 @Injectable()
 export class BadgeTemplatesService {
   async create(
@@ -472,9 +526,13 @@ export class QueryBadgeTemplatesDto {
 ```
 
 **Task 3.3.2: 实现公开查询接口**（1.5小时）
+
+⚠️ **实际实现：** 查询API在同一个Controller中通过不同endpoint区分（公开 vs 管理）
+
 ```typescript
+// gcredit-project/backend/src/badge-templates/badge-templates.controller.ts
 @Controller('badge-templates')
-export class PublicBadgeTemplatesController {
+export class BadgeTemplatesController {
   @Get()
   async findAll(@Query() query: QueryBadgeTemplatesDto) {
     return this.badgeTemplatesService.findAll(query, true); // onlyActive=true

@@ -17,7 +17,7 @@ export const getBlobServiceClient = (): BlobServiceClient => {
 
 export const getBadgesContainerClient = (): ContainerClient => {
   const blobServiceClient = getBlobServiceClient();
-  
+
   if (!azureBlobConfig.containerName) {
     throw new Error('AZURE_STORAGE_CONTAINER_BADGES is not configured');
   }

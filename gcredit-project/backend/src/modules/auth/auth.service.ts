@@ -74,8 +74,11 @@ export class AuthService {
     }
 
     // 3. Verify password
-    const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
-    
+    const isPasswordValid = await bcrypt.compare(
+      dto.password,
+      user.passwordHash,
+    );
+
     if (!isPasswordValid) {
       // TODO: Log failed attempt for rate limiting (Task 2.3.9)
       console.log(`[AUDIT] Failed login attempt: ${dto.email}`);
@@ -92,13 +95,10 @@ export class AuthService {
     const accessToken = this.jwtService.sign(payload);
 
     // 5. Generate refresh token with longer expiry
-    const refreshToken = this.jwtService.sign(
-      { sub: user.id },
-      {
-        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
-        expiresIn: this.config.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d',
-      } as any,
-    );
+    const refreshToken = this.jwtService.sign({ sub: user.id }, {
+      secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+      expiresIn: this.config.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d',
+    } as any);
 
     // 6. Store refresh token in database (7 days expiration)
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
@@ -120,8 +120,8 @@ export class AuthService {
     console.log(`[AUDIT] Successful login: ${user.email} (${user.id})`);
 
     // 9. Return tokens and user profile (without password hash)
-    const { passwordHash: _, ...userProfile} = user;
-    
+    const { passwordHash: _, ...userProfile } = user;
+
     return {
       accessToken,
       refreshToken,
@@ -131,7 +131,7 @@ export class AuthService {
 
   /**
    * Request password reset
-   * 
+   *
    * Generates a secure reset token and sends email to user.
    * Does not reveal whether email exists (security best practice).
    */
@@ -182,7 +182,7 @@ export class AuthService {
 
   /**
    * Reset password with token
-   * 
+   *
    * Validates token and updates user's password.
    */
   async resetPassword(
@@ -230,7 +230,7 @@ export class AuthService {
 
   /**
    * Refresh access token using refresh token
-   * 
+   *
    * Validates refresh token and issues new access token.
    */
   async refreshAccessToken(refreshToken: string) {
@@ -283,7 +283,7 @@ export class AuthService {
 
   /**
    * Logout user by revoking refresh token
-   * 
+   *
    * Marks the refresh token as revoked in the database.
    */
   async logout(refreshToken: string): Promise<{ message: string }> {
@@ -312,7 +312,7 @@ export class AuthService {
 
   /**
    * Get user profile
-   * 
+   *
    * Returns current user's profile information.
    */
   async getProfile(userId: string) {
@@ -341,7 +341,7 @@ export class AuthService {
 
   /**
    * Update user profile
-   * 
+   *
    * Allows users to update their firstName and lastName.
    */
   async updateProfile(userId: string, dto: UpdateProfileDto) {
@@ -382,7 +382,7 @@ export class AuthService {
 
   /**
    * Change password
-   * 
+   *
    * Allows users to change their password after verifying current password.
    */
   async changePassword(userId: string, dto: ChangePasswordDto) {
@@ -412,7 +412,9 @@ export class AuthService {
     );
 
     if (isSamePassword) {
-      throw new BadRequestException('New password must be different from current password');
+      throw new BadRequestException(
+        'New password must be different from current password',
+      );
     }
 
     // 4. Hash new password

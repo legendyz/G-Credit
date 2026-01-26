@@ -77,13 +77,15 @@ export class SkillCategoriesService {
     });
 
     if (!parent) {
-      throw new NotFoundException(`Parent category with ID ${parentId} not found`);
+      throw new NotFoundException(
+        `Parent category with ID ${parentId} not found`,
+      );
     }
 
     // Check nesting level (max 3 levels)
     if (parent.level >= 3) {
       throw new BadRequestException(
-        'Cannot create subcategory: maximum nesting level (3) reached'
+        'Cannot create subcategory: maximum nesting level (3) reached',
       );
     }
 
@@ -121,15 +123,13 @@ export class SkillCategoriesService {
     // Cannot edit system-defined top-level categories
     if (category.isSystemDefined && category.level === 1) {
       throw new ForbiddenException(
-        'Cannot edit system-defined top-level categories'
+        'Cannot edit system-defined top-level categories',
       );
     }
 
     // Cannot edit if not editable
     if (!category.isEditable) {
-      throw new ForbiddenException(
-        'This category is marked as non-editable'
-      );
+      throw new ForbiddenException('This category is marked as non-editable');
     }
 
     // Update category
@@ -167,22 +167,20 @@ export class SkillCategoriesService {
 
     // Cannot delete system-defined categories
     if (category.isSystemDefined) {
-      throw new ForbiddenException(
-        'Cannot delete system-defined categories'
-      );
+      throw new ForbiddenException('Cannot delete system-defined categories');
     }
 
     // Cannot delete if has children
     if (category.children.length > 0) {
       throw new BadRequestException(
-        `Cannot delete category: it has ${category.children.length} subcategories. Delete them first.`
+        `Cannot delete category: it has ${category.children.length} subcategories. Delete them first.`,
       );
     }
 
     // Cannot delete if has skills
     if (category.skills.length > 0) {
       throw new BadRequestException(
-        `Cannot delete category: it has ${category.skills.length} skills. Reassign or delete them first.`
+        `Cannot delete category: it has ${category.skills.length} skills. Reassign or delete them first.`,
       );
     }
 
@@ -199,10 +197,7 @@ export class SkillCategoriesService {
    */
   async findAllFlat() {
     return this.prisma.skillCategory.findMany({
-      orderBy: [
-        { level: 'asc' },
-        { displayOrder: 'asc' },
-      ],
+      orderBy: [{ level: 'asc' }, { displayOrder: 'asc' }],
     });
   }
 }

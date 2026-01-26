@@ -249,32 +249,83 @@ CODE/
 │   │   ├── epics.md                   # 122 KB, 14 epics, 85 stories
 │   │   └── implementation-readiness-report-2026-01-22.md # 10/10 score
 │   ├── excalidraw-diagrams/  # ✅ Wireframes (10 screens, 206 elements)
-│   └── implementation-artifacts/ # 🔄 Ready for Sprint artifacts
+│   └── implementation-artifacts/ # 🔄 Sprint artifacts
+│       ├── sprint-0-backlog.md
+│       ├── sprint-0-retrospective.md
+│       ├── sprint-1-backlog.md
+│       ├── sprint-1-retrospective.md
+│       └── sprint-2-backlog.md
 ├── MD_FromCopilot/           # Source documents
 │   ├── product-brief.md
 │   └── PRD.md
-├── docs/                     # Project knowledge
-├── gcredit-web/              # Frontend monorepo (Vite + React 18 + TypeScript)
-│   ├── src/
-│   │   ├── features/         # Feature modules (badges, assertions, users, etc.)
-│   │   ├── shared/           # Shared UI components, hooks, utils
-│   │   ├── lib/              # Third-party integrations (API client, auth)
-│   │   └── assets/           # Static assets (images, fonts)
-│   └── tests/                # Frontend tests (Vitest + React Testing Library)
-├── gcredit-api/              # Backend monorepo (NestJS 10 + Prisma 5)
-│   ├── src/
-│   │   ├── modules/          # Feature modules (badges, assertions, auth, etc.)
-│   │   ├── common/           # Shared utilities (filters, guards, interceptors)
-│   │   └── config/           # Configuration modules
-│   ├── prisma/               # Prisma schema and migrations
-│   └── test/                 # Backend tests (Jest + Supertest)
-└── project-context.md        # THIS FILE
+├── docs/                     # Project knowledge & decisions
+│   ├── infrastructure-inventory.md  # Azure resources (Sprint 0)
+│   ├── security-notes.md           # Security vulnerabilities tracking (Sprint 2+)
+│   └── decisions/                  # Architecture Decision Records
+│       ├── 001-lodash-prototype-pollution.md
+│       └── 002-lodash-security-risk-acceptance.md
+├── gcredit-project/          # ⚠️ ACTUAL PROJECT ROOT (not gcredit-web/gcredit-api)
+│   ├── frontend/             # React 19.2.3 + Vite 7.3.1 + TypeScript 5.9.3
+│   │   ├── src/
+│   │   │   ├── components/   # Reusable UI components
+│   │   │   ├── lib/          # Utilities, API client
+│   │   │   └── assets/       # Static resources
+│   │   └── tests/            # Vitest + React Testing Library
+│   └── backend/              # NestJS 11.0.1 + Prisma 6.19.2 + TypeScript 5.7.3
+│       ├── src/
+│       │   ├── common/       # ⚠️ SHARED INFRASTRUCTURE (Prisma, guards, decorators, services)
+│       │   │   ├── prisma.module.ts
+│       │   │   ├── prisma.service.ts
+│       │   │   ├── storage.module.ts
+│       │   │   ├── storage.service.ts
+│       │   │   ├── email.service.ts
+│       │   │   ├── guards/           # JWT auth guard, roles guard
+│       │   │   ├── decorators/       # Roles decorator, GetUser decorator
+│       │   │   └── services/         # BlobStorageService
+│       │   ├── modules/              # DOMAIN MODULES WITH COMPLEX BUSINESS LOGIC
+│       │   │   └── auth/             # Authentication module (strategies, JWT config)
+│       │   ├── badge-templates/      # Sprint 2 - Badge template CRUD (flat structure)
+│       │   ├── skill-categories/     # Sprint 2 - Skill category management (flat structure)
+│       │   ├── skills/               # Sprint 2 - Skill management (flat structure)
+│       │   ├── config/               # Configuration files (Azure Blob, JWT, etc.)
+│       │   ├── app.module.ts
+│       │   └── main.ts
+│       ├── prisma/                   # Database schema and migrations
+│       │   ├── schema.prisma         # 7 models (User, PasswordResetToken, RefreshToken, BadgeTemplate, SkillCategory, Skill)
+│       │   ├── migrations/           # 2 migrations (Sprint 1, Sprint 2)
+│       │   └── seed.ts               # Seed data (25 skill categories, 8 skills)
+│       ├── test/                     # E2E tests (Jest + Supertest)
+│       ├── package.json              # 910 packages (6 vulnerabilities - documented)
+│       └── .env                      # Environment variables (Azure, DB, JWT)
+└── project-context.md                # THIS FILE
 ```
 
+**⚠️ CRITICAL: Backend Module Organization Pattern**
+
+Sprint 0-2 established this pattern:
+
+1. **`src/common/`** - Infrastructure & cross-cutting concerns
+   - Prisma (database access)
+   - Auth guards & decorators
+   - Storage services (Azure Blob)
+   - Email service
+   - **Import path:** `'../common/prisma.service'`, `'../common/guards/jwt-auth.guard'`
+
+2. **`src/modules/`** - Complex domain modules with strategies/config
+   - Auth module (Passport strategies, JWT configuration)
+   - Future: modules requiring advanced patterns (CQRS, event sourcing, etc.)
+   - **Import path:** `'../modules/auth/...'`
+
+3. **Flat feature modules** - Standard CRUD features (Sprint 2 pattern)
+   - `badge-templates/`, `skill-categories/`, `skills/`
+   - Each contains: controller, service, DTOs, module file
+   - **Import shared:** `'../common/prisma.module'`, `'../common/guards/roles.guard'`
+   - **Import between features:** Avoid cross-feature imports; use events/shared services
+
 **Monorepo Architecture:**
-- **Frontend:** ~150-200 files (7 feature modules, shared components, routing)
-- **Backend:** ~120-150 files (9 NestJS modules, Prisma schema, global utilities)
-- **Independent Deployment:** Frontend and backend can be deployed separately
+- **Frontend:** ~50-100 files (components, routing, API client) - Sprint 3+ development
+- **Backend:** ~180+ files (3 Sprint 2 feature modules, auth module, shared infrastructure)
+- **Independent Deployment:** Frontend and backend deployed separately to Azure App Service
 
 ---
 
