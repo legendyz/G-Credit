@@ -152,7 +152,7 @@ export class BadgeTemplatesService {
   }
 
   /**
-   * Get a single badge template by ID
+   * Get a single badge template by ID with associated skills
    */
   async findOne(id: string) {
     const badgeTemplate = await this.prisma.badgeTemplate.findUnique({
@@ -174,7 +174,29 @@ export class BadgeTemplatesService {
       throw new NotFoundException(`Badge template with ID ${id} not found`);
     }
 
-    return badgeTemplate;
+    // Fetch associated skills if skillIds exist
+    let skills: any[] = [];
+    if (badgeTemplate.skillIds && badgeTemplate.skillIds.length > 0) {
+      skills = await this.prisma.skill.findMany({
+        where: {
+          id: { in: badgeTemplate.skillIds },
+        },
+        include: {
+          category: {
+            select: {
+              id: true,
+              name: true,
+              nameEn: true,
+            },
+          },
+        },
+      });
+    }
+
+    return {
+      ...badgeTemplate,
+      skills,
+    };
   }
 
   /**

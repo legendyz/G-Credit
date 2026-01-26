@@ -94,6 +94,8 @@ model BadgeTemplate {
   @@index([status])
   @@index([createdAt])
   @@index([createdBy])
+  @@index([category, status]) // Composite index for filtering by category + status
+  @@index([status, createdAt]) // Composite index for status + sorting
   @@map("badge_templates")
 }
 
