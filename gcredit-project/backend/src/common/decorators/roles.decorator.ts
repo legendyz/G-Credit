@@ -4,7 +4,7 @@ export const ROLES_KEY = 'roles';
 
 /**
  * Roles Decorator
- * 
+ *
  * Usage: @Roles('ADMIN', 'ISSUER')
  * Restricts endpoint access to specified roles.
  */

@@ -1,9 +1,10 @@
 # G-Credit - Enterprise Internal Digital Credentialing System
 
-[![Status](https://img.shields.io/badge/Status-Sprint%202%20Planning-blue)]()
+[![Status](https://img.shields.io/badge/Status-Sprint%202%20Ready-green)]()
 [![Phase](https://img.shields.io/badge/Phase-MVP%20Development-blue)]()
 [![Sprint0](https://img.shields.io/badge/Sprint%200-Complete%20(95%25)-success)]()
 [![Sprint1](https://img.shields.io/badge/Sprint%201-Complete%20(100%25)-brightgreen)]()
+[![Sprint2](https://img.shields.io/badge/Sprint%202-Ready%20to%20Start-green)]()
 
 > **G-Credit** is an enterprise-grade internal digital badging platform designed to securely recognize, verify, and analyze employee skills and achievements. Compliant with Open Badges 2.0 standards, it aims to replace fragmented certificate management and reduce dependency on external platforms.
 
@@ -14,9 +15,10 @@
 **Project Name:** G-Credit  
 **Project Type:** Enterprise Internal Platform (Greenfield Development)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
-**Current Status:** ✅ Sprint 1 Complete - Authentication & User Management (100%)  
+**Current Status:** 🚀 Sprint 2 Ready to Start - Badge Template Management  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h estimated, 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h estimated, 2026-01-25)  
+**Sprint 2:** 🚀 Ready to Start (Epic 3, 32-33h estimated, starts 2026-01-27)  
 **Last Updated:** 2026-01-25
 
 ### 🎯 Core Objectives

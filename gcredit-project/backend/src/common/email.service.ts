@@ -4,7 +4,7 @@ import * as nodemailer from 'nodemailer';
 
 /**
  * Email Service
- * 
+ *
  * Handles sending emails for password reset and other notifications.
  * In development: logs to console instead of sending real emails.
  * In production: uses configured SMTP server.
@@ -33,7 +33,7 @@ export class EmailService {
 
   /**
    * Send password reset email
-   * 
+   *
    * @param email User's email address
    * @param token Reset token
    */

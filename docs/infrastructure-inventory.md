@@ -1,0 +1,529 @@
+# G-Credit Infrastructure Inventory
+
+**Last Updated:** 2026-01-26  
+**Project:** G-Credit - Enterprise Internal Digital Credentialing System  
+**Environment:** Development
+
+This document maintains a comprehensive inventory of all infrastructure resources, configurations, and dependencies created throughout the G-Credit project lifecycle. It serves as the single source of truth for resource management and prevents duplicate resource creation.
+
+---
+
+## 📋 Table of Contents
+
+1. [Azure Resources](#azure-resources)
+2. [Database Schema](#database-schema)
+3. [Environment Variables](#environment-variables)
+4. [NPM Dependencies](#npm-dependencies)
+5. [Git Repositories](#git-repositories)
+6. [External Services](#external-services)
+7. [Change Log](#change-log)
+
+---
+
+## 🌐 Azure Resources
+
+### Storage Accounts
+
+#### gcreditdevstoragelz
+- **Type:** Azure Storage Account (General Purpose v2)
+- **Created in:** Sprint 0 (2026-01-24)
+- **Region:** East Asia / Southeast Asia
+- **Performance:** Standard
+- **Redundancy:** LRS (Locally Redundant Storage)
+- **Purpose:** Badge images and evidence file storage
+- **Public Access:** Enabled (for blob-level access)
+- **Cost:** ~$0.02/GB/month + operations
+- **Used in Sprints:** 0, 2, 3, 4, 5
+
+**Containers:**
+```
+gcreditdevstoragelz/
+├── badges/          (Public: Blob-level anonymous read)
+│   Purpose: All badge-related images
+│   - Badge template images (Sprint 2+)
+│   - Issued badge images (Sprint 3+)
+│   - Format: PNG, recommended 400x400px or 512x512px
+│   - Max size: 2MB per file
+│   - Naming: template-{uuid}.png, issued-{badgeId}-{userId}.png
+│
+└── evidence/        (Private: No anonymous access)
+    Purpose: Badge issuance evidence files
+    - Supporting documents (Sprint 5+)
+    - Certificates, transcripts, etc.
+    - Format: PDF, PNG, JPG, DOCX
+    - Max size: 10MB per file
+```
+
+**Environment Variables:**
+```env
+AZURE_STORAGE_CONNECTION_STRING="DefaultEndpointsProtocol=https;AccountName=gcreditdevstoragelz;AccountKey=***;EndpointSuffix=core.windows.net"
+AZURE_STORAGE_ACCOUNT_NAME="gcreditdevstoragelz"
+AZURE_STORAGE_CONTAINER_BADGES="badges"
+AZURE_STORAGE_CONTAINER_EVIDENCE="evidence"
+```
+
+**Access Patterns:**
+- **Read (Public):** `https://gcreditdevstoragelz.blob.core.windows.net/badges/{filename}`
+- **Write:** Via SDK with connection string authentication
+- **Delete:** Admin only, via SDK
+
+---
+
+### Databases
+
+#### gcredit-dev-db-lz
+- **Type:** Azure Database for PostgreSQL Flexible Server
+- **Created in:** Sprint 0 (2026-01-23)
+- **PostgreSQL Version:** 16
+- **Region:** Same as Storage Account
+- **Tier:** Burstable (B1ms or B2s)
+- **Storage:** 32 GB
+- **Backup Retention:** 7 days
+- **High Availability:** No (development)
+- **Purpose:** Primary application database
+- **Used in Sprints:** 0, 1, 2, 3, 4, 5, 6, 7
+
+**Connection Details:**
+```
+Host: gcredit-dev-db-lz.postgres.database.azure.com
+Port: 5432
+Database: postgres
+User: gcreditadmin
+SSL Mode: require
+```
+
+**Environment Variable:**
+```env
+DATABASE_URL="postgresql://gcreditadmin:***@gcredit-dev-db-lz.postgres.database.azure.com:5432/postgres?sslmode=require"
+```
+
+**Firewall Rules:**
+- ✅ Allow public access from any Azure service
+- ✅ Add client IP addresses as needed for local development
+
+**Maintenance Windows:** Default (managed by Azure)
+
+---
+
+## 🗄️ Database Schema
+
+### Current Models (as of Sprint 1 completion)
+
+**Sprint 0: Initial Setup**
+- No models (infrastructure only)
+
+**Sprint 1: Authentication & User Management**
+
+#### User Model
+```prisma
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  firstName     String?
+  lastName      String?
+  role          UserRole  @default(EMPLOYEE)
+  isActive      Boolean   @default(true)
+  emailVerified Boolean   @default(false)
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  passwordResetTokens PasswordResetToken[]
+  refreshTokens       RefreshToken[]
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+```
+
+**Roles:** ADMIN, ISSUER, MANAGER, EMPLOYEE
+
+#### PasswordResetToken Model
+```prisma
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+```
+
+#### RefreshToken Model
+```prisma
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+```
+
+**Total Tables:** 3  
+**Total Migrations:** 2
+- `20260124000000_init_user_model` (Sprint 1)
+- `20260124000001_add_password_reset_refresh_tokens` (Sprint 1)
+
+---
+
+### Planned Models (Sprint 2+)
+
+**Sprint 2: Badge Template Management**
+- BadgeTemplate (Epic 3)
+- SkillCategory (Epic 3)
+- Skill (Epic 3)
+
+**Sprint 3-4: User Badge Management**
+- UserBadge (Epic 4)
+- BadgeIssuance (Epic 4)
+
+**Sprint 5: Evidence Management**
+- Evidence (Epic 5)
+- EvidenceFile (Epic 5)
+
+**Sprint 6-7: Display & Sharing**
+- BadgeDisplay (Epic 6)
+- ShareSettings (Epic 7)
+
+---
+
+## ⚙️ Environment Variables
+
+### Current Configuration (backend/.env)
+
+**Database:**
+```env
+DATABASE_URL="postgresql://gcreditadmin:***@gcredit-dev-db-lz.postgres.database.azure.com:5432/postgres?sslmode=require"
+```
+
+**JWT Configuration:**
+```env
+JWT_SECRET="gcredit-jwt-secret-key-change-this-in-production-2026-min-32-chars-required"
+JWT_REFRESH_SECRET="gcredit-refresh-token-secret-different-from-access-token-2026-security"
+JWT_ACCESS_EXPIRES_IN="15m"
+JWT_REFRESH_EXPIRES_IN="7d"
+```
+
+**Server Configuration:**
+```env
+PORT=3000
+NODE_ENV="development"
+```
+
+**Frontend URL:**
+```env
+FRONTEND_URL="http://localhost:5173"
+```
+
+**Email Configuration (Development - Console Only):**
+```env
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT=587
+SMTP_USER="your-email@gmail.com"
+SMTP_PASSWORD="your-app-password"
+SMTP_FROM="noreply@gcredit.com"
+```
+*Note: Emails are logged to console in development, not actually sent*
+
+**Azure Blob Storage:**
+```env
+AZURE_STORAGE_CONNECTION_STRING="DefaultEndpointsProtocol=https;AccountName=gcreditdevstoragelz;AccountKey=***;EndpointSuffix=core.windows.net"
+AZURE_STORAGE_ACCOUNT_NAME="gcreditdevstoragelz"
+AZURE_STORAGE_CONTAINER_BADGES="badges"
+AZURE_STORAGE_CONTAINER_EVIDENCE="evidence"
+```
+
+---
+
+## 📦 NPM Dependencies
+
+### Frontend (gcredit-web/)
+
+**Framework & Build:**
+- react: 19.0.0
+- react-dom: 19.0.0
+- vite: 7.2.4
+- typescript: 5.9.3
+
+**UI & Styling:**
+- tailwindcss: 4.1.18
+- @radix-ui/* (Shadcn/ui components)
+
+**State & Data:**
+- @tanstack/react-query: 5.x
+- zustand: (planned)
+
+**Routing:**
+- react-router-dom: 6.x
+
+**Forms:**
+- react-hook-form: 7.x
+- zod: 3.x
+
+**Dev Dependencies:**
+- @vitejs/plugin-react: 4.x
+- eslint: 9.x
+- prettier: 3.x
+
+### Backend (gcredit-project/backend/)
+
+**Framework:**
+- @nestjs/core: 11.0.16
+- @nestjs/common: 11.0.16
+- @nestjs/platform-express: 11.0.16
+- typescript: 5.7.3
+
+**Database & ORM:**
+- @prisma/client: 6.19.2
+- prisma: 6.19.2 (dev)
+
+**Authentication:**
+- @nestjs/jwt: 11.x
+- @nestjs/passport: 11.x
+- passport: 0.7.x
+- passport-jwt: 4.x
+- bcrypt: 5.x
+
+**Configuration:**
+- @nestjs/config: 3.x
+
+**Azure Integration:**
+- @azure/storage-blob: 12.30.0
+
+**Image Processing (Sprint 2+):**
+- sharp: (to be installed)
+
+**Validation:**
+- class-validator: 0.14.x
+- class-transformer: 0.5.x
+- ajv: (to be installed for JSON Schema)
+
+**Dev Dependencies:**
+- @nestjs/cli: 11.x
+- @nestjs/testing: 11.x
+- jest: 29.x
+- supertest: 7.x
+- ts-node: 10.x
+
+**Known Issues:**
+- lodash@4.17.21: 1 moderate vulnerability (Prototype Pollution)
+  - Status: Accepted for development
+  - Remediation: Deferred to production deployment
+
+---
+
+## 📚 Git Repositories
+
+### Main Repository
+- **URL:** https://github.com/legendyz/G-Credit.git
+- **Default Branch:** main
+- **Created:** 2026-01-23
+- **Structure:** Monorepo
+  ```
+  G-Credit/
+  ├── gcredit-project/      (Application code)
+  │   ├── backend/          (NestJS API)
+  │   └── frontend/         (React Web App - to be created)
+  ├── _bmad-output/         (Documentation & Planning)
+  │   └── implementation-artifacts/
+  └── docs/                 (Additional documentation)
+  ```
+
+### Branches
+
+**Main Branches:**
+- `main` - Production-ready code
+
+**Sprint Branches:**
+- `sprint-0/infrastructure-setup` - Completed, merged
+- `sprint-1/auth-user-management` - Completed, merged
+- `sprint-2/epic-3-badge-templates` - Active
+
+**Branch Strategy:**
+- Feature branches: `sprint-{n}/{epic-name}`
+- Merge to main after sprint completion
+- Tag releases: `v0.1.0`, `v0.2.0`, etc.
+
+---
+
+## 🔗 External Services
+
+### Development Tools
+
+**Azure Portal:**
+- URL: https://portal.azure.com
+- Subscription: (User's Azure subscription)
+- Resource Group: rg-gcredit-dev
+
+**Prisma Studio:**
+- Command: `npx prisma studio`
+- URL: http://localhost:5555
+- Purpose: Database GUI for development
+
+**Swagger API Docs (Planned):**
+- URL: http://localhost:3000/api/docs
+- Implementation: Sprint 2+
+
+### Third-Party Services (Planned)
+
+**Email Service (Production):**
+- Provider: TBD (SendGrid, AWS SES, or Azure Communication Services)
+- Implementation: Sprint 8+
+
+**CDN (Optional):**
+- Provider: Azure CDN
+- Purpose: Badge image distribution
+- Implementation: Post-MVP
+
+---
+
+## 📝 Change Log
+
+### 2026-01-26 (Sprint 2 Day 1)
+- ✅ Created infrastructure-inventory.md
+- ✅ Verified Azure Blob Storage resources from Sprint 0
+- ✅ Confirmed no duplicate resources needed for Sprint 2
+- ✅ Updated Sprint 2 documentation to use existing `badges` container
+
+### 2026-01-25 (Sprint 1 Completion)
+- ✅ Added 3 database models (User, PasswordResetToken, RefreshToken)
+- ✅ Completed 14 API endpoints
+- ✅ Implemented JWT dual-token authentication
+- ✅ 40/40 tests passed
+
+### 2026-01-24 (Sprint 0 Completion)
+- ✅ Created Azure PostgreSQL Flexible Server (gcredit-dev-db-lz)
+- ✅ Created Azure Storage Account (gcreditdevstoragelz)
+- ✅ Created 2 blob containers (badges, evidence)
+- ✅ Installed @azure/storage-blob SDK
+- ✅ Configured all environment variables
+- ✅ Verified all infrastructure with health checks
+
+### 2026-01-23 (Sprint 0 Start)
+- ✅ Initialized frontend (React 19 + Vite 7 + TypeScript 5.9)
+- ✅ Initialized backend (NestJS 11 + Prisma 6)
+- ✅ Created GitHub repository
+
+---
+
+## 🔍 Resource Verification Commands
+
+### Check Azure Resources
+```bash
+# Test Azure Blob Storage connection
+cd backend
+npx ts-node scripts/test-azure-blob.ts
+
+# Expected output: "All tests passed! Azure Blob Storage is ready."
+```
+
+### Check Database Connection
+```bash
+cd backend
+npx prisma migrate status
+
+# Expected output: Database in sync, all migrations applied
+```
+
+### Check Environment Variables
+```bash
+# Backend
+cd backend
+cat .env | grep -E "DATABASE_URL|AZURE_STORAGE|JWT_SECRET"
+
+# Verify all critical variables are set
+```
+
+### Check Installed Packages
+```bash
+# Backend
+cd backend
+npm list @azure/storage-blob @prisma/client @nestjs/core
+
+# Verify versions match this inventory
+```
+
+---
+
+## 📊 Resource Usage & Cost Estimates
+
+### Azure Resources (Development)
+
+**PostgreSQL Flexible Server:**
+- Tier: B1ms or B2s
+- Estimated Cost: $15-30/month
+- Storage: $0.115/GB/month (32 GB = ~$3.68/month)
+
+**Storage Account:**
+- Storage: $0.02/GB/month
+- Operations: $0.065/10k writes, $0.0043/10k reads
+- Estimated Cost: <$5/month for development
+
+**Total Estimated Azure Cost:** ~$20-40/month
+
+**Note:** Actual costs may vary. Review Azure Cost Management regularly.
+
+---
+
+## ⚠️ Important Notes
+
+### Security
+- 🔒 Never commit `.env` files to Git
+- 🔒 Rotate Azure Storage keys periodically
+- 🔒 Update JWT secrets before production deployment
+- 🔒 Configure proper firewall rules for PostgreSQL
+
+### Backup & Recovery
+- ✅ Azure PostgreSQL: Automatic backups (7 days retention)
+- ✅ Azure Blob Storage: LRS provides local redundancy
+- ⚠️ Code: Backed up in GitHub repository
+- ⚠️ Manual backups recommended before major migrations
+
+### Scaling Considerations
+- Current setup suitable for: <100 users (MVP phase)
+- Scale up when: >1000 active users or >100GB storage
+- Upgrade paths:
+  - PostgreSQL: B1ms → General Purpose tiers
+  - Storage: LRS → GRS for geo-redundancy
+  - Add CDN for global badge image distribution
+
+---
+
+## 📞 Support & Resources
+
+### Documentation
+- Sprint Backlogs: `_bmad-output/implementation-artifacts/sprint-*-backlog.md`
+- Retrospectives: `_bmad-output/implementation-artifacts/sprint-*-retrospective.md`
+- API Documentation: `gcredit-project/backend/README.md`
+
+### Azure Support
+- Portal: https://portal.azure.com
+- Documentation: https://docs.microsoft.com/azure
+- Support: Azure Portal → Help + support
+
+### Prisma
+- Documentation: https://www.prisma.io/docs
+- Studio: `npx prisma studio`
+- Migrations: `npx prisma migrate dev`
+
+---
+
+**Document Owner:** Scrum Master / Product Manager  
+**Review Frequency:** After each Sprint completion  
+**Next Review:** 2026-02-07 (Sprint 2 completion)

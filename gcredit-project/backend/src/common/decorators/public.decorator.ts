@@ -4,7 +4,7 @@ export const IS_PUBLIC_KEY = 'isPublic';
 
 /**
  * Public Decorator
- * 
+ *
  * Usage: @Public()
  * Marks a route as publicly accessible (skips JWT validation).
  * Use for login, register, verification endpoints, etc.

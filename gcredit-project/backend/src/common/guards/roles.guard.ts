@@ -4,10 +4,10 @@ import { ROLES_KEY } from '../decorators/roles.decorator';
 
 /**
  * Roles Guard
- * 
+ *
  * Enforces role-based access control (RBAC).
  * Checks if user's role matches the roles specified in @Roles() decorator.
- * 
+ *
  * Role Hierarchy:
  * - ADMIN: Full system access (can access all endpoints)
  * - ISSUER: Badge management and issuance

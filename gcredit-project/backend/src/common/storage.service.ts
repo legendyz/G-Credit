@@ -14,15 +14,16 @@ export class StorageService implements OnModuleInit {
     const connectionString = this.configService.get<string>(
       'AZURE_STORAGE_CONNECTION_STRING',
     );
-    
+
     if (!connectionString) {
       console.warn('⚠️ Azure Storage connection string not configured');
       return;
     }
 
     try {
-      this.blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
-      
+      this.blobServiceClient =
+        BlobServiceClient.fromConnectionString(connectionString);
+
       const badgesContainerName = this.configService.get<string>(
         'AZURE_STORAGE_CONTAINER_BADGES',
         'badges',
@@ -32,8 +33,11 @@ export class StorageService implements OnModuleInit {
         'evidence',
       );
 
-      this.badgesContainer = this.blobServiceClient.getContainerClient(badgesContainerName);
-      this.evidenceContainer = this.blobServiceClient.getContainerClient(evidenceContainerName);
+      this.badgesContainer =
+        this.blobServiceClient.getContainerClient(badgesContainerName);
+      this.evidenceContainer = this.blobServiceClient.getContainerClient(
+        evidenceContainerName,
+      );
 
       console.log('✅ Azure Storage connected successfully');
     } catch (error) {
