@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
   BadRequestException,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -18,7 +19,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
-export class AuthService {
+export class AuthService {  private readonly logger = new Logger(AuthService.name);
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
@@ -81,7 +82,10 @@ export class AuthService {
 
     if (!isPasswordValid) {
       // TODO: Log failed attempt for rate limiting (Task 2.3.9)
-      console.log(`[AUDIT] Failed login attempt: ${dto.email}`);
+      this.logger.warn(
+        `Failed login attempt for user: ${dto.email}`,
+        'LoginAttempt',
+      );
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -117,7 +121,10 @@ export class AuthService {
     });
 
     // 8. Log successful login
-    console.log(`[AUDIT] Successful login: ${user.email} (${user.id})`);
+    this.logger.log(
+      `Successful login: ${user.email} (${user.id}, role: ${user.role})`,
+      'LoginSuccess',
+    );
 
     // 9. Return tokens and user profile (without password hash)
     const { passwordHash: _, ...userProfile } = user;

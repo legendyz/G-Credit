@@ -13,6 +13,7 @@ import {
   HttpCode,
   HttpStatus,
   Request,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -128,7 +129,25 @@ export class BadgeTemplatesController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.ISSUER)
-  @UseInterceptors(FileInterceptor('image'), MultipartJsonInterceptor)
+  @UseInterceptors(
+    FileInterceptor('image', {
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit
+      },
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/^image\/(jpg|jpeg|png|gif|webp)$/)) {
+          return cb(
+            new BadRequestException(
+              'Only image files (JPG, PNG, GIF, WebP) are allowed',
+            ),
+            false,
+          );
+        }
+        cb(null, true);
+      },
+    }),
+    MultipartJsonInterceptor,
+  )
   @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Create a new badge template with image upload' })
@@ -183,7 +202,25 @@ export class BadgeTemplatesController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.ISSUER)
-  @UseInterceptors(FileInterceptor('image'), MultipartJsonInterceptor)
+  @UseInterceptors(
+    FileInterceptor('image', {
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit
+      },
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/^image\/(jpg|jpeg|png|gif|webp)$/)) {
+          return cb(
+            new BadRequestException(
+              'Only image files (JPG, PNG, GIF, WebP) are allowed',
+            ),
+            false,
+          );
+        }
+        cb(null, true);
+      },
+    }),
+    MultipartJsonInterceptor,
+  )
   @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Update a badge template' })
