@@ -169,10 +169,79 @@ export class BadgeTemplatesController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Admin/Issuer only' })
   async create(
-    @Body() createDto: CreateBadgeTemplateDto,
+    @Body() body: any,
     @UploadedFile() image: Express.Multer.File,
     @Request() req: any,
   ) {
+    // Parse JSON fields from multipart form data
+    // Multipart form data sends everything as strings, need to parse JSON fields
+    
+    let skillIds = body.skillIds;
+    let issuanceCriteria = body.issuanceCriteria;
+    
+    // Handle skillIds - expect JSON array string or comma-separated UUIDs
+    if (typeof body.skillIds === 'string') {
+      // Try to fix malformed JSON (missing quotes around UUIDs)
+      let skillIdsStr = body.skillIds.trim();
+      
+      // If it looks like an array but missing quotes, try to fix it
+      if (skillIdsStr.startsWith('[') && skillIdsStr.endsWith(']')) {
+        // Extract content and split by comma
+        const content = skillIdsStr.slice(1, -1).trim();
+        if (content) {
+          // Split and wrap each UUID in quotes
+          const uuids = content.split(',').map((id: string) => id.trim());
+          skillIds = uuids;
+        } else {
+          skillIds = [];
+        }
+      } else {
+        // Try direct JSON parse
+        try {
+          skillIds = JSON.parse(skillIdsStr);
+        } catch (e) {
+          // If parse fails, treat as single UUID
+          skillIds = [skillIdsStr];
+        }
+      }
+    }
+    
+    // Handle issuanceCriteria - expect JSON object string
+    if (typeof body.issuanceCriteria === 'string') {
+      let criteriaStr = body.issuanceCriteria.trim();
+      
+      // Try to fix malformed JSON (missing quotes around keys/values)
+      if (criteriaStr.startsWith('{') && criteriaStr.endsWith('}')) {
+        // Try to parse, if fails, attempt to fix common issues
+        try {
+          issuanceCriteria = JSON.parse(criteriaStr);
+        } catch (e) {
+          // Replace unquoted keys with quoted keys
+          criteriaStr = criteriaStr.replace(/(\w+):/g, '"$1":');
+          // Replace unquoted string values
+          criteriaStr = criteriaStr.replace(/:(\w+)([,}])/g, ':"$1"$2');
+          
+          try {
+            issuanceCriteria = JSON.parse(criteriaStr);
+          } catch (e2) {
+            throw new Error(`Invalid issuanceCriteria format: ${body.issuanceCriteria}`);
+          }
+        }
+      } else {
+        try {
+          issuanceCriteria = JSON.parse(criteriaStr);
+        } catch (e) {
+          throw new Error(`Invalid issuanceCriteria format: ${body.issuanceCriteria}`);
+        }
+      }
+    }
+    
+    const createDto: CreateBadgeTemplateDto = {
+      ...body,
+      skillIds,
+      issuanceCriteria,
+    };
+    
     return this.badgeTemplatesService.create(createDto, req.user.userId, image);
   }
 
@@ -213,9 +282,16 @@ export class BadgeTemplatesController {
   @ApiResponse({ status: 404, description: 'Badge template not found' })
   async update(
     @Param('id') id: string,
-    @Body() updateDto: UpdateBadgeTemplateDto,
+    @Body() body: any,
     @UploadedFile() image?: Express.Multer.File,
   ) {
+    // Parse JSON fields from multipart form data if present
+    const updateDto: UpdateBadgeTemplateDto = {
+      ...body,
+      skillIds: body.skillIds && typeof body.skillIds === 'string' ? JSON.parse(body.skillIds) : body.skillIds,
+      issuanceCriteria: body.issuanceCriteria && typeof body.issuanceCriteria === 'string' ? JSON.parse(body.issuanceCriteria) : body.issuanceCriteria,
+    };
+    
     return this.badgeTemplatesService.update(id, updateDto, image);
   }
 
