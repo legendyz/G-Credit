@@ -75,16 +75,13 @@ describe('Badge Templates E2E (Sprint 2)', () => {
     adminToken = loginResponse.body.accessToken;
 
     // Create test skills first (needed for badge templates)
-    const skillCategory = await prisma.skillCategory.upsert({
-      where: { id: 'test-category-id' },
-      update: {},
-      create: {
-        id: 'test-category-id',
+    const skillCategory = await prisma.skillCategory.create({
+      data: {
         name: 'Test Category',
         description: 'Category for E2E testing',
       },
     });
-    categoryId = skillCategory.id;
+    categoryId = skillCategory.id; // This will be a proper UUID from Prisma
 
     // Create a test skill
     const skill = await prisma.skill.create({
@@ -100,8 +97,8 @@ describe('Badge Templates E2E (Sprint 2)', () => {
   afterAll(async () => {
     // Cleanup test data - delete in correct order to avoid foreign key constraints
     await prisma.badgeTemplate.deleteMany({ where: { createdBy: adminId } });
-    await prisma.skill.deleteMany({ where: { id: createdSkillId } });
-    await prisma.skillCategory.deleteMany({ where: { id: 'test-category-id' } });
+    await prisma.skill.deleteMany({ where: { categoryId: categoryId } });
+    await prisma.skillCategory.deleteMany({ where: { id: categoryId } });
     await prisma.user.deleteMany({ where: { email: { endsWith: '@templatetest.com' } } });
     await app.close();
   });
@@ -147,22 +144,20 @@ describe('Badge Templates E2E (Sprint 2)', () => {
   });
 
   describe('Story 3.1: Create Skill', () => {
-    // Skip this test - skills are created in setup, this is just testing the skills API
-    it.skip('should create a new skill', () => {
-      return request(app.getHttpServer())
+    it('should create a new skill', async () => {
+      const response = await request(app.getHttpServer())
         .post('/skills')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           name: `E2E Test Skill ${Date.now()}`,
           description: 'Created by E2E test',
           categoryId: categoryId,
-        })
-        .expect(201)
-        .expect((res) => {
-          expect(res.body).toHaveProperty('id');
-          expect(res.body).toHaveProperty('name');
-          // Don't overwrite createdSkillId since it's already set in setup
         });
+
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty('id');
+      expect(response.body).toHaveProperty('name');
+      expect(response.body.categoryId).toBe(categoryId);
     });
 
     it('should require authentication', () => {
