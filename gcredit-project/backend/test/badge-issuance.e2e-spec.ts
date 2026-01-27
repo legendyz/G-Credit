@@ -618,4 +618,107 @@ describe('Badge Issuance (e2e)', () => {
         .expect(404);
     });
   });
+
+  describe('POST /api/badges/bulk', () => {
+    it('should issue badges from valid CSV', async () => {
+      // Create CSV content with 2 valid badges
+      const csvContent = `recipientEmail,templateId,evidenceUrl,expiresIn
+recipient@test.com,${templateId},https://example.com/evidence1.pdf,365
+employee@test.com,${templateId},https://example.com/evidence2.pdf,730`;
+
+      const response = await request(app.getHttpServer())
+        .post('/api/badges/bulk')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .attach('file', Buffer.from(csvContent), 'badges.csv')
+        .expect(201);
+
+      expect(response.body.total).toBe(2);
+      expect(response.body.successful).toBe(2);
+      expect(response.body.failed).toBe(0);
+      expect(response.body.results).toHaveLength(2);
+      expect(response.body.results[0].success).toBe(true);
+      expect(response.body.results[0].badgeId).toBeDefined();
+      expect(response.body.results[1].success).toBe(true);
+    });
+
+    it('should reject invalid CSV format (missing headers)', async () => {
+      const csvContent = `email,template
+test@example.com,${templateId}`;
+
+      return request(app.getHttpServer())
+        .post('/api/badges/bulk')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .attach('file', Buffer.from(csvContent), 'invalid.csv')
+        .expect(400)
+        .expect((res) => {
+          expect(res.body.message).toContain('CSV parsing failed');
+          expect(res.body.message).toContain('Missing required headers');
+        });
+    });
+
+    it('should handle partial failures gracefully', async () => {
+      const csvContent = `recipientEmail,templateId,evidenceUrl
+recipient@test.com,${templateId},https://example.com/valid.pdf
+nonexistent@test.com,${templateId},https://example.com/fail.pdf
+employee@test.com,00000000-0000-0000-0000-000000000000,https://example.com/badtemplate.pdf`;
+
+      const response = await request(app.getHttpServer())
+        .post('/api/badges/bulk')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .attach('file', Buffer.from(csvContent), 'mixed.csv')
+        .expect(201);
+
+      expect(response.body.total).toBe(3);
+      expect(response.body.successful).toBe(1);
+      expect(response.body.failed).toBe(2);
+
+      // Check successful row
+      const successRow = response.body.results.find((r: any) => r.success);
+      expect(successRow).toBeDefined();
+      expect(successRow.email).toBe('recipient@test.com');
+      expect(successRow.badgeId).toBeDefined();
+
+      // Check failed rows have error messages
+      const failedRows = response.body.results.filter((r: any) => !r.success);
+      expect(failedRows).toHaveLength(2);
+      expect(failedRows[0].error).toBeDefined();
+      expect(failedRows[1].error).toBeDefined();
+    });
+
+    it('should return 403 for non-authorized user (EMPLOYEE)', async () => {
+      const csvContent = `recipientEmail,templateId
+test@example.com,${templateId}`;
+
+      return request(app.getHttpServer())
+        .post('/api/badges/bulk')
+        .set('Authorization', `Bearer ${employeeToken}`)
+        .attach('file', Buffer.from(csvContent), 'test.csv')
+        .expect(403);
+    });
+
+    it('should return 400 when no file is uploaded', async () => {
+      return request(app.getHttpServer())
+        .post('/api/badges/bulk')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(400)
+        .expect((res) => {
+          expect(res.body.message).toContain('CSV file is required');
+        });
+    });
+
+    it('should validate email format in CSV', async () => {
+      const csvContent = `recipientEmail,templateId
+invalid-email,${templateId}
+recipient@test.com,${templateId}`;
+
+      const response = await request(app.getHttpServer())
+        .post('/api/badges/bulk')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .attach('file', Buffer.from(csvContent), 'invalid-email.csv')
+        .expect(400);
+
+      expect(response.body.message).toContain('CSV parsing failed');
+      expect(response.body.message).toContain('Invalid email');
+    });
+  });
 });

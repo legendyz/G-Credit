@@ -2,8 +2,10 @@ import { Injectable, NotFoundException, BadRequestException, GoneException, Logg
 import { PrismaService } from '../common/prisma.service';
 import { AssertionGeneratorService } from './services/assertion-generator.service';
 import { BadgeNotificationService } from './services/badge-notification.service';
+import { CSVParserService } from './services/csv-parser.service';
 import { IssueBadgeDto } from './dto/issue-badge.dto';
 import { QueryBadgeDto } from './dto/query-badge.dto';
+import { BulkIssuanceResult } from './dto/bulk-issue-badges.dto';
 import { BadgeStatus, UserRole } from '@prisma/client';
 
 @Injectable()
@@ -14,6 +16,7 @@ export class BadgeIssuanceService {
     private prisma: PrismaService,
     private assertionGenerator: AssertionGeneratorService,
     private notificationService: BadgeNotificationService,
+    private csvParser: CSVParserService,
   ) {}
 
   /**
@@ -461,6 +464,85 @@ export class BadgeIssuanceService {
       revokedAt: revokedBadge.revokedAt,
       revocationReason: revokedBadge.revocationReason,
       message: 'Badge revoked successfully',
+    };
+  }
+
+  /**
+   * Bulk issue badges from CSV file
+   */
+  async bulkIssueBadges(fileBuffer: Buffer, issuerId: string): Promise<BulkIssuanceResult> {
+    // 1. Parse CSV
+    let rows;
+    try {
+      rows = this.csvParser.parseBulkIssuanceCSV(fileBuffer);
+    } catch (error) {
+      throw new BadRequestException(`CSV parsing failed: ${error.message}`);
+    }
+
+    // 2. Limit to 1000 badges per upload
+    if (rows.length > 1000) {
+      throw new BadRequestException(`Too many rows (${rows.length}). Maximum 1000 badges per upload.`);
+    }
+
+    this.logger.log(`Processing bulk issuance: ${rows.length} badges`);
+
+    // 3. Process each row (no transaction - partial failures allowed)
+    const results: BulkIssuanceResult['results'] = [];
+    let successCount = 0;
+    let failCount = 0;
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const rowNumber = i + 2; // +2 for header row
+
+      try {
+        // Find recipient by email
+        const recipient = await this.prisma.user.findUnique({
+          where: { email: row.recipientEmail },
+        });
+
+        if (!recipient) {
+          throw new Error(`Recipient not found: ${row.recipientEmail}`);
+        }
+
+        // Issue badge (reuse existing method)
+        const badge = await this.issueBadge(
+          {
+            templateId: row.templateId,
+            recipientId: recipient.id,
+            evidenceUrl: row.evidenceUrl,
+            expiresIn: row.expiresIn,
+          },
+          issuerId,
+        );
+
+        results.push({
+          row: rowNumber,
+          email: row.recipientEmail,
+          success: true,
+          badgeId: badge.id,
+        });
+        successCount++;
+      } catch (error) {
+        results.push({
+          row: rowNumber,
+          email: row.recipientEmail,
+          success: false,
+          error: error.message,
+        });
+        failCount++;
+        this.logger.warn(`Row ${rowNumber} failed: ${error.message}`);
+      }
+    }
+
+    this.logger.log(`Bulk issuance complete: ${successCount} successful, ${failCount} failed`);
+
+    // 4. Return summary
+    return {
+      total: rows.length,
+      successful: successCount,
+      failed: failCount,
+      results,
     };
   }
 }

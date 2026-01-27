@@ -1,5 +1,6 @@
-import { Controller, Post, Body, UseGuards, Request, Param, Get, Query, NotFoundException, GoneException, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Post, Body, UseGuards, Request, Param, Get, Query, NotFoundException, GoneException, HttpCode, HttpStatus, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -107,5 +108,36 @@ export class BadgeIssuanceController {
     }
 
     return badge.assertionJson;
+  }
+
+  @Post('bulk')
+  @Roles(UserRole.ADMIN, UserRole.ISSUER)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Bulk issue badges from CSV file' })
+  @ApiBody({
+    description: 'CSV file with columns: recipientEmail, templateId, evidenceUrl (optional), expiresIn (optional)',
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 201, description: 'Bulk issuance completed' })
+  @ApiResponse({ status: 400, description: 'Invalid CSV format' })
+  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  async bulkIssueBadges(
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req: any,
+  ) {
+    if (!file) {
+      throw new BadRequestException('CSV file is required');
+    }
+
+    return this.badgeService.bulkIssueBadges(file.buffer, req.user.userId);
   }
 }
