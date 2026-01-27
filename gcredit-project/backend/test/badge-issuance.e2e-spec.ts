@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/common/prisma.service';
 import { UserRole } from '@prisma/client';
@@ -104,20 +104,20 @@ describe('Badge Issuance (e2e)', () => {
 
     // Login to get tokens
     const adminLoginResponse = await request(app.getHttpServer())
-      .post('/api/auth/login')
+      .post('/auth/login')
       .send({
         email: 'admin@test.com',
         password: 'Admin123!',
       });
-    adminToken = adminLoginResponse.body.token;
+    adminToken = adminLoginResponse.body.accessToken;
 
     const employeeLoginResponse = await request(app.getHttpServer())
-      .post('/api/auth/login')
+      .post('/auth/login')
       .send({
         email: 'employee@test.com',
         password: 'Employee123!',
       });
-    employeeToken = employeeLoginResponse.body.token;
+    employeeToken = employeeLoginResponse.body.accessToken;
   }
 
   describe('POST /api/badges', () => {
@@ -138,9 +138,8 @@ describe('Badge Issuance (e2e)', () => {
           expect(res.body.claimToken).toHaveLength(32);
           expect(res.body).toHaveProperty('claimUrl');
           expect(res.body).toHaveProperty('assertionUrl');
-          expect(res.body.templateId).toBe(templateId);
-          expect(res.body.recipientId).toBe(recipientId);
-          expect(res.body.evidenceUrl).toBe('https://example.com/evidence.pdf');
+          expect(res.body.template.id).toBe(templateId);
+          expect(res.body.recipient.id).toBe(recipientId);
           expect(res.body).toHaveProperty('expiresAt');
         });
     });
@@ -195,6 +194,96 @@ describe('Badge Issuance (e2e)', () => {
           expiresIn: 5000, // Max is 3650
         })
         .expect(400);
+    });
+  });
+
+  describe('POST /api/badges/:id/claim', () => {
+    let validBadgeId: string;
+    let validClaimToken: string;
+
+    beforeEach(async () => {
+      // Issue a fresh badge for each claim test
+      const issueResponse = await request(app.getHttpServer())
+        .post('/api/badges')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          templateId: templateId,
+          recipientId: recipientId,
+          evidenceUrl: 'https://example.com/evidence.pdf',
+          expiresIn: 365,
+        });
+
+      validBadgeId = issueResponse.body.id;
+      validClaimToken = issueResponse.body.claimToken;
+    });
+
+    it('should claim badge with valid token (PUBLIC endpoint - no auth required)', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`/api/badges/${validBadgeId}/claim`)
+        .send({
+          claimToken: validClaimToken,
+        })
+        .expect(200);
+
+      expect(response.body.status).toBe('CLAIMED');
+      expect(response.body.claimedAt).toBeDefined();
+      expect(response.body.badge.name).toBe('Test Achievement');
+      expect(response.body.message).toContain('successfully');
+      expect(response.body.assertionUrl).toContain(validBadgeId);
+    });
+
+    it('should return 404 for invalid claim token', () => {
+      return request(app.getHttpServer())
+        .post(`/api/badges/${validBadgeId}/claim`)
+        .send({
+          claimToken: 'invalid-token-' + 'x'.repeat(19), // 32 chars total
+        })
+        .expect(404)
+        .expect((res) => {
+          expect(res.body.message).toContain('Invalid claim token');
+        });
+    });
+
+    it('should return 400 if badge already claimed', async () => {
+      // Claim once
+      await request(app.getHttpServer())
+        .post(`/api/badges/${validBadgeId}/claim`)
+        .send({
+          claimToken: validClaimToken,
+        })
+        .expect(200);
+
+      // Try to claim again
+      return request(app.getHttpServer())
+        .post(`/api/badges/${validBadgeId}/claim`)
+        .send({
+          claimToken: validClaimToken,
+        })
+        .expect(400)
+        .expect((res) => {
+          expect(res.body.message).toContain('already been claimed');
+        });
+    });
+
+    it('should return 410 for expired claim token (>7 days)', async () => {
+      // Manually set badge issuedAt to 8 days ago
+      const eightDaysAgo = new Date();
+      eightDaysAgo.setDate(eightDaysAgo.getDate() - 8);
+
+      await prisma.badge.update({
+        where: { id: validBadgeId },
+        data: { issuedAt: eightDaysAgo },
+      });
+
+      return request(app.getHttpServer())
+        .post(`/api/badges/${validBadgeId}/claim`)
+        .send({
+          claimToken: validClaimToken,
+        })
+        .expect(410)
+        .expect((res) => {
+          expect(res.body.message).toContain('Claim token has expired');
+        });
     });
   });
 });

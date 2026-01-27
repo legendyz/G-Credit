@@ -2,7 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadgeIssuanceService } from './badge-issuance.service';
 import { PrismaService } from '../common/prisma.service';
 import { AssertionGeneratorService } from './services/assertion-generator.service';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadgeNotificationService } from './services/badge-notification.service';
+import { NotFoundException, BadRequestException, GoneException } from '@nestjs/common';
 import { BadgeStatus } from '@prisma/client';
 
 describe('BadgeIssuanceService', () => {
@@ -20,6 +21,7 @@ describe('BadgeIssuanceService', () => {
     badge: {
       create: jest.fn(),
       update: jest.fn(),
+      findUnique: jest.fn(),
     },
   };
 
@@ -29,6 +31,10 @@ describe('BadgeIssuanceService', () => {
     hashEmail: jest.fn(),
     getAssertionUrl: jest.fn(),
     getClaimUrl: jest.fn(),
+  };
+
+  const mockNotificationService = {
+    sendBadgeClaimNotification: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -42,6 +48,10 @@ describe('BadgeIssuanceService', () => {
         {
           provide: AssertionGeneratorService,
           useValue: mockAssertionGenerator,
+        },
+        {
+          provide: BadgeNotificationService,
+          useValue: mockNotificationService,
         },
       ],
     }).compile();
@@ -327,6 +337,153 @@ describe('BadgeIssuanceService', () => {
       const actualDiff = result.expiresAt!.getTime() - now.getTime();
       const expectedDiff = 365 * 24 * 60 * 60 * 1000;
       expect(Math.abs(actualDiff - expectedDiff)).toBeLessThan(1000);
+    });
+  });
+
+  describe('claimBadge', () => {
+    const mockClaimToken = 'a'.repeat(32);
+    const mockTemplate = {
+      id: 'template-uuid',
+      name: 'Test Badge',
+      description: 'Test Description',
+      imageUrl: 'https://example.com/image.png',
+      status: 'ACTIVE',
+    };
+
+    const mockRecipient = {
+      id: 'recipient-uuid',
+      email: 'recipient@example.com',
+      firstName: 'John',
+      lastName: 'Doe',
+    };
+
+    it('should claim badge with valid token', async () => {
+      // Arrange
+      const mockPendingBadge = {
+        id: 'badge-uuid',
+        status: BadgeStatus.PENDING,
+        issuedAt: new Date(),
+        expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+        claimToken: mockClaimToken,
+        template: mockTemplate,
+        recipient: mockRecipient,
+      };
+
+      const mockClaimedBadge = {
+        ...mockPendingBadge,
+        status: BadgeStatus.CLAIMED,
+        claimedAt: new Date(),
+        claimToken: null,
+      };
+
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockPendingBadge);
+      mockPrismaService.badge.update.mockResolvedValue(mockClaimedBadge);
+      mockAssertionGenerator.getAssertionUrl.mockReturnValue('http://localhost:3000/api/badges/badge-uuid/assertion');
+
+      // Act
+      const result = await service.claimBadge(mockClaimToken);
+
+      // Assert
+      expect(result.status).toBe(BadgeStatus.CLAIMED);
+      expect(result.claimedAt).toBeDefined();
+      expect(result.badge.name).toBe(mockTemplate.name);
+      expect(result.message).toContain('successfully');
+      expect(mockPrismaService.badge.update).toHaveBeenCalledWith({
+        where: { id: mockPendingBadge.id },
+        data: {
+          status: BadgeStatus.CLAIMED,
+          claimedAt: expect.any(Date),
+          claimToken: null,
+        },
+        include: {
+          template: true,
+          recipient: true,
+        },
+      });
+    });
+
+    it('should throw NotFoundException for invalid token', async () => {
+      // Arrange
+      mockPrismaService.badge.findUnique.mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(service.claimBadge('invalid-token-' + 'x'.repeat(19)))
+        .rejects
+        .toThrow(NotFoundException);
+      expect(mockPrismaService.badge.findUnique).toHaveBeenCalledWith({
+        where: { claimToken: 'invalid-token-' + 'x'.repeat(19) },
+        include: {
+          template: true,
+          recipient: true,
+        },
+      });
+    });
+
+    it('should throw BadRequestException if already claimed', async () => {
+      // Arrange
+      const mockClaimedBadge = {
+        id: 'badge-uuid',
+        status: BadgeStatus.CLAIMED,
+        issuedAt: new Date(),
+        claimToken: null,
+        template: mockTemplate,
+        recipient: mockRecipient,
+      };
+
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockClaimedBadge);
+
+      // Act & Assert
+      await expect(service.claimBadge(mockClaimToken))
+        .rejects
+        .toThrow(BadRequestException);
+      expect(mockPrismaService.badge.update).not.toHaveBeenCalled();
+    });
+
+    it('should throw GoneException if revoked', async () => {
+      // Arrange
+      const mockRevokedBadge = {
+        id: 'badge-uuid',
+        status: BadgeStatus.REVOKED,
+        issuedAt: new Date(),
+        claimToken: mockClaimToken,
+        template: mockTemplate,
+        recipient: mockRecipient,
+      };
+
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockRevokedBadge);
+
+      // Act & Assert
+      await expect(service.claimBadge(mockClaimToken))
+        .rejects
+        .toThrow(GoneException);
+      expect(mockPrismaService.badge.update).not.toHaveBeenCalled();
+    });
+
+    it('should throw GoneException if claim token expired (>7 days)', async () => {
+      // Arrange
+      const eightDaysAgo = new Date();
+      eightDaysAgo.setDate(eightDaysAgo.getDate() - 8);
+
+      const mockExpiredTokenBadge = {
+        id: 'badge-uuid',
+        status: BadgeStatus.PENDING,
+        issuedAt: eightDaysAgo,
+        expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        claimToken: mockClaimToken,
+        template: mockTemplate,
+        recipient: mockRecipient,
+      };
+
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockExpiredTokenBadge);
+
+      // Act & Assert
+      await expect(service.claimBadge(mockClaimToken))
+        .rejects
+        .toThrow(GoneException);
+      await expect(service.claimBadge(mockClaimToken))
+        .rejects
+        .toThrow(/Claim token has expired/);
+      expect(mockPrismaService.badge.update).not.toHaveBeenCalled();
     });
   });
 });

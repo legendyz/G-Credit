@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, GoneException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { AssertionGeneratorService } from './services/assertion-generator.service';
 import { BadgeNotificationService } from './services/badge-notification.service';
@@ -143,6 +143,79 @@ export class BadgeIssuanceService {
           : badge.recipient.email,
         email: badge.recipient.email,
       },
+    };
+  }
+
+  /**
+   * Claim a badge using claim token
+   */
+  async claimBadge(claimToken: string) {
+    // 1. Find badge by claim token
+    const badge = await this.prisma.badge.findUnique({
+      where: { claimToken },
+      include: {
+        template: true,
+        recipient: true,
+      },
+    });
+
+    if (!badge) {
+      throw new NotFoundException('Invalid claim token');
+    }
+
+    // 2. Check if already claimed
+    if (badge.status === BadgeStatus.CLAIMED) {
+      throw new BadRequestException('Badge has already been claimed');
+    }
+
+    // 3. Check if revoked
+    if (badge.status === BadgeStatus.REVOKED) {
+      throw new GoneException('Badge has been revoked');
+    }
+
+    // 4. Check if badge has expiration and is expired
+    if (badge.expiresAt && badge.expiresAt < new Date()) {
+      // Update status to EXPIRED
+      await this.prisma.badge.update({
+        where: { id: badge.id },
+        data: { status: BadgeStatus.EXPIRED },
+      });
+      throw new GoneException('Badge has expired');
+    }
+
+    // 5. Check if claim token expired (7 days from issuance)
+    const tokenExpirationDate = new Date(badge.issuedAt);
+    tokenExpirationDate.setDate(tokenExpirationDate.getDate() + 7);
+    if (tokenExpirationDate < new Date()) {
+      throw new GoneException('Claim token has expired. Tokens must be claimed within 7 days of issuance.');
+    }
+
+    // 6. Claim the badge
+    const claimedBadge = await this.prisma.badge.update({
+      where: { id: badge.id },
+      data: {
+        status: BadgeStatus.CLAIMED,
+        claimedAt: new Date(),
+        claimToken: null, // Clear token (one-time use)
+      },
+      include: {
+        template: true,
+        recipient: true,
+      },
+    });
+
+    // 7. Return badge details
+    return {
+      id: claimedBadge.id,
+      status: claimedBadge.status,
+      claimedAt: claimedBadge.claimedAt,
+      badge: {
+        name: claimedBadge.template.name,
+        description: claimedBadge.template.description,
+        imageUrl: claimedBadge.template.imageUrl,
+      },
+      assertionUrl: this.assertionGenerator.getAssertionUrl(claimedBadge.id),
+      message: 'Badge claimed successfully! You can now view it in your wallet.',
     };
   }
 }

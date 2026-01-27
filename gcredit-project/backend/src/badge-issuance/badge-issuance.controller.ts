@@ -1,11 +1,13 @@
-import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
+import { Public } from '../common/decorators/public.decorator';
 import { UserRole } from '@prisma/client';
 import { BadgeIssuanceService } from './badge-issuance.service';
 import { IssueBadgeDto } from './dto/issue-badge.dto';
+import { ClaimBadgeDto } from './dto/claim-badge.dto';
 
 @ApiTags('Badge Issuance')
 @Controller('api/badges')
@@ -23,5 +25,33 @@ export class BadgeIssuanceController {
   @ApiResponse({ status: 404, description: 'Template or recipient not found' })
   async issueBadge(@Body() dto: IssueBadgeDto, @Request() req: any) {
     return this.badgeService.issueBadge(dto, req.user.userId);
+  }
+
+  @Post(':id/claim')
+  @Public() // No authentication required - anyone with token can claim
+  @ApiOperation({ summary: 'Claim a badge using claim token' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Badge claimed successfully',
+    schema: {
+      example: {
+        id: 'badge-uuid',
+        status: 'CLAIMED',
+        claimedAt: '2026-01-27T12:00:00.000Z',
+        badge: {
+          name: 'Outstanding Performance',
+          description: 'Awarded for exceptional work',
+          imageUrl: 'https://example.com/badge.png'
+        },
+        assertionUrl: 'http://localhost:3000/api/badges/badge-uuid/assertion',
+        message: 'Badge claimed successfully! You can now view it in your wallet.'
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Badge already claimed' })
+  @ApiResponse({ status: 404, description: 'Invalid claim token' })
+  @ApiResponse({ status: 410, description: 'Badge expired or revoked' })
+  async claimBadge(@Param('id') id: string, @Body() dto: ClaimBadgeDto) {
+    return this.badgeService.claimBadge(dto.claimToken);
   }
 }
