@@ -11,6 +11,7 @@ import { SkillsModule } from './skills/skills.module';
 import { BadgeTemplatesModule } from './badge-templates/badge-templates.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
+import { BadgeIssuanceModule } from './badge-issuance/badge-issuance.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     SkillCategoriesModule,
     SkillsModule,
     BadgeTemplatesModule,
+    BadgeIssuanceModule,
   ],
   controllers: [AppController],
   providers: [

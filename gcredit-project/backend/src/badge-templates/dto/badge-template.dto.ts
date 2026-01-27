@@ -13,7 +13,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { BadgeStatus } from '@prisma/client';
+import { TemplateStatus } from '@prisma/client';
 import { IssuanceCriteriaDto } from './issuance-criteria.dto';
 
 export class CreateBadgeTemplateDto {
@@ -150,13 +150,13 @@ export class UpdateBadgeTemplateDto {
   validityPeriod?: number;
 
   @ApiPropertyOptional({
-    enum: BadgeStatus,
-    example: BadgeStatus.ACTIVE,
+    enum: TemplateStatus,
+    example: TemplateStatus.ACTIVE,
     description: '徽章状态',
   })
   @IsOptional()
-  @IsEnum(BadgeStatus)
-  status?: BadgeStatus;
+  @IsEnum(TemplateStatus)
+  status?: TemplateStatus;
 }
 
 export class BadgeTemplateResponseDto {
@@ -186,8 +186,8 @@ export class BadgeTemplateResponseDto {
   @ApiPropertyOptional({ example: 365 })
   validityPeriod: number | null;
 
-  @ApiProperty({ enum: BadgeStatus, example: BadgeStatus.DRAFT })
-  status: BadgeStatus;
+  @ApiProperty({ enum: TemplateStatus, example: TemplateStatus.DRAFT })
+  status: TemplateStatus;
 
   @ApiProperty({ example: 'creator-uuid' })
   createdBy: string;
