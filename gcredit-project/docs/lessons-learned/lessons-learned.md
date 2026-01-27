@@ -2,14 +2,14 @@
 
 **Project:** G-Credit Digital Credentialing System  
 **Purpose:** Capture key learnings and establish best practices for efficient development  
-**Last Updated:** 2026-01-26 (Sprint 2 Complete - Documentation Reorganization)  
+**Last Updated:** 2026-01-27 (Sprint 3 - Test File Organization)  
 **Status:** Living document - update after each Sprint Retrospective  
-**Coverage:** Sprint 0 (Infrastructure) → Sprint 1 (Authentication) → Sprint 2 (Badge Templates) + Documentation Organization  
-**Total Lessons:** 14 sprint-specific lessons + 12 cross-sprint patterns = 26 key learnings
+**Coverage:** Sprint 0 (Infrastructure) → Sprint 1 (Authentication) → Sprint 2 (Badge Templates) → Sprint 3 (Badge Issuance) + Documentation & Test Organization  
+**Total Lessons:** 16 sprint-specific lessons + 12 cross-sprint patterns = 28 key learnings
 
 ---
 
-## 📊 Project Summary (Sprint 0-2)
+## 📊 Project Summary (Sprint 0-3)
 
 ### Velocity Metrics
 | Sprint | Stories | Estimated | Actual | Accuracy | Velocity |
@@ -17,10 +17,11 @@
 | Sprint 0 | 5/5 (100%) | 10h | 9.5h | 95% | ~1h/story |
 | Sprint 1 | 7/7 (100%) | 21h | 21h | 100% | ~3h/story |
 | Sprint 2 | 4/6 (67%) | 21-22h | ~3h | 7-8x faster | ~45min/story |
+| Sprint 3 | 1/6 (17%) | 2h | 2h | 100% | ~2h/story (Story 4.1) |
 
 ### Quality Metrics
-- **Test Pass Rate:** 100% (40/40 Sprint 1 tests, comprehensive Sprint 2 testing)
-- **Documentation Accuracy:** 95%+ (after Sprint 2 path corrections)
+- **Test Pass Rate:** 100% (40/40 Sprint 1, comprehensive Sprint 2+3)
+- **Documentation Accuracy:** 95%+ (after Sprint 2+3 reorganization)
 - **Technical Debt:** 3 items (all documented, 2 scheduled for Sprint 7+)
 - **Zero Production Bugs:** All issues caught in development
 
@@ -28,7 +29,9 @@
 - ✅ Production-ready infrastructure (Azure PostgreSQL + Blob Storage)
 - ✅ Complete authentication system (JWT + RBAC + Multi-device)
 - ✅ Badge management foundation (Templates, Skills, Categories)
-- ✅ Comprehensive documentation system (5 major guides created)
+- ✅ Badge issuance system (Single badge + Open Badges 2.0) ⭐
+- ✅ Comprehensive documentation system (8 major guides created)
+- ✅ Well-organized test structure (35 tests reorganized) ⭐
 - ✅ Established development patterns and best practices
 
 ---
@@ -37,7 +40,7 @@
 - [Sprint 0 Lessons](#sprint-0-lessons-january-2026) - Infrastructure Setup (5 lessons)
 - [Sprint 1 Lessons](#sprint-1-lessons-january-2026) - Authentication System (4 lessons)
 - [Sprint 2 Lessons](#sprint-2-lessons-january-2026) - Badge Templates (7 lessons)
-- [Post-Sprint 2 Lessons](#post-sprint-2-lessons-january-2026) - Documentation Organization (2 lessons) ⭐ **NEW**
+- [Post-Sprint 2 Lessons](#post-sprint-2-lessons-january-2026) - Documentation & Test Organization (3 lessons) ⭐
 - [Cross-Sprint Patterns](#cross-sprint-patterns) - 12 patterns
 - [Development Checklists](#development-checklists)
 - [Common Pitfalls](#common-pitfalls-to-avoid)
@@ -877,6 +880,174 @@ backend/docs/
   → Yes: /docs/{category}/
   → No: Consider creating new category or placing in /docs/
 ```
+
+---
+
+### 🎯 Lesson 16: Test File Organization - Proactive vs Reactive Cleanup
+
+**What Happened:**
+After 3 sprints of development (Sprint 0-3), discovered 35+ test-related files scattered in backend root directory:
+- 25 PowerShell test scripts (`.ps1`)
+- 4 HTTP test files (`.http`)
+- 3 test reports (`.txt`)
+- 3 alternative language versions (`.js`, `.py`)
+- Multiple duplicate/deprecated test files
+
+**Impact:**
+- 🔍 Root directory cluttered (62 files/folders → hard to navigate)
+- 😕 Confusion about which tests are current vs deprecated
+- ⏱️ 2+ hours spent searching for specific test files
+- 🤔 New developers unsure which tests to run
+- 📁 No clear organization by Sprint or feature
+
+**Root Cause:**
+- Created test files "wherever convenient" during sprints
+- No upfront test file organization strategy
+- Kept deprecated tests alongside active ones
+- No clear naming convention for test evolution (v1, v2, etc.)
+- Accumulated "experimental" test files from debugging sessions
+
+**Solution Implemented (2026-01-27):**
+Created structured test directory organization:
+
+```
+backend/
+├── test/                      # Jest E2E tests (4 files)
+│   ├── *.e2e-spec.ts
+│   └── jest-e2e.json
+│
+├── test-scripts/              # Active PowerShell tests (17 files) ⭐
+│   ├── sprint-1/             # 7 files: Authentication tests
+│   ├── sprint-2/             # 4 files: Badge template tests
+│   ├── sprint-3/             # 1 file: Badge issuance tests
+│   ├── infrastructure/       # 3 files: Email, storage, DB reset
+│   └── utilities/            # 2 files: Test data generation
+│
+└── test-archive/              # Historical/deprecated tests (17 files) ⭐
+    ├── deprecated/           # 6 files: Replaced by newer versions
+    ├── alternative-languages/ # 3 files: JS, Python reference
+    ├── http-client-tests/    # 4 files: REST Client format
+    ├── experimental/         # 6 files: Debugging attempts
+    └── README.md            # Archive explanation
+```
+
+**Reorganization Actions:**
+- ✅ Moved 35 test files from root to organized directories
+- ✅ Reduced root directory from 62 → 30 items (52% reduction)
+- ✅ Created `test-archive/README.md` explaining each archived file
+- ✅ Separated active vs deprecated tests clearly
+- ✅ Organized by Sprint for easy historical reference
+- ✅ Created `testing-quick-guide.md` for finding tests
+- ✅ Updated `project-structure.md` to reflect new layout
+
+**Time Investment:**
+- Reorganization: 1 hour
+- Documentation updates: 30 minutes
+- **Total**: 1.5 hours
+
+**Immediate Benefits:**
+- ✅ Root directory clean and navigable
+- ✅ Clear which tests are active vs archived
+- ✅ Easy to find Sprint-specific tests
+- ✅ Historical tests preserved for reference
+- ✅ New developers can quickly locate tests
+
+**Key Principles Established:**
+
+1. **Organize by Sprint AND Purpose**
+   - Sprint-specific tests → `test-scripts/sprint-{n}/`
+   - Cross-cutting tests → `test-scripts/infrastructure/`
+   - Tools/utilities → `test-scripts/utilities/`
+
+2. **Active vs Archive Separation**
+   - Active tests: `test-scripts/` (current, maintained)
+   - Deprecated tests: `test-archive/` (reference only)
+
+3. **Never Delete, Always Archive**
+   - Deprecated tests move to `test-archive/deprecated/`
+   - Document WHY archived (replaced by what?)
+   - Preserve for learning and historical reference
+
+4. **Test Evolution Naming**
+   - Instead of `test-v1.ps1`, `test-v2.ps1`, `test-v3.ps1`
+   - Use descriptive names: `test-quick.ps1`, `test-e2e.ps1`, `test-complete.ps1`
+   - Archive old versions when superseded
+
+5. **Documentation is Critical**
+   - Each test directory needs a README
+   - Archive needs explanation of each file's history
+   - Quick guide for finding/running tests
+
+**Prevention for Future:**
+
+**At Sprint Start:**
+```
+□ Create test-scripts/sprint-{n}/ directory
+□ Plan test organization upfront
+□ Decide test naming convention
+□ Document in test strategy
+```
+
+**During Sprint:**
+```
+□ Place new tests in correct sprint folder
+□ Use descriptive names (not test1, test2, test3)
+□ Delete temporary test files after debugging
+□ Don't keep multiple versions of same test
+```
+
+**At Sprint End:**
+```
+□ Review all test files in sprint folder
+□ Archive deprecated tests
+□ Update test documentation
+□ Ensure tests runnable for future reference
+```
+
+**Comparison with Code Organization:**
+This is analogous to Lesson 14 (Documentation Organization) but for test files:
+
+| Aspect | Documentation (Lesson 14) | Tests (Lesson 16) |
+|--------|---------------------------|-------------------|
+| Problem | Docs scattered everywhere | Tests scattered in root |
+| Solution | Organize by type & sprint | Organize by sprint & purpose |
+| Living vs Historical | `/docs/` vs `/sprints/` | `test-scripts/` vs `test-archive/` |
+| Key Principle | Location signals purpose | Location signals status |
+
+**Red Flags (When to Reorganize):**
+- 🚨 Root directory has >10 test files
+- 🚨 Confusion about which test to run
+- 🚨 Multiple versions of same test exist
+- 🚨 Old test files "just in case we need them"
+- 🚨 5+ minutes to find the right test
+
+**Key Takeaway:**
+> Test file organization is as important as code organization. Define test directory structure upfront, organize by Sprint and purpose, and separate active from archived tests. Never let test files accumulate in root directory - reorganize proactively when count exceeds 10.
+
+**ROI Calculation:**
+- Reorganization cost: 1.5 hours (one-time)
+- Time saved per developer: ~10 minutes/sprint finding tests
+- Team size: 3 developers
+- Remaining sprints: 5
+- **Savings**: 3 × 10min × 5 = 2.5 hours
+- **ROI**: 67% time savings (plus cleaner codebase)
+
+**Template for Future Projects:**
+```
+backend/
+├── test/                 # Jest E2E tests only
+├── test-scripts/         # Active PowerShell/manual tests
+│   ├── sprint-1/
+│   ├── sprint-2/
+│   ├── sprint-{n}/
+│   ├── infrastructure/
+│   └── utilities/
+└── test-archive/         # Historical reference
+    ├── deprecated/
+    └── README.md
+```
+
+This structure should be created at project start, not after accumulating technical debt.
 
 ---
 
