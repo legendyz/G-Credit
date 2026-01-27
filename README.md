@@ -431,8 +431,8 @@ This project uses the **BMAD (Business Model Agent Development) Framework** v6.0
 | → Sprint 0 | 1 day | Infrastructure Setup | ✅ Complete (2026-01-24, 9.5h/10h, 95%) |
 | → Sprint 1 | 1 day | JWT Auth & User Management (Epic 2) | ✅ Complete (2026-01-25, 21h/21h, 100%) |
 | → Sprint 2 | 1 day | Badge Template Management (Epic 3) | ✅ Complete (2026-01-26, 29h/32h, 110%) |
-| → Sprint 3 | TBD | Badge Issuance (Epic 4) | 🔜 Planning |
-| → Sprint 4-5 | TBD | Verification & Wallet (Epic 5-6) | ⏳ Planned |
+| → Sprint 3 | 1 day | Badge Issuance System (Epic 4) | ✅ Complete (2026-01-28, 13h/12.5h, 104%, v0.3.0) |
+| → Sprint 4-5 | TBD | Verification & Wallet (Epic 5-6) | 🔜 Planning |
 | → Sprint 6-7 | TBD | Analytics & Integrations | ⏳ Planned |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ Pending |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
