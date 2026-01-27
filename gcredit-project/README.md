@@ -4,11 +4,12 @@
 
 ## 📊 Project Status
 
-**Current Sprint:** Sprint 3 (Badge Issuance) 🔜  
+**Current Sprint:** ✅ Sprint 3 Complete (v0.3.0) → 🔜 Sprint 4 Planning  
+**Sprint 3:** ✅ Complete (100%, 13h/12.5h, 2026-01-28, Badge Issuance)  
 **Sprint 2:** ✅ Complete (100%, 29h/32h, 2026-01-26)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, 2026-01-25)  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, 2026-01-24)  
-**Version:** v0.2.0 (Badge Template Management)  
+**Version:** v0.3.0 (Badge Issuance System)  
 **License:** MIT
 
 ## 🚀 Tech Stack
