@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Request, Param } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request, Param, Get, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -8,6 +8,7 @@ import { UserRole } from '@prisma/client';
 import { BadgeIssuanceService } from './badge-issuance.service';
 import { IssueBadgeDto } from './dto/issue-badge.dto';
 import { ClaimBadgeDto } from './dto/claim-badge.dto';
+import { QueryBadgeDto } from './dto/query-badge.dto';
 
 @ApiTags('Badge Issuance')
 @Controller('api/badges')
@@ -53,5 +54,21 @@ export class BadgeIssuanceController {
   @ApiResponse({ status: 410, description: 'Badge expired or revoked' })
   async claimBadge(@Param('id') id: string, @Body() dto: ClaimBadgeDto) {
     return this.badgeService.claimBadge(dto.claimToken);
+  }
+
+  @Get('my-badges')
+  @ApiOperation({ summary: 'Get badges received by current user' })
+  @ApiResponse({ status: 200, description: 'Badges retrieved successfully' })
+  async getMyBadges(@Request() req: any, @Query() query: QueryBadgeDto) {
+    return this.badgeService.getMyBadges(req.user.userId, query);
+  }
+
+  @Get('issued')
+  @Roles(UserRole.ADMIN, UserRole.ISSUER)
+  @ApiOperation({ summary: 'Get badges issued by current user (ISSUER) or all badges (ADMIN)' })
+  @ApiResponse({ status: 200, description: 'Badges retrieved successfully' })
+  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  async getIssuedBadges(@Request() req: any, @Query() query: QueryBadgeDto) {
+    return this.badgeService.getIssuedBadges(req.user.userId, req.user.role, query);
   }
 }

@@ -3,7 +3,8 @@ import { PrismaService } from '../common/prisma.service';
 import { AssertionGeneratorService } from './services/assertion-generator.service';
 import { BadgeNotificationService } from './services/badge-notification.service';
 import { IssueBadgeDto } from './dto/issue-badge.dto';
-import { BadgeStatus } from '@prisma/client';
+import { QueryBadgeDto } from './dto/query-badge.dto';
+import { BadgeStatus, UserRole } from '@prisma/client';
 
 @Injectable()
 export class BadgeIssuanceService {
@@ -216,6 +217,179 @@ export class BadgeIssuanceService {
       },
       assertionUrl: this.assertionGenerator.getAssertionUrl(claimedBadge.id),
       message: 'Badge claimed successfully! You can now view it in your wallet.',
+    };
+  }
+
+  /**
+   * Get badges received by a user
+   */
+  async getMyBadges(userId: string, query: QueryBadgeDto) {
+    // Build where clause
+    const where: any = {
+      recipientId: userId,
+    };
+
+    // Add optional filters
+    if (query.status) {
+      where.status = query.status;
+    }
+
+    if (query.templateId) {
+      where.templateId = query.templateId;
+    }
+
+    // Get total count
+    const totalCount = await this.prisma.badge.count({ where });
+
+    // Calculate pagination
+    const skip = (query.page - 1) * query.limit;
+    const take = query.limit;
+
+    // Build orderBy
+    const orderBy = {
+      [query.sortBy]: query.sortOrder,
+    };
+
+    // Get badges
+    const badges = await this.prisma.badge.findMany({
+      where,
+      skip,
+      take,
+      orderBy,
+      include: {
+        template: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            imageUrl: true,
+            category: true,
+          },
+        },
+        issuer: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    // Format response
+    return {
+      data: badges.map((badge) => ({
+        id: badge.id,
+        status: badge.status,
+        issuedAt: badge.issuedAt,
+        claimedAt: badge.claimedAt,
+        expiresAt: badge.expiresAt,
+        evidenceUrl: badge.evidenceUrl,
+        template: badge.template,
+        issuer: {
+          id: badge.issuer.id,
+          name: badge.issuer.firstName && badge.issuer.lastName
+            ? `${badge.issuer.firstName} ${badge.issuer.lastName}`
+            : badge.issuer.email,
+        },
+      })),
+      pagination: {
+        page: query.page,
+        limit: query.limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / query.limit),
+        hasMore: skip + take < totalCount,
+      },
+    };
+  }
+
+  /**
+   * Get badges issued by user (ISSUER sees own, ADMIN sees all)
+   */
+  async getIssuedBadges(userId: string, userRole: UserRole, query: QueryBadgeDto) {
+    // Build where clause based on role
+    const where: any = {};
+
+    // ISSUER can only see badges they issued
+    if (userRole === UserRole.ISSUER) {
+      where.issuerId = userId;
+    }
+    // ADMIN can see all badges (no filter)
+
+    // Add optional filters
+    if (query.status) {
+      where.status = query.status;
+    }
+
+    if (query.templateId) {
+      where.templateId = query.templateId;
+    }
+
+    // Get total count
+    const totalCount = await this.prisma.badge.count({ where });
+
+    // Calculate pagination
+    const skip = (query.page - 1) * query.limit;
+    const take = query.limit;
+
+    // Build orderBy
+    const orderBy = {
+      [query.sortBy]: query.sortOrder,
+    };
+
+    // Get badges
+    const badges = await this.prisma.badge.findMany({
+      where,
+      skip,
+      take,
+      orderBy,
+      include: {
+        template: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            imageUrl: true,
+            category: true,
+          },
+        },
+        recipient: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    // Format response
+    return {
+      data: badges.map((badge) => ({
+        id: badge.id,
+        status: badge.status,
+        issuedAt: badge.issuedAt,
+        claimedAt: badge.claimedAt,
+        expiresAt: badge.expiresAt,
+        evidenceUrl: badge.evidenceUrl,
+        template: badge.template,
+        recipient: {
+          id: badge.recipient.id,
+          name: badge.recipient.firstName && badge.recipient.lastName
+            ? `${badge.recipient.firstName} ${badge.recipient.lastName}`
+            : badge.recipient.email,
+          email: badge.recipient.email,
+        },
+      })),
+      pagination: {
+        page: query.page,
+        limit: query.limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / query.limit),
+        hasMore: skip + take < totalCount,
+      },
     };
   }
 }
