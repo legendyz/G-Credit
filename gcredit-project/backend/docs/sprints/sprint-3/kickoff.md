@@ -14,15 +14,15 @@
 Deliver a working badge issuance system that allows authorized users to issue badges to employees, send email notifications, and enable recipients to claim their badges. All issued badges must comply with Open Badges 2.0 standard.
 
 ### Success Criteria
-- âœ… Authorized users (ADMIN/ISSUER) can issue individual badges
-- âœ… Batch issuance via CSV upload works for 10+ badges
-- âœ… Recipients receive email notifications with claim links
-- âœ… Recipients can claim badges via unique token
-- âœ… Issued badges include Open Badges 2.0 compliant assertion
-- âœ… Public verification endpoint returns valid assertions
-- âœ… Badge revocation workflow functions correctly
-- âœ… All tests pass (unit + E2E) with 100% pass rate
-- âœ… API documentation updated in Swagger
+- âœ?Authorized users (ADMIN/ISSUER) can issue individual badges
+- âœ?Batch issuance via CSV upload works for 10+ badges
+- âœ?Recipients receive email notifications with claim links
+- âœ?Recipients can claim badges via unique token
+- âœ?Issued badges include Open Badges 2.0 compliant assertion
+- âœ?Public verification endpoint returns valid assertions
+- âœ?Badge revocation workflow functions correctly
+- âœ?All tests pass (unit + E2E) with 100% pass rate
+- âœ?API documentation updated in Swagger
 
 ---
 
@@ -45,7 +45,7 @@ Deliver a working badge issuance system that allows authorized users to issue ba
 
 ### Prerequisites Completion Status
 
-#### 1. Sprint 2 Closure âœ…
+#### 1. Sprint 2 Closure âœ?
 - [x] Sprint 2 retrospective completed (2026-01-26)
 - [x] Technical debt resolved (100%)
 - [x] Code review completed (10/10 rating after improvements)
@@ -54,7 +54,7 @@ Deliver a working badge issuance system that allows authorized users to issue ba
 - [x] PR merged to main
 - [x] Release v0.2.0 published
 
-#### 2. Technical Decisions âœ…
+#### 2. Technical Decisions âœ?
 - [x] ADR-003: Open Badges 2.0 assertion format selected
 - [x] ADR-004: Azure Communication Services email selected
 - [x] Data model designed (Badge entity with assertionJson)
@@ -72,16 +72,16 @@ Deliver a working badge issuance system that allows authorized users to issue ba
   - [ ] Badge claim notification template
   - [ ] Badge revocation notification template
 
-#### 4. Development Environment âœ…
+#### 4. Development Environment âœ?
 - [x] Node.js 20.20.0 LTS installed
 - [x] All dependencies up to date (Sprint 2 package.json)
 - [x] Database migrations applied
 - [x] Test environment functional
 
-#### 5. Documentation âœ…
+#### 5. Documentation âœ?
 - [x] Lessons learned reviewed (26 lessons from Sprint 0-2)
 - [x] Project structure documented (DOCUMENTATION-STRUCTURE.md)
-- [x] Import paths reference available (IMPORT-PATHS.md)
+- [x] Import paths reference available (backend-code-structure-guide.md)
 - [x] Sprint 2 retrospective insights captured
 
 ---
@@ -90,7 +90,7 @@ Deliver a working badge issuance system that allows authorized users to issue ba
 
 ### From Sprint 2 Retrospective
 
-#### âœ… Lesson 10: Code-Documentation Sync
+#### âœ?Lesson 10: Code-Documentation Sync
 **Action:** All import paths in backlog verified against actual codebase
 ```typescript
 // Story 4.1 will use ACTUAL paths:
@@ -99,27 +99,27 @@ import { EmailService } from '../common/email.service';
 import { BadgeTemplate } from '@prisma/client';
 ```
 
-#### âœ… Lesson 11: Adjusted Time Estimates
+#### âœ?Lesson 11: Adjusted Time Estimates
 **Action:** Using Sprint 2 actual velocity (7x faster than original estimates)
 - Simple CRUD: 1-2h (not 5-6h)
 - Validation logic: 2-3h (not 8-10h)
 - Testing: Included in story time (not separate)
 
-#### âœ… Lesson 13: Prisma JSON Types
-**Action:** Badge.assertionJson will need DTO â†’ Plain Object conversion
+#### âœ?Lesson 13: Prisma JSON Types
+**Action:** Badge.assertionJson will need DTO â†?Plain Object conversion
 ```typescript
 // When saving assertion to database:
 assertionJson: JSON.parse(JSON.stringify(assertionDto))
 ```
 
-#### âœ… Lesson 14: Union Type Validation
+#### âœ?Lesson 14: Union Type Validation
 **Action:** All DTOs with union types have explicit decorators
 ```typescript
 @IsNotEmpty() // Required for union types!
 value: string | number | boolean | string[];
 ```
 
-#### âœ… Lesson 5: Test-First Approach
+#### âœ?Lesson 5: Test-First Approach
 **Action:** Each story includes:
 - Test strategy section
 - E2E test scenarios
@@ -127,7 +127,7 @@ value: string | number | boolean | string[];
 
 ---
 
-## ğŸ—ï¸ Technical Architecture
+## ğŸ—ï¸?Technical Architecture
 
 ### New Data Models
 
@@ -187,11 +187,11 @@ badge-issuance/
 â”œâ”€â”€ badge-issuance.service.ts         # Core business logic
 â”œâ”€â”€ badge-issuance.module.ts
 â”œâ”€â”€ dto/
-â”‚   â”œâ”€â”€ issue-badge.dto.ts            # Single issuance
-â”‚   â”œâ”€â”€ bulk-issue-badges.dto.ts      # CSV upload
-â”‚   â”œâ”€â”€ claim-badge.dto.ts            # Claim token
-â”‚   â”œâ”€â”€ revoke-badge.dto.ts           # Revocation
-â”‚   â””â”€â”€ query-badge.dto.ts            # Filtering
+â”?  â”œâ”€â”€ issue-badge.dto.ts            # Single issuance
+â”?  â”œâ”€â”€ bulk-issue-badges.dto.ts      # CSV upload
+â”?  â”œâ”€â”€ claim-badge.dto.ts            # Claim token
+â”?  â”œâ”€â”€ revoke-badge.dto.ts           # Revocation
+â”?  â””â”€â”€ query-badge.dto.ts            # Filtering
 â””â”€â”€ services/
     â”œâ”€â”€ assertion-generator.service.ts # OB 2.0 JSON-LD
     â”œâ”€â”€ csv-parser.service.ts          # Bulk issuance
@@ -206,9 +206,9 @@ badge-issuance/
 **Impact:** 24-48 hour wait for email domain verification
 
 **Mitigation:**
-- âœ… **Option A (Recommended):** Start domain verification NOW (before Sprint 3 dev starts)
-- âœ… **Option B:** Use Azure-provided domain for MVP (instant, but ugly sender address)
-- âœ… **Option C:** Keep Ethereal for development, deploy ACS later
+- âœ?**Option A (Recommended):** Start domain verification NOW (before Sprint 3 dev starts)
+- âœ?**Option B:** Use Azure-provided domain for MVP (instant, but ugly sender address)
+- âœ?**Option C:** Keep Ethereal for development, deploy ACS later
 
 **Decision:** Use Option B for Sprint 3 development, switch to Option A for production
 
@@ -263,56 +263,56 @@ jane.smith@example.com,uuid-1,,
 
 #### Unit Tests (Jest) - 20 tests
 - AssertionGeneratorService (8 tests)
-  - âœ… Generate valid OB 2.0 JSON-LD
-  - âœ… Hash recipient email (SHA-256)
-  - âœ… Include evidence URLs
-  - âœ… Handle expiration dates
-  - âœ… Generate verification URLs
+  - âœ?Generate valid OB 2.0 JSON-LD
+  - âœ?Hash recipient email (SHA-256)
+  - âœ?Include evidence URLs
+  - âœ?Handle expiration dates
+  - âœ?Generate verification URLs
   
 - CSVParserService (6 tests)
-  - âœ… Parse valid CSV
-  - âœ… Validate headers
-  - âœ… Handle missing optional fields
-  - âœ… Reject invalid data
+  - âœ?Parse valid CSV
+  - âœ?Validate headers
+  - âœ?Handle missing optional fields
+  - âœ?Reject invalid data
   
 - BadgeService (6 tests)
-  - âœ… Issue single badge
-  - âœ… Generate unique claim token
-  - âœ… Revoke badge
-  - âœ… Verify badge authenticity
+  - âœ?Issue single badge
+  - âœ?Generate unique claim token
+  - âœ?Revoke badge
+  - âœ?Verify badge authenticity
 
 #### Integration Tests (Jest E2E) - 15 tests
 - Issue Badge (3 tests)
-  - âœ… Authorized user can issue
-  - âœ… Unauthorized user cannot issue
-  - âœ… Invalid template ID rejected
+  - âœ?Authorized user can issue
+  - âœ?Unauthorized user cannot issue
+  - âœ?Invalid template ID rejected
   
 - Bulk Issue (3 tests)
-  - âœ… Valid CSV processes successfully
-  - âœ… Invalid CSV rejected with errors
-  - âœ… Partial failures handled
+  - âœ?Valid CSV processes successfully
+  - âœ?Invalid CSV rejected with errors
+  - âœ?Partial failures handled
   
 - Claim Badge (3 tests)
-  - âœ… Valid token claims successfully
-  - âœ… Invalid token rejected
-  - âœ… Expired token rejected
+  - âœ?Valid token claims successfully
+  - âœ?Invalid token rejected
+  - âœ?Expired token rejected
   
 - Query Badges (3 tests)
-  - âœ… User sees own badges only
-  - âœ… Issuer sees issued badges
-  - âœ… Admin sees all badges
+  - âœ?User sees own badges only
+  - âœ?Issuer sees issued badges
+  - âœ?Admin sees all badges
   
 - Revoke Badge (3 tests)
-  - âœ… Admin can revoke
-  - âœ… Non-admin cannot revoke
-  - âœ… Revoked badge returns 410 Gone
+  - âœ?Admin can revoke
+  - âœ?Non-admin cannot revoke
+  - âœ?Revoked badge returns 410 Gone
 
 #### E2E Tests (PowerShell) - 5 tests
-- âœ… Complete issuance workflow (issue â†’ notify â†’ claim)
-- âœ… Bulk issuance smoke test
-- âœ… Public assertion endpoint
-- âœ… Badge verification
-- âœ… Revocation workflow
+- âœ?Complete issuance workflow (issue â†?notify â†?claim)
+- âœ?Bulk issuance smoke test
+- âœ?Public assertion endpoint
+- âœ?Badge verification
+- âœ?Revocation workflow
 
 **Total Tests:** 40 tests  
 **Target Pass Rate:** 100%
@@ -356,7 +356,7 @@ A story is considered "Done" when:
 - [ ] Unit tests written and passing
 - [ ] E2E tests written and passing
 - [ ] PowerShell smoke tests passing
-- [ ] Test coverage â‰¥ 80% for new code
+- [ ] Test coverage â‰?80% for new code
 - [ ] Edge cases covered (invalid input, errors)
 
 ### Documentation
@@ -384,28 +384,28 @@ A story is considered "Done" when:
 
 ### Day 1 (6-7 hours)
 **Morning (3-4h):**
-- âœ… Story 4.1: Single Badge Issuance (2h)
-- âœ… Story 4.5: Email Notifications (2h)
+- âœ?Story 4.1: Single Badge Issuance (2h)
+- âœ?Story 4.5: Email Notifications (2h)
 
 **Afternoon (3h):**
-- âœ… Story 4.3: Badge Claiming Workflow (2h)
-- âœ… Setup Azure Communication Services (1h)
+- âœ?Story 4.3: Badge Claiming Workflow (2h)
+- âœ?Setup Azure Communication Services (1h)
 
 ### Day 2 (5-6 hours)
 **Morning (3-4h):**
-- âœ… Story 4.2: Batch Badge Issuance (CSV) (3h)
-- âœ… Story 4.4: Issuance History & Queries (2h)
+- âœ?Story 4.2: Batch Badge Issuance (CSV) (3h)
+- âœ?Story 4.4: Issuance History & Queries (2h)
 
 **Afternoon (2h):**
-- âœ… Story 4.6: Badge Revocation (1.5h)
-- âœ… Final testing & bug fixes (30min)
+- âœ?Story 4.6: Badge Revocation (1.5h)
+- âœ?Final testing & bug fixes (30min)
 
 ### Day 3 (Optional, 2-3 hours)
-- âœ… Sprint retrospective
-- âœ… Update documentation
-- âœ… Prepare Sprint 3 final report
-- âœ… Create PR and merge to main
-- âœ… Tag v0.3.0 release
+- âœ?Sprint retrospective
+- âœ?Update documentation
+- âœ?Prepare Sprint 3 final report
+- âœ?Create PR and merge to main
+- âœ?Tag v0.3.0 release
 
 ---
 
@@ -432,7 +432,7 @@ A story is considered "Done" when:
 
 ---
 
-## âœ… Pre-Sprint Checklist
+## âœ?Pre-Sprint Checklist
 
 ### Infrastructure
 - [ ] Azure Communication Services resource created
@@ -467,7 +467,7 @@ A story is considered "Done" when:
 
 ---
 
-**Status:** âœ… Ready to Start  
+**Status:** âœ?Ready to Start  
 **Next Step:** Review [Sprint 3 Backlog](./backlog.md) and begin Story 4.1  
 **Questions?** Refer to lessons learned or ADR documents
 

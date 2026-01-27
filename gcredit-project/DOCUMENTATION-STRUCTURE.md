@@ -82,6 +82,35 @@ gcredit-project/
 
 ## 📋 Documentation Categories
 
+### 0. **Workspace Root Documentation** (`CODE/`)
+**Purpose:** GitHub repository showcase and external visibility
+
+**Key File:**
+- `CODE/README.md` - Repository homepage (GitHub first impression)
+
+**Target Audience:** 
+- GitHub visitors and potential contributors
+- External developers evaluating the project
+- Open source community members
+- Recruiters and technical evaluators
+
+**Content Focus:**
+- Project highlights and achievements
+- Technology stack showcase
+- Sprint milestones and progress visualization
+- Feature status overview (✅ Complete / 🔜 Upcoming)
+- Quick start for external contributors
+- Professional presentation with badges and metrics
+
+**Update Frequency:** Every Sprint completion (required in sprint-completion-checklist)
+
+**Relationship to project-context.md:**
+- `CODE/README.md` = External presentation (GitHub showcase)
+- `project-context.md` = Internal SSOT (BMAD agents + team)
+- Both should reflect same Sprint status but serve different audiences
+
+---
+
 ### 1. **Project-Level Documentation** (`/docs`)
 **Purpose:** Cross-cutting concerns, planning, architecture decisions
 
@@ -158,12 +187,18 @@ gcredit-project/
 
 ## 🎯 Documentation Principles
 
-### 1. **Single Source of Truth**
-- Each piece of information should exist in ONE canonical location
+### 1. **Single Source of Truth (with Exception for Different Audiences)**
+- Each piece of **internal information** should exist in ONE canonical location
+- **Exception:** `CODE/README.md` and `project-context.md` both track Sprint status but serve different audiences:
+  - `project-context.md` - Internal SSOT for BMAD agents and team (technical details)
+  - `CODE/README.md` - External showcase for GitHub visitors (presentation/marketing)
 - Link to authoritative sources instead of duplicating
 - Update links when moving documents
+- **Both README and project-context must be updated every Sprint** (enforced in sprint-completion-checklist)
 
 ### 2. **Clear Ownership**
+- Workspace root: External presentation → `CODE/README.md`
+- Project root: Internal SSOT → `project-context.md`
 - Project-level: Architecture, planning → `/docs`
 - Backend-specific: API, deployment, testing → `/backend/docs`
 - Sprint work: Historical sprints → `/backend/docs/sprints/sprint-X/`

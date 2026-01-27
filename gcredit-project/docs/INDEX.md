@@ -56,7 +56,7 @@ Project-specific copies of ADRs for quick reference (canonical versions in `_bma
 In-depth technical investigations and analysis.
 
 **Available Documents:**
-- **[sprint-1-npm-warnings-analysis.md](./sprint-1-npm-warnings-analysis.md)** - NPM dependency warnings analysis
+- **[npm-warnings-analysis.md](../backend/docs/sprints/sprint-1/npm-warnings-analysis.md)** - NPM dependency warnings analysis (Sprint 1)
 
 ---
 
