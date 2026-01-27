@@ -1,76 +1,208 @@
 # G-Credit Project Documentation
 
-**Version:** 0.2.0 (Sprint 2 Complete)  
-**Last Updated:** 2026-01-26  
+**Version:** 0.3.0 (Sprint 3 Complete - Badge Issuance)  
+**Last Updated:** 2026-01-27  
 **Status:** Active Development
 
 ---
 
-## 📚 Documentation Index
+## 📚 Documentation Hub - Single Source of Truth
 
-This directory contains all project-level documentation for the G-Credit Digital Credentialing System.
+This is the **primary documentation location** for the G-Credit Digital Credentialing System. All project documentation lives here or is linked from here.
 
-### Quick Links
-- 🏗️ [Architecture](./architecture/) - System design and technical architecture
-- 📋 [Planning](./planning/) - Product requirements and planning artifacts
-- 🎯 [Decisions](./decisions/) - Architecture Decision Records (ADRs)
-- 📖 [Lessons Learned](./lessons-learned/) - Project knowledge base
-- 🔒 [Security](./security/) - Security documentation and policies
+### 🚀 Quick Start
+- **New Developer?** Start with [Development Getting Started](#development) → [Backend README](../backend/README.md)
+- **Looking for APIs?** See [API Documentation](#api-documentation) → [Sprint 3 Badge Issuance](./sprints/sprint-3/)
+- **Sprint Planning?** Check [Sprint Documentation](#sprint-documentation)
+- **Architecture Questions?** Review [System Architecture](./architecture/system-architecture.md)
+
+### 📑 Quick Navigation
+- 🏗️ [Architecture](#architecture) - System design and technical architecture
+- 📋 [Planning](#planning) - Product requirements and specifications
+- 🏃 [Sprints](#sprint-documentation) - Sprint backlogs, summaries, and retrospectives
+- 🔒 [Security](#security) - Security documentation and policies
+- ⚙️ [Setup](#setup--configuration) - Environment and service setup guides
+- 🧪 [Testing](#testing) - Testing strategies and guides
+- 🎯 [Decisions](#decisions) - Architecture Decision Records (ADRs)
+- 📖 [Lessons Learned](#lessons-learned) - Project knowledge base
+- 👨‍💻 [Development](#development) - Developer guides and standards
 
 ---
 
-## 📁 Directory Structure
+## 📁 Documentation Sections
 
-### `/architecture` - System Architecture
-Technical architecture documents describing system design, data models, and API structure.
+### 🏗️ Architecture
+System design, data models, and technical architecture documentation.
 
-**Documents:**
-- [system-architecture.md](./architecture/system-architecture.md) - Overall system architecture
+**📄 Documents:**
+- [system-architecture.md](./architecture/system-architecture.md) - Complete system architecture overview
+- **Coming Soon:** data-model.md, api-design.md, infrastructure.md
 
-### `/planning` - Planning Artifacts
-Product planning, requirements, and design specifications.
+**Purpose:** Understand how the system is designed and why certain technical decisions were made.
 
-**Documents:**
-- [epics.md](./planning/epics.md) - Epic definitions and user stories
-- [ux-design-specification.md](./planning/ux-design-specification.md) - UX/UI design specifications
+---
 
-### `/decisions` - Architecture Decision Records
-Important architectural and technical decisions with context and rationale.
+### 📋 Planning
+Product requirements, epics, user stories, and design specifications.
 
-**Documents:**
+**📄 Documents:**
+- [epics.md](./planning/epics.md) - Epic definitions with user stories
+- [ux-design-specification.md](./planning/ux-design-specification.md) - Complete UX/UI specifications
+- **Legacy:** See `_bmad-output/planning-artifacts/` for historical planning docs
+
+**Purpose:** Product vision, requirements, and design specifications that guide development.
+
+---
+
+### 🏃 Sprint Documentation
+Sprint-by-sprint development history, backlogs, summaries, and retrospectives.
+
+**📁 Sprint Structure:**
+```
+sprints/
+├── sprint-0/ - Infrastructure & Setup
+├── sprint-1/ - Authentication & Authorization  
+├── sprint-2/ - Badge Template Management
+└── sprint-3/ - Badge Issuance System ⭐ NEW
+    ├── summary.md - Complete Sprint 3 report (26 E2E tests, 6 stories)
+    └── uat-testing-guide.md - User acceptance testing guide
+```
+
+**Current Sprint:** Sprint 3 (Badge Issuance) - ✅ Complete!
+- 6/6 stories delivered (100%)
+- 26 E2E tests passing
+- UAT successfully completed
+- See [Sprint 3 Summary](./sprints/sprint-3/summary.md)
+
+**Legacy Location:** Sprint 0-2 artifacts in `_bmad-output/implementation-artifacts/` (to be migrated)
+
+---
+
+### 🔒 Security
+Security policies, threat models, compliance, and security-related documentation.
+
+**📄 Documents:**
+- [security-notes.md](./security/security-notes.md) - Security considerations and best practices
+- **Coming Soon:** threat-model.md, compliance.md, security-audit-checklist.md
+
+**Purpose:** Ensure secure development and deployment practices.
+
+---
+
+### ⚙️ Setup & Configuration
+Environment setup, service configuration, and deployment prerequisites.
+
+**📄 Documents:**
+- [EMAIL_SETUP_QUICK.md](./setup/EMAIL_SETUP_QUICK.md) - Quick email service setup
+- [OUTLOOK_EMAIL_SETUP.md](./setup/OUTLOOK_EMAIL_SETUP.md) - Detailed Outlook/Azure setup
+- [OUTLOOK_VS_GMAIL_COMPARISON.md](./setup/OUTLOOK_VS_GMAIL_COMPARISON.md) - Email provider comparison
+- **Coming Soon:** DATABASE_SETUP.md, AZURE_INFRASTRUCTURE_SETUP.md
+
+**Purpose:** Get your development or production environment configured correctly.
+
+---
+
+### 🧪 Testing
+Testing strategies, test documentation, and quality assurance guides.
+
+**📄 Documents:**
+- [PASSWORD_RESET_TESTING.md](./testing/PASSWORD_RESET_TESTING.md) - Password reset flow testing
+- [UAT Testing Guide](./sprints/sprint-3/uat-testing-guide.md) - Sprint 3 user acceptance testing
+- **Backend Tests:** See `../backend/test/` for test code and documentation
+
+**Test Coverage (Sprint 3):**
+- 26 E2E tests (badge issuance)
+- 20 Unit tests
+- 7 UAT scenarios
+- All passing ✅
+
+**Purpose:** Understand testing strategy and how to validate system functionality.
+
+---
+
+### 🎯 Decisions
+Architecture Decision Records (ADRs) documenting important technical choices.
+
+**📄 Documents:**
 - [002-lodash-security-risk-acceptance.md](./decisions/002-lodash-security-risk-acceptance.md) - Lodash CVE risk acceptance
-- [README.md](./decisions/README.md) - ADR index and guidelines
+- **Note:** Decision records should be created here, not scattered in other locations
 
-### `/lessons-learned` - Project Knowledge Base
-Captured learnings, best practices, and common pitfalls from all sprints.
+**ADR Format:**
+- Sequential numbering: 001-xxx.md, 002-xxx.md
+- Include: Context, Decision, Consequences, Status
 
-**Documents:**
-- [lessons-learned.md](./lessons-learned/lessons-learned.md) - Comprehensive lessons from Sprint 0-2 (25 key learnings)
+**Purpose:** Track why we made important technical decisions and their trade-offs.
 
-### `/security` - Security Documentation
-Security policies, threat models, and security-related documentation.
+---
 
-**Documents:**
-- [security-notes.md](./security/security-notes.md) - Security considerations and policies
+### 📖 Lessons Learned
+Project knowledge base capturing what we've learned from experience.
+
+**📄 Documents:**
+- [lessons-learned.md](./lessons-learned/lessons-learned.md) - 25+ lessons from Sprint 0-3
+- **Categories:** Code Quality, Testing, Email, Prisma, TypeScript, Git, Documentation
+
+**Key Lessons (Sprint 3):**
+- Lesson 26: UAT reveals usability issues automated tests miss
+- Lesson 27: PowerShell multipart form-data requires manual encoding
+- Lesson 28: API endpoint paths must be consistent across controllers
+
+**Purpose:** Learn from past mistakes and build institutional knowledge.
+
+---
+
+### 👨‍💻 Development
+Developer guides, coding standards, and development workflows.
+
+**📄 Documents:**
+- [Backend README](../backend/README.md) - Quick start for backend development
+- [Backend Code Structure](../backend/src/README.md) - Code organization guide
+- **Coming Soon:** coding-standards.md, git-workflow.md, troubleshooting.md
+
+**Quick Links:**
+- [NestJS Documentation](https://docs.nestjs.com/)
+- [Prisma Documentation](https://www.prisma.io/docs/)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+
+**Purpose:** Help developers contribute effectively with consistent coding practices.
 
 ---
 
 ## 📖 Backend-Specific Documentation
 
-For backend API documentation, deployment guides, and sprint reports, see:
-- [Backend Documentation](../backend/docs/README.md)
-- [API Guide](../backend/docs/API-GUIDE.md)
-- [Deployment Guide](../backend/docs/DEPLOYMENT.md)
-- [Testing Guide](../backend/docs/TESTING.md)
+Backend application has its own detailed documentation:
+
+**Location:** `../backend/docs/`
+
+**Key Documents:**
+- [Sprint 3 Summary](../backend/docs/SPRINT-3-SUMMARY.md) - Complete Sprint 3 report ⭐ NEW
+- [Backend README](../backend/README.md) - Getting started with backend
+- [CHANGELOG](../backend/CHANGELOG.md) - Version history
+- **Coming Soon:** API-GUIDE.md, DEPLOYMENT.md, TESTING.md
+
+**Test Documentation:**
+- [UAT Testing Guide](../backend/test/UAT-TESTING-GUIDE.md) - Manual testing scenarios
+- [E2E Test Suite](../backend/test/badge-issuance.e2e-spec.ts) - Automated E2E tests
+- [Manual UAT Script](../backend/test/manual-uat-test.ps1) - PowerShell test automation
 
 ---
 
-## 🎯 Sprint Documentation
+## 🗺️ Documentation Map
 
-Sprint-specific work is organized chronologically:
-- [Sprint 0](../backend/docs/sprints/sprint-0/) - Infrastructure Setup
-- [Sprint 1](../backend/docs/sprints/sprint-1/) - Authentication & Authorization
-- [Sprint 2](../backend/docs/sprints/sprint-2/) - Badge Template Management
+**Where to find specific information:**
+
+| Need | Location |
+|------|----------|
+| System overview | [Architecture](./architecture/system-architecture.md) |
+| API endpoints | Backend Swagger UI: `http://localhost:3000/api-docs` |
+| Sprint history | [Sprints](./sprints/) |
+| Setup guides | [Setup](./setup/) |
+| Security policies | [Security](./security/security-notes.md) |
+| Technical decisions | [Decisions](./decisions/) |
+| Lessons learned | [Lessons](./lessons-learned/lessons-learned.md) |
+| Code structure | [Backend README](../backend/README.md) |
+| Testing strategy | [Testing](./testing/) |
+| Environment variables | [Backend .env.example](../backend/.env.example) |
 
 ---
 

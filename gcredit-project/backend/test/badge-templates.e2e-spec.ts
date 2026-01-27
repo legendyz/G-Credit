@@ -3,6 +3,8 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { PrismaService } from './../src/common/prisma.service';
+import { UserRole } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -25,6 +27,7 @@ describe('Badge Templates E2E (Sprint 2)', () => {
   let categoryId: string; // For skill creation
   let createdSkillId: string;
   let createdBadgeId: string;
+  let adminId: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -37,26 +40,67 @@ describe('Badge Templates E2E (Sprint 2)', () => {
 
     prisma = app.get<PrismaService>(PrismaService);
 
+    // Clean up any existing test data first
+    await prisma.badgeTemplate.deleteMany({ where: { createdBy: { endsWith: '@templatetest.com' } } });
+    await prisma.user.deleteMany({ where: { email: { endsWith: '@templatetest.com' } } });
+
+    // Setup test data
+    await setupTestData();
+  });
+
+  async function setupTestData() {
+    // Create admin user with unique email for this test suite
+    const adminPassword = await bcrypt.hash('Admin123!', 10);
+    const admin = await prisma.user.create({
+      data: {
+        email: 'admin@templatetest.com',
+        passwordHash: adminPassword,
+        firstName: 'Admin',
+        lastName: 'User',
+        role: UserRole.ADMIN,
+        emailVerified: true,
+      },
+    });
+    adminId = admin.id;
+
     // Login as admin to get token
     const loginResponse = await request(app.getHttpServer())
       .post('/auth/login')
       .send({
-        email: 'admin@gcredit.test',
+        email: 'admin@templatetest.com',
         password: 'Admin123!',
       })
       .expect(200);
 
     adminToken = loginResponse.body.accessToken;
 
-    // Get a category ID for skill creation
-    const categories = await request(app.getHttpServer())
-      .get('/skill-categories')
-      .set('Authorization', `Bearer ${adminToken}`)
-      .expect(200);
+    // Create test skills first (needed for badge templates)
+    const skillCategory = await prisma.skillCategory.create({
+      data: {
+        name: 'Test Category',
+        description: 'Category for E2E testing',
+      },
+    });
+    categoryId = skillCategory.id; // This will be a proper UUID from Prisma
 
-    if (categories.body.length > 0) {
-      categoryId = categories.body[0].id;
-    }
+    // Create a test skill
+    const skill = await prisma.skill.create({
+      data: {
+        name: 'Test Skill',
+        description: 'Skill for E2E testing',
+        categoryId: categoryId,
+      },
+    });
+    createdSkillId = skill.id;
+  }
+
+  afterAll(async () => {
+    // Cleanup test data - delete in correct order to avoid foreign key constraints
+    await prisma.badgeTemplate.deleteMany({ where: { createdBy: adminId } });
+    await prisma.skill.deleteMany({ where: { categoryId: categoryId } });
+    await prisma.skillCategory.deleteMany({ where: { id: categoryId } });
+    await prisma.user.deleteMany({ where: { email: { endsWith: '@templatetest.com' } } });
+    await app.close();
   });
 
   afterAll(async () => {
@@ -80,9 +124,9 @@ describe('Badge Templates E2E (Sprint 2)', () => {
         .expect((res) => {
           expect(Array.isArray(res.body)).toBe(true);
           expect(res.body.length).toBeGreaterThan(0);
-          // Should have seed categories
+          // Should have test category created in setup
           const categoryNames = res.body.map((cat: any) => cat.name);
-          expect(categoryNames).toContain('技术技能');
+          expect(categoryNames).toContain('Test Category');
         });
     });
 
@@ -100,21 +144,20 @@ describe('Badge Templates E2E (Sprint 2)', () => {
   });
 
   describe('Story 3.1: Create Skill', () => {
-    it('should create a new skill', () => {
-      return request(app.getHttpServer())
+    it('should create a new skill', async () => {
+      const response = await request(app.getHttpServer())
         .post('/skills')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           name: `E2E Test Skill ${Date.now()}`,
           description: 'Created by E2E test',
           categoryId: categoryId,
-        })
-        .expect(201)
-        .expect((res) => {
-          expect(res.body).toHaveProperty('id');
-          expect(res.body).toHaveProperty('name');
-          createdSkillId = res.body.id;
         });
+
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty('id');
+      expect(response.body).toHaveProperty('name');
+      expect(response.body.categoryId).toBe(categoryId);
     });
 
     it('should require authentication', () => {

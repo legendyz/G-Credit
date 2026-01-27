@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Badge Revoked</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: #dc3545; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+    .content { background: white; padding: 30px; border: 1px solid #e0e0e0; border-top: none; }
+    .info-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }
+    .footer { text-align: center; color: #666; font-size: 14px; margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 style="margin: 0;">⚠️ Badge Revoked</h1>
+  </div>
+  
+  <div class="content">
+    <p>Hi {{recipientName}},</p>
+    
+    <p>We're writing to inform you that your <strong>{{badgeName}}</strong> badge has been revoked.</p>
+    
+    <div class="info-box">
+      <p><strong>Reason for Revocation:</strong></p>
+      <p>{{revocationReason}}</p>
+    </div>
+    
+    <p>This badge is no longer valid and cannot be verified or shared.</p>
+    
+    <p>If you believe this is an error or have questions, please contact our support team at <a href="mailto:badges@gcredit.example.com">badges@gcredit.example.com</a>.</p>
+    
+    <p>We appreciate your understanding.</p>
+  </div>
+  
+  <div class="footer">
+    <p><strong>G-Credit Digital Credentialing Platform</strong></p>
+  </div>
+</body>
+</html>

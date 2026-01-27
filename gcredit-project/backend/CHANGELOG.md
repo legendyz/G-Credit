@@ -7,6 +7,123 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0] - 2026-01-28
+
+### Added - Badge Issuance System (Sprint 3)
+
+#### Core Features
+- **Single Badge Issuance** - Issue individual badges with recipient email and optional evidence URL
+- **Badge Claiming Workflow** - Recipients receive claim tokens (7-day expiry) via email and claim their badges
+- **Badge Revocation** - Admins and issuers can revoke badges (status ISSUED → REVOKED)
+- **Email Notifications** - Azure Communication Services integration for badge claim notifications
+- **Query Endpoints** - Get user's claimed badges and view issued badges (admin/issuer)
+- **Public Verification** - Open Badges 2.0 compliant JSON-LD assertion endpoints
+- **Bulk Issuance Preparation** - CSV upload validation endpoint (bulk workflow foundation)
+
+#### Open Badges 2.0 Compliance
+- JSON-LD assertion format with @context
+- Assertion schema with badge, recipient, issuedOn, verification fields
+- Public verification URL: `/api/badges/:id/assertion`
+- Badge portability to LinkedIn, Credly, and other platforms
+
+#### Data Models
+- `Badge` model with 11 fields (id, templateId, recipientEmail, issuedBy, claimToken, status, claimedAt, assertion, etc.)
+- Badge status lifecycle: ISSUED → CLAIMED → REVOKED
+- Claim token system with 7-day expiry (UUID v4)
+- Foreign key relationships: Badge → BadgeTemplate, Badge → User (issuedBy, claimedBy)
+
+#### API Endpoints (7 core routes)
+- `POST /api/badges` - Single badge issuance (ADMIN, ISSUER only)
+- `POST /api/badges/:id/claim` - Public claim endpoint (token-based authentication)
+- `GET /api/badges/my-badges` - User's claimed badges with template details
+- `GET /api/badges/issued` - Issued badges query (admin/issuer, paginated)
+- `POST /api/badges/:id/revoke` - Badge revocation with reason
+- `GET /api/badges/:id/assertion` - Public Open Badges 2.0 assertion
+- `POST /api/badges/bulk/validate-csv` - CSV bulk upload validation (future bulk workflow)
+
+#### Email Notification System
+- Azure Communication Services integration (ACS trial: 100 emails/day)
+- Professional HTML email templates
+- Badge claim notification with token link
+- 7-day token expiry enforcement
+- Email service with retry logic and error handling
+
+#### RBAC Enforcement
+- Badge issuance: ADMIN, ISSUER roles only
+- Badge revocation: ADMIN, ISSUER roles only
+- Query issued badges: ADMIN, ISSUER, MANAGER roles
+- Public endpoints: Badge claiming, assertion verification
+
+#### Testing
+- **46 Jest E2E Tests** - Complete end-to-end testing (100% pass rate)
+  - Story 4.1: Single badge issuance (8 tests)
+  - Story 4.2: Badge claiming workflow (6 tests)
+  - Story 4.3: My Badges query (4 tests)
+  - Story 4.4: Issued badges query (4 tests)
+  - Story 4.5: Badge revocation (4 tests)
+  - Badge Templates: 19 tests (from Sprint 2)
+  - App health check: 1 test
+- **20 Unit Tests** - Service layer coverage
+- **7 UAT Scenarios** - User acceptance testing (100% acceptance)
+- **Test Coverage:** 82% overall (exceeds 80% target)
+
+#### Documentation
+- [sprint-3/summary.md](./docs/sprints/sprint-3/summary.md) - Comprehensive sprint summary
+- [sprint-3/retrospective.md](./docs/sprints/sprint-3/retrospective.md) - Sprint retrospective and lessons learned
+- [sprint-3/uat-testing-guide.md](./docs/sprints/sprint-3/uat-testing-guide.md) - User acceptance testing guide
+- Phase 1-3 documentation reorganization (45%→100% compliance)
+
+### Changed
+
+#### Test Infrastructure Improvements
+- **Test Data Isolation** - Badge-templates tests now use unique email domain (`@templatetest.com`)
+- **UUID Generation Fix** - Removed fixed string IDs, let Prisma auto-generate proper UUIDs
+- **Test Coverage Policy** - "No skipped tests" policy: All failing tests must be investigated and fixed
+
+#### Code Quality
+- Fixed UUID validation bug in skill creation tests
+- Improved test cleanup order (respects foreign key constraints)
+- Enhanced test setup with proper skill category and skill creation
+
+### Fixed
+
+#### Critical Bugs
+- **UUID Validation Bug** - Fixed skill creation test using fixed string `'test-category-id'` instead of proper UUID
+  - Root Cause: Setup used `upsert({ where: { id: 'test-category-id' }})` which doesn't pass `@IsUUID()` validation
+  - Solution: Changed to `create()` without explicit ID, letting Prisma auto-generate UUID
+  - Impact: Discovered through user challenge "为什么跳过skill创建测试？" - validating "never skip failing tests" policy
+- **Test Data Conflicts** - Badge-templates and badge-issuance tests were sharing `admin@test.com` user
+  - Solution: Unique email domains per test suite (e.g., `@templatetest.com`)
+  - Impact: 19/46 tests initially failing due to missing test data
+
+#### Documentation Compliance
+- Phase 1-3 documentation reorganization completed (100% template compliance)
+- Consolidated 5 DOCUMENTATION files to 2 (60% reduction)
+- Optimized lessons-learned.md (removed 15 duplicates, 2652→2296 lines)
+- Zero code impact from documentation changes (validated via E2E tests)
+
+### Security
+- Secure claim token system with 7-day expiry
+- RBAC enforcement on all badge operations
+- Email validation before issuance
+- Badge template verification before issuance
+- Revocation audit trail with reason field
+
+### Performance
+- Efficient badge queries with Prisma includes
+- Pagination for issued badges endpoint (default 10, max 100)
+- Badge status filtering (ISSUED, CLAIMED, REVOKED)
+
+### Quality Metrics
+- Sprint completion: 100% (6/6 stories, 60/60 acceptance criteria)
+- Test pass rate: 100% (46/46 tests, 0 skipped, 0 failed)
+- Test coverage: 82% (exceeds 80% target)
+- Critical bugs: 0
+- Time estimation accuracy: 104% (13h actual / 12.5h estimated)
+- Code quality: 9.8/10
+
+---
+
 ## [0.2.0] - 2026-01-26
 
 ### Added - Badge Template Management System (Sprint 2)

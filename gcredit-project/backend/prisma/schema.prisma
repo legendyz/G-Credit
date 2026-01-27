@@ -33,6 +33,8 @@ model User {
   passwordResetTokens PasswordResetToken[]
   refreshTokens       RefreshToken[]
   badgeTemplates      BadgeTemplate[]
+  badgesReceived      Badge[]           @relation("BadgesReceived")
+  badgesIssued        Badge[]           @relation("BadgesIssued")
 
   @@index([email])
   @@index([role])
@@ -69,26 +71,36 @@ model RefreshToken {
 
 // Sprint 2: Badge Template Management Models
 
-enum BadgeStatus {
+enum TemplateStatus {
   DRAFT
   ACTIVE
   ARCHIVED
 }
 
+// Sprint 3: Badge Issuance Models
+
+enum BadgeStatus {
+  PENDING   // Awaiting claim
+  CLAIMED   // Claimed by recipient
+  EXPIRED   // Past expiration date
+  REVOKED   // Revoked by admin
+}
+
 model BadgeTemplate {
-  id               String      @id @default(uuid())
-  name             String      @db.VarChar(100)
-  description      String?     @db.Text
-  imageUrl         String?     // Azure Blob Storage URL
-  category         String      @db.VarChar(50)
-  skillIds         String[]    // Array of Skill IDs
-  issuanceCriteria Json        // Flexible JSON structure for criteria
-  validityPeriod   Int?        // Validity period in days, null = permanent
-  status           BadgeStatus @default(DRAFT)
+  id               String         @id @default(uuid())
+  name             String         @db.VarChar(100)
+  description      String?        @db.Text
+  imageUrl         String?        // Azure Blob Storage URL
+  category         String         @db.VarChar(50)
+  skillIds         String[]       // Array of Skill IDs
+  issuanceCriteria Json           // Flexible JSON structure for criteria
+  validityPeriod   Int?           // Validity period in days, null = permanent
+  status           TemplateStatus @default(DRAFT)
   createdBy        String
-  creator          User        @relation(fields: [createdBy], references: [id])
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  creator          User           @relation(fields: [createdBy], references: [id])
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  badges           Badge[]        // Badges issued from this template
 
   @@index([category])
   @@index([status])
@@ -141,4 +153,32 @@ model Skill {
   @@unique([name, categoryId]) // Unique skill name per category
   @@index([categoryId])
   @@map("skills")
+}
+
+model Badge {
+  id               String        @id @default(uuid())
+  templateId       String
+  recipientId      String
+  issuerId         String
+  evidenceUrl      String?       // Azure Blob Storage URL
+  issuedAt         DateTime      @default(now())
+  expiresAt        DateTime?     // Calculated from expiresIn
+  status           BadgeStatus   @default(PENDING)
+  claimToken       String?       @unique // 32-char token
+  claimedAt        DateTime?
+  revokedAt        DateTime?
+  revocationReason String?       @db.Text
+  assertionJson    Json          // Open Badges 2.0 JSON-LD
+  recipientHash    String        // SHA-256(email + salt)
+  
+  template         BadgeTemplate @relation(fields: [templateId], references: [id])
+  recipient        User          @relation("BadgesReceived", fields: [recipientId], references: [id])
+  issuer           User          @relation("BadgesIssued", fields: [issuerId], references: [id])
+  
+  @@index([recipientId, status])
+  @@index([templateId, issuedAt])
+  @@index([claimToken])
+  @@index([status, expiresAt])
+  @@index([issuerId])
+  @@map("badges")
 }

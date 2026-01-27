@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { BadgeStatus } from '@prisma/client';
+import { TemplateStatus } from '@prisma/client';
 
 export class QueryBadgeTemplatesDto {
   @ApiPropertyOptional({
@@ -39,13 +39,13 @@ export class QueryBadgeTemplatesDto {
   limit?: number = 10;
 
   @ApiPropertyOptional({
-    enum: BadgeStatus,
-    example: BadgeStatus.ACTIVE,
+    enum: TemplateStatus,
+    example: TemplateStatus.ACTIVE,
     description: '徽章状态筛选',
   })
   @IsOptional()
-  @IsEnum(BadgeStatus)
-  status?: BadgeStatus;
+  @IsEnum(TemplateStatus)
+  status?: TemplateStatus;
 
   @ApiPropertyOptional({
     example: 'skill',

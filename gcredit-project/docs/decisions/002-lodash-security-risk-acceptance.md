@@ -224,7 +224,7 @@ Total: 5 vulnerabilities (2 moderate, 3 high)
 └── bcrypt indirect (1 high) ✅ Accepted - same as tar
 ```
 
-**Detailed Analysis:** See `docs/sprint-1-npm-warnings-analysis.md`
+**Detailed Analysis:** See `../../backend/docs/sprints/sprint-1/npm-warnings-analysis.md`
 
 ---
 

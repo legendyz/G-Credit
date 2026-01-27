@@ -11,7 +11,7 @@ import {
   UpdateBadgeTemplateDto,
 } from './dto/badge-template.dto';
 import { QueryBadgeTemplatesDto } from './dto/query-badge-template.dto';
-import { BadgeStatus, Prisma } from '@prisma/client';
+import { TemplateStatus, Prisma } from '@prisma/client';
 
 @Injectable()
 export class BadgeTemplatesService {
@@ -62,7 +62,7 @@ export class BadgeTemplatesService {
           ? JSON.parse(JSON.stringify(createDto.issuanceCriteria))
           : null,
         validityPeriod: createDto.validityPeriod,
-        status: BadgeStatus.DRAFT,
+        status: TemplateStatus.DRAFT,
         createdBy: userId,
       },
       include: {
@@ -103,7 +103,7 @@ export class BadgeTemplatesService {
 
     // Status filter (override with onlyActive if true)
     if (onlyActive) {
-      where.status = BadgeStatus.ACTIVE;
+      where.status = TemplateStatus.ACTIVE;
     } else if (status) {
       where.status = status;
     }
