@@ -301,31 +301,63 @@ Remove-Item -Recurse -Force backend\.git
 
 ## 🚧 Sprint Roadmap
 
-### ✅ Sprint 0: Infrastructure Setup (Complete - 2026-01-23 to 2026-01-24)
-- ✅ Frontend initialization (React 18.3.1 + Vite 7.2.4 + Tailwind 4.1.18 + Shadcn/ui)
-- ✅ Backend initialization (NestJS 11.0.16 + Prisma 6.19.2 + ConfigModule)
+### ✅ Sprint 0: Infrastructure Setup (Complete - 2026-01-24)
+- ✅ Frontend initialization (React 19.2.3 + Vite 7.3.1 + Tailwind 4.1.18 + Shadcn/ui)
+- ✅ Backend initialization (NestJS 11.1.12 + Prisma 6.19.2 + ConfigModule)
 - ✅ Azure PostgreSQL Flexible Server (B1ms, gcredit-dev-db-lz)
 - ✅ Azure Blob Storage (gcreditdevstoragelz, 2 containers)
 - ✅ Health check endpoints (/health, /ready)
 - ✅ Comprehensive README documentation
 - **Actual Time:** 9.5h / 10h estimated (95% accuracy)
-- **Retrospective:** Lessons learned documented
+- **Retrospective:** [Sprint 0 Retrospective](docs/sprints/sprint-0/retrospective.md)
 
-### 🚀 Sprint 1: JWT Authentication & User Management (Current - 2026-01-27 to 2026-02-09)
-- User data model with RBAC roles (Admin, Issuer, Manager, Employee)
-- User registration with password validation
-- JWT login authentication (access + refresh tokens)
-- RBAC role permissions system
-- Session management and logout
-- Password reset via email
-- User profile management page
-- **Estimated Time:** 21 hours (7 stories from Epic 2)
+### ✅ Sprint 1: JWT Authentication & User Management (Complete - 2026-01-25)
+- ✅ User data model with RBAC roles (Admin, Issuer, Manager, Employee)
+- ✅ User registration with password validation
+- ✅ JWT login authentication (access + refresh tokens)
+- ✅ RBAC role permissions system
+- ✅ Session management and logout
+- ✅ Password reset via email
+- ✅ User profile management page
+- **Actual Time:** 21h / 21h estimated (100% accuracy)
+- **Retrospective:** [Sprint 1 Retrospective](docs/sprints/sprint-1/retrospective.md)
+
+### ✅ Sprint 2: Badge Template Management (Complete - 2026-01-26)
+- ✅ Badge template data model (Open Badges 2.0)
+- ✅ Template CRUD operations (Create, Read, Update, Delete)
+- ✅ Badge criteria and skills tracking
+- ✅ Multi-language template support (en, zh)
+- ✅ Badge design customization (colors, icons)
+- ✅ Template version control
+- ✅ Admin template management UI
+- **Actual Time:** 29h / 32h estimated (110% estimation ratio)
+- **Test Coverage:** 19 E2E tests passing
+- **Retrospective:** [Sprint 2 Retrospective](docs/sprints/sprint-2/retrospective.md)
+
+### ✅ Sprint 3: Badge Issuance System (Complete - 2026-01-28, v0.3.0)
+- ✅ Badge issuance workflow (Epic 4)
+- ✅ Open Badges 2.0 compliance (assertion, verification)
+- ✅ Recipient email management
+- ✅ Badge expiration and revocation
+- ✅ Evidence attachment support
+- ✅ Issuance analytics and reporting
+- **Actual Time:** 13h / 12.5h estimated (104% estimation ratio)
+- **Test Coverage:** 46 total tests (26 badge-issuance + 19 badge-templates + 1 health)
+- **Pull Request:** [PR #2](https://github.com/legendyz/G-Credit/pull/2) - Badge Issuance System v0.3.0
+- **Git Tag:** v0.3.0
+- **Sprint Grade:** A+ (9.5/10)
+- **Retrospective:** [Sprint 3 Retrospective](docs/sprints/sprint-3/retrospective.md)
+
+### 🔜 Sprint 4: Badge Wallet & Verification System (Planning)
+- Employee badge wallet (view/download badges)
+- Badge verification portal
+- QR code generation
+- Public badge verification
+- Badge export (JSON/PDF)
 
 ### 📅 Future Sprints
-- Badge Template CRUD
-- Badge Issuance
-- Verification Portal
-- Admin Dashboard
+- **Sprint 5:** Analytics & Reporting Dashboard
+- **Sprint 6-7:** Social Sharing & Integrations
 
 ## 📝 License
 
