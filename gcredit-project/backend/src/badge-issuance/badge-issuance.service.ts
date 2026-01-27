@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { AssertionGeneratorService } from './services/assertion-generator.service';
+import { BadgeNotificationService } from './services/badge-notification.service';
 import { IssueBadgeDto } from './dto/issue-badge.dto';
 import { BadgeStatus } from '@prisma/client';
 
@@ -9,6 +10,7 @@ export class BadgeIssuanceService {
   constructor(
     private prisma: PrismaService,
     private assertionGenerator: AssertionGeneratorService,
+    private notificationService: BadgeNotificationService,
   ) {}
 
   /**
@@ -108,7 +110,19 @@ export class BadgeIssuanceService {
       },
     });
 
-    // 10. Return badge response
+    // 10. Send email notification to recipient
+    await this.notificationService.sendBadgeClaimNotification({
+      recipientEmail: recipient.email,
+      recipientName: recipient.firstName && recipient.lastName
+        ? `${recipient.firstName} ${recipient.lastName}`
+        : recipient.email,
+      badgeName: template.name,
+      badgeDescription: template.description || 'No description available',
+      badgeImageUrl: template.imageUrl || '',
+      claimUrl: this.assertionGenerator.getClaimUrl(badge.claimToken!),
+    });
+
+    // 11. Return badge response
     return {
       id: badge.id,
       status: badge.status,

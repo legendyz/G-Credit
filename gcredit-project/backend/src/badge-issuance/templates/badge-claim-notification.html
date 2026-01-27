@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>You've earned a badge!</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .email-container {
+      background-color: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px 30px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 600;
+    }
+    .header p {
+      margin: 10px 0 0 0;
+      font-size: 16px;
+      opacity: 0.95;
+    }
+    .content {
+      padding: 40px 30px;
+    }
+    .greeting {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .badge-section {
+      text-align: center;
+      margin: 30px 0;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+    }
+    .badge-image {
+      margin: 20px 0;
+    }
+    .badge-image img {
+      max-width: 200px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .badge-name {
+      font-size: 24px;
+      font-weight: 600;
+      color: #667eea;
+      margin: 15px 0 10px 0;
+    }
+    .info-box {
+      background: #f8f9fa;
+      border-left: 4px solid #0078d4;
+      padding: 20px;
+      margin: 25px 0;
+      border-radius: 4px;
+    }
+    .info-box h3 {
+      margin: 0 0 10px 0;
+      font-size: 16px;
+      color: #0078d4;
+    }
+    .info-box p {
+      margin: 0;
+      color: #555;
+    }
+    .cta-section {
+      text-align: center;
+      margin: 35px 0;
+    }
+    .cta-button {
+      display: inline-block;
+      background: #0078d4;
+      color: white !important;
+      padding: 16px 40px;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 16px;
+      box-shadow: 0 2px 8px rgba(0,120,212,0.3);
+      transition: background 0.3s;
+    }
+    .cta-button:hover {
+      background: #005a9e;
+    }
+    .expiration-notice {
+      text-align: center;
+      color: #dc3545;
+      font-size: 14px;
+      margin-top: 20px;
+      padding: 12px;
+      background-color: #fff5f5;
+      border-radius: 4px;
+      border: 1px solid #ffdddd;
+    }
+    .value-prop {
+      background: #e8f4fd;
+      border-left: 4px solid #28a745;
+      padding: 20px;
+      margin: 25px 0;
+      border-radius: 4px;
+    }
+    .value-prop h3 {
+      margin: 0 0 10px 0;
+      font-size: 16px;
+      color: #28a745;
+    }
+    .value-prop p {
+      margin: 0;
+      color: #555;
+      font-size: 14px;
+    }
+    .footer {
+      background-color: #f8f9fa;
+      padding: 30px;
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+      border-top: 1px solid #e0e0e0;
+    }
+    .footer strong {
+      color: #333;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .footer p {
+      margin: 8px 0;
+    }
+    .footer a {
+      color: #0078d4;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <h1>🎓 Congratulations!</h1>
+      <p>You've earned a new digital badge</p>
+    </div>
+    
+    <div class="content">
+      <div class="greeting">
+        <p>Hi {{recipientName}},</p>
+      </div>
+      
+      <p>Great news! You've been awarded the <strong>{{badgeName}}</strong> badge for your outstanding achievement.</p>
+      
+      <div class="badge-section">
+        <div class="badge-image">
+          <img src="{{badgeImageUrl}}" alt="{{badgeName}}">
+        </div>
+        <div class="badge-name">{{badgeName}}</div>
+      </div>
+      
+      <div class="info-box">
+        <h3>📋 Badge Description</h3>
+        <p>{{badgeDescription}}</p>
+      </div>
+      
+      <h3 style="color: #333; margin-top: 30px;">What's next?</h3>
+      <p>Click the button below to claim your badge and add it to your digital wallet. You'll be able to share it on LinkedIn, download it, and showcase your achievement.</p>
+      
+      <div class="cta-section">
+        <a href="{{claimUrl}}" class="cta-button">Claim Your Badge</a>
+      </div>
+      
+      <div class="expiration-notice">
+        ⏰ <strong>Important:</strong> This claim link expires in 7 days. Make sure to claim your badge soon!
+      </div>
+      
+      <div class="value-prop">
+        <h3>✨ Why digital badges?</h3>
+        <p>Digital badges are verifiable credentials that showcase your skills and achievements. They're based on the Open Badges 2.0 standard and can be shared across professional networks, verified by employers, and added to your resume.</p>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <strong>G-Credit Digital Credentialing Platform</strong>
+      <p>This is an automated email. Please do not reply.</p>
+      <p>If you have questions, contact <a href="mailto:badges@gcredit.example.com">badges@gcredit.example.com</a></p>
+      <p style="margin-top: 15px; color: #999;">© 2026 G-Credit. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

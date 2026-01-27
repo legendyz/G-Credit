@@ -1,38 +1,161 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EmailClient } from '@azure/communication-email';
 import * as nodemailer from 'nodemailer';
+import type { Transporter } from 'nodemailer';
 
 /**
  * Email Service
  *
- * Handles sending emails for password reset and other notifications.
- * In development: logs to console instead of sending real emails.
- * In production: uses configured SMTP server.
+ * Handles sending emails for password reset and badge notifications.
+ * Development: Uses Ethereal (fake SMTP) - emails viewable via preview URL
+ * Production: Uses Azure Communication Services
  */
+
+interface SendMailOptions {
+  to: string;
+  subject: string;
+  html: string;
+  text?: string;
+}
+
 @Injectable()
 export class EmailService {
-  private transporter: nodemailer.Transporter | null = null;
-  private isDevelopment: boolean;
+  private readonly logger = new Logger(EmailService.name);
+  private acsClient: EmailClient | null = null;
+  private etherealTransporter: Transporter | null = null;
+  private readonly isDevelopment: boolean;
+  private readonly fromAddress: string;
+  private etherealInitialized = false;
 
   constructor(private config: ConfigService) {
     this.isDevelopment = this.config.get<string>('NODE_ENV') !== 'production';
+    this.fromAddress = this.config.get<string>('EMAIL_FROM', 'badges@gcredit.example.com');
 
-    // Only create transporter in production
-    if (!this.isDevelopment) {
-      this.transporter = nodemailer.createTransport({
-        host: this.config.get<string>('SMTP_HOST'),
-        port: this.config.get<number>('SMTP_PORT') || 587,
-        secure: false, // true for 465, false for other ports
-        auth: {
-          user: this.config.get<string>('SMTP_USER'),
-          pass: this.config.get<string>('SMTP_PASSWORD'),
-        },
-      });
+    if (this.isDevelopment) {
+      // Initialize Ethereal asynchronously
+      this.initializeEthereal();
+    } else {
+      this.initializeACS();
     }
   }
 
   /**
-   * Send password reset email
+   * Initialize Azure Communication Services (Production)
+   */
+  private initializeACS(): void {
+    const connectionString = this.config.get<string>('AZURE_COMMUNICATION_CONNECTION_STRING');
+    if (!connectionString) {
+      this.logger.warn('⚠️ AZURE_COMMUNICATION_CONNECTION_STRING not configured');
+      return;
+    }
+    this.acsClient = new EmailClient(connectionString);
+    this.logger.log('✅ Azure Communication Services Email initialized');
+  }
+
+  /**
+   * Initialize Ethereal (Development)
+   */
+  private async initializeEthereal(): Promise<void> {
+    try {
+      const testAccount = await nodemailer.createTestAccount();
+      this.etherealTransporter = nodemailer.createTransport({
+        host: testAccount.smtp.host,
+        port: testAccount.smtp.port,
+        secure: testAccount.smtp.secure,
+        auth: {
+          user: testAccount.user,
+          pass: testAccount.pass,
+        },
+      });
+      this.etherealInitialized = true;
+      this.logger.log('✅ Ethereal Email initialized (development)');
+    } catch (error) {
+      this.logger.error('❌ Failed to initialize Ethereal:', error.message);
+    }
+  }
+
+  /**
+   * Send email (generic method for all email types)
+   */
+  async sendMail(options: SendMailOptions): Promise<void> {
+    try {
+      if (this.isDevelopment) {
+        await this.sendViaEthereal(options);
+      } else {
+        await this.sendViaACS(options);
+      }
+      this.logger.log(`✅ Email sent to ${options.to}: ${options.subject}`);
+    } catch (error) {
+      this.logger.error(`❌ Failed to send email to ${options.to}:`, error.message);
+      // Don't throw - email failure shouldn't block operations
+    }
+  }
+
+  /**
+   * Send via Azure Communication Services
+   */
+  private async sendViaACS(options: SendMailOptions): Promise<void> {
+    if (!this.acsClient) {
+      throw new Error('Azure Communication Services not initialized');
+    }
+
+    const message = {
+      senderAddress: this.fromAddress,
+      content: {
+        subject: options.subject,
+        html: options.html,
+        plainText: options.text || this.stripHtml(options.html),
+      },
+      recipients: {
+        to: [{ address: options.to }],
+      },
+    };
+
+    const poller = await this.acsClient.beginSend(message);
+    await poller.pollUntilDone();
+  }
+
+  /**
+   * Send via Ethereal (Development)
+   */
+  private async sendViaEthereal(options: SendMailOptions): Promise<void> {
+    // Wait for initialization if not ready
+    if (!this.etherealInitialized) {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+
+    if (!this.etherealTransporter) {
+      this.logger.warn('⚠️ Ethereal not initialized, logging email to console');
+      console.log('\n' + '='.repeat(80));
+      console.log('📧 [DEV MODE] Email (Ethereal not available)');
+      console.log('='.repeat(80));
+      console.log(`To: ${options.to}`);
+      console.log(`Subject: ${options.subject}`);
+      console.log('='.repeat(80) + '\n');
+      return;
+    }
+
+    const info = await this.etherealTransporter.sendMail({
+      from: this.fromAddress,
+      to: options.to,
+      subject: options.subject,
+      html: options.html,
+      text: options.text,
+    });
+
+    this.logger.log(`📧 Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+  }
+
+  /**
+   * Strip HTML tags for plain text fallback
+   */
+  private stripHtml(html: string): string {
+    return html.replace(/<[^>]*>/g, '');
+  }
+
+  /**
+   * Send password reset email (legacy method, now uses sendMail)
    *
    * @param email User's email address
    * @param token Reset token
@@ -42,11 +165,7 @@ export class EmailService {
       this.config.get<string>('FRONTEND_URL') || 'http://localhost:5173';
     const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
 
-    const emailContent = {
-      from: this.config.get<string>('SMTP_FROM') || 'noreply@gcredit.com',
-      to: email,
-      subject: 'G-Credit Password Reset Request',
-      html: `
+    const html = `
         <!DOCTYPE html>
         <html>
         <head>
@@ -94,8 +213,9 @@ export class EmailService {
           </div>
         </body>
         </html>
-      `,
-      text: `
+    `;
+
+    const text = `
 G-Credit Password Reset Request
 
 We received a request to reset your password for your G-Credit account.
@@ -107,26 +227,13 @@ This link expires in 1 hour.
 If you didn't request this password reset, please ignore this email.
 
 © 2026 G-Credit. All rights reserved.
-      `.trim(),
-    };
+    `.trim();
 
-    if (this.isDevelopment) {
-      // In development: log to console instead of sending email
-      console.log('\n' + '='.repeat(80));
-      console.log('📧 [DEV MODE] Password Reset Email (not sent)');
-      console.log('='.repeat(80));
-      console.log(`To: ${emailContent.to}`);
-      console.log(`Subject: ${emailContent.subject}`);
-      console.log(`Reset URL: ${resetUrl}`);
-      console.log(`Token: ${token}`);
-      console.log('='.repeat(80) + '\n');
-    } else {
-      // In production: send real email
-      if (!this.transporter) {
-        throw new Error('Email transporter not configured');
-      }
-      await this.transporter.sendMail(emailContent);
-      console.log(`✅ Password reset email sent to ${email}`);
-    }
+    await this.sendMail({
+      to: email,
+      subject: 'G-Credit Password Reset Request',
+      html,
+      text,
+    });
   }
 }
