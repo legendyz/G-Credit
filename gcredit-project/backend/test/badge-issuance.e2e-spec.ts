@@ -449,4 +449,173 @@ describe('Badge Issuance (e2e)', () => {
         .expect(403);
     });
   });
+
+  describe('POST /api/badges/:id/revoke', () => {
+    let badgeToRevoke: string;
+
+    beforeEach(async () => {
+      // Issue a fresh badge for revocation tests
+      const issueResponse = await request(app.getHttpServer())
+        .post('/api/badges')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          templateId: templateId,
+          recipientId: recipientId,
+          evidenceUrl: 'https://example.com/revocation-test.pdf',
+          expiresIn: 365,
+        });
+
+      badgeToRevoke = issueResponse.body.id;
+    });
+
+    it('should revoke badge successfully (ADMIN)', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`/api/badges/${badgeToRevoke}/revoke`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          reason: 'Badge issued in error - recipient did not meet criteria',
+        })
+        .expect(200);
+
+      expect(response.body.status).toBe('REVOKED');
+      expect(response.body.revokedAt).toBeDefined();
+      expect(response.body.revocationReason).toBe('Badge issued in error - recipient did not meet criteria');
+      expect(response.body.message).toContain('revoked successfully');
+    });
+
+    it('should return 403 for non-ADMIN user (ISSUER)', async () => {
+      // Create issuer token if not already exists
+      const issuerPassword = await bcrypt.hash('Issuer123!', 10);
+      let issuer = await prisma.user.findUnique({ where: { email: 'issuer@test.com' } });
+      
+      if (!issuer) {
+        issuer = await prisma.user.create({
+          data: {
+            email: 'issuer@test.com',
+            passwordHash: issuerPassword,
+            firstName: 'Issuer',
+            lastName: 'User',
+            role: UserRole.ISSUER,
+            emailVerified: true,
+          },
+        });
+      }
+
+      const loginResponse = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({
+          email: 'issuer@test.com',
+          password: 'Issuer123!',
+        });
+
+      const issuerToken = loginResponse.body.accessToken;
+
+      return request(app.getHttpServer())
+        .post(`/api/badges/${badgeToRevoke}/revoke`)
+        .set('Authorization', `Bearer ${issuerToken}`)
+        .send({
+          reason: 'Attempting to revoke as issuer',
+        })
+        .expect(403);
+    });
+
+    it('should return 400 if badge already revoked', async () => {
+      // Revoke once
+      await request(app.getHttpServer())
+        .post(`/api/badges/${badgeToRevoke}/revoke`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          reason: 'First revocation',
+        })
+        .expect(200);
+
+      // Try to revoke again
+      return request(app.getHttpServer())
+        .post(`/api/badges/${badgeToRevoke}/revoke`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          reason: 'Second revocation attempt',
+        })
+        .expect(400)
+        .expect((res) => {
+          expect(res.body.message).toContain('already revoked');
+        });
+    });
+
+    it('should return 400 if reason is too short', async () => {
+      return request(app.getHttpServer())
+        .post(`/api/badges/${badgeToRevoke}/revoke`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          reason: 'Short',
+        })
+        .expect(400);
+    });
+  });
+
+  describe('GET /api/badges/:id/assertion', () => {
+    let revokedBadgeId: string;
+    let activeBadgeId: string;
+
+    beforeAll(async () => {
+      // Create an active badge
+      const activeResponse = await request(app.getHttpServer())
+        .post('/api/badges')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          templateId: templateId,
+          recipientId: recipientId,
+          evidenceUrl: 'https://example.com/active-badge.pdf',
+          expiresIn: 365,
+        });
+      activeBadgeId = activeResponse.body.id;
+
+      // Create and revoke a badge
+      const revokeResponse = await request(app.getHttpServer())
+        .post('/api/badges')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          templateId: templateId,
+          recipientId: recipientId,
+          evidenceUrl: 'https://example.com/revoked-badge.pdf',
+          expiresIn: 365,
+        });
+      revokedBadgeId = revokeResponse.body.id;
+
+      // Revoke it
+      await request(app.getHttpServer())
+        .post(`/api/badges/${revokedBadgeId}/revoke`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          reason: 'Test revocation for assertion endpoint',
+        });
+    });
+
+    it('should return assertion for active badge (PUBLIC)', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/api/badges/${activeBadgeId}/assertion`)
+        .expect(200);
+
+      expect(response.body).toHaveProperty('@context');
+      expect(response.body).toHaveProperty('type');
+      expect(response.body.type).toBe('Assertion');
+      expect(response.body).toHaveProperty('id');
+    });
+
+    it('should return 410 for revoked badge', async () => {
+      return request(app.getHttpServer())
+        .get(`/api/badges/${revokedBadgeId}/assertion`)
+        .expect(410)
+        .expect((res) => {
+          expect(res.body.message).toContain('revoked');
+        });
+    });
+
+    it('should return 404 for non-existent badge', async () => {
+      const fakeId = '00000000-0000-0000-0000-000000000000';
+      return request(app.getHttpServer())
+        .get(`/api/badges/${fakeId}/assertion`)
+        .expect(404);
+    });
+  });
 });

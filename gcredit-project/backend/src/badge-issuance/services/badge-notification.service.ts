@@ -14,24 +14,38 @@ import * as path from 'path';
 export class BadgeNotificationService {
   private readonly logger = new Logger(BadgeNotificationService.name);
   private badgeClaimTemplate: string;
+  private badgeRevocationTemplate: string;
 
   constructor(private emailService: EmailService) {
-    // Load email template on service initialization
-    // In development: load from src directory
-    // In production: load from dist directory
-    let templatePath = path.join(__dirname, '../templates/badge-claim-notification.html');
+    // Load badge claim email template
+    let claimTemplatePath = path.join(__dirname, '../templates/badge-claim-notification.html');
     
     // If template not found in dist, try src directory (development)
-    if (!fs.existsSync(templatePath)) {
-      templatePath = path.join(process.cwd(), 'src/badge-issuance/templates/badge-claim-notification.html');
+    if (!fs.existsSync(claimTemplatePath)) {
+      claimTemplatePath = path.join(process.cwd(), 'src/badge-issuance/templates/badge-claim-notification.html');
     }
     
     try {
-      this.badgeClaimTemplate = fs.readFileSync(templatePath, 'utf-8');
+      this.badgeClaimTemplate = fs.readFileSync(claimTemplatePath, 'utf-8');
       this.logger.log('✅ Badge claim email template loaded');
     } catch (error) {
-      this.logger.error(`❌ Failed to load email template: ${error.message}`);
-      throw new Error(`Email template not found at ${templatePath}`);
+      this.logger.error(`❌ Failed to load claim email template: ${error.message}`);
+      throw new Error(`Email template not found at ${claimTemplatePath}`);
+    }
+
+    // Load badge revocation email template
+    let revocationTemplatePath = path.join(__dirname, '../templates/badge-revocation-notification.html');
+    
+    if (!fs.existsSync(revocationTemplatePath)) {
+      revocationTemplatePath = path.join(process.cwd(), 'src/badge-issuance/templates/badge-revocation-notification.html');
+    }
+    
+    try {
+      this.badgeRevocationTemplate = fs.readFileSync(revocationTemplatePath, 'utf-8');
+      this.logger.log('✅ Badge revocation email template loaded');
+    } catch (error) {
+      this.logger.error(`❌ Failed to load revocation email template: ${error.message}`);
+      throw new Error(`Email template not found at ${revocationTemplatePath}`);
     }
   }
 
@@ -76,8 +90,6 @@ export class BadgeNotificationService {
    * Send badge revocation notification
    * 
    * @param params Revocation notification parameters
-   * 
-   * TODO: Implement in Story 4.6
    */
   async sendBadgeRevocationNotification(params: {
     recipientEmail: string;
@@ -85,7 +97,24 @@ export class BadgeNotificationService {
     badgeName: string;
     revocationReason: string;
   }): Promise<void> {
-    this.logger.warn('Badge revocation notification not yet implemented (Story 4.6)');
-    // Placeholder for Story 4.6 implementation
+    try {
+      // Replace template variables with actual values
+      const html = this.badgeRevocationTemplate
+        .replace(/\{\{recipientName\}\}/g, params.recipientName || 'there')
+        .replace(/\{\{badgeName\}\}/g, params.badgeName)
+        .replace(/\{\{revocationReason\}\}/g, params.revocationReason);
+
+      // Send email via EmailService
+      await this.emailService.sendMail({
+        to: params.recipientEmail,
+        subject: `Badge Revoked: ${params.badgeName}`,
+        html,
+      });
+
+      this.logger.log(`✅ Revocation notification sent to ${params.recipientEmail}`);
+    } catch (error) {
+      this.logger.error(`❌ Failed to send revocation notification:`, error);
+      // Don't throw - email failure shouldn't block revocation operation
+    }
   }
 }

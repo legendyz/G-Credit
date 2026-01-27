@@ -1,14 +1,15 @@
-import { Controller, Post, Body, UseGuards, Request, Param, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request, Param, Get, Query, NotFoundException, GoneException, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Public } from '../common/decorators/public.decorator';
-import { UserRole } from '@prisma/client';
+import { UserRole, BadgeStatus } from '@prisma/client';
 import { BadgeIssuanceService } from './badge-issuance.service';
 import { IssueBadgeDto } from './dto/issue-badge.dto';
 import { ClaimBadgeDto } from './dto/claim-badge.dto';
 import { QueryBadgeDto } from './dto/query-badge.dto';
+import { RevokeBadgeDto } from './dto/revoke-badge.dto';
 
 @ApiTags('Badge Issuance')
 @Controller('api/badges')
@@ -70,5 +71,41 @@ export class BadgeIssuanceController {
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
   async getIssuedBadges(@Request() req: any, @Query() query: QueryBadgeDto) {
     return this.badgeService.getIssuedBadges(req.user.userId, req.user.role, query);
+  }
+
+  @Post(':id/revoke')
+  @Roles(UserRole.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Revoke a badge (ADMIN only)' })
+  @ApiResponse({ status: 200, description: 'Badge revoked successfully' })
+  @ApiResponse({ status: 400, description: 'Badge already revoked' })
+  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  @ApiResponse({ status: 404, description: 'Badge not found' })
+  async revokeBadge(
+    @Param('id') id: string,
+    @Body() dto: RevokeBadgeDto,
+    @Request() req: any,
+  ) {
+    return this.badgeService.revokeBadge(id, dto.reason, req.user.userId);
+  }
+
+  @Get(':id/assertion')
+  @Public()
+  @ApiOperation({ summary: 'Get Open Badges 2.0 assertion (public)' })
+  @ApiResponse({ status: 200, description: 'Assertion retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Badge not found' })
+  @ApiResponse({ status: 410, description: 'Badge revoked' })
+  async getAssertion(@Param('id') id: string) {
+    const badge = await this.badgeService.findOne(id);
+
+    if (!badge) {
+      throw new NotFoundException('Badge not found');
+    }
+
+    if (badge.status === BadgeStatus.REVOKED) {
+      throw new GoneException('Badge has been revoked');
+    }
+
+    return badge.assertionJson;
   }
 }
