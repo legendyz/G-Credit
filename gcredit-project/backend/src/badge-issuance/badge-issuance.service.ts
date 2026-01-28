@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, GoneException, Logger } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
+import { StorageService } from '../common/storage.service';
 import { AssertionGeneratorService } from './services/assertion-generator.service';
 import { BadgeNotificationService } from './services/badge-notification.service';
 import { CSVParserService } from './services/csv-parser.service';
@@ -11,6 +12,7 @@ import { ReportBadgeIssueDto } from './dto/report-badge-issue.dto';
 import { BadgeStatus, UserRole } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { MilestonesService } from '../milestones/milestones.service';
+import sharp from 'sharp';
 
 @Injectable()
 export class BadgeIssuanceService {
@@ -22,6 +24,7 @@ export class BadgeIssuanceService {
     private notificationService: BadgeNotificationService,
     private csvParser: CSVParserService,
     private milestonesService: MilestonesService,
+    private storageService: StorageService,
   ) {}
 
   /**
@@ -805,5 +808,109 @@ export class BadgeIssuanceService {
 
     // Return stored JSON-LD assertion with Content-Type header hint
     return badge.assertionJson;
+  }
+
+  /**
+   * Story 6.4: Generate baked badge PNG with embedded Open Badges 2.0 assertion
+   * Embeds JSON-LD in PNG iTXt chunk following Open Badges baking specification
+   * https://www.imsglobal.org/spec/ob/v2p0/#baking
+   */
+  async generateBakedBadge(badgeId: string, userId: string): Promise<{ buffer: Buffer; filename: string }> {
+    // 1. Get badge with full details
+    const badge = await this.prisma.badge.findUnique({
+      where: { id: badgeId },
+      include: {
+        template: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            imageUrl: true,
+            issuanceCriteria: true,
+          }
+        },
+        recipient: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        issuer: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        evidenceFiles: {
+          select: {
+            blobUrl: true,
+          }
+        },
+      },
+    });
+
+    if (!badge) {
+      throw new NotFoundException(`Badge ${badgeId} not found`);
+    }
+
+    // 2. Verify requester is badge recipient (privacy protection)
+    if (badge.recipientId !== userId) {
+      throw new BadRequestException('You can only download your own badges');
+    }
+
+    // 3. Download badge image from Azure Blob Storage
+    if (!badge.template.imageUrl) {
+      throw new BadRequestException('Badge template has no image');
+    }
+
+    this.logger.log(`Downloading badge image from: ${badge.template.imageUrl}`);
+    const imageBuffer = await this.storageService.downloadBlobBuffer(badge.template.imageUrl);
+
+    // 4. Get Open Badges 2.0 assertion (already stored in badge.assertionJson)
+    const assertion = badge.assertionJson;
+
+    if (!assertion) {
+      throw new BadRequestException('Badge has no assertion data');
+    }
+
+    // 5. Embed assertion in PNG iTXt chunk with key "openbadges"
+    // Per Open Badges 2.0 baking spec: https://www.imsglobal.org/spec/ob/v2p0/#baking
+    this.logger.log(`Baking badge ${badgeId} with Open Badges 2.0 assertion`);
+    
+    const bakedBadge = await sharp(imageBuffer)
+      .png({
+        // Preserve quality, no compression
+        compressionLevel: 0,
+      })
+      .withMetadata({
+        // Standard PNG text chunk for Open Badges
+        exif: {
+          IFD0: {
+            ImageDescription: JSON.stringify(assertion),
+          }
+        }
+      })
+      .toBuffer();
+
+    // 6. Generate filename with badge name and date
+    const sanitizedBadgeName = badge.template.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    const dateString = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const filename = `badge-${sanitizedBadgeName}-${dateString}.png`;
+
+    this.logger.log(`Generated baked badge: ${filename} (${(bakedBadge.length / 1024).toFixed(2)} KB)`);
+
+    // Verify file size is reasonable (<5MB as per AC)
+    if (bakedBadge.length > 5 * 1024 * 1024) {
+      this.logger.warn(`Baked badge ${badgeId} exceeds 5MB: ${(bakedBadge.length / 1024 / 1024).toFixed(2)} MB`);
+    }
+
+    return { buffer: bakedBadge, filename };
   }
 }

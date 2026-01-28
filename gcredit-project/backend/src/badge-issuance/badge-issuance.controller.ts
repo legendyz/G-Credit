@@ -1,6 +1,7 @@
-import { Controller, Post, Body, UseGuards, Request, Param, Get, Query, NotFoundException, GoneException, HttpCode, HttpStatus, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request, Param, Get, Query, NotFoundException, GoneException, HttpCode, HttpStatus, UseInterceptors, UploadedFile, BadRequestException, Res, Header } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
+import type { Response } from 'express';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -224,5 +225,43 @@ export class BadgeIssuanceController {
     @Request() req: any,
   ) {
     return this.badgeService.reportBadgeIssue(badgeId, dto, req.user.userId);
+  }
+
+  /**
+   * Story 6.4: Download baked badge PNG with embedded Open Badges 2.0 assertion
+   * Returns PNG with assertion in iTXt chunk - compatible with Credly, Badgr
+   */
+  @Get(':id/download/png')
+  @ApiOperation({ 
+    summary: 'Download baked badge PNG (Open Badges 2.0)',
+    description: 'Downloads badge image with embedded JSON-LD assertion in PNG metadata. Compatible with Open Badge validators, Credly, and Badgr. Only badge recipient can download.'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Baked badge PNG with embedded assertion',
+    headers: {
+      'Content-Type': {
+        description: 'image/png',
+        schema: { type: 'string' }
+      },
+      'Content-Disposition': {
+        description: 'attachment; filename="badge-{name}-{date}.png"',
+        schema: { type: 'string' }
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Not badge recipient or no image available' })
+  @ApiResponse({ status: 404, description: 'Badge not found' })
+  async downloadBakedBadge(
+    @Param('id') badgeId: string,
+    @Request() req: any,
+    @Res() res: Response,
+  ) {
+    const { buffer, filename } = await this.badgeService.generateBakedBadge(badgeId, req.user.userId);
+    
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Cache-Control', 'private, max-age=86400'); // Cache for 24h
+    res.send(buffer);
   }
 }

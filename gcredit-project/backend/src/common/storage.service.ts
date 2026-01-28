@@ -116,4 +116,39 @@ export class StorageService implements OnModuleInit {
 
     return { url, expiresAt };
   }
+
+  /**
+   * Story 6.4: Download blob content as Buffer
+   * Used for baked badge generation - downloads badge image from Azure
+   */
+  async downloadBlobBuffer(blobUrl: string): Promise<Buffer> {
+    try {
+      // Extract blob name from URL
+      // URL format: https://{account}.blob.core.windows.net/{container}/{blobName}
+      const url = new URL(blobUrl);
+      const pathParts = url.pathname.split('/').filter(Boolean);
+      
+      if (pathParts.length < 2) {
+        throw new Error(`Invalid blob URL format: ${blobUrl}`);
+      }
+
+      const containerName = pathParts[0];
+      const blobName = pathParts.slice(1).join('/');
+
+      const containerClient = this.blobServiceClient.getContainerClient(containerName);
+      const blobClient = containerClient.getBlobClient(blobName);
+
+      // Download blob to buffer
+      const downloadResponse = await blobClient.download();
+      const chunks: Buffer[] = [];
+      
+      for await (const chunk of downloadResponse.readableStreamBody!) {
+        chunks.push(Buffer.from(chunk));
+      }
+
+      return Buffer.concat(chunks);
+    } catch (error) {
+      throw new Error(`Failed to download blob: ${error.message}`);
+    }
+  }
 }
