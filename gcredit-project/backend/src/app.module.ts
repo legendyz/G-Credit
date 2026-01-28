@@ -12,6 +12,7 @@ import { BadgeTemplatesModule } from './badge-templates/badge-templates.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { BadgeIssuanceModule } from './badge-issuance/badge-issuance.module';
+import { EvidenceModule } from './evidence/evidence.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { BadgeIssuanceModule } from './badge-issuance/badge-issuance.module';
     SkillsModule,
     BadgeTemplatesModule,
     BadgeIssuanceModule,
+    EvidenceModule,
   ],
   controllers: [AppController],
   providers: [
