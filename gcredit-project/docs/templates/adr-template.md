@@ -161,7 +161,7 @@
 
 **Example: How to Use This Template**
 
-See [ADR-002: Lodash Security Risk Acceptance](../../decisions/002-lodash-security-risk-acceptance.md) for a real example.
+See [ADR-002: Lodash Security Risk Acceptance](../decisions/002-lodash-security-risk-acceptance.md) or [ADR-005: Open Badges 2.0 Integration Strategy](../decisions/005-open-badges-integration-strategy.md) for real examples.
 
 **Tips:**
 1. Keep it concise - aim for 1-2 pages
@@ -170,3 +170,9 @@ See [ADR-002: Lodash Security Risk Acceptance](../../decisions/002-lodash-securi
 4. Update status as decision evolves
 5. Link to related documentation
 6. Include concrete examples when helpful
+
+---
+
+**Template Version:** v1.1  
+**Last Updated:** 2026-01-29  
+**Maintained By:** GCredit Development Team

@@ -84,10 +84,9 @@ npm install [dev-package-1]@X.Y.Z --save-dev
 1. ✅ **Use exact versions** in package.json (no `^` or `~` for critical packages)
 2. ✅ **Lock major versions** when breaking changes are known (e.g., Prisma 6 vs 7)
 3. ✅ **Test all npm installs** in dev environment before committing to main
-4. ✅ **Document version choices** when deviating from latest stable (add rationale)
-5. ✅ **Use local binaries** (`node_modules\.bin\[tool]`) instead of `npx` to avoid cache issues
-6. ✅ **Run security audits** before sprint start: `npm audit` / `yarn audit`
-7. ✅ **Check changelog** for all major/minor updates before adopting
+4. ✅ **Run security audits** before sprint start: `npm audit` / `yarn audit`
+
+🔗 **详细版本策略文档:** 参考 [docs/development/version-management-policy.md](../development/version-management-policy.md) (如需要，可创建)
 
 ### **Compatibility Matrix**
 | Package | Version | Compatible With | Notes |
@@ -107,56 +106,42 @@ npm install [dev-package-1]@X.Y.Z --save-dev
 ## 📝 Version Verification Checklist
 
 **Before Sprint Starts:**
-- [ ] All versions in manifest match actual installed versions (`package.json` / `package-lock.json`)
-- [ ] Run `npm list --depth=0` (or `yarn list --depth=0`) to verify top-level dependencies
+- [ ] All versions in manifest match actual installed versions (`package.json`)
 - [ ] Run `npm audit` (or `yarn audit`) to check for security vulnerabilities
-- [ ] Test dev environment startup:
-  - [ ] Backend: `npm run start:dev` (verify health checks pass)
-  - [ ] Frontend: `npm run dev` (verify app loads)
+- [ ] Test dev environment startup (backend + frontend)
 - [ ] Verify Node.js version: `node -v` matches manifest
-- [ ] Verify npm/yarn version: `npm -v` / `yarn -v` matches manifest
-- [ ] Database connection working (run Prisma Studio or similar)
-- [ ] Cloud services accessible (storage, cache, etc.)
+- [ ] Database connection working
 
 **During Sprint (When Installing New Packages):**
 - [ ] Check package version compatibility before installing
-- [ ] Review package changelog for breaking changes
 - [ ] Test in dev environment before committing
 - [ ] Update this manifest with new package versions
-- [ ] Add rationale for version choice if not using latest stable
 
 **End of Sprint:**
 - [ ] Update manifest with actual final versions (if any changes)
 - [ ] Document any version-related issues encountered
-- [ ] Add action items for next sprint if version upgrades are needed
 
 ---
 
-## 🔄 Version Update Policy
+## 🔄 Version Update Policy (Summary)
 
 **Major Version Updates (X.0.0):**
 - ❌ **Do NOT auto-upgrade** - Require spike/investigation before adoption
-- ✅ Review changelog and migration guide
-- ✅ Test in isolated feature branch
-- ✅ Get team approval before merging
-- ✅ Document decision in Architecture Decision Record (ADR)
+- ✅ Review changelog, test in isolated branch, get team approval
 
 **Minor Version Updates (0.X.0):**
 - ⚠️ **Review carefully** - May contain new features and minor breaking changes
-- ✅ Review changelog for breaking changes
-- ✅ Test in dev environment
-- ✅ Safe to upgrade if no breaking changes found
+- ✅ Review changelog, test in dev environment
 
 **Patch Version Updates (0.0.X):**
 - ✅ **Generally safe to upgrade** - Bug fixes and security patches
-- ✅ Review changelog for unexpected behavior changes
 - ✅ Prioritize security patches (CVE fixes)
 
 **Security Updates (Any Version):**
 - ⚠️ **Immediate evaluation required** - Regardless of version bump type
-- ✅ Check severity level (Critical > High > Moderate > Low)
 - ✅ Critical/High: Fix immediately or document risk acceptance
-- ✅ Moderate/Low: Evaluate risk vs. effort, may defer to next sprint
+
+🔗 **完整策略文档:** 参考 [docs/development/version-management-policy.md](../development/version-management-policy.md) (如需要)
 
 ---
 
@@ -170,8 +155,9 @@ npm install [dev-package-1]@X.Y.Z --save-dev
 
 ---
 
-**Template Version:** 1.0  
+**Template Version:** 1.1  
 **Created:** 2026-01-25  
+**Last Updated:** 2026-01-29 (简化策略说明，保留核心内容)  
 **Owner:** Product Manager / Tech Lead  
 **Maintained By:** Development Team  
 **Review Frequency:** Every sprint planning session

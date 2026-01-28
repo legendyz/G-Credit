@@ -3,7 +3,7 @@
 **目的：** 确保Sprint Planning全面、准确，避免重复工作和资源浪费  
 **使用时机：** 每个Sprint开始前的Planning阶段  
 **责任人：** Product Manager + Scrum Master  
-**最后更新：** 2026-01-26（基于Sprint 2经验教训）
+**最后更新：** 2026-01-29（基于Sprint 2-5经验教训）
 
 ---
 
@@ -15,7 +15,7 @@
 - [ ] 确认所有技术债务已记录
 
 ### 2. 资源清单回顾（🚨 关键步骤）
-- [ ] **必须：** 阅读 [`docs/infrastructure-inventory.md`](../setup/infrastructure-inventory.md)
+- [ ] **必须：** 阅读 [`docs/setup/infrastructure-inventory.md`](../setup/infrastructure-inventory.md)
 - [ ] 列出当前可用的Azure资源
 - [ ] 列出当前可用的Database Tables/Models
 - [ ] 检查`.env`文件中的环境变量配置
@@ -27,6 +27,11 @@ Sprint 2差点重复创建Azure Storage Account，因为Planning时没有回顾S
 - 架构不一致
 - 环境配置混乱
 - 数据库表重复定义
+
+**Sprint 3-5补充经验：**
+- Sprint 3: UUID验证bug提醒我们**永远不要跳过失败的测试**，看似小问题可能隐藏真实bug
+- Sprint 4: Timeline-based测试approach证明有效，继续在复杂功能中使用
+- Sprint 5: 架构预先准备（Winston的ADRs）避免了开发中的技术争议，节省大量时间
 
 ### 3. 技术环境验证
 - [ ] 确认开发环境（Dev）可用
@@ -60,7 +65,7 @@ Sprint 2差点重复创建Azure Storage Account，因为Planning时没有回顾S
 
 ### 8. 资源需求分析（🚨 关键步骤）
 - [ ] **逐一检查：** 每个技术任务是否需要新资源？
-- [ ] **新Azure资源：** 是否已存在？参考 `infrastructure-inventory.md`
+- [ ] **新Azure资源：** 是否已存在？参考 `docs/setup/infrastructure-inventory.md`
 - [ ] **新Database Table：** 是否与现有Schema冲突？
 - [ ] **新npm Package：** 是否已安装？版本兼容吗？
 - [ ] **新环境变量：** 命名是否与现有冲突？
@@ -92,7 +97,7 @@ Sprint 2差点重复创建Azure Storage Account，因为Planning时没有回顾S
 ### 11. Sprint Backlog文档
 - [ ] 创建 `sprint-{N}-backlog.md`
 - [ ] 包含所有Story和Task的详细描述
-- [ ] **交叉引用：** 引用 `infrastructure-inventory.md`
+- [ ] **交叉引用：** 引用 `docs/setup/infrastructure-inventory.md`
 - [ ] **代码示例：** 使用环境变量，不要硬编码资源名称
 - [ ] 包含验收标准和测试策略
 
@@ -119,7 +124,7 @@ const containerName = process.env.AZURE_STORAGE_CONTAINER_BADGES;
 - [ ] 包含故障排查部分
 
 ### 14. 资源清单更新计划
-- [ ] 计划在Sprint结束时更新 `infrastructure-inventory.md`
+- [ ] 计划在Sprint结束时更新 `docs/setup/infrastructure-inventory.md`
 - [ ] 在Sprint Backlog的DoD中明确列出
 - [ ] 指定负责人
 
@@ -134,7 +139,7 @@ const containerName = process.env.AZURE_STORAGE_CONTAINER_BADGES;
 
 ### 16. 技术就绪度
 - [ ] 开发环境可用
-- [ ] **资源清单已回顾，无重复创建风险**
+- [ ] **资源清单已回顾，无重复创建风险** (参考 `docs/setup/infrastructure-inventory.md`)
 - [ ] 所有工具和依赖已准备好
 - [ ] 测试环境可用
 
@@ -194,10 +199,10 @@ Sprint 2的Planning文档建议创建新的Azure Storage Account `gcreditdev`和
 
 ## 📚 相关文档
 
-- **资源清单：** [`docs/infrastructure-inventory.md`](../setup/infrastructure-inventory.md)
-- **Sprint 0 Backlog：** [`_bmad-output/implementation-artifacts/sprint-0-backlog.md`](../_bmad-output/implementation-artifacts/sprint-0-backlog.md)
-- **Sprint 1 Backlog：** [`_bmad-output/implementation-artifacts/sprint-1-backlog.md`](../_bmad-output/implementation-artifacts/sprint-1-backlog.md)
-- **Sprint 2 Backlog：** [`_bmad-output/implementation-artifacts/sprint-2-backlog.md`](../_bmad-output/implementation-artifacts/sprint-2-backlog.md)
+- **资源清单：** [docs/setup/infrastructure-inventory.md](../setup/infrastructure-inventory.md)
+- **Sprint文档：** [docs/sprints/](../sprints/) (Sprint 0-5完整文档)
+- **经验教训：** [docs/lessons-learned/lessons-learned.md](../lessons-learned/lessons-learned.md)
+- **架构决策：** [docs/decisions/](../decisions/) (ADRs)
 
 ---
 
@@ -208,9 +213,13 @@ Sprint 2的Planning文档建议创建新的Azure Storage Account `gcreditdev`和
 | Sprint 0 | 2026-01-24 | N/A | N/A | Checklist尚未存在 |
 | Sprint 1 | 2026-01-25 | N/A | N/A | Checklist尚未存在 |
 | Sprint 2 | 2026-01-25 | ~85% | 未回顾Sprint 0资源 | **已修正文档** |
-| Sprint 3 | TBD | TBD | TBD | 使用此Checklist |
+| Sprint 3 | 2026-01-27 | ~95% | 无重大问题 | 使用此Checklist，成功避免资源重复 |
+| Sprint 4 | 2026-01-28 | ~90% | 无重大问题 | 架构复杂度高但准备充分 |
+| Sprint 5 | 2026-01-29 | 100% | 架构预先准备成功 | Winston的ADRs节省大量开发时间 |
+| Sprint 6 | TBD | TBD | TBD | 计划使用 |
 
 ---
 
 **版本历史：**
 - v1.0（2026-01-26）- 初始版本，基于Sprint 2经验教训创建
+- v1.1（2026-01-29）- 添加Sprint 3-5经验教训，修复路径引用

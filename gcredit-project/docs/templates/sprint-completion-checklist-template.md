@@ -2,7 +2,8 @@
 
 **Sprint:** Sprint N - [Epic Name]  
 **日期:** YYYY-MM-DD  
-**负责人:** [Name/Role]
+**负责人:** [Name/Role]  
+**模板版本:** v1.1 (2026-01-29)
 
 ---
 
@@ -13,6 +14,7 @@
 - [ ] 所有验收标准通过 (X/X AC)
 - [ ] 功能演示准备就绪
 - [ ] 所有 TODO/FIXME 已解决或记录为技术债务
+- [ ] **Sprint 3-5经验：** 没有跳过任何失败的测试（见Sprint 3 UUID bug）
 
 ### 2. 测试质量 ✅
 - [ ] 单元测试通过率 100%
@@ -42,6 +44,8 @@
 ### 必须更新的文档
 
 #### A. project-context.md ✅ 最高优先级
+❗ **文件位置:** `{project-root}/project-context.md` (工作区根目录)
+
 - [ ] 更新 **Status** 行（当前 Sprint 状态）
 - [ ] 更新 **Sprint N** 状态行
 - [ ] 更新 **Last Updated** 日期
@@ -87,7 +91,8 @@
 #### D. README.md 文件更新 ✅ 中优先级
 **注意：需要更新两个 README 文件，服务不同受众**
 
-##### 1. CODE/README.md (工作区根目录) - GitHub 仓库首页展示
+##### 1. {project-root}/README.md (工作区根目录) - GitHub 仓库首页展示
+❗ **文件位置:** `{project-root}/README.md`
 - [ ] 更新徽章状态（Sprint N Complete）
 - [ ] 添加 Sprint N 徽章（如果需要）
 - [ ] 更新版本徽章（v0.X.0）
@@ -104,6 +109,8 @@
 **内容重点：** 项目亮点、里程碑、功能展示、快速上手
 
 ##### 2. gcredit-project/README.md (项目目录) - 开发者本地参考
+❗ **文件位置:** `{project-root}/gcredit-project/README.md`
+
 - [ ] 更新项目状态（如果是重要里程碑）
 - [ ] 更新功能列表（添加新功能）
 - [ ] 更新 Getting Started（如有环境变更）
@@ -335,11 +342,31 @@ git push origin vX.X.X
 
 ---
 
-**模板版本:** v1.0  
+**模板版本:** v1.1  
 **创建日期:** 2026-01-27  
-**最后更新:** 2026-01-27  
+**最后更新:** 2026-01-29 (添加Sprint 3-5经验教训)  
 **维护者:** GCredit Development Team
 
 ---
 
 **记住: 没有更新 project-context.md 的 Sprint 不算真正完成！** 🎯
+
+---
+
+## 📚 Sprint 3-5 经验教训总结
+
+### Sprint 3: 永远不要跳过失败的测试
+**教训：** UUID验证bug被失败测试发现，如果跳过就会遗漏真实问题  
+**行动：** 所有失败测试必须调查原因，不能直接跳过
+
+### Sprint 4: Timeline-based 测试方法有效
+**教训：** 复杂功能（如badge wallet timeline）的测试需要基于时间序列数据  
+**行动：** 继续在时间相关功能中使用这种方法
+
+### Sprint 5: 架构预先准备节省时间
+**教训：** Winston在Sprint开始前完成ADRs，开发过程中零架构争论  
+**行动：** 复杂Epic开始前让架构师预先分析并形成ADR
+
+### Sprint 5: 参考Lessons-Learned避免重复错误
+**教训：** 主动回顾Sprint 0-4的retrospectives，成功避免了过往失误  
+**行动：** 每个Sprint Planning前必须复习过往经验教训

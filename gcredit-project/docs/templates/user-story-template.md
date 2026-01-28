@@ -265,7 +265,7 @@
 
 **Example: Completed Story**
 
-See Sprint 3 stories in [docs/sprints/sprint-3/backlog.md](../../sprints/sprint-3/backlog.md) for real examples.
+See Sprint 5 stories in [docs/sprints/sprint-5/backlog.md](../sprints/sprint-5/backlog.md) for real examples.
 
 **Tips for Writing Good User Stories:**
 1. Keep stories small (completable in 1-3 days)
@@ -274,3 +274,9 @@ See Sprint 3 stories in [docs/sprints/sprint-3/backlog.md](../../sprints/sprint-
 4. Include edge cases and error scenarios
 5. Collaborate with team on estimation
 6. Update status daily during sprint
+
+---
+
+**Template Version:** v1.1  
+**Last Updated:** 2026-01-29  
+**Maintained By:** GCredit Development Team

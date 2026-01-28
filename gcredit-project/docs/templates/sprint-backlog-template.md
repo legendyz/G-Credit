@@ -53,12 +53,14 @@ As a [role], I want [feature] so that [benefit].
 - [ ] Deployed to dev environment
 - [ ] QA approved
 
-**Sprint-Level DoD (End of Sprint):** ⚠️ **CRITICAL**
-- [ ] **project-context.md updated** (Status, Sprint N, Last Updated, Implemented Features, Next Actions)
-- [ ] Sprint summary + retrospective created
-- [ ] CHANGELOG.md updated
-- [ ] Code merged to main + Git tag created
-- [ ] Use [sprint-completion-checklist-template.md](./sprint-completion-checklist-template.md)!
+**Sprint-Level DoD (End of Sprint):** ⚠️ **CRITICAL**  
+🔗 **完整清单参考:** [sprint-completion-checklist-template.md](./sprint-completion-checklist-template.md)
+
+**关键项目：**
+- [ ] **project-context.md已更新** (状态, Sprint N, 实现功能, 下一步动作)
+- [ ] Sprint summary + retrospective已创建
+- [ ] CHANGELOG.md已更新
+- [ ] 代码已合并到main + Git tag已创建
 
 ---
 
@@ -230,3 +232,4 @@ As a [role], I want [feature] so that [benefit].
 
 **Last Updated:** [Date]  
 **Status:** [In Progress | Completed]
+**Template Version:** v1.1 (2026-01-29 - 简化DoD部分)
