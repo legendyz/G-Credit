@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadgeIssuanceService } from './badge-issuance.service';
 import { PrismaService } from '../common/prisma.service';
+import { StorageService } from '../common/storage.service';
 import { AssertionGeneratorService } from './services/assertion-generator.service';
 import { BadgeNotificationService } from './services/badge-notification.service';
 import { CSVParserService } from './services/csv-parser.service';
@@ -38,6 +39,12 @@ describe('BadgeIssuanceService - Wallet (Story 4.1)', () => {
     getUserAchievements: jest.fn().mockResolvedValue([]),
   };
 
+  const mockStorageService = {
+    uploadBadgeImage: jest.fn(),
+    getBadgeImageUrl: jest.fn(),
+    deleteBadgeImage: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -61,6 +68,10 @@ describe('BadgeIssuanceService - Wallet (Story 4.1)', () => {
         {
           provide: MilestonesService,
           useValue: mockMilestonesService,
+        },
+        {
+          provide: StorageService,
+          useValue: mockStorageService,
         },
       ],
     }).compile();

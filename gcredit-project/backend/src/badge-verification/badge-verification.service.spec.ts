@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadgeVerificationService } from './badge-verification.service';
 import { PrismaService } from '../common/prisma.service';
 import { BadgeStatus } from '@prisma/client';
+import { AssertionGeneratorService } from '../badge-issuance/services/assertion-generator.service';
 
 describe('BadgeVerificationService - Story 6.3', () => {
   let service: BadgeVerificationService;
@@ -13,6 +14,11 @@ describe('BadgeVerificationService - Story 6.3', () => {
     },
   };
 
+  const mockAssertionGeneratorService = {
+    computeAssertionHash: jest.fn(),
+    verifyAssertionIntegrity: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
 
@@ -20,6 +26,7 @@ describe('BadgeVerificationService - Story 6.3', () => {
       providers: [
         BadgeVerificationService,
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: AssertionGeneratorService, useValue: mockAssertionGeneratorService },
       ],
     }).compile();
 

@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadgeIssuanceService } from './badge-issuance.service';
 import { PrismaService } from '../common/prisma.service';
+import { StorageService } from '../common/storage.service';
 import { AssertionGeneratorService } from './services/assertion-generator.service';
 import { BadgeNotificationService } from './services/badge-notification.service';
 import { CSVParserService } from './services/csv-parser.service';
@@ -33,6 +34,7 @@ describe('BadgeIssuanceService', () => {
     hashEmail: jest.fn(),
     getAssertionUrl: jest.fn(),
     getClaimUrl: jest.fn(),
+    computeAssertionHash: jest.fn().mockReturnValue('mock-hash-12345'),
   };
 
   const mockNotificationService = {
@@ -46,6 +48,12 @@ describe('BadgeIssuanceService', () => {
 
   const mockMilestonesService = {
     checkMilestones: jest.fn().mockResolvedValue(undefined),
+  };
+
+  const mockStorageService = {
+    uploadBadgeImage: jest.fn(),
+    getBadgeImageUrl: jest.fn(),
+    deleteBadgeImage: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -71,6 +79,10 @@ describe('BadgeIssuanceService', () => {
         {
           provide: MilestonesService,
           useValue: mockMilestonesService,
+        },
+        {
+          provide: StorageService,
+          useValue: mockStorageService,
         },
       ],
     }).compile();
