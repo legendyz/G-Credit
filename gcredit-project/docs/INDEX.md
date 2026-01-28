@@ -1,8 +1,8 @@
 # Documentation Directory
 
-This directory contains project-specific technical documentation, setup guides, and testing resources.
+This directory contains project-specific technical documentation, setup guides, sprint history, and testing resources.
 
-**Last Updated:** 2026-01-25
+**Last Updated:** 2026-01-28 (Post-Sprint 4 cleanup)
 
 ---
 
@@ -10,15 +10,50 @@ This directory contains project-specific technical documentation, setup guides, 
 
 ```
 docs/
+├── architecture/       # System architecture and design
+├── planning/           # Planning artifacts (epics, UX spec, readiness reports)
+├── sprints/            # Sprint documentation (Sprint 0-4)
+├── decisions/          # Architecture Decision Records (ADRs)
+├── development/        # Developer guides (coding standards, testing)
 ├── setup/              # Environment and service setup guides
 ├── testing/            # Testing guides and methodologies
-├── decisions/          # Project-specific architectural decisions (ADR copies)
-└── INDEX.md            # This file
+├── templates/          # Documentation templates (ADR, sprint, user story)
+├── security/           # Security policies and notes
+├── lessons-learned/    # Project lessons learned
+├── INDEX.md            # This file
+├── README.md           # Documentation overview
+├── DOCUMENTATION-INVENTORY.md
+├── DOCUMENTATION-REORGANIZATION-COMPLETE.md
+└── DOCUMENTATION-VALIDATION-REPORT.md
 ```
 
 ---
 
 ## 📚 Documentation Categories
+
+### 🏗️ Architecture (`architecture/`)
+System design, technical architecture, and visual diagrams.
+
+**Available Documents:**
+- **[system-architecture.md](./architecture/system-architecture.md)** - Complete system architecture (5,406 lines, 12 decisions)
+- **[architecture-diagrams.md](./architecture/architecture-diagrams.md)** - Visual architecture diagrams
+
+### 📋 Planning (`planning/`)
+Project planning documents, epics, user stories, and UX specifications.
+
+**Available Documents:**
+- **[epics.md](./planning/epics.md)** - 14 epics, 85 stories, 100% FR coverage (126 KB)
+- **[ux-design-specification.md](./planning/ux-design-specification.md)** - 22 screens, complete interaction design (138 KB)
+- **[implementation-readiness-report-2026-01-22.md](./planning/implementation-readiness-report-2026-01-22.md)** - Score: 10/10 (52 KB)
+- **[ux-design-directions.html](./planning/ux-design-directions.html)** - Visual UX design directions (47 KB)
+
+### 🏃 Sprint History (`sprints/`)
+Historical sprint documentation organized by sprint number.
+
+**Sprint Structure:**
+- **Sprint 0-4:** Each sprint directory contains backlog, retrospective, and sprint-specific docs
+- **Total Files:** 30 files across 5 sprint directories
+- **Index:** [sprints/README.md](./sprints/README.md)
 
 ### 🛠️ Setup Guides (`setup/`)
 Configuration and installation instructions for various services and integrations.
@@ -26,13 +61,17 @@ Configuration and installation instructions for various services and integration
 **Available Guides:**
 - **[EMAIL_SETUP_QUICK.md](./setup/EMAIL_SETUP_QUICK.md)** - Quick email configuration for development
 - **[OUTLOOK_EMAIL_SETUP.md](./setup/OUTLOOK_EMAIL_SETUP.md)** - Detailed Outlook SMTP configuration
-- **[OUTLOOK_VS_GMAIL_COMPARISON.md](./setup/OUTLOOK_VS_GMAIL_COMPARISON.md)** - Email service comparison and recommendations
+- **[OUTLOOK_VS_GMAIL_COMPARISON.md](./setup/OUTLOOK_VS_GMAIL_COMPARISON.md)** - Email service comparison
+- **[infrastructure-inventory.md](./setup/infrastructure-inventory.md)** - Azure resources inventory
+- **[earning-badges.md](./setup/earning-badges.md)** - Badge earning guide
+- **[badge-revocation-policy.md](./setup/badge-revocation-policy.md)** - Badge revocation policy
 
 **Topics Covered:**
 - SMTP configuration for development
 - Gmail app password setup
 - Outlook OAuth2 investigation and limitations
 - Email service selection criteria
+- Azure infrastructure setup
 
 ### 🧪 Testing Guides (`testing/`)
 Testing strategies, scripts, and methodologies.
@@ -47,7 +86,7 @@ Testing strategies, scripts, and methodologies.
 - Security testing considerations
 
 ### 🏛️ Architectural Decisions (`decisions/`)
-Project-specific copies of ADRs for quick reference (canonical versions in `_bmad-output/implementation-artifacts/decisions/`).
+Architecture Decision Records (ADRs) documenting important technical decisions.
 
 **Available ADRs:**
 - **[002-lodash-security-risk-acceptance.md](./decisions/002-lodash-security-risk-acceptance.md)** - Security vulnerability risk acceptance
@@ -63,18 +102,23 @@ In-depth technical investigations and analysis.
 ## 🎯 When to Add Documentation Here
 
 ### ✅ Should be in `docs/`
-- Service setup guides (email, storage, external APIs)
-- Testing methodologies and scripts
-- Development environment configuration
-- Technical troubleshooting guides
-- Integration guides
-- API client setup instructions
+- **Planning:** Epics, user stories, UX specifications
+- **Architecture:** System design, technical decisions, diagrams
+- **Sprints:** Sprint backlogs, retrospectives, sprint-specific docs
+- **Setup:** Service configuration, environment setup, integration guides
+- **Testing:** Testing methodologies, test scripts, UAT guides
+- **Development:** Coding standards, developer onboarding, technical guides
+- **Decisions:** Architecture Decision Records (ADRs)
+- **Templates:** Reusable documentation templates
+- **Security:** Security policies, vulnerability tracking
+- **Lessons Learned:** Project knowledge base
 
 ### ❌ Should NOT be in `docs/`
-- Sprint planning documents → `_bmad-output/implementation-artifacts/`
-- Architecture documents → `_bmad-output/planning-artifacts/`
-- Project context → Root level `project-context.md`
-- Code-level documentation → Inline comments and docstrings
+- **Root level docs** → `project-context.md` (root), `README.md` (root)
+- **BMAD workflow outputs** → `_bmad-output/` (except when migrating to docs/)
+- **Code-level documentation** → Inline comments, docstrings, JSDoc
+- **API documentation** → OpenAPI/Swagger specs (generate from code)
+- **Test output** → Test reports, coverage reports (generated files)
 
 ---
 
@@ -124,9 +168,12 @@ All guides should include:
 ## 🔗 Related Documentation
 
 ### Main Project Documentation
-- **Project Context:** [../project-context.md](../project-context.md)
-- **Implementation Artifacts:** [../_bmad-output/implementation-artifacts/](../_bmad-output/implementation-artifacts/)
-- **Planning Artifacts:** [../_bmad-output/planning-artifacts/](../_bmad-output/planning-artifacts/)
+- **Project Context:** [../../project-context.md](../../project-context.md)
+- **Sprint Documentation:** [./sprints/](./sprints/)
+- **Planning Documentation:** [./planning/](./planning/)
+- **Architecture:** [./architecture/](./architecture/)
+- **Lessons Learned:** [./lessons-learned/](./lessons-learned/)
+- **Decisions:** [./decisions/](./decisions/)
 
 ### Code Documentation
 - **Backend README:** [../gcredit-project/backend/README.md](../gcredit-project/backend/README.md)

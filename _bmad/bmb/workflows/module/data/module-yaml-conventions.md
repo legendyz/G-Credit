@@ -268,13 +268,15 @@ user_skill_level:
 
 planning_artifacts:
   prompt: "Where should planning artifacts be stored?"
-  default: "{output_folder}/planning-artifacts"
+  default: "gcredit-project/docs/planning"
   result: "{project-root}/{value}"
+  note: "⚠️ Legacy path: {output_folder}/planning-artifacts is deprecated. Use project-specific docs/ structure."
 
 implementation_artifacts:
-  prompt: "Where should implementation artifacts be stored?"
-  default: "{output_folder}/implementation-artifacts"
+  prompt: "Where should implementation artifacts (sprint docs) be stored?"
+  default: "gcredit-project/docs/sprints"
   result: "{project-root}/{value}"
+  note: "⚠️ Legacy path: {output_folder}/implementation-artifacts is deprecated. Use project-specific docs/sprints/ structure."
 
 project_knowledge:
   prompt: "Where should project knowledge be stored?"

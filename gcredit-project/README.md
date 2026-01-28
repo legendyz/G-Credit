@@ -260,13 +260,20 @@ Remove-Item -Recurse -Force backend\.git
 ## 📚 Documentation
 
 **Sprint Documentation:**
-- [Sprint 0 Backlog](../_bmad-output/implementation-artifacts/sprint-0-backlog.md) ✅ Complete
-- [Sprint 0 Retrospective](../_bmad-output/implementation-artifacts/sprint-0-retrospective.md) ✅ Complete
-- [Sprint 1 Backlog](../_bmad-output/implementation-artifacts/sprint-1-backlog.md) 🚀 Ready
+- [Sprint 0 Backlog](docs/sprints/sprint-0/backlog.md) ✅ Complete
+- [Sprint 0 Retrospective](docs/sprints/sprint-0/retrospective.md) ✅ Complete
+- [Sprint 1 Backlog](docs/sprints/sprint-1/backlog.md) ✅ Complete
+- [Sprint 1 Retrospective](docs/sprints/sprint-1/retrospective.md) ✅ Complete
+- [Sprint 2 Documentation](docs/sprints/sprint-2/) ✅ Complete
+- [Sprint 3 Documentation](docs/sprints/sprint-3/) ✅ Complete
+- [Sprint 4 Documentation](docs/sprints/sprint-4/) ✅ Complete
+- [All Sprints Index](docs/sprints/README.md)
 
 **Planning Documentation:**
-- [Architecture Document](../_bmad-output/planning-artifacts/architecture.md)
-- [Epics Overview](../_bmad-output/planning-artifacts/epics.md)
+- [Architecture Document](docs/architecture/system-architecture.md)
+- [Epics Overview](docs/planning/epics.md)
+- [UX Design Specification](docs/planning/ux-design-specification.md)
+- [Implementation Readiness Report](docs/planning/implementation-readiness-report-2026-01-22.md)
 - [Project Context](../project-context.md) (Single Source of Truth)
 - [API Documentation](./backend/README.md)
 

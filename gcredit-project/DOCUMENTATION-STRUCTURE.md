@@ -1,7 +1,8 @@
 # G-Credit Documentation Structure
 
-**Version:** 1.0  
-**Last Updated:** 2026-01-26  
+**Version:** 1.1  
+**Last Updated:** 2026-01-28  
+**Status:** ✅ Active - Reflects current project structure  
 **Purpose:** Define standard documentation organization for the G-Credit project
 
 ---
@@ -10,61 +11,68 @@
 
 ```
 gcredit-project/
-├── docs/                              # Project-level documentation
-│   ├── README.md                      # Documentation index
-│   ├── project-overview.md            # High-level project description
+├── docs/                              # Project-level documentation (✅ PRIMARY LOCATION)
+│   ├── INDEX.md                       # Complete documentation index and navigation
+│   ├── README.md                      # Documentation overview
 │   ├── architecture/                  # Architecture documents
-│   │   ├── system-architecture.md
-│   │   ├── data-model.md
-│   │   └── api-design.md
+│   │   ├── system-architecture.md     # Complete system architecture (5,406 lines)
+│   │   └── architecture-diagrams.md   # Visual architecture diagrams
 │   ├── planning/                      # Planning artifacts
-│   │   ├── product-requirements.md
-│   │   ├── epics.md
-│   │   ├── ux-design-specification.md
-│   │   └── implementation-readiness-reports/
+│   │   ├── epics.md                   # 14 epics, 85 stories (126 KB)
+│   │   ├── ux-design-specification.md # 22 screens (138 KB)
+│   │   ├── implementation-readiness-report-2026-01-22.md
+│   │   └── ux-design-directions.html
+│   ├── sprints/                       # Sprint documentation (Sprint 0-4)
+│   │   ├── README.md                  # Sprint index
+│   │   ├── sprint-0/                  # Infrastructure setup (3 files)
+│   │   ├── sprint-1/                  # JWT auth & user management (5 files)
+│   │   ├── sprint-2/                  # Badge template management (10 files)
+│   │   ├── sprint-3/                  # Badge issuance (5 files)
+│   │   └── sprint-4/                  # Employee badge wallet (7 files)
 │   ├── decisions/                     # Architecture Decision Records (ADRs)
-│   │   ├── 001-framework-selection.md
+│   │   ├── README.md
 │   │   ├── 002-lodash-security-risk-acceptance.md
-│   │   └── README.md
+│   │   ├── 003-badge-assertion-format.md
+│   │   └── 004-email-service-selection.md
+│   ├── development/                   # Developer guides
+│   │   ├── README.md
+│   │   ├── coding-standards.md
+│   │   ├── testing-guide.md
+│   │   ├── badge-wallet-guide.md
+│   │   └── backend-code-structure-guide.md
 │   ├── lessons-learned/               # Project knowledge base
-│   │   ├── README.md                  # Index of all lessons
-│   │   ├── lessons-learned.md         # Main lessons document
-│   │   ├── best-practices.md
-│   │   └── common-pitfalls.md
+│   │   └── lessons-learned.md
 │   ├── security/                      # Security documentation
-│   │   ├── security-notes.md
-│   │   ├── threat-model.md
-│   │   └── compliance.md
-│   └── templates/                     # Document templates
-│       ├── adr-template.md
-│       ├── sprint-retrospective-template.md
-│       └── user-story-template.md
+│   │   └── security-notes.md
+│   ├── setup/                         # Setup and configuration guides
+│   │   ├── EMAIL_SETUP_QUICK.md
+│   │   ├── OUTLOOK_EMAIL_SETUP.md
+│   │   ├── OUTLOOK_VS_GMAIL_COMPARISON.md
+│   │   ├── infrastructure-inventory.md
+│   │   ├── earning-badges.md
+│   │   └── badge-revocation-policy.md
+│   ├── testing/                       # Testing guides
+│   │   └── PASSWORD_RESET_TESTING.md
+│   ├── templates/                     # Document templates
+│   │   ├── adr-template.md
+│   │   ├── sprint-backlog-template.md
+│   │   ├── sprint-completion-checklist-template.md
+│   │   ├── sprint-planning-checklist.md
+│   │   ├── sprint-version-manifest-template.md
+│   │   └── user-story-template.md
+│   └── archive/                       # Historical documentation
+│       ├── README.md
+│       ├── DOCUMENTATION-INVENTORY.md
+│       ├── DOCUMENTATION-REORGANIZATION-COMPLETE.md
+│       └── DOCUMENTATION-VALIDATION-REPORT.md
 │
-├── backend/                           # Backend application
+├── backend/                           # Backend application (NestJS)
 │   ├── README.md                      # Backend quick start guide
 │   ├── CHANGELOG.md                   # Version history
 │   ├── docs/                          # Backend-specific documentation
-│   │   ├── API-GUIDE.md              # API usage and examples
-│   │   ├── DEPLOYMENT.md             # Deployment procedures
-│   │   ├── TESTING.md                # Testing guide
-│   │   └── sprints/                  # Sprint reports
-│   │       ├── sprint-0/
-│   │       │   ├── backlog.md
-│   │       │   ├── retrospective.md
-│   │       │   └── azure-setup-guide.md
-│   │       ├── sprint-1/
-│   │       │   ├── backlog.md
-│   │       │   ├── retrospective.md
-│   │       │   ├── kickoff-readiness.md
-│   │       │   └── tech-stack-verification.md
-│   │       └── sprint-2/
-│   │           ├── backlog.md
-│   │           ├── kickoff.md
-│   │           ├── retrospective.md
-│   │           ├── final-report.md
-│   │           ├── code-review-recommendations.md
-│   │           └── technical-debt-completion.md
+│   │   └── (Note: Sprint docs moved to gcredit-project/docs/sprints/)
 │   ├── src/                          # Source code
+│   ├── prisma/                       # Database schema and migrations
 │   └── test/                         # Tests
 │
 ├── frontend/                          # Frontend application (future)
@@ -127,27 +135,52 @@ gcredit-project/
 
 ---
 
-### 2. **Backend Documentation** (`/backend/docs`)
-**Purpose:** Backend-specific technical documentation
+### 2. **Sprint Documentation** (`/docs/sprints`)
+**Purpose:** Historical record of sprint work, organized by sprint number
 
 **Contents:**
-- API usage guide
-- Deployment procedures
-- Testing strategies
-- Sprint reports and retrospectives
-- Enhancement guides
-- Code review reports
+- Sprint backlogs and retrospectives (Sprint 0-4)
+- Sprint-specific technical documents
+- Kickoff readiness checklists
+- Completion checklists
+- UX design documents
 
-**Audience:** Backend developers, DevOps engineers
+**Audience:** All team members, stakeholders
 
-**Sub-organization:**
-- `sprints/` - Organized by sprint number
-- Root level - Living documents (API, Deployment, Testing)
+**Organization:**
+- Each sprint has its own directory: `sprint-0/`, `sprint-1/`, etc.
+- Common files: `backlog.md`, `retrospective.md`
+- Sprint-specific docs as needed
 
 ---
 
-### 3. **Sprint Documentation** (`/backend/docs/sprints/sprint-X/`)
-**Purpose:** Historical record of sprint work
+### 3. **Development Guides** (`/docs/development`)
+**Purpose:** Developer onboarding and coding standards
+
+**Contents:**
+- Coding standards and best practices
+- Testing guide
+- Backend code structure guide
+- Feature-specific guides (e.g., badge wallet)
+
+**Audience:** Developers (new and existing)
+
+---
+
+### 4. **Setup & Configuration** (`/docs/setup`)
+**Purpose:** Environment setup and service configuration
+
+**Contents:**
+- Email setup guides
+- Azure infrastructure inventory
+- Service configuration instructions
+
+**Audience:** Developers, DevOps
+
+---
+
+### 5. **Historical Sprint Documentation** (`/docs/sprints/sprint-X/`)
+**Purpose:** Snapshot of each sprint's work
 
 **Standard Files:**
 - `backlog.md` - Sprint backlog with user stories
@@ -221,9 +254,9 @@ gcredit-project/
 
 ---
 
-## 🔄 Migration from Legacy Structure
+## ✅ Migration Completed (2026-01-28)
 
-### Old Structure (Before 2026-01-26)
+### Old Structure (Before 2026-01-26) - ⚠️ DEPRECATED
 ```
 _bmad-output/
 ├── implementation-artifacts/
@@ -250,38 +283,45 @@ docs/
 └── templates/
 ```
 
-### New Structure (After Reorganization)
+### Current Structure (As of 2026-01-28) - ✅ COMPLETE
 ```
-docs/                                   # Project-level
+docs/                                   # Project-level (PRIMARY LOCATION)
 ├── architecture/
-│   └── system-architecture.md         # From: planning-artifacts/architecture.md
+│   ├── system-architecture.md         # ✅ From: _bmad-output/planning-artifacts/architecture.md
+│   └── architecture-diagrams.md       # ✅ Created during Phase 3
 ├── planning/
-│   ├── epics.md                       # From: planning-artifacts/epics.md
-│   └── ux-design-specification.md     # From: planning-artifacts/ux-design-specification.md
-├── decisions/
-│   └── 002-lodash-security-risk-acceptance.md  # From: implementation-artifacts/decisions/
-├── lessons-learned/
-│   └── lessons-learned.md             # Already here
-└── security/
-    └── security-notes.md              # Already here
+│   ├── epics.md                       # ✅ From: _bmad-output/planning-artifacts/epics.md
+│   ├── ux-design-specification.md     # ✅ From: _bmad-output/planning-artifacts/
+│   ├── implementation-readiness-report-2026-01-22.md  # ✅ Migrated
+│   └── ux-design-directions.html      # ✅ Migrated
+├── sprints/                           # ✅ MOVED from backend/docs/sprints/
+│   ├── sprint-0/ (3 files)            # ✅ From: _bmad-output/implementation-artifacts/
+│   ├── sprint-1/ (5 files)            # ✅ From: _bmad-output/implementation-artifacts/
+│   ├── sprint-2/ (10 files)           # ✅ From: _bmad-output/implementation-artifacts/ + backend/docs/
+│   ├── sprint-3/ (5 files)            # ✅ Complete
+│   └── sprint-4/ (7 files)            # ✅ Complete
+├── decisions/ (4 files)               # ✅ From: _bmad-output/implementation-artifacts/decisions/
+├── development/ (5 files)             # ✅ Created during Phase 3
+├── templates/ (6 files)               # ✅ Created during Phase 3
+├── setup/ (6 files)                   # ✅ Consolidated
+├── testing/ (1 file)                  # ✅ Organized
+├── lessons-learned/                   # ✅ Consolidated
+├── security/                          # ✅ Consolidated
+└── archive/                           # ✅ Historical documentation
 
-backend/docs/
-├── API-GUIDE.md                       # Already here
-├── DEPLOYMENT.md                      # Already here
-├── TESTING.md                         # Already here
-└── sprints/
-    ├── sprint-0/
-    │   ├── backlog.md                 # From: implementation-artifacts/sprint-0-backlog.md
-    │   └── retrospective.md           # From: implementation-artifacts/sprint-0-retrospective.md
-    ├── sprint-1/
-    │   ├── backlog.md                 # From: implementation-artifacts/sprint-1-backlog.md
-    │   └── retrospective.md           # From: implementation-artifacts/sprint-1-retrospective.md
-    └── sprint-2/
-        ├── backlog.md                 # From: implementation-artifacts/sprint-2-backlog.md
-        ├── retrospective.md           # Already in backend/docs/
-        ├── final-report.md            # Already in backend/docs/
-        └── code-review-recommendations.md  # Already in backend/docs/
+_bmad-output/
+├── excalidraw-diagrams/               # ✅ ACTIVE - Wireframes
+├── planning-artifacts/                # ⚠️ DEPRECATED (README.md with migration notice)
+└── implementation-artifacts/          # ⚠️ DEPRECATED (README.md with migration notice)
 ```
+
+**Migration Status:** ✅ **100% COMPLETE** (2026-01-28)
+- All planning docs migrated to `docs/planning/`
+- All sprint docs migrated to `docs/sprints/`
+- All architecture docs migrated to `docs/architecture/`
+- Deprecation notices in place with clear migration mapping
+- 14 path references updated across 6 files
+- 28/28 BMAD agents configured to use new structure
 
 ---
 
@@ -301,10 +341,13 @@ backend/docs/
 - [ ] Commit with clear message explaining the move
 
 ### At End of Each Sprint
-- [ ] Move sprint documents to `/backend/docs/sprints/sprint-X/`
+- [ ] Create sprint directory: `/docs/sprints/sprint-X/`
+- [ ] Move sprint documents (backlog, retrospective) to sprint directory
+- [ ] Update `project-context.md` with sprint completion status (CRITICAL)
 - [ ] Update lessons-learned.md with new insights
+- [ ] Update `docs/sprints/README.md` sprint index
 - [ ] Archive any deprecated documents
-- [ ] Update main README.md indexes
+- [ ] Verify completion using `docs/templates/sprint-completion-checklist-template.md`
 
 ---
 
@@ -342,4 +385,5 @@ backend/docs/
 **Document Owner:** Development Team  
 **Review Frequency:** Quarterly or when structure pain points emerge  
 **Version History:**
+- 1.1 (2026-01-28) - Updated to reflect actual structure, Sprint 0-4 complete, migration finished
 - 1.0 (2026-01-26) - Initial structure definition

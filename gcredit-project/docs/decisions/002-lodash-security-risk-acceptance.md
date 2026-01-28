@@ -231,8 +231,8 @@ Total: 5 vulnerabilities (2 moderate, 3 high)
 ## References
 
 - **GitHub Advisory:** https://github.com/advisories/GHSA-xxjr-mmjv-4gpg
-- **Sprint 0 Retrospective:** `_bmad-output/implementation-artifacts/sprint-0-retrospective.md` (Action Item AI-2)
-- **Sprint 1 Backlog:** `_bmad-output/implementation-artifacts/sprint-1-backlog.md` (Known Security Issues section)
+- **Sprint 0 Retrospective:** [gcredit-project/docs/sprints/sprint-0/retrospective.md](../sprints/sprint-0/retrospective.md) (Action Item AI-2)
+- **Sprint 1 Backlog:** [gcredit-project/docs/sprints/sprint-1/backlog.md](../sprints/sprint-1/backlog.md) (Known Security Issues section)
 - **CVSS Calculator:** https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator
 - **NestJS Config GitHub:** https://github.com/nestjs/config
 

@@ -15,6 +15,85 @@
 
 ---
 
+## 🚨 Maintenance Protocol - How to Keep This Document Current
+
+**⚠️ CRITICAL FOR ALL BMAD AGENTS (ESPECIALLY SM/DEV):** This file is the **Single Source of Truth** for the G-Credit project. It MUST be updated at specific milestones to remain accurate and useful.
+
+### When to Update This Document
+
+#### 🎯 MANDATORY: After Every Sprint Completion
+**Trigger:** Sprint retrospective completed, all stories done  
+**Responsible:** Scrum Master (Bob) or Developer (Amelia)  
+**Reference:** `gcredit-project/docs/templates/sprint-completion-checklist-template.md`
+
+**Required Updates:**
+1. **Status Section (Lines 8-14):**
+   - Update "Status:" line with current sprint completion
+   - Update "Sprint N:" status line (mark as ✅ Complete)
+   - Update "Last Updated:" date
+
+2. **Implemented Features Section:**
+   - Add new Sprint N subsection with:
+     - Sprint completion date and metrics
+     - API endpoints added (list all new endpoints)
+     - Database models added/modified
+     - Key features delivered
+     - Testing statistics (X tests, Y% pass rate)
+     - Branch name and version tag (if applicable)
+
+3. **Next Actions Section:**
+   - Mark current sprint as ✅ COMPLETE
+   - Add next sprint planning entry (🔜 Sprint N+1 Planning)
+   - Update epic options for next sprint
+
+4. **Repository Structure (if changed):**
+   - Update if new directories or modules were added
+   - Update file counts or significant structure changes
+
+5. **Technical Stack (if changed):**
+   - Update if new dependencies were added
+   - Update if versions were upgraded
+   - Document any breaking changes
+
+6. **Known Issues (if new issues discovered):**
+   - Add new technical debt items
+   - Update security vulnerability status
+   - Document any deferred work
+
+#### 📋 RECOMMENDED: After Major Milestones
+- **New Epic Started:** Update "Current Phase" and epic progress
+- **Architecture Change:** Update architecture references and decisions
+- **Production Deployment:** Update deployment status and infrastructure
+- **New Integration:** Update integration requirements section
+
+### How to Update
+
+**Step 1:** Load this file  
+**Step 2:** Reference sprint completion checklist: `gcredit-project/docs/templates/sprint-completion-checklist-template.md`  
+**Step 3:** Update all required sections listed above  
+**Step 4:** Verify accuracy by reviewing recent sprint retrospective  
+**Step 5:** Commit changes with message: `docs: Update project-context.md for Sprint N completion`
+
+### Verification Checklist
+
+After updating, verify:
+- [ ] All sprint status lines are accurate
+- [ ] "Last Updated" date is current
+- [ ] New features are documented in "Implemented Features"
+- [ ] "Next Actions" reflects current sprint status
+- [ ] No outdated information remains
+- [ ] All file paths are correct (especially after documentation reorganization)
+
+### What NOT to Update Frequently
+
+❌ **Don't change these unless truly necessary:**
+- Project Vision (only if business direction changes)
+- Business Objectives (stable over project lifetime)
+- Core User Personas (stable unless new research)
+- Integration Requirements (only when scope changes)
+
+---
+
 ## Project Vision
 
 Build an internal digital credentialing (badging) platform to securely recognize, verify, and analyze employee skills and achievements—replacing fragmented certificates and reducing dependence on external platforms.
@@ -25,15 +104,88 @@ Build an internal digital credentialing (badging) platform to securely recognize
 
 - **Product Brief:** `MD_FromCopilot/product-brief.md` ✅ COMPLETE
 - **PRD:** `MD_FromCopilot/PRD.md` ✅ COMPLETE (33 FRs, 22 NFRs)
-- **Architecture:** `_bmad-output/planning-artifacts/architecture.md` ✅ COMPLETE (5,406 lines, 12 decisions, Phased Azure Strategy)
-- **UX Design Specification:** `_bmad-output/planning-artifacts/ux-design-specification.md` ✅ COMPLETE (3,314 lines, 22 screens)
+- **Architecture:** `gcredit-project/docs/architecture/system-architecture.md` ✅ COMPLETE (5,406 lines, 12 decisions, Phased Azure Strategy)
+- **UX Design Specification:** `gcredit-project/docs/planning/ux-design-specification.md` ✅ COMPLETE (3,314 lines, 22 screens)
 - **UX Wireframes:** `_bmad-output/excalidraw-diagrams/wireframe-gcredit-mvp-20260122.excalidraw` ✅ COMPLETE (10 screens: 6 desktop + 4 mobile)
-- **Epics & Stories:** `_bmad-output/planning-artifacts/epics.md` ✅ COMPLETE (14 epics, 85 stories, 100% FR coverage)
-- **Implementation Readiness Review:** `_bmad-output/planning-artifacts/implementation-readiness-report-2026-01-22.md` ✅ COMPLETE (Score: 10/10)
-- **Sprint 0 Backlog:** `_bmad-output/implementation-artifacts/sprint-0-backlog.md` ✅ COMPLETE (All 5 stories delivered)
-- **Sprint 0 Retrospective:** `_bmad-output/implementation-artifacts/sprint-0-retrospective.md` ✅ COMPLETE (Lessons learned & action items)
-- **Sprint 1 Backlog:** `_bmad-output/implementation-artifacts/sprint-1-backlog.md` ✅ COMPLETE (7 stories, 21h actual, Epic 2 delivered)
-- **Sprint 1 Retrospective:** `_bmad-output/implementation-artifacts/sprint-1-retrospective.md` ✅ COMPLETE (100% test pass rate, perfect time estimation)
+- **Epics & Stories:** `gcredit-project/docs/planning/epics.md` ✅ COMPLETE (14 epics, 85 stories, 100% FR coverage)
+- **Implementation Readiness Review:** `gcredit-project/docs/planning/implementation-readiness-report-2026-01-22.md` ✅ COMPLETE (Score: 10/10)
+- **Sprint 0 Backlog:** `gcredit-project/docs/sprints/sprint-0/backlog.md` ✅ COMPLETE (All 5 stories delivered)
+- **Sprint 0 Retrospective:** `gcredit-project/docs/sprints/sprint-0/retrospective.md` ✅ COMPLETE (Lessons learned & action items)
+- **Sprint 1 Backlog:** `gcredit-project/docs/sprints/sprint-1/backlog.md` ✅ COMPLETE (7 stories, 21h actual, Epic 2 delivered)
+- **Sprint 1 Retrospective:** `gcredit-project/docs/sprints/sprint-1/retrospective.md` ✅ COMPLETE (100% test pass rate, perfect time estimation)
+- **Sprint 2 Backlog:** `gcredit-project/docs/sprints/sprint-2/backlog.md` ✅ COMPLETE (6 stories + 1 enhancement, Epic 3 delivered)
+- **Sprint 2 Retrospective:** `gcredit-project/docs/sprints/sprint-2/retrospective.md` ✅ COMPLETE (27 tests, 100% pass rate, Azure integration)
+- **Sprint 3 Backlog:** `gcredit-project/docs/sprints/sprint-3/backlog.md` ✅ COMPLETE (6 stories, 13h/12.5h, Epic 4 delivered)
+- **Sprint 3 Retrospective:** `gcredit-project/docs/sprints/sprint-3/retrospective.md` ✅ COMPLETE (46 tests, Open Badges 2.0 compliance, v0.3.0)
+- **Sprint 4 Backlog:** `gcredit-project/docs/sprints/sprint-4/backlog.md` ✅ COMPLETE (7 stories, 48h, Epic 5 delivered)
+- **Sprint 4 Retrospective:** `gcredit-project/docs/sprints/sprint-4/retrospective.md` ✅ COMPLETE (58 tests, Timeline View + Badge Detail Modal)
+
+---
+
+## 📂 Documentation Structure & Navigation Guide
+
+**⚠️ IMPORTANT FOR ALL BMAD AGENTS:** This project follows a two-tier documentation architecture. Always reference the correct paths below.
+
+### Canonical Documentation Location
+**Primary:** `gcredit-project/docs/` - Project-specific technical documentation
+**Secondary:** `_bmad-output/` - BMAD workflow outputs only (deprecated for most documentation)
+
+### Directory Structure
+
+```
+gcredit-project/docs/
+├── planning/              # Planning artifacts
+│   ├── epics.md          # 14 epics, 85 stories
+│   ├── ux-design-specification.md  # 22 screens, 3,314 lines
+│   ├── implementation-readiness-report-2026-01-22.md
+│   └── ux-design-directions.html
+├── architecture/          # System architecture
+│   ├── system-architecture.md  # 5,406 lines, 12 decisions
+│   └── architecture-diagrams.md
+├── sprints/              # Sprint documentation (Sprint 0-4)
+│   ├── sprint-0/         # Infrastructure setup
+│   ├── sprint-1/         # JWT auth & user management
+│   ├── sprint-2/         # Badge template management
+│   ├── sprint-3/         # Badge issuance
+│   └── sprint-4/         # Employee badge wallet
+├── decisions/            # Architecture Decision Records
+│   ├── 002-lodash-security-risk-acceptance.md
+│   ├── 003-badge-assertion-format.md
+│   └── 004-email-service-selection.md
+├── setup/                # Setup guides (email, Azure, infrastructure)
+├── testing/              # Testing guides and methodologies
+├── development/          # Development guides (coding standards, testing)
+├── templates/            # Documentation templates (ADR, sprint, user story)
+├── security/             # Security notes and vulnerability tracking
+└── lessons-learned/      # Project lessons learned
+
+_bmad-output/
+├── excalidraw-diagrams/  # ✅ ACTIVE - Wireframes and diagrams
+├── planning-artifacts/   # ⚠️ DEPRECATED - Use gcredit-project/docs/planning/
+└── implementation-artifacts/  # ⚠️ DEPRECATED - Use gcredit-project/docs/sprints/
+```
+
+### Path Migration Mapping
+
+| Old Path (DEPRECATED) | New Path (USE THIS) |
+|----------------------|---------------------|
+| `_bmad-output/planning-artifacts/architecture.md` | `gcredit-project/docs/architecture/system-architecture.md` |
+| `_bmad-output/planning-artifacts/epics.md` | `gcredit-project/docs/planning/epics.md` |
+| `_bmad-output/planning-artifacts/ux-design-specification.md` | `gcredit-project/docs/planning/ux-design-specification.md` |
+| `_bmad-output/implementation-artifacts/sprint-N-backlog.md` | `gcredit-project/docs/sprints/sprint-N/backlog.md` |
+| `_bmad-output/implementation-artifacts/sprint-N-retrospective.md` | `gcredit-project/docs/sprints/sprint-N/retrospective.md` |
+
+### Finding Documentation
+
+**When looking for:**
+- **Planning docs** → `gcredit-project/docs/planning/`
+- **Sprint docs** → `gcredit-project/docs/sprints/sprint-N/`
+- **Architecture** → `gcredit-project/docs/architecture/`
+- **Decisions** → `gcredit-project/docs/decisions/`
+- **Setup guides** → `gcredit-project/docs/setup/`
+- **Wireframes** → `_bmad-output/excalidraw-diagrams/`
+
+**Complete documentation index:** `gcredit-project/docs/INDEX.md`
 
 ---
 
@@ -367,19 +519,19 @@ Build an internal digital credentialing (badging) platform to securely recognize
 ```
 CODE/
 ├── _bmad/                    # BMAD framework configuration
-├── _bmad-output/             # Generated artifacts
-│   ├── planning-artifacts/   # ✅ Planning complete (all documents validated)
-│   │   ├── architecture.md           # 185 KB, 5,406 lines, 12 decisions
-│   │   ├── ux-design-specification.md # 137 KB, 3,314 lines, 22 screens
-│   │   ├── epics.md                   # 122 KB, 14 epics, 85 stories
-│   │   └── implementation-readiness-report-2026-01-22.md # 10/10 score
+├── _bmad-output/             # Generated BMAD artifacts (deprecated for documentation)
 │   ├── excalidraw-diagrams/  # ✅ Wireframes (10 screens, 206 elements)
-│   └── implementation-artifacts/ # 🔄 Sprint artifacts
-│       ├── sprint-0-backlog.md
-│       ├── sprint-0-retrospective.md
-│       ├── sprint-1-backlog.md
-│       ├── sprint-1-retrospective.md
-│       └── sprint-2-backlog.md
+│   ├── planning-artifacts/   # ⚠️ DEPRECATED - See gcredit-project/docs/
+│   └── implementation-artifacts/ # ⚠️ DEPRECATED - See gcredit-project/docs/sprints/
+├── gcredit-project/          # Main project (canonical documentation location)
+│   ├── docs/
+│   │   ├── planning/         # Planning artifacts (epics, UX spec, readiness reports)
+│   │   ├── architecture/     # Architecture documentation
+│   │   ├── sprints/          # Sprint documentation (Sprint 0-4)
+│   │   ├── decisions/        # Architecture decision records
+│   │   └── INDEX.md          # Documentation index
+│   ├── backend/              # NestJS backend
+│   └── frontend/             # React frontend
 ├── MD_FromCopilot/           # Source documents
 │   ├── product-brief.md
 │   └── PRD.md
@@ -460,21 +612,21 @@ Sprint 0-2 established this pattern:
 
 1. ✅ Create project context document (DONE - 2026-01-22)
 2. ✅ Create Architecture Document (DONE - 2026-01-22)
-   - **Output:** `_bmad-output/planning-artifacts/architecture.md` (5,406 lines)
+   - **Output:** `gcredit-project/docs/architecture/system-architecture.md` (5,406 lines)
    - **Coverage:** 12 architectural decisions, 16 components, 33 FR mappings
    - **Status:** Validated, zero critical gaps
 3. ✅ Create UX Design Specification (DONE - 2026-01-22)
-   - **Output:** `_bmad-output/planning-artifacts/ux-design-specification.md` (3,314 lines)
+   - **Output:** `gcredit-project/docs/planning/ux-design-specification.md` (3,314 lines)
    - **Coverage:** 22 screens, 7 user flows, complete interaction design
 4. ✅ Create UX Wireframes (DONE - 2026-01-22)
    - **Output:** `_bmad-output/excalidraw-diagrams/wireframe-gcredit-mvp-20260122.excalidraw`
    - **Coverage:** 10 screens (6 desktop + 4 mobile), 206 elements
    - **Purpose:** Stakeholder alignment and visual communication
 5. ✅ Create Epics & User Stories (DONE - 2026-01-22)
-   - **Output:** `_bmad-output/planning-artifacts/epics.md`
+   - **Output:** `gcredit-project/docs/planning/epics.md`
    - **Coverage:** 14 epics, 85 stories, 100% FR coverage validated
 6. ✅ Implementation Readiness Review (DONE - 2026-01-22)
-   - **Output:** `_bmad-output/planning-artifacts/implementation-readiness-report-2026-01-22.md`
+   - **Output:** `gcredit-project/docs/planning/implementation-readiness-report-2026-01-22.md`
    - **Score:** 10/10 ("Rare achievement, zero critical gaps")
 
 ### 🎯 Current Phase (Phase 4 - Implementation)
@@ -533,14 +685,31 @@ Sprint 0-2 established this pattern:
      - Phase 1-3 documentation reorganization (45%→100% compliance)
    - **Version:** v0.3.0 (tagged 2026-01-28)
 
-12. 🔜 **Sprint 4 Planning** (NEXT - Ready to Start)
+12. ✅ **Sprint 4: Employee Badge Wallet** (COMPLETE - 2026-01-28)
+   - **Epic:** Epic 5 - Badge Wallet & Employee Profile
+   - **Actual Time:** 48h estimated (58 tests, 100% pass)
+   - **Deliverables:** Timeline View, Badge Detail Modal, Evidence Files, Similar Badges, Milestones, Empty States, Report Issues
+   - **Testing:** 58 backend tests (19 milestone + 11 evidence + 8 recommendations)
+   - **Key Achievements:**
+     - Timeline view replacing grid layout (date navigation, horizontal cards)
+     - Badge detail modal with 10 sub-components
+     - Azure Blob evidence integration with SAS tokens (5-min expiry)
+     - Similar badge recommendations (skills +20, category +15, issuer +10)
+     - Admin-configurable milestones (badge count, skill tracks, anniversaries)
+     - 4 empty state scenarios with auto-detection
+     - Inline issue reporting to g-credit@outlook.com
+   - **Database:** 3 new tables (evidence_files, milestone_configs, milestone_achievements)
+   - **API Endpoints:** 9 new endpoints (wallet, similar, evidence, download, report, milestones)
+   - **Branch:** sprint-4/epic-5-employee-badge-wallet (7 commits)
+
+13. 🔜 **Sprint 5 Planning** (NEXT - Ready to Start)
    - **Epic Options:**
-     - Epic 5: Badge Wallet & Employee Profile
-     - Epic 6: Badge Verification & Public Pages
+     - Epic 6: Badge Verification & Public Pages (recommended - completes core badge flow)
      - Epic 7: Analytics Dashboard (Basic)
-   - **Prerequisites:** ✅ Sprint 3 retrospective complete
+     - Epic 8: Azure AD Integration & SSO
+   - **Prerequisites:** ✅ Sprint 4 complete, documentation reorganization complete
    - **Estimated Duration:** 2 weeks
-   - **Target:** Continue MVP development for pilot launch
+   - **Target:** Complete MVP core functionality for pilot launch
 
 ---
 
