@@ -138,4 +138,26 @@ export class AssertionGeneratorService {
   getClaimUrl(claimToken: string): string {
     return `${this.baseUrl}/claim-badge?token=${claimToken}`;
   }
+
+  /**
+   * Compute SHA-256 hash of assertion JSON for integrity verification
+   * Sprint 5 Story 6.5: Metadata immutability
+   */
+  computeAssertionHash(assertion: any): string {
+    return crypto
+      .createHash('sha256')
+      .update(JSON.stringify(assertion))
+      .digest('hex');
+  }
+
+  /**
+   * Verify assertion integrity by comparing stored hash with computed hash
+   * Sprint 5 Story 6.5: Integrity validation
+   * 
+   * @returns true if hashes match, false if tampered
+   */
+  verifyAssertionIntegrity(assertion: any, storedHash: string): boolean {
+    const computedHash = this.computeAssertionHash(assertion);
+    return computedHash === storedHash;
+  }
 }

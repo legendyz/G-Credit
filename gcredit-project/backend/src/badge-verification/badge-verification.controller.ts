@@ -134,6 +134,10 @@ export class BadgeVerificationController {
         recipient: badge.recipient,
         issuer: badge.issuer,
         evidenceFiles: badge.evidenceFiles,
+        // Story 6.5: Integrity verification status
+        ...(badge.integrity && {
+          integrity: badge.integrity,
+        }),
       }
     };
   }

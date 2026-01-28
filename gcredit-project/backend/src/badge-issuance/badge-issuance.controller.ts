@@ -264,4 +264,32 @@ export class BadgeIssuanceController {
     res.setHeader('Cache-Control', 'private, max-age=86400'); // Cache for 24h
     res.send(buffer);
   }
+
+  /**
+   * Story 6.5: Verify badge assertion integrity
+   * Check if badge metadata has been tampered with
+   */
+  @Get(':id/integrity')
+  @Public() // Public endpoint for transparency
+  @ApiOperation({ 
+    summary: 'Verify badge assertion integrity (Story 6.5)',
+    description: 'Checks if badge assertion data has been tampered with by comparing stored hash with computed hash. Returns integrity status and hash details.'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Integrity verification result',
+    schema: {
+      example: {
+        integrityVerified: true,
+        storedHash: 'abc123...',
+        computedHash: 'abc123...',
+        tampered: false
+      }
+    }
+  })
+  @ApiResponse({ status: 404, description: 'Badge not found' })
+  async verifyIntegrity(@Param('id') badgeId: string) {
+    return this.badgeService.verifyBadgeIntegrity(badgeId);
+  }
 }
+

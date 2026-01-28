@@ -1,12 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { BadgeStatus } from '@prisma/client';
+import { AssertionGeneratorService } from '../badge-issuance/services/assertion-generator.service';
 
 @Injectable()
 export class BadgeVerificationService {
   private readonly logger = new Logger(BadgeVerificationService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private assertionGenerator: AssertionGeneratorService,
+  ) {}
 
   /**
    * Story 6.2: Verify badge by verificationId (public endpoint)
@@ -79,6 +83,28 @@ export class BadgeVerificationService {
       status: badge.status,
     });
 
+    // Sprint 5 Story 6.5: Verify assertion integrity
+    let integrityStatus = null;
+    if (badge.metadataHash && badge.assertionJson) {
+      const computedHash = this.assertionGenerator.computeAssertionHash(badge.assertionJson);
+      const integrityVerified = computedHash === badge.metadataHash;
+      
+      integrityStatus = {
+        verified: integrityVerified,
+        hash: badge.metadataHash,
+      };
+
+      if (!integrityVerified) {
+        this.logger.error({
+          action: 'INTEGRITY_VIOLATION',
+          badgeId: badge.id,
+          verificationId,
+          storedHash: badge.metadataHash,
+          computedHash,
+        });
+      }
+    }
+
     // Format response for frontend
     return {
       id: badge.id,
@@ -124,6 +150,11 @@ export class BadgeVerificationService {
 
       // Open Badges 2.0 assertion (from Story 6.1)
       assertionJson: badge.assertionJson,
+
+      // Sprint 5 Story 6.5: Integrity verification status
+      ...(integrityStatus && {
+        integrity: integrityStatus,
+      }),
     };
   }
 

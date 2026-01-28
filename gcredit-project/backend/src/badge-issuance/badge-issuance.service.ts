@@ -105,12 +105,16 @@ export class BadgeIssuanceService {
       evidenceUrls, // Sprint 5: Multiple evidence URLs
     });
 
-    // 8. Update badge with final assertion JSON
+    // Sprint 5 Story 6.5: Compute metadata hash for integrity
+    const metadataHash = this.assertionGenerator.computeAssertionHash(assertion);
+
+    // 8. Update badge with final assertion JSON and metadata hash
     await this.prisma.badge.update({
       where: { id: badge.id },
       data: {
         // IMPORTANT: Convert to plain object (Lesson 13 - Prisma JSON type conversion)
         assertionJson: JSON.parse(JSON.stringify(assertion)),
+        metadataHash, // Sprint 5 Story 6.5: Store hash for integrity verification
       },
     });
 
@@ -913,4 +917,67 @@ export class BadgeIssuanceService {
 
     return { buffer: bakedBadge, filename };
   }
+
+  /**
+   * Verify badge assertion integrity
+   * Sprint 5 Story 6.5: Metadata immutability & integrity verification
+   * 
+   * @param badgeId - Badge ID to verify
+   * @returns Object with integrity status and details
+   */
+  async verifyBadgeIntegrity(badgeId: string): Promise<{
+    integrityVerified: boolean;
+    storedHash: string | null;
+    computedHash: string;
+    tampered: boolean;
+  }> {
+    const badge = await this.prisma.badge.findUnique({
+      where: { id: badgeId },
+      select: {
+        assertionJson: true,
+        metadataHash: true,
+      },
+    });
+
+    if (!badge) {
+      throw new NotFoundException(`Badge ${badgeId} not found`);
+    }
+
+    if (!badge.assertionJson) {
+      throw new BadRequestException('Badge has no assertion data');
+    }
+
+    const computedHash = this.assertionGenerator.computeAssertionHash(badge.assertionJson);
+    const storedHash = badge.metadataHash;
+
+    // If no stored hash, badge was created before Story 6.5
+    if (!storedHash) {
+      this.logger.warn(`Badge ${badgeId} has no stored hash (created before Story 6.5)`);
+      return {
+        integrityVerified: false,
+        storedHash: null,
+        computedHash,
+        tampered: false, // Can't determine tampering without baseline
+      };
+    }
+
+    const integrityVerified = computedHash === storedHash;
+
+    if (!integrityVerified) {
+      this.logger.error(
+        `🔴 INTEGRITY VIOLATION: Badge ${badgeId} assertion hash mismatch!\n` +
+        `  Stored:   ${storedHash}\n` +
+        `  Computed: ${computedHash}\n` +
+        `  This indicates potential data tampering.`
+      );
+    }
+
+    return {
+      integrityVerified,
+      storedHash,
+      computedHash,
+      tampered: !integrityVerified,
+    };
+  }
 }
+
