@@ -11,6 +11,7 @@ import { IssueBadgeDto } from './dto/issue-badge.dto';
 import { ClaimBadgeDto } from './dto/claim-badge.dto';
 import { QueryBadgeDto } from './dto/query-badge.dto';
 import { RevokeBadgeDto } from './dto/revoke-badge.dto';
+import { WalletQueryDto } from './dto/wallet-query.dto';
 
 @ApiTags('Badge Issuance')
 @Controller('api/badges')
@@ -63,6 +64,26 @@ export class BadgeIssuanceController {
   @ApiResponse({ status: 200, description: 'Badges retrieved successfully' })
   async getMyBadges(@Request() req: any, @Query() query: QueryBadgeDto) {
     return this.badgeService.getMyBadges(req.user.userId, query);
+  }
+
+  @Get('wallet')
+  @ApiOperation({ summary: 'Get wallet badges with timeline view (Story 4.1)' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Wallet badges retrieved with date groups',
+    schema: {
+      example: {
+        badges: [],
+        pagination: { page: 1, limit: 50, total: 100, totalPages: 2 },
+        dateGroups: [
+          { label: 'January 2026', count: 12, startIndex: 0 },
+          { label: 'December 2025', count: 15, startIndex: 12 }
+        ]
+      }
+    }
+  })
+  async getWallet(@Request() req: any, @Query() query: WalletQueryDto) {
+    return this.badgeService.getWalletBadges(req.user.userId, query);
   }
 
   @Get('issued')

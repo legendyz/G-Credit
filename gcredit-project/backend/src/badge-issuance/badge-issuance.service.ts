@@ -6,6 +6,7 @@ import { CSVParserService } from './services/csv-parser.service';
 import { IssueBadgeDto } from './dto/issue-badge.dto';
 import { QueryBadgeDto } from './dto/query-badge.dto';
 import { BulkIssuanceResult } from './dto/bulk-issue-badges.dto';
+import { WalletQueryDto, WalletResponse, DateGroup } from './dto/wallet-query.dto';
 import { BadgeStatus, UserRole } from '@prisma/client';
 
 @Injectable()
@@ -544,5 +545,94 @@ export class BadgeIssuanceService {
       failed: failCount,
       results,
     };
+  }
+
+  /**
+   * Get wallet badges for authenticated user (Story 4.1)
+   * Timeline View with date grouping and pagination
+   */
+  async getWalletBadges(userId: string, query: WalletQueryDto): Promise<WalletResponse> {
+    const { page = 1, limit = 50, status, sort = 'issuedAt_desc' } = query;
+    const skip = (page - 1) * limit;
+
+    // Build where clause
+    const where: any = {
+      recipientId: userId,
+    };
+
+    if (status) {
+      where.status = status;
+    }
+
+    // Get total count
+    const total = await this.prisma.badge.count({ where });
+
+    // Get badges with template info
+    const badges = await this.prisma.badge.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: {
+        issuedAt: sort === 'issuedAt_desc' ? 'desc' : 'asc',
+      },
+      include: {
+        template: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            imageUrl: true,
+            category: true,
+          },
+        },
+        issuer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    // Generate date groups
+    const dateGroups = this.generateDateGroups(badges);
+
+    return {
+      badges,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+      dateGroups,
+    };
+  }
+
+  /**
+   * Helper: Generate date groups for Timeline View
+   */
+  private generateDateGroups(badges: any[]): DateGroup[] {
+    const groups = new Map<string, { count: number; startIndex: number }>();
+
+    badges.forEach((badge, index) => {
+      const date = new Date(badge.issuedAt);
+      const monthYear = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+      if (!groups.has(monthYear)) {
+        groups.set(monthYear, { count: 0, startIndex: index });
+      }
+
+      const group = groups.get(monthYear)!;
+      group.count++;
+    });
+
+    return Array.from(groups.entries()).map(([label, data]) => ({
+      label,
+      count: data.count,
+      startIndex: data.startIndex,
+    }));
   }
 }

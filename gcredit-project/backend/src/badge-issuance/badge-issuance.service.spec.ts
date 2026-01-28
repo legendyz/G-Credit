@@ -3,6 +3,7 @@ import { BadgeIssuanceService } from './badge-issuance.service';
 import { PrismaService } from '../common/prisma.service';
 import { AssertionGeneratorService } from './services/assertion-generator.service';
 import { BadgeNotificationService } from './services/badge-notification.service';
+import { CSVParserService } from './services/csv-parser.service';
 import { NotFoundException, BadRequestException, GoneException } from '@nestjs/common';
 import { BadgeStatus } from '@prisma/client';
 
@@ -37,6 +38,11 @@ describe('BadgeIssuanceService', () => {
     sendBadgeClaimNotification: jest.fn(),
   };
 
+  const mockCSVParserService = {
+    parseCSV: jest.fn(),
+    validateCSVHeaders: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -52,6 +58,10 @@ describe('BadgeIssuanceService', () => {
         {
           provide: BadgeNotificationService,
           useValue: mockNotificationService,
+        },
+        {
+          provide: CSVParserService,
+          useValue: mockCSVParserService,
         },
       ],
     }).compile();

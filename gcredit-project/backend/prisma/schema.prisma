@@ -30,11 +30,14 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  passwordResetTokens PasswordResetToken[]
-  refreshTokens       RefreshToken[]
-  badgeTemplates      BadgeTemplate[]
-  badgesReceived      Badge[]           @relation("BadgesReceived")
-  badgesIssued        Badge[]           @relation("BadgesIssued")
+  passwordResetTokens   PasswordResetToken[]
+  refreshTokens         RefreshToken[]
+  badgeTemplates        BadgeTemplate[]
+  badgesReceived        Badge[]                @relation("BadgesReceived")
+  badgesIssued          Badge[]                @relation("BadgesIssued")
+  milestonesCreated     MilestoneConfig[]      @relation("MilestoneCreator")
+  milestoneAchievements MilestoneAchievement[] @relation("MilestoneAchievements")
+  evidenceUploads       EvidenceFile[]         @relation("EvidenceUploader")
 
   @@index([email])
   @@index([role])
@@ -174,11 +177,74 @@ model Badge {
   template         BadgeTemplate @relation(fields: [templateId], references: [id])
   recipient        User          @relation("BadgesReceived", fields: [recipientId], references: [id])
   issuer           User          @relation("BadgesIssued", fields: [issuerId], references: [id])
+  evidenceFiles    EvidenceFile[]
   
   @@index([recipientId, status])
   @@index([templateId, issuedAt])
   @@index([claimToken])
   @@index([status, expiresAt])
   @@index([issuerId])
+  @@index([recipientId, status, issuedAt(sort: Desc)], name: "idx_badges_timeline") // Timeline view optimization
   @@map("badges")
+}
+
+// Sprint 4: Milestone System Models
+
+enum MilestoneType {
+  BADGE_COUNT
+  SKILL_TRACK
+  ANNIVERSARY
+  CUSTOM
+}
+
+model MilestoneConfig {
+  id           String        @id @default(uuid())
+  type         MilestoneType
+  title        String        @db.VarChar(200)
+  description  String        @db.Text
+  trigger      Json          // JSONB trigger config
+  icon         String        @db.VarChar(10) // Emoji
+  isActive     Boolean       @default(true)
+  createdBy    String
+  creator      User          @relation("MilestoneCreator", fields: [createdBy], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  achievements MilestoneAchievement[]
+
+  @@index([isActive])
+  @@map("milestone_configs")
+}
+
+model MilestoneAchievement {
+  id          String          @id @default(uuid())
+  milestoneId String
+  userId      String
+  achievedAt  DateTime        @default(now())
+  
+  milestone   MilestoneConfig @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  user        User            @relation("MilestoneAchievements", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([milestoneId, userId]) // One achievement per user per milestone
+  @@index([userId, achievedAt])
+  @@map("milestone_achievements")
+}
+
+// Sprint 4: Evidence File Management
+
+model EvidenceFile {
+  id           String   @id @default(uuid())
+  badgeId      String
+  fileName     String   @db.VarChar(255)
+  originalName String   @db.VarChar(255)
+  fileSize     Int      // Bytes
+  mimeType     String   @db.VarChar(100)
+  blobUrl      String   @db.Text // Azure Blob URL
+  uploadedBy   String
+  uploadedAt   DateTime @default(now())
+  
+  badge        Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  uploader     User     @relation("EvidenceUploader", fields: [uploadedBy], references: [id])
+
+  @@index([badgeId])
+  @@map("evidence_files")
 }
