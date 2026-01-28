@@ -14,6 +14,7 @@ import { RolesGuard } from './common/guards/roles.guard';
 import { BadgeIssuanceModule } from './badge-issuance/badge-issuance.module';
 import { EvidenceModule } from './evidence/evidence.module';
 import { MilestonesModule } from './milestones/milestones.module';
+import { BadgeVerificationModule } from './badge-verification/badge-verification.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { MilestonesModule } from './milestones/milestones.module';
     BadgeIssuanceModule,
     EvidenceModule,
     MilestonesModule,
+    BadgeVerificationModule,
   ],
   controllers: [AppController],
   providers: [

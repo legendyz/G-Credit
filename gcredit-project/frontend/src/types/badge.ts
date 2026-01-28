@@ -34,3 +34,37 @@ export interface BadgeDetail {
   assertionUrl: string;
 }
 
+// Sprint 5 Story 6.2: Public verification response type
+export interface VerificationResponse {
+  id: string;
+  verificationId: string;
+  status: 'ACTIVE' | 'REVOKED' | 'EXPIRED';
+  badge: {
+    name: string;
+    description: string;
+    imageUrl: string | null;
+    criteria: string;
+    category: string;
+    skills: string[];
+  };
+  recipient: {
+    name: string;
+    email: string; // Partially masked
+  };
+  issuer: {
+    name: string;
+    email: string;
+  };
+  issuedAt: string;
+  expiresAt: string | null;
+  claimedAt: string | null;
+  revokedAt?: string;
+  revocationReason?: string;
+  evidenceFiles: Array<{
+    filename: string;
+    blobUrl: string;
+    uploadedAt: string;
+  }>;
+  assertionJson: any; // Open Badges 2.0 JSON-LD
+}
+
