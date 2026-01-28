@@ -5,11 +5,12 @@
 **Project Type:** Enterprise Internal Platform (Greenfield)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
 **License:** MIT License (Open Source)  
-**Status:** ✅ Sprint 3 Complete - Ready for Sprint 4 Planning  
+**Status:** ✅ Sprint 4 Complete - Employee Badge Wallet Delivered  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, committed 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, committed 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, committed 2026-01-26)  
 **Sprint 3:** ✅ Complete (100%, 13h/12.5h, committed 2026-01-28, tagged v0.3.0)  
+**Sprint 4:** ✅ Complete (100%, 48h/48h estimated, committed 2026-01-28, branch: sprint-4/epic-5-employee-badge-wallet)  
 **Last Updated:** 2026-01-28
 
 ---
@@ -307,6 +308,57 @@ Build an internal digital credentialing (badging) platform to securely recognize
 - All acceptance criteria met (60/60)
 - Zero critical bugs
 - Documentation compliance: 100% (Phase 1-3 reorganization complete)
+
+---
+
+### Employee Badge Wallet (Epic 5) ✅
+**Sprint 4 Completion:** 2026-01-28 (7 stories, 48h estimated, 58 tests passing)
+
+**Key Features:**
+- **Timeline View:** Chronological badge display with date navigation (replacing grid view)
+- **Badge Detail Modal:** Comprehensive badge information with 10 sub-components
+- **Evidence Files:** Azure Blob integration with SAS tokens (5-min expiry, 10MB limit)
+- **Similar Badges:** Recommendation algorithm (skills +20, category +15, issuer +10 scoring)
+- **Milestones:** Admin-configurable achievements (badge count, skill tracks, anniversaries)
+- **Empty States:** 4 scenarios (new employee, pending badges, all revoked, filtered empty)
+- **Report Issues:** Inline form sending to g-credit@outlook.com
+
+**API Endpoints (9 new):**
+- GET /api/badges/wallet - Timeline view with pagination and date groups
+- GET /api/badges/:id/similar - Similar badge recommendations
+- GET /api/badges/:id/evidence - List evidence files
+- GET /api/badges/:id/evidence/:fileId/download - SAS token generation
+- POST /api/badges/:id/report - Badge issue reporting
+- POST /api/admin/milestones - Create milestone config
+- GET /api/admin/milestones - List milestone configs
+- PATCH /api/admin/milestones/:id - Update milestone
+- GET /api/milestones/achievements - User's milestone achievements
+
+**Database Tables (3 new):**
+- evidence_files: id, badgeId, fileName, originalName, fileSize, mimeType, blobUrl, uploadedBy
+- milestone_configs: id, type, title, description, trigger (JSONB), icon, isActive
+- milestone_achievements: id, milestoneId, userId, achievedAt (UNIQUE constraint)
+
+**Frontend Components (20+ created):**
+- TimelineView: Date sidebar navigation, horizontal badge cards, view toggle
+- BadgeDetailModal: 10 sub-components (ModalHero, IssuerMessage, BadgeInfo, Timeline, Verification, Evidence, Similar, ReportForm)
+- EmptyState: Auto-detection with 4 scenario-specific displays
+- SimilarBadgesSection: Horizontal scroll recommendations
+
+**Testing:**
+- 58 backend tests (100% pass rate)
+- 19 milestone service tests
+- 11 evidence service tests  
+- 8 recommendations service tests
+- Performance: <500ms milestone detection, <150ms wallet query
+
+**Commit History (7 commits):**
+- 298cf32: Database Migration + Timeline View
+- ff7e240: Evidence File Management
+- cf7c010: Similar Badge Recommendations
+- 9953f2d: Badge Detail Modal
+- 785dbee: Empty State Handling
+- d41c425: Admin-Configurable Milestones
 
 ---
 

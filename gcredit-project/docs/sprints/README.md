@@ -9,11 +9,12 @@
 ## 📊 Sprint Overview
 
 | Sprint | Name | Status | Duration | Stories | Tests | Version |
-|--------|------|--------|----------|---------|-------|---------|
+|--------|------|--------|----------|---------|-------|---------|------|
 | [Sprint 0](./sprint-0/) | Infrastructure & Setup | ✅ Complete | Setup Phase | N/A | N/A | - |
-| [Sprint 1](./sprint-1/) | Authentication & Authorization | ✅ Complete | 2 weeks | 4 stories | Unit tests | v0.1.0 |
-| [Sprint 2](./sprint-2/) | Badge Template Management | ✅ Complete | 2 weeks | 5 stories | Integration tests | v0.2.0 |
+| [Sprint 1](./sprint-1/) | Authentication & Authorization | ✅ Complete | 2 weeks | 4 stories | 40 tests | v0.1.0 |
+| [Sprint 2](./sprint-2/) | Badge Template Management | ✅ Complete | 2 weeks | 6 stories | 27 tests | v0.2.0 |
 | [Sprint 3](./sprint-3/) | Badge Issuance System | ✅ Complete | 2 weeks | 6 stories | 46 tests | v0.3.0 |
+| [Sprint 4](./sprint-4/) | Employee Badge Wallet | ✅ Complete | 2 weeks | 7 stories | 58 tests | (branch) |
 
 ---
 
@@ -83,7 +84,7 @@ sprint-N/
 
 ---
 
-### Sprint 3 - Badge Issuance System ⭐ ✅ COMPLETE
+### Sprint 3 - Badge Issuance System ✅ COMPLETE
 **Focus:** Complete badge issuance workflow
 
 **Status:** ✅ Complete (v0.3.0, 2026-01-28)
@@ -97,6 +98,59 @@ sprint-N/
 - Badge revocation with audit trail
 - Open Badges 2.0 JSON-LD assertions
 - Public verification endpoints
+
+**Technologies:**
+- Azure Communication Services (email)
+- CSV parsing and validation
+- Open Badges 2.0 standard
+
+[View Sprint 3 Details →](./sprint-3/)
+
+---
+
+### Sprint 4 - Employee Badge Wallet ⭐ ✅ COMPLETE
+**Focus:** Complete employee badge viewing and management experience
+
+**Status:** ✅ Complete (2026-01-28, 7 stories, 58 tests)
+
+**Key Deliverables:**
+- **Timeline View** - Chronological badge display with date navigation (replacing grid)
+- **Badge Detail Modal** - 10 sub-components with comprehensive badge information
+- **Evidence Files** - Azure Blob integration with SAS tokens (5-min expiry)
+- **Similar Badges** - Recommendation algorithm based on skills, category, issuer
+- **Admin Milestones** - Configurable achievement triggers (badge count, skill tracks, anniversaries)
+- **Empty States** - 4 contextual scenarios (new employee, pending, revoked, filtered)
+- **Issue Reporting** - Inline form for badge problems
+
+**Database Changes:**
+- 3 new tables: evidence_files, milestone_configs, milestone_achievements
+- UNIQUE constraint on milestone achievements (no duplicates)
+- Azure Blob integration for evidence file storage
+
+**API Endpoints Added (9):**
+- GET /api/badges/wallet - Timeline view with pagination
+- GET /api/badges/:id/similar - Recommendation algorithm
+- GET /api/badges/:id/evidence - List evidence files
+- GET /api/badges/:id/evidence/:fileId/download - SAS token generation
+- POST /api/badges/:id/report - Issue reporting
+- POST /api/admin/milestones - Create milestone config
+- GET /api/admin/milestones - List configs
+- PATCH /api/admin/milestones/:id - Update config
+- GET /api/milestones/achievements - User achievements
+
+**Frontend Components (20+ files):**
+- TimelineView with date sidebar navigation
+- BadgeDetailModal with 10 sub-components
+- EmptyState with 4 scenario handlers
+- SimilarBadgesSection horizontal scroll
+- Zustand modal state management
+
+**Testing:**
+- 58 backend tests (100% pass rate)
+- 19 milestone service tests
+- 11 evidence service tests
+- 8 recommendations tests
+- 6 wallet API tests
 
 **Technologies:**
 - Azure Communication Services (email)

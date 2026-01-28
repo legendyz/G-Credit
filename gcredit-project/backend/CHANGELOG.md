@@ -7,6 +7,105 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0] - 2026-01-28
+
+### Added - Employee Badge Wallet (Sprint 4)
+
+#### Timeline View
+- **Badge Wallet API** - `GET /api/badges/wallet` with pagination, status filters, and date grouping
+- **Date Navigation** - Chronological badge display grouped by month/year
+- **View Modes** - Timeline (default) and grid view toggle
+- **Status Filters** - Filter by CLAIMED, PENDING, EXPIRED, REVOKED
+- **Responsive Design** - Mobile-optimized horizontal badge cards
+
+#### Badge Detail Modal
+- **10 Sub-Components** - ModalHero, IssuerMessage, BadgeInfo, TimelineSection, VerificationSection, EvidenceSection, SimilarBadgesSection, ReportIssueForm
+- **Badge Information Display** - Full badge metadata, skills tags, criteria checklist
+- **Issuer Message** - Custom message from issuer displayed in callout
+- **Timeline Dates** - Issued, claimed, expires dates with 30-day expiry warning
+- **Public Verification** - Copy verification URL, verify button linking to public assertion
+- **Keyboard Navigation** - Escape to close, focus trap, ARIA compliance
+
+#### Evidence File Management
+- **Evidence Upload** - `POST /api/badges/:badgeId/evidence` (10MB limit, 5 MIME types)
+- **File Storage** - Azure Blob Storage private container with structured paths
+- **SAS Token Generation** - `GET /api/badges/:badgeId/evidence/:fileId/download` (5-min expiry)
+- **Evidence Display** - File list with download/preview buttons
+- **Security** - Verify badge ownership before SAS token generation
+- **Validation** - File size, MIME type (PDF, PNG, JPG, DOC, DOCX), filename sanitization
+
+#### Similar Badge Recommendations
+- **Recommendation Algorithm** - Skills overlap (+20), category match (+15), issuer match (+10), popularity (+1/10 holders)
+- **Similar Badges API** - `GET /api/badges/:id/similar?limit=5` (default 5, max 10)
+- **Scoring System** - In-memory scoring for <500 templates
+- **Exclusion Logic** - Excludes already-owned badges
+- **Horizontal Scroll UI** - Compact badge cards with "Earn This Badge" CTA
+
+#### Admin-Configurable Milestones
+- **Milestone Configs API** - CRUD endpoints (POST/GET/PATCH/DELETE /api/admin/milestones)
+- **3 Trigger Types** - BADGE_COUNT, SKILL_TRACK (by category), ANNIVERSARY (tenure months)
+- **Async Detection** - `checkMilestones(userId)` called after badge issuance/claiming
+- **Performance Optimized** - 5-minute config cache, <500ms detection target
+- **Non-Blocking** - Errors logged but don't block badge operations
+- **User Achievements API** - `GET /api/milestones/achievements` (employee endpoint)
+- **Timeline Integration** - Milestones merged into wallet timeline response
+- **RBAC Enforcement** - Admin-only milestone configuration
+
+#### Empty State Handling
+- **4 Scenarios** - New employee (welcoming), pending badges (animated), all revoked (neutral), filtered empty
+- **Auto-Detection** - `detectEmptyStateScenario()` determines correct state
+- **Help Documentation** - `docs/setup/earning-badges.md`, `docs/setup/badge-revocation-policy.md`
+- **Contextual CTAs** - Scenario-specific action buttons
+
+#### Badge Issue Reporting
+- **Report API** - `POST /api/badges/:id/report` (3 issue types: Incorrect info, Technical problem, Other)
+- **Email Integration** - Sends to g-credit@outlook.com with badge details
+- **Character Limit** - 500 chars max for description
+- **Inline Form** - Embedded in Badge Detail Modal
+
+#### Data Models (3 new tables)
+- **evidence_files** - id, badgeId (FK), fileName, originalName, fileSize, mimeType, blobUrl, uploadedBy (FK), uploadedAt
+- **milestone_configs** - id, type (enum), title, description, trigger (JSONB), icon, isActive, createdBy (FK), createdAt
+- **milestone_achievements** - id, milestoneId (FK), userId (FK), achievedAt, UNIQUE(milestoneId, userId)
+
+#### Testing
+- **58 total tests** (100% pass rate)
+- **19 milestone service tests** - CRUD, trigger evaluation, cache, deduplication, RBAC
+- **11 evidence service tests** - Upload, SAS token, validation, security
+- **8 recommendations service tests** - Scoring algorithm, exclusions, limits
+- **6 wallet tests** - Pagination, filtering, date groups, milestone merging
+
+#### Frontend Components (20+ files)
+- `TimelineView/` - Main wallet view with date sidebar
+- `BadgeDetailModal/` - 10 sub-components for comprehensive badge display
+- `EmptyStateScenarios/` - 4 scenario-specific components
+- `SimilarBadgesSection.tsx` - Horizontal recommendation cards
+- Zustand store for modal state management
+
+### Changed
+- **Wallet Query** - Modified to merge badges + milestones in chronological order
+- **Pagination** - Now calculates total from badges + milestones count
+- **Badge Response** - Extended with milestone objects (type: 'milestone')
+
+### Performance
+- Milestone detection: <500ms (with 5-min cache)
+- Wallet query: <150ms target
+- SAS token generation: <100ms
+- Modal open: <300ms (lazy-loaded components)
+
+### Security
+- SAS token 5-minute expiry (evidence files)
+- Badge ownership verification before file access
+- RBAC enforcement on milestone admin endpoints
+- File upload validation (size, MIME type, sanitization)
+
+### Documentation
+- Sprint 4 backlog complete (1054 lines)
+- Help docs for new employees and revocation policy
+- 7 atomic commits with detailed messages
+
+---
+
 ## [0.3.0] - 2026-01-28
 
 ### Added - Badge Issuance System (Sprint 3)

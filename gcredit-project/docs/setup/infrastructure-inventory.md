@@ -1,6 +1,6 @@
 # G-Credit Infrastructure Inventory
 
-**Last Updated:** 2026-01-26  
+**Last Updated:** 2026-01-28  
 **Project:** G-Credit - Enterprise Internal Digital Credentialing System  
 **Environment:** Development
 
@@ -33,7 +33,7 @@ This document maintains a comprehensive inventory of all infrastructure resource
 - **Purpose:** Badge images and evidence file storage
 - **Public Access:** Enabled (for blob-level access)
 - **Cost:** ~$0.02/GB/month + operations
-- **Used in Sprints:** 0, 2, 3, 4, 5
+- **Used in Sprints:** 0, 2, 3, 4
 
 **Containers:**
 ```
@@ -47,11 +47,13 @@ gcreditdevstoragelz/
 │   - Naming: template-{uuid}.png, issued-{badgeId}-{userId}.png
 │
 └── evidence/        (Private: No anonymous access)
-    Purpose: Badge issuance evidence files
-    - Supporting documents (Sprint 5+)
-    - Certificates, transcripts, etc.
-    - Format: PDF, PNG, JPG, DOCX
+    Purpose: Badge issuance evidence files (Sprint 4+)
+    - Supporting documents (PDF, PNG, JPG, DOCX)
+    - Certificates, transcripts, project deliverables
     - Max size: 10MB per file
+    - SAS token access with 5-minute expiry
+    - Naming: {badgeId}/{fileId}-{sanitized-filename}.ext
+    - Security: Verify badge ownership before token generation
 ```
 
 **Environment Variables:**
@@ -182,7 +184,170 @@ model RefreshToken {
 
 ---
 
-### Planned Models (Sprint 2+)
+### Sprint 2-4 Database Models (Added)
+
+#### BadgeTemplate Model (Sprint 2)
+```prisma
+model BadgeTemplate {
+  id                 String   @id @default(uuid())
+  name               String   @db.VarChar(200)
+  description        String?  @db.Text
+  imageUrl           String?
+  issuanceCriteria   Json     // JSONB
+  category           String?
+  skillIds           String[] // Array of skill UUIDs
+  validityPeriod     Int?     // Days
+  status             String   @default("DRAFT")
+  createdBy          String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  creator User   @relation("BadgeTemplateCreator", fields: [createdBy], references: [id])
+  badges  Badge[]
+
+  @@index([status])
+  @@index([createdBy])
+  @@map("badge_templates")
+}
+```
+
+#### Skill & SkillCategory Models (Sprint 2)
+```prisma
+model SkillCategory {
+  id          String   @id @default(uuid())
+  name        String   @unique @db.VarChar(100)
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  skills Skill[]
+
+  @@map("skill_categories")
+}
+
+model Skill {
+  id          String   @id @default(uuid())
+  name        String   @unique @db.VarChar(200)
+  description String?  @db.Text
+  categoryId  String?
+
+  category SkillCategory? @relation(fields: [categoryId], references: [id])
+
+  @@index([categoryId])
+  @@map("skills")
+}
+```
+
+#### Badge Model (Sprint 3)
+```prisma
+model Badge {
+  id             String      @id @default(uuid())
+  templateId     String
+  recipientId    String
+  issuerId       String
+  evidenceUrl    String?
+  issuedAt       DateTime    @default(now())
+  expiresAt      DateTime?
+  claimedAt      DateTime?
+  status         BadgeStatus @default(PENDING)
+  claimToken     String?     @unique
+  recipientHash  String
+  assertionJson  Json
+
+  template  BadgeTemplate @relation(fields: [templateId], references: [id])
+  recipient User          @relation("BadgeRecipient", fields: [recipientId], references: [id])
+  issuer    User          @relation("BadgeIssuer", fields: [issuerId], references: [id])
+  evidenceFiles EvidenceFile[]
+
+  @@index([recipientId])
+  @@index([templateId])
+  @@index([status])
+  @@index([claimToken])
+  @@map("badges")
+}
+
+enum BadgeStatus {
+  PENDING
+  CLAIMED
+  EXPIRED
+  REVOKED
+}
+```
+
+#### Evidence Files Model (Sprint 4)
+```prisma
+model EvidenceFile {
+  id           String   @id @default(uuid())
+  badgeId      String
+  fileName     String   @db.VarChar(500)
+  originalName String   @db.VarChar(500)
+  fileSize     Int
+  mimeType     String   @db.VarChar(100)
+  blobUrl      String
+  uploadedBy   String
+  uploadedAt   DateTime @default(now())
+
+  badge    Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  uploader User  @relation("EvidenceUploader", fields: [uploadedBy], references: [id])
+
+  @@index([badgeId])
+  @@map("evidence_files")
+}
+```
+
+#### Milestone Models (Sprint 4)
+```prisma
+model MilestoneConfig {
+  id          String        @id @default(uuid())
+  type        MilestoneType
+  title       String        @db.VarChar(200)
+  description String        @db.Text
+  trigger     Json          // JSONB trigger config
+  icon        String        @db.VarChar(10) // Emoji
+  isActive    Boolean       @default(true)
+  createdBy   String
+  createdAt   DateTime      @default(now())
+
+  creator      User                   @relation("MilestoneCreator", fields: [createdBy], references: [id])
+  achievements MilestoneAchievement[]
+
+  @@index([isActive])
+  @@map("milestone_configs")
+}
+
+model MilestoneAchievement {
+  id          String   @id @default(uuid())
+  milestoneId String
+  userId      String
+  achievedAt  DateTime @default(now())
+
+  milestone MilestoneConfig @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  user      User            @relation("MilestoneAchiever", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([milestoneId, userId]) // One achievement per user per milestone
+  @@index([userId, achievedAt])
+  @@map("milestone_achievements")
+}
+
+enum MilestoneType {
+  BADGE_COUNT
+  SKILL_TRACK
+  ANNIVERSARY
+  CUSTOM
+}
+```
+
+**Total Tables:** 10 (3 Sprint 1 + 3 Sprint 2 + 1 Sprint 3 + 3 Sprint 4)  
+**Total Migrations:** 5
+- `20260124000000_init_user_model` (Sprint 1)
+- `20260124000001_add_password_reset_refresh_tokens` (Sprint 1)
+- `20260126000000_badge_template_system` (Sprint 2)
+- `20260128000000_badge_issuance` (Sprint 3)
+- `20260128000001_sprint4_wallet_tables` (Sprint 4)
+
+---
+
+### Planned Models (Sprint 5+)
 
 **Sprint 2: Badge Template Management**
 - BadgeTemplate (Epic 3)
@@ -190,14 +355,13 @@ model RefreshToken {
 - Skill (Epic 3)
 
 **Sprint 3-4: User Badge Management**
-- UserBadge (Epic 4)
-- BadgeIssuance (Epic 4)
+- UserBadge (Epic 4) - ✅ Implemented as Badge model (Sprint 3)
+- BadgeIssuance (Epic 4) - ✅ Implemented as Badge model (Sprint 3)
+- EvidenceFile (Epic 5) - ✅ Implemented (Sprint 4)
+- MilestoneConfig (Epic 5) - ✅ Implemented (Sprint 4)
+- MilestoneAchievement (Epic 5) - ✅ Implemented (Sprint 4)
 
-**Sprint 5: Evidence Management**
-- Evidence (Epic 5)
-- EvidenceFile (Epic 5)
-
-**Sprint 6-7: Display & Sharing**
+**Sprint 5+: Display & Sharing**
 - BadgeDisplay (Epic 6)
 - ShareSettings (Epic 7)
 
@@ -394,6 +558,23 @@ AZURE_STORAGE_CONTAINER_EVIDENCE="evidence"
 ---
 
 ## 📝 Change Log
+
+### 2026-01-28 (Sprint 4 Completion)
+- ✅ Added 3 database tables: evidence_files, milestone_configs, milestone_achievements
+- ✅ Implemented evidence file storage with Azure Blob SAS tokens
+- ✅ Created admin-configurable milestone system with 3 trigger types
+- ✅ Updated evidence container documentation with SAS token security
+- ✅ 58 backend tests passing (19 milestone + 11 evidence + 8 recommendations)
+- ✅ Timeline View API with badge + milestone merging
+- ✅ Badge Detail Modal backend support (9 new endpoints)
+- ✅ Similar badge recommendation algorithm implemented
+
+### 2026-01-28 (Sprint 3 Completion)
+- ✅ Added Badge model with BadgeStatus enum
+- ✅ Implemented Open Badges 2.0 assertion system
+- ✅ Integrated Azure Communication Services for email
+- ✅ 46 backend tests passing
+- ✅ Tagged v0.3.0
 
 ### 2026-01-26 (Sprint 2 Day 1)
 - ✅ Created infrastructure-inventory.md
