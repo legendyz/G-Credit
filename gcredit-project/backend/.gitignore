@@ -51,6 +51,7 @@ lerna-debug.log*
 # Test reports and artifacts
 sprint-*-test-report-*.txt
 test-report-*.txt
+test-results.txt
 *.test-results/
 
 # Runtime data
