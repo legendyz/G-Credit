@@ -6,6 +6,7 @@ import { BadgeNotificationService } from './services/badge-notification.service'
 import { CSVParserService } from './services/csv-parser.service';
 import { PrismaModule } from '../common/prisma.module';
 import { EmailModule } from '../common/email.module';
+import { RecommendationsService } from '../badge-templates/recommendations.service';
 
 @Module({
   imports: [PrismaModule, EmailModule],
@@ -15,6 +16,7 @@ import { EmailModule } from '../common/email.module';
     AssertionGeneratorService,
     BadgeNotificationService,
     CSVParserService,
+    RecommendationsService,
   ],
   exports: [BadgeIssuanceService],
 })

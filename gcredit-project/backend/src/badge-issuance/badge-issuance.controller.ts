@@ -12,13 +12,18 @@ import { ClaimBadgeDto } from './dto/claim-badge.dto';
 import { QueryBadgeDto } from './dto/query-badge.dto';
 import { RevokeBadgeDto } from './dto/revoke-badge.dto';
 import { WalletQueryDto } from './dto/wallet-query.dto';
+import { SimilarBadgesQueryDto } from '../badge-templates/dto/similar-badges-query.dto';
+import { RecommendationsService } from '../badge-templates/recommendations.service';
 
 @ApiTags('Badge Issuance')
 @Controller('api/badges')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class BadgeIssuanceController {
-  constructor(private readonly badgeService: BadgeIssuanceService) {}
+  constructor(
+    private readonly badgeService: BadgeIssuanceService,
+    private readonly recommendationsService: RecommendationsService,
+  ) {}
 
   @Post()
   @Roles(UserRole.ADMIN, UserRole.ISSUER)
@@ -160,5 +165,40 @@ export class BadgeIssuanceController {
     }
 
     return this.badgeService.bulkIssueBadges(file.buffer, req.user.userId);
+  }
+
+  @Get(':id/similar')
+  @ApiOperation({ summary: 'Get similar badge recommendations' })
+  @ApiResponse({
+    status: 200,
+    description: 'Similar badges retrieved successfully',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          name: { type: 'string' },
+          description: { type: 'string', nullable: true },
+          imageUrl: { type: 'string', nullable: true },
+          category: { type: 'string' },
+          issuerName: { type: 'string' },
+          badgeCount: { type: 'number' },
+          similarityScore: { type: 'number' },
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 404, description: 'Badge not found' })
+  async getSimilarBadges(
+    @Param('id') badgeId: string,
+    @Query() query: SimilarBadgesQueryDto,
+    @Request() req: any,
+  ) {
+    return this.recommendationsService.getSimilarBadges(
+      badgeId,
+      req.user.userId,
+      query.limit,
+    );
   }
 }

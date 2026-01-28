@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadgeIssuanceController } from './badge-issuance.controller';
 import { BadgeIssuanceService } from './badge-issuance.service';
+import { RecommendationsService } from '../badge-templates/recommendations.service';
 
 describe('BadgeIssuanceController', () => {
   let controller: BadgeIssuanceController;
@@ -12,6 +13,11 @@ describe('BadgeIssuanceController', () => {
     findAll: jest.fn(),
     findOne: jest.fn(),
     revokeBadge: jest.fn(),
+    getWalletBadges: jest.fn(),
+  };
+
+  const mockRecommendationsService = {
+    getSimilarBadges: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -21,6 +27,10 @@ describe('BadgeIssuanceController', () => {
         {
           provide: BadgeIssuanceService,
           useValue: mockBadgeIssuanceService,
+        },
+        {
+          provide: RecommendationsService,
+          useValue: mockRecommendationsService,
         },
       ],
     }).compile();
