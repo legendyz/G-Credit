@@ -31,7 +31,26 @@ export function VerifyBadgePage() {
       setIsLoading(true);
       setError(null);
       const response = await axios.get(`http://localhost:3000/api/verify/${verificationId}`);
-      setBadge(response.data);
+      
+      // Transform API response to match frontend type
+      const apiData = response.data;
+      const transformedData: VerificationResponse = {
+        id: apiData.id,
+        verificationId: verificationId!,
+        status: apiData.revoked ? 'REVOKED' : apiData.verificationStatus === 'valid' ? 'ACTIVE' : 'EXPIRED',
+        badge: apiData._meta?.badge || {},
+        recipient: apiData._meta?.recipient || {},
+        issuer: apiData._meta?.issuer || {},
+        issuedAt: apiData.issuedOn || new Date().toISOString(),
+        expiresAt: apiData.expires || null,
+        claimedAt: null,
+        revokedAt: apiData.revokedAt || undefined,
+        revocationReason: apiData.revocationReason || undefined,
+        evidenceFiles: apiData._meta?.evidenceFiles || [],
+        assertionJson: apiData,
+      };
+      
+      setBadge(transformedData);
     } catch (err: any) {
       if (err.response?.status === 404) {
         setError('Badge not found. The verification link may be invalid.');
