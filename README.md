@@ -435,13 +435,15 @@ This project uses the **BMAD (Business Model Agent Development) Framework** v6.0
 |-------|----------|--------------|--------|
 | Phase 1 - Discovery | 4-6 weeks | PRD, Product Brief, KPIs | ✅ Complete |
 | Phase 2 - Design & Architecture | 4 weeks | Architecture doc, UX Design, Wireframes | ✅ Complete |
-| **Phase 3 - MVP Development** | **8-12 weeks** | **Working MVP** | **🔄 In Progress** |
+| **Phase 3 - MVP Development** | **8-12 weeks** | **Working MVP** | **🔄 In Progress (Week 6)** |
 | → Sprint 0 | 1 day | Infrastructure Setup | ✅ Complete (2026-01-24, 9.5h/10h, 95%) |
 | → Sprint 1 | 1 day | JWT Auth & User Management (Epic 2) | ✅ Complete (2026-01-25, 21h/21h, 100%) |
 | → Sprint 2 | 1 day | Badge Template Management (Epic 3) | ✅ Complete (2026-01-26, 29h/32h, 110%) |
 | → Sprint 3 | 1 day | Badge Issuance System (Epic 4) | ✅ Complete (2026-01-28, 13h/12.5h, 104%, v0.3.0) |
-| → Sprint 4-5 | TBD | Verification & Wallet (Epic 5-6) | 🔜 Planning |
-| → Sprint 6-7 | TBD | Analytics & Integrations | ⏳ Planned |
+| → Sprint 4 | 2 weeks | Employee Badge Wallet (Epic 5) | ✅ Complete (2026-01-28, 48h, 58 tests, v0.4.0) |
+| → Sprint 5 | 1 day | Badge Verification & Open Badges 2.0 (Epic 6) | ✅ Complete (2026-01-29, 30h/28h, 107%, v0.5.0) |
+| → Sprint 6 | TBD | Social Sharing & Integrations (Epic 7) | 🔜 Planning |
+| → Sprint 7+ | TBD | Analytics & Advanced Features | ⏳ Planned |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ Pending |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
@@ -544,11 +546,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Last Updated:** 2026-01-28  
-**Status:** Sprint 3 Complete - Badge Issuance System ✅  
-**Version:** v0.3.0 (Released 2026-01-28)  
+**Last Updated:** 2026-01-29  
+**Status:** Sprint 5 Complete - Badge Verification & Open Badges 2.0 ✅  
+**Version:** v0.5.0 (Released 2026-01-29)  
 **Sprint 0:** ✅ Complete (9.5h/10h, 95%) - [Retrospective](./_bmad-output/implementation-artifacts/sprint-0-retrospective.md)  
 **Sprint 1:** ✅ Complete (21h/21h, 100%) - [Retrospective](./_bmad-output/implementation-artifacts/sprint-1-retrospective.md)  
 **Sprint 2:** ✅ Complete (29h/32h, 110%) - [Final Report](./gcredit-project/backend/docs/sprints/sprint-2/final-report.md) | [Retrospective](./gcredit-project/backend/docs/sprints/sprint-2/retrospective.md)  
-**Sprint 3:** ✅ Complete (13h/12.5h, 104%, PR #2) - [Summary](./gcredit-project/docs/sprints/sprint-3/summary.md) | [Retrospective](./gcredit-project/docs/sprints/sprint-3/retrospective.md)  
-**Next:** Sprint 4 Planning - Badge Wallet or Verification System 🔜
+**Sprint 3:** ✅ Complete (13h/12.5h, 104%, v0.3.0) - [Summary](./gcredit-project/docs/sprints/sprint-3/summary.md) | [Retrospective](./gcredit-project/docs/sprints/sprint-3/retrospective.md)  
+**Sprint 4:** ✅ Complete (48h, 58 tests, v0.4.0) - [Retrospective](./gcredit-project/docs/sprints/sprint-4/retrospective.md)  
+**Sprint 5:** ✅ Complete (30h/28h, 107%, v0.5.0) - [Summary](./gcredit-project/docs/sprints/sprint-5/sprint-5-completion-summary.md) | [Retrospective](./gcredit-project/docs/sprints/sprint-5/retrospective.md)  
+**Next:** Sprint 6 Planning - Social Sharing & Integrations (Epic 7) 🔜

@@ -348,23 +348,47 @@ Remove-Item -Recurse -Force backend\.git
 - ✅ Badge expiration and revocation
 - ✅ Evidence attachment support
 - ✅ Issuance analytics and reporting
-- **Actual Time:** 13h / 12.5h estimated (104% estimation ratio)
-- **Test Coverage:** 46 total tests (26 badge-issuance + 19 badge-templates + 1 health)
-- **Pull Request:** [PR #2](https://github.com/legendyz/G-Credit/pull/2) - Badge Issuance System v0.3.0
+- **Actual Time:** 13h / 12.5h estimated (104%)
+- **Test Coverage:** 46 total tests
 - **Git Tag:** v0.3.0
-- **Sprint Grade:** A+ (9.5/10)
 - **Retrospective:** [Sprint 3 Retrospective](docs/sprints/sprint-3/retrospective.md)
 
-### 🔜 Sprint 4: Badge Wallet & Verification System (Planning)
-- Employee badge wallet (view/download badges)
-- Badge verification portal
-- QR code generation
-- Public badge verification
-- Badge export (JSON/PDF)
+### ✅ Sprint 4: Employee Badge Wallet (Complete - 2026-01-28, v0.4.0)
+- ✅ Timeline view with date navigation (Epic 5)
+- ✅ Badge detail modal (10 sub-components)
+- ✅ Evidence file management with Azure Blob
+- ✅ Similar badge recommendations algorithm
+- ✅ Admin-configurable milestones (3 trigger types)
+- ✅ Empty state handling (4 scenarios)
+- ✅ Badge issue reporting
+- **Actual Time:** 48h estimated
+- **Test Coverage:** 58 tests (100% pass rate)
+- **Git Tag:** v0.4.0
+- **Retrospective:** [Sprint 4 Retrospective](docs/sprints/sprint-4/retrospective.md)
+
+### ✅ Sprint 5: Badge Verification & Open Badges 2.0 (Complete - 2026-01-29, v0.5.0)
+- ✅ Public verification system (Epic 6)
+- ✅ Open Badges 2.0 full compliance (JSON-LD)
+- ✅ Baked badge PNG generation (Sharp library)
+- ✅ Cryptographic integrity verification (SHA-256)
+- ✅ Email masking for privacy
+- ✅ 5 new API endpoints (3 public, 2 protected)
+- **Actual Time:** 30h / 28h estimated (107% velocity)
+- **Test Coverage:** 68 tests (24 unit + 6 integration + 38 E2E)
+- **Git Tag:** v0.5.0
+- **Retrospective:** [Sprint 5 Retrospective](docs/sprints/sprint-5/retrospective.md)
+
+### 🔜 Sprint 6: Social Sharing & Integrations (Planning - Epic 7)
+- LinkedIn sharing (mock OAuth for demo)
+- Email sharing with templates
+- Embeddable badge widget
+- Microsoft Teams notifications (mock webhook)
+- Sharing analytics tracking
+- **Strategy:** 3 production-ready + 2 mocked integrations
+- **UAT:** Full-role UAT scheduled after Sprint 6
 
 ### 📅 Future Sprints
-- **Sprint 5:** Analytics & Reporting Dashboard
-- **Sprint 6-7:** Social Sharing & Integrations
+- **Sprint 7+:** Analytics Dashboard, Advanced Features, Production Deployment
 
 ## 📝 License
 
@@ -382,5 +406,6 @@ For issues and questions:
 
 ---
 
-**Last Updated:** 2026-01-24  
-**Version:** 0.2.0 (Sprint 0 Complete, Sprint 1 Planning Complete)
+**Last Updated:** 2026-01-29  
+**Version:** v0.5.0 (Sprint 5 Complete - Badge Verification & Open Badges 2.0)  
+**Sprint Status:** Sprint 0-5 Complete ✅ | Sprint 6 Planning 🔜
