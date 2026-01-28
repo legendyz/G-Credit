@@ -6,6 +6,7 @@ import { BadgeTimelineCard } from './BadgeTimelineCard';
 import { DateGroupHeader } from './DateGroupHeader';
 import { DateNavigationSidebar } from './DateNavigationSidebar';
 import { ViewToggle } from './ViewToggle';
+import EmptyState, { detectEmptyStateScenario } from '../BadgeWallet/EmptyState';
 
 export type ViewMode = 'timeline' | 'grid';
 
@@ -34,6 +35,45 @@ export function TimelineView() {
   }
 
   if (!data || data.badges.length === 0) {
+    // AC 6.14: Detect which empty state scenario to display
+    // Calculate badge counts for scenario detection
+    const totalBadges = data?.pagination?.total || 0;
+    const claimedBadges = 0; // TODO: Get from API response if available
+    const pendingBadges = 0; // TODO: Get from API response if available
+    const revokedBadges = 0; // TODO: Get from API response if available
+    const hasActiveFilter = statusFilter !== undefined;
+
+    const emptyScenario = detectEmptyStateScenario(
+      totalBadges,
+      claimedBadges,
+      pendingBadges,
+      revokedBadges,
+      hasActiveFilter,
+    );
+
+    if (emptyScenario) {
+      return (
+        <EmptyState
+          scenario={emptyScenario}
+          pendingCount={pendingBadges}
+          currentFilter={statusFilter ? `Status: ${statusFilter}` : null}
+          onExploreCatalog={() => {
+            window.location.href = '/badges/templates';
+          }}
+          onLearnMore={() => {
+            window.location.href = '/docs/help/earning-badges';
+          }}
+          onViewPending={() => {
+            setStatusFilter(BadgeStatus.PENDING);
+          }}
+          onClearFilters={() => {
+            setStatusFilter(undefined);
+          }}
+        />
+      );
+    }
+
+    // Fallback if no scenario matches
     return (
       <div className="text-center py-12">
         <p className="text-gray-500 text-lg">No badges found</p>
