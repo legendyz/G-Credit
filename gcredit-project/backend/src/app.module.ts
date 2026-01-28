@@ -13,6 +13,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { BadgeIssuanceModule } from './badge-issuance/badge-issuance.module';
 import { EvidenceModule } from './evidence/evidence.module';
+import { MilestonesModule } from './milestones/milestones.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { EvidenceModule } from './evidence/evidence.module';
     BadgeTemplatesModule,
     BadgeIssuanceModule,
     EvidenceModule,
+    MilestonesModule,
   ],
   controllers: [AppController],
   providers: [

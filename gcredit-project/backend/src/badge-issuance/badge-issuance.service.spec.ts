@@ -4,6 +4,7 @@ import { PrismaService } from '../common/prisma.service';
 import { AssertionGeneratorService } from './services/assertion-generator.service';
 import { BadgeNotificationService } from './services/badge-notification.service';
 import { CSVParserService } from './services/csv-parser.service';
+import { MilestonesService } from '../milestones/milestones.service';
 import { NotFoundException, BadRequestException, GoneException } from '@nestjs/common';
 import { BadgeStatus } from '@prisma/client';
 
@@ -43,6 +44,10 @@ describe('BadgeIssuanceService', () => {
     validateCSVHeaders: jest.fn(),
   };
 
+  const mockMilestonesService = {
+    checkMilestones: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -62,6 +67,10 @@ describe('BadgeIssuanceService', () => {
         {
           provide: CSVParserService,
           useValue: mockCSVParserService,
+        },
+        {
+          provide: MilestonesService,
+          useValue: mockMilestonesService,
         },
       ],
     }).compile();

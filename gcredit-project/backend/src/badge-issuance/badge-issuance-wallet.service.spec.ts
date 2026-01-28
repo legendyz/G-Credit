@@ -4,6 +4,7 @@ import { PrismaService } from '../common/prisma.service';
 import { AssertionGeneratorService } from './services/assertion-generator.service';
 import { BadgeNotificationService } from './services/badge-notification.service';
 import { CSVParserService } from './services/csv-parser.service';
+import { MilestonesService } from '../milestones/milestones.service';
 import { WalletQueryDto } from './dto/wallet-query.dto';
 import { BadgeStatus } from '@prisma/client';
 
@@ -32,6 +33,11 @@ describe('BadgeIssuanceService - Wallet (Story 4.1)', () => {
     parseCSV: jest.fn(),
   };
 
+  const mockMilestonesService = {
+    checkMilestones: jest.fn().mockResolvedValue(undefined),
+    getUserAchievements: jest.fn().mockResolvedValue([]),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -51,6 +57,10 @@ describe('BadgeIssuanceService - Wallet (Story 4.1)', () => {
         {
           provide: CSVParserService,
           useValue: mockCSVParserService,
+        },
+        {
+          provide: MilestonesService,
+          useValue: mockMilestonesService,
         },
       ],
     }).compile();
@@ -132,8 +142,6 @@ describe('BadgeIssuanceService - Wallet (Story 4.1)', () => {
       });
       expect(mockPrismaService.badge.findMany).toHaveBeenCalledWith({
         where: { recipientId: userId },
-        skip: 0,
-        take: 50,
         orderBy: { issuedAt: 'desc' },
         include: {
           template: {
@@ -195,10 +203,11 @@ describe('BadgeIssuanceService - Wallet (Story 4.1)', () => {
         totalPages: 3,
       });
 
+      // AC 2.12: No longer uses skip/take (fetches all for milestone merging)
       expect(mockPrismaService.badge.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          skip: 10, // (page 2 - 1) * 10
-          take: 10,
+          where: { recipientId: userId },
+          orderBy: { issuedAt: 'desc' },
         }),
       );
     });

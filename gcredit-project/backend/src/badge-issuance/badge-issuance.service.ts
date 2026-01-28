@@ -10,6 +10,7 @@ import { WalletQueryDto, WalletResponse, DateGroup } from './dto/wallet-query.dt
 import { ReportBadgeIssueDto } from './dto/report-badge-issue.dto';
 import { BadgeStatus, UserRole } from '@prisma/client';
 import { randomUUID } from 'crypto';
+import { MilestonesService } from '../milestones/milestones.service';
 
 @Injectable()
 export class BadgeIssuanceService {
@@ -20,6 +21,7 @@ export class BadgeIssuanceService {
     private assertionGenerator: AssertionGeneratorService,
     private notificationService: BadgeNotificationService,
     private csvParser: CSVParserService,
+    private milestonesService: MilestonesService,
   ) {}
 
   /**
@@ -131,7 +133,12 @@ export class BadgeIssuanceService {
       claimUrl: this.assertionGenerator.getClaimUrl(badge.claimToken!),
     });
 
-    // 11. Return badge response
+    // 11. Check milestones (non-blocking)
+    this.milestonesService.checkMilestones(dto.recipientId).catch(err => {
+      this.logger.warn(`Milestone check failed after badge issuance: ${err.message}`);
+    });
+
+    // 12. Return badge response
     return {
       id: badge.id,
       status: badge.status,
@@ -211,6 +218,11 @@ export class BadgeIssuanceService {
         template: true,
         recipient: true,
       },
+    });
+
+    // 6b. Check milestones (non-blocking)
+    this.milestonesService.checkMilestones(claimedBadge.recipientId).catch(err => {
+      this.logger.warn(`Milestone check failed after badge claim: ${err.message}`);
     });
 
     // 7. Return badge details
@@ -555,7 +567,6 @@ export class BadgeIssuanceService {
    */
   async getWalletBadges(userId: string, query: WalletQueryDto): Promise<WalletResponse> {
     const { page = 1, limit = 50, status, sort = 'issuedAt_desc' } = query;
-    const skip = (page - 1) * limit;
 
     // Build where clause
     const where: any = {
@@ -566,14 +577,21 @@ export class BadgeIssuanceService {
       where.status = status;
     }
 
-    // Get total count
-    const total = await this.prisma.badge.count({ where });
+    // Get total badge count (for accurate pagination)
+    const totalBadges = await this.prisma.badge.count({ where });
 
-    // Get badges with template info
+    // AC 2.12: Fetch user's milestone achievements
+    const milestones = await this.milestonesService.getUserAchievements(userId);
+    const totalMilestones = milestones.length;
+
+    // Calculate total items for pagination
+    const totalItems = totalBadges + totalMilestones;
+    const totalPages = Math.ceil(totalItems / limit);
+
+    // For now, fetch ALL badges and milestones to properly merge and paginate
+    // (Future optimization: Fetch only needed range after calculating positions)
     const badges = await this.prisma.badge.findMany({
       where,
-      skip,
-      take: limit,
       orderBy: {
         issuedAt: sort === 'issuedAt_desc' ? 'desc' : 'asc',
       },
@@ -598,16 +616,51 @@ export class BadgeIssuanceService {
       },
     });
 
-    // Generate date groups
-    const dateGroups = this.generateDateGroups(badges);
+    // Merge badges and milestones, sorted by date
+    const badgeItems = badges.map(b => ({
+      type: 'badge',
+      sortDate: b.issuedAt,
+      data: b,
+    }));
+
+    const milestoneItems = milestones.map(m => ({
+      type: 'milestone',
+      sortDate: m.achievedAt,
+      data: {
+        milestoneId: m.milestoneId,
+        title: `${m.milestone.icon} ${m.milestone.title}`,
+        description: m.milestone.description,
+        achievedAt: m.achievedAt,
+      },
+    }));
+
+    // Combine and sort
+    const allItems = [...badgeItems, ...milestoneItems].sort((a, b) => {
+      return sort === 'issuedAt_desc'
+        ? b.sortDate.getTime() - a.sortDate.getTime()
+        : a.sortDate.getTime() - b.sortDate.getTime();
+    });
+
+    // Apply pagination to combined items
+    const skip = (page - 1) * limit;
+    const paginatedItems = allItems.slice(skip, skip + limit);
+
+    // Extract final timeline items
+    const timelineItems = paginatedItems.map(item => item.data);
+
+    // Generate date groups from paginated items
+    const dateGroups = this.generateDateGroups(paginatedItems.map(item => ({
+      ...item.data,
+      issuedAt: item.sortDate,
+    })));
 
     return {
-      badges,
+      badges: timelineItems, // Contains both badges and milestone objects
       pagination: {
         page,
         limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+        total: totalItems,
+        totalPages,
       },
       dateGroups,
     };

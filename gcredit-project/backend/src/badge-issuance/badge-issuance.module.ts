@@ -7,9 +7,10 @@ import { CSVParserService } from './services/csv-parser.service';
 import { PrismaModule } from '../common/prisma.module';
 import { EmailModule } from '../common/email.module';
 import { RecommendationsService } from '../badge-templates/recommendations.service';
+import { MilestonesModule } from '../milestones/milestones.module';
 
 @Module({
-  imports: [PrismaModule, EmailModule],
+  imports: [PrismaModule, EmailModule, MilestonesModule],
   controllers: [BadgeIssuanceController],
   providers: [
     BadgeIssuanceService,
