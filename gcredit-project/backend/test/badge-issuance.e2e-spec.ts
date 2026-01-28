@@ -596,10 +596,32 @@ describe('Badge Issuance (e2e)', () => {
         .get(`/api/badges/${activeBadgeId}/assertion`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('@context');
-      expect(response.body).toHaveProperty('type');
-      expect(response.body.type).toBe('Assertion');
+      // Sprint 5 Story 6.1: Validate Open Badges 2.0 JSON-LD structure
+      expect(response.body).toHaveProperty('@context', 'https://w3id.org/openbadges/v2');
+      expect(response.body).toHaveProperty('type', 'Assertion');
       expect(response.body).toHaveProperty('id');
+      expect(response.body.id).toMatch(/\/api\/badges\/.+\/assertion$/);
+
+      // Badge should be URL string (not embedded object)
+      expect(response.body).toHaveProperty('badge');
+      expect(typeof response.body.badge).toBe('string');
+      expect(response.body.badge).toMatch(/\/api\/badge-templates\/.+$/);
+
+      // Recipient should be hashed
+      expect(response.body.recipient).toHaveProperty('type', 'email');
+      expect(response.body.recipient).toHaveProperty('hashed', true);
+      expect(response.body.recipient).toHaveProperty('salt');
+      expect(response.body.recipient).toHaveProperty('identity');
+      expect(response.body.recipient.identity).toMatch(/^sha256\$/);
+
+      // Verification (hosted type)
+      expect(response.body.verification).toHaveProperty('type', 'hosted');
+      expect(response.body.verification).toHaveProperty('verificationUrl');
+      expect(response.body.verification.verificationUrl).toMatch(/\/verify\/.+$/);
+
+      // Issuance date
+      expect(response.body).toHaveProperty('issuedOn');
+      expect(new Date(response.body.issuedOn).getTime()).toBeGreaterThan(0);
     });
 
     it('should return 410 for revoked badge', async () => {

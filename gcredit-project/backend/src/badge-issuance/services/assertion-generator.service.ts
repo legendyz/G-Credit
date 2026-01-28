@@ -34,67 +34,64 @@ export class AssertionGeneratorService {
 
   /**
    * Generate Open Badges 2.0 compliant assertion
+   * Sprint 5 Story 6.1: Updated to match spec exactly
    * Reference: https://www.imsglobal.org/spec/ob/v2p0/
    */
   generateAssertion(params: {
     badgeId: string;
+    verificationId: string;
     template: BadgeTemplate;
     recipient: User;
     issuer: User;
     issuedAt: Date;
     expiresAt?: Date;
     evidenceUrl?: string;
+    evidenceUrls?: string[]; // Sprint 5: Support multiple evidence files
   }) {
-    const { badgeId, template, recipient, issuer, issuedAt, expiresAt, evidenceUrl } = params;
+    const { badgeId, verificationId, template, recipient, issuer, issuedAt, expiresAt, evidenceUrl, evidenceUrls } = params;
 
+    // Salt for email hashing
+    const salt = this.getSalt();
+    
     // Hash recipient email (privacy-preserving)
-    const recipientHash = this.hashEmail(recipient.email);
+    const emailHash = crypto
+      .createHash('sha256')
+      .update(recipient.email.toLowerCase() + salt)
+      .digest('hex');
 
     const assertion = {
       '@context': 'https://w3id.org/openbadges/v2',
       type: 'Assertion',
       id: `${this.baseUrl}/api/badges/${badgeId}/assertion`,
 
-      // Badge Class
-      badge: {
-        type: 'BadgeClass',
-        id: `${this.baseUrl}/api/badge-templates/${template.id}`,
-        name: template.name,
-        description: template.description,
-        image: template.imageUrl,
-        criteria: {
-          narrative: template.issuanceCriteria?.description || 'Badge awarded for achievement',
-        },
-        issuer: this.issuerProfile,
-      },
+      // Badge Class URL (not embedded object - per Open Badges 2.0 spec)
+      badge: `${this.baseUrl}/api/badge-templates/${template.id}`,
 
-      // Recipient (hashed)
+      // Recipient (hashed for privacy)
       recipient: {
         type: 'email',
         hashed: true,
-        salt: this.getSalt(),
-        identity: recipientHash,
+        salt: salt,
+        identity: `sha256$${emailHash}`,
       },
 
       // Issuance metadata
       issuedOn: issuedAt.toISOString(),
       ...(expiresAt && { expires: expiresAt.toISOString() }),
 
-      // Verification
+      // Verification (hosted type with verification URL)
       verification: {
         type: 'hosted',
-        url: `${this.baseUrl}/api/badges/${badgeId}/assertion`,
+        verificationUrl: `${this.baseUrl}/verify/${verificationId}`,
       },
 
-      // Evidence (optional)
-      ...(evidenceUrl && {
-        evidence: [
-          {
-            id: evidenceUrl,
-            name: 'Supporting Evidence',
-            description: 'Evidence of achievement',
-          },
-        ],
+      // Evidence URLs (optional, array of strings)
+      ...(evidenceUrls && evidenceUrls.length > 0 && {
+        evidence: evidenceUrls,
+      }),
+      // Backward compatibility: single evidenceUrl
+      ...(evidenceUrl && !evidenceUrls && {
+        evidence: [evidenceUrl],
       }),
     };
 

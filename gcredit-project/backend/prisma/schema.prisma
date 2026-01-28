@@ -174,6 +174,10 @@ model Badge {
   assertionJson    Json          // Open Badges 2.0 JSON-LD
   recipientHash    String        // SHA-256(email + salt)
   
+  // Sprint 5: Badge Verification Fields
+  verificationId   String        @unique @default(uuid()) // Public verification UUID
+  metadataHash     String?       // SHA-256 hash of JSON-LD assertion for integrity
+  
   template         BadgeTemplate @relation(fields: [templateId], references: [id])
   recipient        User          @relation("BadgesReceived", fields: [recipientId], references: [id])
   issuer           User          @relation("BadgesIssued", fields: [issuerId], references: [id])
@@ -184,6 +188,7 @@ model Badge {
   @@index([claimToken])
   @@index([status, expiresAt])
   @@index([issuerId])
+  @@index([verificationId]) // Sprint 5: Fast public verification lookup
   @@index([recipientId, status, issuedAt(sort: Desc)], name: "idx_badges_timeline") // Timeline view optimization
   @@map("badges")
 }
