@@ -1,8 +1,8 @@
 # Sprint Documentation Index
 
-**Last Updated:** 2026-01-28  
-**Current Sprint:** Sprint 3 Complete (v0.3.0) → Planning Sprint 4  
-**Total Sprints:** 4 (Sprint 0-3)
+**Last Updated:** 2026-01-29  
+**Current Sprint:** Sprint 5 Complete (v0.5.0) → Planning Sprint 6  
+**Total Sprints:** 6 (Sprint 0-5)
 
 ---
 
@@ -14,7 +14,8 @@
 | [Sprint 1](./sprint-1/) | Authentication & Authorization | ✅ Complete | 2 weeks | 4 stories | 40 tests | v0.1.0 |
 | [Sprint 2](./sprint-2/) | Badge Template Management | ✅ Complete | 2 weeks | 6 stories | 27 tests | v0.2.0 |
 | [Sprint 3](./sprint-3/) | Badge Issuance System | ✅ Complete | 2 weeks | 6 stories | 46 tests | v0.3.0 |
-| [Sprint 4](./sprint-4/) | Employee Badge Wallet | ✅ Complete | 2 weeks | 7 stories | 58 tests | (branch) |
+| [Sprint 4](./sprint-4/) | Employee Badge Wallet | ✅ Complete | 2 weeks | 7 stories | 58 tests | v0.4.0 |
+| [Sprint 5](./sprint-5/) | Badge Verification & Open Badges 2.0 | ✅ Complete | 1 day | 5 stories | 68 tests | v0.5.0 |
 
 ---
 
@@ -98,6 +99,91 @@ sprint-N/
 - Badge revocation with audit trail
 - Open Badges 2.0 JSON-LD assertions
 - Public verification endpoints
+
+**Technologies:**
+- Open Badges 2.0 specification
+- CSV parsing with validation
+- Email service integration
+- JWT authentication
+
+[View Sprint 3 Details →](./sprint-3/)
+
+---
+
+### Sprint 4 - Employee Badge Wallet ✅ COMPLETE
+**Focus:** Employee badge experience and engagement
+
+**Status:** ✅ Complete (v0.4.0, 2026-01-28)
+
+**Key Deliverables:**
+- Timeline view with date navigation and grouping
+- Badge detail modal (10 sub-components)
+- Evidence file management (Azure Blob, SAS tokens)
+- Similar badge recommendations algorithm
+- Admin-configurable milestones (3 trigger types)
+- Empty state handling (4 scenarios)
+- Badge issue reporting system
+
+**Technologies:**
+- React Zustand (state management)
+- Azure Blob Storage (private evidence files)
+- SAS token generation (5-min expiry)
+- Sharp library preparation
+- Recommendation scoring algorithm
+
+**Database:**
+- evidence_files table
+- milestone_configs table
+- milestone_achievements table
+
+**Metrics:**
+- 7 stories completed
+- 58 tests (100% pass rate)
+- 9 API endpoints
+- 20+ React components
+
+[View Sprint 4 Details →](./sprint-4/)
+
+---
+
+### Sprint 5 - Badge Verification & Open Badges 2.0 ✅ COMPLETE
+**Focus:** Standards compliance and external verification
+
+**Status:** ✅ Complete (v0.5.0, 2026-01-29)
+
+**Key Deliverables:**
+- Public verification system with unique URLs
+- Full Open Badges 2.0 compliance (JSON-LD)
+- Baked badge PNG generation (Sharp library)
+- Cryptographic integrity verification (SHA-256)
+- Email masking for privacy
+- 5 new public/protected API endpoints
+
+**Technologies:**
+- Sharp library (`sharp@^0.33.0`) - PNG processing
+- SHA-256 cryptographic hashing
+- iTXt PNG metadata embedding
+- CORS support for public APIs
+- Open Badges 2.0 three-layer architecture
+
+**Database:**
+- Migration: verificationId (UUID, unique)
+- Migration: metadataHash (String, SHA-256)
+- Index: idx_badges_verification
+
+**Metrics:**
+- 5 stories completed (100%)
+- 68 tests (24 unit + 6 integration + 38 E2E)
+- 30h actual / 28h estimated (107% velocity)
+- Zero production bugs
+- 3 Architecture Decision Records
+
+**Standards Compliance:**
+- Compatible with Credly, Badgr, Open Badge Passport
+- Hosted verification (not GPG signed)
+- Three-layer JSON-LD structure (Issuer → BadgeClass → Assertion)
+
+[View Sprint 5 Details →](./sprint-5/)
 
 **Technologies:**
 - Azure Communication Services (email)

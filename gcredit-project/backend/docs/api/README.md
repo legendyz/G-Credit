@@ -1,8 +1,9 @@
 # GCredit API Documentation
 
-**Version:** 1.0.0  
+**Version:** 0.5.0 (Sprint 5 Complete)  
 **Base URL:** `http://localhost:3000`  
-**API Prefix:** `/api` (for badge resources) or `/auth` (for authentication)
+**API Prefix:** `/api` (for badge resources) or `/auth` (for authentication)  
+**Last Updated:** 2026-01-29
 
 ## Overview
 
@@ -76,6 +77,28 @@ See [Authentication API](./authentication.md) for detailed endpoint documentatio
 - **Path:** `/api/skill-categories`
 - **Documentation:** [skill-categories.md](./skill-categories.md)
 - **Endpoints:** CRUD operations, hierarchical category management
+
+### 6. Badge Wallet (Sprint 4)
+- **Path:** `/api/badges/wallet`
+- **Documentation:** In development
+- **Endpoints:** Timeline view, similar badges, evidence management, milestones
+- **Key Features:**
+  - Timeline view with date grouping
+  - Badge detail modal data
+  - Evidence file upload and download (SAS tokens)
+  - Similar badge recommendations
+  - Milestone achievements
+
+### 7. Badge Verification (Sprint 5) 🆕
+- **Path:** `/verify/:verificationId` and `/api/verify/:verificationId`
+- **Documentation:** In development
+- **Endpoints:** Public verification, assertion export, baked PNG, integrity check
+- **Key Features:**
+  - Public HTML verification page (no auth)
+  - Open Badges 2.0 JSON-LD assertions
+  - Baked badge PNG download (JWT protected)
+  - SHA-256 integrity verification
+  - CORS-enabled public APIs
 
 ## Common Patterns
 
