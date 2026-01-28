@@ -13,6 +13,11 @@
 |-------|------|-------|--------|----------------|
 | [001](001-prisma-version-lock.md) | TBD | Prisma Version Lock at 6.19.2 | ⏳ Pending | Tech Lead |
 | [002](002-lodash-security-risk-acceptance.md) | 2026-01-25 | Accept lodash Security Risk for MVP | ✅ Accepted | PM / Tech Lead |
+| [003](003-badge-assertion-format.md) | 2026-01-26 | Badge Assertion Format (JSON-LD) | ✅ Accepted | Architect |
+| [004](004-email-service-selection.md) | 2026-01-27 | Email Service Selection for Badge Claims | ✅ Accepted | Tech Lead |
+| [005](005-open-badges-integration.md) | 2026-01-28 | Open Badges 2.0 Integration Architecture | ✅ Accepted | Architect |
+| [006](006-public-api-security.md) | 2026-01-28 | Public API Security Model | ✅ Accepted | Architect |
+| [007](007-baked-badge-storage.md) | 2026-01-28 | Baked Badge Storage Strategy | ✅ Accepted | Architect |
 
 ---
 
@@ -33,15 +38,18 @@
 
 ### Security & Authentication
 - [ADR-002: lodash Security Risk Acceptance](002-lodash-security-risk-acceptance.md) ✅
+- [ADR-006: Public API Security Model](006-public-api-security.md) ✅
 
 ### Database & Data Management
 - [ADR-001: Prisma Version Lock](001-prisma-version-lock.md) ⏳
+- [ADR-003: Badge Assertion Format (JSON-LD)](003-badge-assertion-format.md) ✅
+- [ADR-007: Baked Badge Storage Strategy](007-baked-badge-storage.md) ✅
 
 ### Architecture & Design Patterns
-- *None yet*
+- [ADR-005: Open Badges 2.0 Integration Architecture](005-open-badges-integration.md) ✅
 
 ### Third-Party Integrations
-- *None yet*
+- [ADR-004: Email Service Selection](004-email-service-selection.md) ✅
 
 ---
 
@@ -69,6 +77,23 @@ Each ADR should contain:
 
 ---
 
-**Last Updated:** 2026-01-25  
+## Recent ADRs (Sprint 5)
+
+### Sprint 5: Badge Verification & Open Badges 2.0 Compliance
+
+**Context:** Sprint 5 introduces public badge verification and Open Badges 2.0 standard compliance, requiring architectural decisions for security, storage, and external integration.
+
+**Key Decisions:**
+- **ADR-005:** Open Badges 2.0 hosted verification (vs. signed badges)
+- **ADR-006:** Public API security model (rate limiting, CORS, privacy)
+- **ADR-007:** Lazy generation + persistent caching for baked badges
+
+**Related Documents:**
+- [Sprint 5 Technical Design](../sprints/sprint-5/technical-design.md)
+- [Sprint 5 Backlog](../sprints/sprint-5/backlog.md)
+
+---
+
+**Last Updated:** 2026-01-28  
 **Maintained By:** Tech Lead / Architecture Team  
 **Review Frequency:** Monthly or as decisions are made

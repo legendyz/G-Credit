@@ -150,43 +150,41 @@ describe('Badge Verification (e2e) - Story 6.2', () => {
         .get(`/api/verify/${activeBadgeVerificationId}`)
         .expect(200);
 
-      // Verify response structure
-      expect(response.body).toHaveProperty('id');
-      expect(response.body).toHaveProperty('verificationId', activeBadgeVerificationId);
-      expect(response.body.status).toBe('CLAIMED'); // Check exact value
+      // Story 6.3: Response is Open Badges 2.0 assertion + metadata
+      expect(response.body).toHaveProperty('@context', 'https://w3id.org/openbadges/v2');
+      expect(response.body).toHaveProperty('type', 'Assertion');
+      expect(response.body).toHaveProperty('badge'); // URL string
+      expect(response.body.badge).toMatch(/\/api\/badge-templates\//);
       
-      // Badge details
-      expect(response.body.badge).toHaveProperty('name', 'Verification Test Badge');
-      expect(response.body.badge).toHaveProperty('description');
-      expect(response.body.badge).toHaveProperty('imageUrl');
-      expect(response.body.badge).toHaveProperty('criteria');
+      // Story 6.3: Verification metadata
+      expect(response.body).toHaveProperty('verificationStatus');
+      expect(response.body).toHaveProperty('verifiedAt');
+      
+      // Story 6.2: Badge details in _meta
+      expect(response.body._meta.badge).toHaveProperty('name', 'Verification Test Badge');
+      expect(response.body._meta.badge).toHaveProperty('description');
+      expect(response.body._meta.badge).toHaveProperty('imageUrl');
+      expect(response.body._meta.badge).toHaveProperty('criteria');
       
       // Recipient (email masked for privacy)
-      expect(response.body.recipient).toHaveProperty('name', 'Test Recipient');
-      expect(response.body.recipient.email).toMatch(/^r\*\*\*@test\.com$/);
+      expect(response.body._meta.recipient).toHaveProperty('name', 'Test Recipient');
+      expect(response.body._meta.recipient.email).toMatch(/^r\*\*\*@test\.com$/);
       
       // Issuer
-      expect(response.body.issuer).toHaveProperty('name', 'Admin Verifier');
-      
-      // Dates
-      expect(response.body).toHaveProperty('issuedAt');
-      expect(response.body).toHaveProperty('expiresAt');
-      
-      // Open Badges 2.0 assertion
-      expect(response.body.assertionJson).toHaveProperty('@context', 'https://w3id.org/openbadges/v2');
-      expect(response.body.assertionJson).toHaveProperty('type', 'Assertion');
+      expect(response.body._meta.issuer).toHaveProperty('name', 'Admin Verifier');
     });
 
     it('should return 410 for revoked badge with revocation details', async () => {
       const response = await request(app.getHttpServer())
         .get(`/api/verify/${revokedBadgeVerificationId}`)
-        .expect(410);
+        .expect(200); // Story 6.3: Changed from 410 to 200
 
-      expect(response.body).toHaveProperty('statusCode', 410);
-      expect(response.body.message).toContain('revoked');
-      expect(response.body.badge).toHaveProperty('status', 'REVOKED');
-      expect(response.body.badge).toHaveProperty('revokedAt');
-      expect(response.body.badge).toHaveProperty('revocationReason', 'Test revocation for E2E testing');
+      // Story 6.3: Verify verification status
+      expect(response.body).toHaveProperty('verificationStatus', 'revoked');
+      expect(response.body).toHaveProperty('revoked', true);
+      expect(response.body).toHaveProperty('revokedAt');
+      expect(response.body).toHaveProperty('revocationReason', 'Test revocation for E2E testing');
+      expect(response.body).toHaveProperty('verifiedAt');
     });
 
     it('should return badge data for expired badge (status check on frontend)', async () => {
@@ -194,12 +192,12 @@ describe('Badge Verification (e2e) - Story 6.2', () => {
         .get(`/api/verify/${expiredBadgeVerificationId}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('status', 'CLAIMED');
-      expect(response.body).toHaveProperty('expiresAt');
+      // Story 6.3: Verify expired status
+      expect(response.body).toHaveProperty('verificationStatus', 'expired');
+      expect(response.body).toHaveProperty('verifiedAt');
       
-      // Frontend should check if expiresAt < now to show expired state
-      const expiresAt = new Date(response.body.expiresAt);
-      expect(expiresAt.getTime()).toBeLessThan(Date.now());
+      // Expired badges still return full assertion
+      expect(response.body).toHaveProperty('@context', 'https://w3id.org/openbadges/v2');
     });
 
     it('should return 404 for invalid verificationId', async () => {
@@ -218,7 +216,7 @@ describe('Badge Verification (e2e) - Story 6.2', () => {
         .get(`/api/verify/${activeBadgeVerificationId}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('verificationId');
+      expect(response.body).toHaveProperty('@context'); // Open Badges assertion returned
     });
 
     it('should mask recipient email for privacy', async () => {
@@ -227,8 +225,8 @@ describe('Badge Verification (e2e) - Story 6.2', () => {
         .expect(200);
 
       // Email should be masked: recipient-verify@test.com → r***@test.com
-      expect(response.body.recipient.email).not.toBe('recipient-verify@test.com');
-      expect(response.body.recipient.email).toMatch(/^r\*\*\*@/);
+      expect(response.body._meta.recipient.email).not.toBe('recipient-verify@test.com');
+      expect(response.body._meta.recipient.email).toMatch(/^r\*\*\*@/);
     });
 
     it('should include Open Badges 2.0 JSON-LD assertion', async () => {
@@ -236,10 +234,61 @@ describe('Badge Verification (e2e) - Story 6.2', () => {
         .get(`/api/verify/${activeBadgeVerificationId}`)
         .expect(200);
 
-      expect(response.body.assertionJson).toBeDefined();
-      expect(response.body.assertionJson['@context']).toBe('https://w3id.org/openbadges/v2');
-      expect(response.body.assertionJson.type).toBe('Assertion');
-      expect(response.body.assertionJson.badge).toMatch(/\/api\/badge-templates\//);
+      // Story 6.3: Response IS the Open Badges 2.0 assertion
+      expect(response.body['@context']).toBe('https://w3id.org/openbadges/v2');
+      expect(response.body.type).toBe('Assertion');
+      expect(response.body.badge).toMatch(/\/api\/badge-templates\//);
+    });
+
+    // Story 6.3: New tests for verification status and caching
+    it('should return verificationStatus and verifiedAt timestamp', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/api/verify/${activeBadgeVerificationId}`)
+        .expect(200);
+
+      expect(response.body).toHaveProperty('verificationStatus');
+      expect(['valid', 'expired', 'revoked']).toContain(response.body.verificationStatus);
+      expect(response.body).toHaveProperty('verifiedAt');
+      
+      // Verify timestamp is valid ISO 8601
+      const verifiedAt = new Date(response.body.verifiedAt);
+      expect(verifiedAt.getTime()).toBeGreaterThan(0);
+    });
+
+    it('should set Cache-Control header for valid badges (1 hour)', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/api/verify/${activeBadgeVerificationId}`)
+        .expect(200);
+
+      expect(response.headers['cache-control']).toBeDefined();
+      expect(response.headers['cache-control']).toMatch(/public.*max-age=3600/);
+    });
+
+    it('should set no-cache headers for revoked badges', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/api/verify/${revokedBadgeVerificationId}`)
+        .expect(200);
+
+      expect(response.headers['cache-control']).toBeDefined();
+      expect(response.headers['cache-control']).toMatch(/no-cache/);
+    });
+
+    it('should include CORS headers for cross-origin access', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/api/verify/${activeBadgeVerificationId}`)
+        .expect(200);
+
+      expect(response.headers['access-control-allow-origin']).toBe('*');
+      expect(response.headers['access-control-allow-methods']).toMatch(/GET/);
+    });
+
+    it('should include X-Verification-Status header', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/api/verify/${activeBadgeVerificationId}`)
+        .expect(200);
+
+      expect(response.headers['x-verification-status']).toBeDefined();
+      expect(['valid', 'expired', 'revoked']).toContain(response.headers['x-verification-status']);
     });
   });
 });
