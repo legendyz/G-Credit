@@ -12,6 +12,7 @@ import { ClaimBadgeDto } from './dto/claim-badge.dto';
 import { QueryBadgeDto } from './dto/query-badge.dto';
 import { RevokeBadgeDto } from './dto/revoke-badge.dto';
 import { WalletQueryDto } from './dto/wallet-query.dto';
+import { ReportBadgeIssueDto } from './dto/report-badge-issue.dto';
 import { SimilarBadgesQueryDto } from '../badge-templates/dto/similar-badges-query.dto';
 import { RecommendationsService } from '../badge-templates/recommendations.service';
 
@@ -200,5 +201,28 @@ export class BadgeIssuanceController {
       req.user.userId,
       query.limit,
     );
+  }
+
+  @Post(':id/report')
+  @ApiOperation({ summary: 'Report an issue with a badge' })
+  @ApiResponse({
+    status: 201,
+    description: 'Issue report submitted successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: "Report submitted. We'll review within 2 business days." },
+        reportId: { type: 'string', example: 'report-uuid-123' },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Invalid request or not badge owner' })
+  @ApiResponse({ status: 404, description: 'Badge not found' })
+  async reportBadgeIssue(
+    @Param('id') badgeId: string,
+    @Body() dto: ReportBadgeIssueDto,
+    @Request() req: any,
+  ) {
+    return this.badgeService.reportBadgeIssue(badgeId, dto, req.user.userId);
   }
 }
