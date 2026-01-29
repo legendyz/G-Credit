@@ -78,13 +78,13 @@ So that **I'm notified in my primary work communication tool**.
   - [x] Add Swagger/OpenAPI documentation
   - [x] Write controller unit tests - 7/7 tests passing
 
-- [ ] **Task 4: Integrate Teams Notification into Badge Issuance Flow** (AC: #1)
-  - [ ] Update `BadgeIssuanceService` to trigger Teams notification
-  - [ ] Add `notifyTeams` parameter to `issueBadge()` method (default: true)
-  - [ ] Call `TeamsBadgeNotificationService` after badge creation
-  - [ ] Handle async notification (don't block issuance on Teams failure)
-  - [ ] Log notification trigger in audit log
-  - [ ] Write integration test (badge issuance → Teams notification sent)
+- [x] **Task 4: Integrate Teams Notification into Badge Issuance Flow** (AC: #1)
+  - [x] Update `BadgeIssuanceService` to trigger Teams notification
+  - [x] Add `notifyTeams` parameter to `issueBadge()` method (default: true)
+  - [x] Call `TeamsBadgeNotificationService` after badge creation
+  - [x] Handle async notification (don't block issuance on Teams failure)
+  - [x] Log notification trigger in audit log
+  - [x] Write integration test (badge issuance → Teams notification sent) - 4/4 tests passing
 
 - [ ] **Task 5: Implement Claim Badge Action Handler** (AC: #3)
   - [ ] Create `TeamsActionController` in `src/microsoft-graph/teams/`
