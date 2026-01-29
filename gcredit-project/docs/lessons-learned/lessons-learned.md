@@ -2457,6 +2457,141 @@ const mockBadge: BadgeWithRelations = {
 
 > **5. Schema migrations have massive ripple effects.** Don't rename unless absolutely necessary.
 
+#### ⚠️ 重大更新：真正的根本原因发现 (2026-01-30)
+
+**经过深入调查，发现137个TypeScript编译错误的真正原因：**
+
+| 项目 | 详情 |
+|------|------|
+| **问题提交** | `d1431dd` (2026-01-29 23:18) |
+| **提交消息** | "style(prisma): Apply Prisma format to schema" |
+| **错误操作** | 将 PascalCase 模型名改为 snake_case |
+| **影响范围** | 137+ TypeScript 编译错误 |
+
+**这个提交做了什么：**
+```prisma
+// 原始设计（正确）
+model User {
+  id String @id @default(uuid())
+  ...
+  @@map("users")  // 表名映射
+}
+
+// 被格式化后（错误）
+model users {
+  id String @id @default(uuid())
+  ...
+  // @@map() 被移除
+}
+```
+
+**为什么原始设计是正确的：**
+- `model User` + `@@map("users")` 是 Prisma 官方推荐的最佳实践
+- API 使用 `prisma.user` (单数、PascalCase) 符合 JS/TS 惯例
+- 数据库表名 `users` (复数、snake_case) 符合 PostgreSQL 惯例
+- TypeScript 类型导出为 `User` 而非 `users`
+
+**最终解决方案：**
+- **Commit `28114df`**: 回退 schema 到正确版本
+- **操作**: `git checkout d1431dd^ -- prisma/schema.prisma`
+- **结果**: 零代码更改，137个错误全部消失
+- **验证**: 181/181 测试通过，服务器正常启动
+
+---
+
+### 🚨 强制性开发规范 (MANDATORY)
+
+> **以下规范必须严格遵守，违反可能导致整个代码库损坏！**
+
+#### 规范 1: 禁止格式化 Prisma Schema
+
+```bash
+# ❌ 禁止运行
+npx prisma format          # 会破坏 @@map() 设计
+prettier schema.prisma     # 会重新格式化模型名
+
+# ✅ 允许的操作
+npx prisma generate        # 重新生成 Prisma Client
+npx prisma db push         # 同步数据库（开发环境）
+npx prisma migrate dev     # 创建迁移
+```
+
+#### 规范 2: Schema 修改必须遵循三步验证
+
+```bash
+# 任何 schema.prisma 修改后必须执行：
+npx prisma generate        # 步骤 1: 重新生成 Client
+npm run build              # 步骤 2: TypeScript 编译检查
+npm test                   # 步骤 3: 运行所有测试
+
+# 如果步骤 2 出现大量错误（>10个），立即回退！
+git checkout HEAD -- prisma/schema.prisma
+```
+
+#### 规范 3: 保护 Schema 命名约定
+
+**当前项目使用的正确模式：**
+```prisma
+model User {           // ✅ PascalCase 模型名 → prisma.user
+  id String @id
+  ...
+  @@map("users")       // ✅ snake_case 表名
+}
+
+model BadgeTemplate {  // ✅ PascalCase 模型名 → prisma.badgeTemplate
+  id String @id
+  ...
+  @@map("badge_templates")  // ✅ snake_case 表名
+}
+```
+
+**绝对禁止的模式：**
+```prisma
+model users {          // ❌ snake_case 模型名
+  id String @id
+  ...
+}
+
+model badge_templates { // ❌ snake_case 模型名
+  id String @id
+  ...
+}
+```
+
+#### 规范 4: 提交前必检清单
+
+**修改 `prisma/schema.prisma` 时：**
+- [ ] **确认没有运行 `prisma format`**
+- [ ] 检查所有 `model` 名称仍为 PascalCase
+- [ ] 检查所有 `@@map()` 属性仍然存在
+- [ ] 运行 `npx prisma generate` 成功
+- [ ] 运行 `npm run build` 无错误
+- [ ] 运行 `npm test` 全部通过
+
+#### 规范 5: 紧急回退程序
+
+**如果 TypeScript 编译出现 >50 个错误且与 Prisma 相关：**
+
+```bash
+# 1. 立即停止当前工作
+# 2. 检查 schema.prisma 最近的更改
+git log -3 --oneline -- prisma/schema.prisma
+
+# 3. 对比差异
+git diff HEAD~1 -- prisma/schema.prisma
+
+# 4. 如果发现模型名被改为 snake_case，立即回退
+git checkout HEAD~1 -- prisma/schema.prisma
+npx prisma generate
+npm run build
+
+# 5. 验证错误消失后，提交回退
+git add prisma/schema.prisma
+git commit -m "fix(prisma): Revert schema format changes"
+```
+
+---
+
 #### Related Lessons
 
 - **Lesson 20**: Unit Tests Can't Catch All Integration Issues (similar mock isolation problem)
@@ -2468,6 +2603,7 @@ const mockBadge: BadgeWithRelations = {
 - [Prisma Naming Conventions](https://www.prisma.io/docs/concepts/components/prisma-schema/names-in-underlying-database)
 - [Prisma Relations](https://www.prisma.io/docs/concepts/components/prisma-schema/relations)
 - [TypeScript Type Safety with Prisma](https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety)
+- **Commit History**: `d1431dd` (破坏性格式化) → `28114df` (回退修复)
 
 **Commits:**
 - `9eb3be3`: Fixed Prisma schema mismatches in Teams notification services
