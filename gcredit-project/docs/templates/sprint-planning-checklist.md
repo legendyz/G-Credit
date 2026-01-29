@@ -101,7 +101,7 @@ Sprint 2差点重复创建Azure Storage Account，因为Planning时没有回顾S
 - ⚠️ **Lesson 1:** 版本漂移问题 → 已解决（Section 9自动创建Version Manifest）
 - ⚠️ **Lesson 11:** 文档组织原则（SSOT vs 副本）
 - ⚠️ **Lesson 15:** SSOT需要强制执行
-- 📊 **Velocity指标:** Sprint 0-5的估时准确性数据
+- � **Lesson 22:** Prisma Schema命名规范 → 一次`npx prisma format`破坏137个文件（Sprint 6重大风险）
 
 **快速检查命令（可选）：**
 ```powershell
