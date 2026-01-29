@@ -86,14 +86,14 @@ So that **I'm notified in my primary work communication tool**.
   - [x] Log notification trigger in audit log
   - [x] Write integration test (badge issuance → Teams notification sent) - 4/4 tests passing
 
-- [ ] **Task 5: Implement Claim Badge Action Handler** (AC: #3)
-  - [ ] Create `TeamsActionController` in `src/microsoft-graph/teams/`
-  - [ ] Add endpoint: `POST /api/teams/actions/claim-badge`
-  - [ ] Request body: `{ badgeId: string, userId: string }`
-  - [ ] Validate user authorization (must be badge recipient)
-  - [ ] Update badge status from PENDING → CLAIMED
-  - [ ] Return Adaptive Card update (show "Claimed" status)
-  - [ ] Write unit tests for claim action
+- [x] **Task 5: Implement Claim Badge Action Handler** (AC: #3)
+  - [x] Create `TeamsActionController` in `src/microsoft-graph/teams/`
+  - [x] Add endpoint: `POST /api/teams/actions/claim-badge`
+  - [x] Request body: `{ badgeId: string, userId: string }`
+  - [x] Validate user authorization (must be badge recipient)
+  - [x] Update badge status from PENDING → CLAIMED
+  - [x] Return Adaptive Card update (show "Claimed" status)
+  - [x] Write unit tests for claim action - 7/7 tests passing
 
 - [ ] **Task 6: Configure Email Fallback** (AC: #4)
   - [ ] Update `TeamsBadgeNotificationService` to use `GraphEmailService` as fallback
