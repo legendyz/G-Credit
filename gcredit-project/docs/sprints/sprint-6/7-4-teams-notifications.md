@@ -102,12 +102,13 @@ So that **I'm notified in my primary work communication tool**.
   - [x] Log fallback action in system logs
   - [x] Write integration test (Teams fails → email sent) - 3/3 tests passing
 
-- [ ] **Task 7: Add Configuration Settings** (AC: #5)
-  - [ ] Add environment variables: `DEFAULT_TEAMS_TEAM_ID`, `DEFAULT_TEAMS_CHANNEL_ID`
-  - [ ] Add `ENABLE_TEAMS_NOTIFICATIONS` flag (default: true)
-  - [ ] Update ConfigService to load Teams settings
-  - [ ] Validate required settings on app startup
-  - [ ] Document configuration in `.env.example`
+- [x] **Task 7: Add Configuration Settings** (AC: #5)
+  - [x] Add environment variables: `DEFAULT_TEAMS_TEAM_ID`, `DEFAULT_TEAMS_CHANNEL_ID`
+  - [x] Add `ENABLE_TEAMS_NOTIFICATIONS` flag (default: true)
+  - [x] Update ConfigService to load Teams settings
+  - [x] Validate required settings on app startup
+  - [x] Document configuration in `.env.example`
+  - [x] Created comprehensive setup guide: `teams-integration-setup.md`
 
 ### Testing
 
