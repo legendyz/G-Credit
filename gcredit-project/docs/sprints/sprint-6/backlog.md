@@ -42,18 +42,22 @@ Enable badge recipients to share their achievements via **email** and **Microsof
 
 ## Resource Requirements & Validation
 
-**🔗 Reference:** See [`docs/setup/infrastructure-inventory.md`](../../setup/infrastructure-inventory.md)
+**🔗 References:**
+- [`docs/setup/infrastructure-inventory.md`](../../setup/infrastructure-inventory.md) - Existing Azure/Database resources
+- ✅ **[`version-manifest.md`](./version-manifest.md)** - Sprint 6 dependency versions (CREATED: 2026-01-29)
 
 **⚠️ Critical:** Before implementing any task, verify resources don't already exist to avoid duplication (Sprint 2 lesson learned).
 
 ### New Resources Required for Sprint 6
 
+**📋 Version Reference:** See [version-manifest.md](./version-manifest.md) for exact dependency versions and installation commands.
+
 | Task/Story | Required Resource | Status | Action | Notes |
 |------------|------------------|--------|--------|-------|
 | **Azure AD App Registration** | Azure AD Application | ❌ **CREATE** | Register new app in M365 Dev Subscription | First-time setup for Graph API |
-| **Microsoft Graph Module** | npm: `@microsoft/microsoft-graph-client` | ❌ **INSTALL** | `npm install @microsoft/microsoft-graph-client @azure/identity` | New dependencies |
-| **Microsoft Graph Module** | npm: `@azure/identity` | ❌ **INSTALL** | Same as above | OAuth token management |
-| **Adaptive Cards** | npm: `adaptive-cards` | ❌ **INSTALL** | `npm install adaptive-cards` | Teams card rendering |
+| **Microsoft Graph Module** | npm: `@microsoft/microsoft-graph-client@3.0.7` | ❌ **INSTALL** | See version-manifest.md for command | New dependencies |
+| **Microsoft Graph Module** | npm: `@azure/identity@4.13.0` | ❌ **INSTALL** | See version-manifest.md for command | OAuth token management |
+| **Adaptive Cards** | npm: `adaptivecards@3.0.5` | ❌ **INSTALL** | See version-manifest.md for command | Teams card rendering |
 | **BadgeShare Table** | PostgreSQL Table | ❌ **CREATE** | Prisma migration (Story 7.5) | New table for analytics |
 | **Email Templates** | HTML template files | ❌ **CREATE** | Create in `backend/src/microsoft-graph/email/templates/` | Badge notification template |
 

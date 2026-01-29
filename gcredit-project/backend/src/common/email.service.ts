@@ -33,8 +33,10 @@ export class EmailService {
     this.fromAddress = this.config.get<string>('EMAIL_FROM', 'badges@gcredit.example.com');
 
     if (this.isDevelopment) {
-      // Initialize Ethereal asynchronously
-      this.initializeEthereal();
+      // Initialize Ethereal asynchronously (non-blocking)
+      this.initializeEthereal().catch(err => {
+        this.logger.warn('⚠️ Ethereal initialization delayed, will retry on first email send');
+      });
     } else {
       this.initializeACS();
     }
@@ -120,9 +122,11 @@ export class EmailService {
    * Send via Ethereal (Development)
    */
   private async sendViaEthereal(options: SendMailOptions): Promise<void> {
-    // Wait for initialization if not ready
-    if (!this.etherealInitialized) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+    // Wait for initialization if not ready (max 5 seconds)
+    let retries = 0;
+    while (!this.etherealInitialized && retries < 10) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      retries++;
     }
 
     if (!this.etherealTransporter) {
