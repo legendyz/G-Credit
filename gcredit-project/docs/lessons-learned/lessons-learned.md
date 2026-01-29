@@ -2,10 +2,10 @@
 
 **Project:** G-Credit Digital Credentialing System  
 **Purpose:** Capture key learnings and establish best practices for efficient development  
-**Last Updated:** 2026-01-30 (Sprint 6 - Testing Strategy & Service Initialization)  
+**Last Updated:** 2026-01-30 (Sprint 6 - Testing Strategy & Prisma Schema Conventions)  
 **Status:** Living document - update after each Sprint Retrospective  
 **Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 → Sprint 6 + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
-**Total Lessons:** 21 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 2)
+**Total Lessons:** 22 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 3)
 
 ---
 
@@ -53,9 +53,10 @@
   - Lesson 18: Periodic Cleanup Reveals Hidden Debt
 - [Post-Sprint 5 Lessons](#post-sprint-5-lessons-january-2026) - Workflow Automation & Template System (1 lesson) 🆕
   - Lesson 19: Agent Activation Safety Net - Proactive Template/Reference Checking
-- [Sprint 6 Lessons](#sprint-6-lessons-january-2026) - Testing Strategy & Service Initialization (2 lessons) 🆕
+- [Sprint 6 Lessons](#sprint-6-lessons-january-2026) - Testing Strategy & Service Initialization (3 lessons) 🆕
   - Lesson 20: Unit Tests Can't Catch All Integration Issues - The Testing Coverage Gap
   - Lesson 21: Story File Creation Process Gap - Missing BMM Workflow Step
+  - Lesson 22: Prisma Schema Naming Conventions and Mock Testing Pitfalls
 - [Cross-Sprint Patterns](#cross-sprint-patterns) - 12 patterns
 - [Development Checklists](#development-checklists)
 - [Common Pitfalls](#common-pitfalls-to-avoid)
@@ -2046,6 +2047,437 @@ Before marking story complete:
 - [ ] Add enforcement logic to dev-story workflow (suggest to BMad framework)
 - [ ] Review with LegendZhu in Sprint 6 retrospective
 - [ ] Consider if Story 7.2 needs retroactive story file (decision: NO, too much effort)
+
+---
+
+### 🎯 Lesson 22: Prisma Schema Naming Conventions and Mock Testing Pitfalls
+
+**Category:** 🧪 Testing, 🏗️ Architecture, 🐛 Debugging  
+**Impact:** HIGH (caused repeated TypeScript compilation errors)  
+**Sprint Discovered:** Sprint 6, Story 7.4 (Teams Notifications)  
+**Discovery Date:** 2026-01-30  
+**Related Story:** [Story 7.4](../../sprints/sprint-6/7-4-teams-notifications.md)
+
+#### Problem
+
+**Symptoms:**
+Repeated TypeScript compilation errors when accessing Prisma relations, despite all unit tests (182/182) passing:
+
+```typescript
+// ❌ TS2339: Property 'badgeTemplate' does not exist
+const badge = await prisma.badge.findUnique({
+  where: { id: badgeId },
+  include: { 
+    badgeTemplate: {  // ERROR!
+      include: { issuer: true } 
+    }
+  }
+});
+
+// ❌ TS2339: Property 'credential' does not exist on type 'PrismaService'
+const credential = await prisma.credential.findFirst(...);
+
+// ❌ TS2339: Property 'name' does not exist on type 'User'
+const userName = user.name;  // User has firstName/lastName, not name
+```
+
+**What Happened in Story 7.4:**
+1. Implemented `TeamsSharingController` and `TeamsBadgeNotificationService`
+2. All 36 unit tests passed (100% coverage) ✅
+3. Committed code and started dev server
+4. TypeScript compilation showed 5 errors ❌
+5. Server started but had runtime errors
+6. Spent 30+ minutes debugging "obvious" code that worked in tests
+
+#### Root Cause
+
+**Three interrelated issues:**
+
+**1. Prisma Relation Naming Mismatch**
+
+```prisma
+// Schema definition (schema.prisma)
+model badges {
+  templateId                      String
+  users_badges_issuerIdTousers    users  @relation("badges_issuerIdTousers", ...)
+  users_badges_recipientIdTousers users  @relation("badges_recipientIdTousers", ...)
+  badge_templates                 badge_templates  @relation(...)
+  //  ↑ Field name                 ↑ Table name
+}
+```
+
+**How Prisma generates API names:**
+- Field name in schema: `badge_templates` (snake_case, same as table)
+- **Generated API name**: `template` (singular, camelCase, **without "badge" prefix**)
+- **NOT**: `badgeTemplate` (what we incorrectly assumed)
+- Similarly: `users_badges_issuerIdTousers` → `issuer`, `users_badges_recipientIdTousers` → `recipient`
+
+**Why this is confusing:**
+```typescript
+// Database table: badge_templates
+// Foreign key field: templateId (camelCase)
+// Natural assumption: relation should be badgeTemplate
+// Actual Prisma API: template (removes redundant prefix)
+
+// Wrong assumption
+badge.badgeTemplate.name  // ❌ Property doesn't exist
+badge.badgeTemplate.issuer.name  // ❌ Double wrong
+
+// Correct usage
+badge.template.name  // ✅ Correct
+badge.issuer.name   // ✅ Direct relation
+```
+
+**2. Mock Testing Isolation Trap** (Related to Lesson 20)
+
+```typescript
+// Unit test with mock
+const mockBadge = {
+  id: 'badge-123',
+  badgeTemplate: {  // ❌ Wrong structure, but mock accepts anything
+    issuer: {
+      id: 'issuer-456',
+      name: 'Test University'  // ❌ User doesn't have 'name' field
+    }
+  }
+};
+
+mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+
+// Test passes ✅ because mock returns what we tell it
+const result = await service.sendNotification('badge-123', 'user-789');
+expect(result).toBeDefined();  // ✅ PASS
+```
+
+**The trap:**
+- **Jest tests**: 182/182 passing ✅ (mocks return any structure)
+- **TypeScript compilation**: FAILED ❌ (real Prisma types enforced)
+- **Runtime**: Server crashes 💥 (actual database schema enforced)
+
+**3. User Model Field Mismatch**
+
+```prisma
+model users {
+  id            String
+  email         String
+  firstName     String?  // ✅ Exists
+  lastName      String?  // ✅ Exists
+  // NO 'name' field!
+}
+```
+
+```typescript
+// Wrong assumption (common in other ORMs)
+const userName = user.name;  // ❌ Property doesn't exist
+
+// Correct usage
+const userName = `${user.firstName} ${user.lastName}`.trim() || user.email;
+```
+
+#### Why Tests Didn't Catch This
+
+**Mock testing isolation (documented in Lesson 20):**
+
+```typescript
+// Mocks can return ANY structure - TypeScript doesn't validate mock data
+mockPrisma.badge.findUnique.mockResolvedValue({
+  // This structure doesn't match real Prisma types, but TypeScript allows it
+  badgeTemplate: { ... },  // Wrong property
+  credential: { ... },     // Model doesn't exist
+  name: 'Test User'        // Field doesn't exist on User
+});
+```
+
+**What gets validated:**
+- ✅ Mock setup syntax (method exists)
+- ✅ Test assertions (expect statements)
+- ✅ Business logic (function behavior with mocked data)
+
+**What doesn't get validated:**
+- ❌ Mock data structure matches real Prisma types
+- ❌ Relation names are correct
+- ❌ Field names exist on actual models
+- ❌ TypeScript compilation of actual service code
+
+**Root issue**: Unit tests with mocks validate logic, not type correctness.
+
+#### Why We Can't Just Rename Schema
+
+**Initial attempted fix:**
+```prisma
+model badges {
+  template  badge_templates  @relation(...)
+  issuer    users  @relation("badges_issuerIdTousers", ...)
+  recipient users  @relation("badges_recipientIdTousers", ...)
+  //  ↑ Explicit naming
+}
+```
+
+**What happened after `npx prisma generate`:**
+
+Prisma Client regeneration **broke 137 files** throughout the entire codebase!
+
+**Why it failed:**
+- Entire codebase uses camelCase model names: `prisma.user`, `prisma.badge`, `prisma.badgeTemplate`
+- Prisma actually generates from table names: `prisma.users`, `prisma.badges`, `prisma.badge_templates`
+- Schema was created with snake_case tables but code was written assuming camelCase
+- Changing relation names in schema cascaded to all Prisma queries
+
+**Scope of impact** (if we had proceeded):
+```typescript
+// All of these would break:
+prisma.user → prisma.users               // 15+ files in auth module
+prisma.badge → prisma.badges             // 20+ files in badge issuance
+prisma.badgeTemplate → prisma.badge_templates  // 10+ files
+prisma.skill → prisma.skills             // 12+ files
+prisma.milestoneConfig → prisma.milestone_configs  // 8+ files
+// ... and 72+ more files
+```
+
+**Decision**: Reverted schema change, used correct Prisma-generated names instead.
+
+#### Solution Implemented
+
+**Immediate Fix (Commit 9eb3be3):**
+
+**1. Fixed Prisma queries to use correct relation names:**
+
+```typescript
+// Before (wrong)
+const badge = await this.prisma.badge.findUnique({
+  where: { id: badgeId },
+  include: {
+    badgeTemplate: {  // ❌ Wrong
+      include: { issuer: true }
+    }
+  }
+});
+
+// After (correct)
+const badge = await this.prisma.badge.findUnique({
+  where: { id: badgeId },
+  include: {
+    template: true,  // ✅ Correct relation name
+    issuer: true,    // ✅ Direct relation
+  }
+});
+```
+
+**2. Removed non-existent model queries:**
+
+```typescript
+// Before (wrong) - credential model doesn't exist
+const credential = await this.prisma.credential.findFirst({
+  where: { badgeId, userId }
+});
+const isRecipient = !!credential;
+
+// After (correct) - use badge.recipientId field
+const isRecipient = badge.recipientId === userId;
+```
+
+**3. Fixed User model field access:**
+
+```typescript
+// Before (wrong)
+const userName = user.name;  // ❌ Property doesn't exist
+const issuerName = badge.badgeTemplate.issuer.name;  // ❌ Nested wrong
+
+// After (correct)
+private getFullName(user: { firstName: string | null; lastName: string | null; email: string }): string {
+  const parts = [];
+  if (user.firstName) parts.push(user.firstName);
+  if (user.lastName) parts.push(user.lastName);
+  return parts.length > 0 ? parts.join(' ') : user.email;
+}
+
+const userName = this.getFullName(user);
+const issuerName = this.getFullName(badge.issuer);  // ✅ Direct relation
+```
+
+**4. Fixed null safety:**
+
+```typescript
+// Handle nullable fields from schema
+badgeImageUrl: badge.template.imageUrl || 'https://default-badge-image.png',
+badgeDescription: badge.template.description || '',
+```
+
+**5. Updated all test mocks to match real schema:**
+
+```typescript
+// Before (wrong mock structure)
+const mockBadge = {
+  badgeTemplate: {
+    issuer: { name: 'Test' }
+  }
+};
+
+// After (correct mock structure)
+const mockBadge = {
+  status: 'PENDING',
+  issuerId: 'issuer-456',
+  recipientId: 'user-123',
+  template: {
+    name: 'Test Badge',
+    description: 'Test description',
+    imageUrl: 'https://test.png'
+  },
+  issuer: {
+    id: 'issuer-456',
+    firstName: 'Test',
+    lastName: 'University',
+    email: 'test@university.edu'
+  }
+};
+```
+
+**Files Fixed:**
+- `teams-sharing.controller.ts` - 4 replacements
+- `teams-badge-notification.service.ts` - 3 replacements + helper method
+- `teams-sharing.controller.spec.ts` - Updated mock structure
+- `teams-badge-notification.service.spec.ts` - Updated mock structure
+
+**Changes:**
+- 4 files modified
+- 128 lines deleted (incorrect queries and mocks)
+- 75 lines added (correct schema access)
+- All tests still passing: 182/182 ✅
+- TypeScript compilation: SUCCESS ✅
+- Server startup: No errors ✅
+
+#### Long-term Solution
+
+**Development Workflow Improvements:**
+
+**1. Always check Prisma-generated types before writing queries:**
+
+```bash
+# View generated types
+code node_modules/.prisma/client/index.d.ts
+
+# Or use Prisma Studio
+npx prisma studio  # Visual schema browser
+```
+
+**2. Use VSCode autocomplete for Prisma queries:**
+- Type `prisma.` → See all available models
+- Type `prisma.badge.findUnique({ include: { ` → See all available relations
+- Autocomplete shows correct field names
+
+**3. Compile TypeScript frequently during development:**
+
+```bash
+# Before committing
+npm run build  # Catches type errors
+npm test       # Validates logic
+npm run start:dev  # Validates runtime
+```
+
+**4. Type-safe mocks (future improvement):**
+
+```typescript
+// Instead of generic mocks, use Prisma-generated types
+import { Prisma } from '@prisma/client';
+
+type BadgeWithRelations = Prisma.badgesGetPayload<{
+  include: { template: true; issuer: true }
+}>;
+
+const mockBadge: BadgeWithRelations = {
+  // TypeScript validates structure matches real Prisma type
+  id: 'badge-123',
+  template: { ... },  // ✅ Correct property enforced
+  issuer: { ... },    // ✅ Correct property enforced
+  // badgeTemplate: { ... }  // ❌ TypeScript error!
+};
+```
+
+**Schema Naming Convention Decision:**
+
+**Option A: Keep snake_case (✅ CHOSEN)**
+- Pros: No breaking changes, follows PostgreSQL conventions
+- Cons: Code uses different naming than database visually
+- Action: Document relation names in schema comments
+
+**Option B: Migrate to camelCase**
+- Requires: Database migration + Prisma schema update + 137 file updates
+- Risk: HIGH - potential data loss or service disruption
+- Timeline: Requires dedicated sprint
+- Decision: **NOT worth it** for this project size
+
+#### Prevention Checklist
+
+**Before writing Prisma queries:**
+- [ ] Check generated types in `node_modules/.prisma/client/index.d.ts`
+- [ ] Use VSCode autocomplete to see available relations
+- [ ] Reference recent working code (e.g., `badge-issuance.service.ts`)
+- [ ] Document non-obvious relation names in code comments
+
+**Before committing code:**
+- [ ] Run `npm run build` (catches TypeScript errors)
+- [ ] Run `npm test` (validates logic)
+- [ ] Run `npm run start:dev` (validates runtime)
+- [ ] Check server logs for errors
+
+**When creating mocks:**
+- [ ] Reference real Prisma types (copy from working service)
+- [ ] Match field names exactly (template not badgeTemplate)
+- [ ] Include all required fields (id, timestamps, etc.)
+- [ ] Consider using Prisma-generated Payload types for type safety
+
+**When updating schema:**
+- [ ] Run `npx prisma generate` immediately
+- [ ] Run `npm run build` to check for breaking changes
+- [ ] Search codebase for affected relation names
+- [ ] Update mocks to match new structure
+
+#### Metrics Impact
+
+| Metric | Value |
+|--------|-------|
+| **Bug Discovery** | TypeScript compilation (not tests) |
+| **Tests Passing** | 182/182 (100%) - gave false confidence |
+| **TypeScript Errors** | 5 errors in 2 files |
+| **Debugging Time** | 30+ minutes |
+| **Files Fixed** | 4 files |
+| **Lines Changed** | -128 / +75 (net -53) |
+| **Prevention Time** | 5 min `npm run build` before commit |
+| **ROI** | 30 min debugging / 5 min prevention = 6x return |
+
+#### Key Takeaways
+
+> **1. Prisma's naming is auto-generated and non-obvious.** Always verify relation names in generated types rather than assuming based on table/field names.
+
+> **2. Mock tests provide false confidence when not paired with type checking.** 100% unit test coverage ≠ type-safe code.
+
+> **3. TypeScript compilation is not optional.** It's a critical validation step that catches what tests miss.
+
+> **4. When in doubt, copy from working code.** Recent similar code has correct patterns.
+
+> **5. Schema migrations have massive ripple effects.** Don't rename unless absolutely necessary.
+
+#### Related Lessons
+
+- **Lesson 20**: Unit Tests Can't Catch All Integration Issues (similar mock isolation problem)
+- **Lesson 1**: Version Discrepancy (planning vs reality gap)
+- **Lesson 8**: E2E Test Stability (test environment vs production differences)
+
+#### References
+
+- [Prisma Naming Conventions](https://www.prisma.io/docs/concepts/components/prisma-schema/names-in-underlying-database)
+- [Prisma Relations](https://www.prisma.io/docs/concepts/components/prisma-schema/relations)
+- [TypeScript Type Safety with Prisma](https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety)
+
+**Commits:**
+- `9eb3be3`: Fixed Prisma schema mismatches in Teams notification services
+- `24114b1`: Documented Lesson 22
+
+**Future Enhancements:**
+- [ ] Add Prisma type reference guide to documentation
+- [ ] Create type-safe mock utilities using Prisma Payload types
+- [ ] Add pre-commit hook: `npm run build` before allowing commits
+- [ ] Document common Prisma gotchas in architecture guide
 
 ---
 
