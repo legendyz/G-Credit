@@ -138,11 +138,12 @@ So that **I'm notified in my primary work communication tool**.
 
 ### Documentation
 
-- [ ] **Task 11: Update API Documentation** (AC: #1)
-  - [ ] Document `POST /api/badges/:badgeId/share/teams` endpoint
-  - [ ] Document `POST /api/teams/actions/claim-badge` endpoint
-  - [ ] Add request/response examples to Swagger
-  - [ ] Update API changelog
+- [x] **Task 11: Update API Documentation** (AC: #1)
+  - [x] Document `POST /api/badges/:badgeId/share/teams` endpoint ✅
+  - [x] Document `POST /api/teams/actions/claim-badge` endpoint ✅
+  - [x] Add request/response examples to Swagger ✅
+  - [x] Update API changelog ✅ (v0.6.0 release notes)
+  - [x] Add Swagger tags: "Badge Sharing", "Teams Actions" ✅
 
 - [x] **Task 12: Create Teams Setup Guide** (AC: #5)
   - [x] Document how to configure Teams integration
