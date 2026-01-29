@@ -118,7 +118,7 @@
   - ✅ HTML email template with Handlebars rendering
   - ✅ Updated GraphEmailService to support textBody parameter
   - ✅ Integrated BadgeSharingModule to AppModule
-  - Committed: [pending]
+  - Committed: a819786 (implementation), 7fc65df (fixes)
 - **Tests:**
   - ✅ Unit tests for EmailTemplateService (10 tests)
   - ✅ Unit tests for BadgeSharingService (17 tests)
@@ -131,8 +131,53 @@
   - ✅ HTML template renders correctly (verified in tests)
   - ⏳ Recipient receives formatted email (pending manual test)
   - 🔲 Share event tracked in analytics (Story 7.5)
+- **File List** (From git commits):
+  - **Created (14 files):**
+    - `backend/src/badge-sharing/badge-sharing.module.ts`
+    - `backend/src/badge-sharing/badge-sharing.service.ts`
+    - `backend/src/badge-sharing/badge-sharing.service.spec.ts`
+    - `backend/src/badge-sharing/badge-sharing.controller.ts`
+    - `backend/src/badge-sharing/badge-sharing.controller.spec.ts`
+    - `backend/src/badge-sharing/services/email-template.service.ts`
+    - `backend/src/badge-sharing/services/email-template.service.spec.ts`
+    - `backend/src/badge-sharing/templates/badge-notification.html`
+    - `backend/src/badge-sharing/dto/share-badge-email.dto.ts`
+    - `backend/test-scripts/sprint-6/test-email-sharing.ps1`
+  - **Modified (5 files):**
+    - `backend/src/app.module.ts` (added BadgeSharingModule import)
+    - `backend/src/microsoft-graph/services/graph-email.service.ts` (added textBody support, OnModuleInit)
+    - `backend/src/microsoft-graph/services/graph-teams.service.ts` (added OnModuleInit)
+    - `backend/src/badge-sharing/services/email-template.service.ts` (added fallback path)
+    - `backend/package.json` (added handlebars@4.7.8)
+- **Key Implementation Decisions:**
+  - **Template Engine:** Chose Handlebars for HTML template rendering (industry standard, simple syntax)
+  - **Email Structure:** Dual-format (HTML + plain text fallback) for compatibility
+  - **Permission Model:** Only badge recipient or issuer can share (enforced in service layer)
+  - **Error Handling:** GraphEmailService retries with exponential backoff (3 attempts, handles 429 rate limits)
+  - **Module Organization:** Created dedicated `badge-sharing` module (aligned with NestJS best practices)
+- **Runtime Issues Discovered & Fixed:**
+  - **Issue 1:** Template file path resolution failed in compiled `dist/` directory
+    - Root Cause: NestJS copies assets to `dist/` but code compiled to `dist/src/`
+    - Fix: Added fallback path logic with existence check
+    - Lesson: Test compiled artifacts, not just source code
+  - **Issue 2:** GraphEmailService and GraphTeamsService failed to initialize
+    - Root Cause: Services called GraphTokenProvider in constructor before its `onModuleInit()` executed
+    - Fix: Implemented `OnModuleInit` interface, moved initialization there
+    - Lesson: Never call dependent services in constructor, use lifecycle hooks
+  - **Issue 3:** Missing environment variables (GRAPH_API_SCOPE, GRAPH_EMAIL_FROM)
+    - Fix: Added to `.env` file with proper values
+  - All fixes committed in 7fc65df (13 minutes after initial implementation)
+- **Lessons Learned:**
+  - Unit tests with mocks don't catch real dependency initialization issues (see Lesson 20)
+  - Always run `npm run build && npm run start:dev` before marking story complete
+  - NestJS lifecycle hooks critical for service dependencies
+  - Path resolution differs in `src/` vs `dist/` - need fallback logic
 - **Agent Command:** "Implement Story 7.2 - Email Badge Sharing"
 - **Daily Standup Trigger:** After completion ✅
+- **Related Documentation:**
+  - [Lesson 20: Testing Coverage Gap](../../lessons-learned/lessons-learned.md#lesson-20-unit-tests-cant-catch-all-integration-issues)
+  - [Email Template Specs](./email-template-specs.md)
+  - [ADR-008: Microsoft Graph Integration](../../decisions/ADR-008-microsoft-graph-integration.md)
 
 ---
 

@@ -2,10 +2,10 @@
 
 **Project:** G-Credit Digital Credentialing System  
 **Purpose:** Capture key learnings and establish best practices for efficient development  
-**Last Updated:** 2026-01-29 (Post-Sprint 5 - Agent Activation Safety Net & Template System Optimization)  
+**Last Updated:** 2026-01-30 (Sprint 6 - Testing Strategy & Service Initialization)  
 **Status:** Living document - update after each Sprint Retrospective  
-**Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
-**Total Lessons:** 19 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1)
+**Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 → Sprint 6 + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
+**Total Lessons:** 21 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 2)
 
 ---
 
@@ -53,6 +53,9 @@
   - Lesson 18: Periodic Cleanup Reveals Hidden Debt
 - [Post-Sprint 5 Lessons](#post-sprint-5-lessons-january-2026) - Workflow Automation & Template System (1 lesson) 🆕
   - Lesson 19: Agent Activation Safety Net - Proactive Template/Reference Checking
+- [Sprint 6 Lessons](#sprint-6-lessons-january-2026) - Testing Strategy & Service Initialization (2 lessons) 🆕
+  - Lesson 20: Unit Tests Can't Catch All Integration Issues - The Testing Coverage Gap
+  - Lesson 21: Story File Creation Process Gap - Missing BMM Workflow Step
 - [Cross-Sprint Patterns](#cross-sprint-patterns) - 12 patterns
 - [Development Checklists](#development-checklists)
 - [Common Pitfalls](#common-pitfalls-to-avoid)
@@ -1612,6 +1615,437 @@ Added proactive template/reference checking step to all 4 specialized agents' ac
 - [Template Audit Report](../archive/template-audit-2026-01-29.md) - Complete template system analysis
 - [sprint-planning-checklist.md](../templates/sprint-planning-checklist.md) - Planning workflow with agent automation
 - [sprint-completion-checklist-template.md](../templates/sprint-completion-checklist-template.md) - Completion workflow
+
+---
+
+## Sprint 6 Lessons (January 2026)
+### Testing Strategy & Service Initialization
+
+### 🎯 Lesson 20: Unit Tests Can't Catch All Integration Issues - The Testing Coverage Gap
+
+**Category:** 🧪 Testing Strategy, 🏗️ Architecture  
+**Impact:** HIGH (affects all future service development and testing practices)  
+**Sprint Discovered:** Sprint 6, Story 7.2 (Email Badge Sharing)  
+**Discovery Date:** 2026-01-30
+
+**What Happened:**
+Story 7.2 implemented email badge sharing with Microsoft Graph API integration. All **29 unit tests passed 100%**, but upon starting the development server, **4 critical runtime errors** appeared:
+1. **EmailTemplateService**: Template file not found (path resolution issue)
+2. **GraphTokenProviderService**: Not initialized (lifecycle timing)
+3. **GraphEmailService**: Failed to initialize (dependency on uninitialized TokenProvider)
+4. **GraphTeamsService**: Failed to initialize (same root cause)
+
+**Timeline:**
+- ✅ **12:13 AM**: All unit tests passing (29/29)
+- ✅ **12:13 AM**: TypeScript compilation successful
+- ✅ **12:13 AM**: Story 7.2 marked complete, commit pushed
+- ❌ **12:13 AM**: `npm run start:dev` fails with 4 ERROR logs
+- 🔧 **12:15-12:28 AM**: Debugging and fixing (13 minutes to resolve)
+
+**Root Causes Identified:**
+
+**Issue 1: Template Path Resolution**
+```typescript
+// Test Environment (src/ directory) ✅
+__dirname = 'src/badge-sharing/services'
+template = '../templates/badge-notification.html' 
+→ Resolves to: src/badge-sharing/templates/badge-notification.html ✅
+
+// Production Environment (dist/ compiled) ❌
+__dirname = 'dist/src/badge-sharing/services'
+template = '../templates/badge-notification.html'
+→ Resolves to: dist/src/badge-sharing/templates/badge-notification.html ❌
+→ Actual location: dist/badge-sharing/templates/badge-notification.html (NestJS asset copy)
+```
+
+**Why Tests Didn't Catch This:**
+- Jest runs directly in `src/` using ts-jest (no compilation)
+- `nest build` asset copying only happens during production build
+- Tests never executed the actual file I/O in compiled environment
+
+**Issue 2: Service Initialization Order**
+```typescript
+// Test Environment (with Mocks) ✅
+const mockTokenProvider = {
+  getAuthProvider: jest.fn().mockReturnValue(mockAuthProvider)  // Instant
+};
+// GraphEmailService constructor calls mockTokenProvider.getAuthProvider() ✅
+
+// Production Environment (real dependencies) ❌
+1. GraphEmailService constructor → calls initializeClient()
+2. initializeClient() → calls tokenProvider.getAuthProvider()
+3. getAuthProvider() → throws "not initialized" ❌
+4. (Later) GraphTokenProviderService.onModuleInit() → initializes provider ⏰
+```
+
+**Why Tests Didn't Catch This:**
+- **Mocks hide real behavior**: Mock immediately returns, real service needs async initialization
+- **No lifecycle hooks**: Tests don't run NestJS `onModuleInit()` lifecycle
+- **Dependency isolation**: Unit tests don't test cross-service initialization timing
+
+**Problems This Caused:**
+1. **False confidence**: 100% test pass rate gave false sense of completion
+2. **Delayed discovery**: Issues only found during manual server startup
+3. **Production risk**: Could have deployed broken code if we didn't test server startup
+4. **Time waste**: 13 minutes debugging "working" code that passed all tests
+
+**Solutions Implemented:**
+
+**Fix 1: Template Path with Fallback**
+```typescript
+// Added environment-aware path resolution
+let templatePath = path.join(__dirname, '../templates/badge-notification.html');
+if (!fs.existsSync(templatePath)) {
+  // Fallback for dist/src/ structure
+  templatePath = path.join(__dirname, '../../..', 'badge-sharing/templates/badge-notification.html');
+}
+```
+
+**Fix 2: Move Initialization to Lifecycle Hook**
+```typescript
+// Before (in constructor) ❌
+constructor() {
+  if (this.isEnabled) {
+    this.initializeClient(); // Too early!
+  }
+}
+
+// After (in onModuleInit) ✅
+export class GraphEmailService implements OnModuleInit {
+  async onModuleInit() {
+    if (this.isEnabled) {
+      this.initializeClient(); // After dependencies ready
+    }
+  }
+}
+```
+
+**Prevention Strategies for Future:**
+
+**1. Add Integration/Smoke Tests**
+```typescript
+// New test type: Module initialization
+describe('MicrosoftGraphModule (Integration)', () => {
+  it('should initialize all services in correct order', async () => {
+    const module = await Test.createTestingModule({
+      imports: [MicrosoftGraphModule], // Real module, not mocks
+    }).compile();
+    
+    await module.init(); // Trigger actual lifecycle
+    
+    const emailService = module.get(GraphEmailService);
+    expect(emailService.isGraphEmailEnabled()).toBe(true);
+  });
+});
+```
+
+**2. CI/CD Build + Startup Check**
+```yaml
+# .github/workflows/ci.yml
+- name: Build application
+  run: npm run build
+  
+- name: Start server (smoke test)
+  run: |
+    npm run start &
+    sleep 5
+    curl http://localhost:3000/health
+    pkill -f "node.*dist/main"
+```
+
+**3. Test in Production Mode Locally**
+```bash
+# Before committing
+npm run build
+npm run start:prod  # Not just npm test
+# Check logs for ERROR
+```
+
+**Testing Coverage Gap Analysis:**
+
+| Test Type | What It Catches | What It Misses |
+|-----------|-----------------|----------------|
+| **Unit Tests** | ✅ Business logic<br>✅ Single function behavior<br>✅ Error handling paths | ❌ File path resolution<br>❌ Dependency init order<br>❌ Compilation artifacts<br>❌ NestJS lifecycle |
+| **Integration Tests** | ✅ Service interactions<br>✅ Database queries<br>✅ API contracts | ❌ Full lifecycle hooks<br>❌ Real file I/O<br>❌ Build process issues |
+| **E2E Tests** | ✅ Full user flows<br>✅ Real HTTP requests | ❌ Server startup errors (if E2E assumes server running) |
+| **Smoke Tests** | ✅ Server starts<br>✅ Basic health check | ❌ Complex flows<br>❌ Edge cases |
+
+**The Testing Pyramid Revised:**
+
+```
+        E2E (5-10%)
+     ↗    Smoke Tests (5%)    ← NEW LAYER
+   Integration (15-20%)
+ Unit Tests (65-75%)
+```
+
+**Key Insight**: **The gap between unit tests and E2E tests is where production bugs hide.**
+
+**New Testing Checklist for All Services:**
+
+**Before Marking Story Complete:**
+- [ ] ✅ All unit tests pass (`npm test`)
+- [ ] ✅ TypeScript compiles (`npm run build`)
+- [ ] ✅ **Server starts successfully** (`npm run start:dev`, check for ERROR logs)
+- [ ] ✅ Health endpoint responds (`curl localhost:3000/health`)
+- [ ] ✅ **Check logs for initialization sequence** (services initialize in correct order)
+- [ ] ✅ Basic smoke test (if API endpoint, hit it with curl/Postman)
+
+**Architectural Lessons:**
+
+**1. Dependency Injection ≠ Dependency Resolution**
+- DI frameworks inject dependencies, but don't guarantee initialization order
+- Services using other services must respect lifecycle hooks
+- Constructor should only assign dependencies, not use them
+
+**2. Mock Isolation is a Double-Edged Sword**
+- **Pro**: Fast, reliable, isolated tests
+- **Con**: Hides real integration problems
+- **Balance**: Use mocks for logic, real instances for integration
+
+**3. NestJS Lifecycle Hooks Matter**
+- `onModuleInit()`: After all dependencies injected
+- `onApplicationBootstrap()`: After all modules initialized
+- Don't call dependent services in constructor
+
+**Prevention Pattern for Future:**
+
+**When creating services with dependencies:**
+1. ✅ **DO**: Implement `OnModuleInit` if using other services
+2. ✅ **DO**: Move initialization logic to `onModuleInit()`
+3. ✅ **DO**: Keep constructor minimal (only DI assignment)
+4. ✅ **DO**: Add integration test for module initialization
+5. ❌ **DON'T**: Call other services in constructor
+6. ❌ **DON'T**: Assume mocked behavior = real behavior
+7. ❌ **DON'T**: Skip server startup test before committing
+
+**When working with file paths in compiled code:**
+1. ✅ **DO**: Use `nest-cli.json` assets configuration
+2. ✅ **DO**: Add fallback paths for src/ vs dist/ structure
+3. ✅ **DO**: Test path resolution in both environments
+4. ✅ **DO**: Log resolved paths during development
+5. ❌ **DON'T**: Assume `__dirname` points to same place in test vs prod
+6. ❌ **DON'T**: Hard-code paths without environment checking
+
+**Metrics Impact:**
+- **Test Coverage**: 100% unit test coverage → False security
+- **Bug Detection**: 0 bugs caught by tests → 4 bugs found at runtime
+- **Recovery Time**: 13 minutes to debug and fix
+- **Prevention Cost**: ~5 min to run `npm run build && npm run start:dev` before commit
+- **ROI**: Spend 5 min to prevent 13+ min debugging = 2.6x return
+
+**Key Takeaway:**
+> **100% unit test coverage ≠ bug-free code**. Always validate in the actual runtime environment. Mocks hide integration issues that only appear when real dependencies interact. Add a "build + startup" check to your development workflow.
+
+**Related Lessons:**
+- Lesson 1: Version Discrepancy (planning vs reality gap)
+- Lesson 8: E2E Test Stability (test environment vs production differences)
+- Pattern 2: Copy Working Code > Reading Docs (real examples reveal real issues)
+
+**Files Modified (Fixes):**
+- `email-template.service.ts`: Added fallback path resolution
+- `graph-email.service.ts`: Moved initialization to `onModuleInit()`
+- `graph-teams.service.ts`: Moved initialization to `onModuleInit()`
+- `.env`: Added missing `GRAPH_API_SCOPE` configuration
+
+**Commits:**
+- `a819786`: Story 7.2 implementation (all tests passing)
+- `7fc65df`: Runtime issue fixes (initialization order + template path)
+
+**Future Enhancements:**
+- [ ] Add smoke test suite: `npm run smoke-test` (build + start + health check)
+- [ ] CI/CD: Run build + startup validation on every PR
+- [ ] Create integration test template for all new modules
+- [ ] Document "Lifecycle Hook Best Practices" in architecture guide
+- [ ] Add pre-commit hook: `npm run build && npm run start:dev -- --timeout 10s`
+
+---
+
+### 🎯 Lesson 21: Story File Creation Process Gap - Missing BMM Workflow Step
+
+**Category:** 📋 Process, 🔄 Workflow  
+**Impact:** MEDIUM (affects knowledge management and team scaling)  
+**Sprint Discovered:** Sprint 6, during Story 7.4 planning  
+**Discovery Date:** 2026-01-30
+
+**What Happened:**
+
+During Sprint 6 Story 7.4 preparation, discovered that **all previous sprints (0-5) and Story 7.2 were developed without creating dedicated story files**. Development proceeded directly from `backlog.md` specifications, skipping the BMM `create-story` workflow step.
+
+**Timeline:**
+- **Sprint 0-5**: No story files created (e.g., no `1-2-user-authentication.md`, `6-3-verification-service.md`)
+- **Story 7.2**: Implemented directly from backlog, no `7-2-email-sharing.md` created
+- **Story 7.4**: First story to follow proper workflow → discovered the gap
+
+**Affected Sprints:**
+- Sprint 0: 5 stories (infrastructure setup)
+- Sprint 1: 7 stories (authentication)
+- Sprint 2: 4 stories (badge templates)
+- Sprint 3: 2 stories (badge issuance)
+- Sprint 5: 5 stories (verification, Open Badges 2.0)
+- **Total: ~30 stories without dedicated story files**
+
+**What Was Missing in Those Stories:**
+
+| Missing Component | Impact | Workaround That Helped |
+|-------------------|--------|------------------------|
+| **Dev Agent Record** | No implementation debug log | Git commits with story references |
+| **File List** | Unclear which files each story modified | Git history, code search |
+| **Completion Notes** | Lost development decisions and context | Retrospective.md captured some |
+| **Detailed Tasks/Subtasks** | No granular tracking | Backlog.md had acceptance criteria |
+| **Dev Notes Section** | Missing architecture constraints for future reference | Code comments like `// Story 6.3` |
+| **Change Log** | No chronological story evolution | Git commits |
+
+**Root Causes:**
+
+**1. BMM Workflow Understanding Gap:**
+- Team wasn't fully aware that `create-story` was a required workflow step
+- Assumed detailed `backlog.md` was sufficient for development
+- Dev agent didn't enforce story file requirement
+
+**2. Time Pressure:**
+- Sprint 0-5 were completed quickly (Sprint 2: 21h estimated, ~3h actual)
+- Skipped "overhead" to move faster
+- Focus on "working code" over "complete documentation"
+
+**3. Workflow Design:**
+- `dev-story` workflow has fallback logic: works with or without story file
+- No hard enforcement of story file existence
+- System allowed proceeding without blocking
+
+**4. Backlog Quality Masked the Gap:**
+- Sprint 5 backlog: 900+ lines with code examples
+- Very detailed acceptance criteria (BDD format)
+- Developers could work effectively without story files
+
+**Actual Impact Analysis:**
+
+**✅ What Went Well Despite Missing Story Files:**
+1. **Code Quality:** All stories delivered high-quality code (68 tests in Sprint 5, 29 in Story 7.2)
+2. **Retrospectives:** Comprehensive retrospectives captured key learnings (Sprint 5: 688 lines)
+3. **Git History:** Commit messages referenced stories (e.g., "Story 6.3: Add verification service")
+4. **Code Comments:** Source code annotated with story references (e.g., `// Story 4.3 - AC 3.7`)
+5. **Production Stability:** All features work correctly, no bugs from missing documentation
+
+**⚠️ What Suffered:**
+1. **Knowledge Transfer:** New team members would struggle to understand "why" decisions were made
+2. **Context Recovery:** Revisiting code 6 months later lacks implementation rationale
+3. **File Tracking:** Unclear exactly which files were created/modified per story (must infer from git)
+4. **Process Compliance:** BMM workflow incomplete, missing key tracking artifacts
+5. **Onboarding Cost:** Higher learning curve for new developers joining the project
+
+**Why This Wasn't Catastrophic:**
+
+**Mitigating Factors:**
+- Small team (1 developer + agents) - knowledge in heads, not just docs
+- Continuous development - no long gaps between sprints
+- Excellent testing - tests serve as executable documentation
+- Detailed retrospectives - captured "what happened" and "why"
+- Git discipline - meaningful commit messages with story references
+
+**When It Would Become Critical:**
+- Team grows beyond 2-3 developers
+- Developer turnover occurs
+- Project paused for >3 months
+- Need to audit what was built in each story
+- Compliance review requires change tracking
+
+**Solution Implemented:**
+
+**Starting with Story 7.4:**
+1. ✅ Created comprehensive story file: `7-4-teams-notifications.md`
+2. ✅ Used `create-story` workflow (even though manual due to no sprint-status.yaml)
+3. ✅ Story file includes:
+   - Complete tasks/subtasks breakdown (12 tasks, 48+ subtasks)
+   - Dev Notes with architecture constraints
+   - References to related documents (ADR-008, adaptive-card-specs.md)
+   - Lessons learned from Story 7.2 (Lesson 20)
+   - Dev Agent Record structure prepared
+   - File List section ready for tracking
+   - Change Log section ready
+
+**Decision for Past Stories:**
+
+**❌ NOT Retroactively Creating Story Files for Sprint 0-5**
+
+**Rationale:**
+- Work/benefit ratio too low (~35 stories × 30 min = 17.5 hours)
+- Alternative documentation already exists (retrospectives, git, code comments)
+- Code is stable and in production
+- Knowledge already captured in lessons-learned.md
+- Team continuity means knowledge retention is good
+
+**✅ Compensating Actions:**
+1. Added this lesson to prevent future gaps
+2. Comprehensive lessons-learned.md covers key decisions
+3. Retrospectives provide historical context
+4. Git history is well-maintained
+
+**Prevention Pattern for Future:**
+
+**1. Sprint Planning Checklist Update:**
+```markdown
+Before starting any story:
+- [ ] Run create-story workflow to generate story file
+- [ ] Verify story file has: Tasks, Dev Notes, References, Dev Agent Record
+- [ ] Story status = "ready-for-dev" (set by create-story)
+- [ ] Dev agent confirms story file exists before implementation
+```
+
+**2. Dev Agent Enforcement:**
+```yaml
+# dev-story workflow should HALT if:
+- Story file not found
+- Story status != "ready-for-dev"
+- Dev Agent Record sections missing
+
+# Prompt user:
+"Story file missing. Run create-story workflow first? (y/n)"
+```
+
+**3. Code Review Gate:**
+```markdown
+Before marking story complete:
+- [ ] Story file exists
+- [ ] File List updated with all changed files
+- [ ] Completion Notes filled in Dev Agent Record
+- [ ] Change Log has entry for this completion
+```
+
+**Key Takeaway:**
+
+> **Process shortcuts work short-term but create knowledge debt.** Even with excellent code quality and testing, missing the story file creation step loses valuable development context. For solo/small teams, retrospectives can compensate. For scaling teams, story files are essential for knowledge transfer and onboarding.
+
+**Metrics:**
+
+| Metric | Before (Sprint 0-5) | After (Story 7.4+) |
+|--------|---------------------|---------------------|
+| Story files created | 0/30 (0%) | 1/1 (100%) target |
+| Dev Agent Record | None | Complete structure |
+| File List tracking | Git only | In story file + git |
+| Implementation notes | Retrospective only | Per-story + retrospective |
+| Onboarding time | ~2-3 days (code reading) | ~1 day (story files + code) estimate |
+
+**Related Lessons:**
+- Lesson 11: Documentation Organization (importance of structure)
+- Lesson 15: SSOT Requires Enforcement (process compliance)
+- Lesson 19: Agent Activation Safety Net (proactive checks)
+- Lesson 20: Testing Coverage Gap (unit tests ≠ complete validation)
+
+**Files Referenced:**
+- [Sprint 6 Backlog](../../sprints/sprint-6/backlog.md) - Used instead of story files
+- [Sprint 5 Retrospective](../../sprints/sprint-5/retrospective.md) - Partial context recovery
+- [Story 7.4 Story File](../../sprints/sprint-6/7-4-teams-notifications.md) - First proper story file
+- [BMM Create-Story Workflow](/_bmad/bmm/workflows/4-implementation/create-story/workflow.yaml)
+- [BMM Dev-Story Workflow](/_bmad/bmm/workflows/4-implementation/dev-story/workflow.yaml)
+
+**Action Items:**
+- [x] Document this gap in lessons-learned.md
+- [x] Create Story 7.4 with complete story file
+- [ ] Update sprint-planning checklist with story file requirement
+- [ ] Add enforcement logic to dev-story workflow (suggest to BMad framework)
+- [ ] Review with LegendZhu in Sprint 6 retrospective
+- [ ] Consider if Story 7.2 needs retroactive story file (decision: NO, too much effort)
 
 ---
 
