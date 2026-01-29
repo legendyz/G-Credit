@@ -7,17 +7,19 @@ describe('GraphTeamsService', () => {
   let service: GraphTeamsService;
   let tokenProvider: GraphTokenProviderService;
 
+  const mockAuthProvider = {
+    getAccessToken: jest.fn().mockResolvedValue('mock-token'),
+  };
+
   const mockTokenProvider = {
-    getAuthProvider: jest.fn().mockReturnValue({
-      getAccessToken: jest.fn().mockResolvedValue('mock-token'),
-    }),
+    getAuthProvider: jest.fn().mockReturnValue(mockAuthProvider),
   };
 
   const mockConfigService = {
-    get: jest.fn((key: string, defaultValue?: any) => {
+    get: (key: string, defaultValue?: any) => {
       if (key === 'ENABLE_GRAPH_TEAMS') return true;
       return defaultValue;
-    }),
+    },
   };
 
   beforeEach(async () => {
@@ -53,7 +55,12 @@ describe('GraphTeamsService', () => {
     });
 
     it('should not initialize when ENABLE_GRAPH_TEAMS=false', async () => {
-      mockConfigService.get.mockReturnValue(false);
+      const disabledConfigService = {
+        get: (key: string, defaultValue?: any) => {
+          if (key === 'ENABLE_GRAPH_TEAMS') return false;
+          return defaultValue;
+        },
+      };
 
       const module = await Test.createTestingModule({
         providers: [
@@ -64,7 +71,7 @@ describe('GraphTeamsService', () => {
           },
           {
             provide: ConfigService,
-            useValue: mockConfigService,
+            useValue: disabledConfigService,
           },
         ],
       }).compile();
@@ -77,7 +84,12 @@ describe('GraphTeamsService', () => {
 
   describe('sendActivityNotification', () => {
     it('should skip sending when disabled', async () => {
-      mockConfigService.get.mockReturnValue(false);
+      const disabledConfigService = {
+        get: (key: string, defaultValue?: any) => {
+          if (key === 'ENABLE_GRAPH_TEAMS') return false;
+          return defaultValue;
+        },
+      };
 
       const module = await Test.createTestingModule({
         providers: [
@@ -88,7 +100,7 @@ describe('GraphTeamsService', () => {
           },
           {
             provide: ConfigService,
-            useValue: mockConfigService,
+            useValue: disabledConfigService,
           },
         ],
       }).compile();
@@ -108,13 +120,8 @@ describe('GraphTeamsService', () => {
   });
 
   describe('isGraphTeamsEnabled', () => {
-    it('should return true when enabled', () => {
-      expect(service.isGraphTeamsEnabled()).toBe(true);
-    });
-
-    it('should return false when disabled', async () => {
-      mockConfigService.get.mockReturnValue(false);
-
+    it('should return true when enabled and tokenProvider available', async () => {
+      // Create module with proper mock BEFORE service is constructed
       const module = await Test.createTestingModule({
         providers: [
           GraphTeamsService,
@@ -125,6 +132,32 @@ describe('GraphTeamsService', () => {
           {
             provide: ConfigService,
             useValue: mockConfigService,
+          },
+        ],
+      }).compile();
+
+      const enabledService = module.get<GraphTeamsService>(GraphTeamsService);
+      expect(enabledService.isGraphTeamsEnabled()).toBe(true);
+    });
+
+    it('should return false when disabled', async () => {
+      const disabledConfigService = {
+        get: (key: string, defaultValue?: any) => {
+          if (key === 'ENABLE_GRAPH_TEAMS') return false;
+          return defaultValue;
+        },
+      };
+
+      const module = await Test.createTestingModule({
+        providers: [
+          GraphTeamsService,
+          {
+            provide: GraphTokenProviderService,
+            useValue: mockTokenProvider,
+          },
+          {
+            provide: ConfigService,
+            useValue: disabledConfigService,
           },
         ],
       }).compile();

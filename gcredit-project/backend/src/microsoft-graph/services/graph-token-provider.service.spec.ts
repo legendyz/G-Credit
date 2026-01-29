@@ -11,7 +11,7 @@ describe('GraphTokenProviderService', () => {
   let configService: ConfigService;
 
   const mockConfigService = {
-    get: jest.fn((key: string, defaultValue?: string) => {
+    get: (key: string, defaultValue?: string) => {
       const config = {
         AZURE_TENANT_ID: 'test-tenant-id',
         AZURE_CLIENT_ID: 'test-client-id',
@@ -19,7 +19,7 @@ describe('GraphTokenProviderService', () => {
         GRAPH_API_SCOPE: 'https://graph.microsoft.com/.default',
       };
       return config[key] || defaultValue;
-    }),
+    },
   };
 
   beforeEach(async () => {
@@ -101,8 +101,48 @@ describe('GraphTokenProviderService', () => {
 
   describe('getAuthProvider', () => {
     it('should return auth provider after initialization', async () => {
-      await service.onModuleInit();
-      const authProvider = service.getAuthProvider();
+      // Mock ClientSecretCredential before creating service
+      const mockCredential = {
+        getToken: jest.fn().mockResolvedValue({
+          token: 'mock-token',
+          expiresOnTimestamp: Date.now() + 3600000,
+        }),
+      };
+
+      (ClientSecretCredential as jest.Mock).mockImplementation(
+        () => mockCredential,
+      );
+
+      // Create completely fresh config for this test
+      const freshConfigService = {
+        get: (key: string, defaultValue?: string) => {
+          const config = {
+            AZURE_TENANT_ID: 'test-tenant-id',
+            AZURE_CLIENT_ID: 'test-client-id',
+            AZURE_CLIENT_SECRET: 'test-client-secret',
+            GRAPH_API_SCOPE: 'https://graph.microsoft.com/.default',
+          };
+          return config[key] || defaultValue;
+        },
+      };
+
+      // Create fresh service instance
+      const freshModule = await Test.createTestingModule({
+        providers: [
+          GraphTokenProviderService,
+          {
+            provide: ConfigService,
+            useValue: freshConfigService,
+          },
+        ],
+      }).compile();
+
+      const freshService = freshModule.get<GraphTokenProviderService>(
+        GraphTokenProviderService,
+      );
+
+      await freshService.onModuleInit();
+      const authProvider = freshService.getAuthProvider();
       expect(authProvider).toBeDefined();
     });
 
@@ -126,12 +166,44 @@ describe('GraphTokenProviderService', () => {
         expiresOnTimestamp: Date.now() + 3600000,
       });
 
-      (ClientSecretCredential as jest.Mock).mockImplementation(() => ({
+      const mockCredential = {
         getToken: mockGetToken,
-      }));
+      };
 
-      await service.onModuleInit();
-      const token = await service.getAccessToken();
+      (ClientSecretCredential as jest.Mock).mockImplementation(
+        () => mockCredential,
+      );
+
+      // Create completely fresh config for this test
+      const freshConfigService = {
+        get: (key: string, defaultValue?: string) => {
+          const config = {
+            AZURE_TENANT_ID: 'test-tenant-id',
+            AZURE_CLIENT_ID: 'test-client-id',
+            AZURE_CLIENT_SECRET: 'test-client-secret',
+            GRAPH_API_SCOPE: 'https://graph.microsoft.com/.default',
+          };
+          return config[key] || defaultValue;
+        },
+      };
+
+      // Create fresh service instance for this test
+      const freshModule = await Test.createTestingModule({
+        providers: [
+          GraphTokenProviderService,
+          {
+            provide: ConfigService,
+            useValue: freshConfigService,
+          },
+        ],
+      }).compile();
+
+      const freshService = freshModule.get<GraphTokenProviderService>(
+        GraphTokenProviderService,
+      );
+
+      await freshService.onModuleInit();
+      const token = await freshService.getAccessToken();
 
       expect(mockGetToken).toHaveBeenCalledWith(
         'https://graph.microsoft.com/.default',

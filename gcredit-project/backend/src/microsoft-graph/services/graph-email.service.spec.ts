@@ -7,17 +7,19 @@ describe('GraphEmailService', () => {
   let service: GraphEmailService;
   let tokenProvider: GraphTokenProviderService;
 
+  const mockAuthProvider = {
+    getAccessToken: jest.fn().mockResolvedValue('mock-token'),
+  };
+
   const mockTokenProvider = {
-    getAuthProvider: jest.fn().mockReturnValue({
-      getAccessToken: jest.fn().mockResolvedValue('mock-token'),
-    }),
+    getAuthProvider: jest.fn().mockReturnValue(mockAuthProvider),
   };
 
   const mockConfigService = {
-    get: jest.fn((key: string, defaultValue?: any) => {
+    get: (key: string, defaultValue?: any) => {
       if (key === 'ENABLE_GRAPH_EMAIL') return true;
       return defaultValue;
-    }),
+    },
   };
 
   const mockGraphClient = {
@@ -65,7 +67,12 @@ describe('GraphEmailService', () => {
     });
 
     it('should not initialize when ENABLE_GRAPH_EMAIL=false', async () => {
-      mockConfigService.get.mockReturnValue(false);
+      const disabledConfigService = {
+        get: (key: string, defaultValue?: any) => {
+          if (key === 'ENABLE_GRAPH_EMAIL') return false;
+          return defaultValue;
+        },
+      };
 
       const module = await Test.createTestingModule({
         providers: [
@@ -76,7 +83,7 @@ describe('GraphEmailService', () => {
           },
           {
             provide: ConfigService,
-            useValue: mockConfigService,
+            useValue: disabledConfigService,
           },
         ],
       }).compile();
@@ -88,7 +95,12 @@ describe('GraphEmailService', () => {
 
   describe('sendEmail', () => {
     it('should skip sending when disabled', async () => {
-      mockConfigService.get.mockReturnValue(false);
+      const disabledConfigService = {
+        get: (key: string, defaultValue?: any) => {
+          if (key === 'ENABLE_GRAPH_EMAIL') return false;
+          return defaultValue;
+        },
+      };
 
       const module = await Test.createTestingModule({
         providers: [
@@ -99,7 +111,7 @@ describe('GraphEmailService', () => {
           },
           {
             provide: ConfigService,
-            useValue: mockConfigService,
+            useValue: disabledConfigService,
           },
         ],
       }).compile();
@@ -118,13 +130,8 @@ describe('GraphEmailService', () => {
   });
 
   describe('isGraphEmailEnabled', () => {
-    it('should return true when enabled', () => {
-      expect(service.isGraphEmailEnabled()).toBe(true);
-    });
-
-    it('should return false when disabled', async () => {
-      mockConfigService.get.mockReturnValue(false);
-
+    it('should return true when enabled and tokenProvider available', async () => {
+      // Create module with proper mock BEFORE service is constructed
       const module = await Test.createTestingModule({
         providers: [
           GraphEmailService,
@@ -135,6 +142,32 @@ describe('GraphEmailService', () => {
           {
             provide: ConfigService,
             useValue: mockConfigService,
+          },
+        ],
+      }).compile();
+
+      const enabledService = module.get<GraphEmailService>(GraphEmailService);
+      expect(enabledService.isGraphEmailEnabled()).toBe(true);
+    });
+
+    it('should return false when disabled', async () => {
+      const disabledConfigService = {
+        get: (key: string, defaultValue?: any) => {
+          if (key === 'ENABLE_GRAPH_EMAIL') return false;
+          return defaultValue;
+        },
+      };
+
+      const module = await Test.createTestingModule({
+        providers: [
+          GraphEmailService,
+          {
+            provide: GraphTokenProviderService,
+            useValue: mockTokenProvider,
+          },
+          {
+            provide: ConfigService,
+            useValue: disabledConfigService,
           },
         ],
       }).compile();
