@@ -6,6 +6,7 @@ import { AssertionGeneratorService } from './services/assertion-generator.servic
 import { BadgeNotificationService } from './services/badge-notification.service';
 import { CSVParserService } from './services/csv-parser.service';
 import { MilestonesService } from '../milestones/milestones.service';
+import { TeamsBadgeNotificationService } from '../microsoft-graph/teams/teams-badge-notification.service';
 import { WalletQueryDto } from './dto/wallet-query.dto';
 import { BadgeStatus } from '@prisma/client';
 
@@ -45,6 +46,10 @@ describe('BadgeIssuanceService - Wallet (Story 4.1)', () => {
     deleteBadgeImage: jest.fn(),
   };
 
+  const mockTeamsNotificationService = {
+    sendBadgeIssuanceNotification: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -72,6 +77,10 @@ describe('BadgeIssuanceService - Wallet (Story 4.1)', () => {
         {
           provide: StorageService,
           useValue: mockStorageService,
+        },
+        {
+          provide: TeamsBadgeNotificationService,
+          useValue: mockTeamsNotificationService,
         },
       ],
     }).compile();

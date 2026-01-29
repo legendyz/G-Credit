@@ -6,6 +6,7 @@ import { AssertionGeneratorService } from './services/assertion-generator.servic
 import { BadgeNotificationService } from './services/badge-notification.service';
 import { CSVParserService } from './services/csv-parser.service';
 import { MilestonesService } from '../milestones/milestones.service';
+import { TeamsBadgeNotificationService } from '../microsoft-graph/teams/teams-badge-notification.service';
 import { BadgeStatus } from '@prisma/client';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 
@@ -31,6 +32,9 @@ describe('BadgeIssuanceService - Baked Badge (Story 6.4)', () => {
   const mockNotificationService = {};
   const mockCSVParser = {};
   const mockMilestonesService = {};
+  const mockTeamsNotificationService = {
+    sendBadgeIssuanceNotification: jest.fn().mockResolvedValue(undefined),
+  };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -44,6 +48,7 @@ describe('BadgeIssuanceService - Baked Badge (Story 6.4)', () => {
         { provide: BadgeNotificationService, useValue: mockNotificationService },
         { provide: CSVParserService, useValue: mockCSVParser },
         { provide: MilestonesService, useValue: mockMilestonesService },
+        { provide: TeamsBadgeNotificationService, useValue: mockTeamsNotificationService },
       ],
     }).compile();
 

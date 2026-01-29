@@ -4,6 +4,7 @@ import { StorageService } from '../common/storage.service';
 import { AssertionGeneratorService } from './services/assertion-generator.service';
 import { BadgeNotificationService } from './services/badge-notification.service';
 import { CSVParserService } from './services/csv-parser.service';
+import { TeamsBadgeNotificationService } from '../microsoft-graph/teams/teams-badge-notification.service';
 import { IssueBadgeDto } from './dto/issue-badge.dto';
 import { QueryBadgeDto } from './dto/query-badge.dto';
 import { BulkIssuanceResult } from './dto/bulk-issue-badges.dto';
@@ -25,6 +26,7 @@ export class BadgeIssuanceService {
     private csvParser: CSVParserService,
     private milestonesService: MilestonesService,
     private storageService: StorageService,
+    private teamsNotificationService: TeamsBadgeNotificationService,
   ) {}
 
   /**
@@ -129,6 +131,16 @@ export class BadgeIssuanceService {
       badgeImageUrl: template.imageUrl || '',
       claimUrl: this.assertionGenerator.getClaimUrl(badge.claimToken!),
     });
+
+    // 10.5. Send Teams notification (non-blocking)
+    // Story 7.4: Teams notifications integration
+    this.teamsNotificationService
+      .sendBadgeIssuanceNotification(badge.id, recipient.id)
+      .catch(err => {
+        this.logger.warn(
+          `Teams notification failed for badge ${badge.id}: ${err.message}`,
+        );
+      });
 
     // 11. Check milestones (non-blocking)
     this.milestonesService.checkMilestones(dto.recipientId).catch(err => {
