@@ -4,15 +4,15 @@
 
 ## 📊 Project Status
 
-**Current Sprint:** ✅ Sprint 5 Complete (v0.5.0) → 🟡 Sprint 6 Planning Complete (Awaiting Kickoff)  
+**Current Sprint:** 🟡 Sprint 6 In Progress (60% complete, 3/5 stories done, Epic 7 - Badge Sharing & Social Proof)  
 **Sprint 5:** ✅ Complete (100%, 30h/28h, 2026-01-29, Badge Verification & Open Badges 2.0)  
 **Sprint 4:** ✅ Complete (100%, 48h/48h, 2026-01-28, Employee Badge Wallet)  
 **Sprint 3:** ✅ Complete (100%, 13h/12.5h, 2026-01-28, Badge Issuance)  
 **Sprint 2:** ✅ Complete (100%, 29h/32h, 2026-01-26, Badge Templates)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, 2026-01-25, Authentication)  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, 2026-01-24, Infrastructure)  
-**Version:** v0.5.0 (Badge Verification & Open Badges 2.0)  
-**Sprint 6:** 🟡 Planning Complete (Epic 7 - Badge Sharing & Social Proof, 56-76h estimated)  
+**Version:** v0.6.0-dev (Sprint 6 development branch: sprint-6/epic-7-badge-sharing)  
+**Sprint 6:** 🟡 60% Complete (Stories 7.1✅, 7.2✅, 7.4✅ | 7.3⏳, 7.5⏳ | 194 tests passing, 100%)  
 **License:** MIT
 
 ## 🚀 Tech Stack

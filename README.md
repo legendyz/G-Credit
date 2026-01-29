@@ -1,6 +1,6 @@
 # G-Credit - Enterprise Internal Digital Credentialing System
 
-[![Status](https://img.shields.io/badge/Status-Sprint%206%20Planning%20Complete-yellow)]()
+[![Status](https://img.shields.io/badge/Status-Sprint%206%20In%20Progress%20(60%25)-orange)]()
 [![Phase](https://img.shields.io/badge/Phase-MVP%20Development-blue)]()
 [![Sprint0](https://img.shields.io/badge/Sprint%200-Complete%20(100%25)-success)]()
 [![Sprint1](https://img.shields.io/badge/Sprint%201-Complete%20(100%25)-brightgreen)]()
@@ -8,9 +8,9 @@
 [![Sprint3](https://img.shields.io/badge/Sprint%203-Complete%20(100%25)-brightgreen)]()
 [![Sprint4](https://img.shields.io/badge/Sprint%204-Complete%20(100%25)-brightgreen)]()
 [![Sprint5](https://img.shields.io/badge/Sprint%205-Complete%20(100%25)-brightgreen)]()
-[![Sprint6](https://img.shields.io/badge/Sprint%206-Planning%20Complete-yellow)]()
-[![Version](https://img.shields.io/badge/Version-v0.5.0-blue)]()
-[![Tests](https://img.shields.io/badge/Tests-157%20Total-success)]()
+[![Sprint6](https://img.shields.io/badge/Sprint%206-In%20Progress%20(60%25)-orange)]()
+[![Version](https://img.shields.io/badge/Version-v0.6.0--dev-blue)]()
+[![Tests](https://img.shields.io/badge/Tests-194%20Total-success)]()
 
 > **G-Credit** is an enterprise-grade internal digital badging platform designed to securely recognize, verify, and analyze employee skills and achievements. Compliant with Open Badges 2.0 standards, it aims to replace fragmented certificate management and reduce dependency on external platforms.
 
@@ -21,16 +21,16 @@
 **Project Name:** G-Credit  
 **Project Type:** Enterprise Internal Platform (Greenfield Development)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
-**Current Status:** 🟡 Sprint 6 Planning Complete - Awaiting Kickoff (Epic 7 - Badge Sharing & Social Proof)  
+**Current Status:** 🟡 Sprint 6 In Progress (60% complete - Epic 7: Badge Sharing & Social Proof)  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h estimated, 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h estimated, 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, 29h/32h estimated, 2026-01-26)  
 **Sprint 3:** ✅ Complete (100%, 13h/12.5h estimated, 2026-01-28, v0.3.0)  
 **Sprint 4:** ✅ Complete (100%, 48h estimated, 2026-01-28, v0.4.0)  
 **Sprint 5:** ✅ Complete (100%, 30h/28h estimated, 2026-01-29, v0.5.0)  
-**Sprint 6:** 🟡 Planning Complete (56-76h estimated, 3,781 lines documentation, Epic 7)  
-**Version:** v0.5.0 (Released 2026-01-29)  
-**Last Updated:** 2026-01-29
+**Sprint 6:** 🟡 In Progress (60% - Stories 7.1✅ Graph, 7.2✅ Email, 7.4✅ Teams done; 7.3⏳ Widget, 7.5⏳ Analytics pending)  
+**Version:** v0.6.0-dev (Sprint 6 development in progress, 194 tests passing)  
+**Last Updated:** 2026-01-30
 
 ### 🎯 Core Objectives
 
