@@ -67,6 +67,7 @@ export class GraphEmailService {
    * @param toEmails - Array of recipient email addresses
    * @param subject - Email subject
    * @param htmlBody - HTML email body
+   * @param textBody - Optional plain text email body (fallback for text-only clients)
    * @param retries - Number of retries remaining (default: 3)
    * @returns Promise resolving when email sent successfully
    */
@@ -75,6 +76,7 @@ export class GraphEmailService {
     toEmails: string[],
     subject: string,
     htmlBody: string,
+    textBody?: string,
     retries = 3,
   ): Promise<void> {
     if (!this.isEnabled) {
@@ -119,7 +121,7 @@ export class GraphEmailService {
         );
 
         await this.sleep(retryAfter * 1000);
-        return this.sendEmail(fromEmail, toEmails, subject, htmlBody, retries - 1);
+        return this.sendEmail(fromEmail, toEmails, subject, htmlBody, textBody, retries - 1);
       }
 
       this.logger.error('❌ Failed to send email', error);
