@@ -22,13 +22,14 @@ export class GraphTeamsService implements OnModuleInit {
     private readonly tokenProvider: GraphTokenProviderService,
     private readonly configService: ConfigService,
   ) {
-    this.isEnabled = this.configService.get<boolean>(
-      'ENABLE_GRAPH_TEAMS',
-      false,
-    );
+    // Task 7: Use new ENABLE_TEAMS_NOTIFICATIONS config
+    this.isEnabled = this.configService.get<string>(
+      'ENABLE_TEAMS_NOTIFICATIONS',
+      'false',
+    ) === 'true';
 
     if (!this.isEnabled) {
-      this.logger.warn('⚠️ Graph Teams disabled (ENABLE_GRAPH_TEAMS=false)');
+      this.logger.warn('⚠️ Teams notifications disabled (ENABLE_TEAMS_NOTIFICATIONS=false)');
     }
   }
 

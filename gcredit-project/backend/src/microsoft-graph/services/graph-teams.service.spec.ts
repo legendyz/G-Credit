@@ -17,7 +17,8 @@ describe('GraphTeamsService', () => {
 
   const mockConfigService = {
     get: (key: string, defaultValue?: any) => {
-      if (key === 'ENABLE_GRAPH_TEAMS') return true;
+      // Task 7: Updated to use ENABLE_TEAMS_NOTIFICATIONS
+      if (key === 'ENABLE_TEAMS_NOTIFICATIONS') return 'true';
       return defaultValue;
     },
   };
@@ -50,14 +51,14 @@ describe('GraphTeamsService', () => {
   });
 
   describe('initialization', () => {
-    it('should initialize when ENABLE_GRAPH_TEAMS=true', () => {
+    it('should initialize when ENABLE_TEAMS_NOTIFICATIONS=true', () => {
       expect(service.isGraphTeamsEnabled()).toBe(true);
     });
 
-    it('should not initialize when ENABLE_GRAPH_TEAMS=false', async () => {
+    it('should not initialize when ENABLE_TEAMS_NOTIFICATIONS=false', async () => {
       const disabledConfigService = {
         get: (key: string, defaultValue?: any) => {
-          if (key === 'ENABLE_GRAPH_TEAMS') return false;
+          if (key === 'ENABLE_TEAMS_NOTIFICATIONS') return 'false';
           return defaultValue;
         },
       };
@@ -86,7 +87,7 @@ describe('GraphTeamsService', () => {
     it('should skip sending when disabled', async () => {
       const disabledConfigService = {
         get: (key: string, defaultValue?: any) => {
-          if (key === 'ENABLE_GRAPH_TEAMS') return false;
+          if (key === 'ENABLE_TEAMS_NOTIFICATIONS') return 'false';
           return defaultValue;
         },
       };
@@ -143,7 +144,7 @@ describe('GraphTeamsService', () => {
     it('should return false when disabled', async () => {
       const disabledConfigService = {
         get: (key: string, defaultValue?: any) => {
-          if (key === 'ENABLE_GRAPH_TEAMS') return false;
+          if (key === 'ENABLE_TEAMS_NOTIFICATIONS') return 'false';
           return defaultValue;
         },
       };
