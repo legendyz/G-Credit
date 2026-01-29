@@ -34,21 +34,30 @@ export class EmailTemplateService {
   private loadTemplates(): void {
     try {
       // Load HTML template
-      const templatePath = path.join(
-        __dirname,
-        '..',
-        'templates',
-        'badge-notification.html',
-      );
+      // NestJS copies assets from src/ to dist/ preserving relative paths
+      // Compiled code is in: dist/src/badge-sharing/services
+      // Assets are copied to: dist/badge-sharing/templates
+      // So we need to go up to dist/ and then down to badge-sharing/templates
+      let templatePath = path.join(__dirname, '../templates/badge-notification.html');
+      
+      // Fallback: if running from dist/src/badge-sharing/services, go up to dist root
+      if (!fs.existsSync(templatePath)) {
+        templatePath = path.join(__dirname, '../../..', 'badge-sharing/templates/badge-notification.html');
+      }
+      
+      this.logger.debug(`Loading template from: ${templatePath}`);
+      
       const templateSource = fs.readFileSync(templatePath, 'utf-8');
       this.template = Handlebars.compile(templateSource);
 
       // Load plain text template
       this.textTemplate = this.createTextTemplate();
 
-      this.logger.log('Email templates loaded successfully');
+      this.logger.log('✅ Email templates loaded successfully');
     } catch (error) {
-      this.logger.error('Failed to load email templates', error);
+      this.logger.error(`❌ Failed to load email templates`, error);
+      this.logger.error(`__dirname: ${__dirname}`);
+      this.logger.error(`Attempted paths: ${path.join(__dirname, '../templates/badge-notification.html')}, ${path.join(__dirname, '../../..', 'badge-sharing/templates/badge-notification.html')}`);
       throw error;
     }
   }

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Client } from '@microsoft/microsoft-graph-client';
 import { GraphTokenProviderService } from './graph-token-provider.service';
@@ -13,7 +13,7 @@ import { GraphTokenProviderService } from './graph-token-provider.service';
  * @see Sprint 6 Story 7.4: Microsoft Teams Notifications
  */
 @Injectable()
-export class GraphTeamsService {
+export class GraphTeamsService implements OnModuleInit {
   private readonly logger = new Logger(GraphTeamsService.name);
   private graphClient: Client;
   private isEnabled: boolean;
@@ -27,15 +27,22 @@ export class GraphTeamsService {
       false,
     );
 
+    if (!this.isEnabled) {
+      this.logger.warn('⚠️ Graph Teams disabled (ENABLE_GRAPH_TEAMS=false)');
+    }
+  }
+
+  /**
+   * Initialize Graph client after all dependencies are ready
+   */
+  async onModuleInit() {
     if (this.isEnabled) {
       try {
         this.initializeClient();
       } catch (error) {
-        this.logger.error('❌ Failed during constructor initialization', error);
+        this.logger.error('❌ Failed to initialize Graph Teams on module init', error);
         this.isEnabled = false;
       }
-    } else {
-      this.logger.warn('⚠️ Graph Teams disabled (ENABLE_GRAPH_TEAMS=false)');
     }
   }
 

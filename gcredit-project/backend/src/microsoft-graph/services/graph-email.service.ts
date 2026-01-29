@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Client } from '@microsoft/microsoft-graph-client';
 import { GraphTokenProviderService } from './graph-token-provider.service';
@@ -13,7 +13,7 @@ import { GraphTokenProviderService } from './graph-token-provider.service';
  * @see Sprint 6 Story 7.2: Email Badge Sharing
  */
 @Injectable()
-export class GraphEmailService {
+export class GraphEmailService implements OnModuleInit {
   private readonly logger = new Logger(GraphEmailService.name);
   private graphClient: Client;
   private isEnabled: boolean;
@@ -27,15 +27,22 @@ export class GraphEmailService {
       false,
     );
 
+    if (!this.isEnabled) {
+      this.logger.warn('⚠️ Graph Email disabled (ENABLE_GRAPH_EMAIL=false)');
+    }
+  }
+
+  /**
+   * Initialize Graph client after all dependencies are ready
+   */
+  async onModuleInit() {
     if (this.isEnabled) {
       try {
         this.initializeClient();
       } catch (error) {
-        this.logger.error('❌ Failed during constructor initialization', error);
+        this.logger.error('❌ Failed to initialize Graph Email on module init', error);
         this.isEnabled = false;
       }
-    } else {
-      this.logger.warn('⚠️ Graph Email disabled (ENABLE_GRAPH_EMAIL=false)');
     }
   }
 
