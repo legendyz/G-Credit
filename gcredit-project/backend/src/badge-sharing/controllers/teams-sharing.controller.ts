@@ -93,11 +93,8 @@ export class TeamsSharingController {
     const badge = await this.prisma.badge.findUnique({
       where: { id: badgeId },
       include: {
-        badgeTemplate: {
-          include: {
-            issuer: true,
-          },
-        },
+        template: true,
+        issuer: true,
       },
     });
 
@@ -119,17 +116,10 @@ export class TeamsSharingController {
     }
 
     // 3. Check if user is badge recipient or issuer
-    const isIssuer = badge.badgeTemplate.issuer.id === userId;
+    const isIssuer = badge.issuerId === userId;
 
-    // Check if user is recipient (has credential for this badge)
-    const credential = await this.prisma.credential.findFirst({
-      where: {
-        badgeId,
-        userId,
-      },
-    });
-
-    const isRecipient = !!credential;
+    // Check if user is recipient
+    const isRecipient = badge.recipientId === userId;
 
     if (!isRecipient && !isIssuer) {
       throw new UnauthorizedException(

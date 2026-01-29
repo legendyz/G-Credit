@@ -54,15 +54,12 @@ export class TeamsBadgeNotificationService {
       `📢 Preparing Teams notification for badge ${badgeId} → user ${recipientUserId}`,
     );
 
-    // 1. Fetch badge data with issuer
+    // 1. Fetch badge data with template and issuer
     const badge = await this.prisma.badge.findUnique({
       where: { id: badgeId },
       include: {
-        badgeTemplate: {
-          include: {
-            issuer: true,
-          },
-        },
+        template: true,
+        issuer: true,
       },
     });
 
@@ -79,37 +76,22 @@ export class TeamsBadgeNotificationService {
       throw new Error(`Recipient user not found: ${recipientUserId}`);
     }
 
-    // 3. Fetch credential to get issue date and claim token
-    const credential = await this.prisma.credential.findFirst({
-      where: {
-        badgeId,
-        userId: recipientUserId,
-      },
-      orderBy: {
-        issuedAt: 'desc',
-      },
-    });
-
-    if (!credential) {
-      throw new Error('Credential not found for badge and user');
-    }
-
-    // 4. Build Adaptive Card data
+    // 3. Build Adaptive Card data
     const platformUrl = this.configService.get<string>('PLATFORM_URL');
     const badgeWalletUrl = `${platformUrl}/wallet`;
 
     const cardData: BadgeNotificationCardData = {
-      badgeImageUrl: badge.imageUrl,
-      badgeName: badge.name,
-      issuerName: badge.badgeTemplate.issuer.name,
-      recipientName: recipient.name,
-      issueDate: BadgeNotificationCardBuilder.formatDate(credential.issuedAt),
+      badgeImageUrl: badge.template.imageUrl || 'https://default-badge-image.png',
+      badgeName: badge.template.name,
+      issuerName: this.getFullName(badge.issuer),
+      recipientName: this.getFullName(recipient),
+      issueDate: BadgeNotificationCardBuilder.formatDate(badge.issuedAt),
       badgeId: badge.id,
-      badgeDescription: badge.description,
+      badgeDescription: badge.template.description || '',
       badgeWalletUrl,
       claimUrl:
-        credential.status === 'PENDING'
-          ? `${platformUrl}/claim?token=${credential.claimToken}`
+        badge.status === 'PENDING'
+          ? `${platformUrl}/claim?token=${badge.claimToken}`
           : undefined,
     };
 
@@ -118,10 +100,10 @@ export class TeamsBadgeNotificationService {
 
     // 6. Send Teams notification
     const activityType = 'badgeEarned';
-    const previewText = `🎉 You earned the "${badge.name}" badge!`;
+    const previewText = `🎉 You earned the "${badge.template.name}" badge!`;
     const templateParameters = {
-      badgeName: badge.name,
-      issuerName: badge.badgeTemplate.issuer.name,
+      badgeName: badge.template.name,
+      issuerName: this.getFullName(badge.issuer),
     };
 
     try {
@@ -143,5 +125,15 @@ export class TeamsBadgeNotificationService {
       );
       throw error;
     }
+  }
+
+  /**
+   * Helper to get full name from user object
+   */
+  private getFullName(user: { firstName: string | null; lastName: string | null; email: string }): string {
+    const parts = [];
+    if (user.firstName) parts.push(user.firstName);
+    if (user.lastName) parts.push(user.lastName);
+    return parts.length > 0 ? parts.join(' ') : user.email;
   }
 }

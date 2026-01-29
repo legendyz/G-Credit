@@ -45,28 +45,30 @@ describe('TeamsBadgeNotificationService - Story 7.4', () => {
 
   const mockBadgeData = {
     id: 'badge-123',
-    name: 'Full-Stack Developer Certification',
-    description: 'This badge recognizes proficiency in full-stack development.',
-    imageUrl: 'https://storage.azure.com/badges/test-badge.png',
-    badgeTemplate: {
-      issuer: {
-        id: 'issuer-456',
-        name: 'Acme Tech University',
-      },
+    status: 'PENDING',
+    issuedAt: new Date('2026-01-30T12:00:00Z'),
+    claimToken: 'claim-token-xyz',
+    recipientId: 'user-789',
+    issuerId: 'issuer-456',
+    template: {
+      id: 'template-001',
+      name: 'Full-Stack Developer Certification',
+      description: 'This badge recognizes proficiency in full-stack development.',
+      imageUrl: 'https://storage.azure.com/badges/test-badge.png',
+    },
+    issuer: {
+      id: 'issuer-456',
+      firstName: 'Acme',
+      lastName: 'Tech University',
+      email: 'issuer@example.com',
     },
   };
 
   const mockRecipient = {
     id: 'user-789',
-    name: 'John Smith',
+    firstName: 'John',
+    lastName: 'Smith',
     email: 'john.smith@example.com',
-  };
-
-  const mockCredential = {
-    id: 'credential-101',
-    issuedAt: new Date('2026-01-30T12:00:00Z'),
-    status: 'PENDING',
-    claimToken: 'claim-token-xyz',
   };
 
   beforeEach(async () => {
@@ -103,20 +105,15 @@ describe('TeamsBadgeNotificationService - Story 7.4', () => {
     it('should send Teams notification with Adaptive Card', async () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeData);
       mockPrismaService.user.findUnique.mockResolvedValue(mockRecipient);
-      mockPrismaService.credential.findFirst.mockResolvedValue(mockCredential);
 
       await service.sendBadgeIssuanceNotification('badge-123', 'user-789');
 
       expect(mockPrismaService.badge.findUnique).toHaveBeenCalledWith({
         where: { id: 'badge-123' },
-        include: { badgeTemplate: { include: { issuer: true } } },
+        include: { template: true, issuer: true },
       });
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { id: 'user-789' },
-      });
-      expect(mockPrismaService.credential.findFirst).toHaveBeenCalledWith({
-        where: { badgeId: 'badge-123', userId: 'user-789' },
-        orderBy: { issuedAt: 'desc' },
       });
 
       expect(mockGraphTeamsService.sendActivityNotification).toHaveBeenCalled();
@@ -124,7 +121,7 @@ describe('TeamsBadgeNotificationService - Story 7.4', () => {
         mockGraphTeamsService.sendActivityNotification.mock.calls[0];
       expect(callArgs[0]).toBe(mockRecipient.email); // userId
       expect(callArgs[1]).toBe('badgeEarned'); // activityType
-      expect(callArgs[2]).toContain(mockBadgeData.name); // previewText
+      expect(callArgs[2]).toContain(mockBadgeData.template.name); // previewText
       expect(callArgs[4]).toBeDefined(); // adaptiveCard
     });
 
@@ -145,20 +142,9 @@ describe('TeamsBadgeNotificationService - Story 7.4', () => {
       ).rejects.toThrow('Recipient user not found: user-999');
     });
 
-    it('should throw error if credential not found', async () => {
+    it('should include claim URL when badge has PENDING status', async () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeData);
       mockPrismaService.user.findUnique.mockResolvedValue(mockRecipient);
-      mockPrismaService.credential.findFirst.mockResolvedValue(null);
-
-      await expect(
-        service.sendBadgeIssuanceNotification('badge-123', 'user-789'),
-      ).rejects.toThrow('Credential not found for badge and user');
-    });
-
-    it('should include claim URL when credential has PENDING status', async () => {
-      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeData);
-      mockPrismaService.user.findUnique.mockResolvedValue(mockRecipient);
-      mockPrismaService.credential.findFirst.mockResolvedValue(mockCredential);
 
       await service.sendBadgeIssuanceNotification('badge-123', 'user-789');
 
@@ -170,13 +156,10 @@ describe('TeamsBadgeNotificationService - Story 7.4', () => {
       expect(cardJson).toContain('claim?token=claim-token-xyz');
     });
 
-    it('should not include claim URL when credential is CLAIMED', async () => {
-      const claimedCredential = { ...mockCredential, status: 'CLAIMED' };
-      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeData);
+    it('should not include claim URL when badge is CLAIMED', async () => {
+      const claimedBadge = { ...mockBadgeData, status: 'CLAIMED', claimToken: null };
+      mockPrismaService.badge.findUnique.mockResolvedValue(claimedBadge);
       mockPrismaService.user.findUnique.mockResolvedValue(mockRecipient);
-      mockPrismaService.credential.findFirst.mockResolvedValue(
-        claimedCredential,
-      );
 
       await service.sendBadgeIssuanceNotification('badge-123', 'user-789');
 
@@ -192,7 +175,6 @@ describe('TeamsBadgeNotificationService - Story 7.4', () => {
       mockGraphTeamsService.isGraphTeamsEnabled.mockReturnValue(false);
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeData);
       mockPrismaService.user.findUnique.mockResolvedValue(mockRecipient);
-      mockPrismaService.credential.findFirst.mockResolvedValue(mockCredential);
 
       await service.sendBadgeIssuanceNotification('badge-123', 'user-789');
 
@@ -202,7 +184,6 @@ describe('TeamsBadgeNotificationService - Story 7.4', () => {
     it('should handle Graph API errors gracefully', async () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeData);
       mockPrismaService.user.findUnique.mockResolvedValue(mockRecipient);
-      mockPrismaService.credential.findFirst.mockResolvedValue(mockCredential);
       
       // Mock the error AFTER enabling Teams
       mockGraphTeamsService.isGraphTeamsEnabled.mockReturnValue(true);
@@ -221,7 +202,6 @@ describe('TeamsBadgeNotificationService - Story 7.4', () => {
     it('should format date correctly in Adaptive Card', async () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeData);
       mockPrismaService.user.findUnique.mockResolvedValue(mockRecipient);
-      mockPrismaService.credential.findFirst.mockResolvedValue(mockCredential);
       
       // Ensure Teams is enabled for this test
       mockGraphTeamsService.isGraphTeamsEnabled.mockReturnValue(true);
@@ -252,13 +232,13 @@ describe('TeamsBadgeNotificationService - Story 7.4', () => {
   describe('buildAdaptiveCard', () => {
     it('should build Adaptive Card with all required data', () => {
       const cardData = {
-        badgeImageUrl: mockBadgeData.imageUrl,
-        badgeName: mockBadgeData.name,
-        issuerName: mockBadgeData.badgeTemplate.issuer.name,
-        recipientName: mockRecipient.name,
+        badgeImageUrl: mockBadgeData.template.imageUrl,
+        badgeName: mockBadgeData.template.name,
+        issuerName: 'Acme Tech University',
+        recipientName: 'John Smith',
         issueDate: 'January 30, 2026',
         badgeId: mockBadgeData.id,
-        badgeDescription: mockBadgeData.description,
+        badgeDescription: mockBadgeData.template.description,
         badgeWalletUrl: 'https://g-credit.com/wallet',
         claimUrl: 'https://g-credit.com/claim?token=claim-token-xyz',
       };

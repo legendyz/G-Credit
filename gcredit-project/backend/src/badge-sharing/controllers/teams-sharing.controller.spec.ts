@@ -37,20 +37,17 @@ describe('TeamsSharingController - Story 7.4', () => {
 
   const mockBadge = {
     id: 'badge-456',
-    name: 'Full-Stack Developer',
-    status: 'ACTIVE',
-    badgeTemplate: {
-      issuer: {
-        id: 'issuer-789',
-      },
-    },
-  };
-
-  const mockCredential = {
-    id: 'credential-101',
-    badgeId: 'badge-456',
-    userId: 'user-123',
     status: 'CLAIMED',
+    issuerId: 'issuer-789',
+    recipientId: 'user-123',
+    template: {
+      id: 'template-001',
+      name: 'Full-Stack Developer',
+    },
+    issuer: {
+      id: 'issuer-789',
+      name: 'Tech University',
+    },
   };
 
   beforeEach(async () => {
@@ -86,7 +83,6 @@ describe('TeamsSharingController - Story 7.4', () => {
 
     it('should share badge to Teams successfully', async () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
-      mockPrismaService.credential.findFirst.mockResolvedValue(mockCredential);
       mockTeamsNotificationService.sendBadgeIssuanceNotification.mockResolvedValue(
         undefined,
       );
@@ -107,14 +103,7 @@ describe('TeamsSharingController - Story 7.4', () => {
 
       expect(mockPrismaService.badge.findUnique).toHaveBeenCalledWith({
         where: { id: 'badge-456' },
-        include: { badgeTemplate: { include: { issuer: true } } },
-      });
-
-      expect(mockPrismaService.credential.findFirst).toHaveBeenCalledWith({
-        where: {
-          badgeId: 'badge-456',
-          userId: 'user-123',
-        },
+        include: { template: true, issuer: true },
       });
 
       expect(
@@ -133,15 +122,15 @@ describe('TeamsSharingController - Story 7.4', () => {
     it('should throw UnauthorizedException if user is not recipient or issuer', async () => {
       const differentBadge = {
         ...mockBadge,
-        badgeTemplate: {
-          issuer: {
-            id: 'different-issuer',
-          },
+        issuerId: 'different-issuer',
+        recipientId: 'different-recipient',
+        issuer: {
+          id: 'different-issuer',
+          name: 'Other University',
         },
       };
 
       mockPrismaService.badge.findUnique.mockResolvedValue(differentBadge);
-      mockPrismaService.credential.findFirst.mockResolvedValue(null); // User is not recipient
 
       await expect(
         controller.shareBadgeToTeams('badge-456', shareDto, mockRequest as any),
@@ -157,7 +146,6 @@ describe('TeamsSharingController - Story 7.4', () => {
       };
 
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
-      mockPrismaService.credential.findFirst.mockResolvedValue(null); // Not recipient
       mockTeamsNotificationService.sendBadgeIssuanceNotification.mockResolvedValue(
         undefined,
       );
@@ -178,7 +166,6 @@ describe('TeamsSharingController - Story 7.4', () => {
       };
 
       mockPrismaService.badge.findUnique.mockResolvedValue(revokedBadge);
-      mockPrismaService.credential.findFirst.mockResolvedValue(mockCredential);
 
       await expect(
         controller.shareBadgeToTeams('badge-456', shareDto, mockRequest as any),
@@ -192,7 +179,6 @@ describe('TeamsSharingController - Story 7.4', () => {
       };
 
       mockPrismaService.badge.findUnique.mockResolvedValue(expiredBadge);
-      mockPrismaService.credential.findFirst.mockResolvedValue(mockCredential);
 
       await expect(
         controller.shareBadgeToTeams('badge-456', shareDto, mockRequest as any),
@@ -201,7 +187,6 @@ describe('TeamsSharingController - Story 7.4', () => {
 
     it('should handle Teams notification service errors', async () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
-      mockPrismaService.credential.findFirst.mockResolvedValue(mockCredential);
       mockTeamsNotificationService.sendBadgeIssuanceNotification.mockRejectedValue(
         new Error('Teams API rate limit exceeded'),
       );
