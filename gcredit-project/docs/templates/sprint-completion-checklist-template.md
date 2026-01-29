@@ -3,7 +3,36 @@
 **Sprint:** Sprint N - [Epic Name]  
 **日期:** YYYY-MM-DD  
 **负责人:** [Name/Role]  
-**模板版本:** v1.1 (2026-01-29)
+**模板版本:** v1.2 (2026-01-29 + Agent自动化集成)
+
+---
+
+## 🤖 Agent 自动化指令 (FOR BMAD AGENT)
+
+**当用户说：** "基于sprint-completion-checklist做收尾" 或类似指令时
+
+**Agent 应自动执行以下步骤：**
+
+1. **读取此 checklist** 并向用户展示关键检查项
+2. **文档更新阶段（Phase 1）：**
+   - ⚡ **自动执行** [documentation-maintenance-checklist.md](./documentation-maintenance-checklist.md) Scenario A
+   - 包括自动运行 `verify-versions.ps1` 验证版本清单
+   - 更新 project-context.md, README, CHANGELOG 等核心文档
+   - 创建 Sprint summary + retrospective 文档
+3. **Lessons Learned 更新（Phase 1.5）：**
+   - ⚡ **自动提醒** 更新 [lessons-learned.md](../../lessons-learned/lessons-learned.md)
+   - 使用 Retrospective 的内容添加新教训
+   - 更新 Velocity Metrics 表格
+   - 询问："本Sprint有哪些值得记录的新教训？"
+4. **Git 操作阶段（Phase 2-4）：**
+   - 引导用户完成 Git 提交、PR 创建、合并、Tag 创建
+5. **验证版本清单（自动）：**
+   - ⚡ **自动运行** `gcredit-project/scripts/verify-versions.ps1 -ManifestFile "docs/sprints/sprint-N/version-manifest.md"`
+   - 展示验证结果（✅ 通过 / ❌ 发现不匹配）
+   - 如果不匹配，询问是否自动修正
+6. **最终确认** 所有 CRITICAL 文档已更新
+
+**Agent 无需等待用户单独说 "验证版本清单" 或 "更新Lessons Learned"** - 这些应该是 Completion 流程的自动化部分。
 
 ---
 
@@ -41,94 +70,81 @@
 
 ## 📝 文档更新 (CRITICAL - 必须完成!)
 
-### 必须更新的文档
+### 🎯 使用标准文档维护流程
 
-#### A. project-context.md ✅ 最高优先级
-❗ **文件位置:** `{project-root}/project-context.md` (工作区根目录)
+**📚 完整流程参考：** [documentation-maintenance-checklist.md](./documentation-maintenance-checklist.md)
 
-- [ ] 更新 **Status** 行（当前 Sprint 状态）
-- [ ] 更新 **Sprint N** 状态行
-- [ ] 更新 **Last Updated** 日期
-- [ ] 添加本 Sprint 成就到 "Implemented Features" 部分
-  - [ ] API 端点数量
-  - [ ] 数据模型变更
-  - [ ] 关键功能列表
-  - [ ] 测试统计
-- [ ] 更新 "Repository Structure" (如有新模块/文件)
-- [ ] 更新 "Next Actions" 部分（标记当前 Sprint 完成，添加下个 Sprint）
-- [ ] 更新 "Project Phases" 表格
-- [ ] 验证文件内容准确性
+**⚠️ 重要：** Sprint完成时的文档更新必须使用 **Scenario A (Sprint Completion)** 流程。
 
-**Why Critical:** project-context.md 是 "Single Source of Truth"，被 BMAD agents 和团队成员依赖
+---
 
-#### B. Sprint 文档 ✅ 高优先级
-- [ ] 创建 `docs/sprints/sprint-N/summary.md`
-  - [ ] Sprint 概览（时间、团队、状态）
-  - [ ] Story 完成情况
-  - [ ] 技术实现亮点
-  - [ ] 遇到的挑战和解决方案
-  - [ ] 关键指标和统计
-- [ ] 创建 `docs/sprints/sprint-N/retrospective.md`
-  - [ ] What went well
-  - [ ] What could be improved
-  - [ ] Action items for next sprint
-  - [ ] Lessons learned
-- [ ] 更新 `docs/sprints/sprint-N/README.md`
-  - [ ] 最终状态和指标
-  - [ ] 链接到 summary 和 retrospective
-- [ ] 更新 `docs/sprints/README.md`（Sprint 索引）
-  - [ ] 添加 Sprint N 条目
-  - [ ] 更新整体进度
+### 执行步骤：
 
-#### C. CHANGELOG.md ✅ 高优先级
-- [ ] 添加 vX.X.X 版本条目
-- [ ] 列出所有新功能 (Added)
-- [ ] 列出所有变更 (Changed)
-- [ ] 列出所有修复 (Fixed)
-- [ ] 列出技术债务解决情况
-- [ ] 添加性能改进（如有）
+1. **打开标准文档维护清单：**
+   - 文件路径：`docs/templates/documentation-maintenance-checklist.md`
+   - 或直接用命令：`code docs/templates/documentation-maintenance-checklist.md`
 
-#### D. README.md 文件更新 ✅ 中优先级
-**注意：需要更新两个 README 文件，服务不同受众**
+2. **执行 Scenario A：Sprint Completion Documentation Update**
+   - 时间估算：20-30分钟（取决于Sprint复杂度）
+   - 涵盖：project-context.md, README文件, CHANGELOG, Sprint文档创建
+   - 包含验证命令和代理协助说明
 
-##### 1. {project-root}/README.md (工作区根目录) - GitHub 仓库首页展示
-❗ **文件位置:** `{project-root}/README.md`
-- [ ] 更新徽章状态（Sprint N Complete）
-- [ ] 添加 Sprint N 徽章（如果需要）
-- [ ] 更新版本徽章（v0.X.0）
-- [ ] 更新 "Current Status" 行（Sprint N Complete - Epic Name）
-- [ ] 添加 Sprint N 完成状态行
-- [ ] 更新 "Version" 和 "Last Updated" 日期
-- [ ] 更新 "Current Phase" 部分：
-  - [ ] 添加 Sprint N 完成摘要
-  - [ ] 更新 "Next Sprints" 部分
-- [ ] 更新核心功能状态（✅ Complete / 🔜 Upcoming）
-- [ ] 验证所有链接有效
+3. **确认所有核心文档已更新：**
+   - [ ] ✅ `project-context.md` - Status行更新为 "Sprint N Complete ✅"
+   - [ ] ✅ `CODE/README.md` - Sprint badge + Current Status更新
+   - [ ] ✅ `gcredit-project/README.md` - 项目状态更新（如重要里程碑）
+   - [ ] ✅ `docs/sprints/sprint-N/summary.md` - 已创建
+   - [ ] ✅ `docs/sprints/sprint-N/retrospective.md` - 已创建
+   - [ ] ✅ `backend/CHANGELOG.md` + `frontend/CHANGELOG.md` - vX.X.X条目已添加
+   - [ ] ✅ 所有文档 "Last Updated" 日期为今天
 
-**目标受众：** GitHub 访客、潜在贡献者、外部开发者  
-**内容重点：** 项目亮点、里程碑、功能展示、快速上手
+---
 
-##### 2. gcredit-project/README.md (项目目录) - 开发者本地参考
-❗ **文件位置:** `{project-root}/gcredit-project/README.md`
+### 快速验证命令：
 
-- [ ] 更新项目状态（如果是重要里程碑）
-- [ ] 更新功能列表（添加新功能）
-- [ ] 更新 Getting Started（如有环境变更）
-- [ ] 更新依赖版本（如有重大更新）
+```powershell
+# 验证核心文档已更新（检查今日日期）
+Get-ChildItem -Path "project-context.md", "README.md", "gcredit-project/README.md" | Select-Object Name, LastWriteTime
 
-**目标受众：** 团队内部开发者、本地开发环境  
-**内容重点：** 技术细节、开发指南、本地配置
+# 验证Sprint文档已创建
+Test-Path "gcredit-project/docs/sprints/sprint-N/summary.md"
+Test-Path "gcredit-project/docs/sprints/sprint-N/retrospective.md"
 
-#### E. API 文档 ✅ 中优先级（如有 API 变更）
-- [ ] 更新 `backend/docs/api/README.md`
-- [ ] 为新端点创建文档文件
-- [ ] 更新 OpenAPI/Swagger 定义
-- [ ] 添加 cURL 示例
+# 验证CHANGELOG已更新
+Select-String -Path "gcredit-project/backend/CHANGELOG.md" -Pattern "## \[v0\.X\.X\]" | Select-Object -First 1
+```
 
-#### F. 技术债务追踪 ✅ 低优先级
-- [ ] 更新 `docs/technical-debt.md`（如有新债务）
-- [ ] 更新 ADR（如有架构决策）
-- [ ] 更新安全漏洞追踪（如有新发现）
+---
+
+### 🚨 Why Critical?
+
+**project-context.md 是 "Single Source of Truth"：**
+- 被 BMAD agents 依赖做决策
+- 新团队成员参考了解项目状态
+- Definition of Done 的关键部分
+
+**如果不更新的后果：**
+- ❌ 信息不一致导致混淆
+- ❌ AI agents 产生错误建议
+- ❌ 下个Sprint规划基于错误信息
+- ❌ 技术债务累积（文档债务）
+
+---
+
+### Sprint特有文档（需手动创建）
+
+#### Retrospective 内容要点：
+- ✅ **What went well** - 至少3项成功经验
+- ⚠️ **What could be improved** - 至少2项改进点
+- 🎯 **Action items for next sprint** - 可执行的具体行动
+- 📚 **Lessons learned** - 可复用的经验（参考Sprint 3-5教训）
+
+#### Summary 内容要点：
+- 📊 Story完成情况 (X/X stories, 100%)
+- 🎯 Epic目标达成情况
+- 🔧 技术实现亮点
+- ⚠️ 遇到的挑战和解决方案
+- 📈 关键指标（测试覆盖率、性能、代码质量）
 
 ---
 
@@ -225,12 +241,82 @@ git push origin vX.X.X
 ## 🚀 Sprint 收官
 
 ### Phase 1: 文档完成 (必须)
-预计时间: 30-45 分钟
+预计时间: 20-30 分钟
 
-1. ✅ 更新 project-context.md（15 分钟）
-2. ✅ 创建 Sprint summary（10 分钟）
-3. ✅ 创建 Sprint retrospective（10 分钟）
-4. ✅ 更新 CHANGELOG.md（5 分钟）
+1. ✅ 执行 [documentation-maintenance-checklist.md](./documentation-maintenance-checklist.md) Scenario A（20-30 分钟）
+   - 包含：project-context.md, README文件, CHANGELOG, Sprint文档创建
+
+### Phase 1.5: Lessons Learned 更新 (必须) ⚡ [AGENT AUTO-REMINDER]
+预计时间: 10-15 分钟
+
+**🤖 Agent 自动提醒：** 当到达此步骤时，Agent 应自动提示用户更新 lessons-learned.md。
+
+**Agent 执行步骤：**
+1. 读取 retrospective.md 的内容
+2. 提示用户："根据Retrospective，本Sprint有哪些值得记录的新教训？"
+3. 展示 lessons-learned.md 的"Lessons Learned Review"模板
+4. 引导用户添加：
+   - 新的Lesson到Sprint N section
+   - 更新Velocity Metrics表格
+   - 更新Last Updated日期
+5. 标记此项完成 ✅
+
+---
+
+**必须更新的内容：**
+- [ ] **新的Lesson（如有）** - 添加到 Sprint N section
+  - What worked well?（成功经验）
+  - What didn't work?（失败教训）
+  - What to try next?（改进建议）
+
+- [ ] **Velocity Metrics表格** - 更新本Sprint数据
+  ```markdown
+  | Sprint N | X/Y (Z%) | Xh估算 | Yh实际 | 准确率 | ~Xh/story |
+  ```
+
+- [ ] **Last Updated日期** - 更新为今天
+  ```markdown
+  **Last Updated:** 2026-01-29 (Post-Sprint N)
+  ```
+
+- [ ] **Total Lessons计数** - 增加本Sprint新增的Lesson数量
+  ```markdown
+  **Total Lessons:** XX lessons (Sprint 0: 5, ..., Sprint N: X)
+  ```
+
+**快速模板（复制粘贴到lessons-learned.md）：**
+```markdown
+## Sprint N Lessons (January 2026)
+### [Epic Name]
+
+### 🎯 Lesson XX: [标题]
+
+**What Happened:**
+[描述情况]
+
+**Root Cause:**
+[根本原因]
+
+**Solution Implemented:**
+[解决方案]
+
+**Prevention for Future:**
+- [预防措施1]
+- [预防措施2]
+
+**Key Takeaway:**
+> [一句话总结]
+
+---
+```
+
+**对BMad的命令：**
+- "帮我更新Lessons Learned"
+- "基于Retrospective添加新教训"
+- "更新Sprint N的Velocity指标"
+
+🔗 **参考：** [lessons-learned.md](../../lessons-learned/lessons-learned.md) - 完整教训文档
+   - 使用标准化流程，确保完整性
 
 ### Phase 2: Git 操作 (必须)
 预计时间: 15-20 分钟
@@ -260,15 +346,26 @@ git push origin vX.X.X
 
 在标记 Sprint 为"完成"之前，确认：
 
+**代码交付：**
 - [ ] ✅ 所有代码已提交并推送
-- [ ] ✅ project-context.md 已更新（最重要！）
-- [ ] ✅ Sprint 文档已创建（summary + retrospective）
-- [ ] ✅ CHANGELOG.md 已更新
 - [ ] ✅ 所有测试 100% 通过
 - [ ] ✅ Pull Request 已创建
 - [ ] ✅ Code Review 完成（如适用）
 - [ ] ✅ PR 已合并到 main
 - [ ] ✅ Git Tag 已创建
+
+**文档完成：**（参考 [documentation-maintenance-checklist.md](./documentation-maintenance-checklist.md) Scenario A）
+- [ ] ✅ project-context.md 已更新（最重要！）
+- [ ] ✅ Sprint 文档已创建（summary + retrospective）
+- [ ] ✅ CHANGELOG.md 已更新（frontend + backend）
+- [ ] ✅ README 文件已更新（CODE/ + gcredit-project/）
+
+**Lessons Learned 更新：**（参考 Phase 1.5）
+- [ ] ✅ 新教训已添加到 lessons-learned.md（如有）
+- [ ] ✅ Velocity Metrics 表格已更新
+- [ ] ✅ Last Updated 日期已更新
+
+**团队协作：**
 - [ ] ✅ 团队已通知（如适用）
 
 ---
@@ -342,9 +439,9 @@ git push origin vX.X.X
 
 ---
 
-**模板版本:** v1.1  
+**模板版本:** v1.2  
 **创建日期:** 2026-01-27  
-**最后更新:** 2026-01-29 (添加Sprint 3-5经验教训)  
+**最后更新:** 2026-01-29 (精简文档更新部分，委托给documentation-maintenance-checklist.md Scenario A)  
 **维护者:** GCredit Development Team
 
 ---

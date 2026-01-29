@@ -6,7 +6,68 @@
 
 ---
 
-## 🔧 Technology Version Manifest
+## � 快速操作（推荐）
+
+### **方法1：自动生成版本清单（最快！）**
+
+在项目根目录运行自动化脚本：
+
+```powershell
+# 在 CODE/ 目录运行
+.\gcredit-project\scripts\check-versions.ps1
+```
+
+**脚本会自动提取：**
+- ✅ Frontend 所有关键依赖版本
+- ✅ Backend 所有关键依赖版本
+- ✅ Node.js / npm 版本
+- ✅ Infrastructure 配置版本
+
+**然后：**
+1. 复制脚本输出
+2. 粘贴到下方"Technology Version Manifest"部分
+3. 根据需要添加注释和说明
+
+**⏱️ 时间：** 30秒（vs 手动填写 10分钟）
+
+---
+
+### **方法2：手动运行 npm 命令**
+
+```powershell
+# Frontend 版本查看
+cd gcredit-project/frontend
+npm list --depth=0
+
+# Backend 版本查看
+cd gcredit-project/backend
+npm list --depth=0
+```
+
+---
+
+### **验证版本清单准确性（推荐在 Sprint Completion 时）**
+
+创建 version manifest 后，运行验证脚本确保准确性：
+
+```powershell
+# 验证当前 Sprint 的版本清单
+.\gcredit-project\scripts\verify-versions.ps1 -ManifestFile "docs/sprints/sprint-6/version-manifest.md"
+
+# 输出示例：
+# ✅ 版本清单完全准确！所有关键版本号匹配。
+# 或
+# ❌ Prisma: 不匹配！实际: 6.19.2 | Manifest: 7.0.0
+```
+
+**验证时机：**
+- ✅ Sprint Planning 后（确认 manifest 填写准确）
+- ✅ Sprint Completion 前（确认没有版本漂移）
+- ✅ 安装新依赖后（确认 manifest 已更新）
+
+---
+
+## �🔧 Technology Version Manifest
 
 > **Purpose:** Explicit version tracking to avoid dependency conflicts and version drift  
 > **Last Verified:** [YYYY-MM-DD] (Sprint [N] Kickoff Preparation)  
@@ -155,9 +216,59 @@ npm install [dev-package-1]@X.Y.Z --save-dev
 
 ---
 
-**Template Version:** 1.1  
+**Template Version:** 1.2  
 **Created:** 2026-01-25  
-**Last Updated:** 2026-01-29 (简化策略说明，保留核心内容)  
+**Last Updated:** 2026-01-29 (添加自动化脚本 + BMad Agent集成)  
 **Owner:** Product Manager / Tech Lead  
 **Maintained By:** Development Team  
 **Review Frequency:** Every sprint planning session
+
+---
+
+## 📌 自动化脚本说明
+
+### **check-versions.ps1 - 自动提取版本号**
+- **位置:** `gcredit-project/scripts/check-versions.ps1`
+- **用途:** 从 package.json 自动提取所有依赖版本
+- **执行方式:** 通过BMad Agent自动运行（推荐）或手动运行
+- **输出:** 格式化的版本清单（可直接用于创建manifest）
+- **时间:** 5秒
+
+### **verify-versions.ps1 - 验证版本准确性**
+- **位置:** `gcredit-project/scripts/verify-versions.ps1`
+- **用途:** 对比 manifest 与实际 package.json，发现版本不匹配
+- **执行方式:** 通过BMad Agent自动运行（推荐）或手动运行
+- **输出:** 验证报告（通过 ✅ / 失败 ❌）
+- **时间:** 5秒
+
+**🤖 集成到BMad Agent工作流：**
+
+| 阶段 | Agent命令 | 自动执行内容 |
+|------|-----------|-------------|
+| Sprint Planning | "创建Sprint N的版本清单" | 运行check-versions.ps1 → 创建manifest文档 |
+| Sprint Completion | "验证Sprint N的版本清单" | 运行verify-versions.ps1 → 检查版本漂移 |
+| 安装新依赖后 | "更新version manifest" | 重新运行check-versions.ps1 → 更新文档 |
+
+**💡 BMad Agent工作原理：**
+- Agent使用 `run_in_terminal` 工具执行PowerShell脚本
+- 展示脚本输出给你review
+- 在关键决策点询问确认（如：是否添加注释、是否修正不匹配）
+- 自动创建或更新manifest文件
+- 标记清单项完成
+- **输出:** 验证报告（通过 ✅ / 失败 ❌）
+- **时间:** 5秒
+
+**🤖 集成到BMad Agent工作流：**
+
+| 阶段 | Agent命令 | 自动执行内容 |
+|------|-----------|-------------|
+| Sprint Planning | "创建Sprint N的版本清单" | 运行check-versions.ps1 → 创建manifest文档 |
+| Sprint Completion | "验证Sprint N的版本清单" | 运行verify-versions.ps1 → 检查版本漂移 |
+| 安装新依赖后 | "更新version manifest" | 重新运行check-versions.ps1 → 更新文档 |
+
+**💡 BMad Agent工作原理：**
+- Agent使用 `run_in_terminal` 工具执行PowerShell脚本
+- 展示脚本输出给你review
+- 在关键决策点询问确认（如：是否添加注释、是否修正不匹配）
+- 自动创建或更新manifest文件
+- 标记清单项完成

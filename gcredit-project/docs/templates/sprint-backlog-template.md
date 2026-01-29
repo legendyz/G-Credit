@@ -21,58 +21,101 @@
 
 ## User Stories
 
-### Epic: [Epic Name]
+**📝 用户故事格式：**每个用户故事应使用 [user-story-template.md](./user-story-template.md) 创建详细文档。本Backlog仅列出摘要信息。
+
+**完整用户故事参考：**
+- 🔗 [user-story-template.md](./user-story-template.md) - 包含INVEST原则、验收标准、技术细节、DoD等完整格式
+- 📂 实际故事文档存放位置：`docs/sprints/sprint-N/stories/`
+
+---
+
+### Epic: [Epic Name] - [Brief Description]
 
 #### Story 1: [Story Title]
-**Priority:** High | Medium | Low  
-**Story Points:** [X]  
-**Estimate:** [X] hours  
-**Assigned To:** [Name]
+**Priority:** 🔴 High | 🟡 Medium | 🟢 Low  
+**Story Points:** [X] SP  
+**Estimate:** [X]h  
+**Assigned:** [Name]  
+**Status:** 🔴 Not Started | 🟡 In Progress | 🟢 Done  
+**Story Doc:** 📄 [Link to full story doc]
 
-**User Story:**  
-As a [role], I want [feature] so that [benefit].
+**Quick Summary:** As a [role], I want [feature] so that [benefit].
 
-**Acceptance Criteria:**
-- [ ] AC 1: [Specific, testable criterion]
-- [ ] AC 2: [Specific, testable criterion]
-- [ ] AC 3: [Specific, testable criterion]
+**Key Deliverables:**
+- [ ] [Main feature/component 1]
+- [ ] [Main feature/component 2]
+- [ ] [Tests + Documentation]
 
-**Technical Notes:**
-- Implementation detail 1
-- Implementation detail 2
+**Dependencies:** [List story IDs or "None"]
 
-**Dependencies:**
-- [ ] Story X must be completed first
-- [ ] External API integration required
+---
 
-**Definition of Done:**
-- [ ] Code written and reviewed
-- [ ] Unit tests written (>80% coverage)
-- [ ] E2E tests added
-- [ ] Documentation updated
-- [ ] Deployed to dev environment
-- [ ] QA approved
+#### Story 2: [Story Title]
+**Priority:** 🔴 High | 🟡 Medium | 🟢 Low  
+**Story Points:** [X] SP  
+**Estimate:** [X]h  
+**Assigned:** [Name]  
+**Status:** 🔴 Not Started | 🟡 In Progress | 🟢 Done  
+**Story Doc:** 📄 [Link to full story doc]
+
+**Quick Summary:** As a [role], I want [feature] so that [benefit].
+
+**Key Deliverables:**
+- [ ] [Main feature/component 1]
+- [ ] [Main feature/component 2]
+- [ ] [Tests + Documentation]
+
+**Dependencies:** [List story IDs or "None"]
+
+---
+
+### Epic: [Epic Name] - [Brief Description]
+
+#### Story 3: [Story Title]
+**Priority:** 🔴 High | 🟡 Medium | 🟢 Low  
+**Story Points:** [X] SP  
+**Estimate:** [X]h  
+**Assigned:** [Name]  
+**Status:** 🔴 Not Started | 🟡 In Progress | 🟢 Done  
+**Story Doc:** 📄 [Link to full story doc]
+
+**Quick Summary:** As a [role], I want [feature] so that [benefit].
+
+**Key Deliverables:**
+- [ ] [Main feature/component 1]
+- [ ] [Main feature/component 2]
+- [ ] [Tests + Documentation]
+
+**Dependencies:** [List story IDs or "None"]
+
+---
+
+### 📊 Stories Summary
+
+| Story ID | Title | Priority | Points | Hours | Assigned | Status |
+|----------|-------|----------|--------|-------|----------|--------|
+| Story 1 | [Title] | 🔴 High | X | Xh | [Name] | 🔴 |
+| Story 2 | [Title] | 🟡 Med | X | Xh | [Name] | 🔴 |
+| Story 3 | [Title] | 🟢 Low | X | Xh | [Name] | 🔴 |
+| **Total** | - | - | **XX SP** | **XXh** | - | - |
+
+---
+
+## Definition of Done
+
+**Story-Level DoD:**  
+每个用户故事完成时必须满足 [user-story-template.md](./user-story-template.md) 中定义的 DoD 标准。
 
 **Sprint-Level DoD (End of Sprint):** ⚠️ **CRITICAL**  
 🔗 **完整清单参考:** [sprint-completion-checklist-template.md](./sprint-completion-checklist-template.md)
 
 **关键项目：**
 - [ ] **project-context.md已更新** (状态, Sprint N, 实现功能, 下一步动作)
-- [ ] Sprint summary + retrospective已创建
-- [ ] CHANGELOG.md已更新
-- [ ] 代码已合并到main + Git tag已创建
-
----
-
-#### Story 2: [Story Title]
-[Same structure as Story 1]
-
----
-
-### Epic: [Epic Name]
-
-#### Story 3: [Story Title]
-[Same structure as Story 1]
+- [ ] **Sprint summary + retrospective已创建**
+- [ ] **CHANGELOG.md已更新** (frontend + backend)
+- [ ] **代码已合并到main + Git tag已创建** (vX.Y.Z)
+- [ ] **所有测试通过** (Unit >80%, E2E关键路径)
+- [ ] **部署到目标环境** (Dev/Staging/Production)
 
 ---
 
@@ -231,5 +274,5 @@ As a [role], I want [feature] so that [benefit].
 ---
 
 **Last Updated:** [Date]  
-**Status:** [In Progress | Completed]
-**Template Version:** v1.1 (2026-01-29 - 简化DoD部分)
+**Status:** [In Progress | Completed]  
+**Template Version:** v1.2 (2026-01-29 - 简化用户故事格式，引用user-story-template.md，减少重复内容)
