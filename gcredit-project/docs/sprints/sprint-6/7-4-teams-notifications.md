@@ -67,16 +67,16 @@ So that **I'm notified in my primary work communication tool**.
   - [x] Add logging for successful/failed notifications
   - [x] Write unit tests (mock GraphTeamsService, test error scenarios) - 10/10 tests passing
 
-- [ ] **Task 3: Create REST API for Badge Sharing to Teams** (AC: #1)
-  - [ ] Create `TeamsSharingController` in `src/badge-sharing/`
-  - [ ] Add endpoint: `POST /api/badges/:badgeId/share/teams`
-  - [ ] Request body: `{ teamId: string, channelId: string, personalMessage?: string }`
-  - [ ] Validate badge ownership (only recipient or issuer can share)
-  - [ ] Validate badge status (cannot share REVOKED badges)
-  - [ ] Call `TeamsBadgeNotificationService.sendBadgeIssuanceNotification()`
-  - [ ] Return success response with notification ID
-  - [ ] Add Swagger/OpenAPI documentation
-  - [ ] Write controller unit tests
+- [x] **Task 3: Create REST API for Badge Sharing to Teams** (AC: #1)
+  - [x] Create `TeamsSharingController` in `src/badge-sharing/`
+  - [x] Add endpoint: `POST /api/badges/:badgeId/share/teams`
+  - [x] Request body: `{ teamId: string, channelId: string, personalMessage?: string }`
+  - [x] Validate badge ownership (only recipient or issuer can share)
+  - [x] Validate badge status (cannot share REVOKED badges)
+  - [x] Call `TeamsBadgeNotificationService.sendBadgeIssuanceNotification()`
+  - [x] Return success response with notification ID
+  - [x] Add Swagger/OpenAPI documentation
+  - [x] Write controller unit tests - 7/7 tests passing
 
 - [ ] **Task 4: Integrate Teams Notification into Badge Issuance Flow** (AC: #1)
   - [ ] Update `BadgeIssuanceService` to trigger Teams notification
@@ -373,17 +373,32 @@ Claude Sonnet 4.5 (via GitHub Copilot)
 - Conditional execution based on ENABLE_GRAPH_TEAMS flag
 - 10 unit tests created, all passing: success path, error cases, conditional logic, data validation
 
+**2026-01-30 - Task 3 Complete:** Created REST API for Badge Sharing to Teams
+- Implemented TeamsSharingController with POST /badges/:badgeId/share/teams endpoint
+- Created DTOs: ShareBadgeTeamsDto (request) and ShareBadgeTeamsResponseDto (response)
+- Permission validation: Only badge recipient or issuer can share
+- Status validation: Cannot share REVOKED or EXPIRED badges
+- Integrates TeamsBadgeNotificationService to send Teams notifications
+- Full Swagger/OpenAPI documentation with examples
+- JWT authentication required (JwtAuthGuard)
+- 7 unit tests: success path, authorization checks, status validation, error handling
+- Updated BadgeSharingModule and MicrosoftGraphModule to export new services
+
 ### File List
 
-**Created (5 files):**
+**Created (8 files):**
 - `backend/src/microsoft-graph/teams/adaptive-cards/badge-notification.builder.ts` (196 lines)
 - `backend/src/microsoft-graph/teams/adaptive-cards/badge-notification.builder.spec.ts` (311 lines)
 - `backend/src/microsoft-graph/teams/adaptive-cards/index.ts` (5 lines)
 - `backend/src/microsoft-graph/teams/teams-badge-notification.service.ts` (141 lines)
 - `backend/src/microsoft-graph/teams/teams-badge-notification.service.spec.ts` (264 lines)
+- `backend/src/badge-sharing/dto/share-badge-teams.dto.ts` (72 lines)
+- `backend/src/badge-sharing/controllers/teams-sharing.controller.ts` (155 lines)
+- `backend/src/badge-sharing/controllers/teams-sharing.controller.spec.ts` (184 lines)
 
-**Modified:**
-(To be filled as implementation continues)
+**Modified (2 files):**
+- `backend/src/badge-sharing/badge-sharing.module.ts` (added TeamsSharingController)
+- `backend/src/microsoft-graph/microsoft-graph.module.ts` (added TeamsBadgeNotificationService export)
 
 ### Change Log
 
