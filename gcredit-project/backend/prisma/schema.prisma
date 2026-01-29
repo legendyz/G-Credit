@@ -1,3 +1,6 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,204 +10,130 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model badge_templates {
-  id               String         @id
-  name             String         @db.VarChar(100)
-  description      String?
-  imageUrl         String?
-  category         String         @db.VarChar(50)
-  skillIds         String[]
-  issuanceCriteria Json
-  validityPeriod   Int?
-  status           TemplateStatus @default(DRAFT)
-  createdBy        String
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime
-  users            users          @relation(fields: [createdBy], references: [id])
-  badges           badges[]
-
-  @@index([category])
-  @@index([category, status])
-  @@index([createdAt])
-  @@index([createdBy])
-  @@index([status, createdAt])
-  @@index([status])
+enum UserRole {
+  ADMIN
+  ISSUER
+  MANAGER
+  EMPLOYEE
 }
 
-model badges {
-  id                              String           @id
-  templateId                      String
-  recipientId                     String
-  issuerId                        String
-  evidenceUrl                     String?
-  issuedAt                        DateTime         @default(now())
-  expiresAt                       DateTime?
-  status                          BadgeStatus      @default(PENDING)
-  claimToken                      String?          @unique
-  claimedAt                       DateTime?
-  revokedAt                       DateTime?
-  revocationReason                String?
-  assertionJson                   Json
-  recipientHash                   String
-  metadataHash                    String?
-  verificationId                  String           @unique
-  users_badges_issuerIdTousers    users            @relation("badges_issuerIdTousers", fields: [issuerId], references: [id])
-  users_badges_recipientIdTousers users            @relation("badges_recipientIdTousers", fields: [recipientId], references: [id])
-  badge_templates                 badge_templates  @relation(fields: [templateId], references: [id])
-  evidence_files                  evidence_files[]
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  firstName     String?
+  lastName      String?
+  role          UserRole  @default(EMPLOYEE)
+  isActive      Boolean   @default(true)
+  emailVerified Boolean   @default(false)
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  @@index([claimToken])
-  @@index([issuerId])
-  @@index([recipientId, status])
-  @@index([status, expiresAt])
-  @@index([templateId, issuedAt])
-  @@index([verificationId])
-  @@index([recipientId, status, issuedAt(sort: Desc)], map: "idx_badges_timeline")
-}
-
-model evidence_files {
-  id           String   @id
-  badgeId      String
-  fileName     String   @db.VarChar(255)
-  originalName String   @db.VarChar(255)
-  fileSize     Int
-  mimeType     String   @db.VarChar(100)
-  blobUrl      String
-  uploadedBy   String
-  uploadedAt   DateTime @default(now())
-  badges       badges   @relation(fields: [badgeId], references: [id], onDelete: Cascade)
-  users        users    @relation(fields: [uploadedBy], references: [id])
-
-  @@index([badgeId])
-}
-
-model milestone_achievements {
-  id                String            @id
-  milestoneId       String
-  userId            String
-  achievedAt        DateTime          @default(now())
-  milestone_configs milestone_configs @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
-  users             users             @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([milestoneId, userId])
-  @@index([userId, achievedAt])
-}
-
-model milestone_configs {
-  id                     String                   @id
-  type                   MilestoneType
-  title                  String                   @db.VarChar(200)
-  description            String
-  trigger                Json
-  icon                   String                   @db.VarChar(10)
-  isActive               Boolean                  @default(true)
-  createdBy              String
-  createdAt              DateTime                 @default(now())
-  updatedAt              DateTime
-  milestone_achievements milestone_achievements[]
-  users                  users                    @relation(fields: [createdBy], references: [id])
-
-  @@index([isActive])
-}
-
-model password_reset_tokens {
-  id        String   @id
-  token     String   @unique
-  userId    String
-  used      Boolean  @default(false)
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  users     users    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([token])
-  @@index([userId])
-}
-
-model refresh_tokens {
-  id        String   @id
-  token     String   @unique
-  userId    String
-  expiresAt DateTime
-  isRevoked Boolean  @default(false)
-  createdAt DateTime @default(now())
-  users     users    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([token])
-  @@index([userId])
-}
-
-model skill_categories {
-  id                     String             @id
-  name                   String             @db.VarChar(100)
-  nameEn                 String?            @db.VarChar(100)
-  description            String?
-  parentId               String?
-  level                  Int                @default(1)
-  isSystemDefined        Boolean            @default(false)
-  isEditable             Boolean            @default(true)
-  displayOrder           Int                @default(0)
-  createdAt              DateTime           @default(now())
-  updatedAt              DateTime
-  skill_categories       skill_categories?  @relation("skill_categoriesToskill_categories", fields: [parentId], references: [id], onDelete: Cascade)
-  other_skill_categories skill_categories[] @relation("skill_categoriesToskill_categories")
-  skills                 skills[]
-
-  @@index([isSystemDefined])
-  @@index([level])
-  @@index([parentId])
-}
-
-model skills {
-  id               String           @id
-  name             String           @db.VarChar(100)
-  description      String?
-  categoryId       String
-  level            SkillLevel?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime
-  skill_categories skill_categories @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-
-  @@unique([name, categoryId])
-  @@index([categoryId])
-}
-
-model users {
-  id                               String                   @id
-  email                            String                   @unique
-  role                             UserRole                 @default(EMPLOYEE)
-  createdAt                        DateTime                 @default(now())
-  updatedAt                        DateTime
-  emailVerified                    Boolean                  @default(false)
-  firstName                        String?
-  isActive                         Boolean                  @default(true)
-  lastLoginAt                      DateTime?
-  lastName                         String?
-  passwordHash                     String
-  badge_templates                  badge_templates[]
-  badges_badges_issuerIdTousers    badges[]                 @relation("badges_issuerIdTousers")
-  badges_badges_recipientIdTousers badges[]                 @relation("badges_recipientIdTousers")
-  evidence_files                   evidence_files[]
-  milestone_achievements           milestone_achievements[]
-  milestone_configs                milestone_configs[]
-  password_reset_tokens            password_reset_tokens[]
-  refresh_tokens                   refresh_tokens[]
+  passwordResetTokens   PasswordResetToken[]
+  refreshTokens         RefreshToken[]
+  badgeTemplates        BadgeTemplate[]
+  badgesReceived        Badge[]                @relation("BadgesReceived")
+  badgesIssued          Badge[]                @relation("BadgesIssued")
+  milestonesCreated     MilestoneConfig[]      @relation("MilestoneCreator")
+  milestoneAchievements MilestoneAchievement[] @relation("MilestoneAchievements")
+  evidenceUploads       EvidenceFile[]         @relation("EvidenceUploader")
 
   @@index([email])
   @@index([role])
+  @@map("users")
 }
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  used      Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique @db.Text
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  isRevoked Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// Sprint 2: Badge Template Management Models
+
+enum TemplateStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+// Sprint 3: Badge Issuance Models
 
 enum BadgeStatus {
-  PENDING
-  CLAIMED
-  EXPIRED
-  REVOKED
+  PENDING   // Awaiting claim
+  CLAIMED   // Claimed by recipient
+  EXPIRED   // Past expiration date
+  REVOKED   // Revoked by admin
 }
 
-enum MilestoneType {
-  BADGE_COUNT
-  SKILL_TRACK
-  ANNIVERSARY
-  CUSTOM
+model BadgeTemplate {
+  id               String         @id @default(uuid())
+  name             String         @db.VarChar(100)
+  description      String?        @db.Text
+  imageUrl         String?        // Azure Blob Storage URL
+  category         String         @db.VarChar(50)
+  skillIds         String[]       // Array of Skill IDs
+  issuanceCriteria Json           // Flexible JSON structure for criteria
+  validityPeriod   Int?           // Validity period in days, null = permanent
+  status           TemplateStatus @default(DRAFT)
+  createdBy        String
+  creator          User           @relation(fields: [createdBy], references: [id])
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  badges           Badge[]        // Badges issued from this template
+
+  @@index([category])
+  @@index([status])
+  @@index([createdAt])
+  @@index([createdBy])
+  @@index([category, status]) // Composite index for filtering by category + status
+  @@index([status, createdAt]) // Composite index for status + sorting
+  @@map("badge_templates")
+}
+
+model SkillCategory {
+  id              String           @id @default(uuid())
+  name            String           @db.VarChar(100)
+  nameEn          String?          @db.VarChar(100) // English name
+  description     String?          @db.Text
+  parentId        String?
+  parent          SkillCategory?   @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children        SkillCategory[]  @relation("CategoryHierarchy")
+  level           Int              @default(1) // 1=top, 2=second, 3=third
+  isSystemDefined Boolean          @default(false) // true=preset, false=custom
+  isEditable      Boolean          @default(true)
+  displayOrder    Int              @default(0)
+  skills          Skill[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([parentId])
+  @@index([isSystemDefined])
+  @@index([level])
+  @@map("skill_categories")
 }
 
 enum SkillLevel {
@@ -214,15 +143,113 @@ enum SkillLevel {
   EXPERT
 }
 
-enum TemplateStatus {
-  DRAFT
-  ACTIVE
-  ARCHIVED
+model Skill {
+  id          String        @id @default(uuid())
+  name        String        @db.VarChar(100)
+  description String?       @db.Text
+  categoryId  String
+  category    SkillCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  level       SkillLevel?   // Optional skill level
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([name, categoryId]) // Unique skill name per category
+  @@index([categoryId])
+  @@map("skills")
 }
 
-enum UserRole {
-  ADMIN
-  ISSUER
-  MANAGER
-  EMPLOYEE
+model Badge {
+  id               String        @id @default(uuid())
+  templateId       String
+  recipientId      String
+  issuerId         String
+  evidenceUrl      String?       // Azure Blob Storage URL
+  issuedAt         DateTime      @default(now())
+  expiresAt        DateTime?     // Calculated from expiresIn
+  status           BadgeStatus   @default(PENDING)
+  claimToken       String?       @unique // 32-char token
+  claimedAt        DateTime?
+  revokedAt        DateTime?
+  revocationReason String?       @db.Text
+  assertionJson    Json          // Open Badges 2.0 JSON-LD
+  recipientHash    String        // SHA-256(email + salt)
+  
+  // Sprint 5: Badge Verification Fields
+  verificationId   String        @unique @default(uuid()) // Public verification UUID
+  metadataHash     String?       // SHA-256 hash of JSON-LD assertion for integrity
+  
+  template         BadgeTemplate @relation(fields: [templateId], references: [id])
+  recipient        User          @relation("BadgesReceived", fields: [recipientId], references: [id])
+  issuer           User          @relation("BadgesIssued", fields: [issuerId], references: [id])
+  evidenceFiles    EvidenceFile[]
+  
+  @@index([recipientId, status])
+  @@index([templateId, issuedAt])
+  @@index([claimToken])
+  @@index([status, expiresAt])
+  @@index([issuerId])
+  @@index([verificationId]) // Sprint 5: Fast public verification lookup
+  @@index([recipientId, status, issuedAt(sort: Desc)], name: "idx_badges_timeline") // Timeline view optimization
+  @@map("badges")
+}
+
+// Sprint 4: Milestone System Models
+
+enum MilestoneType {
+  BADGE_COUNT
+  SKILL_TRACK
+  ANNIVERSARY
+  CUSTOM
+}
+
+model MilestoneConfig {
+  id           String        @id @default(uuid())
+  type         MilestoneType
+  title        String        @db.VarChar(200)
+  description  String        @db.Text
+  trigger      Json          // JSONB trigger config
+  icon         String        @db.VarChar(10) // Emoji
+  isActive     Boolean       @default(true)
+  createdBy    String
+  creator      User          @relation("MilestoneCreator", fields: [createdBy], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  achievements MilestoneAchievement[]
+
+  @@index([isActive])
+  @@map("milestone_configs")
+}
+
+model MilestoneAchievement {
+  id          String          @id @default(uuid())
+  milestoneId String
+  userId      String
+  achievedAt  DateTime        @default(now())
+  
+  milestone   MilestoneConfig @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  user        User            @relation("MilestoneAchievements", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([milestoneId, userId]) // One achievement per user per milestone
+  @@index([userId, achievedAt])
+  @@map("milestone_achievements")
+}
+
+// Sprint 4: Evidence File Management
+
+model EvidenceFile {
+  id           String   @id @default(uuid())
+  badgeId      String
+  fileName     String   @db.VarChar(255)
+  originalName String   @db.VarChar(255)
+  fileSize     Int      // Bytes
+  mimeType     String   @db.VarChar(100)
+  blobUrl      String   @db.Text // Azure Blob URL
+  uploadedBy   String
+  uploadedAt   DateTime @default(now())
+  
+  badge        Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  uploader     User     @relation("EvidenceUploader", fields: [uploadedBy], references: [id])
+
+  @@index([badgeId])
+  @@map("evidence_files")
 }
