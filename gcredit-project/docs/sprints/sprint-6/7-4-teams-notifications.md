@@ -95,12 +95,12 @@ So that **I'm notified in my primary work communication tool**.
   - [x] Return Adaptive Card update (show "Claimed" status)
   - [x] Write unit tests for claim action - 7/7 tests passing
 
-- [ ] **Task 6: Configure Email Fallback** (AC: #4)
-  - [ ] Update `TeamsBadgeNotificationService` to use `GraphEmailService` as fallback
-  - [ ] If Teams notification fails after retries, send email notification
-  - [ ] Use existing email template from Story 7.2
-  - [ ] Log fallback action in system logs
-  - [ ] Write integration test (Teams fails → email sent)
+- [x] **Task 6: Configure Email Fallback** (AC: #4)
+  - [x] Update `TeamsBadgeNotificationService` to use `GraphEmailService` as fallback
+  - [x] If Teams notification fails after retries, send email notification
+  - [x] Use existing email template from Story 7.2
+  - [x] Log fallback action in system logs
+  - [x] Write integration test (Teams fails → email sent) - 3/3 tests passing
 
 - [ ] **Task 7: Add Configuration Settings** (AC: #5)
   - [ ] Add environment variables: `DEFAULT_TEAMS_TEAM_ID`, `DEFAULT_TEAMS_CHANNEL_ID`
