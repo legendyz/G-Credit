@@ -76,6 +76,8 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('Authentication', 'User authentication and authorization')
     .addTag('Badge Templates', 'Badge template management (CRUD, query, image upload)')
+    .addTag('Badge Sharing', 'Share badges to Teams and other platforms (Story 7.4)')
+    .addTag('Teams Actions', 'Handle Adaptive Card actions from Microsoft Teams (Story 7.4)')
     .addTag('Skills', 'Skill management and categories')
     .addTag('Users', 'User profile and management')
     .addBearerAuth(

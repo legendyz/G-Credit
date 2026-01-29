@@ -112,12 +112,14 @@ So that **I'm notified in my primary work communication tool**.
 
 ### Testing
 
-- [ ] **Task 8: Write Unit Tests** (AC: All)
-  - [ ] BadgeNotificationCardBuilder: 5 tests (card structure, data binding, edge cases)
-  - [ ] TeamsBadgeNotificationService: 8 tests (success, retries, failures, fallback)
-  - [ ] TeamsSharingController: 4 tests (valid request, auth errors, badge not found)
-  - [ ] TeamsActionController: 3 tests (claim success, already claimed, unauthorized)
-  - [ ] Target: >80% code coverage
+- [x] **Task 8: Write Unit Tests** (AC: All)
+  - [x] BadgeNotificationCardBuilder: 19 tests (card structure, data binding, edge cases) ✅
+  - [x] TeamsBadgeNotificationService: 11 tests (success, retries, failures, fallback) ✅
+  - [x] TeamsSharingController: 7 tests (valid request, auth errors, badge not found) ✅
+  - [x] TeamsActionController: 7 tests (claim success, already claimed, unauthorized) ✅
+  - [x] Badge Issuance Integration: 4 tests (Teams trigger, non-blocking) ✅
+  - [x] **Total: 48 tests passing for Story 7.4**
+  - [x] Overall test suite: 194/194 passing (100%)
 
 - [ ] **Task 9: Integration Tests with Real Graph API** (AC: #4)
   - [ ] Create test Teams channel in M365 Dev Subscription
@@ -142,12 +144,12 @@ So that **I'm notified in my primary work communication tool**.
   - [ ] Add request/response examples to Swagger
   - [ ] Update API changelog
 
-- [ ] **Task 12: Create Teams Setup Guide** (AC: #5)
-  - [ ] Document how to configure Teams integration
-  - [ ] Include instructions for getting Team ID and Channel ID
-  - [ ] Explain Graph API permissions required
-  - [ ] Add troubleshooting section
-  - [ ] Create guide: `docs/setup/teams-integration-setup.md`
+- [x] **Task 12: Create Teams Setup Guide** (AC: #5)
+  - [x] Document how to configure Teams integration
+  - [x] Include instructions for getting Team ID and Channel ID
+  - [x] Explain Graph API permissions required
+  - [x] Add troubleshooting section
+  - [x] Create guide: `docs/setup/teams-integration-setup.md` ✅ (280 lines)
 
 ## Dev Notes
 
