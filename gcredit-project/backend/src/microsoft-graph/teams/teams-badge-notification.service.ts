@@ -3,6 +3,7 @@
  * 
  * Story 7.4 - Microsoft Teams Notifications
  * Sends badge issuance notifications to Microsoft Teams with Adaptive Cards
+ * Task 6: Implements email fallback when Teams notification fails
  * 
  * @see ADR-008: Microsoft Graph Integration Strategy
  * @see docs/sprints/sprint-6/adaptive-card-specs.md
@@ -12,6 +13,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GraphTeamsService } from '../services/graph-teams.service';
 import { PrismaService } from '../../common/prisma.service';
+import { BadgeNotificationService } from '../../badge-issuance/services/badge-notification.service';
 import {
   BadgeNotificationCardBuilder,
   BadgeNotificationCardData,
@@ -25,6 +27,7 @@ export class TeamsBadgeNotificationService {
     private readonly graphTeamsService: GraphTeamsService,
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
+    private readonly emailNotificationService: BadgeNotificationService,
   ) {}
 
   /**
@@ -120,11 +123,50 @@ export class TeamsBadgeNotificationService {
       );
     } catch (error) {
       this.logger.error(
-        `❌ Failed to send Teams notification to ${recipient.email}`,
-        error.stack,
+        `❌ Failed to send Teams notification to ${recipient.email}: ${error.message}`,
       );
-      throw error;
+      
+      // Task 6: Email fallback
+      this.logger.log(
+        `📧 Attempting email fallback for badge ${badgeId} → ${recipient.email}`,
+      );
+      
+      try {
+        await this.sendEmailFallback(badge, recipient, cardData.claimUrl);
+        this.logger.log(
+          `✅ Email fallback sent successfully to ${recipient.email}`,
+        );
+      } catch (emailError) {
+        this.logger.error(
+          `❌ Email fallback also failed for ${recipient.email}: ${emailError.message}`,
+        );
+        // Don't throw - notification failure shouldn't block badge issuance
+      }
     }
+  }
+
+  /**
+   * Send email notification as fallback when Teams notification fails
+   * 
+   * Task 6: Email Fallback
+   * Uses existing email template from Story 7.2
+   */
+  private async sendEmailFallback(
+    badge: any,
+    recipient: any,
+    claimUrl?: string,
+  ): Promise<void> {
+    const platformUrl = this.configService.get<string>('PLATFORM_URL');
+    const finalClaimUrl = claimUrl || `${platformUrl}/claim?token=${badge.claimToken}`;
+
+    await this.emailNotificationService.sendBadgeClaimNotification({
+      recipientEmail: recipient.email,
+      recipientName: this.getFullName(recipient),
+      badgeName: badge.template.name,
+      badgeDescription: badge.template.description || 'Congratulations on earning this badge!',
+      badgeImageUrl: badge.template.imageUrl || 'https://default-badge-image.png',
+      claimUrl: finalClaimUrl,
+    });
   }
 
   /**

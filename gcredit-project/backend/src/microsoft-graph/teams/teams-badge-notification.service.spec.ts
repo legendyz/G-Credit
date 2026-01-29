@@ -1,6 +1,7 @@
 /**
  * Unit tests for TeamsBadgeNotificationService
  * Story 7.4 - Microsoft Teams Notifications
+ * Task 6: Email Fallback Testing
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
@@ -9,12 +10,14 @@ import { TeamsBadgeNotificationService } from './teams-badge-notification.servic
 import { GraphTeamsService } from '../services/graph-teams.service';
 import { BadgeNotificationCardBuilder } from './adaptive-cards/badge-notification.builder';
 import { PrismaService } from '../../common/prisma.service';
+import { BadgeNotificationService } from '../../badge-issuance/services/badge-notification.service';
 
 describe('TeamsBadgeNotificationService - Story 7.4', () => {
   let service: TeamsBadgeNotificationService;
   let graphTeamsService: GraphTeamsService;
   let prismaService: PrismaService;
   let configService: ConfigService;
+  let emailNotificationService: BadgeNotificationService;
 
   const mockGraphTeamsService = {
     sendActivityNotification: jest.fn(),
@@ -41,6 +44,10 @@ describe('TeamsBadgeNotificationService - Story 7.4', () => {
       };
       return config[key];
     }),
+  };
+
+  const mockEmailNotificationService = {
+    sendBadgeClaimNotification: jest.fn(),
   };
 
   const mockBadgeData = {
@@ -87,6 +94,10 @@ describe('TeamsBadgeNotificationService - Story 7.4', () => {
           provide: ConfigService,
           useValue: mockConfigService,
         },
+        {
+          provide: BadgeNotificationService,
+          useValue: mockEmailNotificationService,
+        },
       ],
     }).compile();
 
@@ -96,6 +107,7 @@ describe('TeamsBadgeNotificationService - Story 7.4', () => {
     graphTeamsService = module.get<GraphTeamsService>(GraphTeamsService);
     prismaService = module.get<PrismaService>(PrismaService);
     configService = module.get<ConfigService>(ConfigService);
+    emailNotificationService = module.get<BadgeNotificationService>(BadgeNotificationService);
 
     // Reset mocks
     jest.clearAllMocks();
@@ -182,6 +194,7 @@ describe('TeamsBadgeNotificationService - Story 7.4', () => {
     });
 
     it('should handle Graph API errors gracefully', async () => {
+      // Task 6: Updated - now sends email fallback instead of throwing
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeData);
       mockPrismaService.user.findUnique.mockResolvedValue(mockRecipient);
       
@@ -190,13 +203,71 @@ describe('TeamsBadgeNotificationService - Story 7.4', () => {
       mockGraphTeamsService.sendActivityNotification.mockRejectedValueOnce(
         new Error('Graph API rate limit exceeded'),
       );
+      mockEmailNotificationService.sendBadgeClaimNotification.mockResolvedValue(undefined);
 
+      // Should NOT throw - email fallback handles it
       await expect(
         service.sendBadgeIssuanceNotification('badge-123', 'user-789'),
-      ).rejects.toThrow('Graph API rate limit exceeded');
+      ).resolves.not.toThrow();
       
-      // Verify the error was thrown after attempting to send
+      // Verify Teams was attempted
       expect(mockGraphTeamsService.sendActivityNotification).toHaveBeenCalled();
+      
+      // Verify email fallback was triggered
+      expect(mockEmailNotificationService.sendBadgeClaimNotification).toHaveBeenCalledWith({
+        recipientEmail: 'john.smith@example.com',
+        recipientName: 'John Smith',
+        badgeName: 'Full-Stack Developer Certification',
+        badgeDescription: 'This badge recognizes proficiency in full-stack development.',
+        badgeImageUrl: 'https://storage.azure.com/badges/test-badge.png',
+        claimUrl: 'https://g-credit.com/claim?token=claim-token-xyz',
+      });
+    });
+
+    it('should send email fallback when Teams fails', async () => {
+      // Task 6: Test email fallback
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeData);
+      mockPrismaService.user.findUnique.mockResolvedValue(mockRecipient);
+
+      mockGraphTeamsService.isGraphTeamsEnabled.mockReturnValue(true);
+      mockGraphTeamsService.sendActivityNotification.mockRejectedValueOnce(
+        new Error('Teams service unavailable'),
+      );
+      mockEmailNotificationService.sendBadgeClaimNotification.mockResolvedValue(undefined);
+
+      await service.sendBadgeIssuanceNotification('badge-123', 'user-789');
+
+      // Verify email was sent
+      expect(mockEmailNotificationService.sendBadgeClaimNotification).toHaveBeenCalledTimes(1);
+      expect(mockEmailNotificationService.sendBadgeClaimNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          recipientEmail: 'john.smith@example.com',
+          recipientName: 'John Smith',
+          badgeName: 'Full-Stack Developer Certification',
+        }),
+      );
+    });
+
+    it('should not throw if both Teams and email fail', async () => {
+      // Task 6: Graceful degradation
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeData);
+      mockPrismaService.user.findUnique.mockResolvedValue(mockRecipient);
+
+      mockGraphTeamsService.isGraphTeamsEnabled.mockReturnValue(true);
+      mockGraphTeamsService.sendActivityNotification.mockRejectedValueOnce(
+        new Error('Teams failed'),
+      );
+      mockEmailNotificationService.sendBadgeClaimNotification.mockRejectedValueOnce(
+        new Error('Email service down'),
+      );
+
+      // Should not throw - notification failure is logged but doesn't block
+      await expect(
+        service.sendBadgeIssuanceNotification('badge-123', 'user-789'),
+      ).resolves.not.toThrow();
+
+      expect(mockGraphTeamsService.sendActivityNotification).toHaveBeenCalled();
+      expect(mockEmailNotificationService.sendBadgeClaimNotification).toHaveBeenCalled();
     });
 
     it('should format date correctly in Adaptive Card', async () => {
