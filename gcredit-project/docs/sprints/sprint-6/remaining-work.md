@@ -95,22 +95,41 @@
 **时间**: 4-6 小时  
 **理由**: Stories 7.3 和 7.4 需要记录分享数据
 
+**⚠️ CRITICAL: Prisma Schema 命名规范检查（Lesson 22）**
+在修改任何 Prisma schema 前，必须阅读并遵守：
+- 📖 **必读**: [Lesson 22 - Prisma Schema Naming Conventions](../../lessons-learned/lessons-learned.md#lesson-22-prisma-schema-naming-conventions-and-mock-testing-pitfalls)
+- 🚨 **强制规范**: 禁止运行 `npx prisma format`
+- ✅ **正确模式**: `model User { ... @@map("users") }` (PascalCase model + snake_case table)
+- ❌ **禁止模式**: `model users { ... }` (snake_case model)
+- 🔧 **三步验证**: `prisma generate` → `npm run build` → `npm test`
+
 1. **Story 7.5 - Tasks 1-2** (2 小时)
-   - 创建 BadgeShare 表迁移
-   - 实现 BadgeAnalyticsService
+   - [ ] **开始前必做**: 检查现有 schema.prisma 中所有 model 命名（必须 PascalCase）
+   - [ ] 创建 BadgeShare 表迁移
+     - ⚠️ 使用 `model BadgeShare { ... @@map("badge_shares") }`
+     - ❌ 绝对禁止: `model badge_shares { ... }`
+   - [ ] 实现 BadgeAnalyticsService
+   - [ ] **完成后必做**: 运行三步验证 (generate → build → test)
 
 2. **Story 7.5 - Tasks 3-4** (1 小时)
-   - 集成 Story 7.2 (Email) - 移除 TODO
-   - 集成 Story 7.4 (Teams) - 移除 TODO
-   - 运行测试验证集成
+   - [ ] 集成 Story 7.2 (Email) - 移除 TODO
+   - [ ] 集成 Story 7.4 (Teams) - 移除 TODO
+   - [ ] **验证 Prisma 关系名**:
+     - ✅ 使用 `badge.template` (不是 `badgeTemplate`)
+     - ✅ 使用 `badge.issuer` (不是 `badge.badgeTemplate.issuer`)
+     - ✅ 使用 VSCode 自动完成验证
+   - [ ] 运行测试验证集成
 
 3. **Story 7.5 - Task 6** (1 小时)
-   - 实现 Analytics API Endpoints
-   - Swagger 文档更新
+   - [ ] 实现 Analytics API Endpoints
+   - [ ] Swagger 文档更新
 
 4. **Story 7.5 - Tasks 9-10** (1-2 小时)
-   - 单元测试和集成测试
-   - 验证数据正确记录
+   - [ ] 单元测试和集成测试
+   - [ ] **测试模拟数据必须匹配真实 schema**:
+     - ✅ Mock 结构: `{ template: {...}, issuer: {...} }`
+     - ❌ 错误结构: `{ badgeTemplate: {...} }`
+   - [ ] 验证数据正确记录
 
 **✅ Checkpoint**: Analytics 后端完成，Stories 7.2 & 7.4 集成完毕
 
