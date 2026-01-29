@@ -15,6 +15,7 @@ import { BadgeIssuanceModule } from './badge-issuance/badge-issuance.module';
 import { EvidenceModule } from './evidence/evidence.module';
 import { MilestonesModule } from './milestones/milestones.module';
 import { BadgeVerificationModule } from './badge-verification/badge-verification.module';
+import { MicrosoftGraphModule } from './microsoft-graph/microsoft-graph.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { BadgeVerificationModule } from './badge-verification/badge-verification
     EvidenceModule,
     MilestonesModule,
     BadgeVerificationModule,
+    MicrosoftGraphModule,
   ],
   controllers: [AppController],
   providers: [
