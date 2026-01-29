@@ -11,10 +11,10 @@
 
 | Metric | Value | Status |
 |--------|-------|--------|
-| **Stories Completed** | 2/7 | 29% |
-| **Hours Spent** | 2.5h | - |
-| **Estimated Remaining** | 53.5-73.5h | - |
-| **Current Velocity** | - | TBD |
+| **Stories Completed** | 3/7 | 43% |
+| **Hours Spent** | 3.5h | - |
+| **Estimated Remaining** | 52.5-72.5h | - |
+| **Current Velocity** | 1.17h/story | - |
 | **Mid-Sprint Check** | Not reached | Trigger: 3.5 stories done |
 
 ---
@@ -60,22 +60,18 @@
   - Committed: f53d4ca
 - **Notes:** 19 packages added, all dependencies verified, Prisma stable
 
-#### ⏳ Story 0.3: Create ADR-008 (Microsoft Graph Integration)
-- **Status:** 🔲 NOT STARTED
+#### ✅ Story 0.3: Create ADR-008 (Microsoft Graph Integration)
+- **Status:** ✅ COMPLETE (2026-01-29)
 - **Effort:** 1h
-- **Dependencies:** None
-- **Deliverable:** `docs/decisions/ADR-008-microsoft-graph-integration.md`
-- **Content:**
-  - OAuth 2.0 Client Credentials Flow
-  - Token management strategy
-  - Error handling (exponential backoff)
-  - Production migration path
-  - Security considerations
-- **Success Criteria:**
-  - ADR follows template format
-  - All decision points documented
-  - Alternatives considered section complete
-- **Agent Command:** "Create ADR-008 for Microsoft Graph integration"
+- **Deliverable:** `docs/decisions/ADR-008-microsoft-graph-integration.md` ✅
+- **Deliverables:**
+  - 879 lines comprehensive ADR
+  - OAuth 2.0 Client Credentials Flow architecture
+  - Token management strategy (caching, refresh, lifecycle)
+  - Error handling (exponential backoff, rate limiting)
+  - Production migration path documented
+  - Security considerations complete
+- **Notes:** ADR-008 Status: Accepted, pending LegendZhu approval
 
 #### ⏳ Story 0.4: Microsoft Graph Module Foundation
 - **Status:** 🔲 NOT STARTED
