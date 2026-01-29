@@ -1,0 +1,147 @@
+/**
+ * Teams Badge Notification Service
+ * 
+ * Story 7.4 - Microsoft Teams Notifications
+ * Sends badge issuance notifications to Microsoft Teams with Adaptive Cards
+ * 
+ * @see ADR-008: Microsoft Graph Integration Strategy
+ * @see docs/sprints/sprint-6/adaptive-card-specs.md
+ */
+
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { GraphTeamsService } from '../services/graph-teams.service';
+import { PrismaService } from '../../common/prisma.service';
+import {
+  BadgeNotificationCardBuilder,
+  BadgeNotificationCardData,
+} from './adaptive-cards/badge-notification.builder';
+
+@Injectable()
+export class TeamsBadgeNotificationService {
+  private readonly logger = new Logger(TeamsBadgeNotificationService.name);
+
+  constructor(
+    private readonly graphTeamsService: GraphTeamsService,
+    private readonly prisma: PrismaService,
+    private readonly configService: ConfigService,
+  ) {}
+
+  /**
+   * Send badge issuance notification to Microsoft Teams
+   * 
+   * Fetches badge, recipient, and credential data, then sends Teams notification
+   * with Adaptive Card showing badge details and action buttons.
+   * 
+   * @param badgeId - Badge ID that was issued
+   * @param recipientUserId - User ID of badge recipient
+   * @throws Error if badge, user, or credential not found
+   * @throws Error if Teams notification fails
+   */
+  async sendBadgeIssuanceNotification(
+    badgeId: string,
+    recipientUserId: string,
+  ): Promise<void> {
+    // Check if Teams notifications are enabled
+    if (!this.graphTeamsService.isGraphTeamsEnabled()) {
+      this.logger.warn(
+        '⚠️ Teams notifications disabled, skipping notification',
+      );
+      return;
+    }
+
+    this.logger.log(
+      `📢 Preparing Teams notification for badge ${badgeId} → user ${recipientUserId}`,
+    );
+
+    // 1. Fetch badge data with issuer
+    const badge = await this.prisma.badge.findUnique({
+      where: { id: badgeId },
+      include: {
+        badgeTemplate: {
+          include: {
+            issuer: true,
+          },
+        },
+      },
+    });
+
+    if (!badge) {
+      throw new Error(`Badge not found: ${badgeId}`);
+    }
+
+    // 2. Fetch recipient user
+    const recipient = await this.prisma.user.findUnique({
+      where: { id: recipientUserId },
+    });
+
+    if (!recipient) {
+      throw new Error(`Recipient user not found: ${recipientUserId}`);
+    }
+
+    // 3. Fetch credential to get issue date and claim token
+    const credential = await this.prisma.credential.findFirst({
+      where: {
+        badgeId,
+        userId: recipientUserId,
+      },
+      orderBy: {
+        issuedAt: 'desc',
+      },
+    });
+
+    if (!credential) {
+      throw new Error('Credential not found for badge and user');
+    }
+
+    // 4. Build Adaptive Card data
+    const platformUrl = this.configService.get<string>('PLATFORM_URL');
+    const badgeWalletUrl = `${platformUrl}/wallet`;
+
+    const cardData: BadgeNotificationCardData = {
+      badgeImageUrl: badge.imageUrl,
+      badgeName: badge.name,
+      issuerName: badge.badgeTemplate.issuer.name,
+      recipientName: recipient.name,
+      issueDate: BadgeNotificationCardBuilder.formatDate(credential.issuedAt),
+      badgeId: badge.id,
+      badgeDescription: badge.description,
+      badgeWalletUrl,
+      claimUrl:
+        credential.status === 'PENDING'
+          ? `${platformUrl}/claim?token=${credential.claimToken}`
+          : undefined,
+    };
+
+    // 5. Build Adaptive Card
+    const adaptiveCard = BadgeNotificationCardBuilder.build(cardData);
+
+    // 6. Send Teams notification
+    const activityType = 'badgeEarned';
+    const previewText = `🎉 You earned the "${badge.name}" badge!`;
+    const templateParameters = {
+      badgeName: badge.name,
+      issuerName: badge.badgeTemplate.issuer.name,
+    };
+
+    try {
+      await this.graphTeamsService.sendActivityNotification(
+        recipient.email, // Use email as userId for Graph API
+        activityType,
+        previewText,
+        templateParameters,
+        adaptiveCard,
+      );
+
+      this.logger.log(
+        `✅ Teams notification sent successfully to ${recipient.email}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `❌ Failed to send Teams notification to ${recipient.email}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+}
