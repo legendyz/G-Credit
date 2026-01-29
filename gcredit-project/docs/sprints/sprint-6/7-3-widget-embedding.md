@@ -22,13 +22,44 @@ so that I can display my credentials on my personal website, portfolio, or Linke
 
 ## Tasks / Subtasks
 
+### ⚠️ CRITICAL: Prisma 使用规范（开始前必读）
+
+**🚨 Sprint 6 重大教训 - Lesson 22**
+
+Story 7.3 需要访问 Prisma 数据库（Badge、BadgeShare表）。**在编写任何 Prisma 查询前，必须了解以下关键规范：**
+
+**📖 完整文档**: [Lesson 22 - Prisma Schema Naming Conventions](../../lessons-learned/lessons-learned.md#lesson-22)
+
+**关键要点:**
+1. **关系名验证**: 使用 VSCode 自动完成验证正确的关系名
+   - ✅ 正确: `badge.template` (不是 `badgeTemplate`)
+   - ✅ 正确: `badge.issuer` (不是 `badge.badgeTemplate.issuer`)
+   - ✅ 正确: `badge.recipient` (不是 `recipientUser`)
+
+2. **User 模型字段**: 没有 `name` 字段
+   - ❌ 错误: `user.name`
+   - ✅ 正确: `user.firstName` + `user.lastName` 或 `user.email`
+
+3. **测试 Mock 必须匹配真实 schema**:
+   - ✅ 正确: `{ template: {...}, issuer: {...} }`
+   - ❌ 错误: `{ badgeTemplate: {...} }`
+
+4. **每次修改 Prisma 查询后运行**: `npm run build` (验证 TypeScript 类型)
+
+**如果不遵守**: 可能导致编译错误（Lesson 22: 一个错误导致 137 个 TS 错误）
+
+---
+
 ### Backend Implementation
 
 - [ ] **Task 1: Widget Embedding API** (AC: #2, #3)
+  - [ ] **PRE-CHECK**: 阅读上方 Prisma 使用规范
   - [ ] Create `GET /api/badges/:badgeId/widget` endpoint (returns HTML snippet)
   - [ ] Create `GET /api/badges/:badgeId/embed` endpoint (returns JSON for client-side rendering)
+  - [ ] **Prisma 查询**: 使用正确关系名 (`badge.template`, `badge.issuer`)
   - [ ] Make API public (no authentication required)
   - [ ] Configure CORS for cross-origin embedding
+  - [ ] **POST-CHECK**: Run `npm run build` to verify TypeScript types
 
 - [ ] **Task 2: Widget Configuration Options** (AC: #4)
   - [ ] Implement size parameter: `small` (100x100), `medium` (200x200), `large` (300x300)
@@ -37,9 +68,11 @@ so that I can display my credentials on my personal website, portfolio, or Linke
   - [ ] Return appropriate HTML/JSON based on parameters
 
 - [ ] **Task 3: Widget Share Tracking** (AC: #6)
+  - [ ] **依赖**: Story 7.5 必须先完成（创建 BadgeShare 表）
   - [ ] Record widget embeds in BadgeShare table
   - [ ] Use `platform='widget'` and `sharedAt` timestamp
   - [ ] Store referrer URL in metadata (if available)
+  - [ ] **验证**: Mock 数据结构匹配真实 BadgeShare schema
 
 ### Frontend Implementation
 
@@ -63,7 +96,11 @@ so that I can display my credentials on my personal website, portfolio, or Linke
   - [ ] Test widget API endpoints (HTML/JSON responses)
   - [ ] Test widget configuration options (size, theme, details)
   - [ ] Test widget share tracking
+  - [ ] **IMPORTANT**: Mock 数据必须使用正确的 Prisma 关系名
+    - ✅ `mockBadge = { template: {...}, issuer: {...} }`
+    - ❌ `mockBadge = { badgeTemplate: {...} }` (这会导致测试通过但编译失败)
   - [ ] Achieve >80% test coverage
+  - [ ] **验证**: Run `npm run build` after all tests pass
 
 - [ ] **Task 7: Integration Tests** (AC: #3, #7, #8)
   - [ ] Test embedding widget on test HTML page

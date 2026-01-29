@@ -139,10 +139,21 @@
 **时间**: 6-8 小时  
 **理由**: 新功能开发，依赖 Story 7.5 已完成
 
+**⚠️ Prisma 使用提醒（Lesson 22）**
+Story 7.3 需要查询 Badge 和 BadgeShare 数据，请遵守：
+- ✅ 使用正确关系名: `badge.template`, `badge.issuer`
+- ✅ Mock 数据匹配真实 schema: `{ template: {...}, issuer: {...} }`
+- ✅ 每次修改查询后运行: `npm run build`
+- 📖 详细规范见: [Story 7.3 文档](7-3-widget-embedding.md#-critical-prisma-使用规范开始前必读)
+
 1. **Story 7.3 - Tasks 1-3** (2-3 小时)
-   - Widget API 端点 (GET /badges/:id/widget, /embed)
-   - Widget 配置选项 (size, theme, details)
-   - Widget 分享跟踪 (调用 BadgeAnalyticsService)
+   - [ ] **开始前**: 阅读 Story 7.3 中的 Prisma 使用规范
+   - [ ] Widget API 端点 (GET /badges/:id/widget, /embed)
+     - 查询 Badge 数据时使用正确关系名
+   - [ ] Widget 配置选项 (size, theme, details)
+   - [ ] Widget 分享跟踪 (调用 BadgeAnalyticsService)
+     - 记录到 BadgeShare 表
+   - [ ] **完成后**: Run `npm run build` 验证类型
 
 2. **Story 7.3 - Tasks 4-5** (2-3 小时)
    - Widget Generator Page (前端)
@@ -151,6 +162,7 @@
 
 3. **Story 7.3 - Tasks 6-8** (2 小时)
    - 单元测试、集成测试
+   - **验证**: Mock 数据使用正确的关系名结构
    - 跨浏览器测试
 
 **✅ Checkpoint**: Widget 功能完成，可嵌入外部网站
