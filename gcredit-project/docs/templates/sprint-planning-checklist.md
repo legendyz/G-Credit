@@ -282,26 +282,76 @@ const containerName = process.env.AZURE_STORAGE_CONTAINER_BADGES;
 
 ---
 
+## 🌿 Git分支策略（🚨 CRITICAL - Sprint启动前必须执行）
+
+### 16. Git分支规划（🚨 MANDATORY）
+
+**⚠️ 重要：** 这是Sprint启动的第一步，必须在任何开发工作前完成！
+
+- [ ] **确认分支命名规范**
+  - 格式：`sprint-N/epic-X-description`
+  - 示例：`sprint-6/epic-7-badge-sharing`
+  - 遵循项目GitFlow策略
+
+- [ ] **验证main分支状态**
+  - [ ] 切换到main分支：`git checkout main`
+  - [ ] 拉取最新代码：`git pull origin main`
+  - [ ] 确认工作区干净：`git status`（无未提交变更）
+
+- [ ] **计划分支创建时间点**
+  - [ ] **Kickoff会议结束后立即执行**（作为Story 0.1）
+  - [ ] 或Planning完成并提交准备文档到main后
+
+- [ ] **分支创建命令准备**
+  ```bash
+  # 创建并切换到新分支
+  git checkout -b sprint-N/epic-X-description
+  
+  # 推送到远程并设置上游跟踪
+  git push -u origin sprint-N/epic-X-description
+  
+  # 验证当前分支
+  git branch
+  ```
+
+- [ ] **将分支创建纳入Sprint Backlog**
+  - [ ] 在Sprint Backlog中列为Story 0.1
+  - [ ] 标记为CRITICAL优先级
+  - [ ] 明确"必须在任何代码修改前完成"
+
+**🎓 Lesson Learned（Sprint 6经验）：**
+> Git分支创建容易被遗漏！必须在Planning阶段明确规划，并在Kickoff后立即执行。如果在main分支开发，会违反GitFlow并导致后续merge困难。
+
+**防止遗漏检查清单：**
+- [ ] ✅ Planning时已规划分支名称
+- [ ] ✅ Sprint Tracking文档中Story 0.1是"Create Git Branch"
+- [ ] ✅ Kickoff Checklist中包含分支创建验证
+- [ ] ✅ 在开始Story 0.2（安装依赖）前验证已在正确分支
+
+---
+
 ## ✅ 最终验证（Readiness Check）
 
-### 16. 团队就绪度
+### 17. 团队就绪度
 - [ ] 所有团队成员理解Sprint目标
 - [ ] 所有团队成员理解自己的任务
 - [ ] 团队对Sprint承诺有信心
 
-### 17. 技术就绪度
+### 18. 技术就绪度
 - [ ] 开发环境可用
 - [ ] **资源清单已回顾，无重复创建风险** (参考 `docs/setup/infrastructure-inventory.md`)
 - [ ] **版本清单已创建** (参考 `docs/sprints/sprint-N/version-manifest.md`) 🚨 MANDATORY
+- [ ] **Git分支策略已规划** (分支名称已确定) 🚨 MANDATORY
 - [ ] 所有工具和依赖已准备好
 - [ ] 测试环境可用
 
-### 18. 流程就绪度
+### 19. 流程就绪度
 - [ ] Sprint仪式（Ceremonies）时间已安排
 - [ ] Daily Standup时间已确定
 - [ ] Sprint Review和Retrospective已预订
+- [ ] **Git分支创建已列为Story 0.1** 🚨 MANDATORY
 
-### 19. 风险管理
+### 20. 风险管理
 - [ ] 高风险任务已识别
 - [ ] 缓解计划已制定
 - [ ] 应急方案已讨论
