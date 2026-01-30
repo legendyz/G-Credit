@@ -54,12 +54,13 @@ export class BadgeAnalyticsService {
     }
 
     // Create share record
-    const metadataToStore = metadata
+    const metadataToStore: Record<string, any> | null = metadata
       ? Object.keys(metadata)
           .filter((key) => key !== 'recipientEmail')
-          .reduce((acc, key) => {
-            if (metadata[key] !== undefined) {
-              acc[key] = metadata[key];
+          .reduce<Record<string, any>>((acc, key) => {
+            const value = metadata[key as keyof typeof metadata];
+            if (value !== undefined) {
+              acc[key] = value;
             }
             return acc;
           }, {})
@@ -71,7 +72,7 @@ export class BadgeAnalyticsService {
         platform,
         sharedBy: userId,
         recipientEmail: metadata?.recipientEmail || null,
-        metadata: metadataToStore && Object.keys(metadataToStore).length > 0 ? metadataToStore : null,
+        metadata: (metadataToStore && Object.keys(metadataToStore).length > 0 ? metadataToStore : null) as any,
       },
     });
   }
