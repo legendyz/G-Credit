@@ -1,11 +1,13 @@
 import type { Badge } from '../../hooks/useWallet';
 import { BadgeStatus } from '../../types/badge';
+import { useBadgeDetailModal } from '../../stores/badgeDetailModal';
 
 interface BadgeTimelineCardProps {
   badge: Badge;
 }
 
 export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
+  const { openModal } = useBadgeDetailModal();
   const getStatusColor = (status: BadgeStatus) => {
     switch (status) {
       case BadgeStatus.CLAIMED:
@@ -41,7 +43,10 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
       />
 
       {/* Card Content - AC 1.4 */}
-      <div className="flex-1 bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div 
+        className="flex-1 bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+        onClick={() => openModal(badge.id)}
+      >
         <div className="flex gap-4">
           {/* Badge Image */}
           <img
@@ -74,6 +79,10 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
               className="p-2 hover:bg-gray-100 rounded"
               aria-label="View badge details"
               title="View Details"
+              onClick={(e) => {
+                e.stopPropagation();
+                openModal(badge.id);
+              }}
             >
               👁️
             </button>
@@ -81,6 +90,7 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
               className="p-2 hover:bg-gray-100 rounded"
               aria-label="Download badge"
               title="Download"
+              onClick={(e) => e.stopPropagation()}
             >
               ⬇️
             </button>
