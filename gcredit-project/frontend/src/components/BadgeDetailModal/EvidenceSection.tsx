@@ -25,7 +25,7 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
   const fetchEvidence = async () => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:3000/api/evidence/${badgeId}`, {
+      const response = await fetch(`http://localhost:3000/api/badges/${badgeId}/evidence`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -155,7 +155,7 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
                   {file.originalName}
                 </p>
                 <p className="text-xs text-gray-500">
-                  {formatFileSize(file.fileSize)} â€?{new Date(file.uploadedAt).toLocaleDateString()}
+                  {formatFileSize(file.fileSize)} ï¿½?{new Date(file.uploadedAt).toLocaleDateString()}
                 </p>
               </div>
             </div>

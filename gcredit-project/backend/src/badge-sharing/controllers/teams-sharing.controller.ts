@@ -35,7 +35,7 @@ import {
 } from '../dto/share-badge-teams.dto';
 
 @ApiTags('Badge Sharing')
-@Controller('badges')
+@Controller('api/badges')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class TeamsSharingController {
@@ -89,7 +89,7 @@ export class TeamsSharingController {
     @Body() dto: ShareBadgeTeamsDto,
     @Request() req: any,
   ): Promise<ShareBadgeTeamsResponseDto> {
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     // 1. Fetch badge with issuer information
     const badge = await this.prisma.badge.findUnique({

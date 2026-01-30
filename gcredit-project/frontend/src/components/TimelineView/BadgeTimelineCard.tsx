@@ -8,6 +8,9 @@ interface BadgeTimelineCardProps {
 
 export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
   const { openModal } = useBadgeDetailModal();
+  
+  console.log('BadgeTimelineCard rendered, openModal:', openModal);
+  
   const getStatusColor = (status: BadgeStatus) => {
     switch (status) {
       case BadgeStatus.CLAIMED:
@@ -45,7 +48,12 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
       {/* Card Content - AC 1.4 */}
       <div 
         className="flex-1 bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-        onClick={() => openModal(badge.id)}
+        onClick={() => {
+          console.log('Card clicked! Badge ID:', badge.id);
+          console.log('Calling openModal...');
+          openModal(badge.id);
+          console.log('openModal called');
+        }}
       >
         <div className="flex gap-4">
           {/* Badge Image */}

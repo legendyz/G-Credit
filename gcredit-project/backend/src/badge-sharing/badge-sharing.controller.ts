@@ -22,7 +22,7 @@ import {
 } from './dto/share-badge-email.dto';
 
 @ApiTags('Badge Sharing')
-@Controller('badges/share')
+@Controller('api/badges/share')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class BadgeSharingController {

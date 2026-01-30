@@ -32,7 +32,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 
 @ApiTags('Badge Widget')
-@Controller('badges')
+@Controller('api/badges')
 export class WidgetEmbedController {
   private readonly logger = new Logger(WidgetEmbedController.name);
 

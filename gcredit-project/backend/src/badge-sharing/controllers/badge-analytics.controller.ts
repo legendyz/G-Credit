@@ -27,7 +27,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { BadgeAnalyticsService, ShareStatsDto, ShareHistoryDto } from '../services/badge-analytics.service';
 
 @ApiTags('Badge Analytics')
-@Controller('badges')
+@Controller('api/badges')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class BadgeAnalyticsController {
@@ -86,7 +86,7 @@ export class BadgeAnalyticsController {
     @Param('badgeId') badgeId: string,
     @Request() req: any,
   ): Promise<ShareStatsDto> {
-    const userId = req.user.id;
+    const userId = req.user.userId;
     return this.badgeAnalyticsService.getShareStats(badgeId, userId);
   }
 
@@ -153,7 +153,7 @@ export class BadgeAnalyticsController {
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
     @Request() req: any,
   ): Promise<ShareHistoryDto[]> {
-    const userId = req.user.id;
+    const userId = req.user.userId;
     return this.badgeAnalyticsService.getShareHistory(badgeId, userId, limit);
   }
 }

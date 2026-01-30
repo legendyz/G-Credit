@@ -20,6 +20,8 @@ const BadgeDetailModal: React.FC = () => {
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
+  console.log('BadgeDetailModal render - isOpen:', isOpen, 'badgeId:', badgeId);
+
   useEffect(() => {
     if (isOpen && badgeId) {
       fetchBadgeDetails();
@@ -111,13 +113,25 @@ const BadgeDetailModal: React.FC = () => {
     }
   };
 
+  // Don't render anything if modal is closed
   if (!isOpen) return null;
 
   return (
     <>
-      {/* AC 4.12: Overlay backdrop with rgba(0,0,0,0.5) */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem'
+        }}
         onClick={handleBackdropClick}
         role="dialog"
         aria-modal="true"
@@ -125,7 +139,20 @@ const BadgeDetailModal: React.FC = () => {
       >
         {/* AC 4.12: Desktop 800px width, centered */}
         {/* AC 4.13: Mobile full-screen */}
-        <div className="bg-white rounded-lg shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col md:animate-fadeIn">
+        <div 
+          style={{
+            backgroundColor: 'white',
+            borderRadius: '0.5rem',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            width: '100%',
+            maxWidth: '48rem',
+            maxHeight: '90vh',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column'
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* AC 4.1: Header with close button */}
           <header className="px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-10">
             <h1 id="modal-title" className="text-xl font-bold text-gray-900">

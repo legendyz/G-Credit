@@ -159,8 +159,8 @@ export function TimelineView() {
           </div>
         )}
       </div>
-
-      {/* Badge Detail Modal */}
+      
+      {/* Badge Detail Modal - renders via Portal to document.body */}
       <BadgeDetailModal />
     </div>
   );
