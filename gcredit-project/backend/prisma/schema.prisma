@@ -182,6 +182,7 @@ model Badge {
   recipient        User          @relation("BadgesReceived", fields: [recipientId], references: [id])
   issuer           User          @relation("BadgesIssued", fields: [issuerId], references: [id])
   evidenceFiles    EvidenceFile[]
+  shares           BadgeShare[]  // Sprint 6: Badge sharing analytics
   
   @@index([recipientId, status])
   @@index([templateId, issuedAt])
@@ -252,4 +253,24 @@ model EvidenceFile {
 
   @@index([badgeId])
   @@map("evidence_files")
+}
+
+// Sprint 6: Badge Sharing Analytics (Story 7.5)
+
+model BadgeShare {
+  id             String   @id @default(uuid())
+  badgeId        String
+  badge          Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  
+  platform       String   @db.VarChar(50) // 'email', 'teams', 'widget'
+  sharedAt       DateTime @default(now())
+  sharedBy       String?  // User ID who shared (nullable for anonymous widget embeds)
+  
+  // Platform-specific fields
+  recipientEmail String?  @db.VarChar(255) // For email shares
+  metadata       Json?    // For Teams (team/channel IDs), Widget (referrer URL)
+  
+  @@index([badgeId, platform])
+  @@index([sharedAt])
+  @@map("badge_shares")
 }

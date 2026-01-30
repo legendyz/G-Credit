@@ -6,6 +6,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TeamsSharingController } from './teams-sharing.controller';
 import { TeamsBadgeNotificationService } from '../../microsoft-graph/teams/teams-badge-notification.service';
+import { BadgeAnalyticsService } from '../services/badge-analytics.service';
 import { PrismaService } from '../../common/prisma.service';
 import { ShareBadgeTeamsDto } from '../dto/share-badge-teams.dto';
 import { UnauthorizedException, NotFoundException, BadRequestException } from '@nestjs/common';
@@ -13,10 +14,15 @@ import { UnauthorizedException, NotFoundException, BadRequestException } from '@
 describe('TeamsSharingController - Story 7.4', () => {
   let controller: TeamsSharingController;
   let teamsNotificationService: TeamsBadgeNotificationService;
+  let badgeAnalyticsService: BadgeAnalyticsService;
   let prismaService: PrismaService;
 
   const mockTeamsNotificationService = {
     sendBadgeIssuanceNotification: jest.fn(),
+  };
+
+  const mockBadgeAnalyticsService = {
+    recordShare: jest.fn(),
   };
 
   const mockPrismaService = {
@@ -59,6 +65,10 @@ describe('TeamsSharingController - Story 7.4', () => {
           useValue: mockTeamsNotificationService,
         },
         {
+          provide: BadgeAnalyticsService,
+          useValue: mockBadgeAnalyticsService,
+        },
+        {
           provide: PrismaService,
           useValue: mockPrismaService,
         },
@@ -69,6 +79,7 @@ describe('TeamsSharingController - Story 7.4', () => {
     teamsNotificationService = module.get<TeamsBadgeNotificationService>(
       TeamsBadgeNotificationService,
     );
+    badgeAnalyticsService = module.get<BadgeAnalyticsService>(BadgeAnalyticsService);
     prismaService = module.get<PrismaService>(PrismaService);
 
     jest.clearAllMocks();

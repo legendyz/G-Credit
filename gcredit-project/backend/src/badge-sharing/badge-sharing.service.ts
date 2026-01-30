@@ -8,6 +8,7 @@ import { PrismaService } from '../common/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { GraphEmailService } from '../microsoft-graph/services/graph-email.service';
 import { EmailTemplateService } from './services/email-template.service';
+import { BadgeAnalyticsService } from './services/badge-analytics.service';
 import { ShareBadgeEmailDto, ShareBadgeEmailResponseDto } from './dto/share-badge-email.dto';
 
 @Injectable()
@@ -18,6 +19,7 @@ export class BadgeSharingService {
     private prisma: PrismaService,
     private graphEmailService: GraphEmailService,
     private emailTemplateService: EmailTemplateService,
+    private badgeAnalyticsService: BadgeAnalyticsService,
     private configService: ConfigService,
   ) {}
 
@@ -148,8 +150,21 @@ export class BadgeSharingService {
         `Successfully sent badge ${dto.badgeId} via email to ${dto.recipientEmail}`,
       );
 
-      // TODO: Record share event in analytics (Story 7.5)
-      // await this.recordShareEvent(badge.id, userId, 'EMAIL', dto.recipientEmail);
+      // Record share event in analytics (Story 7.5)
+      try {
+        await this.badgeAnalyticsService.recordShare(
+          badge.id,
+          'email',
+          userId,
+          { recipientEmail: dto.recipientEmail },
+        );
+        this.logger.log(`Recorded email share event for badge ${badge.id}`);
+      } catch (analyticsError) {
+        // Log but don't fail the request if analytics recording fails
+        this.logger.warn(
+          `Failed to record share analytics: ${analyticsError.message}`,
+        );
+      }
 
       return {
         success: true,

@@ -27,6 +27,7 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { TeamsBadgeNotificationService } from '../../microsoft-graph/teams/teams-badge-notification.service';
+import { BadgeAnalyticsService } from '../services/badge-analytics.service';
 import { PrismaService } from '../../common/prisma.service';
 import {
   ShareBadgeTeamsDto,
@@ -40,6 +41,7 @@ import {
 export class TeamsSharingController {
   constructor(
     private readonly teamsNotificationService: TeamsBadgeNotificationService,
+    private readonly badgeAnalyticsService: BadgeAnalyticsService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -135,7 +137,23 @@ export class TeamsSharingController {
       userId,
     );
 
-    // 5. Return success response
+    // 5. Record share event in analytics (Story 7.5)
+    try {
+      await this.badgeAnalyticsService.recordShare(
+        badgeId,
+        'teams',
+        userId,
+        {
+          teamId: dto.teamId,
+          channelId: dto.channelId,
+        },
+      );
+    } catch (analyticsError) {
+      // Log but don't fail the request if analytics recording fails
+      console.warn('Failed to record Teams share analytics:', analyticsError.message);
+    }
+
+    // 6. Return success response
     return {
       success: true,
       message: 'Badge shared to Microsoft Teams successfully',

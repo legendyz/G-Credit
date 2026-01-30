@@ -5,6 +5,7 @@ import { PrismaService } from '../common/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { GraphEmailService } from '../microsoft-graph/services/graph-email.service';
 import { EmailTemplateService } from './services/email-template.service';
+import { BadgeAnalyticsService } from './services/badge-analytics.service';
 import { ShareBadgeEmailDto } from './dto/share-badge-email.dto';
 
 describe('BadgeSharingService', () => {
@@ -12,6 +13,7 @@ describe('BadgeSharingService', () => {
   let prismaService: PrismaService;
   let graphEmailService: GraphEmailService;
   let emailTemplateService: EmailTemplateService;
+  let badgeAnalyticsService: BadgeAnalyticsService;
 
   const mockPrismaService = {
     badge: {
@@ -30,6 +32,10 @@ describe('BadgeSharingService', () => {
   const mockEmailTemplateService = {
     renderHtml: jest.fn(),
     renderText: jest.fn(),
+  };
+
+  const mockBadgeAnalyticsService = {
+    recordShare: jest.fn(),
   };
 
   const mockConfigService = {
@@ -78,6 +84,7 @@ describe('BadgeSharingService', () => {
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: GraphEmailService, useValue: mockGraphEmailService },
         { provide: EmailTemplateService, useValue: mockEmailTemplateService },
+        { provide: BadgeAnalyticsService, useValue: mockBadgeAnalyticsService },
         { provide: ConfigService, useValue: mockConfigService },
       ],
     }).compile();
@@ -86,6 +93,7 @@ describe('BadgeSharingService', () => {
     prismaService = module.get<PrismaService>(PrismaService);
     graphEmailService = module.get<GraphEmailService>(GraphEmailService);
     emailTemplateService = module.get<EmailTemplateService>(EmailTemplateService);
+    badgeAnalyticsService = module.get<BadgeAnalyticsService>(BadgeAnalyticsService);
   });
 
   it('should be defined', () => {
