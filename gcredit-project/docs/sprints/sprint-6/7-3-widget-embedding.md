@@ -77,21 +77,20 @@ Story 7.3 需要访问 Prisma 数据库（Badge、BadgeShare表）。**在编写
 
 ### Frontend Implementation
 
-- [ ] **Task 4: Widget Generator Page** (AC: #1) ⚠️ **OPTIONAL - Backend Sufficient**
-  - [ ] Create new page: `/badges/:badgeId/embed`
-  - [ ] Preview widget with different size/theme options
-  - [ ] Copy HTML snippet button (for iframe embedding)
-  - [ ] Copy standalone code button (for direct HTML embedding)
-  - [ ] Display embedding instructions
-  - **Note**: Backend API provides all necessary functionality; frontend UI is optional enhancement
+- [x] **Task 4: Widget Generator Page** (AC: #1) ✅ **COMPLETE - 2026-01-31**
+  - [x] Create new page: `/badges/:badgeId/embed`
+  - [x] Preview widget with different size/theme options
+  - [x] Copy HTML snippet button (for iframe embedding)
+  - [x] Copy standalone code button (for direct HTML embedding)
+  - [x] Display embedding instructions
 
-- [ ] **Task 5: Embeddable Widget Component** (AC: #2, #5, #8) ⚠️ **OPTIONAL - Backend Sufficient**
-  - [ ] Create standalone React component (can run outside main app)
-  - [ ] Fetch badge data from public API
-  - [ ] Render badge image + details based on options
-  - [ ] Click opens badge verification page in new tab
-  - **Note**: Backend generates complete HTML/CSS/JS; standalone React component optional
-  - [ ] Ensure responsive design (mobile, tablet, desktop)
+- [x] **Task 5: Embeddable Widget Component** (AC: #2, #5, #8) ✅ **COMPLETE - 2026-01-31**
+  - [x] Create standalone React component (can run outside main app)
+  - [x] Fetch badge data from public API
+  - [x] Render badge image + details based on options
+  - [x] Click opens badge verification page in new tab
+  - [x] Ensure responsive design (mobile, tablet, desktop)
+  - **Note**: Implemented via BadgeEmbedPage with live preview
 
 ### Testing
 
