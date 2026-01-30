@@ -57,7 +57,7 @@ export function useWallet(params: UseWalletParams = {}) {
       if (params.sort) searchParams.set('sort', params.sort);
 
       const response = await fetch(
-        `http://localhost:3001/api/badges/wallet?${searchParams}`,
+        `http://localhost:3000/api/badges/wallet?${searchParams}`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
