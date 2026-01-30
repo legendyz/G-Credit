@@ -1,7 +1,7 @@
 # Story 7.3: Embeddable Badge Widget
 
-Status: **backlog** 🔴  
-*Note: This is a retroactive documentation file. Implementation has NOT been started yet.*
+Status: **in-progress** 🟡  
+*Implementation started: 2026-01-30*
 
 ## Story
 

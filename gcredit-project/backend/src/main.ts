@@ -57,6 +57,15 @@ async function bootstrap() {
   // Validate configuration on startup
   validateTeamsConfiguration();
 
+  // Enable CORS for widget embedding (Story 7.3)
+  // Allow widget endpoints to be embedded cross-origin
+  app.enableCors({
+    origin: true, // Allow all origins for public widget endpoints
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  });
+
   // Enable global validation pipe for class-validator DTOs
   app.useGlobalPipes(
     new ValidationPipe({
@@ -77,6 +86,7 @@ async function bootstrap() {
     .addTag('Authentication', 'User authentication and authorization')
     .addTag('Badge Templates', 'Badge template management (CRUD, query, image upload)')
     .addTag('Badge Sharing', 'Share badges to Teams and other platforms (Story 7.4)')
+    .addTag('Badge Widget', 'PUBLIC API - Embeddable badge widgets for external websites (Story 7.3)')
     .addTag('Teams Actions', 'Handle Adaptive Card actions from Microsoft Teams (Story 7.4)')
     .addTag('Skills', 'Skill management and categories')
     .addTag('Users', 'User profile and management')

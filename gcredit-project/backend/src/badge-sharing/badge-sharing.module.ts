@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { BadgeSharingController } from './badge-sharing.controller';
 import { TeamsSharingController } from './controllers/teams-sharing.controller';
 import { BadgeAnalyticsController } from './controllers/badge-analytics.controller';
+import { WidgetEmbedController } from './controllers/widget-embed.controller';
 import { BadgeSharingService } from './badge-sharing.service';
 import { EmailTemplateService } from './services/email-template.service';
 import { BadgeAnalyticsService } from './services/badge-analytics.service';
@@ -11,7 +12,12 @@ import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [PrismaModule, MicrosoftGraphModule, ConfigModule],
-  controllers: [BadgeSharingController, TeamsSharingController, BadgeAnalyticsController],
+  controllers: [
+    BadgeSharingController,
+    TeamsSharingController,
+    BadgeAnalyticsController,
+    WidgetEmbedController,
+  ],
   providers: [BadgeSharingService, EmailTemplateService, BadgeAnalyticsService],
   exports: [BadgeSharingService, BadgeAnalyticsService],
 })
