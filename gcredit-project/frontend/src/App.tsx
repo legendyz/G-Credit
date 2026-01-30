@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { TimelineView } from '@/components/TimelineView/TimelineView';
 import { VerifyBadgePage } from '@/pages/VerifyBadgePage';
 import BadgeEmbedPage from '@/pages/BadgeEmbedPage';
+import AdminAnalyticsPage from '@/pages/AdminAnalyticsPage';
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ function App() {
           />
           <Route path="/verify/:verificationId" element={<VerifyBadgePage />} />
           <Route path="/badges/:badgeId/embed" element={<BadgeEmbedPage />} />
+          <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
