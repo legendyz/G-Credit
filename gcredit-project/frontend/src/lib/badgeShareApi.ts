@@ -56,7 +56,7 @@ export async function shareBadgeViaEmail(
   badgeId: string,
   data: ShareViaEmailRequest
 ): Promise<{ message: string; shareCount: number }> {
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem('accessToken');
   
   const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/share`, {
     method: 'POST',
@@ -82,7 +82,7 @@ export async function shareBadgeToTeams(
   badgeId: string,
   data: ShareToTeamsRequest
 ): Promise<{ message: string; activityId: string }> {
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem('accessToken');
   
   const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/teams/share`, {
     method: 'POST',
@@ -105,7 +105,7 @@ export async function shareBadgeToTeams(
  * Get badge sharing analytics statistics
  */
 export async function getBadgeShareStats(badgeId: string): Promise<ShareStats> {
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem('accessToken');
   
   const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/analytics/shares`, {
     headers: {
@@ -128,7 +128,7 @@ export async function getBadgeShareHistory(
   badgeId: string,
   limit: number = 10
 ): Promise<ShareHistoryItem[]> {
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem('accessToken');
   
   const response = await fetch(
     `${API_BASE_URL}/badges/${badgeId}/analytics/shares/history?limit=${limit}`,

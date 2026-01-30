@@ -50,7 +50,7 @@ const BadgeDetailModal: React.FC = () => {
     setError(null);
 
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('accessToken');
       const response = await fetch(`http://localhost:3000/api/badges/${badgeId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -76,7 +76,7 @@ const BadgeDetailModal: React.FC = () => {
 
     setDownloading(true);
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('accessToken');
       const response = await fetch(`http://localhost:3000/api/badges/${badge.id}/download/png`, {
         headers: {
           Authorization: `Bearer ${token}`,
