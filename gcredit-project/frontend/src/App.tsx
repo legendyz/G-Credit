@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { TimelineView } from '@/components/TimelineView/TimelineView';
 import { VerifyBadgePage } from '@/pages/VerifyBadgePage';
+import BadgeEmbedPage from '@/pages/BadgeEmbedPage';
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ function App() {
             } 
           />
           <Route path="/verify/:verificationId" element={<VerifyBadgePage />} />
+          <Route path="/badges/:badgeId/embed" element={<BadgeEmbedPage />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
