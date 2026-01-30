@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>G-Credit Badge Widget Demo</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      background: #f5f5f5;
+    }
+    
+    h1 {
+      color: #333;
+      border-bottom: 3px solid #007bff;
+      padding-bottom: 10px;
+    }
+    
+    .section {
+      background: white;
+      padding: 30px;
+      margin: 30px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    h2 {
+      color: #007bff;
+      margin-top: 0;
+    }
+    
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 30px;
+      margin: 20px 0;
+    }
+    
+    .demo-item {
+      text-align: center;
+    }
+    
+    .demo-item h3 {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 15px;
+    }
+    
+    code {
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+    
+    pre {
+      background: #f4f4f4;
+      padding: 20px;
+      border-radius: 5px;
+      overflow-x: auto;
+      border-left: 4px solid #007bff;
+    }
+    
+    .note {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    
+    .api-endpoint {
+      background: #e7f3ff;
+      border-left: 4px solid #007bff;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+    }
+    
+    .api-endpoint code {
+      background: #d0e7ff;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎖️ G-Credit Badge Widget Demo</h1>
+  
+  <div class="section">
+    <h2>Overview</h2>
+    <p>
+      The G-Credit Badge Widget allows you to embed your digital badges on any website.
+      This page demonstrates different widget configurations and provides embedding instructions.
+    </p>
+    
+    <div class="note">
+      <strong>⚠️ Important:</strong> Replace <code>YOUR_BADGE_ID</code> with your actual badge ID
+      and <code>http://localhost:3000</code> with your API server URL.
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Widget Sizes</h2>
+    <p>The widget supports three sizes: <code>small</code> (100x100), <code>medium</code> (200x200), and <code>large</code> (300x300).</p>
+    
+    <div class="demo-grid">
+      <div class="demo-item">
+        <h3>Small (100x100)</h3>
+        <!-- Widget will be embedded here via JavaScript -->
+        <div id="widget-small"></div>
+      </div>
+      
+      <div class="demo-item">
+        <h3>Medium (200x200)</h3>
+        <div id="widget-medium"></div>
+      </div>
+      
+      <div class="demo-item">
+        <h3>Large (300x300)</h3>
+        <div id="widget-large"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Widget Themes</h2>
+    <p>The widget supports three themes: <code>light</code>, <code>dark</code>, and <code>auto</code>.</p>
+    
+    <div class="demo-grid">
+      <div class="demo-item">
+        <h3>Light Theme</h3>
+        <div id="widget-light"></div>
+      </div>
+      
+      <div class="demo-item" style="background: #2a2a2a; padding: 20px; border-radius: 8px;">
+        <h3 style="color: white;">Dark Theme</h3>
+        <div id="widget-dark"></div>
+      </div>
+      
+      <div class="demo-item">
+        <h3>Auto Theme</h3>
+        <div id="widget-auto"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Widget Options</h2>
+    <p>You can choose to show or hide badge details (name and issuer).</p>
+    
+    <div class="demo-grid">
+      <div class="demo-item">
+        <h3>With Details</h3>
+        <div id="widget-details-true"></div>
+      </div>
+      
+      <div class="demo-item">
+        <h3>Image Only</h3>
+        <div id="widget-details-false"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>API Endpoints</h2>
+    
+    <div class="api-endpoint">
+      <strong>Get Badge Data (JSON):</strong><br>
+      <code>GET /api/badges/{badgeId}/embed</code>
+    </div>
+    
+    <div class="api-endpoint">
+      <strong>Get Widget HTML:</strong><br>
+      <code>GET /api/badges/{badgeId}/widget?size=medium&theme=light&showDetails=true</code>
+    </div>
+    
+    <h3>Query Parameters</h3>
+    <ul>
+      <li><code>size</code>: <code>small</code>, <code>medium</code>, <code>large</code> (default: medium)</li>
+      <li><code>theme</code>: <code>light</code>, <code>dark</code>, <code>auto</code> (default: light)</li>
+      <li><code>showDetails</code>: <code>true</code>, <code>false</code> (default: true)</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>Embedding Methods</h2>
+    
+    <h3>Method 1: Direct HTML (Recommended)</h3>
+    <p>Fetch the widget HTML from the API and inject it into your page:</p>
+    <pre><code>&lt;div id="badge-widget"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+async function loadBadgeWidget(badgeId, containerId, options = {}) {
+  const { size = 'medium', theme = 'light', showDetails = true } = options;
+  const apiUrl = `http://localhost:3000/api/badges/${badgeId}/widget`;
+  const params = new URLSearchParams({ size, theme, showDetails: String(showDetails) });
+  
+  try {
+    const response = await fetch(`${apiUrl}?${params}`);
+    const widget = await response.json();
+    
+    const container = document.getElementById(containerId);
+    
+    // Inject CSS
+    const style = document.createElement('style');
+    style.textContent = widget.css;
+    document.head.appendChild(style);
+    
+    // Inject HTML
+    container.innerHTML = widget.html;
+    
+    // Inject JavaScript
+    const script = document.createElement('script');
+    script.textContent = widget.script;
+    document.body.appendChild(script);
+  } catch (error) {
+    console.error('Failed to load badge widget:', error);
+  }
+}
+
+// Load widget
+loadBadgeWidget('YOUR_BADGE_ID', 'badge-widget', {
+  size: 'medium',
+  theme: 'light',
+  showDetails: true
+});
+&lt;/script&gt;</code></pre>
+
+    <h3>Method 2: Iframe Embedding</h3>
+    <p>Create a dedicated page that renders the widget and embed it via iframe:</p>
+    <pre><code>&lt;iframe
+  src="http://localhost:3000/widget.html?badgeId=YOUR_BADGE_ID&size=medium&theme=light"
+  width="220"
+  height="320"
+  frameborder="0"
+  style="border: none;"
+&gt;&lt;/iframe&gt;</code></pre>
+    
+    <div class="note">
+      <strong>Note:</strong> For iframe embedding, you'll need to create a dedicated widget page that calls the API.
+    </div>
+
+    <h3>Method 3: JSON API (Custom Rendering)</h3>
+    <p>Fetch badge data and render it yourself:</p>
+    <pre><code>fetch('http://localhost:3000/api/badges/YOUR_BADGE_ID/embed')
+  .then(response => response.json())
+  .then(badge => {
+    // Render badge with your own HTML/CSS
+    console.log(badge.badgeName);
+    console.log(badge.badgeImageUrl);
+    console.log(badge.verificationUrl);
+  });</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>Testing Instructions</h2>
+    <ol>
+      <li>Start the G-Credit API server: <code>npm run start:dev</code></li>
+      <li>Create a test badge in the system</li>
+      <li>Copy the badge ID</li>
+      <li>Open this HTML file in a browser</li>
+      <li>Open browser console and run:
+        <pre><code>loadBadgeWidget('YOUR_BADGE_ID', 'widget-small', { size: 'small' });</code></pre>
+      </li>
+      <li>Verify widget displays correctly</li>
+      <li>Click the widget to verify it opens the verification page</li>
+    </ol>
+  </div>
+
+  <script>
+    // Widget loader function
+    async function loadBadgeWidget(badgeId, containerId, options = {}) {
+      const { size = 'medium', theme = 'light', showDetails = true } = options;
+      const apiUrl = `http://localhost:3000/api/badges/${badgeId}/widget`;
+      const params = new URLSearchParams({ 
+        size, 
+        theme, 
+        showDetails: String(showDetails) 
+      });
+      
+      try {
+        const response = await fetch(`${apiUrl}?${params}`);
+        
+        if (!response.ok) {
+          throw new Error(`API returned ${response.status}: ${response.statusText}`);
+        }
+        
+        const widget = await response.json();
+        const container = document.getElementById(containerId);
+        
+        if (!container) {
+          console.error(`Container ${containerId} not found`);
+          return;
+        }
+        
+        // Inject CSS (only once per theme)
+        const styleId = `badge-widget-style-${theme}`;
+        if (!document.getElementById(styleId)) {
+          const style = document.createElement('style');
+          style.id = styleId;
+          style.textContent = widget.css;
+          document.head.appendChild(style);
+        }
+        
+        // Inject HTML
+        container.innerHTML = widget.html;
+        
+        // Inject JavaScript
+        const scriptId = `badge-widget-script-${badgeId}-${containerId}`;
+        if (!document.getElementById(scriptId)) {
+          const script = document.createElement('script');
+          script.id = scriptId;
+          script.textContent = widget.script;
+          document.body.appendChild(script);
+        }
+        
+        console.log(`✅ Widget loaded: ${badgeId} (${size}, ${theme})`);
+      } catch (error) {
+        console.error('Failed to load badge widget:', error);
+        const container = document.getElementById(containerId);
+        if (container) {
+          container.innerHTML = `
+            <div style="padding: 20px; border: 2px dashed #ccc; border-radius: 8px; text-align: center;">
+              <p style="color: #999; margin: 0;">⚠️ Widget unavailable</p>
+              <p style="color: #ccc; font-size: 12px; margin: 5px 0 0 0;">${error.message}</p>
+            </div>
+          `;
+        }
+      }
+    }
+
+    // Instructions for testing
+    console.log('%c🎖️ G-Credit Badge Widget Demo', 'font-size: 20px; font-weight: bold; color: #007bff;');
+    console.log('%cTo test the widgets:', 'font-size: 14px; font-weight: bold;');
+    console.log('1. Start your API server: npm run start:dev');
+    console.log('2. Get a badge ID from your database');
+    console.log('3. Run: loadBadgeWidget("YOUR_BADGE_ID", "widget-small", { size: "small" })');
+    console.log(' ');
+    console.log('%cExample:', 'font-weight: bold;');
+    console.log('loadBadgeWidget("badge-123", "widget-small", { size: "small" });');
+    console.log('loadBadgeWidget("badge-123", "widget-medium", { size: "medium" });');
+    console.log('loadBadgeWidget("badge-123", "widget-large", { size: "large" });');
+    console.log('loadBadgeWidget("badge-123", "widget-light", { theme: "light" });');
+    console.log('loadBadgeWidget("badge-123", "widget-dark", { theme: "dark" });');
+    console.log('loadBadgeWidget("badge-123", "widget-details-true", { showDetails: true });');
+    console.log('loadBadgeWidget("badge-123", "widget-details-false", { showDetails: false });');
+  </script>
+</body>
+</html>
