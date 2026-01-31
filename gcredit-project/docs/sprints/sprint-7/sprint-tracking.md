@@ -1,8 +1,10 @@
 # Sprint 7 - Story Tracking (Development Progress)
 
 **Sprint:** Sprint 7 - Badge Revocation & Complete Lifecycle UAT  
-**Start Date:** 2026-02-03 (Kickoff: 2026-01-31)  
-**Status:** 🟡 Ready to Start  
+**Start Date:** February 3, 2026  
+**End Date:** February 11, 2026  
+**Duration:** 7 working days (extended from 5 days after Technical Review)  
+**Status:** 🟢 Ready for Day 1  
 **Development Mode:** Solo Developer (LegendZhu)
 
 ---
@@ -11,11 +13,35 @@
 
 | Metric | Value | Status |
 |--------|-------|--------|
-| **Stories Completed** | 1/10 | 10% |
+| **Stories Completed** | 1/11 | 9% |
 | **Hours Spent** | 0h | - |
-| **Estimated Remaining** | 37-53h | - |
+| **Estimated Remaining** | 54.5h | - |
+| **Sprint Capacity** | 56h (7 days × 8h) | - |
+| **Buffer** | 1.5h (3% capacity buffer) | 🟢 Healthy |
 | **Current Velocity** | - | TBD |
-| **Sprint Status** | 🟡 KICKOFF COMPLETE | Day 1 starts Feb 3 |
+| **Sprint Status** | 🟢 ALL PREP COMPLETE | Day 1 starts Feb 3 |
+
+---
+
+## 🗓️ Sprint Timeline (7 Days)
+
+**Day 1 (Feb 3):** Backend Foundation
+- Story 9.1: Revoke API (7h) + axe-core setup (0.5h)
+
+**Day 2 (Feb 4):** Revocation UX  
+- Stories 9.2 (4h) + 9.3 (4h) + Design sync (15min)
+
+**Day 3 (Feb 5):** Login & M365 Sync
+- Story 0.2a: Login MVP (6h) + Story U.2a: M365 Sync MVP (6h) - 12h split across day
+
+**Day 4 (Feb 6):** Revocation Polish
+- Story 9.5: Admin UI (4.5h) + Story 9.4: Notifications (3.5h)
+
+**Day 5-6 (Feb 7-10):** Complete UAT
+- Story U.1: Complete Lifecycle UAT (10-12h over 2 days)
+
+**Day 7 (Feb 11):** Bug Fixes & Wrap-Up
+- Story U.3: Bug fixes (3-5h) + Buffer + Retrospective
 
 ---
 
@@ -44,38 +70,43 @@
 
 ### **Phase 2: Sprint Setup Part 2 (Day 3)** 🔵
 
-#### 🔵 Story 0.2: Simple Login & Navigation System
+#### 🔵 Story 0.2a: Simple Login & Navigation System (MVP)
 - **Status:** 🔲 NOT STARTED
-- **Effort:** 4-6h estimated
+- **Effort:** 6h estimated (updated from 4h after Technical Review)
 - **Priority:** CRITICAL
-- **Story Points:** 4
-- **Dependencies:** Stories 9.1-9.5 (all features developed)
+- **Story Points:** 4 → 6 (MVP scope)
+- **Dependencies:** Stories 9.1-9.3 (core features ready for integration)
 - **Story File:** [0-2-login-navigation.md](0-2-login-navigation.md)
 - **Target Start:** February 5, 2026 (Day 3 Morning)
 - **Target Completion:** February 5, 2026 (Day 3 Afternoon)
 - **Deliverables:**
-  - LoginPage component
-  - Auth store (Zustand) with token management
-  - Role-based Dashboard
-  - Protected routes with authentication
-  - Layout component with navigation
+  - LoginPage component (basic accessibility)
+  - Auth store (Zustand, NO token refresh in MVP)
+  - Admin + Employee dashboards only
+  - Protected routes with role guards
+  - Top navigation layout
   - Test accounts for UAT
 - **Acceptance Criteria:**
-  - [ ] Login page with email/password form
-  - [ ] Auth state stored in Zustand (accessToken, user, role)
-  - [ ] Dashboard shows role-appropriate links
+  - [ ] Login page with email/password + basic ARIA labels
+  - [ ] Auth state in Zustand (no token refresh logic)
+  - [ ] Admin + Employee dashboards (Manager/Issuer deferred to Sprint 8)
   - [ ] Protected routes redirect unauthenticated users
-  - [ ] Logout functionality works
+  - [ ] Logout functionality
+  - [ ] Top nav layout (sidebar evaluated in UAT)
 - **Tasks:**
-  - [ ] Create auth store (Zustand)
-  - [ ] Create LoginPage component
+  - [ ] Create auth store (Zustand, simplified)
+  - [ ] Create LoginPage with basic accessibility
   - [ ] Create ProtectedRoute component
-  - [ ] Create DashboardPage (role-based)
-  - [ ] Create Layout component
+  - [ ] Create Admin + Employee dashboard variants
+  - [ ] Create top navigation layout
   - [ ] Update router
-  - [ ] Unit tests + E2E tests
-- **Why Critical:** Without login system, Story U.1 (Complete Lifecycle UAT) cannot test multi-role workflows. UAT requires switching between Admin and Employee roles.
-- **Notes:**
+  - [ ] Basic unit tests + E2E tests
+- **Why Critical:** Enables multi-role UAT testing in Story U.1. Without this, cannot test complete badge lifecycle.
+- **MVP Notes:** 
+  - No token refresh (acceptable for <1h UAT sessions)
+  - Basic accessibility only (full WCAG 2.1 AA in Story 0.2b, Sprint 8)
+  - Top nav only (sidebar deferred to Sprint 8)
+- **Deferred to 0.2b:** Token refresh, full WCAG 2.1 AA, Manager/Issuer dashboards
 
 ---
 
@@ -83,67 +114,82 @@
 
 #### 🔵 Story 9.1: Badge Revocation API
 - **Status:** 🔲 NOT STARTED
-- **Effort:** 5h estimated
+- **Effort:** 7h estimated (updated from 5h - added AuditLog table + enum changes)
 - **Priority:** HIGH
-- **Story Points:** 5
+- **Story Points:** 5 → 7
 - **Dependencies:** Story 0.1 ✅
 - **Story File:** [9-1-revoke-api.md](9-1-revoke-api.md)
 - **Target Start:** February 3, 2026 (Day 1 Morning)
 - **Target Completion:** February 3, 2026 (Day 1)
 - **Deliverables:**
-  - Database migration (add 4 new Badge fields)
-  - POST /api/badges/:id/revoke endpoint
+  - **NEW:** AuditLog Prisma model creation
+  - **NEW:** REVOKED enum added to BadgeStatus
+  - Database migration (Badge revocation fields)
+  - POST /api/badges/:id/revoke endpoint (idempotent)
   - Revocation service logic
   - Authorization rules (ADMIN, ISSUER only)
-  - Audit logging
-  - Unit tests (15-20 tests)
+  - Audit logging in AuditLog table
+  - Unit tests (15-20 tests, TDD approach)
   - E2E tests
 - **Acceptance Criteria:**
-  - [ ] Badge status updated to REVOKED
+  - [ ] AuditLog table created with proper schema
+  - [ ] BadgeStatus enum includes REVOKED status
+  - [ ] Badge status updated to REVOKED (not soft delete)
   - [ ] Revocation metadata recorded (date, reason, notes, revoker)
   - [ ] Authorization enforced (403 if unauthorized)
-  - [ ] Audit log entry created
-  - [ ] Cannot revoke already-revoked badge (400 error)
+  - [ ] Audit log entry created in AuditLog table
+  - [ ] API is idempotent (200 OK if already revoked)
 - **Tasks:**
-  - [ ] Create Prisma migration
-  - [ ] Implement service layer (revoke logic)
+  - [ ] Create AuditLog Prisma model + migration
+  - [ ] Update BadgeStatus enum (add REVOKED)
+  - [ ] Create Badge revocation fields migration
+  - [ ] Implement service layer (revoke logic + audit)
   - [ ] Create DTO with validation
   - [ ] Implement controller & guards
-  - [ ] Write unit tests
+  - [ ] Write unit tests (TDD - tests first)
   - [ ] Write E2E tests
   - [ ] Manual API testing
+- **Technical Review Updates:**
+  - +2h for AuditLog infrastructure setup
+  - TDD approach required (high risk story)
+  - Index on revokedAt field for performance
 - **Notes:** 
 
 ---
 
 #### 🔵 Story 9.2: Revoked Badge Display in Verification Page
 - **Status:** 🔲 NOT STARTED
-- **Effort:** 4.5h estimated (2-3h backend + 2h frontend)
+- **Effort:** 4h estimated (updated from 3h - added reason categorization)
 - **Priority:** HIGH
-- **Story Points:** 3
+- **Story Points:** 3 → 4
 - **Dependencies:** Story 9.1
 - **Story File:** [9-2-verification-status.md](9-2-verification-status.md)
-- **Target Start:** February 3, 2026 (Day 1 Afternoon)
-- **Target Completion:** February 3, 2026 (Day 1)
+- **Target Start:** February 4, 2026 (Day 2 Morning)
+- **Target Completion:** February 4, 2026 (Day 2)
 - **Deliverables:**
-  - Backend: Update verify API to return status
+  - Backend: Update verify API to return status + categorized reason
   - Frontend: RevokedBadgeAlert component
   - Verification page styling updates
+  - Reason visibility logic (public vs private categories)
   - Disable Download/Share buttons for revoked badges
   - Unit tests (frontend + backend)
   - E2E test
 - **Acceptance Criteria:**
   - [ ] Red alert banner displays "BADGE REVOKED"
-  - [ ] Revocation date and reason displayed
+  - [ ] Public reasons shown (Expired, Error, Duplicate)
+  - [ ] Private reasons show generic message (Policy Violation, Fraud)
+  - [ ] Revocation date displayed
   - [ ] Original badge details grayed out
   - [ ] Download and Share buttons disabled
 - **Tasks:**
-  - [ ] Backend: Update GET /verify/:id response
+  - [ ] Backend: Update GET /verify/:id response with reason category
+  - [ ] Backend: Add reason categorization logic
   - [ ] Frontend: Create RevokedBadgeAlert component
   - [ ] Frontend: Update VerifyBadgePage component
   - [ ] Styling (Tailwind CSS)
   - [ ] Unit tests
   - [ ] E2E test
+- **UX Decision:** Show public reasons only to external verifiers (Product Owner approved)
 - **Notes:**
 
 ---
