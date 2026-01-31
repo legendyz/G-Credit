@@ -26,13 +26,18 @@ export class EmailService {
   private etherealTransporter: Transporter | null = null;
   private readonly isDevelopment: boolean;
   private readonly fromAddress: string;
+  private readonly useGraphEmail: boolean;
   private etherealInitialized = false;
 
   constructor(private config: ConfigService) {
     this.isDevelopment = this.config.get<string>('NODE_ENV') !== 'production';
     this.fromAddress = this.config.get<string>('EMAIL_FROM', 'badges@gcredit.example.com');
+    this.useGraphEmail = this.config.get<string>('ENABLE_GRAPH_EMAIL', 'false') === 'true';
 
-    if (this.isDevelopment) {
+    if (this.useGraphEmail) {
+      // Skip Ethereal when Graph Email is configured
+      this.logger.log('✅ EmailService initialized (Graph Email enabled - Ethereal skipped)');
+    } else if (this.isDevelopment) {
       // Initialize Ethereal asynchronously (non-blocking)
       this.initializeEthereal().catch(err => {
         this.logger.warn('⚠️ Ethereal initialization delayed, will retry on first email send');

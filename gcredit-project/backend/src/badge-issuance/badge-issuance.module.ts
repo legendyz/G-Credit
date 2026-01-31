@@ -8,9 +8,10 @@ import { PrismaModule } from '../common/prisma.module';
 import { EmailModule } from '../common/email.module';
 import { RecommendationsService } from '../badge-templates/recommendations.service';
 import { MilestonesModule } from '../milestones/milestones.module';
+import { MicrosoftGraphModule } from '../microsoft-graph/microsoft-graph.module';
 
 @Module({
-  imports: [PrismaModule, EmailModule, MilestonesModule],
+  imports: [PrismaModule, EmailModule, MilestonesModule, MicrosoftGraphModule],
   controllers: [BadgeIssuanceController],
   providers: [
     BadgeIssuanceService,

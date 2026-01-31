@@ -7,6 +7,82 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.0] - 2026-01-31
+
+### Added - Badge Sharing & Social Proof (Sprint 6, Epic 7)
+
+#### Teams Badge Notifications
+- **Adaptive Cards 1.4** - Rich Teams notifications with badge details and action buttons
+- **Badge Issuance Trigger** - Automatic Teams notification when badge is issued (PENDING status)
+- **Interactive Actions** - "Claim Badge" button in Teams updates badge to CLAIMED
+- **Email Fallback** - Automatic email notification if Teams delivery fails
+- **Non-blocking** - Teams notifications don't block badge issuance flow
+- **Configuration** - `ENABLE_TEAMS_NOTIFICATIONS` flag to enable/disable
+
+#### New API Endpoints
+- **Share Badge to Teams** - `POST /badges/:badgeId/share/teams`
+  - Request: `{ teamId, channelId, personalMessage? }`
+  - Authorization: Only recipient or issuer can share
+  - Validation: Cannot share REVOKED badges
+  - Response: `{ success, shareId, sharedAt, channelUrl }`
+
+- **Claim Badge Action** - `POST /api/teams/actions/claim-badge`
+  - Request: `{ badgeId, userId }`
+  - Authorization: Only recipient can claim
+  - Validation: Badge must be PENDING status
+  - Response: `{ success, message, badge, adaptiveCard }`
+  - Returns: Updated Adaptive Card showing CLAIMED status
+
+#### Adaptive Card Features
+- **Badge Image** - Displays badge template image (80x80)
+- **Badge Details** - Name, issuer, description, issue date
+- **Status Indicator** - PENDING with claim instructions, or CLAIMED with success message
+- **Action Buttons:**
+  - "View Badge" - Opens badge wallet (OpenUrl action)
+  - "Claim Badge" - Updates status to CLAIMED (Action.Execute)
+- **Responsive Design** - Works on Teams desktop, web, and mobile
+- **Theme Support** - Adapts to Teams light/dark theme
+
+#### Configuration & Setup
+- **Environment Variables:**
+  - `ENABLE_TEAMS_NOTIFICATIONS` - Enable/disable Teams (default: false)
+  - `DEFAULT_TEAMS_TEAM_ID` - Default team for notifications (optional)
+  - `DEFAULT_TEAMS_CHANNEL_ID` - Default channel (optional)
+  - `PLATFORM_URL` - Backend URL for links
+  - `FRONTEND_URL` - Frontend URL for wallet links
+- **Startup Validation** - Validates Graph API credentials on app start
+- **Configuration Guide** - Complete setup documentation in `docs/setup/teams-integration-setup.md`
+
+#### Testing & Documentation
+- **Unit Tests:** 48 tests added (194 total, 100% passing)
+  - BadgeNotificationCardBuilder: 19 tests
+  - TeamsBadgeNotificationService: 11 tests  
+  - TeamsSharingController: 7 tests
+  - TeamsActionController: 7 tests
+  - Badge Issuance Integration: 4 tests
+- **Swagger Documentation:** Added "Badge Sharing" and "Teams Actions" API tags
+- **Setup Guide:** 280-line guide with configuration, permissions, troubleshooting
+
+#### Technical Details
+- **Graph API Integration** - Uses existing GraphTeamsService from Story 0.4
+- **Error Handling** - Graceful degradation with email fallback
+- **Logging** - Detailed logs for Teams send, fallback, and errors
+- **Authorization** - JWT authentication for all endpoints
+- **Validation** - DTO validation with class-validator
+
+### Changed
+- Updated Swagger API documentation with Teams endpoints
+- Enhanced badge issuance flow to trigger Teams notifications
+- Updated `.env.example` with Teams configuration examples
+
+### Technical Notes
+- Compatible with Microsoft Graph API v1.0
+- Requires `TeamsActivity.Send` Graph API permission
+- Follows Adaptive Cards 1.4 schema
+- Zero breaking changes to existing API
+
+---
+
 ## [0.5.0] - 2026-01-29
 
 ### Added - Badge Verification & Open Badges 2.0 (Sprint 5)

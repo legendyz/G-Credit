@@ -30,7 +30,7 @@ const SimilarBadgesSection: React.FC<SimilarBadgesSectionProps> = ({
 
   const fetchSimilarBadges = async () => {
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('accessToken');
       const response = await fetch(
         `http://localhost:3000/api/badges/${badgeId}/similar?limit=6`,
         {
@@ -160,7 +160,7 @@ const SimilarBadgesSection: React.FC<SimilarBadgesSectionProps> = ({
       {/* AC 5.8: Scroll hint for mobile */}
       {similarBadges.length > 1 && (
         <p className="text-xs text-gray-500 text-center mt-2">
-          ‚Üê Scroll to see more ‚Üí
+          ‚Ü?Scroll to see more ‚Ü?
         </p>
       )}
     </section>

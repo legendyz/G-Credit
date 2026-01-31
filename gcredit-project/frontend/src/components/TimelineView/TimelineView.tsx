@@ -7,6 +7,7 @@ import { DateGroupHeader } from './DateGroupHeader';
 import { DateNavigationSidebar } from './DateNavigationSidebar';
 import { ViewToggle } from './ViewToggle';
 import EmptyState, { detectEmptyStateScenario } from '../BadgeWallet/EmptyState';
+import BadgeDetailModal from '../BadgeDetailModal/BadgeDetailModal';
 
 export type ViewMode = 'timeline' | 'grid';
 
@@ -158,6 +159,9 @@ export function TimelineView() {
           </div>
         )}
       </div>
+      
+      {/* Badge Detail Modal - renders via Portal to document.body */}
+      <BadgeDetailModal />
     </div>
   );
 }

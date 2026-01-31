@@ -1,0 +1,51 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.16",
+  "version": "1.0.0",
+  "id": "ceafe2e0-73a9-46b6-a203-1005bfdda11f",
+  "packageName": "com.gcredit.badgeplatform",
+  "developer": {
+    "name": "G-Credit",
+    "websiteUrl": "https://localhost:5173",
+    "privacyUrl": "https://localhost:5173/privacy",
+    "termsOfUseUrl": "https://localhost:5173/terms"
+  },
+  "name": {
+    "short": "G-Credit Badges",
+    "full": "G-Credit Badge Platform"
+  },
+  "description": {
+    "short": "Badge notification system",
+    "full": "Receive notifications when you earn new badges in the G-Credit platform"
+  },
+  "icons": {
+    "outline": "outline.png",
+    "color": "color.png"
+  },
+  "accentColor": "#4F46E5",
+  "configurableTabs": [],
+  "staticTabs": [],
+  "bots": [],
+  "connectors": [],
+  "composeExtensions": [],
+  "permissions": [
+    "identity",
+    "messageTeamMembers"
+  ],
+  "validDomains": [
+    "localhost"
+  ],
+  "webApplicationInfo": {
+    "id": "ceafe2e0-73a9-46b6-a203-1005bfdda11f",
+    "resource": "https://graph.microsoft.com"
+  },
+  "activities": {
+    "activityTypes": [
+      {
+        "type": "badgeEarned",
+        "description": "You earned a new badge",
+        "templateText": "{actor} earned the {badgeName} badge from {issuerName}"
+      }
+    ]
+  }
+}

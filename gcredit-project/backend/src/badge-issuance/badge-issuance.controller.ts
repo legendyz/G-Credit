@@ -102,6 +102,26 @@ export class BadgeIssuanceController {
     return this.badgeService.getIssuedBadges(req.user.userId, req.user.role, query);
   }
 
+  @Get(':id')
+  @ApiOperation({ summary: 'Get badge details by ID' })
+  @ApiResponse({ status: 200, description: 'Badge details retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Badge not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden - can only view own badges or issued badges' })
+  async getBadgeById(@Param('id') id: string, @Request() req: any) {
+    const badge = await this.badgeService.findOne(id);
+    
+    if (!badge) {
+      throw new NotFoundException('Badge not found');
+    }
+
+    // Check authorization: user can view if they are recipient or issuer
+    if (badge.recipientId !== req.user.userId && badge.issuerId !== req.user.userId) {
+      throw new NotFoundException('Badge not found'); // Don't reveal existence
+    }
+
+    return badge;
+  }
+
   @Post(':id/revoke')
   @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)

@@ -1,10 +1,70 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
+/**
+ * Validate required Teams notification configuration
+ * Story 7.4 Task 7
+ */
+function validateTeamsConfiguration() {
+  const logger = new Logger('ConfigValidation');
+  const teamsEnabled = process.env.ENABLE_TEAMS_NOTIFICATIONS === 'true';
+
+  if (!teamsEnabled) {
+    logger.warn('⚠️  Teams notifications are DISABLED');
+    return;
+  }
+
+  logger.log('✅ Teams notifications are ENABLED');
+
+  // Validate Graph API credentials
+  const requiredGraphVars = [
+    'GRAPH_TENANT_ID',
+    'GRAPH_CLIENT_ID',
+    'GRAPH_CLIENT_SECRET',
+  ];
+
+  const missingGraphVars = requiredGraphVars.filter(
+    (varName) => !process.env[varName],
+  );
+
+  if (missingGraphVars.length > 0) {
+    logger.error(
+      `❌ Missing Microsoft Graph API configuration: ${missingGraphVars.join(', ')}`,
+    );
+    logger.error('   Teams notifications will fail without these credentials');
+  }
+
+  // Validate optional Teams channel settings (warn but don't fail)
+  if (!process.env.DEFAULT_TEAMS_TEAM_ID) {
+    logger.warn('⚠️  DEFAULT_TEAMS_TEAM_ID not set (optional)');
+  }
+
+  if (!process.env.DEFAULT_TEAMS_CHANNEL_ID) {
+    logger.warn('⚠️  DEFAULT_TEAMS_CHANNEL_ID not set (optional)');
+  }
+
+  // Validate platform URL
+  if (!process.env.PLATFORM_URL) {
+    logger.warn('⚠️  PLATFORM_URL not set, using default');
+  }
+}
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Validate configuration on startup
+  validateTeamsConfiguration();
+
+  // Enable CORS for widget embedding (Story 7.3)
+  // Allow widget endpoints to be embedded cross-origin
+  app.enableCors({
+    origin: true, // Allow all origins for public widget endpoints
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  });
 
   // Enable global validation pipe for class-validator DTOs
   app.useGlobalPipes(
@@ -25,6 +85,9 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('Authentication', 'User authentication and authorization')
     .addTag('Badge Templates', 'Badge template management (CRUD, query, image upload)')
+    .addTag('Badge Sharing', 'Share badges to Teams and other platforms (Story 7.4)')
+    .addTag('Badge Widget', 'PUBLIC API - Embeddable badge widgets for external websites (Story 7.3)')
+    .addTag('Teams Actions', 'Handle Adaptive Card actions from Microsoft Teams (Story 7.4)')
     .addTag('Skills', 'Skill management and categories')
     .addTag('Users', 'User profile and management')
     .addBearerAuth(
