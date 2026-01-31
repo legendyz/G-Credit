@@ -4,7 +4,7 @@
 **Epic:** UAT Phase  
 **Sprint:** Sprint 7  
 **Priority:** HIGH  
-**Story Points:** 3  
+**Story Points:** 5  
 **Status:** Backlog
 
 ---
@@ -12,8 +12,8 @@
 ## User Story
 
 **As a** QA/Developer,  
-**I want** a script to generate comprehensive demo seed data,  
-**So that** UAT testing is efficient, repeatable, and covers all scenarios.
+**I want** a script to generate comprehensive demo seed data (from local fixtures OR Microsoft 365 organization),  
+**So that** UAT testing is efficient, repeatable, and uses realistic user accounts.
 
 ---
 
@@ -32,9 +32,17 @@ Manual data creation is:
 
 A seed script provides:
 - One-command setup (`npm run seed:demo`)
+- **Two modes:** Local fixtures OR sync from Microsoft 365 Developer E5 organization
 - Consistent test data
 - Coverage of all test scenarios
 - Fast reset (drop + re-seed in <1 min)
+
+**Microsoft 365 Integration (Optional):**
+For more realistic UAT testing, the script can sync users from an existing M365 Developer E5 subscription:
+- Reads real user accounts from M365 organization
+- Maps M365 users to GCredit roles (via YAML config file)
+- Provides realistic names, emails, departments
+- Enables testing with actual Teams integration
 
 ---
 
@@ -93,6 +101,41 @@ A seed script provides:
 - [x] Prompts for confirmation: "This will delete all data. Continue? (y/n)"
 - [x] Uses Prisma cascade deletes (safe cleanup)
 
+### AC7: Microsoft 365 User Sync (Optional) ✨ NEW
+**Given** I have M365 Developer E5 subscription with demo organization  
+**When** I run `npm run seed:m365`  
+**Then** Real M365 users are synced to GCredit database
+
+- [x] Command: `npm run seed:m365` (uses M365 mode)
+- [x] Environment variable: `SEED_MODE=m365` triggers M365 sync
+- [x] Calls Microsoft Graph API `/users` endpoint
+- [x] Filters active users only (excludes disabled/guest accounts)
+- [x] Reads role mapping from config file: `backend/config/m365-role-mapping.yaml`
+- [x] Maps M365 emails → GCredit roles (ADMIN, ISSUER, MANAGER, EMPLOYEE)
+- [x] Uses consistent test password for all users (configured in YAML)
+- [x] Console output shows: "Synced 15 users from M365 organization"
+
+### AC8: Role Mapping Configuration File ✨ NEW
+- [x] File location: `backend/config/m365-role-mapping.yaml`
+- [x] Clear structure:
+  ```yaml
+  roleMapping:
+    admin@yourdomain.onmicrosoft.com: ADMIN
+    issuer@yourdomain.onmicrosoft.com: ISSUER
+    manager@yourdomain.onmicrosoft.com: MANAGER
+    # All others default to EMPLOYEE
+  
+  defaultPassword: "TestPass123!"
+  
+  syncOptions:
+    onlyActiveUsers: true
+    skipGuestUsers: true
+    updateExisting: true
+  ```
+- [x] Validation: Script validates YAML syntax on startup
+- [x] Default role: Users not in mapping → EMPLOYEE
+- [x] Comments in YAML explain each setting
+
 ---
 
 ## Non-Functional Requirements
@@ -118,10 +161,16 @@ A seed script provides:
 ### File Structure
 ```
 backend/
+  config/
+    m365-role-mapping.yaml      # M365 user → role mapping (NEW)
   prisma/
-    seed-demo.ts          # Main seed script
-    seed-reset.ts         # Reset script (drop + re-seed)
-  package.json            # Add scripts
+    seed-demo.ts                # Main seed script (supports 2 modes)
+    seed-reset.ts               # Reset script (drop + re-seed)
+  src/
+    microsoft-graph/
+      services/
+        graph-users.service.ts  # M365 user sync service (NEW)
+  package.json                  # Add scripts
 ```
 
 ### Package.json Scripts
@@ -129,21 +178,108 @@ backend/
 {
   "scripts": {
     "seed:demo": "ts-node prisma/seed-demo.ts",
+    "seed:m365": "SEED_MODE=m365 ts-node prisma/seed-demo.ts",
     "seed:reset": "ts-node prisma/seed-reset.ts"
   }
 }
 ```
 
-### Seed Script Outline
+### GraphUsersService Implementation (NEW)
+```typescript
+// backend/src/microsoft-graph/services/graph-users.service.ts
+import { Injectable, Logger } from '@nestjs/common';
+import { Client } from '@microsoft/microsoft-graph-client';
+import { GraphTokenProviderService } from './graph-token-provider.service';
+
+export interface M365User {
+  id: string;
+  mail: string;
+  displayName: string;
+  jobTitle?: string;
+  department?: string;
+  accountEnabled: boolean;
+}
+
+@Injectable()
+export class GraphUsersService {
+  private readonly logger = new Logger(GraphUsersService.name);
+  private graphClient: Client;
+
+  constructor(private readonly tokenProvider: GraphTokenProviderService) {
+    const authProvider = this.tokenProvider.getAuthProvider();
+    this.graphClient = Client.initWithMiddleware({ authProvider });
+  }
+
+  /**
+   * Get all active users from M365 organization
+   * Filters out disabled accounts and guest users
+   */
+  async getOrganizationUsers(): Promise<M365User[]> {
+    try {
+      const response = await this.graphClient
+        .api('/users')
+        .select('id,mail,displayName,jobTitle,department,accountEnabled')
+        .filter('accountEnabled eq true and userType eq \'Member\'')
+        .get();
+
+      this.logger.log(`✅ Retrieved ${response.value.length} users from M365`);
+      return response.value;
+    } catch (error) {
+      this.logger.error('❌ Failed to get M365 users', error);
+      throw error;
+    }
+  }
+}
+```
+
+### Role Mapping YAML Schema
+```yaml
+# backend/config/m365-role-mapping.yaml
+# Microsoft 365 User → GCredit Role Mapping
+# Used when running: npm run seed:m365
+
+roleMapping:
+  # === Admins (Full System Access) ===
+  admin@yourdomain.onmicrosoft.com: ADMIN
+  
+  # === Issuers (Badge Issuance) ===
+  issuer@yourdomain.onmicrosoft.com: ISSUER
+  hr-manager@yourdomain.onmicrosoft.com: ISSUER
+  
+  # === Managers (View Team Badges) ===
+  team-lead@yourdomain.onmicrosoft.com: MANAGER
+  project-manager@yourdomain.onmicrosoft.com: MANAGER
+  
+  # NOTE: All other M365 users default to EMPLOYEE role
+
+# Password for UAT testing (all users get same password)
+defaultPassword: "TestPass123!"
+
+# Sync options
+syncOptions:
+  onlyActiveUsers: true   # Only sync accountEnabled = true
+  skipGuestUsers: true    # Skip userType = Guest
+  updateExisting: true    # Update displayName if user already exists
+```
+
+### Seed Script Outline (Hybrid Mode)
 ```typescript
 // backend/prisma/seed-demo.ts
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import * as yaml from 'js-yaml';
+import * as fs from 'fs';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from '../src/app.module';
+import { GraphUsersService } from '../src/microsoft-graph/services/graph-users.service';
 
 const prisma = new PrismaClient();
 
+// Detect seed mode from environment variable
+const SEED_MODE = process.env.SEED_MODE || 'local'; // 'local' | 'm365'
+
 async function main() {
-  console.log('🌱 Seeding demo data...');
+  console.log(`🌱 Seeding demo data (mode: ${SEED_MODE})...`);
   
   // 1. Clear existing demo data
   console.log('🧹 Cleaning existing data...');
@@ -157,18 +293,75 @@ async function main() {
     where: { email: { endsWith: '@example.com' } }
   });
   
-  // 2. Create users
+  // 2. Create users (local OR M365 mode)
   console.log('👤 Creating users...');
-  const hashedPassword = await bcrypt.hash('testpass123', 10);
   
-  const admin = await prisma.user.create({
-    data: {
-      email: 'admin@example.com',
-      password: hashedPassword,
-      name: 'Admin User',
-      role: 'ADMIN'
+  let admin, issuer, manager, employee;
+  
+  if (SEED_MODE === 'm365') {
+    // === M365 SYNC MODE ===
+    console.log('🔄 Syncing users from Microsoft 365...');
+    
+    // Load role mapping config
+    const configPath = './config/m365-role-mapping.yaml';
+    const configFile = fs.readFileSync(configPath, 'utf8');
+    const config = yaml.load(configFile) as any;
+    
+    // Initialize NestJS context to access GraphUsersService
+    const app = await NestFactory.createApplicationContext(AppModule);
+    const graphUsersService = app.get(GraphUsersService);
+    
+    // Fetch M365 users
+    const m365Users = await graphUsersService.getOrganizationUsers();
+    console.log(`📥 Retrieved ${m365Users.length} users from M365`);
+    
+    // Hash default password
+    const hashedPassword = await bcrypt.hash(
+      config.defaultPassword || 'TestPass123!',
+      10
+    );
+    
+    // Sync users to database
+    for (const m365User of m365Users) {
+      const role = config.roleMapping[m365User.mail] || 'EMPLOYEE';
+      
+      await prisma.user.upsert({
+        where: { email: m365User.mail },
+        create: {
+          email: m365User.mail,
+          password: hashedPassword,
+          name: m365User.displayName,
+          role: role,
+        },
+        update: config.syncOptions.updateExisting 
+          ? { name: m365User.displayName }
+          : {},
+      });
+      
+      console.log(`  ✅ ${m365User.displayName} → ${role}`);
     }
-  });
+    
+    // Get reference users for seeding badges
+    admin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
+    issuer = await prisma.user.findFirst({ where: { role: 'ISSUER' } });
+    manager = await prisma.user.findFirst({ where: { role: 'MANAGER' } });
+    employee = await prisma.user.findFirst({ where: { role: 'EMPLOYEE' } });
+    
+    await app.close();
+    
+  } else {
+    // === LOCAL FIXTURES MODE ===
+    console.log('📦 Creating local fixture users...');
+    const hashedPassword = await bcrypt.hash('testpass123', 10);
+    
+    admin = await prisma.user.create({
+      data: {
+        email: 'admin@example.com',
+        password: hashedPassword,
+        name: 'Admin User',
+        role: 'ADMIN'
+      }
+    });
   
   const issuer = await prisma.user.create({
     data: {
@@ -299,10 +492,23 @@ main()
 - [x] Password hashing works (bcrypt verify)
 
 ### Manual Testing
+
+**Local Mode:**
 - [x] Run `npm run seed:demo` in clean database
-- [x] Verify users in database (Prisma Studio or pgAdmin)
+- [x] Verify 4 users created (admin, issuer, manager, employee)
+- [x] Log in with admin@example.com / testpass123
+
+**M365 Mode (if M365 Developer E5 available):**
+- [x] Configure `config/m365-role-mapping.yaml` with real M365 emails
+- [x] Run `npm run seed:m365`
+- [x] Verify M365 users synced (check console output count)
+- [x] Verify role mappings correct (query database for roles)
+- [x] Log in with real M365 account (use TestPass123!)
+- [x] Verify name synced from M365 displayName
+
+**Common Tests:**
+- [x] Verify badge templates created (5 templates)
 - [x] Verify badge statuses correct (ISSUED, CLAIMED, REVOKED)
-- [x] Log in with each test account (admin, issuer, manager, employee)
 - [x] Run UAT Scenario 1 with seeded data
 
 ### Validation Checks
@@ -341,12 +547,15 @@ main()
 | Task | Hours | Assignee |
 |------|-------|----------|
 | Design data structure (users, templates, badges) | 0.5h | Dev |
-| Write seed-demo.ts script | 1.5h | Dev |
+| Write seed-demo.ts script (local mode) | 1.5h | Dev |
+| **NEW: Create GraphUsersService** | 1.5h | Dev |
+| **NEW: Create m365-role-mapping.yaml config** | 0.5h | Dev |
+| **NEW: Integrate M365 sync in seed-demo.ts** | 1.5h | Dev |
 | Write seed-reset.ts script | 0.5h | Dev |
-| Test and debug seed script | 0.5h | Dev |
+| Test local mode and M365 mode | 1h | Dev |
 | Add package.json scripts | 0.25h | Dev |
 | Update documentation | 0.25h | Dev |
-| **Total** | **3.5h** | |
+| **Total** | **7.5h** | |
 
 ### Confidence Level
 High - Straightforward scripting work
@@ -370,20 +579,28 @@ High - Straightforward scripting work
 | Seed script slow (>60s) | Low | Low | Use Prisma createMany for batch inserts |
 | Script fails mid-execution | Low | Medium | Wrap in transaction or add cleanup logic |
 | Accidental production run | Very Low | Critical | Add env check (exit if NODE_ENV = production) |
+| **M365 API rate limiting** | Low | Medium | Use exponential backoff, batch requests if needed |
+| **M365 auth fails during seed** | Medium | Medium | Graceful fallback: log error, skip M365 mode, use local |
+| **Role mapping config syntax error** | Medium | Low | Validate YAML on startup, show clear error message |
 
 ---
 
 ## Questions & Assumptions
 
 ### Assumptions
-- Demo data uses @example.com emails (clearly test data)
-- All users share same password (testpass123) for ease of testing
+- **Local mode:** Demo data uses @example.com emails (clearly test data)
+- **M365 mode:** Uses real M365 organization emails (*.onmicrosoft.com)
+- All users share same password (TestPass123!) for ease of testing
 - Seed script runs on local and test environments only (not production)
 - Data is reset before each UAT session (fresh state)
+- **M365 sync requires:** User.Read.All permission granted to Azure app registration
+- Role mapping config must be manually created/updated (not auto-generated)
 
 ### Open Questions
 - Should we add seed data for LinkedIn sharing tokens? → Not needed, manual OAuth flow
 - Should we seed audit log entries? → Not in MVP, logs auto-generated
+- **NEW: M365 User.Read.All permission available?** → ✅ Yes, Product Owner has M365 Developer E5 subscription with demo org
+- **NEW: Should we auto-create role mapping YAML?** → No, manual config better (explicit role assignments)
 
 ---
 
