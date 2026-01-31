@@ -209,7 +209,7 @@
 
 | # | Action | Owner | Hours | Status |
 |---|--------|-------|-------|--------|
-| 15 | Verify Azure User.Read.All permission | LegendZhu | 15min | ⏳ **CRITICAL** |
+| 15 | Verify Azure User.Read.All permission | LegendZhu | 15min | ✅ **VERIFIED** (Feb 1) |
 | 16 | Update ADR-008 (add User.Read.All) | Architect | 30min | ⏳ Todo |
 
 ### After Sprint 7
