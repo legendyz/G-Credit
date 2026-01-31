@@ -11,9 +11,9 @@
 
 | Metric | Value | Status |
 |--------|-------|--------|
-| **Stories Completed** | 1/9 | 11% |
+| **Stories Completed** | 1/10 | 10% |
 | **Hours Spent** | 0h | - |
-| **Estimated Remaining** | 31-43h | - |
+| **Estimated Remaining** | 37-53h | - |
 | **Current Velocity** | - | TBD |
 | **Sprint Status** | 🟡 KICKOFF COMPLETE | Day 1 starts Feb 3 |
 
@@ -42,7 +42,44 @@
 
 ---
 
-### **Phase 2: Epic 9 - Badge Revocation (Day 1-2)** 🔵
+### **Phase 2: Sprint Setup Part 2 (Day 3)** 🔵
+
+#### 🔵 Story 0.2: Simple Login & Navigation System
+- **Status:** 🔲 NOT STARTED
+- **Effort:** 4-6h estimated
+- **Priority:** CRITICAL
+- **Story Points:** 4
+- **Dependencies:** Stories 9.1-9.5 (all features developed)
+- **Story File:** [0-2-login-navigation.md](0-2-login-navigation.md)
+- **Target Start:** February 5, 2026 (Day 3 Morning)
+- **Target Completion:** February 5, 2026 (Day 3 Afternoon)
+- **Deliverables:**
+  - LoginPage component
+  - Auth store (Zustand) with token management
+  - Role-based Dashboard
+  - Protected routes with authentication
+  - Layout component with navigation
+  - Test accounts for UAT
+- **Acceptance Criteria:**
+  - [ ] Login page with email/password form
+  - [ ] Auth state stored in Zustand (accessToken, user, role)
+  - [ ] Dashboard shows role-appropriate links
+  - [ ] Protected routes redirect unauthenticated users
+  - [ ] Logout functionality works
+- **Tasks:**
+  - [ ] Create auth store (Zustand)
+  - [ ] Create LoginPage component
+  - [ ] Create ProtectedRoute component
+  - [ ] Create DashboardPage (role-based)
+  - [ ] Create Layout component
+  - [ ] Update router
+  - [ ] Unit tests + E2E tests
+- **Why Critical:** Without login system, Story U.1 (Complete Lifecycle UAT) cannot test multi-role workflows. UAT requires switching between Admin and Employee roles.
+- **Notes:**
+
+---
+
+### **Phase 3: Epic 9 - Badge Revocation (Day 1-2)** 🔵
 
 #### 🔵 Story 9.1: Badge Revocation API
 - **Status:** 🔲 NOT STARTED
@@ -205,7 +242,7 @@
 
 ---
 
-### **Phase 3: UAT Phase (Day 3-5)** 🔵
+### **Phase 4: UAT Phase (Day 3-5)** 🔵
 
 #### 🔵 Story U.2: Demo Seed Data Creation
 - **Status:** 🔲 NOT STARTED
@@ -214,8 +251,8 @@
 - **Story Points:** 3
 - **Dependencies:** Story 0.1
 - **Story File:** [U-2-demo-seed.md](U-2-demo-seed.md)
-- **Target Start:** February 5, 2026 (Day 3 Morning)
-- **Target Completion:** February 5, 2026 (Day 3, before 10am)
+- **Target Start:** February 5, 2026 (Day 3 Afternoon)
+- **Target Completion:** February 5, 2026 (Day 3 Evening)
 - **Deliverables:**
   - seed-demo.ts script
   - seed-reset.ts script
@@ -245,10 +282,10 @@
 - **Effort:** 8h estimated (full day)
 - **Priority:** CRITICAL
 - **Story Points:** 6
-- **Dependencies:** Stories 9.1-9.5, U.2
+- **Dependencies:** Stories 9.1-9.5, 0.2, U.2
 - **Story File:** [U-1-lifecycle-uat.md](U-1-lifecycle-uat.md)
-- **Target Start:** February 5, 2026 (Day 3, 10am)
-- **Target Completion:** February 5, 2026 (Day 3 EOD)
+- **Target Start:** February 6, 2026 (Day 4, Full Day)
+- **Target Completion:** February 6, 2026 (Day 4 EOD)
 - **Deliverables:**
   - Scenario 1: Happy Path (8 steps, 26 min, recorded)
   - Scenario 2: Error Handling (6 cases, recorded)
@@ -282,7 +319,7 @@
 - **Story Points:** 2-8 (TBD after UAT)
 - **Dependencies:** Story U.1
 - **Story File:** [U-3-bug-fixes.md](U-3-bug-fixes.md)
-- **Target Start:** February 6, 2026 (Day 4)
+- **Target Start:** February 7, 2026 (Day 5)
 - **Target Completion:** February 7, 2026 (Day 5)
 - **Deliverables:**
   - All P0 bugs fixed
@@ -310,9 +347,10 @@
 ## 🎯 Sprint 7 Success Metrics
 
 ### Definition of Done (Sprint Level)
-- [ ] All 9 stories completed (100%)
+- [ ] All 10 stories completed (100%)
+- [ ] Story 0.2 (Login & Navigation) complete - UAT prerequisite
 - [ ] Epic 9 (Badge Revocation) 100% complete
-- [ ] Complete lifecycle UAT executed
+- [ ] Complete lifecycle UAT executed with login system
 - [ ] All P0/P1 bugs fixed
 - [ ] Test coverage maintained >80%
 - [ ] All story files updated with completion notes
@@ -326,10 +364,12 @@
 - **Bug Fix Rate:** All P0 fixed, 80%+ P1 fixed
 
 ### Time Tracking
-- **Estimated:** 31-43h
+- **Estimated:** 37-53h
 - **Capacity:** 60h
-- **Buffer:** 17-29h (28-48%)
+- **Buffer:** 7-23h (12-38%)
 - **Actual:** [TBD during sprint]
+
+**Note:** Story 0.2 (Login & Navigation, 4-6h) added after kickoff. Required for complete UAT testing.
 
 ---
 
@@ -380,20 +420,39 @@
 
 ---
 
-### Day 3 (February 5, 2026) - UAT Execution
-**Target:** Stories U.2, U.1  
-**Planned Hours:** 11.5h (3.5h + 8h)  
+### Day 3 (February 5, 2026) - UI Foundation + UAT Prep
+**Target:** Stories 9.5 (complete), 0.2, U.2  
+**Planned Hours:** 2h + 4-6h + 3.5h = 9.5-11.5h  
 **Actual Hours:** [TBD]
 
-**Morning Session (9am-10am):**
+**Morning Session:**
+- [ ] Story 9.5: Admin UI (complete, 2h remaining)
+- [ ] Story 0.2: Login & Navigation System (4-6h)
+  - Auth store
+  - LoginPage
+  - Dashboard
+  - Protected routes
+  - Tests
+
+**Afternoon Session:**
 - [ ] Story U.2: Demo Seed Data (3.5h)
   - Create script
-  - Test data generation
+  - Test data
   - Verify
 
-**Full Day (10am-6pm):**
+**Notes:**
+
+---
+
+### Day 4 (February 6, 2026) - Complete Lifecycle UAT
+**Target:** Story U.1  
+**Planned Hours:** 8h  
+**Actual Hours:** [TBD]
+
+**Full Day:**
 - [ ] Story U.1: Complete Lifecycle UAT (8h)
-  - Execute all 4 scenarios
+  - Execute all 4 scenarios with login system
+  - Test multi-role workflows
   - Record videos
   - Document bugs
   - Create GitHub Issues
@@ -402,19 +461,15 @@
 
 ---
 
-### Day 4-5 (February 6-7, 2026) - Bug Fixes & Sprint Completion
+### Day 5 (February 7, 2026) - Bug Fixes & Sprint Completion
 **Target:** Story U.3, Sprint Closeout  
 **Planned Hours:** 6-16h (bug fixes) + 4h (closeout)  
 **Actual Hours:** [TBD]
 
-**Day 4:**
+**Full Day:**
 - [ ] Story U.3: Fix P0/P1 bugs from UAT
 - [ ] Regression testing
 - [ ] Manual smoke test
-
-**Day 5:**
-- [ ] Remaining bug fixes
-- [ ] Final regression test
 - [ ] Sprint documentation
 - [ ] Create sprint-status.yaml
 - [ ] Sprint retrospective
@@ -426,7 +481,7 @@
 ## 🏁 Sprint Completion Checklist
 
 When all stories are done:
-- [ ] All 9 stories marked COMPLETE
+- [ ] All 10 stories marked COMPLETE (including Story 0.2)
 - [ ] All story files updated with completion notes
 - [ ] sprint-status.yaml created
 - [ ] Sprint 7 completion report created
@@ -440,6 +495,6 @@ When all stories are done:
 
 ---
 
-**Last Updated:** 2026-01-31 (Kickoff complete, Day 1 starts Feb 3)  
+**Last Updated:** 2026-01-31 (Story 0.2 added after kickoff)  
 **Maintained By:** LegendZhu  
 **Status:** 🟡 Ready to Start

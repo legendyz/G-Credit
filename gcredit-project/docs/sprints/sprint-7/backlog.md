@@ -22,9 +22,9 @@
 
 ## 📋 User Stories
 
-### Sprint Setup (Story 0.1)
+### Sprint Setup (Stories 0.1-0.2)
 
-#### **Story 0.1:** [Git Branch Creation](0-1-git-branch.md) - **CRITICAL** - 5 min
+#### **Story 0.1:** [Git Branch Creation](0-1-git-branch.md) - **CRITICAL** - 5 min ✅ DONE
 As a **Development Team**,  
 I want **to create Sprint 7 Git branch before any code changes**,  
 So that **we follow GitFlow strategy and avoid merge conflicts**.
@@ -35,18 +35,31 @@ So that **we follow GitFlow strategy and avoid merge conflicts**.
 - All team members verified working on correct branch
 - Main branch remains clean
 
-**Commands:**
-```bash
-git checkout main
-git pull origin main
-git checkout -b sprint-7/epic-9-revocation-lifecycle-uat
-git push -u origin sprint-7/epic-9-revocation-lifecycle-uat
-git branch  # Verify current branch (should show *)
-```
+**Status:** ✅ COMPLETE (2026-01-31)
 
-**⚠️ MUST BE COMPLETED BEFORE ANY CODE CHANGES!**
+**Link:** [0-1-git-branch.md](0-1-git-branch.md)
 
-**Link:** [0-1-git-branch.md](0-1-git-branch.md) *(To be created)*
+---
+
+#### **Story 0.2:** [Simple Login & Navigation System](0-2-login-navigation.md) - **CRITICAL** - 4-6h
+As a **User (any role)**,  
+I want **to log in to the system and navigate between features**,  
+So that **I can access role-appropriate functionality and complete UAT testing**.
+
+**Acceptance Criteria:**
+- Simple login page (email + password)
+- Auth state management (Zustand)
+- Role-based dashboard after login
+- Protected routes with authentication check
+- Basic navigation layout with logout
+- Test accounts accessible (for UAT)
+
+**Why Critical:** Without this, Story U.1 (Complete Lifecycle UAT) cannot test multi-role workflows. UAT requires:
+- Admin login → create template → issue badge
+- Employee login → view wallet → claim badge
+- Admin login again → revoke badge
+
+**Link:** [0-2-login-navigation.md](0-2-login-navigation.md)
 
 ---
 
@@ -186,43 +199,46 @@ So that **the user experience meets quality standards**.
 
 ## ⏱️ Capacity Planning
 
-### Sprint Timeline (5 days)
+### Sprint Timeline (5 days) - UPDATED
 
-**Day 1 Morning: Sprint Setup**
-- Story 0.1: Create Git branch `sprint-7/epic-9-revocation-lifecycle-uat` (5 min)
-- Verify all team members on correct branch
+**Day 1 (Feb 3): Epic 9 Backend**
+- Morning: Story 9.1 - Badge Revocation API (5h)
+- Afternoon: Story 9.2 - Verification Status Display (4.5h)
 
-**Day 1-2: Epic 9 Development**
-- Day 1: Stories 9.1 + 9.2 (Backend: API + Verification)
-- Day 2: Stories 9.3 + 9.4 + 9.5 (Frontend + Notifications + Admin UI)
-- Parallel: U.2 Demo Seed Data creation
+**Day 2 (Feb 4): Epic 9 Frontend**
+- Morning: Story 9.3 - Wallet Display (5.5h)
+- Afternoon: Story 9.4 - Notifications (4h)
+- Afternoon: Story 9.5 - Admin UI (start, 4h)
 
-**Day 3: Complete Lifecycle UAT**
-- Story U.1: Execute 4 test scenarios
-- Record screen videos
-- Document all findings
-- Prioritize issues
+**Day 3 (Feb 5): UI Foundation + UAT Prep**
+- Morning: Story 9.5 - Admin UI (complete, 2h remaining)
+- Morning: Story 0.2 - Login & Navigation (4-6h) ← **NEW**
+- Afternoon: Story U.2 - Demo Seed Data (3.5h)
 
-**Day 4-5: UAT Issue Resolution**
-- Story U.3: Fix P0/P1 issues
-- Regression testing
-- UAT re-verification
-- Documentation updates
+**Day 4 (Feb 6): Complete Lifecycle UAT**
+- Full Day: Story U.1 - Complete UAT (8h)
+  - Now can test complete multi-role workflows with login!
+
+**Day 5 (Feb 7): Bug Fixes & Sprint Completion**
+- Story U.3 - UAT Bug Fixes (6-16h)
+- Sprint documentation and closeout
 
 ### Total Estimated Effort
 
 | Category | Stories | Estimated Hours |
 |----------|---------|-----------------|
-| **Sprint Setup** | 0.1 | 5 min |
+| **Sprint Setup** | 0.1, 0.2 | 5 min + 4-6h |
 | **Epic 9 Stories** | 9.1-9.5 | 14-19h |
-| **UAT Execution** | U.1 | 6-8h |
 | **Demo Seed Data** | U.2 | 3-4h |
-| **Bug Fixes** | U.3 | 8-12h (TBD) |
-| **Total** | 9 stories | **31-43h** |
+| **UAT Execution** | U.1 | 6-8h |
+| **Bug Fixes** | U.3 | 6-16h (TBD) |
+| **Total** | 10 stories | **37-53h** |
 
-**Team Capacity:** 2 developers × 5 days × 6h/day = **60h available**
+**Team Capacity:** Solo developer × 5 days × 12h/day = **60h available**
 
-**Buffer:** ~17-29h for unknowns and polish
+**Buffer:** ~7-23h for unknowns and polish
+
+**⚠️ Story 0.2 Added:** Login & Navigation system is critical for UAT. Without it, Story U.1 cannot test multi-role workflows (Admin login → issue badge, Employee login → view wallet, etc.)
 
 ---
 
