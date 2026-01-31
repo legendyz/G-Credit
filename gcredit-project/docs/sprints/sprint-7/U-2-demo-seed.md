@@ -22,7 +22,7 @@ This story has been split into **MVP (U.2a)** and **Production Hardening (U.2b -
 **MVP Scope (Sprint 7 - This Story):**
 - ✅ GraphUsersService for M365 API integration
 - ✅ .env-based role mapping (security fix)
-- ✅ Support <100 users (Product Owner org has ~15 users)
+- ✅ Support <100 users (Product Owner org has 30-50 users, single API call sufficient)
 - ✅ Production guard (prevent accidental data wipe)
 - ✅ Basic error handling (fail-fast with clear messages)
 - ✅ Local mode fallback
@@ -36,7 +36,7 @@ This story has been split into **MVP (U.2a)** and **Production Hardening (U.2b -
 
 **Why Split:**
 - Architecture review found 5 P0 security issues (7.5h → 12.5-14.5h with all fixes)
-- UAT only needs ~15 users (Product Owner's org size)
+- UAT only needs 30-50 users (Product Owner's org size, no pagination needed)
 - Pagination/retry/audit not critical for Sprint 7
 - MVP delivers realistic UAT data without production risks
 

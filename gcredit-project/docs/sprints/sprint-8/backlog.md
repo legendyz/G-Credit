@@ -77,7 +77,7 @@
 - User deactivation sync (deleted M365 users → inactive in GCredit)
 - Comprehensive error recovery
 
-**Why Deferred:** Sprint 7 UAT only needs ~15 users (Product Owner's org size), pagination not needed
+**Why Deferred:** Sprint 7 UAT only needs 30-50 users (Product Owner's org size, single GraphAPI call sufficient), pagination not needed
 
 **Dependencies:**
 - Story U.2a (Sprint 7) must be complete
