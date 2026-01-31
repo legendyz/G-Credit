@@ -34,6 +34,501 @@ Following Sprint 7 Technical Review Meeting, this story has been updated with ar
 
 ---
 
+## 🏗️ ARCHITECT NOTES - Implementation Guidance (Feb 2, 2026)
+
+### TDD Implementation Sequence
+
+**🔴 RED → 🟢 GREEN → 🔵 REFACTOR**
+
+This story is marked **HIGH RISK** (7 hours, database changes, audit logging). Follow strict TDD to catch issues early.
+
+#### Phase 1: Database Schema (30 min)
+
+**Step 1.1: Write Failing Test**
+```typescript
+// tests/integration/prisma-schema.spec.ts
+describe('Badge Model - Revocation Fields', () => {
+  it('should have revocation fields defined', async () => {
+    const badge = await prisma.badge.create({
+      data: {
+        // ... create badge
+        status: 'REVOKED', // Should compile if enum updated
+        revokedAt: new Date(),
+        revokedBy: 'user-id',
+        revocationReason: 'Policy Violation',
+        revocationNotes: 'Detailed explanation',
+      },
+    });
+    
+    expect(badge.status).toBe('REVOKED');
+    expect(badge.revokedAt).toBeDefined();
+  });
+});
+```
+
+**Step 1.2: Implement Schema**
+```prisma
+// prisma/schema.prisma
+
+enum BadgeStatus {
+  ISSUED
+  CLAIMED
+  REVOKED  // NEW
+}
+
+model Badge {
+  id        String      @id @default(cuid())
+  // ... existing fields ...
+  status    BadgeStatus @default(ISSUED)
+  
+  // Revocation fields (NEW)
+  revokedAt          DateTime?
+  revokedBy          String?
+  revocationReason   String?
+  revocationNotes    String?
+  
+  // Relations
+  revoker            User?     @relation("RevokedBadges", fields: [revokedBy], references: [id])
+  
+  // Indexes (NEW)
+  @@index([revokedAt])  // For admin reporting queries
+  @@map("badges")
+}
+
+// AuditLog table (NEW)
+model AuditLog {
+  id          String   @id @default(cuid())
+  entityType  String   // "Badge", "Template", "User"
+  entityId    String   // Badge ID
+  action      String   // "REVOKED", "ISSUED", "CLAIMED"
+  actorId     String   // User who performed action
+  actorEmail  String?  // For audit trail
+  timestamp   DateTime @default(now())
+  metadata    Json?    // Flexible storage: { reason, notes, oldStatus, newStatus }
+  
+  // Indexes for efficient querying
+  @@index([entityType, entityId])  // Find all actions on a badge
+  @@index([actorId])                // Find all actions by a user
+  @@index([timestamp])              // Time-based reports
+  @@index([action])                 // Filter by action type
+  @@map("audit_logs")
+}
+```
+
+**Step 1.3: Run Migration**
+```bash
+npx prisma migrate dev --name add-badge-revocation
+```
+
+**Step 1.4: Verify Test Passes** ✅
+
+---
+
+#### Phase 2: Service Layer (1 hour)
+
+**Step 2.1: Write Failing Tests (TDD)**
+```typescript
+// src/badges/badges.service.spec.ts
+
+describe('BadgesService - revokeBadge', () => {
+  let service: BadgesService;
+  let prisma: PrismaService;
+
+  beforeEach(async () => {
+    const module = await Test.createTestingModule({
+      providers: [BadgesService, PrismaService, AuditLogService],
+    }).compile();
+    service = module.get<BadgesService>(BadgesService);
+    prisma = module.get<PrismaService>(PrismaService);
+  });
+
+  describe('Authorization', () => {
+    it('should allow ADMIN to revoke any badge', async () => {
+      // Arrange
+      const badge = await createTestBadge();
+      const admin = await createTestUser({ role: 'ADMIN' });
+      
+      // Act
+      const result = await service.revokeBadge(badge.id, {
+        reason: 'Policy Violation',
+        actorId: admin.id,
+      });
+      
+      // Assert
+      expect(result.status).toBe('REVOKED');
+      expect(result.revokedBy).toBe(admin.id);
+    });
+
+    it('should allow ISSUER to revoke their own badges', async () => {
+      const issuer = await createTestUser({ role: 'ISSUER' });
+      const badge = await createTestBadge({ issuedBy: issuer.id });
+      
+      const result = await service.revokeBadge(badge.id, {
+        reason: 'Issued in Error',
+        actorId: issuer.id,
+      });
+      
+      expect(result.status).toBe('REVOKED');
+    });
+
+    it('should throw 403 if ISSUER tries to revoke others badge', async () => {
+      const issuer = await createTestUser({ role: 'ISSUER' });
+      const otherIssuer = await createTestUser({ role: 'ISSUER' });
+      const badge = await createTestBadge({ issuedBy: otherIssuer.id });
+      
+      await expect(
+        service.revokeBadge(badge.id, { 
+          reason: 'Test', 
+          actorId: issuer.id 
+        })
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should throw 403 if EMPLOYEE tries to revoke', async () => {
+      const employee = await createTestUser({ role: 'EMPLOYEE' });
+      const badge = await createTestBadge();
+      
+      await expect(
+        service.revokeBadge(badge.id, { 
+          reason: 'Test', 
+          actorId: employee.id 
+        })
+      ).rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  describe('Idempotency', () => {
+    it('should return 200 if badge already revoked', async () => {
+      // Arrange
+      const badge = await createTestBadge({ status: 'REVOKED' });
+      const admin = await createTestUser({ role: 'ADMIN' });
+      
+      // Act
+      const result = await service.revokeBadge(badge.id, {
+        reason: 'Policy Violation',
+        actorId: admin.id,
+      });
+      
+      // Assert
+      expect(result.status).toBe('REVOKED');
+      expect(result.alreadyRevoked).toBe(true);  // Flag in response
+    });
+
+    it('should NOT create duplicate audit log on re-revoke', async () => {
+      const badge = await createTestBadge({ status: 'REVOKED' });
+      const admin = await createTestUser({ role: 'ADMIN' });
+      
+      const auditLogsBefore = await prisma.auditLog.count();
+      
+      await service.revokeBadge(badge.id, {
+        reason: 'Policy Violation',
+        actorId: admin.id,
+      });
+      
+      const auditLogsAfter = await prisma.auditLog.count();
+      expect(auditLogsAfter).toBe(auditLogsBefore);  // No new log
+    });
+  });
+
+  describe('Data Integrity', () => {
+    it('should populate all revocation fields', async () => {
+      const badge = await createTestBadge();
+      const admin = await createTestUser({ role: 'ADMIN' });
+      
+      const result = await service.revokeBadge(badge.id, {
+        reason: 'Expired',
+        notes: 'Badge validity period ended',
+        actorId: admin.id,
+      });
+      
+      expect(result.revokedAt).toBeInstanceOf(Date);
+      expect(result.revokedBy).toBe(admin.id);
+      expect(result.revocationReason).toBe('Expired');
+      expect(result.revocationNotes).toBe('Badge validity period ended');
+    });
+
+    it('should create audit log entry', async () => {
+      const badge = await createTestBadge();
+      const admin = await createTestUser({ role: 'ADMIN' });
+      
+      await service.revokeBadge(badge.id, {
+        reason: 'Policy Violation',
+        actorId: admin.id,
+      });
+      
+      const auditLog = await prisma.auditLog.findFirst({
+        where: { entityId: badge.id, action: 'REVOKED' },
+      });
+      
+      expect(auditLog).toBeDefined();
+      expect(auditLog.actorId).toBe(admin.id);
+      expect(auditLog.metadata).toHaveProperty('reason', 'Policy Violation');
+    });
+  });
+});
+```
+
+**Step 2.2: Implement Service**
+```typescript
+// src/badges/badges.service.ts
+
+@Injectable()
+export class BadgesService {
+  constructor(
+    private prisma: PrismaService,
+    private auditLog: AuditLogService,
+  ) {}
+
+  async revokeBadge(
+    badgeId: string,
+    dto: RevokeBadgeDto & { actorId: string },
+  ): Promise<Badge & { alreadyRevoked?: boolean }> {
+    const { reason, notes, actorId } = dto;
+
+    // Step 1: Fetch badge and actor
+    const [badge, actor] = await Promise.all([
+      this.prisma.badge.findUnique({
+        where: { id: badgeId },
+        include: { issuedByUser: true },
+      }),
+      this.prisma.user.findUnique({ where: { id: actorId } }),
+    ]);
+
+    if (!badge) {
+      throw new NotFoundException(`Badge ${badgeId} not found`);
+    }
+
+    // Step 2: Check if already revoked (idempotency)
+    if (badge.status === BadgeStatus.REVOKED) {
+      this.logger.warn(`Badge ${badgeId} already revoked, skipping`);
+      return { ...badge, alreadyRevoked: true };
+    }
+
+    // Step 3: Authorization check
+    const canRevoke = 
+      actor.role === Role.ADMIN ||
+      (actor.role === Role.ISSUER && badge.issuedBy === actorId);
+
+    if (!canRevoke) {
+      throw new ForbiddenException(
+        `User ${actorId} cannot revoke badge ${badgeId}`,
+      );
+    }
+
+    // Step 4: Update badge (transaction for safety)
+    const updatedBadge = await this.prisma.$transaction(async (tx) => {
+      // 4a: Update badge
+      const updated = await tx.badge.update({
+        where: { id: badgeId },
+        data: {
+          status: BadgeStatus.REVOKED,
+          revokedAt: new Date(),
+          revokedBy: actorId,
+          revocationReason: reason,
+          revocationNotes: notes,
+        },
+      });
+
+      // 4b: Create audit log entry
+      await tx.auditLog.create({
+        data: {
+          entityType: 'Badge',
+          entityId: badgeId,
+          action: 'REVOKED',
+          actorId: actorId,
+          actorEmail: actor.email,
+          timestamp: new Date(),
+          metadata: {
+            reason,
+            notes,
+            badgeName: badge.name,
+            recipientEmail: badge.recipientEmail,
+          },
+        },
+      });
+
+      return updated;
+    });
+
+    this.logger.log(
+      `Badge ${badgeId} revoked by ${actor.email} (reason: ${reason})`,
+    );
+
+    return updatedBadge;
+  }
+}
+```
+
+**Step 2.3: Run Tests** ✅ All tests should pass
+
+---
+
+#### Phase 3: Controller & DTO (1 hour)
+
+**Step 3.1: Write Failing Tests**
+```typescript
+// src/badges/badges.controller.spec.ts
+
+describe('BadgesController - POST /badges/:id/revoke', () => {
+  it('should revoke badge successfully', () => {
+    return request(app.getHttpServer())
+      .post('/api/badges/badge-id-123/revoke')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ reason: 'Policy Violation', notes: 'Detailed explanation' })
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.status).toBe('REVOKED');
+      });
+  });
+
+  it('should validate reason field (required)', () => {
+    return request(app.getHttpServer())
+      .post('/api/badges/badge-id-123/revoke')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ notes: 'Missing reason' })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.message).toContain('reason');
+      });
+  });
+});
+```
+
+**Step 3.2: Implement DTO**
+```typescript
+// src/badges/dto/revoke-badge.dto.ts
+
+import { IsString, IsOptional, MaxLength, IsEnum } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+
+export enum RevocationReason {
+  POLICY_VIOLATION = 'Policy Violation',
+  ISSUED_IN_ERROR = 'Issued in Error',
+  EXPIRED = 'Expired',
+  DUPLICATE = 'Duplicate',
+  FRAUD = 'Fraud',
+  OTHER = 'Other',
+}
+
+export class RevokeBadgeDto {
+  @ApiProperty({
+    description: 'Reason for revocation',
+    enum: RevocationReason,
+    example: RevocationReason.POLICY_VIOLATION,
+  })
+  @IsEnum(RevocationReason)
+  reason: RevocationReason;
+
+  @ApiProperty({
+    description: 'Additional notes (optional, max 1000 chars)',
+    required: false,
+    maxLength: 1000,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  notes?: string;
+}
+```
+
+**Step 3.3: Implement Controller**
+```typescript
+// src/badges/badges.controller.ts
+
+@Controller('badges')
+@ApiTags('badges')
+export class BadgesController {
+  constructor(private readonly badgesService: BadgesService) {}
+
+  @Post(':id/revoke')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.ISSUER)
+  @ApiOperation({ summary: 'Revoke a badge' })
+  @ApiResponse({ status: 200, description: 'Badge revoked successfully' })
+  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  @ApiResponse({ status: 404, description: 'Badge not found' })
+  async revoke(
+    @Param('id') badgeId: string,
+    @Body() dto: RevokeBadgeDto,
+    @CurrentUser() user: User,
+  ) {
+    const badge = await this.badgesService.revokeBadge(badgeId, {
+      ...dto,
+      actorId: user.id,
+    });
+
+    return {
+      success: true,
+      message: badge.alreadyRevoked 
+        ? 'Badge was already revoked' 
+        : 'Badge revoked successfully',
+      badge,
+    };
+  }
+}
+```
+
+**Step 3.4: Run Tests** ✅
+
+---
+
+### Performance Considerations
+
+**Database Indexes (Already in Schema):**
+```prisma
+@@index([revokedAt])  // Fast queries: "Show all revoked badges"
+@@index([entityType, entityId])  // Fast audit log lookup
+@@index([timestamp])  // Time-based audit reports
+```
+
+**Query Performance:**
+```typescript
+// ❌ BAD: N+1 query
+badges.forEach(badge => badge.revoker)
+
+// ✅ GOOD: Eager load
+await prisma.badge.findMany({
+  include: { revoker: true }
+})
+```
+
+**Async Audit Logging (Future Optimization):**
+```typescript
+// Current: Synchronous (part of transaction)
+await tx.auditLog.create(...)
+
+// Sprint 8: Async with queue
+await this.queue.add('audit-log', { ... })
+```
+
+---
+
+### Testing Checklist
+
+**Before Committing:**
+- [ ] All 15-20 unit tests pass
+- [ ] E2E tests pass (full revocation flow)
+- [ ] Manual Postman test (Admin revoke)
+- [ ] Manual Postman test (Issuer revoke own badge)
+- [ ] Manual Postman test (Issuer revoke other's badge - should fail)
+- [ ] Manual Postman test (Double revoke - should return 200 with flag)
+- [ ] Database migration runs successfully
+- [ ] Swagger docs generated correctly
+
+**Code Review Focus Areas:**
+1. Authorization logic (ADMIN vs ISSUER)
+2. Transaction handling (badge + audit log atomic)
+3. Idempotency (already-revoked handling)
+4. Error messages (clear and actionable)
+
+---
+
+**Architect Sign-Off:** Amelia (Software Architect)  
+**Date:** February 2, 2026  
+**Review Status:** ✅ Ready for Development
+
+---
+
 ## User Story
 
 **As an** Admin or Issuer,  
