@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.6.0] - 2026-01-30
+## [0.6.0] - 2026-01-31
 
-### Added - Microsoft Teams Notifications (Sprint 6, Story 7.4)
+### Added - Badge Sharing & Social Proof (Sprint 6, Epic 7)
 
 #### Teams Badge Notifications
 - **Adaptive Cards 1.4** - Rich Teams notifications with badge details and action buttons
