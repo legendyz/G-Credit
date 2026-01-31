@@ -1,7 +1,6 @@
 # Amelia - Sprint 7 Activation (Simple Version)
 
-**Date:** February 3, 2026  
-**Sprint:** Sprint 7 (7 working days, Feb 3-11, 2026)  
+**Sprint:** Sprint 7 (7 working days)  
 **Branch:** `sprint-7/epic-9-revocation-lifecycle-uat`
 
 ---
@@ -10,11 +9,11 @@
 
 Hi Amelia! 你好！
 
-今天是Sprint 7的Day 1。请按照你自己的**Dev Story workflow**来工作，结合下面的Sprint 7特定信息。
+请按照你自己的**Dev Story workflow**来工作，结合下面的Sprint 7特定信息。
 
 ---
 
-## 📋 Today's Story (Day 1, Feb 3)
+## 📋 First Story to Execute
 
 **Story File:** `gcredit-project/docs/sprints/sprint-7/9-1-revoke-api.md`
 
@@ -45,9 +44,9 @@ Hi Amelia! 你好！
 - 技术决策摘要
 
 **When to read it:**
-- 在开始Story 9.1之前（前10分钟）
+- 在开始Story 9.1之前
 - 当你需要Sprint 7整体context时
-- 当你需要确认Day 3 coordination要求时
+- 当你需要确认后续coordination要求时
 
 ---
 
@@ -98,11 +97,11 @@ project-context.md
 
 ---
 
-## 📅 Day 3 Coordination Alert
+## 📅 Upcoming Coordination Alert
 
-Day 3 (Feb 5)下午会做Stories 0.2a和U.2a，需要**Product Owner参与M365 sync测试**。
+当执行Stories 0.2a和U.2a时，需要**Product Owner参与M365 sync测试**。
 
-When you reach Day 3 Story U.2a:
+When you reach Story U.2a:
 - 提前notify Product Owner准备2-3个真实M365用户邮箱
 - PO需要验证M365 org structure是否正确
 - 这是sprint的关键依赖点
@@ -122,9 +121,9 @@ When you reach Day 3 Story U.2a:
 - Write tests FIRST for each phase
 - Mark [x] only when tests pass
 
-**Step 4:** 下午4pm验证axe-core setup是否工作（快速验证，5分钟）
+**Step 4:** 在完成Story 9.1前验证axe-core setup是否工作（快速验证，5分钟）
 
-**Step 5:** End of day发送status update给Product Owner
+**Step 5:** 完成工作后发送status update给Product Owner
 
 ---
 
