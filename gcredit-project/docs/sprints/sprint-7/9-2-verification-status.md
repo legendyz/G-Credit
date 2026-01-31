@@ -4,8 +4,23 @@
 **Epic:** Epic 9 - Badge Revocation  
 **Sprint:** Sprint 7  
 **Priority:** HIGH  
-**Story Points:** 3  
-**Status:** Backlog
+**Story Points:** 3 → **4** ⚠️ **UPDATED**  
+**Status:** Backlog  
+**Last Updated:** February 1, 2026 (Post-Technical Review)
+
+---
+
+## ⚠️ UX DESIGN DECISION (Feb 1, 2026)
+
+**✅ Decision #3: Public Verification Page - Reason Display**
+- **Approved:** Show revocation reason only for public-safe categories
+- **Public reasons:** "Expired", "Issued in Error" → display on verification page
+- **Private reasons:** "Policy Violation" → show generic "This badge has been revoked"
+- **Implementation:** Backend categorizes reason, frontend displays accordingly
+
+**Estimate Updated:** 3h → 4h (+1h for reason categorization logic)
+
+**Reference:** See `EPIC-9-UX-REVIEW-AMELIA.md` and meeting minutes
 
 ---
 

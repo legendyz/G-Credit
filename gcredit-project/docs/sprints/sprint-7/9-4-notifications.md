@@ -3,9 +3,25 @@
 **Story ID:** Story 9.4  
 **Epic:** Epic 9 - Badge Revocation  
 **Sprint:** Sprint 7  
-**Priority:** MEDIUM  
-**Story Points:** 2  
-**Status:** Backlog
+**Priority:** MEDIUM → **NICE-TO-HAVE** ⚠️ **UPDATED**  
+**Story Points:** 3  
+**Status:** Backlog  
+**Timeline:** Day 4 (moved from Day 2)  
+**Last Updated:** February 1, 2026 (Post-Technical Review)
+
+---
+
+## ⚠️ PRIORITY UPDATE (Feb 1, 2026)
+
+**Decision #18: Email Notifications = Nice-to-Have**
+- Email notifications are **NOT a UAT blocker**
+- UAT can proceed by verifying revocation via database/API
+- If this story encounters issues on Day 4, it can defer to Sprint 8
+- Core revocation functionality (Stories 9.1-9.3, 9.5) takes priority
+
+**Timeline Change:** Moved from Day 2 to Day 4 (after core features complete)
+
+**Reference:** See meeting minutes Part 4, Risk Assessment
 
 ---
 

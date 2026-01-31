@@ -4,8 +4,33 @@
 **Epic:** Epic 9 - Badge Revocation  
 **Sprint:** Sprint 7  
 **Priority:** HIGH  
-**Story Points:** 5  
-**Status:** Backlog
+**Story Points:** 5 → **7** ⚠️ **UPDATED**  
+**Status:** Backlog  
+**Last Updated:** February 1, 2026 (Post-Technical Review)
+
+---
+
+## ⚠️ TECHNICAL REVIEW UPDATES (Feb 1, 2026)
+
+Following Sprint 7 Technical Review Meeting, this story has been updated with architectural decisions:
+
+**Scope Additions:**
+1. ✅ **AuditLog Table Creation** - Must create dedicated AuditLog infrastructure (not just Badge fields)
+2. ✅ **REVOKED Enum Status** - Use Badge.status = REVOKED (not soft-delete with revokedAt field only)
+3. ✅ **API Idempotency** - Revoking already-revoked badge returns 200 OK (not 400 error)
+4. ✅ **Database Index** - Add index on revokedAt for admin reporting queries
+
+**Estimate Updated:**
+- Original: 5 hours
+- **Revised: 7 hours** (+2h for AuditLog table + enum migration)
+
+**Development Approach:**
+- **TDD Required:** Write unit tests BEFORE implementation (risk mitigation strategy)
+- Test coverage target: 15-20 unit tests + 5 E2E tests
+
+**References:**
+- Architecture Review: See `EPIC-9-ARCHITECTURE-REVIEW-AMELIA.md`
+- Meeting Minutes: See `sprint-7-technical-review-meeting-minutes.md`
 
 ---
 
@@ -47,24 +72,38 @@ Revocation must maintain audit trail and update badge status across all systems 
 - [x] EMPLOYEE and MANAGER roles cannot revoke
 - [x] 403 Forbidden error if unauthorized
 
-### AC3: Soft-Delete Pattern
-- [x] Badge not deleted from database
-- [x] Status changed to REVOKED
+### AC3: Database Schema - REVOKED Status Enum ⚠️ **UPDATED**
+- [x] Badge.status enum includes REVOKED (not just soft-delete pattern)
+- [x] Prisma migration adds REVOKED to BadgeStatus enum
 - [x] Fields populated: `revokedAt`, `revokedBy`, `revocationReason`, `revocationNotes`
 - [x] Original issuance data preserved
+- [x] **NEW:** Index on revokedAt field for admin queries
 
-### AC4: Audit Logging
-- [x] Audit log entry created with:
-  - Badge ID
-  - Revoked by (user ID)
-  - Timestamp
-  - Reason and notes
-- [x] Log entry immutable (cannot be edited/deleted)
+### AC4: AuditLog Infrastructure ⚠️ **NEW**
+- [x] **NEW:** Create AuditLog table with schema:
+  ```prisma
+  model AuditLog {
+    id          String   @id @default(cuid())
+    entityType  String   // "Badge"
+    entityId    String   // Badge ID
+    action      String   // "REVOKED"
+    actorId     String   // User who performed action
+    timestamp   DateTime @default(now())
+    metadata    Json?    // { reason, notes }
+    @@index([entityType, entityId])
+    @@index([actorId])
+    @@index([timestamp])
+  }
+  ```
+- [x] Audit log entry created on revocation
+- [x] Log entry immutable (no UPDATE/DELETE endpoints)
+- [x] Queryable by admin for compliance reports
 
-### AC5: Validation Rules
-- [x] Cannot revoke already-revoked badge (return 400 error)
-- [x] Reason is required (enum or text validation)
-- [x] Notes are optional (max 1000 characters)
+### AC5: API Idempotency ⚠️ **UPDATED**
+- [x] Revoking already-revoked badge returns **200 OK** (not 400 error)
+- [x] Response includes flag: `{ alreadyRevoked: true }`
+- [x] No duplicate audit log entries created
+- [x] Reason validation: enum or text with max length
 
 ---
 

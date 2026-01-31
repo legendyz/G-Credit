@@ -1,11 +1,47 @@
-# Story 0.2: Simple Login & Navigation System
+# Story 0.2a: Simple Login & Navigation System (MVP)
 
-**Story ID:** Story 0.2  
+**Story ID:** Story 0.2a (Split from 0.2)  
 **Epic:** Sprint Setup  
 **Sprint:** Sprint 7  
 **Priority:** CRITICAL  
-**Story Points:** 4  
-**Status:** Backlog
+**Story Points:** 4 → **6** ⚠️ **UPDATED**  
+**Status:** Backlog  
+**Last Updated:** February 1, 2026 (Post-Technical Review)
+
+---
+
+## ⚠️ MVP SCOPE NOTE (Feb 1, 2026)
+
+This story has been split into **MVP (0.2a)** and **Enhancements (0.2b - Sprint 8)** following Technical Review.
+
+**MVP Scope (Sprint 7 - This Story):**
+- ✅ Basic login with email/password
+- ✅ Zustand auth store (NO token refresh in MVP)
+- ✅ Protected routes with role guards
+- ✅ Admin + Employee dashboards only (Manager/Issuer defer to Sprint 8)
+- ✅ Top navigation (not sidebar - evaluated in UAT)
+- ✅ Basic accessibility (form labels, ARIA on inputs)
+
+**Deferred to Story 0.2b (Sprint 8):**
+- ⏸️ Token refresh interceptor with exponential backoff
+- ⏸️ Full WCAG 2.1 AA compliance (NVDA/VoiceOver testing)
+- ⏸️ Manager + Issuer dashboard variants
+- ⏸️ Cross-browser testing (Safari, Firefox)
+- ⏸️ Forgot password UI
+
+**Why Split:**
+- UX/Architecture review added +5.5h requirements (6h → 11.5h)
+- UAT only needs Admin + Employee roles (<1h sessions, no token refresh needed)
+- Day 3 timeline feasible with 6h scope
+
+**Estimate Updated:**
+- Original: 4 hours
+- **Revised MVP: 6 hours** (basic implementation + accessibility + testing)
+
+**References:**
+- UX Review: See meeting minutes Part 1
+- Architecture Review: See meeting minutes Part 1  
+- Developer Review: See meeting minutes Part 1
 
 ---
 
@@ -35,64 +71,70 @@ This story creates the **minimum viable login + navigation** to enable UAT, not 
 
 ## Acceptance Criteria
 
-### AC1: Login Page
+### AC1: Login Page - MVP with Basic Accessibility ⚠️ **MVP SCOPE**
 **Given** I am not logged in  
 **When** I visit the app root (http://localhost:5173)  
 **Then** I see a simple login form
 
-- [x] Email and password input fields
-- [x] "Login" button
+- [x] Email and password input fields with `<label>` elements
+- [x] **NEW:** ARIA labels: `aria-required="true"`, `aria-invalid` on error
+- [x] **NEW:** Error messages in `<div role="alert">` for screen readers
+- [x] "Login" button with loading state (text changes to "Logging in...")
 - [x] Form validation (email format, password required)
-- [x] Error message display on failed login
+- [x] Error message display on failed login (specific: "Invalid credentials" vs "Network error")
 - [x] Success: Store token and redirect to Dashboard
 
-### AC2: Authentication State Management
-- [x] Use Zustand store for auth state
-- [x] Store: accessToken, refreshToken, user (id, email, name, role)
-- [x] Login action: Call POST /auth/login, store tokens
+### AC2: Authentication State Management - No Token Refresh ⚠️ **MVP SCOPE**
+- [x] Use Zustand store for auth state (as per Architecture Decision 4.1)
+- [x] Store: accessToken, refreshToken (stored but not used yet), user (id, email, name, role)
+- [x] Login action: Call POST /auth/login, store tokens in localStorage
 - [x] Logout action: Clear tokens, redirect to login
-- [x] Auto-logout on 401 response
+- [x] **MVP:** NO token refresh interceptor (defer to Story 0.2b)
+- [x] **MVP:** Accept manual re-login every ~1h (acceptable for UAT <1h sessions)
+- [x] Auto-logout on 401 response (clear store, show message)
 
-### AC3: Role-Based Dashboard
+### AC3: Role-Based Dashboard - Admin + Employee Only ⚠️ **MVP SCOPE**
 **Given** I successfully log in  
 **When** Page loads  
 **Then** I see role-appropriate dashboard with navigation
 
 **Employee Dashboard:**
-- My Wallet (link to /wallet)
-- Profile (link to /profile)
+- My Badges (link to /wallet)
+- Claim Badge (link to /claim) ← **NEW per UX spec**
+- Settings (link to /settings)
 - Logout button
-
-**Issuer Dashboard:**
-- My Wallet
-- Badge Templates (link to /templates)
-- Issue Badge (link to /issue)
-- Profile
-- Logout button
-
-**Manager Dashboard:**
-- Same as Employee + Analytics (link to /admin/analytics)
 
 **Admin Dashboard:**
-- All features
+- My Badges
+- Claim Badge
+- Badge Templates (link to /templates)
+- Issue Badge (link to /issue)
 - Badge Management (link to /admin/badges)
 - User Management (link to /admin/users)
-- Analytics
+- Analytics (link to /admin/analytics)
+- Settings
 - Logout button
 
-### AC4: Protected Routes
+**Deferred to Story 0.2b:**
+- ⏸️ Manager dashboard
+- ⏸️ Issuer dashboard
+
+### AC4: Protected Routes - Standard Pattern ⚠️ **UNCHANGED**
 - [x] Unauthenticated users redirected to /login
 - [x] Authenticated users can access protected routes
-- [x] Role check: Show 403 page if insufficient permissions
+- [x] Role guard component: `<RoleGuard allowedRoles={['ADMIN']}>`
+- [x] 403 page if insufficient permissions
 
-### AC5: Basic Layout Component
-- [x] Top navigation bar with:
+### AC5: Basic Layout Component - Top Navigation ⚠️ **UX DECISION**
+- [x] **Top navigation bar** (not sidebar - UX team approved for MVP)
+- [x] Navigation includes:
   - App logo/title (G-Credit)
-  - Navigation menu (role-based)
-  - User name + role badge
-  - Logout button
-- [x] Main content area
-- [x] Footer (optional, simple)
+  - Horizontal navigation menu (role-based items)
+  - User name + role badge (color-coded: Admin=red, Employee=gray)
+  - Logout button (right-aligned)
+- [x] Main content area with padding
+- [x] Simple footer (optional)
+- [x] **Note:** Sidebar vs top nav evaluated in UAT feedback (Day 5-6)
 
 ---
 

@@ -1,11 +1,57 @@
-# Story U.2: Demo Seed Data Creation
+# Story U.2a: M365 User Sync for Demo Seed (MVP)
 
-**Story ID:** Story U.2  
+**Story ID:** Story U.2a (Split from U.2)  
 **Epic:** UAT Phase  
 **Sprint:** Sprint 7  
 **Priority:** HIGH  
-**Story Points:** 5  
-**Status:** Backlog
+**Story Points:** 5 → **6** ⚠️ **UPDATED**  
+**Status:** Backlog  
+**Last Updated:** February 1, 2026 (Post-Technical Review)
+
+---
+
+## ⚠️ SECURITY UPDATES & MVP SCOPE (Feb 1, 2026)
+
+This story has been split into **MVP (U.2a)** and **Production Hardening (U.2b - Sprint 8)** following Security Review.
+
+**🔴 CRITICAL SECURITY FIXES (Must Implement):**
+1. ✅ **YAML → .env Migration** - Role mapping via environment variables (NOT YAML file in Git)
+2. ✅ **Production Guard** - `NODE_ENV === 'production'` check prevents accidental sync
+3. ✅ **Fallback Strategy** - Auto-fallback to local mode if M365 API fails
+
+**MVP Scope (Sprint 7 - This Story):**
+- ✅ GraphUsersService for M365 API integration
+- ✅ .env-based role mapping (security fix)
+- ✅ Support <100 users (Product Owner org has ~15 users)
+- ✅ Production guard (prevent accidental data wipe)
+- ✅ Basic error handling (fail-fast with clear messages)
+- ✅ Local mode fallback
+
+**Deferred to Story U.2b (Sprint 8):**
+- ⏸️ Pagination support (1000+ users)
+- ⏸️ Retry logic with exponential backoff (ADR-008 compliance)
+- ⏸️ Audit logging (who synced, when, how many users)
+- ⏸️ User deactivation sync (deleted M365 users → deactivate in GCredit)
+- ⏸️ Comprehensive error recovery
+
+**Why Split:**
+- Architecture review found 5 P0 security issues (7.5h → 12.5-14.5h with all fixes)
+- UAT only needs ~15 users (Product Owner's org size)
+- Pagination/retry/audit not critical for Sprint 7
+- MVP delivers realistic UAT data without production risks
+
+**Estimate Updated:**
+- Original: 7.5 hours (with YAML config)
+- **Revised MVP: 6 hours** (simpler .env config + security guard)
+
+**Prerequisites:**
+- ⚠️ **Product Owner MUST verify Azure User.Read.All permission before Day 3**
+- Verify in Azure Portal → App registrations → API permissions
+
+**References:**
+- Architecture Review: See `architecture-review-story-u2.md`
+- Developer Review: See meeting minutes Part 3
+- Meeting Minutes: See `sprint-7-technical-review-meeting-minutes.md`
 
 ---
 
@@ -101,23 +147,53 @@ For more realistic UAT testing, the script can sync users from an existing M365 
 - [x] Prompts for confirmation: "This will delete all data. Continue? (y/n)"
 - [x] Uses Prisma cascade deletes (safe cleanup)
 
-### AC7: Microsoft 365 User Sync (Optional) ✨ NEW
+### AC7: Microsoft 365 User Sync (MVP) ⚠️ **SECURITY UPDATED**
 **Given** I have M365 Developer E5 subscription with demo organization  
 **When** I run `npm run seed:m365`  
 **Then** Real M365 users are synced to GCredit database
 
 - [x] Command: `npm run seed:m365` (uses M365 mode)
 - [x] Environment variable: `SEED_MODE=m365` triggers M365 sync
+- [x] **NEW:** Production guard checks `NODE_ENV` first:
+  ```typescript
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('M365 sync not allowed in production. Use manual provisioning.');
+  }
+  ```
 - [x] Calls Microsoft Graph API `/users` endpoint
-- [x] Filters active users only (excludes disabled/guest accounts)
-- [x] Reads role mapping from config file: `backend/config/m365-role-mapping.yaml`
-- [x] Maps M365 emails → GCredit roles (ADMIN, ISSUER, MANAGER, EMPLOYEE)
-- [x] Uses consistent test password for all users (configured in YAML)
-- [x] Console output shows: "Synced 15 users from M365 organization"
+- [x] **MVP:** No pagination (works for <100 users, Product Owner has ~15)
+- [x] Filters active users only: `accountEnabled eq true and userType eq 'Member'`
+- [x] **SECURITY FIX:** Reads role mapping from `.env` file (NOT YAML)
+- [x] Maps M365 emails → GCredit roles via env variables
+- [x] Uses consistent test password from `.env`
+- [x] Console output shows: "✅ Synced 15 users from M365 organization"
+- [x] **NEW:** Auto-fallback to local mode if M365 API fails
 
-### AC8: Role Mapping Configuration File ✨ NEW
-- [x] File location: `backend/config/m365-role-mapping.yaml`
-- [x] Clear structure:
+### AC8: Role Mapping via Environment Variables ⚠️ **SECURITY FIX**
+- [x] **CHANGED:** Configuration via `.env` file (NOT YAML in Git)
+- [x] .env structure:
+  ```bash
+  # M365 User Sync Configuration (DO NOT COMMIT REAL VALUES)
+  SEED_MODE=local  # or 'm365' for M365 sync
+  
+  # Role mapping (M365 email -> GCredit role)
+  M365_ADMIN_EMAIL=admin@yourdomain.onmicrosoft.com
+  M365_ISSUER_EMAIL=issuer@yourdomain.onmicrosoft.com  
+  M365_MANAGER_EMAIL=manager@yourdomain.onmicrosoft.com
+  # All other M365 users default to EMPLOYEE
+  
+  # Default password for synced users
+  M365_DEFAULT_PASSWORD=TestPass123!
+  ```
+- [x] `.env.example` provided with placeholder values
+- [x] Real `.env` added to `.gitignore` (prevent email exposure)
+- [x] Validation: Script checks required env vars present
+- [x] Default role: Users not in mapping → EMPLOYEE
+
+**Rationale for .env over YAML:**
+- 🔐 Real employee emails never committed to Git history
+- 🔐 GDPR compliance (no PII in version control)
+- 🔐 Easier to manage per-environment (dev, staging, UAT)
   ```yaml
   roleMapping:
     admin@yourdomain.onmicrosoft.com: ADMIN

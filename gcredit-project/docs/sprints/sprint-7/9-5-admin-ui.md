@@ -5,7 +5,29 @@
 **Sprint:** Sprint 7  
 **Priority:** HIGH  
 **Story Points:** 4  
-**Status:** Backlog
+**Status:** Backlog  
+**Timeline:** Day 4 ⚠️ **MOVED** (was Day 2)  
+**Last Updated:** February 1, 2026 (Post-Technical Review)
+
+---
+
+## ⚠️ TIMELINE CHANGE (Feb 1, 2026)
+
+**Hard Dependency Identified:**
+- Story 9.5 (Admin UI) depends on Story 0.2a (Login & Navigation)
+- Cannot implement admin revocation UI without navigation system
+- Story 0.2a completes on Day 3
+- **Result:** Story 9.5 moved from Day 2 to Day 4
+
+**Timeline:**
+- Day 1: Story 9.1 (Revoke API backend)
+- Day 2: Stories 9.2-9.3 (Verification + Wallet frontend)
+- Day 3: Story 0.2a (Login system)
+- **Day 4: Story 9.5 (Admin UI) + Story 9.4 (Notifications)**
+
+**Impact:** No negative impact - Epic 9 MVP (Stories 9.1-9.3) still completes Day 1-2
+
+**Reference:** See meeting minutes Part 4, Integration Dependencies
 
 ---
 

@@ -4,8 +4,38 @@
 **Epic:** Epic 9 - Badge Revocation  
 **Sprint:** Sprint 7  
 **Priority:** HIGH  
-**Story Points:** 3  
-**Status:** Backlog
+**Story Points:** 3 → **4** ⚠️ **UPDATED**  
+**Status:** Backlog  
+**Last Updated:** February 1, 2026 (Post-Technical Review)
+
+---
+
+## ⚠️ UX DESIGN DECISIONS (Feb 1, 2026)
+
+Following Sprint 7 Technical Review Meeting, Product Owner approved these UX decisions:
+
+**✅ Decision #1: Wallet Display Pattern**
+- **Approved:** Greyed out badge + red "REVOKED" banner overlay (Option A)
+- **Rationale:** Employees need to see complete history for resume/portfolio
+- **Implementation:** Active badges normal, revoked badges 50% opacity + red banner
+
+**✅ Decision #2: Revocation Reason Visibility**
+- **Approved:** Categorized display (public vs private reasons)
+- **Public reasons:** "Expired", "Issued in Error" → show to employee
+- **Private reasons:** "Policy Violation" → show generic "Contact admin for details"
+- **Implementation:** Backend categorizes reason in API response
+
+**✅ Decision #3: Share Button Treatment**
+- **Approved:** Disabled with tooltip explaining why
+- **Implementation:** `<button disabled className="cursor-not-allowed opacity-50" title="Revoked badges cannot be shared">`
+
+**Estimate Updated:**
+- Original: 3 hours
+- **Revised: 4 hours** (+1h for reason categorization logic)
+
+**References:**
+- UX Review: See `EPIC-9-UX-REVIEW-AMELIA.md`
+- Meeting Minutes: See `sprint-7-technical-review-meeting-minutes.md`
 
 ---
 
@@ -30,30 +60,34 @@ Hiding revoked badges without notice would confuse employees. Showing them with 
 
 ## Acceptance Criteria
 
-### AC1: Visual Status Badge
+### AC1: Visual Status Badge - Greyed Out + Red Banner ⚠️ **UX DECISION**
 **Given** I am logged in as Employee with revoked badges  
 **When** I view My Wallet page  
-**Then** revoked badges display with red "REVOKED" badge overlay
+**Then** revoked badges display with grey overlay + red "REVOKED" banner
 
-- [x] Red status badge/pill on badge card
-- [x] "REVOKED" text or icon (🚫)
-- [x] Badge card visually distinct (grayed out, reduced opacity, or red border)
-- [x] Active badges remain unchanged
+- [x] **Visual treatment:** Badge card at 50% opacity (greyed out)
+- [x] Red banner overlay with "🚫 REVOKED" text
+- [x] Banner positioned at top-right or bottom-center of badge card
+- [x] Active badges remain full opacity and color
+- [x] No separate section (revoked badges mixed with active, visually distinguished)
 
-### AC2: Revocation Details in Modal/Drawer
+### AC2: Revocation Details in Modal/Drawer - Categorized Reasons ⚠️ **UX DECISION**
 **Given** I click on a revoked badge in wallet  
 **When** details modal/drawer opens  
-**Then** I see revocation information prominently
+**Then** I see revocation information with categorized reason display
 
 - [x] Revoked date (e.g., "Revoked on February 5, 2026")
-- [x] Revocation reason (Policy Violation, Issued in Error, Expired, Other)
-- [x] Optional notes explaining why
-- [x] Original issuance details still visible
+- [x] **Categorized reason display:**
+  - **Public reasons** ("Expired", "Issued in Error"): Show actual reason
+  - **Private reasons** ("Policy Violation"): Show "This badge was revoked. Contact admin@gcredit.com for details."
+- [x] Optional notes shown only if reason is public
+- [x] Original issuance details still visible below revocation info
 
-### AC3: Download and Share Disabled
-- [x] Download button disabled or hidden for revoked badges
-- [x] Share button (LinkedIn, Teams) disabled
-- [x] Tooltip explains: "This badge has been revoked and cannot be shared"
+### AC3: Download and Share Disabled - With Tooltip ⚠️ **UX DECISION**
+- [x] Share button visually disabled (opacity 50%, cursor-not-allowed)
+- [x] **Tooltip on hover:** "Revoked badges cannot be shared"
+- [x] Download button still enabled (employees can keep records)
+- [x] LinkedIn/Teams share buttons both disabled with same tooltip
 
 ### AC4: Filtering and Sorting
 - [x] Badge wallet supports status filter: "All" | "Active" | "Revoked"
