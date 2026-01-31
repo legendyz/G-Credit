@@ -22,6 +22,34 @@
 
 ## 📋 User Stories
 
+### Sprint Setup (Story 0.1)
+
+#### **Story 0.1:** [Git Branch Creation](0-1-git-branch.md) - **CRITICAL** - 5 min
+As a **Development Team**,  
+I want **to create Sprint 7 Git branch before any code changes**,  
+So that **we follow GitFlow strategy and avoid merge conflicts**.
+
+**Acceptance Criteria:**
+- Branch created: `sprint-7/epic-9-revocation-lifecycle-uat`
+- Pushed to remote with upstream tracking
+- All team members verified working on correct branch
+- Main branch remains clean
+
+**Commands:**
+```bash
+git checkout main
+git pull origin main
+git checkout -b sprint-7/epic-9-revocation-lifecycle-uat
+git push -u origin sprint-7/epic-9-revocation-lifecycle-uat
+git branch  # Verify current branch (should show *)
+```
+
+**⚠️ MUST BE COMPLETED BEFORE ANY CODE CHANGES!**
+
+**Link:** [0-1-git-branch.md](0-1-git-branch.md) *(To be created)*
+
+---
+
 ### Epic 9: Badge Revocation (Stories 9.1-9.5)
 
 #### **Story 9.1:** [Badge Revocation API](9-1-revoke-api.md) - **HIGH** - 4-5h
@@ -160,6 +188,10 @@ So that **the user experience meets quality standards**.
 
 ### Sprint Timeline (5 days)
 
+**Day 1 Morning: Sprint Setup**
+- Story 0.1: Create Git branch `sprint-7/epic-9-revocation-lifecycle-uat` (5 min)
+- Verify all team members on correct branch
+
 **Day 1-2: Epic 9 Development**
 - Day 1: Stories 9.1 + 9.2 (Backend: API + Verification)
 - Day 2: Stories 9.3 + 9.4 + 9.5 (Frontend + Notifications + Admin UI)
@@ -181,11 +213,12 @@ So that **the user experience meets quality standards**.
 
 | Category | Stories | Estimated Hours |
 |----------|---------|-----------------|
+| **Sprint Setup** | 0.1 | 5 min |
 | **Epic 9 Stories** | 9.1-9.5 | 14-19h |
 | **UAT Execution** | U.1 | 6-8h |
 | **Demo Seed Data** | U.2 | 3-4h |
 | **Bug Fixes** | U.3 | 8-12h (TBD) |
-| **Total** | 8 stories | **31-43h** |
+| **Total** | 9 stories | **31-43h** |
 
 **Team Capacity:** 2 developers × 5 days × 6h/day = **60h available**
 

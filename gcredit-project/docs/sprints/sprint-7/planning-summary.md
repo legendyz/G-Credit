@@ -22,8 +22,8 @@
 
 - ✅ **Sprint Goal Defined** - Badge lifecycle completion + UAT validation
 - ✅ **Epic 9 Stories Decomposed** - 5 stories (9.1-9.5) created
-- ✅ **UAT Stories Created** - 3 UAT stories (U.1-U.3)
-- ✅ **Time Estimation** - 31-43h estimated vs 60h capacity
+- ✅ **UAT Stories Created** - 3 UAT stories (U.1-U.3)- ✅ **Git Branch Strategy Defined** - `sprint-7/epic-9-revocation-lifecycle-uat`
+- ✅ **Story 0.1 Added** - Git branch creation as first task- ✅ **Time Estimation** - 31-43h estimated vs 60h capacity
 - ✅ **Dependencies Identified** - No external blockers
 
 ### Documentation Phase ✅ COMPLETE
@@ -50,6 +50,12 @@
 
 ## 📋 Stories Summary
 
+### Sprint Setup (1 story)
+
+| Story | Title | Priority | Estimate | Link |
+|-------|-------|----------|----------|------|
+| 0.1 | Git Branch Creation | CRITICAL | 5 min | To be created |
+
 ### Epic 9: Badge Revocation (5 stories)
 
 | Story | Title | Priority | Estimate | Link |
@@ -72,10 +78,14 @@
 
 ## ⏱️ Sprint Timeline
 
-### Day 1-2: Development (Feb 3-4)
+### Day 1: Setup + Development (Feb 3)
+- **Story 0.1:** Create Git branch `sprint-7/epic-9-revocation-lifecycle-uat` (5 min)
 - **Backend:** Stories 9.1 + 9.2 (API + Verification)
-- **Frontend:** Stories 9.3 + 9.4 + 9.5 (Wallet + Notifications + Admin UI)
 - **Parallel:** U.2 Demo seed data creation
+
+### Day 2: Frontend Development (Feb 4)
+- **Frontend:** Stories 9.3 + 9.4 + 9.5 (Wallet + Notifications + Admin UI)
+- **Continue:** Demo seed data finalization
 
 ### Day 3: UAT Execution (Feb 5)
 - **Morning:** Setup + Scenario 1 (Complete lifecycle)
@@ -167,9 +177,11 @@ model Badge {
 - ✅ Planning complete
 - ✅ Backlog created
 - ✅ UAT plan ready
+- ✅ Git branch name confirmed: `sprint-7/epic-9-revocation-lifecycle-uat`
 - [ ] Commit all planning documents
 
-### Day 1 (Feb 3)
+### Day 1 Morning (Feb 3)
+- [ ] **Story 0.1:** Create Git branch (5 min) ⚠️ FIRST TASK!
 - [ ] Create Story 9.1 file
 - [ ] Implement Badge Revocation API
 - [ ] Database migration
@@ -204,7 +216,8 @@ model Badge {
 
 **Planning Phase:**
 - ✅ Sprint goal defined
-- ✅ Stories decomposed (8 stories)
+- ✅ Stories decomposed (9 stories including Story 0.1)
+- ✅ Git branch strategy defined: `sprint-7/epic-9-revocation-lifecycle-uat`
 - ✅ Time estimated (31-43h)
 - ✅ Capacity verified (60h available)
 
