@@ -117,82 +117,145 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        zIndex: 10000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1rem'
+      }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
+      <div 
+        style={{
+          backgroundColor: 'white',
+          borderRadius: '0.5rem',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          width: '100%',
+          maxWidth: '32rem',
+          maxHeight: '80vh',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
-        <header className="px-6 py-4 border-b flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50">
+        <header style={{
+          padding: '1rem 1.5rem',
+          borderBottom: '1px solid #e5e7eb',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          background: 'linear-gradient(to right, #eff6ff, #eef2ff)'
+        }}>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Share Badge</h2>
-            <p className="text-sm text-gray-600 mt-1">{badgeName}</p>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#111827' }}>Share Badge</h2>
+            <p style={{ fontSize: '0.875rem', color: '#4b5563', marginTop: '0.25rem' }}>{badgeName}</p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-white rounded-full transition-colors"
+            style={{
+              padding: '0.5rem',
+              color: '#6b7280',
+              backgroundColor: 'transparent',
+              border: 'none',
+              borderRadius: '9999px',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = '#374151'; e.currentTarget.style.backgroundColor = 'white'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = '#6b7280'; e.currentTarget.style.backgroundColor = 'transparent'; }}
             aria-label="Close"
           >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg style={{ width: '1.5rem', height: '1.5rem' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </header>
 
         {/* Tabs */}
-        <div className="flex border-b bg-gray-50">
+        <div style={{ display: 'flex', borderBottom: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }}>
           <button
             onClick={() => setActiveTab('email')}
-            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'email'
-                ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-            }`}
+            style={{
+              flex: 1,
+              padding: '0.75rem 1rem',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              color: activeTab === 'email' ? '#2563eb' : '#4b5563',
+              backgroundColor: activeTab === 'email' ? 'white' : 'transparent',
+              borderBottom: activeTab === 'email' ? '2px solid #2563eb' : 'none',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
           >
             📧 Email
           </button>
           <button
             onClick={() => setActiveTab('teams')}
-            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'teams'
-                ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-            }`}
+            style={{
+              flex: 1,
+              padding: '0.75rem 1rem',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              color: activeTab === 'teams' ? '#2563eb' : '#4b5563',
+              backgroundColor: activeTab === 'teams' ? 'white' : 'transparent',
+              borderBottom: activeTab === 'teams' ? '2px solid #2563eb' : 'none',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
           >
             👥 Teams
           </button>
           <button
             onClick={() => setActiveTab('widget')}
-            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'widget'
-                ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-            }`}
+            style={{
+              flex: 1,
+              padding: '0.75rem 1rem',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              color: activeTab === 'widget' ? '#2563eb' : '#4b5563',
+              backgroundColor: activeTab === 'widget' ? 'white' : 'transparent',
+              borderBottom: activeTab === 'widget' ? '2px solid #2563eb' : 'none',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
           >
             🔗 Widget
           </button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
           {/* Success Message */}
           {success && (
-            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-green-700 font-medium">✅ {activeTab === 'widget' ? 'Link copied!' : 'Badge shared successfully!'}</p>
+            <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '0.5rem' }}>
+              <p style={{ color: '#15803d', fontWeight: 500 }}>✅ {activeTab === 'widget' ? 'Link copied!' : 'Badge shared successfully!'}</p>
             </div>
           )}
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-700">{error}</p>
+            <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '0.5rem' }}>
+              <p style={{ color: '#b91c1c' }}>{error}</p>
             </div>
           )}
 
           {/* Email Tab */}
           {activeTab === 'email' && (
-            <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.5rem' }}>
                   Recipient Emails *
                 </label>
                 <input
@@ -200,14 +263,21 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                   value={emailRecipients}
                   onChange={(e) => setEmailRecipients(e.target.value)}
                   placeholder="email1@example.com, email2@example.com"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem 0.75rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.875rem',
+                    outline: 'none'
+                  }}
                   disabled={loading}
                 />
-                <p className="mt-1 text-xs text-gray-500">Separate multiple emails with commas</p>
+                <p style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: '#6b7280' }}>Separate multiple emails with commas</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.5rem' }}>
                   Custom Message (Optional)
                 </label>
                 <textarea
@@ -215,7 +285,15 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                   onChange={(e) => setEmailMessage(e.target.value)}
                   placeholder="Add a personal message..."
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem 0.75rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.875rem',
+                    resize: 'none',
+                    outline: 'none'
+                  }}
                   disabled={loading}
                 />
               </div>
@@ -223,13 +301,28 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
               <button
                 onClick={handleShareViaEmail}
                 disabled={loading || !emailRecipients.trim()}
-                className="w-full px-4 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  backgroundColor: (loading || !emailRecipients.trim()) ? '#d1d5db' : '#2563eb',
+                  color: 'white',
+                  fontWeight: 500,
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: (loading || !emailRecipients.trim()) ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => !loading && emailRecipients.trim() && (e.currentTarget.style.backgroundColor = '#1d4ed8')}
+                onMouseLeave={(e) => !loading && emailRecipients.trim() && (e.currentTarget.style.backgroundColor = '#2563eb')}
               >
                 {loading ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg style={{ animation: 'spin 1s linear infinite', marginLeft: '-0.25rem', marginRight: '0.75rem', width: '1.25rem', height: '1.25rem' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                     Sending...
                   </>
@@ -242,15 +335,15 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
 
           {/* Teams Tab */}
           {activeTab === 'teams' && (
-            <div className="space-y-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                <p className="text-sm text-blue-800">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '0.5rem', padding: '1rem', marginBottom: '1rem' }}>
+                <p style={{ fontSize: '0.875rem', color: '#1e40af' }}>
                   💡 Leave Team ID and Channel ID empty to use default settings configured by your administrator.
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.5rem' }}>
                   Team ID (Optional)
                 </label>
                 <input
@@ -258,13 +351,20 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                   value={teamsTeamId}
                   onChange={(e) => setTeamsTeamId(e.target.value)}
                   placeholder="Leave empty for default team"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem 0.75rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.875rem',
+                    outline: 'none'
+                  }}
                   disabled={loading}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.5rem' }}>
                   Channel ID (Optional)
                 </label>
                 <input
@@ -272,13 +372,20 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                   value={teamsChannelId}
                   onChange={(e) => setTeamsChannelId(e.target.value)}
                   placeholder="Leave empty for default channel"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem 0.75rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.875rem',
+                    outline: 'none'
+                  }}
                   disabled={loading}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.5rem' }}>
                   Custom Message (Optional)
                 </label>
                 <textarea
@@ -286,7 +393,15 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                   onChange={(e) => setTeamsMessage(e.target.value)}
                   placeholder="Add a personal message..."
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem 0.75rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.875rem',
+                    resize: 'none',
+                    outline: 'none'
+                  }}
                   disabled={loading}
                 />
               </div>
@@ -294,13 +409,28 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
               <button
                 onClick={handleShareToTeams}
                 disabled={loading}
-                className="w-full px-4 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  backgroundColor: loading ? '#d1d5db' : '#7c3aed',
+                  color: 'white',
+                  fontWeight: 500,
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => !loading && (e.currentTarget.style.backgroundColor = '#6d28d9')}
+                onMouseLeave={(e) => !loading && (e.currentTarget.style.backgroundColor = '#7c3aed')}
               >
                 {loading ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg style={{ animation: 'spin 1s linear infinite', marginLeft: '-0.25rem', marginRight: '0.75rem', width: '1.25rem', height: '1.25rem' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                     Sharing...
                   </>
@@ -313,47 +443,75 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
 
           {/* Widget Tab */}
           {activeTab === 'widget' && (
-            <div className="space-y-4">
-              <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4">
-                <h3 className="font-medium text-gray-900 mb-2">🎨 Embeddable Badge Widget</h3>
-                <p className="text-sm text-gray-700">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ background: 'linear-gradient(to right, #f0fdf4, #eff6ff)', border: '1px solid #bbf7d0', borderRadius: '0.5rem', padding: '1rem' }}>
+                <h3 style={{ fontWeight: 500, color: '#111827', marginBottom: '0.5rem' }}>🎨 Embeddable Badge Widget</h3>
+                <p style={{ fontSize: '0.875rem', color: '#374151' }}>
                   Generate an embeddable widget to display this badge on your website, portfolio, or LinkedIn profile.
                 </p>
               </div>
 
-              <div className="space-y-3">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <button
                   onClick={handleOpenWidgetGenerator}
-                  className="w-full px-4 py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white font-medium rounded-lg hover:from-green-600 hover:to-blue-600 transition-all flex items-center justify-center"
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    background: 'linear-gradient(to right, #10b981, #3b82f6)',
+                    color: 'white',
+                    fontWeight: 500,
+                    borderRadius: '0.5rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s'
+                  }}
                 >
-                  <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg style={{ width: '1.25rem', height: '1.25rem', marginRight: '0.5rem' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                   </svg>
                   Open Widget Generator
                 </button>
 
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300"></div>
+                <div style={{ position: 'relative' }}>
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}>
+                    <div style={{ width: '100%', borderTop: '1px solid #d1d5db' }}></div>
                   </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">or</span>
+                  <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', fontSize: '0.875rem' }}>
+                    <span style={{ padding: '0 0.5rem', backgroundColor: 'white', color: '#6b7280' }}>or</span>
                   </div>
                 </div>
 
                 <button
                   onClick={handleCopyWidgetLink}
-                  className="w-full px-4 py-3 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center"
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    border: '2px solid #d1d5db',
+                    backgroundColor: 'white',
+                    color: '#374151',
+                    fontWeight: 500,
+                    borderRadius: '0.5rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
                 >
-                  <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg style={{ width: '1.25rem', height: '1.25rem', marginRight: '0.5rem' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
                   Copy Widget Link
                 </button>
               </div>
 
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-4">
-                <p className="text-xs text-gray-600">
+              <div style={{ backgroundColor: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '0.5rem', padding: '1rem', marginTop: '1rem' }}>
+                <p style={{ fontSize: '0.75rem', color: '#4b5563' }}>
                   <strong>Widget Features:</strong>
                   <br />
                   • 3 sizes (small, medium, large)

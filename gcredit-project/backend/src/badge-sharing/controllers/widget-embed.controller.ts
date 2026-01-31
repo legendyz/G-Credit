@@ -21,6 +21,7 @@ import {
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger';
+import { Public } from '../../common/decorators/public.decorator';
 import { PrismaService } from '../../common/prisma.service';
 import { BadgeAnalyticsService } from '../services/badge-analytics.service';
 import {
@@ -33,6 +34,7 @@ import { ConfigService } from '@nestjs/config';
 
 @ApiTags('Badge Widget')
 @Controller('api/badges')
+@Public() // Widget endpoints are public - no authentication required
 export class WidgetEmbedController {
   private readonly logger = new Logger(WidgetEmbedController.name);
 

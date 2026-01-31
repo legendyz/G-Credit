@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { EmailService } from '../../common/email.service';
+import { ConfigService } from '@nestjs/config';
+import { GraphEmailService } from '../../microsoft-graph/services/graph-email.service';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -9,14 +10,23 @@ import * as path from 'path';
  * Handles sending email notifications for badge-related events:
  * - Badge issuance (claim notification)
  * - Badge revocation (future)
+ * 
+ * Uses Microsoft Graph Email Service for production-quality email delivery
  */
 @Injectable()
 export class BadgeNotificationService {
   private readonly logger = new Logger(BadgeNotificationService.name);
   private badgeClaimTemplate: string;
   private badgeRevocationTemplate: string;
+  private readonly useGraphEmail: boolean;
+  private readonly fromEmail: string;
 
-  constructor(private emailService: EmailService) {
+  constructor(
+    private graphEmailService: GraphEmailService,
+    private configService: ConfigService,
+  ) {
+    this.useGraphEmail = this.configService.get<string>('ENABLE_GRAPH_EMAIL', 'false') === 'true';
+    this.fromEmail = this.configService.get<string>('GRAPH_EMAIL_FROM', 'M365DevAdmin@2wjh85.onmicrosoft.com');
     // Load badge claim email template
     let claimTemplatePath = path.join(__dirname, '../templates/badge-claim-notification.html');
     
@@ -71,14 +81,18 @@ export class BadgeNotificationService {
         .replace(/\{\{badgeImageUrl\}\}/g, params.badgeImageUrl)
         .replace(/\{\{claimUrl\}\}/g, params.claimUrl);
 
-      // Send email via EmailService
-      await this.emailService.sendMail({
-        to: params.recipientEmail,
-        subject: `🎓 You've earned the ${params.badgeName} badge!`,
-        html,
-      });
-
-      this.logger.log(`✅ Badge claim notification sent to ${params.recipientEmail}`);
+      // Send email via Microsoft Graph Email Service
+      if (this.useGraphEmail && this.graphEmailService.isGraphEmailEnabled()) {
+        await this.graphEmailService.sendEmail(
+          this.fromEmail,
+          [params.recipientEmail],
+          `🎓 You've earned the ${params.badgeName} badge!`,
+          html,
+        );
+        this.logger.log(`✅ Badge claim notification sent via Graph Email to ${params.recipientEmail}`);
+      } else {
+        this.logger.warn(`⚠️ Graph Email disabled, notification not sent to ${params.recipientEmail}`);
+      }
     } catch (error) {
       this.logger.error(`❌ Failed to send badge notification:`, error);
       // Don't throw - email failure shouldn't block badge issuance
@@ -104,14 +118,18 @@ export class BadgeNotificationService {
         .replace(/\{\{badgeName\}\}/g, params.badgeName)
         .replace(/\{\{revocationReason\}\}/g, params.revocationReason);
 
-      // Send email via EmailService
-      await this.emailService.sendMail({
-        to: params.recipientEmail,
-        subject: `Badge Revoked: ${params.badgeName}`,
-        html,
-      });
-
-      this.logger.log(`✅ Revocation notification sent to ${params.recipientEmail}`);
+      // Send email via Microsoft Graph Email Service
+      if (this.useGraphEmail && this.graphEmailService.isGraphEmailEnabled()) {
+        await this.graphEmailService.sendEmail(
+          this.fromEmail,
+          [params.recipientEmail],
+          `Badge Revoked: ${params.badgeName}`,
+          html,
+        );
+        this.logger.log(`✅ Revocation notification sent via Graph Email to ${params.recipientEmail}`);
+      } else {
+        this.logger.warn(`⚠️ Graph Email disabled, revocation notification not sent to ${params.recipientEmail}`);
+      }
     } catch (error) {
       this.logger.error(`❌ Failed to send revocation notification:`, error);
       // Don't throw - email failure shouldn't block revocation operation

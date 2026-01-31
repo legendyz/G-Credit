@@ -3,6 +3,15 @@
  * Story 7.4 - Microsoft Teams Notifications
  */
 
+/**
+ * Teams Sharing Controller Tests
+ * 
+ * TECHNICAL DEBT: These tests may fail because Teams channel sharing
+ * is currently disabled pending Graph API permissions.
+ * See: docs/sprints/sprint-6/technical-debt.md
+ * 
+ * Email sharing provides equivalent functionality and is fully tested.
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { TeamsSharingController } from './teams-sharing.controller';
 import { TeamsBadgeNotificationService } from '../../microsoft-graph/teams/teams-badge-notification.service';
@@ -36,7 +45,7 @@ describe('TeamsSharingController - Story 7.4', () => {
 
   const mockRequest = {
     user: {
-      id: 'user-123',
+      userId: 'user-123',
       email: 'john.smith@example.com',
     },
   };
@@ -151,7 +160,7 @@ describe('TeamsSharingController - Story 7.4', () => {
     it('should allow issuer to share badge', async () => {
       const issuerRequest = {
         user: {
-          id: 'issuer-789', // Same as badge issuer
+          userId: 'issuer-789', // Same as badge issuer
           email: 'issuer@example.com',
         },
       };

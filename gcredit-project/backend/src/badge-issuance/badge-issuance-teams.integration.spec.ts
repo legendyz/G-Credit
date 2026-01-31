@@ -5,6 +5,14 @@
  * Verifies Teams notification is triggered when badge is issued
  */
 
+/**
+ * Badge Issuance Teams Integration Tests
+ * 
+ * TECHNICAL DEBT: Teams integration tests may fail.
+ * Badge issuance now uses email notifications (fully working).
+ * Teams channel notifications deferred pending permissions.
+ * See: docs/sprints/sprint-6/technical-debt.md
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadgeIssuanceService } from './badge-issuance.service';
 import { TeamsBadgeNotificationService } from '../microsoft-graph/teams/teams-badge-notification.service';

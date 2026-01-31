@@ -31,19 +31,78 @@ export class TeamsBadgeNotificationService {
   ) {}
 
   /**
-   * Send badge issuance notification to Microsoft Teams
+   * Send badge issuance notification via email
    * 
-   * Fetches badge, recipient, and credential data, then sends Teams notification
-   * with Adaptive Card showing badge details and action buttons.
+   * Sends email notification when a badge is issued.
+   * For Teams channel sharing, use shareBadgeToTeamsChannel() instead.
    * 
    * @param badgeId - Badge ID that was issued
    * @param recipientUserId - User ID of badge recipient
-   * @throws Error if badge, user, or credential not found
-   * @throws Error if Teams notification fails
    */
   async sendBadgeIssuanceNotification(
     badgeId: string,
     recipientUserId: string,
+  ): Promise<void> {
+    // Fetch badge data
+    const badge = await this.prisma.badge.findUnique({
+      where: { id: badgeId },
+      include: {
+        template: true,
+        issuer: true,
+      },
+    });
+
+    if (!badge) {
+      throw new Error(`Badge not found: ${badgeId}`);
+    }
+
+    // Fetch recipient
+    const recipient = await this.prisma.user.findUnique({
+      where: { id: recipientUserId },
+    });
+
+    if (!recipient) {
+      throw new Error(`Recipient not found: ${recipientUserId}`);
+    }
+
+    // Send email notification
+    const platformUrl = this.configService.get<string>('PLATFORM_URL', 'http://localhost:5173');
+    const claimUrl = badge.status === 'PENDING'
+      ? `${platformUrl}/claim?token=${badge.claimToken}`
+      : undefined;
+
+    try {
+      await this.sendEmailFallback(badge, recipient, claimUrl);
+      this.logger.log(
+        `✅ Badge issuance email sent to ${recipient.email}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `❌ Failed to send badge issuance email to ${recipient.email}: ${error.message}`,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Share badge to Microsoft Teams Channel
+   * 
+   * Fetches badge, recipient, and credential data, then sends Teams channel message
+   * with Adaptive Card showing badge details and action buttons.
+   * This method does NOT require a Teams App to be installed.
+   * 
+   * @param badgeId - Badge ID to share
+   * @param recipientUserId - User ID of badge recipient
+   * @param teamId - Target Teams team ID
+   * @param channelId - Target Teams channel ID
+   * @throws Error if badge, user, or credential not found
+   * @throws Error if Teams notification fails
+   */
+  async shareBadgeToTeamsChannel(
+    badgeId: string,
+    recipientUserId: string,
+    teamId: string,
+    channelId: string,
   ): Promise<void> {
     // Check if Teams notifications are enabled
     if (!this.graphTeamsService.isGraphTeamsEnabled()) {
@@ -101,29 +160,23 @@ export class TeamsBadgeNotificationService {
     // 5. Build Adaptive Card
     const adaptiveCard = BadgeNotificationCardBuilder.build(cardData);
 
-    // 6. Send Teams notification
-    const activityType = 'badgeEarned';
-    const previewText = `🎉 You earned the "${badge.template.name}" badge!`;
-    const templateParameters = {
-      badgeName: badge.template.name,
-      issuerName: this.getFullName(badge.issuer),
-    };
+    // 6. Send Teams channel message (no Teams App required!)
+    const message = `🎉 **${this.getFullName(recipient)}** earned the **${badge.template.name}** badge!`;
 
     try {
-      await this.graphTeamsService.sendActivityNotification(
-        recipient.email, // Use email as userId for Graph API
-        activityType,
-        previewText,
-        templateParameters,
+      await this.graphTeamsService.sendChannelMessage(
+        teamId,
+        channelId,
+        message,
         adaptiveCard,
       );
 
       this.logger.log(
-        `✅ Teams notification sent successfully to ${recipient.email}`,
+        `✅ Teams channel message sent successfully for badge ${badgeId}`,
       );
     } catch (error) {
       this.logger.error(
-        `❌ Failed to send Teams notification to ${recipient.email}: ${error.message}`,
+        `❌ Failed to send Teams channel message for badge ${badgeId}: ${error.message}`,
       );
       
       // Task 6: Email fallback

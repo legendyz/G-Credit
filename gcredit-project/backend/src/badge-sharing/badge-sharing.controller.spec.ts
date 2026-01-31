@@ -37,6 +37,7 @@ describe('BadgeSharingController', () => {
     };
 
     const userId = 'user-123';
+    const mockUser = { userId };
 
     const expectedResponse = {
       success: true,
@@ -50,7 +51,7 @@ describe('BadgeSharingController', () => {
         expectedResponse,
       );
 
-      const result = await controller.shareBadgeViaEmail(shareDto, userId);
+      const result = await controller.shareBadgeViaEmail(shareDto, mockUser);
 
       expect(result).toEqual(expectedResponse);
       expect(mockBadgeSharingService.shareBadgeViaEmail).toHaveBeenCalledWith(
@@ -65,7 +66,7 @@ describe('BadgeSharingController', () => {
         expectedResponse,
       );
 
-      await controller.shareBadgeViaEmail(shareDto, 'different-user-id');
+      await controller.shareBadgeViaEmail(shareDto, { userId: 'different-user-id' });
 
       expect(mockBadgeSharingService.shareBadgeViaEmail).toHaveBeenCalledWith(
         shareDto,
@@ -78,7 +79,7 @@ describe('BadgeSharingController', () => {
       mockBadgeSharingService.shareBadgeViaEmail.mockRejectedValue(error);
 
       await expect(
-        controller.shareBadgeViaEmail(shareDto, userId),
+        controller.shareBadgeViaEmail(shareDto, mockUser),
       ).rejects.toThrow('Service error');
     });
   });

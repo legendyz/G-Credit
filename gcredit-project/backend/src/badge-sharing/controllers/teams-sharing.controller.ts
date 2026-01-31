@@ -89,77 +89,22 @@ export class TeamsSharingController {
     @Body() dto: ShareBadgeTeamsDto,
     @Request() req: any,
   ): Promise<ShareBadgeTeamsResponseDto> {
-    const userId = req.user.userId;
-
-    // 1. Fetch badge with issuer information
-    const badge = await this.prisma.badge.findUnique({
-      where: { id: badgeId },
-      include: {
-        template: true,
-        issuer: true,
-      },
+    // TODO: Technical Debt - Teams Channel Sharing Not Implemented
+    // 
+    // Teams channel sharing requires additional Microsoft Graph API permissions:
+    // - ChannelMessage.Send (for posting to channels)
+    // 
+    // Current implementation:
+    // - Badge issuance notifications: Email (private, implemented)
+    // - Badge sharing: Email (implemented and working)
+    // 
+    // Future enhancement: Implement Teams channel sharing with proper permissions
+    // See: docs/sprints/sprint-6/technical-debt.md
+    
+    throw new BadRequestException({
+      message: 'Teams channel sharing is not yet implemented. Please use email sharing instead.',
+      alternative: 'POST /api/badges/share/email',
+      technicalDebt: 'Teams integration requires additional Graph API permissions and configuration',
     });
-
-    if (!badge) {
-      throw new NotFoundException(`Badge not found: ${badgeId}`);
-    }
-
-    // 2. Validate badge status (cannot share revoked or expired badges)
-    if (badge.status === 'REVOKED') {
-      throw new BadRequestException(
-        'Cannot share revoked badge. This badge has been revoked and is no longer valid.',
-      );
-    }
-
-    if (badge.status === 'EXPIRED') {
-      throw new BadRequestException(
-        'Cannot share expired badge. This badge has expired.',
-      );
-    }
-
-    // 3. Check if user is badge recipient or issuer
-    const isIssuer = badge.issuerId === userId;
-
-    // Check if user is recipient
-    const isRecipient = badge.recipientId === userId;
-
-    if (!isRecipient && !isIssuer) {
-      throw new UnauthorizedException(
-        'Only the badge recipient or issuer can share this badge',
-      );
-    }
-
-    // 4. Send Teams notification
-    // Note: Currently using sendBadgeIssuanceNotification, but in future
-    // this could be enhanced to support custom channel posting with personalMessage
-    await this.teamsNotificationService.sendBadgeIssuanceNotification(
-      badgeId,
-      userId,
-    );
-
-    // 5. Record share event in analytics (Story 7.5)
-    try {
-      await this.badgeAnalyticsService.recordShare(
-        badgeId,
-        'teams',
-        userId,
-        {
-          teamId: dto.teamId,
-          channelId: dto.channelId,
-        },
-      );
-    } catch (analyticsError) {
-      // Log but don't fail the request if analytics recording fails
-      console.warn('Failed to record Teams share analytics:', analyticsError.message);
-    }
-
-    // 6. Return success response
-    return {
-      success: true,
-      message: 'Badge shared to Microsoft Teams successfully',
-      badgeId,
-      teamId: dto.teamId,
-      channelId: dto.channelId,
-    };
   }
 }

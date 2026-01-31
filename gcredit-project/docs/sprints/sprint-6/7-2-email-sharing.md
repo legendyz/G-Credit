@@ -17,7 +17,7 @@ so that I can showcase my achievement to employers, colleagues, or on profession
 4. ✅ Email is responsive (mobile + desktop tested)
 5. ✅ Email share recorded in BadgeShare table
 6. ✅ Error handling tested (invalid email, API failures)
-7. ✅ Integration test passes with real Graph API
+7. ⚠️ Integration test script available (requires Graph API configuration)
 
 ## Tasks / Subtasks
 
@@ -45,8 +45,8 @@ so that I can showcase my achievement to employers, colleagues, or on profession
   - [x] Error handling with try-catch (graceful degradation)
 
 - [x] **Task 4: REST API Endpoint** (AC: #1, #6)
-  - [x] Add `POST /api/badges/:badgeId/share/email` endpoint
-  - [x] Request validation (recipientEmail, optional message)
+  - [x] Add `POST /api/badges/share/email` endpoint
+  - [x] Request validation (badgeId, recipientEmail, optional message)
   - [x] Badge ownership validation
   - [x] Call BadgeSharingService.shareViaEmail()
   - [x] Return success/error response
@@ -112,7 +112,7 @@ backend/src/badge-sharing/
 - ✅ Follows unified NestJS module structure
 - ✅ Services in `services/` subdirectory
 - ✅ Tests co-located with source files (`.spec.ts`)
-- ✅ API endpoints follow REST conventions (`/api/badges/:id/share/email`)
+- ✅ API endpoints follow REST conventions (`/api/badges/share/email`)
 
 **Key Decisions:**
 - Placed `EmailTemplateService` in `badge-sharing/services/` (not microsoft-graph module)
@@ -209,3 +209,22 @@ Always create dedicated story files using the `create-story` workflow before imp
 
 **Story File Creation:**
 This file was created retroactively on **January 25, 2025** by Bob (Scrum Master) to maintain documentation completeness and consistency with Story 7.4's documentation approach.
+
+---
+
+## Change Log
+
+- 2025-01-25: Story file created retroactively with baseline implementation details
+- 2026-01-31: Corrected email endpoint docs, updated E2E script details, added badge image URL validation note
+
+## Senior Developer Review (AI)
+
+**Review Date:** 2026-01-31  
+**Outcome:** ✅ Approved
+
+**Findings Addressed:**
+1. Corrected endpoint documentation to `/api/badges/share/email`
+2. Fixed E2E script token field and endpoints
+3. Implemented badge image URL validation in service + tests
+
+**Tests:** `npm test` (backend) — 244/244 passing

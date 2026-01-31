@@ -22,12 +22,12 @@ $loginResponse = Invoke-RestMethod -Uri "$BaseUrl/auth/login" -Method POST -Body
     password = $IssuerPassword
 } | ConvertTo-Json) -ContentType "application/json"
 
-if (-not $loginResponse.access_token) {
+if (-not $loginResponse.accessToken) {
     Write-Host "❌ Login failed!" -ForegroundColor Red
     exit 1
 }
 
-$token = $loginResponse.access_token
+$token = $loginResponse.accessToken
 Write-Host "✅ Authenticated successfully" -ForegroundColor Green
 Write-Host "   Token: $($token.Substring(0, 20))..." -ForegroundColor Gray
 Write-Host ""
@@ -37,7 +37,7 @@ if ($BadgeId) {
     Write-Host "[Step 2] Fetching badge details..." -ForegroundColor Yellow
     
     try {
-        $badgeResponse = Invoke-RestMethod -Uri "$BaseUrl/badge-issuance/issued" -Method GET `
+        $badgeResponse = Invoke-RestMethod -Uri "$BaseUrl/api/badges/wallet" -Method GET `
             -Headers @{ Authorization = "Bearer $token" }
         
         $badge = $badgeResponse.badges | Where-Object { $_.id -eq $BadgeId } | Select-Object -First 1
@@ -67,7 +67,7 @@ if ($BadgeId) {
     Write-Host "[Step 2] No BadgeId provided - will fetch from API..." -ForegroundColor Yellow
     
     try {
-        $badgeResponse = Invoke-RestMethod -Uri "$BaseUrl/badge-issuance/issued" -Method GET `
+        $badgeResponse = Invoke-RestMethod -Uri "$BaseUrl/api/badges/wallet" -Method GET `
             -Headers @{ Authorization = "Bearer $token" }
         
         if ($badgeResponse.badges.Count -eq 0) {
@@ -117,7 +117,7 @@ Write-Host $sharePayload -ForegroundColor DarkGray
 Write-Host ""
 
 try {
-    $shareResponse = Invoke-RestMethod -Uri "$BaseUrl/badges/share/email" -Method POST `
+    $shareResponse = Invoke-RestMethod -Uri "$BaseUrl/api/badges/share/email" -Method POST `
         -Headers @{ 
             Authorization = "Bearer $token"
             "Content-Type" = "application/json"

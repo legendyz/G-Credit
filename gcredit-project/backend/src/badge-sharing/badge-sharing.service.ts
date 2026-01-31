@@ -70,6 +70,8 @@ export class BadgeSharingService {
     }
 
     // Verify user has permission to share this badge (must be recipient or issuer)
+    this.logger.log(`Permission check: userId=${userId}, recipientId=${badge.recipientId}, issuerId=${badge.issuerId}`);
+    
     if (badge.recipientId !== userId && badge.issuerId !== userId) {
       throw new BadRequestException(
         'You do not have permission to share this badge',
@@ -107,10 +109,21 @@ export class BadgeSharingService {
       throw new NotFoundException('Sender user not found');
     }
 
+    // Validate badge image URL (avoid broken images)
+    const badgeImageUrl = this.isValidUrl(badge.template.imageUrl)
+      ? badge.template.imageUrl
+      : null;
+
+    if (!badgeImageUrl && badge.template.imageUrl) {
+      this.logger.warn(
+        `Invalid badge image URL for badge ${badge.id}: ${badge.template.imageUrl}`,
+      );
+    }
+
     // Prepare email data
     const emailData = {
       badgeId: badge.id,
-      badgeImageUrl: badge.template.imageUrl,
+      badgeImageUrl,
       badgeName: badge.template.name,
       badgeDescription:
         badge.template.description || 'No description provided',
@@ -138,13 +151,24 @@ export class BadgeSharingService {
 
     // Send email via Microsoft Graph
     try {
-      await this.graphEmailService.sendEmail(
-        fromEmail,
-        [dto.recipientEmail],
-        `🎉 ${sender.firstName} ${sender.lastName} shared a badge with you: "${badge.template.name}"`,
-        htmlBody,
-        textBody,
-      );
+      // MOCK MODE: For development/testing only
+      // Set MOCK_EMAIL_SERVICE=true in .env to skip actual email sending
+      // WARNING: Never enable in production!
+      const isMockMode = this.configService.get<string>('MOCK_EMAIL_SERVICE') === 'true';
+      
+      if (isMockMode) {
+        this.logger.log('MOCK MODE: Skipping actual email send');
+        this.logger.log(`Would send to: ${dto.recipientEmail}`);
+        this.logger.log(`Subject: 🎉 ${sender.firstName} ${sender.lastName} shared a badge with you: "${badge.template.name}"`);
+      } else {
+        await this.graphEmailService.sendEmail(
+          fromEmail,
+          [dto.recipientEmail],
+          `🎉 ${sender.firstName} ${sender.lastName} shared a badge with you: "${badge.template.name}"`,
+          htmlBody,
+          textBody,
+        );
+      }
 
       this.logger.log(
         `Successfully sent badge ${dto.badgeId} via email to ${dto.recipientEmail}`,
@@ -180,6 +204,19 @@ export class BadgeSharingService {
       throw new BadRequestException(
         `Failed to send email: ${error.message}`,
       );
+    }
+  }
+
+  /**
+   * Validate URL format
+   */
+  private isValidUrl(url: string | null | undefined): boolean {
+    if (!url) return false;
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+      return false;
     }
   }
 

@@ -14,7 +14,7 @@ describe('BadgeAnalyticsController', () => {
 
   const mockRequest = {
     user: {
-      id: 'user-123',
+      userId: 'user-123',
       email: 'user@example.com',
     },
   };

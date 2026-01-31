@@ -7,6 +7,8 @@ import { BadgeNotificationService } from './services/badge-notification.service'
 import { CSVParserService } from './services/csv-parser.service';
 import { MilestonesService } from '../milestones/milestones.service';
 import { TeamsBadgeNotificationService } from '../microsoft-graph/teams/teams-badge-notification.service';
+import { GraphEmailService } from '../microsoft-graph/services/graph-email.service';
+import { ConfigService } from '@nestjs/config';
 import { NotFoundException, BadRequestException, GoneException } from '@nestjs/common';
 import { BadgeStatus } from '@prisma/client';
 
@@ -61,6 +63,19 @@ describe('BadgeIssuanceService', () => {
     sendBadgeIssuanceNotification: jest.fn().mockResolvedValue(undefined),
   };
 
+  const mockGraphEmailService = {
+    sendEmail: jest.fn().mockResolvedValue(undefined),
+  };
+
+  const mockConfigService = {
+    get: jest.fn((key: string, defaultValue?: any) => {
+      const config = {
+        GRAPH_EMAIL_FROM: 'test@test.com',
+      };
+      return config[key] || defaultValue;
+    }),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -92,6 +107,14 @@ describe('BadgeIssuanceService', () => {
         {
           provide: TeamsBadgeNotificationService,
           useValue: mockTeamsNotificationService,
+        },
+        {
+          provide: GraphEmailService,
+          useValue: mockGraphEmailService,
+        },
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
         },
       ],
     }).compile();

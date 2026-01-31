@@ -154,18 +154,38 @@ const BadgeDetailModal: React.FC = () => {
           onClick={(e) => e.stopPropagation()}
         >
           {/* AC 4.1: Header with close button */}
-          <header className="px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-10">
-            <h1 id="modal-title" className="text-xl font-bold text-gray-900">
+          <header style={{
+            padding: '1rem 1.5rem',
+            borderBottom: '1px solid #e5e7eb',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            position: 'sticky',
+            top: 0,
+            backgroundColor: 'white',
+            zIndex: 10
+          }}>
+            <h1 id="modal-title" style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#111827' }}>
               Badge Details
             </h1>
             <button
               onClick={closeModal}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+              style={{
+                padding: '0.5rem',
+                color: '#6b7280',
+                backgroundColor: 'transparent',
+                border: 'none',
+                borderRadius: '9999px',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = '#374151'; e.currentTarget.style.backgroundColor = '#f3f4f6'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = '#6b7280'; e.currentTarget.style.backgroundColor = 'transparent'; }}
               aria-label="Close modal"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
+                style={{ width: '1.5rem', height: '1.5rem' }}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -181,17 +201,23 @@ const BadgeDetailModal: React.FC = () => {
           </header>
 
           {/* AC 4.16: Scrollable content */}
-          <div className="flex-1 overflow-y-auto">
+          <div style={{ flex: 1, overflowY: 'auto' }}>
             {loading && (
-              <div className="flex items-center justify-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '5rem 0' }}>
+                <div style={{
+                  animation: 'spin 1s linear infinite',
+                  borderRadius: '9999px',
+                  width: '3rem',
+                  height: '3rem',
+                  borderBottom: '2px solid #2563eb'
+                }}></div>
               </div>
             )}
 
             {error && (
-              <div className="p-6">
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-red-700">Error: {error}</p>
+              <div style={{ padding: '1.5rem' }}>
+                <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '0.5rem', padding: '1rem' }}>
+                  <p style={{ color: '#b91c1c' }}>Error: {error}</p>
                 </div>
               </div>
             )}
@@ -265,12 +291,33 @@ const BadgeDetailModal: React.FC = () => {
           </div>
 
           {/* AC 4.8: Action Footer (Share/Download buttons - future enhancement) */}
-          <footer className="px-6 py-4 border-t bg-gray-50 flex justify-between items-center">
+          <footer style={{
+            padding: '1rem 1.5rem',
+            borderTop: '1px solid #e5e7eb',
+            backgroundColor: '#f9fafb',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
             <button
               onClick={() => setShareModalOpen(true)}
-              className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex items-center"
+              style={{
+                padding: '0.625rem 1.5rem',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                color: 'white',
+                backgroundColor: '#2563eb',
+                borderRadius: '0.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                cursor: 'pointer',
+                border: 'none',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d4ed8'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
             >
-              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
               </svg>
               Share Badge
@@ -278,7 +325,22 @@ const BadgeDetailModal: React.FC = () => {
             <button
               onClick={handleDownloadBadge}
               disabled={downloading}
-              className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 border border-gray-300 rounded-lg transition-colors flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                padding: '0.625rem 1.5rem',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                color: '#374151',
+                backgroundColor: 'white',
+                border: '1px solid #d1d5db',
+                borderRadius: '0.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                cursor: downloading ? 'not-allowed' : 'pointer',
+                opacity: downloading ? 0.5 : 1,
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => !downloading && (e.currentTarget.style.backgroundColor = '#f3f4f6')}
+              onMouseLeave={(e) => !downloading && (e.currentTarget.style.backgroundColor = 'white')}
             >
               {downloading ? (
                 <>

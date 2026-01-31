@@ -77,8 +77,8 @@ const BadgeEmbedPage: React.FC = () => {
 
     return `<iframe
   src="${baseUrl}/api/badges/${badgeId}/widget?${params}"
-  width="${size === 'small' ? '120' : size === 'medium' ? '220' : '320'}"
-  height="${size === 'small' ? '120' : size === 'medium' ? '220' : '320'}"
+  width="${size === 'small' ? '100' : size === 'medium' ? '200' : '300'}"
+  height="${size === 'small' ? '100' : size === 'medium' ? '200' : '300'}"
   frameborder="0"
   style="border: none;"
 ></iframe>`;

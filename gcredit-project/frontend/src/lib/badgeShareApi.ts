@@ -58,13 +58,20 @@ export async function shareBadgeViaEmail(
 ): Promise<{ message: string; shareCount: number }> {
   const token = localStorage.getItem('accessToken');
   
-  const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/share`, {
+  // Backend currently only supports single recipient
+  const recipientEmail = data.recipientEmails[0];
+  
+  const response = await fetch(`${API_BASE_URL}/badges/share/email`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      badgeId,
+      recipientEmail,
+      personalMessage: data.customMessage || undefined,
+    }),
   });
 
   if (!response.ok) {

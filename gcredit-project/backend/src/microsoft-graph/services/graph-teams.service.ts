@@ -66,23 +66,22 @@ export class GraphTeamsService implements OnModuleInit {
   }
 
   /**
-   * Send Teams activity feed notification
+   * Send Teams channel message notification
    * 
-   * Sends notification to user's Teams activity feed with optional Adaptive Card.
-   * Uses /users/{userId}/teamwork/sendActivityNotification endpoint.
+   * Sends message directly to a Teams channel with optional Adaptive Card.
+   * Uses /teams/{teamId}/channels/{channelId}/messages endpoint.
+   * This approach does NOT require a Teams App to be deployed.
    * 
-   * @param userId - Target user ID or email
-   * @param activityType - Activity type identifier (e.g., 'badgeEarned')
-   * @param previewText - Plain text preview shown in notification
-   * @param templateParameters - Variables for activity template
+   * @param teamId - Target team ID
+   * @param channelId - Target channel ID
+   * @param message - Plain text message content
    * @param adaptiveCard - Optional Adaptive Card JSON
-   * @returns Promise resolving when notification sent
+   * @returns Promise resolving when message sent
    */
-  async sendActivityNotification(
-    userId: string,
-    activityType: string,
-    previewText: string,
-    templateParameters: Record<string, string>,
+  async sendChannelMessage(
+    teamId: string,
+    channelId: string,
+    message: string,
     adaptiveCard?: any,
   ): Promise<void> {
     if (!this.isEnabled) {
@@ -94,31 +93,39 @@ export class GraphTeamsService implements OnModuleInit {
       throw new Error('Graph client not initialized');
     }
 
-    const notification = {
-      topic: {
-        source: 'text',
-        value: 'G-Credit Badge Platform',
-      },
-      activityType,
-      previewText: {
-        content: previewText,
-      },
-      templateParameters,
-      ...(adaptiveCard && { card: adaptiveCard }),
-    };
+    const chatMessage = adaptiveCard
+      ? {
+          body: {
+            contentType: 'html',
+            content: `<attachment id="1"></attachment>`,
+          },
+          attachments: [
+            {
+              id: '1',
+              contentType: 'application/vnd.microsoft.card.adaptive',
+              contentUrl: null,
+              content: JSON.stringify(adaptiveCard),
+            },
+          ],
+        }
+      : {
+          body: {
+            content: message,
+          },
+        };
 
     try {
       this.logger.log(
-        `📢 Sending Teams notification: ${activityType} → ${userId}`,
+        `📢 Sending Teams channel message to team ${teamId}, channel ${channelId}`,
       );
 
       await this.graphClient
-        .api(`/users/${userId}/teamwork/sendActivityNotification`)
-        .post(notification);
+        .api(`/teams/${teamId}/channels/${channelId}/messages`)
+        .post(chatMessage);
 
-      this.logger.log('✅ Teams notification sent successfully');
+      this.logger.log('✅ Teams channel message sent successfully');
     } catch (error) {
-      this.logger.error('❌ Failed to send Teams notification', error);
+      this.logger.error('❌ Failed to send Teams channel message', error);
       throw error;
     }
   }

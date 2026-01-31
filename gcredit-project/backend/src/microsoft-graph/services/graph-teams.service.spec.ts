@@ -1,3 +1,10 @@
+/**
+ * Graph Teams Service Tests
+ * 
+ * TECHNICAL DEBT: Tests depend on Teams channel functionality.
+ * Requires ChannelMessage.Send Graph API permission (not yet approved).
+ * See: docs/sprints/sprint-6/technical-debt.md
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { GraphTeamsService } from './graph-teams.service';

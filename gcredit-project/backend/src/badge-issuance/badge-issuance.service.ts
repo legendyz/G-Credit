@@ -5,6 +5,8 @@ import { AssertionGeneratorService } from './services/assertion-generator.servic
 import { BadgeNotificationService } from './services/badge-notification.service';
 import { CSVParserService } from './services/csv-parser.service';
 import { TeamsBadgeNotificationService } from '../microsoft-graph/teams/teams-badge-notification.service';
+import { GraphEmailService } from '../microsoft-graph/services/graph-email.service';
+import { ConfigService } from '@nestjs/config';
 import { IssueBadgeDto } from './dto/issue-badge.dto';
 import { QueryBadgeDto } from './dto/query-badge.dto';
 import { BulkIssuanceResult } from './dto/bulk-issue-badges.dto';
@@ -27,6 +29,8 @@ export class BadgeIssuanceService {
     private milestonesService: MilestonesService,
     private storageService: StorageService,
     private teamsNotificationService: TeamsBadgeNotificationService,
+    private graphEmailService: GraphEmailService,
+    private configService: ConfigService,
   ) {}
 
   /**
@@ -120,25 +124,13 @@ export class BadgeIssuanceService {
       },
     });
 
-    // 10. Send email notification to recipient
-    await this.notificationService.sendBadgeClaimNotification({
-      recipientEmail: recipient.email,
-      recipientName: recipient.firstName && recipient.lastName
-        ? `${recipient.firstName} ${recipient.lastName}`
-        : recipient.email,
-      badgeName: template.name,
-      badgeDescription: template.description || 'No description available',
-      badgeImageUrl: template.imageUrl || '',
-      claimUrl: this.assertionGenerator.getClaimUrl(badge.claimToken!),
-    });
-
-    // 10.5. Send Teams notification (non-blocking)
-    // Story 7.4: Teams notifications integration
+    // 10. Send email notification via Teams notification service (uses Graph Email)
+    // Story 7.4: Unified notification through TeamsNotificationService
     this.teamsNotificationService
       .sendBadgeIssuanceNotification(badge.id, recipient.id)
       .catch(err => {
         this.logger.warn(
-          `Teams notification failed for badge ${badge.id}: ${err.message}`,
+          `Email notification failed for badge ${badge.id}: ${err.message}`,
         );
       });
 
@@ -790,12 +782,14 @@ export class BadgeIssuanceService {
     `;
 
     try {
-      // AC 4.11: Use existing Azure Communication Services (via EmailService directly)
-      await this.notificationService['emailService'].sendMail({
-        to: 'g-credit@outlook.com',
-        subject: `Badge Issue Report: ${dto.issueType} - ${badge.template.name}`,
-        html: emailContent,
-      });
+      // AC 4.11: Send report via Microsoft Graph Email
+      const fromEmail = this.configService.get<string>('GRAPH_EMAIL_FROM', 'M365DevAdmin@2wjh85.onmicrosoft.com');
+      await this.graphEmailService.sendEmail(
+        fromEmail,
+        ['g-credit@outlook.com'],
+        `Badge Issue Report: ${dto.issueType} - ${badge.template.name}`,
+        emailContent,
+      );
 
       this.logger.log(`Badge issue report ${reportId} submitted for badge ${badgeId}`);
 

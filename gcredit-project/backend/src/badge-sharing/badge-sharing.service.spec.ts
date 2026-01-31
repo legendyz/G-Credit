@@ -163,6 +163,24 @@ describe('BadgeSharingService', () => {
       );
     });
 
+    it('should omit badge image URL when invalid', async () => {
+      mockPrismaService.badge.findUnique.mockResolvedValue({
+        ...mockBadge,
+        template: {
+          ...mockBadge.template,
+          imageUrl: 'not-a-valid-url',
+        },
+      });
+
+      await service.shareBadgeViaEmail(shareDto, 'user-123');
+
+      expect(mockEmailTemplateService.renderHtml).toHaveBeenCalledWith(
+        expect.objectContaining({
+          badgeImageUrl: null,
+        }),
+      );
+    });
+
     it('should throw NotFoundException when badge not found', async () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(null);
 

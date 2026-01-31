@@ -56,8 +56,9 @@ export class BadgeSharingController {
   })
   async shareBadgeViaEmail(
     @Body() dto: ShareBadgeEmailDto,
-    @CurrentUser('userId') userId: string,
+    @CurrentUser() user: any,
   ): Promise<ShareBadgeEmailResponseDto> {
+    const userId = user.userId || user.id;
     this.logger.log(
       `User ${userId} sharing badge ${dto.badgeId} via email to ${dto.recipientEmail}`,
     );
