@@ -21,7 +21,8 @@ This story has been split into **MVP (U.2a)** and **Production Hardening (U.2b -
 
 **MVP Scope (Sprint 7 - This Story):**
 - ✅ GraphUsersService for M365 API integration
-- ✅ .env-based role mapping (security fix)
+- ✅ **NEW:** Auto role detection from M365 org structure (Manager = has directReports, Employee = no directReports)
+- ✅ .env-based role mapping for Admin/Issuer only (security fix - no emails in Git)
 - ✅ Support <100 users (Product Owner org has 30-50 users, single API call sufficient)
 - ✅ Production guard (prevent accidental data wipe)
 - ✅ Basic error handling (fail-fast with clear messages)
@@ -147,7 +148,52 @@ For more realistic UAT testing, the script can sync users from an existing M365 
 - [x] Prompts for confirmation: "This will delete all data. Continue? (y/n)"
 - [x] Uses Prisma cascade deletes (safe cleanup)
 
-### AC7: Microsoft 365 User Sync (MVP) ⚠️ **SECURITY UPDATED**
+### AC7: Microsoft 365 User Sync with Auto Role Detection ⚠️ **UPDATED**
+**Given** I have configured M365 credentials in `.env`  
+**When** I run `npm run seed:m365`  
+**Then** Real M365 users are synced to GCredit with auto-detected roles
+
+**Implementation:**
+- [x] Command: `npm run seed:m365` (sets `SEED_MODE=m365`)
+- [x] Reads M365 credentials from `.env` (AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET)
+- [x] **NEW:** Fetches user org structure via Graph API (`/users/{id}/directReports`)
+- [x] **NEW:** Auto-detects Manager role (users with direct reports in M365)
+- [x] **NEW:** Auto-detects Employee role (users without direct reports)
+- [x] Manual role mapping from `.env` for Admin and Issuer only (JSON format, not YAML)
+- [x] Syncs 30-50 M365 users (single API call, no pagination needed)
+- [x] All users get default password: `TestPass123!` (from `.env`)
+- [x] Console output shows role distribution: `📊 Admin: 2, Issuer: 3, Manager: 8 (auto), Employee: 37 (auto)`
+
+**Role Assignment Logic:**
+1. **Check manual mapping first** (`.env` M365_ROLE_MAPPING): If user email found → use specified role (ADMIN or ISSUER)
+2. **Check M365 org structure**: If user has `directReports.length > 0` → assign MANAGER
+3. **Default**: All other users → assign EMPLOYEE
+
+**Example .env Configuration:**
+```env
+# Only specify Admin and Issuer - Manager/Employee auto-detected from M365 org chart
+M365_ROLE_MAPPING='{
+  "legendzhu@yourdomain.onmicrosoft.com": "ADMIN",
+  "hr-director@yourdomain.onmicrosoft.com": "ISSUER"
+}'
+```
+
+**Console Output Example:**
+```
+🔄 Syncing users from Microsoft 365 with org structure...
+📥 Retrieved 45 users from M365
+👔 Identified 8 managers (users with direct reports)
+📊 Role Distribution:
+   - Admin/Issuer (manual): 2
+   - Manager (auto): 8 (users with direct reports)
+   - Employee (auto): 35
+✅ Legend Zhu (legendzhu@yourdomain.onmicrosoft.com) → ADMIN
+✅ HR Director (hr-director@yourdomain.onmicrosoft.com) → ISSUER
+👔 Auto-assigned MANAGER role to john.smith@yourdomain.onmicrosoft.com (3 reports)
+✅ John Smith (john.smith@yourdomain.onmicrosoft.com) → MANAGER
+✅ Jane Doe (jane.doe@yourdomain.onmicrosoft.com) → EMPLOYEE
+...
+```
 **Given** I have M365 Developer E5 subscription with demo organization  
 **When** I run `npm run seed:m365`  
 **Then** Real M365 users are synced to GCredit database
@@ -277,6 +323,18 @@ export interface M365User {
 }
 
 @Injectable()
+export interface M365User {
+  id: string;
+  mail: string;
+  displayName: string;
+  jobTitle?: string;
+  department?: string;
+  accountEnabled: boolean;
+  managerId?: string; // NEW: Manager relationship
+  directReportsCount?: number; // NEW: Number of direct reports
+}
+
+@Injectable()
 export class GraphUsersService {
   private readonly logger = new Logger(GraphUsersService.name);
   private graphClient: Client;
@@ -287,56 +345,102 @@ export class GraphUsersService {
   }
 
   /**
-   * Get all active users from M365 organization
-   * Filters out disabled accounts and guest users
+   * Get all active users from M365 organization with manager relationships
+   * Automatically identifies Managers (users with direct reports)
    */
   async getOrganizationUsers(): Promise<M365User[]> {
     try {
+      // Step 1: Get all users with basic info
       const response = await this.graphClient
         .api('/users')
         .select('id,mail,displayName,jobTitle,department,accountEnabled')
         .filter('accountEnabled eq true and userType eq \'Member\'')
         .get();
 
-      this.logger.log(`✅ Retrieved ${response.value.length} users from M365`);
-      return response.value;
+      const users = response.value;
+      this.logger.log(`📥 Retrieved ${users.length} users from M365`);
+
+      // Step 2: Get direct reports count for each user (to identify Managers)
+      const usersWithReports = await Promise.all(
+        users.map(async (user) => {
+          try {
+            const reportsResponse = await this.graphClient
+              .api(`/users/${user.id}/directReports`)
+              .select('id')
+              .get();
+            
+            return {
+              ...user,
+              directReportsCount: reportsResponse.value.length,
+            };
+          } catch (error) {
+            // User may not have permission or no reports
+            return { ...user, directReportsCount: 0 };
+          }
+        })
+      );
+
+      const managerCount = usersWithReports.filter(u => u.directReportsCount > 0).length;
+      this.logger.log(`👔 Identified ${managerCount} managers (users with direct reports)`);
+      
+      return usersWithReports;
     } catch (error) {
       this.logger.error('❌ Failed to get M365 users', error);
       throw error;
     }
   }
+
+  /**
+   * Determine GCredit role based on M365 org structure and manual config
+   */
+  determineRole(user: M365User, manualRoles: Record<string, string>): Role {
+    // 1. Check manual role mapping (Admin, Issuer)
+    if (manualRoles[user.mail]) {
+      return manualRoles[user.mail] as Role;
+    }
+
+    // 2. Auto-detect Manager (has direct reports in M365)
+    if (user.directReportsCount && user.directReportsCount > 0) {
+      this.logger.log(`👔 Auto-assigned MANAGER role to ${user.mail} (${user.directReportsCount} reports)`);
+      return Role.MANAGER;
+    }
+
+    // 3. Default to Employee
+    return Role.EMPLOYEE;
+  }
 }
 ```
 
-### Role Mapping YAML Schema
-```yaml
-# backend/config/m365-role-mapping.yaml
+### Role Mapping Configuration (.env - Security Fix)
+```env
+# backend/.env
 # Microsoft 365 User → GCredit Role Mapping
-# Used when running: npm run seed:m365
+# Only specify Admin and Issuer roles - Manager/Employee auto-detected
 
-roleMapping:
-  # === Admins (Full System Access) ===
-  admin@yourdomain.onmicrosoft.com: ADMIN
-  
-  # === Issuers (Badge Issuance) ===
-  issuer@yourdomain.onmicrosoft.com: ISSUER
-  hr-manager@yourdomain.onmicrosoft.com: ISSUER
-  
-  # === Managers (View Team Badges) ===
-  team-lead@yourdomain.onmicrosoft.com: MANAGER
-  project-manager@yourdomain.onmicrosoft.com: MANAGER
-  
-  # NOTE: All other M365 users default to EMPLOYEE role
+# === Manual Role Assignments (Admin & Issuer only) ===
+M365_ROLE_MAPPING='{
+  "legendzhu@yourdomain.onmicrosoft.com": "ADMIN",
+  "hr-director@yourdomain.onmicrosoft.com": "ISSUER",
+  "training-lead@yourdomain.onmicrosoft.com": "ISSUER"
+}'
+
+# === Automatic Role Detection ===
+# Manager: M365 users with directReports (auto-detected)
+# Employee: M365 users without directReports (auto-detected)
 
 # Password for UAT testing (all users get same password)
-defaultPassword: "TestPass123!"
+M365_DEFAULT_PASSWORD=TestPass123!
 
 # Sync options
-syncOptions:
-  onlyActiveUsers: true   # Only sync accountEnabled = true
-  skipGuestUsers: true    # Skip userType = Guest
-  updateExisting: true    # Update displayName if user already exists
+M365_SYNC_ACTIVE_ONLY=true     # Only sync accountEnabled = true
+M365_SYNC_SKIP_GUESTS=true     # Skip userType = Guest
+M365_SYNC_UPDATE_EXISTING=true # Update displayName if user exists
 ```
+
+**Key Changes from Original Design:**
+- ✅ **Security Fix**: .env instead of YAML (no emails committed to Git)
+- ✅ **Auto-detection**: Manager/Employee roles based on M365 org chart
+- ✅ **Simplified Config**: Only specify Admin and Issuer manually
 
 ### Seed Script Outline (Hybrid Mode)
 ```typescript
@@ -376,28 +480,54 @@ async function main() {
   
   if (SEED_MODE === 'm365') {
     // === M365 SYNC MODE ===
-    console.log('🔄 Syncing users from Microsoft 365...');
+    console.log('🔄 Syncing users from Microsoft 365 with org structure...');
     
-    // Load role mapping config
-    const configPath = './config/m365-role-mapping.yaml';
-    const configFile = fs.readFileSync(configPath, 'utf8');
-    const config = yaml.load(configFile) as any;
+    // Load manual role mapping from .env
+    const manualRoleMapping = JSON.parse(
+      process.env.M365_ROLE_MAPPING || '{}'
+    );
+    const defaultPassword = process.env.M365_DEFAULT_PASSWORD || 'TestPass123!';
     
     // Initialize NestJS context to access GraphUsersService
     const app = await NestFactory.createApplicationContext(AppModule);
     const graphUsersService = app.get(GraphUsersService);
     
-    // Fetch M365 users
+    // Fetch M365 users with org structure
     const m365Users = await graphUsersService.getOrganizationUsers();
     console.log(`📥 Retrieved ${m365Users.length} users from M365`);
     
-    // Hash default password
-    const hashedPassword = await bcrypt.hash(
-      config.defaultPassword || 'TestPass123!',
-      10
-    );
+    // Count auto-detected roles
+    const managerCount = m365Users.filter(u => u.directReportsCount > 0).length;
+    const employeeCount = m365Users.length - managerCount - Object.keys(manualRoleMapping).length;
     
-    // Sync users to database
+    console.log(`📊 Role Distribution:`);
+    console.log(`   - Admin/Issuer (manual): ${Object.keys(manualRoleMapping).length}`);
+    console.log(`   - Manager (auto): ${managerCount} (users with direct reports)`);
+    console.log(`   - Employee (auto): ${employeeCount}`);
+    
+    // Hash default password
+    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+    
+    // Sync users to database with auto role detection
+    for (const m365User of m365Users) {
+      const role = graphUsersService.determineRole(m365User, manualRoleMapping);
+      
+      await prisma.user.upsert({
+        where: { email: m365User.mail },
+        update: {
+          name: m365User.displayName,
+          role: role,
+        },
+        create: {
+          email: m365User.mail,
+          name: m365User.displayName,
+          password: hashedPassword,
+          role: role,
+        },
+      });
+      
+      console.log(`✅ ${m365User.displayName} (${m365User.mail}) → ${role}`);
+    }
     for (const m365User of m365Users) {
       const role = config.roleMapping[m365User.mail] || 'EMPLOYEE';
       
