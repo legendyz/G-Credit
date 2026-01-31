@@ -49,6 +49,26 @@ This story has been split into **MVP (U.2a)** and **Production Hardening (U.2b -
 - ⚠️ **Product Owner MUST verify Azure User.Read.All permission before Day 3**
 - Verify in Azure Portal → App registrations → API permissions
 
+**🔔 IMPORTANT - Developer Reminder:**
+```
+⚠️ BEFORE implementing AC7 (M365 User Sync):
+
+1. Notify Product Owner (LegendZhu) to:
+   ✅ Verify M365 organizational structure is set up (Manager-Employee relationships)
+   ✅ Provide list of Admin and Issuer email addresses for .env configuration
+   ✅ Confirm M365 org has 30-50 users ready for sync
+
+2. Schedule 15-minute kickoff call to:
+   - Review .env configuration format
+   - Explain auto role detection logic (Manager = has directReports)
+   - Test sync with Product Owner present (live demo)
+
+3. Have Product Owner review first sync output to confirm:
+   - Role distribution looks correct (Admin, Issuer, Manager, Employee)
+   - All expected users synced
+   - No unexpected role assignments
+```
+
 **References:**
 - Architecture Review: See `architecture-review-story-u2.md`
 - Developer Review: See meeting minutes Part 3
