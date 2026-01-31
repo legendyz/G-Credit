@@ -1,9 +1,10 @@
 # Sprint 7 Backlog - Badge生命周期完整化 + UAT验证
 
 **Sprint:** Sprint 7  
-**Duration:** February 3-7, 2026 (5 days)  
+**Duration:** February 3-11, 2026 (7 working days) ← **UPDATED after Technical Review**  
 **Team:** Amelia (Dev Agent) + LegendZhu  
-**Epic:** Epic 9 - Badge Revocation + Complete Lifecycle UAT
+**Epic:** Epic 9 - Badge Revocation + Complete Lifecycle UAT  
+**Last Updated:** February 1, 2026 (Post-Technical Review Meeting)
 
 ---
 
@@ -41,17 +42,17 @@ So that **we follow GitFlow strategy and avoid merge conflicts**.
 
 ---
 
-#### **Story 0.2:** [Simple Login & Navigation System](0-2-login-navigation.md) - **CRITICAL** - 4-6h
+#### **Story 0.2a:** [Simple Login & Navigation System (MVP)](0-2-login-navigation.md) - **CRITICAL** - 6h ← **SPLIT from 0.2**
 As a **User (any role)**,  
 I want **to log in to the system and navigate between features**,  
 So that **I can access role-appropriate functionality and complete UAT testing**.
 
 **Acceptance Criteria:**
-- Simple login page (email + password)
-- Auth state management (Zustand)
-- Role-based dashboard after login
+- Simple login page (email + password, basic ARIA labels)
+- Auth state management (Zustand, NO token refresh in MVP)
+- Role-based dashboard after login (Admin + Employee only in MVP)
 - Protected routes with authentication check
-- Basic navigation layout with logout
+- Basic top navigation layout with logout
 - Test accounts accessible (for UAT)
 
 **Why Critical:** Without this, Story U.1 (Complete Lifecycle UAT) cannot test multi-role workflows. UAT requires:
@@ -59,13 +60,51 @@ So that **I can access role-appropriate functionality and complete UAT testing**
 - Employee login → view wallet → claim badge
 - Admin login again → revoke badge
 
+**MVP Limitations (Sprint 7):**
+- No token refresh (acceptable for <1h UAT sessions)
+- Basic accessibility (form labels only, no screen reader testing)
+- Top navigation (not sidebar - evaluated in UAT feedback)
+- Admin + Employee roles only (Manager + Issuer dashboards in Sprint 8)
+
+**Deferred to Story 0.2b (Sprint 8):**
+- Token refresh interceptor
+- Full WCAG 2.1 AA compliance
+- Manager + Issuer dashboard variants
+- Cross-browser testing
+
 **Link:** [0-2-login-navigation.md](0-2-login-navigation.md)
+
+---
+
+#### **Story 0.2b:** Auth Enhancements - **Sprint 8** - 3h
+- Token refresh interceptor with exponential backoff
+- Full WCAG 2.1 AA compliance (NVDA/VoiceOver testing)
+- Manager + Issuer dashboard layouts
+- Cross-browser testing (Safari, Firefox)
+- Forgot password UI (non-functional link)
+
+**Status:** Sprint 8 Backlog
+
+---
+
+#### **Story 0.3:** CSP Security Headers - **Sprint 8** - 1h
+As a **Security Team**,  
+I want **Content Security Policy headers configured**,  
+So that **XSS attacks are mitigated with localStorage tokens**.
+
+**Acceptance Criteria:**
+- Helmet middleware installed in NestJS
+- CSP directives configured (script-src, img-src, connect-src)
+- Dev mode compatibility verified
+- Production CSP tested
+
+**Status:** Sprint 8 Backlog (NOT UAT blocker)
 
 ---
 
 ### Epic 9: Badge Revocation (Stories 9.1-9.5)
 
-#### **Story 9.1:** [Badge Revocation API](9-1-revoke-api.md) - **HIGH** - 4-5h
+#### **Story 9.1:** [Badge Revocation API](9-1-revoke-api.md) - **HIGH** - 7h ← **UPDATED (+2h)**
 As an **Admin or Issuer**,  
 I want **to revoke a badge with a documented reason**,  
 So that **I can handle policy violations, errors, or expired credentials properly**.
@@ -73,41 +112,51 @@ So that **I can handle policy violations, errors, or expired credentials properl
 **Acceptance Criteria:**
 - API endpoint `POST /api/badges/:id/revoke` implemented
 - Request body accepts revocation reason and optional notes
-- Soft-delete pattern (status updated, not deleted)
-- Audit log entry created
+- Soft-delete pattern: Badge.status = REVOKED (not CLAIMED)
+- **NEW:** AuditLog table created and entry logged
+- **NEW:** REVOKED enum status added to Prisma schema
+- **NEW:** API is idempotent (revoke already-revoked badge returns 200)
 - Authorization: Only ADMIN or original issuer can revoke
+
+**Technical Updates (Post-Review):**
+- Must create AuditLog infrastructure (+1h)
+- Must use REVOKED status enum (not soft-delete with revokedAt field) (+0.5h)
+- Must add revokedAt index for admin reports (+0.5h)
+- TDD approach: Write tests first, then implement
 
 **Link:** [9-1-revoke-api.md](9-1-revoke-api.md)
 
 ---
 
-#### **Story 9.2:** [Revoked Badge Status in Verification](9-2-verification-status.md) - **HIGH** - 2-3h
+####Story 9.2:** [Revoked Badge Status in Verification](9-2-verification-status.md) - **HIGH** - 4h
 As an **External Verifier**,  
 I want **to see when a badge has been revoked on the verification page**,  
 So that **I know the badge is no longer valid**.
 
 **Acceptance Criteria:**
 - Public verification page shows REVOKED status clearly
-- Revocation date and reason (if public) displayed
+- Revocation date and reason (if public-facing) displayed
 - Visual treatment (red badge, warning icon)
 - JSON-LD assertion reflects revoked status
 - Open Badges 2.0 compliance maintained
+- **UX Decision:** Show revocation reason only if public-safe category (not "Policy Violation")
 
 **Link:** [9-2-verification-status.md](9-2-verification-status.md)
 
 ---
 
-#### **Story 9.3:** [Employee Wallet Revoked Badge Display](9-3-wallet-display.md) - **HIGH** - 3-4h
+#### **Story 9.3:** [Employee Wallet Revoked Badge Display](9-3-wallet-display.md) - **HIGH** - 4h
 As an **Employee**,  
 I want **to see which of my badges have been revoked in my wallet**,  
 So that **I understand my current credential status**.
 
 **Acceptance Criteria:**
-- Revoked badges shown in wallet (greyed out or marked)
+- **UX Decision:** Revoked badges shown greyed out with red "REVOKED" banner overlay
 - Badge detail modal shows revocation details
-- Revoked badges cannot be shared
+- **UX Decision:** Show revocation reason with categorization (public vs private)
+- Revoked badges cannot be shared (button disabled with tooltip)
 - Download still available (for record keeping)
-- Filter option: Show/hide revoked badges
+- Filter option: Show/hide revoked badges (optional)
 
 **Link:** [9-3-wallet-display.md](9-3-wallet-display.md)
 
@@ -164,20 +213,50 @@ So that **I can verify the entire user experience works correctly**.
 
 ---
 
-#### **Story U.2:** [Demo Seed Data Creation](U-2-demo-seed.md) - **HIGH** - 3-4h
+#### **Story U.2a:** [M365 User Sync MVP](U-2-demo-seed.md) - **HIGH** - 6h ← **SPLIT from U.2**
 As a **Developer**,  
-I want **comprehensive demo seed data script**,  
-So that **UAT testing can be quickly repeated and stakeholder demos are rich**.
+I want **to sync users from Microsoft 365 organization for realistic UAT data**,  
+So that **UAT testing uses actual organizational users instead of mock accounts**.
 
 **Acceptance Criteria:**
-- Seed script creates 3 admins, 5 employees
-- 10 badge templates across different categories
-- 20 badges in various states (ISSUED, CLAIMED, REVOKED)
-- Email notification history populated
-- Script can reset database to clean state
-- Run time < 2 minutes
+- GraphUsersService calls Microsoft Graph `/users` API
+- **SECURITY FIX:** Role mapping via .env file (NOT YAML in Git)
+- **SECURITY FIX:** Production guard prevents accidental sync (NODE_ENV check)
+- Hybrid mode: `npm run seed:demo` (local) OR `npm run seed:m365`
+- Support <100 users (Product Owner org ~15 users)
+- Upsert pattern (safe to re-run)
+- Console output shows progress
+- Fallback to local mode if M365 API fails
+
+**MVP Limitations (Sprint 7):**
+- No pagination (works for <100 users)
+- No retry logic (fail-fast with error message)
+- No audit logging
+- No user deactivation sync
+
+**Deferred to Story U.2b (Sprint 8):**
+- Pagination support (1000+ users)
+- Retry logic with exponential backoff (ADR-008 compliance)
+- Audit logging (who synced, when, count)
+- User deactivation sync (deleted M365 users)
+
+**Prerequisites:**
+- Product Owner must verify User.Read.All permission granted in Azure Portal
 
 **Link:** [U-2-demo-seed.md](U-2-demo-seed.md)
+
+---
+
+#### **Story U.2b:** M365 Sync Production Hardening - **Sprint 8** - 6h
+- Pagination support for large organizations (1000+ users)
+- Retry logic with exponential backoff
+- Audit logging for compliance
+- User deactivation sync
+- Enhanced error messages
+- Comprehensive testing
+- Update ADR-008 documentation
+
+**Status:** Sprint 8 Backlog
 
 ---
 
@@ -199,46 +278,87 @@ So that **the user experience meets quality standards**.
 
 ## ⏱️ Capacity Planning
 
-### Sprint Timeline (5 days) - UPDATED
+### Sprint Timeline (7 days) - UPDATED AFTER TECHNICAL REVIEW
 
-**Day 1 (Feb 3): Epic 9 Backend**
-- Morning: Story 9.1 - Badge Revocation API (5h)
-- Afternoon: Story 9.2 - Verification Status Display (4.5h)
+**Day 1 (Feb 3): Backend Foundation**
+- Story 9.1: Badge Revocation API (7h - TDD approach)
+- Axe-core accessibility setup (0.5h)
+- **Total: 7.5h**
 
-**Day 2 (Feb 4): Epic 9 Frontend**
-- Morning: Story 9.3 - Wallet Display (5.5h)
-- Afternoon: Story 9.4 - Notifications (4h)
-- Afternoon: Story 9.5 - Admin UI (start, 4h)
+**Day 2 (Feb 4): Frontend Development**
+- Design sync meeting (15min)
+- Story 9.2: Verification Update (4h)
+- Story 9.3: Wallet UI Update (4h)
+- Story 0.2a: Login MVP START (2h of 6h)
+- **Total: 10.25h** (can split UI/backend tasks)
 
-**Day 3 (Feb 5): UI Foundation + UAT Prep**
-- Morning: Story 9.5 - Admin UI (complete, 2h remaining)
-- Morning: Story 0.2 - Login & Navigation (4-6h) ← **NEW**
-- Afternoon: Story U.2 - Demo Seed Data (3.5h)
+**Day 3 (Feb 5): Auth & Data**
+- Story 0.2a: Login MVP COMPLETE (4h remaining)
+- Story U.2a: M365 Sync MVP (6h)
+- **Total: 10h** (could parallelize with 2 developers)
 
-**Day 4 (Feb 6): Complete Lifecycle UAT**
-- Full Day: Story U.1 - Complete UAT (8h)
-  - Now can test complete multi-role workflows with login!
+**Day 4 (Feb 6): Integration**
+- Story 9.5: Admin Revocation UI (4h)
+- Story 9.4: Revocation Notifications (3h)
+- Integration testing (1h)
+- **Total: 8h**
 
-**Day 5 (Feb 7): Bug Fixes & Sprint Completion**
-- Story U.3 - UAT Bug Fixes (6-16h)
-- Sprint documentation and closeout
+**Day 5 (Feb 7): UAT Day 1**
+- Story U.1: Complete UAT Phase 1 (8h)
+  - Badge creation → issuance → claim
+  - Badge sharing → verification  
+  - Badge revocation → wallet display
+- **Total: 8h**
+
+**Day 6 (Feb 8): UAT Day 2 & Bug Fixes**
+- Story U.1: Complete UAT Phase 2 (4h)
+  - Admin UI testing
+  - Email notification testing
+  - Accessibility testing (+1h from risk mitigation)
+- Story U.3: Bug Fixes START (4h of 8h)
+- **Total: 8h**
+
+**Day 7 (Feb 9): Finalization & Buffer**
+- Story U.3: Bug Fixes COMPLETE (4h remaining)
+- Sprint Retrospective (1h)
+- Documentation updates (1h)
+- Production readiness checklist (1h)
+- Buffer for overflow (1h)
+- **Total: 8h**
 
 ### Total Estimated Effort
 
-| Category | Stories | Estimated Hours |
-|----------|---------|-----------------|
-| **Sprint Setup** | 0.1, 0.2 | 5 min + 4-6h |
-| **Epic 9 Stories** | 9.1-9.5 | 14-19h |
-| **Demo Seed Data** | U.2 | 3-4h |
-| **UAT Execution** | U.1 | 6-8h |
-| **Bug Fixes** | U.3 | 6-16h (TBD) |
-| **Total** | 10 stories | **37-53h** |
+| Category | Stories | Estimated Hours | Notes |
+|----------|---------|-----------------|-------|
+| **Sprint Setup** | 0.1, 0.2a | 5 min + 6h | Login MVP |
+| **Epic 9 Stories** | 9.1-9.5 | 22h | +3h from review |
+| **M365 Sync MVP** | U.2a | 6h | Security fixes |
+| **UAT Execution** | U.1 | 12h | 2-day UAT |
+| **Bug Fixes** | U.3 | 8h | TBD based on UAT |
+| **Risk Mitigation** | Axe-core, meetings | 1.25h | Accessibility |
+| **Total** | 11 stories | **54.5h** | Realistic estimate |
 
-**Team Capacity:** Solo developer × 5 days × 12h/day = **60h available**
+**Team Capacity:** Solo developer × 7 days × 8h/day = **56h available**
 
-**Buffer:** ~7-23h for unknowns and polish
+**Buffer:** 1.5h (3% - minimal but Sprint 7 can extend if needed)
 
-**⚠️ Story 0.2 Added:** Login & Navigation system is critical for UAT. Without it, Story U.1 cannot test multi-role workflows (Admin login → issue badge, Employee login → view wallet, etc.)
+**Deferred to Sprint 8:**
+- Story 0.2b: Auth Enhancements (3h)
+- Story 0.3: CSP Security Headers (1h)
+- Story U.2b: M365 Sync Hardening (6h)
+- Epic 9 polish items (Open Badges full compliance, etc.)
+
+### Capacity Analysis
+
+**Critical Path:** 40 hours (Story 9.1 → 9.3 → 0.2a → 9.5 → U.1 → U.3)  
+**Total Capacity:** 56 hours  
+**Buffer:** 16 hours (29% - HEALTHY)
+
+**Risk Mitigation Built-In:**
+- Day 1: TDD for Story 9.1 (prevent downstream blocks)
+- Day 1: Axe-core setup (catch accessibility issues early)
+- Day 2: Design sync meeting (ensure UI consistency)
+- Day 7: Full buffer day for UAT overflow
 
 ---
 
