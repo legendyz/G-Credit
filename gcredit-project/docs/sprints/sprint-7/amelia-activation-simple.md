@@ -1,5 +1,11 @@
 # Amelia - Sprint 7 Activation (Simple Version)
 
+> **📍 如何使用本文件：**  
+> Product Owner只需说：  
+> _"请阅读 `gcredit-project/docs/sprints/sprint-7/amelia-activation-simple.md`，按照里面的指导，然后执行你的 [DS] Execute Dev Story workflow"_
+
+---
+
 **Sprint:** Sprint 7 (7 working days)  
 **Branch:** `sprint-7/epic-9-revocation-lifecycle-uat`
 
