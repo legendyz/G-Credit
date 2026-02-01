@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 
 interface ReportIssueFormProps {
   badgeId: string;
@@ -63,7 +64,9 @@ const ReportIssueForm: React.FC<ReportIssueFormProps> = ({
       }
 
       // AC 4.10: Show success message
-      alert(data.message || "Report submitted. We'll review within 2 business days.");
+      toast.success('Report submitted', {
+        description: data.message || "We'll review your report within 2 business days.",
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit report');
     } finally {

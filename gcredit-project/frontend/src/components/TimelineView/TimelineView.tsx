@@ -110,10 +110,15 @@ export function TimelineView() {
 
         {/* Filter - Story 9.3 AC4 */}
         <div className="mb-6">
+          <label htmlFor="badge-status-filter" className="sr-only">
+            Filter badges by status
+          </label>
           <select
+            id="badge-status-filter"
             value={statusFilter || 'ALL'}
             onChange={(e) => setStatusFilter(e.target.value === 'ALL' ? undefined : e.target.value as BadgeStatus)}
             className="px-4 py-2 border border-gray-300 rounded-lg"
+            aria-label="Filter badges by status"
           >
             <option value="ALL">All Badges</option>
             <option value={BadgeStatus.CLAIMED}>Active</option>

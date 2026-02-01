@@ -255,10 +255,11 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
           {activeTab === 'email' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.5rem' }}>
+                <label htmlFor="share-email-recipients" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.5rem' }}>
                   Recipient Emails *
                 </label>
                 <input
+                  id="share-email-recipients"
                   type="text"
                   value={emailRecipients}
                   onChange={(e) => setEmailRecipients(e.target.value)}
@@ -272,15 +273,17 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                     outline: 'none'
                   }}
                   disabled={loading}
+                  aria-describedby="email-recipients-hint"
                 />
-                <p style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: '#6b7280' }}>Separate multiple emails with commas</p>
+                <p id="email-recipients-hint" style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: '#6b7280' }}>Separate multiple emails with commas</p>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.5rem' }}>
+                <label htmlFor="share-email-message" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.5rem' }}>
                   Custom Message (Optional)
                 </label>
                 <textarea
+                  id="share-email-message"
                   value={emailMessage}
                   onChange={(e) => setEmailMessage(e.target.value)}
                   placeholder="Add a personal message..."
@@ -343,10 +346,11 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.5rem' }}>
+                <label htmlFor="share-teams-team-id" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.5rem' }}>
                   Team ID (Optional)
                 </label>
                 <input
+                  id="share-teams-team-id"
                   type="text"
                   value={teamsTeamId}
                   onChange={(e) => setTeamsTeamId(e.target.value)}
@@ -364,10 +368,11 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.5rem' }}>
+                <label htmlFor="share-teams-channel-id" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.5rem' }}>
                   Channel ID (Optional)
                 </label>
                 <input
+                  id="share-teams-channel-id"
                   type="text"
                   value={teamsChannelId}
                   onChange={(e) => setTeamsChannelId(e.target.value)}
@@ -385,10 +390,11 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.5rem' }}>
+                <label htmlFor="share-teams-message" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.5rem' }}>
                   Custom Message (Optional)
                 </label>
                 <textarea
+                  id="share-teams-message"
                   value={teamsMessage}
                   onChange={(e) => setTeamsMessage(e.target.value)}
                   placeholder="Add a personal message..."
