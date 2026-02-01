@@ -7,7 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased] - Sprint 7 (In Progress)
+## [0.7.0] - 2026-02-02 (Sprint 7 Complete)
+
+### Sprint 7 Summary - Badge Revocation & Lifecycle UAT
+
+**Epic 9: Badge Revocation** - Complete badge lifecycle management with revocation, notifications, and admin UI.
+
+#### Highlights
+- ✅ **10/10 Stories Complete** (38.5h actual / 41-47h estimated)
+- ✅ **UAT 100% Pass** (15/15 tests across Employee, Manager, External Verifier personas)
+- ✅ **9 P0 Issues Fixed** (4 Security, 1 Architecture, 4 UX from pre-UAT reviews)
+- ✅ **302 Core Tests Passing** (100% pass rate)
+- ✅ **0 P0/P1 Bugs** found during UAT
+
+#### Stories Delivered
+1. **Story 9.1:** Badge Revocation API (Manager-only authorization, audit logging)
+2. **Story 9.2:** Revoked Badge Display in Verification Page
+3. **Story 9.3:** Employee Wallet Revoked Badge Display
+4. **Story 9.4:** Revocation Email Notifications (async with retry)
+5. **Story 9.5:** Admin Badge Management UI (search, filter, revoke modal)
+6. **Story 0.1:** Git branch setup
+7. **Story 0.2a:** Login page navigation
+8. **Phase A:** Security P0 fixes (SEC-P0-001/002/003, ARCH-P0-002)
+9. **Phase B:** UX P0 fixes (toast alerts, form labels, claim celebration, login)
+10. **Story U.1:** Complete Lifecycle UAT
+
+#### Pre-UAT Review Fixes (P0)
+- **SEC-P0-001:** Authorization before DB query (security ordering)
+- **SEC-P0-002:** 403 for unauthorized role (not 400)
+- **SEC-P0-003:** Test coverage for authorization flows
+- **ARCH-P0-002:** Remove console.log from production code
+- **UX-P0-001:** Toast system for user feedback
+- **UX-P0-002:** Form label accessibility
+- **UX-P0-003:** Badge claim celebration
+- **UX-P0-004:** Login navigation from header
 
 ### Added - Badge Revocation (Story 9.1) - 2026-02-01
 
