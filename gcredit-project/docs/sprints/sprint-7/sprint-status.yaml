@@ -22,29 +22,29 @@ sprint_info:
 
 development_status:
   0-1-git-branch: done  # Git branch creation (prerequisite)
-  0-2a-login-navigation: ready-for-dev  # Login page - RESTORED from deferred per Pre-UAT Review
+  0-2a-login-navigation: done  # Login page - COMPLETED in Phase B
   9-1-revoke-api: done  # Badge Revocation API - COMPLETE
   9-2-verification-status: done  # Revoked Badge Display in Verification Page - DONE
   9-3-wallet-display: done  # Employee Wallet Display - DONE
   9-4-notifications: review  # Revocation Email Notifications - COMPLETE
   9-5-admin-ui: done  # Admin Revocation UI - COMPLETE (code review fixes done)
   P0-fixes-phase-a: done  # Security & Architecture P0 Fixes (SEC-P0-001/002/003, ARCH-P0-002)
-  P0-fixes-phase-b: ready-for-dev  # UX P0 Fixes (Login, alert→toast, form labels)
-  U-1-lifecycle-uat: blocked  # Complete Lifecycle UAT - blocked on P0-fixes-phase-b
+  P0-fixes-phase-b: done  # UX P0 Fixes (Login, alert→toast, form labels, claim celebration)
+  U-1-lifecycle-uat: ready-for-dev  # Complete Lifecycle UAT - UNBLOCKED, ready to execute
 
 sprint_metrics:
   total_stories: 10  # 0.1 + 0.2a + 9.1-9.5 + P0-A + P0-B + U.1
-  completed_stories: 7  # 0.1 + 9.1 + 9.2 + 9.3 + 9.4 (review) + 9.5 + P0-A
+  completed_stories: 9  # 0.1 + 0.2a + 9.1 + 9.2 + 9.3 + 9.4 + 9.5 + P0-A + P0-B
   in_progress_stories: 0
-  blocked_stories: 1  # U.1 blocked on P0-fixes-phase-b
-  completion_rate: 70%  # 7/10
+  blocked_stories: 0  # All blockers resolved!
+  completion_rate: 90%  # 9/10
   estimated_hours: "41-47"  # Original 20-26 + P0-fixes 15h + Story 0.2a 6h
-  actual_hours: 25  # Story 9.1 (5h) + 9.2 (4.5h) + 9.3 (4.5h) + 9.4 (2.5h) + 9.5 (5.5h) + P0-A (3h)
+  actual_hours: 37  # Story 9.1 (5h) + 9.2 (4.5h) + 9.3 (4.5h) + 9.4 (2.5h) + 9.5 (5.5h) + P0-A (3h) + P0-B (12h)
   
-  backend_completion: 90%  # All backend Stories + Phase A complete
-  frontend_completion: 86%  # All Stories except U.1
+  backend_completion: 100%  # All backend Stories complete
+  frontend_completion: 100%  # All frontend Stories complete
   
-  # Test Results (as of 2026-02-01 after Phase A P0 fixes)
+  # Test Results (as of 2026-02-01 after Phase B UX fixes)
   total_tests: 334  # 282 backend + 52 frontend
   core_tests_passing: 302  # 250 backend + 52 frontend
   teams_tests_failing: 16  # Teams integration (Sprint 6 technical debt)
@@ -195,37 +195,43 @@ story_details:
         status: "done"
 
   P0-fixes-phase-b:
-    status: "ready-for-dev"
+    status: "done"
     priority: "P0 - Critical"
     story_points: 10
     estimated_hours: 12
-    developer: "TBD"
+    actual_hours: 12
+    start_date: "2026-02-01"
+    completion_date: "2026-02-01"
+    developer: "Amelia (Dev Agent)"
     depends_on: ["P0-fixes-phase-a"]
-    blocks: ["U-1-lifecycle-uat"]
-    breakdown:
+    blocks: []  # No longer blocks anything
+    commit: "50d3de3"
+    fixes_completed:
         - id: "UX-P0-001"
           task: "Create minimal login page for UAT"
-          effort: "4h"
+          files: ["LoginPage.tsx", "authStore.ts", "ProtectedRoute.tsx", "Navbar.tsx", "App.tsx"]
+          status: "done"
         - id: "UX-P0-002"
-          task: "Replace all alert() with toast.error()"
-          files: "BadgeDetailModal.tsx, EvidenceSection.tsx"
-          effort: "2h"
+          task: "Replace all alert() with toast"
+          files: ["BadgeDetailModal.tsx", "EvidenceSection.tsx", "ReportIssueForm.tsx"]
+          status: "done"
         - id: "UX-P0-003"
           task: "Add form labels for accessibility"
-          files: "TimelineView.tsx, BadgeShareModal.tsx"
-          effort: "2h"
+          files: ["TimelineView.tsx", "BadgeShareModal.tsx"]
+          status: "done"
         - id: "UX-P0-004"
-          task: "Add basic celebration feedback on badge claiming"
-          effort: "4h"
-    notes: "Pre-UAT UX fixes identified by Security/Architecture/UX reviews on 2026-02-01"
+          task: "Add badge claiming celebration modal"
+          files: ["ClaimSuccessModal.tsx", "BadgeDetailModal.tsx"]
+          status: "done"
+    notes: "All UX P0 fixes completed. Login system with Zustand, toast notifications, A11y labels, claim celebration modal."
 
 next_steps:
-  - \"✅ Phase A: P0 Security Fixes (3h) - COMPLETED 2026-02-01\"
-  - \"🔴 Phase B: P0 UX Fixes (12h) - UX-P0-001 (Login), UX-P0-002 (toast), UX-P0-003 (labels), UX-P0-004 (celebration)\"
-  - \"⏳ Phase C: Story U.1 - Complete Lifecycle UAT (8h) - blocked on Phase B\"
+  - "✅ Phase A: P0 Security Fixes (3h) - COMPLETED 2026-02-01"
+  - "✅ Phase B: P0 UX Fixes (12h) - COMPLETED 2026-02-01"
+  - "🟢 Phase C: Story U.1 - Complete Lifecycle UAT (8h) - READY TO EXECUTE"
 
-last_updated: \"2026-02-01T23:30:00\"
-updated_by: \"Amelia (Dev Agent)\"
+last_updated: "2026-02-01T23:45:00"
+updated_by: "Amelia (Dev Agent)"
 
 technical_debt:
   teams_channel_sharing:

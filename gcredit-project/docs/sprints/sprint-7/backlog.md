@@ -150,77 +150,80 @@
 
 ---
 
-### 🟠 Phase B: UX P0 Fixes + Login (12h)
+### ✅ Phase B: UX P0 Fixes + Login (12h) - COMPLETED
 
-> **在 Phase A 完成后执行。** 包含登录页面和 UX 缺陷修复。
+> ~~**在 Phase A 完成后执行。** 包含登录页面和 UX 缺陷修复。~~ **✅ 已完成 2026-02-01**
 
-#### Story 0.2a: Simple Login & Navigation System (4h)
+#### Story 0.2a: Simple Login & Navigation System (4h) ✅
 
 **User Story:** As a User (any role), I want to log in to the system and navigate between features, So that I can access role-appropriate functionality and complete UAT testing.
 
 **文件:**
-- `frontend/src/pages/LoginPage.tsx` (新建)
-- `frontend/src/App.tsx` (更新路由)
-- `frontend/src/stores/authStore.ts` (新建, Zustand)
+- `frontend/src/pages/LoginPage.tsx` (新建) ✅
+- `frontend/src/App.tsx` (更新路由) ✅
+- `frontend/src/stores/authStore.ts` (新建, Zustand) ✅
+- `frontend/src/components/ProtectedRoute.tsx` (新建) ✅
+- `frontend/src/components/Navbar.tsx` (新建) ✅
 
 **验收标准:**
-- [ ] 登录页面 (email + password)
-- [ ] Auth state management (Zustand)
-- [ ] 登录成功后跳转到 dashboard
-- [ ] 受保护路由检查
-- [ ] 基本 ARIA labels
-- [ ] 登出功能
+- [x] 登录页面 (email + password)
+- [x] Auth state management (Zustand)
+- [x] 登录成功后跳转到 dashboard
+- [x] 受保护路由检查
+- [x] 基本 ARIA labels
+- [x] 登出功能
 
-**Link:** [0-2-login-navigation.md](0-2-login-navigation.md)
+**Commit:** `50d3de3`
 
 ---
 
-#### Task B.2: UX-P0-002 - 替换 alert() 为 toast (2h)
+#### Task B.2: UX-P0-002 - 替换 alert() 为 toast (2h) ✅
 
 **问题:** 使用浏览器 `alert()` 显示错误，用户体验差
 
 **文件:**
-- `frontend/src/components/BadgeDetailModal/BadgeDetailModal.tsx`
-- `frontend/src/components/BadgeDetailModal/EvidenceSection.tsx`
+- `frontend/src/components/BadgeDetailModal/BadgeDetailModal.tsx` ✅
+- `frontend/src/components/BadgeDetailModal/EvidenceSection.tsx` ✅
+- `frontend/src/components/BadgeDetailModal/ReportIssueForm.tsx` ✅
 
 **修复步骤:**
-1. 导入 `toast` from 'sonner'
-2. 将所有 `alert()` 替换为 `toast.error()`
+1. ✅ 导入 `toast` from 'sonner'
+2. ✅ 将所有 `alert()` 替换为 `toast.error()` / `toast.success()` / `toast.info()`
 
 **验收标准:**
-- [ ] 所有 alert() 已替换
-- [ ] 错误通过 toast 显示
-- [ ] Toast 样式一致
+- [x] 所有 alert() 已替换 (6 instances)
+- [x] 错误通过 toast 显示
+- [x] Toast 样式一致
 
 ---
 
-#### Task B.3: UX-P0-003 - 添加表单 labels (2h)
+#### Task B.3: UX-P0-003 - 添加表单 labels (2h) ✅
 
 **问题:** 表单输入缺少 labels，违反 A11y 标准
 
 **文件:**
-- `frontend/src/components/TimelineView/TimelineView.tsx`
-- `frontend/src/components/BadgeShareModal/BadgeShareModal.tsx`
+- `frontend/src/components/TimelineView/TimelineView.tsx` ✅
+- `frontend/src/components/BadgeShareModal/BadgeShareModal.tsx` ✅
 
 **修复步骤:**
-1. 为每个 `<select>` / `<input>` 添加 `<label>`
-2. 使用 `htmlFor` 关联 label 和 input
-3. 如需隐藏可使用 `sr-only` class
+1. ✅ 为每个 `<select>` / `<input>` 添加 `<label>`
+2. ✅ 使用 `htmlFor` 关联 label 和 input
+3. ✅ 使用 `sr-only` class 隐藏视觉标签
 
 **验收标准:**
-- [ ] 所有表单控件有 label
-- [ ] Screen reader 可识别表单用途
-- [ ] 无 A11y 警告
+- [x] 所有表单控件有 label
+- [x] Screen reader 可识别表单用途
+- [x] 添加 aria-describedby 关联提示文本
 
 ---
 
-#### Task B.4: UX-P0-004 - Badge Claiming 庆祝反馈 (4h)
+#### Task B.4: UX-P0-004 - Badge Claiming 庆祝反馈 (4h) ✅
 
 **问题:** Badge claiming 成功后没有视觉反馈
 
 **文件:**
-- `frontend/src/components/ClaimSuccessModal.tsx` (新建)
-- 或修改现有 claim 流程组件
+- `frontend/src/components/ClaimSuccessModal.tsx` (新建) ✅
+- `frontend/src/components/BadgeDetailModal/BadgeDetailModal.tsx` (添加claim按钮) ✅
 
 **实现:**
 ```tsx
@@ -233,31 +236,33 @@
 ```
 
 **验收标准:**
-- [ ] Claim 成功显示庆祝 modal
-- [ ] 绿色 checkmark 图标
-- [ ] "View in Wallet" 按钮
-- [ ] 动画效果
+- [x] Claim 成功显示庆祝 modal
+- [x] 绿色 checkmark 图标 (animated)
+- [x] "View in Wallet" 按钮
+- [x] 动画效果 (fadeInScale, bounceIn, drawCheck)
+- [x] PENDING badges 显示 "Claim Badge" 按钮
+- [x] Claim 后自动更新 badge 状态
 
 ---
 
-#### Phase B 完成检查
+#### Phase B 完成状态 ✅
 
-```powershell
-# 运行前端测试
-cd gcredit-project/frontend
-npm test
-
-# 验证编译通过
-npm run build
+```
+完成时间: 2026-02-01
+提交记录: 50d3de3
+测试状态: 52/52 frontend tests passing
+构建状态: ✅ npm run build PASS
+新增文件: 5 (LoginPage, authStore, ProtectedRoute, Navbar, ClaimSuccessModal)
+修改文件: 6 (App, BadgeDetailModal, EvidenceSection, ReportIssueForm, BadgeShareModal, TimelineView)
 ```
 
-**Phase B 完成后:** 通知 SM，继续 Phase C
+**Phase B 已完成，可继续 Phase C UAT**
 
 ---
 
 ### 🟢 Phase C: UAT Execution (8h)
 
-> **在 Phase A + B 完成后执行。**
+> **Phase A + B 已完成。可以开始 UAT 执行。**
 
 #### Story U.1: Complete Lifecycle UAT Execution (8h)
 
