@@ -28,7 +28,7 @@ development_status:
   9-1-revoke-api: done  # Badge Revocation API - COMPLETE
   9-2-verification-status: done  # Revoked Badge Display in Verification Page - DONE
   9-3-wallet-display: done  # Employee Wallet Display - DONE
-  9-4-notifications: review  # Revocation Email Notifications - COMPLETE
+  9-4-notifications: done  # Revocation Email Notifications - COMPLETE
   9-5-admin-ui: done  # Admin Revocation UI - COMPLETE (code review fixes done)
   P0-fixes-phase-a: done  # Security & Architecture P0 Fixes (SEC-P0-001/002/003, ARCH-P0-002)
   P0-fixes-phase-b: done  # UX P0 Fixes (Login, alert→toast, form labels, claim celebration)
