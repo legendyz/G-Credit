@@ -5,6 +5,7 @@ import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/common/prisma.service';
 import { UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { RevocationReason } from '../src/badge-issuance/dto/revoke-badge.dto';
 
 // Increase timeout for email sending tests
 jest.setTimeout(30000);
@@ -473,13 +474,14 @@ describe('Badge Issuance (e2e)', () => {
         .post(`/api/badges/${badgeToRevoke}/revoke`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
-          reason: 'Badge issued in error - recipient did not meet criteria',
+          reason: RevocationReason.ISSUED_IN_ERROR,
+          notes: 'Badge issued in error - recipient did not meet criteria',
         })
         .expect(200);
 
-      expect(response.body.status).toBe('REVOKED');
-      expect(response.body.revokedAt).toBeDefined();
-      expect(response.body.revocationReason).toBe('Badge issued in error - recipient did not meet criteria');
+      expect(response.body.badge.status).toBe('REVOKED');
+      expect(response.body.badge.revokedAt).toBeDefined();
+      expect(response.body.badge.revocationReason).toBe(RevocationReason.ISSUED_IN_ERROR);
       expect(response.body.message).toContain('revoked successfully');
     });
 
@@ -510,44 +512,48 @@ describe('Badge Issuance (e2e)', () => {
 
       const issuerToken = loginResponse.body.accessToken;
 
+      // ISSUER should get 403 when trying to revoke another issuer's badge
       return request(app.getHttpServer())
         .post(`/api/badges/${badgeToRevoke}/revoke`)
         .set('Authorization', `Bearer ${issuerToken}`)
         .send({
-          reason: 'Attempting to revoke as issuer',
+          reason: RevocationReason.POLICY_VIOLATION,
+          notes: 'Attempting to revoke another issuer\'s badge',
         })
         .expect(403);
     });
 
-    it('should return 400 if badge already revoked', async () => {
+    it('should return 200 with alreadyRevoked flag if badge already revoked (idempotency)', async () => {
       // Revoke once
       await request(app.getHttpServer())
         .post(`/api/badges/${badgeToRevoke}/revoke`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
-          reason: 'First revocation',
+          reason: RevocationReason.POLICY_VIOLATION,
         })
         .expect(200);
 
-      // Try to revoke again
+      // Try to revoke again - should return 200 OK with alreadyRevoked flag
       return request(app.getHttpServer())
         .post(`/api/badges/${badgeToRevoke}/revoke`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
-          reason: 'Second revocation attempt',
+          reason: RevocationReason.DUPLICATE,
         })
-        .expect(400)
+        .expect(200)
         .expect((res) => {
           expect(res.body.message).toContain('already revoked');
+          expect(res.body.badge.alreadyRevoked).toBe(true);
         });
     });
 
-    it('should return 400 if reason is too short', async () => {
+    it('should return 400 if notes exceed max length', async () => {
       return request(app.getHttpServer())
         .post(`/api/badges/${badgeToRevoke}/revoke`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
-          reason: 'Short',
+          reason: RevocationReason.OTHER,
+          notes: 'a'.repeat(1001), // Exceeds 1000 char limit
         })
         .expect(400);
     });
@@ -587,7 +593,8 @@ describe('Badge Issuance (e2e)', () => {
         .post(`/api/badges/${revokedBadgeId}/revoke`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
-          reason: 'Test revocation for assertion endpoint',
+          reason: RevocationReason.OTHER,
+          notes: 'Test revocation for assertion endpoint',
         });
     });
 

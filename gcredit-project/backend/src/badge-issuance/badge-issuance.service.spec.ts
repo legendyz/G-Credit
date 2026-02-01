@@ -549,4 +549,276 @@ describe('BadgeIssuanceService', () => {
       expect(mockPrismaService.badge.update).not.toHaveBeenCalled();
     });
   });
+
+  // Sprint 7: Badge Revocation Tests (Story 9.1)
+  describe('revokeBadge', () => {
+    const mockBadgeId = 'badge-uuid-123';
+    const mockAdminUser = {
+      id: 'admin-id',
+      email: 'admin@test.com',
+      role: 'ADMIN',
+    };
+    const mockIssuerUser = {
+      id: 'issuer-id',
+      email: 'issuer@test.com',
+      role: 'ISSUER',
+    };
+    const mockEmployeeUser = {
+      id: 'employee-id',
+      email: 'employee@test.com',
+      role: 'EMPLOYEE',
+    };
+    const mockBadge = {
+      id: mockBadgeId,
+      status: BadgeStatus.CLAIMED,
+      issuerId: 'issuer-id', // Use issuerId not issuedBy
+      recipientEmail: 'recipient@test.com',
+      name: 'Test Badge',
+      template: {
+        name: 'Test Template',
+        description: 'Test description',
+      },
+      recipient: {
+        email: 'recipient@test.com',
+        firstName: 'John',
+        lastName: 'Doe',
+      },
+    };
+
+    beforeEach(() => {
+      // Reset mocks
+      jest.clearAllMocks();
+      mockPrismaService.badge.findUnique = jest.fn();
+      mockPrismaService.user.findUnique = jest.fn();
+      mockPrismaService.badge.update = jest.fn();
+      mockPrismaService.$transaction = jest.fn();
+    });
+
+    describe('Authorization', () => {
+      it('should allow ADMIN to revoke any badge', async () => {
+        // Arrange
+        mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
+        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+          return callback({
+            badge: {
+              update: jest.fn().mockResolvedValue({
+                ...mockBadge,
+                status: BadgeStatus.REVOKED,
+                revokedBy: mockAdminUser.id,
+                revokedAt: new Date(),
+              }),
+            },
+            auditLog: {
+              create: jest.fn().mockResolvedValue({}),
+            },
+          });
+        });
+
+        // Act
+        const result = await service.revokeBadge(mockBadgeId, {
+          reason: 'POLICY_VIOLATION',
+          actorId: mockAdminUser.id,
+        });
+
+        // Assert
+        expect(result.status).toBe(BadgeStatus.REVOKED);
+        expect(result.revokedBy).toBe(mockAdminUser.id);
+      });
+
+      it('should allow ISSUER to revoke their own badges', async () => {
+        // Arrange
+        const ownBadge = { 
+          ...mockBadge, 
+          issuerId: mockIssuerUser.id, // Correct field name
+        };
+        mockPrismaService.badge.findUnique.mockResolvedValue(ownBadge);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockIssuerUser);
+        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+          return callback({
+            badge: {
+              update: jest.fn().mockResolvedValue({
+                ...ownBadge,
+                status: BadgeStatus.REVOKED,
+              }),
+            },
+            auditLog: {
+              create: jest.fn().mockResolvedValue({}),
+            },
+          });
+        });
+
+        // Act
+        const result = await service.revokeBadge(mockBadgeId, {
+          reason: 'ISSUED_IN_ERROR',
+          actorId: mockIssuerUser.id,
+        });
+
+        // Assert
+        expect(result.status).toBe(BadgeStatus.REVOKED);
+      });
+
+      it('should throw 403 if ISSUER tries to revoke others badge', async () => {
+        // Arrange
+        const otherBadge = { 
+          ...mockBadge, 
+          issuerId: 'other-issuer-id',  // Different issuer
+        };
+        mockPrismaService.badge.findUnique.mockResolvedValue(otherBadge);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockIssuerUser);
+
+        // Act & Assert
+        await expect(
+          service.revokeBadge(mockBadgeId, {
+            reason: 'POLICY_VIOLATION',
+            actorId: mockIssuerUser.id,
+          }),
+        ).rejects.toThrow('cannot revoke badge');
+      });
+
+      it('should throw 403 if EMPLOYEE tries to revoke', async () => {
+        // Arrange
+        mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockEmployeeUser);
+
+        // Act & Assert
+        await expect(
+          service.revokeBadge(mockBadgeId, {
+            reason: 'POLICY_VIOLATION',
+            actorId: mockEmployeeUser.id,
+          }),
+        ).rejects.toThrow('cannot revoke badge');
+      });
+    });
+
+    describe('Idempotency', () => {
+      it('should return 200 if badge already revoked', async () => {
+        // Arrange
+        const revokedBadge = {
+          ...mockBadge,
+          status: BadgeStatus.REVOKED,
+          revokedAt: new Date(),
+          revokedBy: mockAdminUser.id,
+        };
+        mockPrismaService.badge.findUnique.mockResolvedValue(revokedBadge);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
+
+        // Act
+        const result = await service.revokeBadge(mockBadgeId, {
+          reason: 'POLICY_VIOLATION',
+          actorId: mockAdminUser.id,
+        });
+
+        // Assert
+        expect(result.status).toBe(BadgeStatus.REVOKED);
+        expect(result.alreadyRevoked).toBe(true);
+        expect(mockPrismaService.$transaction).not.toHaveBeenCalled();
+      });
+
+      it('should NOT create duplicate audit log on re-revoke', async () => {
+        // Arrange
+        const revokedBadge = { ...mockBadge, status: BadgeStatus.REVOKED };
+        mockPrismaService.badge.findUnique.mockResolvedValue(revokedBadge);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
+
+        // Act
+        await service.revokeBadge(mockBadgeId, {
+          reason: 'POLICY_VIOLATION',
+          actorId: mockAdminUser.id,
+        });
+
+        // Assert
+        expect(mockPrismaService.$transaction).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('Data Integrity', () => {
+      it('should populate all revocation fields', async () => {
+        // Arrange
+        mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
+        const mockTimestamp = new Date();
+        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+          return callback({
+            badge: {
+              update: jest.fn().mockResolvedValue({
+                ...mockBadge,
+                status: BadgeStatus.REVOKED,
+                revokedAt: mockTimestamp,
+                revokedBy: mockAdminUser.id,
+                revocationReason: 'EXPIRED',
+                revocationNotes: 'Badge validity period ended',
+              }),
+            },
+            auditLog: {
+              create: jest.fn().mockResolvedValue({}),
+            },
+          });
+        });
+
+        // Act
+        const result = await service.revokeBadge(mockBadgeId, {
+          reason: 'EXPIRED',
+          notes: 'Badge validity period ended',
+          actorId: mockAdminUser.id,
+        });
+
+        // Assert
+        expect(result.revokedAt).toBeInstanceOf(Date);
+        expect(result.revokedBy).toBe(mockAdminUser.id);
+        expect(result.revocationReason).toBe('EXPIRED');
+        expect(result.revocationNotes).toBe('Badge validity period ended');
+      });
+
+      it('should create audit log entry', async () => {
+        // Arrange
+        mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
+        const mockAuditLogCreate = jest.fn().mockResolvedValue({});
+        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+          return callback({
+            badge: {
+              update: jest.fn().mockResolvedValue({
+                ...mockBadge,
+                status: BadgeStatus.REVOKED,
+              }),
+            },
+            auditLog: {
+              create: mockAuditLogCreate,
+            },
+          });
+        });
+
+        // Act
+        await service.revokeBadge(mockBadgeId, {
+          reason: 'POLICY_VIOLATION',
+          actorId: mockAdminUser.id,
+        });
+
+        // Assert
+        expect(mockAuditLogCreate).toHaveBeenCalledWith({
+          data: expect.objectContaining({
+            entityType: 'Badge',
+            entityId: mockBadgeId,
+            action: 'REVOKED',
+            actorId: mockAdminUser.id,
+            actorEmail: mockAdminUser.email,
+          }),
+        });
+      });
+
+      it('should throw 404 if badge not found', async () => {
+        // Arrange
+        mockPrismaService.badge.findUnique.mockResolvedValue(null);
+
+        // Act & Assert
+        await expect(
+          service.revokeBadge(mockBadgeId, {
+            reason: 'POLICY_VIOLATION',
+            actorId: mockAdminUser.id,
+          }),
+        ).rejects.toThrow(NotFoundException);
+      });
+    });
+  });
 });

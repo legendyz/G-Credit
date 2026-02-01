@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, GoneException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, GoneException, Logger } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { StorageService } from '../common/storage.service';
 import { AssertionGeneratorService } from './services/assertion-generator.service';
@@ -242,6 +242,96 @@ export class BadgeIssuanceService {
   }
 
   /**
+   * Revoke a badge (Sprint 7 - Story 9.1)
+   * Only ADMIN or the original ISSUER can revoke badges
+   */
+  async revokeBadge(
+    badgeId: string,
+    dto: { reason: string; notes?: string; actorId: string },
+  ) {
+    const { reason, notes, actorId } = dto;
+
+    // Step 1: Fetch badge and actor
+    const [badge, actor] = await Promise.all([
+      this.prisma.badge.findUnique({
+        where: { id: badgeId },
+        include: { template: true, recipient: true },
+      }),
+      this.prisma.user.findUnique({ where: { id: actorId } }),
+    ]);
+
+    if (!badge) {
+      throw new NotFoundException(`Badge ${badgeId} not found`);
+    }
+
+    if (!actor) {
+      throw new NotFoundException(`User ${actorId} not found`);
+    }
+
+    // Step 2: Authorization check (must happen before idempotency to prevent info leak)
+    const canRevoke =
+      actor.role === UserRole.ADMIN ||
+      (actor.role === UserRole.ISSUER && badge.issuerId === actorId);
+
+    if (!canRevoke) {
+      throw new ForbiddenException(
+        `User ${actorId} (${actor.role}) cannot revoke badge ${badgeId}`,
+      );
+    }
+
+    // Step 3: Check if already revoked (idempotency)
+    if (badge.status === BadgeStatus.REVOKED) {
+      this.logger.warn(`Badge ${badgeId} already revoked, skipping`);
+      return { ...badge, alreadyRevoked: true };
+    }
+
+    // Step 4: Update badge (transaction for safety)
+    const updatedBadge = await this.prisma.$transaction(async (tx) => {
+      // 4a: Update badge
+      const updated = await tx.badge.update({
+        where: { id: badgeId },
+        data: {
+          status: BadgeStatus.REVOKED,
+          revokedAt: new Date(),
+          revokedBy: actorId,
+          revocationReason: reason,
+          revocationNotes: notes,
+        },
+        include: {
+          template: true,
+          recipient: true,
+        },
+      });
+
+      // 4b: Create audit log entry
+      await tx.auditLog.create({
+        data: {
+          entityType: 'Badge',
+          entityId: badgeId,
+          action: 'REVOKED',
+          actorId: actorId,
+          actorEmail: actor.email,
+          timestamp: new Date(),
+          metadata: {
+            reason,
+            notes,
+            badgeName: badge.template.name,
+            recipientEmail: badge.recipient.email,
+          },
+        },
+      });
+
+      return updated;
+    });
+
+    this.logger.log(
+      `Badge ${badgeId} revoked by ${actor.email} (reason: ${reason})`,
+    );
+
+    return updatedBadge;
+  }
+
+  /**
    * Get badges received by a user
    */
   async getMyBadges(userId: string, query: QueryBadgeDto) {
@@ -431,58 +521,6 @@ export class BadgeIssuanceService {
   /**
    * Revoke a badge (ADMIN only)
    */
-  async revokeBadge(badgeId: string, reason: string, adminId: string) {
-    // 1. Find badge
-    const badge = await this.prisma.badge.findUnique({
-      where: { id: badgeId },
-      include: {
-        template: true,
-        recipient: true,
-      },
-    });
-
-    if (!badge) {
-      throw new NotFoundException(`Badge ${badgeId} not found`);
-    }
-
-    // 2. Check if already revoked
-    if (badge.status === BadgeStatus.REVOKED) {
-      throw new BadRequestException('Badge is already revoked');
-    }
-
-    // 3. Revoke badge
-    const revokedBadge = await this.prisma.badge.update({
-      where: { id: badgeId },
-      data: {
-        status: BadgeStatus.REVOKED,
-        revokedAt: new Date(),
-        revocationReason: reason,
-        claimToken: null, // Clear token
-      },
-    });
-
-    // 4. Send revocation notification email
-    await this.notificationService.sendBadgeRevocationNotification({
-      recipientEmail: badge.recipient.email,
-      recipientName: badge.recipient.firstName && badge.recipient.lastName
-        ? `${badge.recipient.firstName} ${badge.recipient.lastName}`
-        : badge.recipient.email,
-      badgeName: badge.template.name,
-      revocationReason: reason,
-    });
-
-    // 5. Log revocation (audit trail)
-    this.logger.log(`Badge ${badgeId} revoked by admin ${adminId}: ${reason}`);
-
-    return {
-      id: revokedBadge.id,
-      status: revokedBadge.status,
-      revokedAt: revokedBadge.revokedAt,
-      revocationReason: revokedBadge.revocationReason,
-      message: 'Badge revoked successfully',
-    };
-  }
-
   /**
    * Bulk issue badges from CSV file
    */

@@ -123,19 +123,46 @@ export class BadgeIssuanceController {
   }
 
   @Post(':id/revoke')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.ISSUER) // Sprint 7: Allow ISSUER to revoke own badges
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Revoke a badge (ADMIN only)' })
-  @ApiResponse({ status: 200, description: 'Badge revoked successfully' })
-  @ApiResponse({ status: 400, description: 'Badge already revoked' })
-  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  @ApiOperation({ 
+    summary: 'Revoke a badge (ADMIN can revoke any, ISSUER can revoke their own)' 
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Badge revoked successfully',
+    schema: {
+      example: {
+        id: 'badge-uuid',
+        status: 'REVOKED',
+        revokedAt: '2026-02-01T10:30:00.000Z',
+        revokedBy: 'admin-user-id',
+        revocationReason: 'Policy Violation',
+        revocationNotes: 'Detailed explanation'
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Insufficient permissions' })
+  @ApiResponse({ status: 403, description: 'Cannot revoke others badges (ISSUER)' })
   @ApiResponse({ status: 404, description: 'Badge not found' })
   async revokeBadge(
     @Param('id') id: string,
     @Body() dto: RevokeBadgeDto,
     @Request() req: any,
   ) {
-    return this.badgeService.revokeBadge(id, dto.reason, req.user.userId);
+    const badge = await this.badgeService.revokeBadge(id, {
+      reason: dto.reason,
+      notes: dto.notes,
+      actorId: req.user.userId,
+    });
+
+    return {
+      success: true,
+      message: badge.alreadyRevoked
+        ? 'Badge was already revoked'
+        : 'Badge revoked successfully',
+      badge,
+    };
   }
 
   @Get(':id/assertion')
