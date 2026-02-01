@@ -190,13 +190,13 @@ export class BadgeVerificationService {
   /**
    * Story 9.2: Determine if revocation reason is public-safe
    * Per DEVELOPER-CONTEXT.md Decision #3:
-   * - Public reasons: Expired, Issued in Error, Duplicate → show on verification page
+   * - Public reasons: Expired, Issued in Error → show on verification page
    * - Private reasons: Policy Violation, Fraud → show generic message
    */
   private isPublicRevocationReason(reason: string | null): boolean {
     if (!reason) return false;
     
-    const publicReasons = ['Expired', 'Issued in Error', 'Duplicate'];
+    const publicReasons = ['Expired', 'Issued in Error'];
     return publicReasons.includes(reason);
   }
 }

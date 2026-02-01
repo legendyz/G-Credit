@@ -131,12 +131,13 @@ export function VerifyBadgePage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Story 9.2 AC1-AC2: Revoked Badge Alert */}
-      {isRevoked && badge.revokedAt && badge.revocationReason && (
+      {isRevoked && (badge.revokedAt || badge.revocationReason) && (
         <RevokedBadgeAlert
-          revokedAt={badge.revokedAt}
-          reason={badge.revocationReason}
+          revokedAt={badge.revokedAt || new Date().toISOString()}
+          reason={badge.revocationReason || 'Unknown'}
           notes={badge.revocationNotes}
           isPublicReason={badge.isPublicReason || false}
+          revokedBy={badge.revokedBy}
         />
       )}
 

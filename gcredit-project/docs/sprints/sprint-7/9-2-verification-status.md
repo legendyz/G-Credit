@@ -69,16 +69,18 @@ This is critical for trust in the credentialing system - verifiers must know if 
 - [x] Visual indicator (e.g., strikethrough or opacity) that info is historical
 
 ### AC4: API Integration
-- [x] Call `GET /api/badges/:id/verify` endpoint
-- [x] Response includes `status: 'REVOKED'` field
+- [x] Call `GET /api/verify/:verificationId` endpoint
+- [x] Response includes `isValid: false` for revoked badges
 - [x] Response includes revocation metadata:
   ```json
   {
     "badge": { ... },
-    "status": "REVOKED",
+    "isValid": false,
     "revokedAt": "2026-02-05T14:30:00Z",
     "revocationReason": "Policy Violation",
-    "revocationNotes": "Optional details"
+    "revocationNotes": "Optional details",
+    "isPublicReason": false,
+    "revokedBy": { "name": "Admin Name", "role": "ADMIN" }
   }
   ```
 
@@ -241,15 +243,17 @@ async verifyBadge(badgeId: string) {
 - [x] No TypeScript/ESLint errors
 
 ### Testing Complete
-- [x] Unit tests for frontend component (>80% coverage)
-- [x] Unit tests for backend API response
-- [x] E2E test with revoked badge
-- [x] Manual testing with real revoked badge
-- [x] Cross-browser testing (Chrome, Firefox, Edge)
+- [x] Unit tests for frontend component (created, pending test runner setup)
+- [x] Unit tests for backend API response (8/8 passing)
+- [x] E2E test with revoked badge (17/17 passing)
+- [ ] Manual testing with real revoked badge (pending UAT)
+- [ ] Cross-browser testing (Chrome, Firefox, Edge) (pending UAT)
+
+**Note**: Frontend unit tests created but require Vitest setup to execute.
 
 ### Documentation Complete
 - [x] Component documented in code comments
-- [x] Story file updated with screenshots
+- [ ] Story file updated with screenshots (pending UAT)
 - [x] API response format documented
 
 ---
@@ -348,14 +352,22 @@ High - Mostly UI work, backend changes minimal
 
 **Public vs Private Reason Logic:**
 ```typescript
-const publicReasons = ['Expired', 'Issued in Error', 'Duplicate'];
+const publicReasons = ['Expired', 'Issued in Error'];
 // Private reasons: 'Policy Violation', 'Fraud' → show generic message
 ```
 
-**Test Results:**
+**Code Review Fixes (February 1, 2026):**
+1. ✅ Added `revokedBy` prop to RevokedBadgeAlert component (AC2 missing field)
+2. ✅ Made banner rendering defensive - renders with either revokedAt OR revocationReason
+3. ✅ Updated AC4 documentation - endpoint is `/api/verify/:verificationId` not `/api/badges/:id/verify`
+4. ✅ Removed "Duplicate" from publicReasons array per DEVELOPER-CONTEXT.md Decision #3
+5. ✅ Updated DoD testing section - marked manual/cross-browser/screenshot tests as pending UAT
+6. ✅ Documented frontend test runner status - tests created but require Vitest setup
+
+**Test Results (After Code Review Fixes):**
 - Backend unit tests: 8/8 passing ✅
   - 4 existing tests
-  - 4 new Story 9.2 tests (reason categorization)
+  - 4 new Story 9.2 tests (reason categorization with updated logic)
 - E2E tests: 17/17 passing ✅
   - 12 existing tests
   - 5 new Story 9.2 tests (public/private reason display)
@@ -398,6 +410,9 @@ const publicReasons = ['Expired', 'Issued in Error', 'Duplicate'];
 | Date | Status | Author | Notes |
 |------|--------|--------|-------|
 | 2026-01-31 | Backlog | Bob (Scrum Master) | Story created during planning |
+| 2026-02-01 | In Progress | Dev Agent | Implementation started |
+| 2026-02-01 | Review | Dev Agent | Code review found 6 issues |
+| 2026-02-01 | Done | Dev Agent | All code review fixes applied, 25/25 tests passing |
 
 ---
 

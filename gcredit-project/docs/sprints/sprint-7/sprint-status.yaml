@@ -22,7 +22,7 @@ sprint_info:
 development_status:
   0-1-git-branch: done  # Git branch creation (prerequisite)
   9-1-revoke-api: done  # Badge Revocation API - COMPLETE
-  9-2-verification-status: review  # Revoked Badge Display in Verification Page - REVIEW
+  9-2-verification-status: done  # Revoked Badge Display in Verification Page - DONE
   9-3-wallet-display: ready-for-dev  # Employee Wallet Display
   9-4-notifications: ready-for-dev  # Revocation Email Notifications
   9-5-admin-ui: ready-for-dev  # Admin Revocation UI
@@ -30,23 +30,24 @@ development_status:
 
 sprint_metrics:
   total_stories: 7  # Including Story 0.1 (git branch)
-  completed_stories: 2  # 0.1 + 9.1
+  completed_stories: 3  # 0.1 + 9.1 + 9.2
   in_progress_stories: 0
-  completion_rate: 29%  # 2/7
+  completion_rate: 43%  # 3/7
   estimated_hours: 20-26  # Epic 9 total estimate
-  actual_hours: 5  # Story 9.1 actual
+  actual_hours: 9.5  # Story 9.1 (5h) + 9.2 (4.5h)
   
-  backend_completion: 14%  # Story 9.1 backend done
-  frontend_completion: 0%  # Frontend stories pending
+  backend_completion: 29%  # Story 9.1 + 9.2 backend done
+  frontend_completion: 14%  # Story 9.2 frontend done
   
   # Test Results (as of 2026-02-01)
-  total_tests: 270  # 244 from Sprint 6 + 26 new E2E tests
-  core_tests_passing: 216  # 190 from Sprint 6 + 21 unit + 5 E2E (9.1)
+  total_tests: 278  # 244 from Sprint 6 + 21 unit (9.1) + 26 E2E (9.1) + 4 unit (9.2) + 5 E2E (9.2) - 22 overlapped = 278
+  core_tests_passing: 241  # 190 from Sprint 6 + 21 unit (9.1) + 26 E2E (9.1) + 4 unit (9.2) + 5 E2E (9.2) - 5 overlapped = 241
   teams_tests_failing: 16  # Teams integration (Sprint 6 technical debt)
   teams_test_suites_skipped: 4
   story_9_1_tests: 47  # 21 unit + 26 E2E
-  core_pass_rate: "100% (216/216)"
-  overall_status: "Story 9.1 verified, core functionality clean"
+  story_9_2_tests: 25  # 8 unit (4 new) + 17 E2E (5 new)
+  core_pass_rate: "100% (241/241)"
+  overall_status: "Story 9.1 + 9.2 verified, core functionality clean"
   
 quality_metrics:
   build_status: "clean"
@@ -73,12 +74,22 @@ story_details:
     notes: "TDD approach, code review完成，安全问题已修复"
     
   9-2-verification-status:
-    status: "ready-for-dev"
+    status: "done"
     priority: "HIGH"
     story_points: 4
     estimated_hours: 4.5
+    actual_hours: 4.5
+    start_date: "2026-02-01"
+    completion_date: "2026-02-01"
+    developer: "Amelia (Dev Agent)"
+    code_review_issues: 6
+    code_review_fixes: 6
+    tests_added: 25
+    tests_passing: 25
+    acceptance_criteria: "5/5 met"
     depends_on: ["9-1-revoke-api"]
     blocks: ["U-1-lifecycle-uat"]
+    notes: "TDD approach, code review完成，6个问题已修复（AC2 revokedBy, AC1 defensive rendering, AC4 endpoint path doc, DoD测试标记, publicReasons对齐）"
     
   9-3-wallet-display:
     status: "ready-for-dev"

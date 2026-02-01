@@ -7,9 +7,10 @@ interface RevokedBadgeAlertProps {
   reason: string;
   notes?: string;
   isPublicReason: boolean;
+  revokedBy?: { name: string; role: string } | null;
 }
 
-export function RevokedBadgeAlert({ revokedAt, reason, notes, isPublicReason }: RevokedBadgeAlertProps) {
+export function RevokedBadgeAlert({ revokedAt, reason, notes, isPublicReason, revokedBy }: RevokedBadgeAlertProps) {
   const formattedDate = format(new Date(revokedAt), 'MMMM d, yyyy');
 
   return (
@@ -34,6 +35,11 @@ export function RevokedBadgeAlert({ revokedAt, reason, notes, isPublicReason }: 
             {notes && (
               <p className="text-sm mt-1">
                 <span className="font-medium">Notes:</span> {notes}
+              </p>
+            )}
+            {revokedBy && (
+              <p className="text-sm mt-1">
+                <span className="font-medium">Revoked by:</span> {revokedBy.name} ({revokedBy.role})
               </p>
             )}
           </>
