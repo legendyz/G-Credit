@@ -14,14 +14,20 @@
 │
 ├─ 🚀 Sprint Planning（准备开始新Sprint）?
 │   │
-│   └─ 使用：sprint-planning-checklist.md (45-60分钟)
+│   └─ 使用：sprint-planning-checklist.md v1.3 (45-60分钟)
 │       │
+│       ├─ [Section 4.5] 🆕 DoD 确认（必须）
+│       ├─ [Section 6.5] ⚡ 自动创建 → Story文件
+│       ├─ [Section 7.5] 🆕 Code Review 策略（必须）
 │       ├─ [Section 9] ⚡ 自动创建 → version-manifest.md (30秒)
 │       │               使用模板：sprint-version-manifest-template.md
 │       │               脚本：check-versions.ps1
 │       │
+│       ├─ [Section 10.5] 🆕 Testing Strategy 验证（必须）
+│       ├─ [Section 11.5] 🆕 UAT 早期规划（条件性）
 │       ├─ [Section 12] ⚡ 自动创建 → backlog.md (2-3分钟)
 │       │                使用模板：sprint-backlog-template.md
+│       ├─ [Section 22] 🆕 Sprint 闭环准备
 │       │
 │       └─ 对BMad说："基于sprint-planning-checklist做sprint planning"
 │
@@ -32,12 +38,14 @@
 │
 ├─ ✅ Sprint完成收尾?
 │   │
-│   └─ 使用：sprint-completion-checklist-template.md (70-100分钟)
+│   └─ 使用：sprint-completion-checklist-template.md v1.3 (70-100分钟)
 │       │
+│       ├─ [Section 3.5] 🆕 DoD 验证（闭环 Planning Section 4.5）
 │       ├─ [Phase 1] ⚡ 自动执行 → documentation-maintenance Scenario A
 │       │            自动运行 → verify-versions.ps1 (5秒)
 │       │            自动更新 → project-context.md, README, CHANGELOG
 │       │            自动创建 → summary.md, retrospective.md
+│       ├─ [UAT 记录] 🆕 UAT 结果记录（条件性）
 │       │
 │       └─ 对BMad说："基于sprint-completion-checklist做收尾"
 │
@@ -76,9 +84,9 @@
 
 | 我想做... | 使用模板 | 预计时间 | Agent自动化 | BMad命令 |
 |----------|---------|---------|-----------|----------|
-| **规划Sprint** | sprint-planning-checklist.md | 45-60分钟 | ✅ 自动创建版本清单+Backlog | "基于sprint-planning-checklist做sprint planning" |
+| **规划Sprint** | sprint-planning-checklist.md v1.3 | 45-60分钟 | ✅ 自动DoD+版本清单+Backlog | "基于sprint-planning-checklist做sprint planning" |
 | **写用户故事** | user-story-template.md | 15-30分钟 | ❌ 手动 | "基于user-story-template创建Story X" |
-| **Sprint收尾** | sprint-completion-checklist-template.md | 70-100分钟 | ✅ 自动验证+更新文档 | "基于sprint-completion-checklist做收尾" |
+| **Sprint收尾** | sprint-completion-checklist-template.md v1.3 | 70-100分钟 | ✅ 自动DoD验证+更新文档 | "基于sprint-completion-checklist做收尾" |
 | **更新文档（Sprint完成）** | doc-maintenance Scenario A | 20-30分钟 | ✅ Agent自动调用 | Sprint收尾时自动执行 |
 | **更新文档（代码变更）** | doc-maintenance Scenario B | 10-15分钟 | 🔧 半自动 | "更新代码相关文档" |
 | **更新文档（功能发布）** | doc-maintenance Scenario C | 15-20分钟 | 🔧 半自动 | "更新功能发布文档" |
@@ -278,18 +286,18 @@ Agent运行 `verify-versions.ps1` → 对比manifest与实际package.json → �
 
 ## 📌 模板文件清单
 
-| 模板文件 | 行数 | 用途 | 使用频率 | Agent自动化 |
-|---------|------|------|---------|-----------|
-| **sprint-planning-checklist.md** | 321 | Sprint规划流程 | 每Sprint 1次 | ✅ 自动创建版本+Backlog |
-| **sprint-completion-checklist-template.md** | 389 | Sprint收尾流程 | 每Sprint 1次 | ✅ 自动验证+更新文档 |
-| **sprint-backlog-template.md** | 170 | Backlog文档结构 | Planning时使用 | ✅ Agent自动调用 |
-| **sprint-version-manifest-template.md** | 258 | 版本清单结构 | Planning时使用 | ✅ Agent自动调用 |
-| **user-story-template.md** | 282 | 详细用户故事 | 按需使用 | ❌ 手动创建 |
-| **documentation-maintenance-checklist.md** | 727 | 文档维护（9场景） | 任何时候 | ✅ Scenario A自动 |
-| **adr-template.md** | 280 | 架构决策记录 | 重大决策时 | ❌ 手动创建 |
-| **hotfix-template.md** | 476 | 紧急修复流程 | 生产问题时 | ❌ 手动创建 |
+| 模板文件 | 行数 | 版本 | 用途 | 使用频率 | Agent自动化 |
+|---------|------|------|------|---------|-----------|
+| **sprint-planning-checklist.md** | ~810 | v1.3 | Sprint规划流程 | 每Sprint 1次 | ✅ 自动创建版本+Backlog+DoD |
+| **sprint-completion-checklist-template.md** | ~530 | v1.3 | Sprint收尾流程 | 每Sprint 1次 | ✅ 自动DoD验证+更新文档 |
+| **sprint-backlog-template.md** | 170 | v1.0 | Backlog文档结构 | Planning时使用 | ✅ Agent自动调用 |
+| **sprint-version-manifest-template.md** | 258 | v1.0 | 版本清单结构 | Planning时使用 | ✅ Agent自动调用 |
+| **user-story-template.md** | 282 | v1.0 | 详细用户故事 | 按需使用 | ❌ 手动创建 |
+| **documentation-maintenance-checklist.md** | 907 | v1.1 | 文档维护（9场景） | 任何时候 | ✅ Scenario A自动 |
+| **adr-template.md** | 280 | v1.0 | 架构决策记录 | 重大决策时 | ❌ 手动创建 |
+| **hotfix-template.md** | 476 | v1.0 | 紧急修复流程 | 生产问题时 | ❌ 手动创建 |
 
-**总计：** 8个模板，2,903行，约87 KB
+**总计：** 8个模板，~3,700行，级100 KB
 
 ---
 
@@ -399,8 +407,9 @@ Agent运行 `verify-versions.ps1` → 对比manifest与实际package.json → �
 
 ---
 
-**Quick Reference Card Version:** 1.0  
+**Quick Reference Card Version:** 1.1  
 **Created:** 2026-01-29  
+**Last Updated:** 2026-02-01 (反映 sprint-planning-checklist v1.3 + sprint-completion-checklist v1.3 优化)  
 **Maintained By:** GCredit Development Team  
 **下次更新时机：** 模板系统有重大变更时
 

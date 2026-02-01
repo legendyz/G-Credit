@@ -3,7 +3,8 @@
 **目的：** 确保Sprint Planning全面、准确，避免重复工作和资源浪费  
 **使用时机：** 每个Sprint开始前的Planning阶段  
 **责任人：** Product Manager + Scrum Master  
-**最后更新：** 2026-01-29（基于Sprint 2-5经验教训 + Agent自动化集成）
+**版本：** v1.3  
+**最后更新：** 2026-02-01（基于Sprint 0-7全面回顾 + 完整优化）
 
 ---
 
@@ -129,6 +130,44 @@ Select-String -Path "gcredit-project/docs/lessons-learned/lessons-learned.md" -P
 - [ ] 确认所有阻塞问题已解决
 - [ ] 确认外部依赖（如API、第三方服务）可用
 - [ ] 确认团队成员可用性
+
+### 4.5 Definition of Done (DoD) 确认（🚨 MANDATORY）
+
+**为什么重要：** 没有明确的 DoD 会导致 "什么算完成" 的理解不一致，Sprint 结束时产生争议。
+
+**本 Sprint 的 DoD 检查清单：**
+
+**代码质量：**
+- [ ] TypeScript 严格模式编译通过（0 errors）
+- [ ] ESLint 检查通过（0 errors, warnings 可接受）
+- [ ] Prettier 格式化已应用
+- [ ] 所有 TODO/FIXME 已解决或记录为技术债务
+
+**测试要求：**
+- [ ] 单元测试覆盖率 > 80%（新代码）
+- [ ] E2E 测试覆盖所有 Happy Path
+- [ ] 所有测试通过（`npm test` 100% pass）
+- [ ] 无跳过的测试（除非有 ADR 记录原因）
+
+**Code Review：**
+- [ ] 至少进行自我审查（diff review）
+- [ ] 高风险代码由 AI Agent 或第二人审查
+- [ ] PR 描述包含 What/Why/How
+
+**文档：**
+- [ ] Story 文件已更新（Dev Notes, Completion Notes）
+- [ ] API 端点已在 Swagger 中记录
+- [ ] 架构变更已记录 ADR（如适用）
+
+**部署：**
+- [ ] 本地环境可正常运行
+- [ ] 无阻塞性 Bug（P0/P1）
+- [ ] 数据库迁移可安全执行
+
+**🎓 最佳实践：**
+- DoD 应在 Planning 时确认，不要等到 Sprint 结束
+- 所有 DoD 项都应有客观验证方法
+- 如果某项 DoD 无法满足，必须在 Planning 时讨论豁免
 
 ---
 
@@ -263,6 +302,39 @@ So that [benefit].
 - [ ] 识别所有技术依赖
 - [ ] 识别所有技术风险
 
+### 7.5 Code Review 策略确认（🚨 MANDATORY）
+
+**为什么重要（Sprint 0-2 经验教训）：**
+早期 Sprint 缺乏系统性 Code Review 导致部分代码质量问题未被及时发现。Code Review 策略应在 Planning 时明确，而不是开发时临时决定。
+
+**Code Review 检查清单：**
+
+**TDD Stories 识别：**
+- [ ] **高风险 Stories:** 识别需要 TDD 方法的 Stories（如：认证、授权、安全相关）
+- [ ] **TDD 候选:** 列出需要 "先写测试，再写代码" 的 Stories
+- [ ] **示例:** Story 9.1 (Badge Revocation API) 使用 TDD 因为涉及授权逻辑
+
+**Review 级别分类：**
+| Story | 风险级别 | Review 方式 | 原因 |
+|-------|---------|------------|------|
+| _填写_ | 🔴 HIGH | TDD + AI Review + 自我审查 | 安全/授权相关 |
+| _填写_ | 🟡 MEDIUM | AI Review + 自我审查 | 核心业务逻辑 |
+| _填写_ | 🟢 LOW | 自我审查 | CRUD / UI 组件 |
+
+**AI 辅助 Review 策略：**
+- [ ] **使用场景:** 复杂逻辑、安全敏感代码、算法实现
+- [ ] **提示模板:** "Review this code for security vulnerabilities, edge cases, and best practices"
+- [ ] **文档:** Review 发现记录在 Story 文件的 `code_review_issues` 和 `code_review_fixes` 中
+
+**Review Checklist（每次 Review 使用）：**
+- [ ] 授权检查在正确位置（controller 入口）？
+- [ ] 错误处理完整（try-catch, 边界情况）？
+- [ ] 数据库查询高效（N+1 问题？索引？）
+- [ ] 敏感数据未泄露（日志、响应）？
+- [ ] 测试覆盖关键路径？
+
+**🔗 参考：** Sprint 7 Story 9.1 的 TDD 实践示例
+
 ### 8. 资源需求分析（🚨 关键步骤）
 - [ ] **逐一检查：** 每个技术任务是否需要新资源？
 - [ ] **新Azure资源：** 是否已存在？参考 `docs/setup/infrastructure-inventory.md`
@@ -330,10 +402,101 @@ So that [benefit].
 - [ ] 考虑团队成员的可用工作时间
 - [ ] **调整：** 如果资源已存在，减少配置时间（如：Azure配置1.5h → 验证0.5h）
 
+### 10.5 Testing Strategy 验证（🚨 MANDATORY）
+
+**为什么重要（Sprint 3 + Sprint 5 经验教训）：**
+- Sprint 3: UUID 验证 bug 因为跳过失败测试而延迟发现
+- Sprint 5: E2E 测试隔离问题（TD-001）影响并行测试执行
+- 测试策略应在 Planning 时验证，避免开发后期发现测试基础设施问题
+
+**Testing Strategy 检查清单：**
+
+**覆盖率目标：**
+- [ ] **单元测试目标:** >80% 新代码覆盖率
+- [ ] **E2E 测试范围:** 每个 Story 的 Happy Path + 关键 Error Path
+- [ ] **集成测试:** 跨模块调用是否需要集成测试？
+
+**测试数据策略：**
+- [ ] **数据隔离:** 每个测试套件使用独立数据（避免 TD-001 问题）
+- [ ] **命名约定:** 测试用户邮箱格式 `{suite}-{test}@test.gcredit.com`
+- [ ] **Seed Data:** 是否需要 Demo Seed Script？（UAT 需要）
+- [ ] **Factory Pattern:** 是否使用 Test Data Factory？（推荐）
+
+**技术债务检查：**
+- [ ] **TD-001 (E2E 隔离):** 是否影响本 Sprint？如何规避？
+- [ ] **跳过的测试:** 当前有多少 `.skip()` 测试？原因是什么？
+- [ ] **Flaky Tests:** 是否有不稳定测试需要修复？
+
+**CI/CD 检查（如适用）：**
+- [ ] 测试在 CI pipeline 中运行？
+- [ ] 测试超时设置合理？（E2E 默认 30s 可能不够）
+- [ ] 并行测试是否启用？是否稳定？
+
+**测试验证命令：**
+```powershell
+# 运行所有测试并检查状态
+cd gcredit-project/backend
+npm test
+
+# 检查跳过的测试
+Select-String -Path "test/**/*.spec.ts" -Pattern "\.skip\("
+
+# 检查测试覆盖率
+npm run test:cov
+```
+
+**🎓 最佳实践：**
+- **永不跳过失败测试:** 如果测试失败，要么修复，要么记录为技术债务
+- **测试先行:** 高风险 Story 使用 TDD
+- **隔离优先:** 测试之间不应有数据依赖
+
 ### 11. 依赖管理
 - [ ] Story之间的依赖关系已明确
 - [ ] 跨团队依赖已识别并沟通
 - [ ] 关键路径（Critical Path）已识别
+
+### 11.5 UAT 早期规划（如适用）
+
+**适用条件：** 本 Sprint 包含用户验收测试（UAT）或演示需求时填写此部分。
+
+**UAT 规划检查清单：**
+
+**范围定义：**
+- [ ] **UAT 是否包含在本 Sprint？** (是/否)
+- [ ] **UAT 类型:** 内部验收 / 客户演示 / 完整 UAT
+- [ ] **UAT 时间点:** Sprint 第几天执行？
+- [ ] **UAT 时长:** 预计多少小时？
+
+**测试账号准备：**
+| 角色 | 测试邮箱 | 密码 | 权限说明 |
+|------|---------|------|----------|
+| Admin | admin@test.gcredit.com | (UAT 前创建) | 所有功能 |
+| Employee | employee@test.gcredit.com | (UAT 前创建) | Badge Wallet |
+| Issuer | issuer@test.gcredit.com | (UAT 前创建) | 发放 Badge |
+| Manager | manager@test.gcredit.com | (UAT 前创建) | 撤销 Badge |
+
+**Seed Data 准备：**
+- [ ] **Demo Seed Script:** 是否需要？（Story U.2）
+- [ ] **测试数据量:** 多少 Badge Templates / Badges / Users？
+- [ ] **数据重置:** UAT 前如何重置数据库？
+
+**已知限制文档：**
+- [ ] **功能限制:** 列出 UAT 中不可用的功能
+- [ ] **Workarounds:** 提供替代方案说明
+- [ ] **限制原因:** 解释为什么某些功能未实现
+
+**示例（Sprint 7 UAT 已知限制）：**
+```markdown
+| 功能 | 状态 | 限制说明 | Workaround |
+|------|------|---------|------------|
+| Teams Channel 分享 | ⚠️ 限制 | 需要额外权限 | 使用邮件分享 |
+| Badge PNG 下载 | ⚠️ 限制 | 返回占位图 | 截图或使用验证 URL |
+| Token 自动刷新 | ⚠️ 限制 | 15分钟过期 | UAT 前临时延长到 4h |
+```
+
+**🔗 参考：** 
+- Sprint 7 UAT Test Plan: `docs/sprints/sprint-7/uat-test-plan.md`
+- UAT 模板: `docs/templates/uat-test-plan-template.md`（待创建）
 
 ---
 
@@ -484,7 +647,7 @@ const containerName = process.env.AZURE_STORAGE_CONTAINER_BADGES;
 - [ ] 缓解计划已制定
 - [ ] 应急方案已讨论
 
-### 20. 沟通计划
+### 20a. 沟通计划
 - [ ] 利益相关者已通知Sprint目标
 - [ ] 沟通渠道已明确
 - [ ] 阻塞问题上报机制已确认
@@ -493,6 +656,42 @@ const containerName = process.env.AZURE_STORAGE_CONTAINER_BADGES;
 - [ ] Scrum Master批准就绪度
 - [ ] Product Owner批准Sprint Backlog
 - [ ] 团队对Sprint开始达成共识
+
+### 22. Sprint 闭环准备（Planning-Completion 联动）
+
+**为什么重要：** Planning 和 Completion 是一个闭环。在 Planning 时预告收尾流程，确保团队知道 "完成" 的标准和流程。
+
+**闭环检查清单：**
+
+**收尾流程预告：**
+- [ ] **团队知晓:** Sprint 结束时使用 `sprint-completion-checklist-template.md`
+- [ ] **Retrospective 时间:** 已预订回顾会议时间槽
+- [ ] **Review 时间:** 已预订 Sprint Review 时间槽（如适用）
+
+**DoD 验证准备：**
+- [ ] **所有 DoD 项可验证:** 每项 DoD 都有客观验证方法（不是主观判断）
+- [ ] **验证责任人:** 谁负责验证每项 DoD？（开发者自己 / Scrum Master / 自动化）
+- [ ] **验证时间点:** DoD 在 Sprint 最后一天验证还是每个 Story 完成时？
+
+**文档更新预告：**
+- [ ] **project-context.md:** Sprint 结束时必须更新状态
+- [ ] **lessons-learned.md:** 新教训将被记录
+- [ ] **CHANGELOG.md:** 版本条目将被添加
+- [ ] **Story 文件:** Completion Notes 和 Retrospective Notes 将被填写
+
+**Git 操作预告：**
+- [ ] **PR 创建:** Sprint 分支将创建 PR 到 main
+- [ ] **Merge 策略:** Squash / Merge Commit / Rebase？
+- [ ] **Tag 创建:** 版本号格式 vX.Y.Z
+
+**🎓 最佳实践：**
+- Planning 时讨论 "什么是完成"，避免 Sprint 结束时争议
+- 提前 1-2 天开始收尾流程，不要等最后一刻
+- 使用 `sprint-completion-checklist-template.md` 确保不遗漏
+
+**🔗 参考：**
+- [sprint-completion-checklist-template.md](./sprint-completion-checklist-template.md) - Sprint 收尾清单
+- [documentation-maintenance-checklist.md](./documentation-maintenance-checklist.md) - 文档维护流程
 
 ---
 
@@ -601,7 +800,8 @@ Planning阶段: 创建Story文件框架（Story、AC、Tasks基本结构）
 | Sprint 4 | 2026-01-28 | ~90% | 无重大问题 | 架构复杂度高但准备充分 |
 | Sprint 5 | 2026-01-29 | 100% | 架构预先准备成功 | Winston的ADRs节省大量开发时间 |
 | Sprint 6 | 2026-01-30 | ~90% | **未创建Story文件** | Stories 7.2/7.3无独立文件，导致Story 7.3未实现 |
-| Sprint 7 | TBD | TBD | TBD | 计划使用v1.2（含Story文件创建） |
+| Sprint 7 | 2026-01-31 | 100% | 无重大问题 | 使用v1.2 + 12,000行文档，28个Story文件 |
+| Sprint 8 | TBD | TBD | TBD | 计划使用v1.3（含完整优化） |
 
 ---
 
@@ -609,3 +809,10 @@ Planning阶段: 创建Story文件框架（Story、AC、Tasks基本结构）
 - v1.0（2026-01-26）- 初始版本，基于Sprint 2经验教训创建
 - v1.1（2026-01-29）- 添加Sprint 3-5经验教训，修复路径引用
 - v1.2（2026-01-30）- **添加Section 6.5"Story文件创建"🚨 MANDATORY步骤**，基于Sprint 6经验教训
+- v1.3（2026-02-01）- **完整优化版本**，基于Sprint 0-7全面回顾：
+  - 新增 Section 4.5：Definition of Done (DoD) 确认 🚨 MANDATORY
+  - 新增 Section 7.5：Code Review 策略确认 🚨 MANDATORY（含TDD指南）
+  - 新增 Section 10.5：Testing Strategy 验证 🚨 MANDATORY
+  - 新增 Section 11.5：UAT 早期规划（条件性）
+  - 新增 Section 22：Sprint 闭环准备（Planning-Completion 联动）
+  - 修复：Section 20 重复问题（现为 20 + 20a）
