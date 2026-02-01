@@ -11,9 +11,9 @@
 **Sprint 2:** ✅ Complete (100%, committed 2026-01-26)  
 **Sprint 3:** ✅ Complete (100%, 13h/12.5h, committed 2026-01-28, tagged v0.3.0)  
 **Sprint 4:** ✅ Complete (100%, 48h/48h estimated, committed 2026-01-28, tagged v0.4.0)  
-**Sprint 5:** ✅ Complete (100%, 30h/28h, committed 2026-01-29, tagged v0.5.0, branch: sprint-5/epic-6-badge-verification)  
-**Sprint 6:** ✅ Complete (100%, 30h/56h, committed 2026-01-31, branch: sprint-6/epic-7-badge-sharing, 243 tests, v0.6.0)  
-**Sprint 7:** 🟡 In Progress (86%, 6/7 stories, 22h/20-26h, branch: sprint-7/epic-9-revocation-lifecycle-uat, Stories 9.1-9.5 done, UAT pending)  
+**Sprint 5:** ✅ Complete (100%, actual 30h / estimated 28h, committed 2026-01-29, tagged v0.5.0, branch: sprint-5/epic-6-badge-verification)  
+**Sprint 6:** ✅ Complete (100%, actual 35h / estimated 56-76h, committed 2026-01-31, branch: sprint-6/epic-7-badge-sharing, 243 tests, v0.6.0)  
+**Sprint 7:** 🟡 In Progress (86%, 6/7 stories, actual 22h / estimated 20-26h, branch: sprint-7/epic-9-revocation-lifecycle-uat, Stories 9.1-9.5 done, UAT pending)  
 **Last Updated:** 2026-02-01 (Sprint 7: Stories 9.1-9.5 complete - Complete Badge Revocation Feature, 334 tests, 297 passing)
 
 ---

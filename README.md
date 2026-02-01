@@ -23,14 +23,14 @@
 **Project Type:** Enterprise Internal Platform (Greenfield Development)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
 **Current Status:** 🟡 Sprint 7 In Progress (86% - Epic 9: Badge Revocation - Stories 9.1-9.5 done, UAT pending)  
-**Sprint 0:** ✅ Complete (100%, 9.5h/10h estimated, 2026-01-24)  
-**Sprint 1:** ✅ Complete (100%, 21h/21h estimated, 2026-01-25)  
-**Sprint 2:** ✅ Complete (100%, 29h/32h estimated, 2026-01-26)  
-**Sprint 3:** ✅ Complete (100%, 13h/12.5h estimated, 2026-01-28, v0.3.0)  
-**Sprint 4:** ✅ Complete (100%, 48h estimated, 2026-01-28, v0.4.0)  
-**Sprint 5:** ✅ Complete (100%, 30h/28h estimated, 2026-01-29, v0.5.0)  
-**Sprint 6:** ✅ Complete (100%, 35h/56-76h estimated, 2026-01-31, v0.6.0)  
-**Sprint 7:** 🟡 In Progress (86%, 6/7 stories, 22h/20-26h, Stories 9.1-9.5 complete: Revocation Feature)  
+**Sprint 0:** ✅ Complete (100%, actual 9.5h / estimated 10h, 2026-01-24)  
+**Sprint 1:** ✅ Complete (100%, actual 21h / estimated 21h, 2026-01-25)  
+**Sprint 2:** ✅ Complete (100%, actual 29h / estimated 32h, 2026-01-26)  
+**Sprint 3:** ✅ Complete (100%, actual 13h / estimated 12.5h, 2026-01-28, v0.3.0)  
+**Sprint 4:** ✅ Complete (100%, estimated 48h, 2026-01-28, v0.4.0)  
+**Sprint 5:** ✅ Complete (100%, actual 30h / estimated 28h, 2026-01-29, v0.5.0)  
+**Sprint 6:** ✅ Complete (100%, actual 35h / estimated 56-76h, 2026-01-31, v0.6.0)  
+**Sprint 7:** 🟡 In Progress (86%, 6/7 stories, actual 22h / estimated 20-26h, Stories 9.1-9.5 complete: Revocation Feature)  
 **Version:** v0.6.0 (Sprint 6 complete, 334 tests, 297 passing core tests)  
 **Last Updated:** 2026-02-01
 
