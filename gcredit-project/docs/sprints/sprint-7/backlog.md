@@ -42,7 +42,10 @@ So that **we follow GitFlow strategy and avoid merge conflicts**.
 
 ---
 
-#### **Story 0.2a:** [Simple Login & Navigation System (MVP)](0-2-login-navigation.md) - **CRITICAL** - 6h ← **SPLIT from 0.2**
+#### **Story 0.2a:** [Simple Login & Navigation System (MVP)](0-2-login-navigation.md) - **CRITICAL** - 6h ← **RESTORED from deferred**
+
+**Status:** ⏳ READY-FOR-DEV (Restored from deferred on 2026-02-01 per Pre-UAT Review findings)
+
 As a **User (any role)**,  
 I want **to log in to the system and navigate between features**,  
 So that **I can access role-appropriate functionality and complete UAT testing**.
@@ -496,7 +499,46 @@ So that **the user experience meets quality standards**.
 
 ---
 
-## 📚 Reference Documents
+## � Appendix: P0 Defects (Pre-UAT Review Findings)
+
+**Source:** Security Audit, Architecture Review, UX Audit (2026-02-01)  
+**Status:** Must fix before Story U.1 (UAT)  
+**Tracking:** [technical-debt-from-reviews.md](technical-debt-from-reviews.md)  
+**Execution Plan:** [p0-fix-execution-plan.md](p0-fix-execution-plan.md)
+
+### Security Defects (3)
+
+| ID | Defect | File | Effort | Status |
+|----|--------|------|--------|--------|
+| SEC-P0-001 | IDOR: Teams badge claiming uses DTO userId instead of JWT | `teams-action.controller.ts` | 1h | ⏳ Pending |
+| SEC-P0-002 | Register allows role self-assignment (anyone can become ADMIN) | `register.dto.ts`, `auth.service.ts` | 1h | ⏳ Pending |
+| SEC-P0-003 | JWT Secret fallback to hardcoded 'default-secret' | `jwt.strategy.ts` | 15m | ⏳ Pending |
+
+### Architecture Defects (1)
+
+| ID | Defect | File | Effort | Status |
+|----|--------|------|--------|--------|
+| ARCH-P0-002 | Badge Template findOne() exposes DRAFT templates to EMPLOYEE | `badge-templates.service.ts` | 1h | ⏳ Pending |
+
+### UX/Accessibility Defects (3)
+
+| ID | Defect | File | Effort | Status |
+|----|--------|------|--------|--------|
+| UX-P0-002 | Uses `alert()` for errors instead of toast notifications | `BadgeDetailModal.tsx`, `EvidenceSection.tsx` | 2h | ⏳ Pending |
+| UX-P0-003 | Form inputs missing labels (A11y violation) | `TimelineView.tsx`, `BadgeShareModal.tsx` | 2h | ⏳ Pending |
+| UX-P0-004 | Badge claiming lacks celebration feedback | Claim flow | 4h | ⏳ Pending |
+
+> **Note:** UX-P0-001 (No login page) is covered by **Story 0.2a** above.
+
+### P0 Fix Execution Order
+
+1. **Phase A (Security):** SEC-P0-002 → SEC-P0-001 → SEC-P0-003 → ARCH-P0-002 (3.25h)
+2. **Phase B (UX):** Story 0.2a → UX-P0-002 → UX-P0-003 → UX-P0-004 (12h)
+3. **Phase C:** Story U.1 (Complete Lifecycle UAT)
+
+---
+
+## �📚 Reference Documents
 
 ### Planning Documents
 - [Sprint Planning Checklist](../../templates/sprint-planning-checklist.md)

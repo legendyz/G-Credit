@@ -6,11 +6,12 @@
 
 sprint_info:
   sprint_number: 7
-  sprint_name: "Epic 9 - Badge Revocation"
+  sprint_name: "Epic 9 - Badge Revocation + Pre-UAT Fixes"
   start_date: "2026-02-01"
-  end_date: "2026-02-05"
-  duration_days: 5
+  end_date: "2026-02-07"  # Extended from 02-05 due to P0 fixes from reviews
+  duration_days: 7
   status: "in-progress"
+  extension_reason: "Pre-UAT reviews (Security, Architecture, UX) identified 9 P0 issues requiring fix before UAT"
 
 # Story Status Definitions:
 # - ready-for-dev: Story is ready to be implemented
@@ -21,19 +22,22 @@ sprint_info:
 
 development_status:
   0-1-git-branch: done  # Git branch creation (prerequisite)
+  0-2a-login-navigation: ready-for-dev  # Login page - RESTORED from deferred per Pre-UAT Review
   9-1-revoke-api: done  # Badge Revocation API - COMPLETE
   9-2-verification-status: done  # Revoked Badge Display in Verification Page - DONE
   9-3-wallet-display: done  # Employee Wallet Display - DONE
   9-4-notifications: review  # Revocation Email Notifications - COMPLETE
   9-5-admin-ui: done  # Admin Revocation UI - COMPLETE (code review fixes done)
-  U-1-lifecycle-uat: ready-for-dev  # Complete Lifecycle UAT
+  P0-fixes: ready-for-dev  # Pre-UAT P0 Fixes from Security/Architecture/UX Reviews
+  U-1-lifecycle-uat: blocked  # Complete Lifecycle UAT - blocked on P0-fixes
 
 sprint_metrics:
-  total_stories: 7  # Including Story 0.1 (git branch)
+  total_stories: 9  # 0.1 + 0.2a + 9.1-9.5 + P0-fixes + U.1
   completed_stories: 6  # 0.1 + 9.1 + 9.2 + 9.3 + 9.4 (review) + 9.5 (done)
   in_progress_stories: 0
-  completion_rate: 86%  # 6/7
-  estimated_hours: 20-26  # Epic 9 total estimate
+  blocked_stories: 1  # U.1 blocked on P0-fixes
+  completion_rate: 67%  # 6/9
+  estimated_hours: "41-47"  # Original 20-26 + P0-fixes 15h + Story 0.2a 6h
   actual_hours: 22  # Story 9.1 (5h) + 9.2 (4.5h) + 9.3 (4.5h) + 9.4 (2.5h) + 9.5 (5.5h)
   
   backend_completion: 86%  # All Stories except U.1
@@ -148,14 +152,61 @@ story_details:
     notes: "BadgeManagementPage with table, RevokeBadgeModal with form validation, search/filter/pagination, backend search + activeOnly support. Code review fixes applied. 52 frontend unit tests added (vitest + testing-library)"
     
   U-1-lifecycle-uat:
-    status: "ready-for-dev"
+    status: "blocked"
     priority: "P0 - Critical"
     story_points: 8
     estimated_hours: 8
-    depends_on: ["9-1-revoke-api", "9-2-verification-status", "9-3-wallet-display", "9-4-notifications", "9-5-admin-ui"]
+    blocked_by: "P0-fixes"
+    depends_on: ["9-1-revoke-api", "9-2-verification-status", "9-3-wallet-display", "9-4-notifications", "9-5-admin-ui", "P0-fixes"]
+
+  P0-fixes:
+    status: "ready-for-dev"
+    priority: "P0 - Critical"
+    story_points: 13
+    estimated_hours: 15
+    developer: "TBD"
+    depends_on: ["9-5-admin-ui"]
+    blocks: ["U-1-lifecycle-uat"]
+    breakdown:
+      security:
+        - id: "SEC-P0-001"
+          task: "IDOR fix: Teams badge claiming - use @CurrentUser()"
+          file: "teams-action.controller.ts"
+          effort: "1h"
+        - id: "SEC-P0-002"
+          task: "Remove role from RegisterDto, hardcode EMPLOYEE"
+          file: "register.dto.ts, auth.service.ts"
+          effort: "1h"
+        - id: "SEC-P0-003"
+          task: "JWT Secret validation - throw error if missing"
+          file: "jwt.strategy.ts"
+          effort: "15m"
+      architecture:
+        - id: "ARCH-P0-002"
+          task: "Badge Template findOne() add status check for DRAFT"
+          file: "badge-templates.service.ts"
+          effort: "1h"
+      ux:
+        - id: "UX-P0-001"
+          task: "Create minimal login page for UAT"
+          effort: "4h"
+        - id: "UX-P0-002"
+          task: "Replace all alert() with toast.error()"
+          files: "BadgeDetailModal.tsx, EvidenceSection.tsx"
+          effort: "2h"
+        - id: "UX-P0-003"
+          task: "Add form labels for accessibility"
+          files: "TimelineView.tsx, BadgeShareModal.tsx"
+          effort: "2h"
+        - id: "UX-P0-004"
+          task: "Add basic celebration feedback on badge claiming"
+          effort: "4h"
+    notes: "Pre-UAT fixes identified by Security/Architecture/UX reviews on 2026-02-01"
 
 next_steps:
-  - "Story U.1: Complete Lifecycle UAT (8h)"
+  - "Phase A: P0 Security Fixes (3.25h) - SEC-P0-001, SEC-P0-002, SEC-P0-003, ARCH-P0-002"
+  - "Phase B: P0 UX Fixes (12h) - UX-P0-001, UX-P0-002, UX-P0-003, UX-P0-004"
+  - "Phase C: Story U.1 - Complete Lifecycle UAT (8h)"
 
 technical_debt:
   teams_channel_sharing:
@@ -166,6 +217,16 @@ technical_debt:
     priority: "medium"
     estimated_effort: "2-3 days when permissions available"
     documentation: "docs/sprints/sprint-6/technical-debt.md"
+  
+  pre_uat_reviews:
+    status: "new-from-sprint-7"
+    source: "Security Audit, Architecture Review, UX Audit (2026-02-01)"
+    p0_count: 9  # Fixed in Sprint 7
+    p1_count: 16  # Tracked for Sprint 8
+    p2_count: 12  # Future improvements
+    total_effort: "70.5h (P0: 15h, P1: 29.5h, P2: 25.75h)"
+    documentation: "docs/sprints/sprint-7/technical-debt-from-reviews.md"
+    priority: "P1 items must be addressed in Sprint 8"
 
 notes:
   - "Sprint 7 kicked off February 1, 2026"
