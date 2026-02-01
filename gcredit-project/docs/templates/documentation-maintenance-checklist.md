@@ -206,12 +206,24 @@ Ready to proceed: ✅ All data verified, cross-validation complete
 
 ### ✅ Step 2: Sync README Files
 
+**⚠️ IMPORTANT:** README files have **multiple locations** that need updating. Use the detailed checklist below to avoid missing any section.
+
+**📋 Detailed Reference:** See [README-update-checklist.md](./README-update-checklist.md) for comprehensive location-by-location guide.
+
 #### A. `CODE/README.md` (GitHub Showcase - External Audience)
 
 **File Location:** `{project-root}/README.md`  
 **Purpose:** GitHub repository homepage, first impression for visitors
 
-**Check and Update:**
+**⚡ Quick Checklist (6 Update Locations):**
+- [ ] **Location 1: Badges Section** (Lines ~3-14) - Status, Sprint, Version, Tests badges
+- [ ] **Location 2: Project Overview** (Lines ~20-40) - Current Status, Sprint lines, Version, Last Updated
+- [ ] **Location 3: Recent Progress** (Lines ~270-290) - Sprint details, stories, metrics, Git tag
+- [ ] **Location 4: Roadmap Table** (Lines ~475-495) - Sprint row status and duration
+- [ ] **Location 5: Footer Last Updated** (Lines ~592-600) - Date, Status, Version
+- [ ] **Location 6: Footer Sprint Status** (Lines ~601-609) - Sprint list, links, Next steps
+
+**Detailed Instructions:**
 - [ ] **Badges Section (Lines 3-12):**
   - [ ] Sprint badges added (e.g., `[![Sprint6](https://img.shields.io/badge/Sprint%206-Complete-brightgreen)]()`)
   - [ ] Version badge updated (e.g., `[![Version](https://img.shields.io/badge/Version-v0.X.0-blue)]()`)
