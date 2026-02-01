@@ -2,19 +2,20 @@
 
 **Created:** 2026-02-01  
 **Source:** Pre-UAT Reviews + Historical Sprint Debt (Sprint 0-6)  
-**Status:** Consolidated master list for Sprint 8+ planning
+**Status:** Consolidated master list for Sprint 8+ planning  
+**Last Updated:** 2026-02-01 (Phase A complete, 4 Teams test issues added)
 
 ---
 
 ## Summary
 
-| Priority | Count | Source | Target Sprint |
-|----------|-------|--------|---------------|
-| **P0 (UAT Blocker)** | 9 | Pre-UAT Reviews | Sprint 7 (NOW) |
-| **P1 (Must Fix)** | 17 | Reviews + Historical | Sprint 8 |
-| **P2 (Medium)** | 17 | Reviews + Historical | Sprint 8-9 |
-| **P3 (Low/Future)** | 8 | Historical | Sprint 9+ |
-| **Total** | **51** | - | - |
+| Priority | Count | Source | Target Sprint | Status |
+|----------|-------|--------|---------------|--------|
+| **P0 (UAT Blocker)** | 9 | Pre-UAT Reviews | Sprint 7 | **4/9 Fixed** (Phase A) |
+| **P1 (Must Fix)** | 17 | Reviews + Historical | Sprint 8 | Pending |
+| **P2 (Medium)** | 21 | Reviews + Historical + TD-009~012 | Sprint 8-9 | +4 Teams tests |
+| **P3 (Low/Future)** | 8 | Historical | Sprint 9+ | Pending |
+| **Total** | **55** | - | - | - |
 
 ---
 
@@ -68,19 +69,19 @@
 
 > These items MUST be fixed before UAT begins
 
-### Security P0 (3 items)
+### Security P0 (3 items) ✅ COMPLETED 2026-02-01
 
 | ID | Issue | Location | Effort | Status |
 |----|-------|----------|--------|--------|
-| SEC-P0-001 | IDOR: Teams badge claiming uses DTO userId | `teams-action.controller.ts` | 1h | ⏳ Pending |
-| SEC-P0-002 | Register allows role self-assignment | `register.dto.ts`, `auth.service.ts` | 1h | ⏳ Pending |
-| SEC-P0-003 | JWT Secret fallback to hardcoded value | `jwt.strategy.ts` | 15m | ⏳ Pending |
+| SEC-P0-001 | IDOR: Teams badge claiming uses DTO userId | `teams-action.controller.ts` | 1h | ✅ Fixed |
+| SEC-P0-002 | Register allows role self-assignment | `register.dto.ts`, `auth.service.ts` | 1h | ✅ Fixed |
+| SEC-P0-003 | JWT Secret fallback to hardcoded value | `jwt.strategy.ts` | 15m | ✅ Fixed |
 
-### Architecture P0 (1 item)
+### Architecture P0 (1 item) ✅ COMPLETED 2026-02-01
 
 | ID | Issue | Location | Effort | Status |
 |----|-------|----------|--------|--------|
-| ARCH-P0-002 | Badge Template findOne exposes DRAFT | `badge-templates.service.ts` | 1h | ⏳ Pending |
+| ARCH-P0-002 | Badge Template findOne exposes DRAFT | `badge-templates.service.ts` | 1h | ✅ Fixed |
 
 ### UX P0 (4 items)
 
@@ -162,6 +163,17 @@
 | ID | Issue | Location | Effort | Notes |
 |----|-------|----------|--------|-------|
 | TD-002 | Badge Issuance Tests Update | E2E tests | 2-4h | metadataHash migration impact |
+
+### Testing - Teams Test Failures (4 items) - NEW 2026-02-01
+
+> Discovered during Phase A. Pre-existing issues, not caused by P0 fixes.
+
+| ID | Issue | Location | Root Cause | Effort |
+|----|-------|----------|------------|--------|
+| TD-009 | Mock setup error | `graph-teams.service.spec.ts` | `disabledService.sendActivityNotification` is not a function | 1h |
+| TD-010 | Array index error | `teams-badge-notification.service.spec.ts` | Cannot read properties of undefined (reading '4') | 1h |
+| TD-011 | Mock error handling | `teams-sharing.controller.spec.ts` | Teams notification service error handling | 1h |
+| TD-012 | DI injection missing | `badge-issuance-teams.integration.specs.ts` | Missing provider for ConfigService or EmailService | 2h |
 
 ### UX (5 items)
 
