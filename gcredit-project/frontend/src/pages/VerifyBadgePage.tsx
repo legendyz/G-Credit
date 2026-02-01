@@ -8,6 +8,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import { CheckCircle2, XCircle, AlertTriangle, Download, ExternalLink, Calendar, User, Building2, Award } from 'lucide-react';
 import { format } from 'date-fns';
 import axios from 'axios';
+import { RevokedBadgeAlert } from '../components/badges/RevokedBadgeAlert';
 
 export function VerifyBadgePage() {
   const { verificationId } = useParams<{ verificationId: string }>();
@@ -37,17 +38,21 @@ export function VerifyBadgePage() {
       const transformedData: VerificationResponse = {
         id: apiData.id,
         verificationId: verificationId!,
-        status: apiData.revoked ? 'REVOKED' : apiData.verificationStatus === 'valid' ? 'ACTIVE' : 'EXPIRED',
-        badge: apiData._meta?.badge || {},
-        recipient: apiData._meta?.recipient || {},
-        issuer: apiData._meta?.issuer || {},
-        issuedAt: apiData.issuedOn || new Date().toISOString(),
-        expiresAt: apiData.expires || null,
-        claimedAt: null,
+        status: apiData.status || (apiData.revoked ? 'REVOKED' : apiData.verificationStatus === 'valid' ? 'ACTIVE' : 'EXPIRED'),
+        badge: apiData.badge || apiData._meta?.badge || {},
+        recipient: apiData.recipient || apiData._meta?.recipient || {},
+        issuer: apiData.issuer || apiData._meta?.issuer || {},
+        issuedAt: apiData.issuedAt || apiData.issuedOn || new Date().toISOString(),
+        expiresAt: apiData.expiresAt || apiData.expires || null,
+        claimedAt: apiData.claimedAt || null,
+        isValid: apiData.isValid !== undefined ? apiData.isValid : true,
         revokedAt: apiData.revokedAt || undefined,
         revocationReason: apiData.revocationReason || undefined,
-        evidenceFiles: apiData._meta?.evidenceFiles || [],
-        assertionJson: apiData,
+        revocationNotes: apiData.revocationNotes || undefined,
+        isPublicReason: apiData.isPublicReason || false,
+        revokedBy: apiData.revokedBy || undefined,
+        evidenceFiles: apiData.evidenceFiles || apiData._meta?.evidenceFiles || [],
+        assertionJson: apiData.assertionJson || apiData,
       };
       
       setBadge(transformedData);
@@ -125,19 +130,18 @@ export function VerifyBadgePage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      {/* Status Banner */}
-      {isRevoked && (
-        <Alert variant="destructive" className="mb-6">
-          <XCircle className="h-5 w-5" />
-          <AlertTitle>This credential has been revoked</AlertTitle>
-          <AlertDescription>
-            This badge is no longer valid. 
-            {badge.revokedAt && ` Revoked on ${format(new Date(badge.revokedAt), 'MMMM d, yyyy')}.`}
-            {badge.revocationReason && <><br />Reason: {badge.revocationReason}</>}
-          </AlertDescription>
-        </Alert>
+      {/* Story 9.2 AC1-AC2: Revoked Badge Alert */}
+      {isRevoked && (badge.revokedAt || badge.revocationReason) && (
+        <RevokedBadgeAlert
+          revokedAt={badge.revokedAt || new Date().toISOString()}
+          reason={badge.revocationReason || 'Unknown'}
+          notes={badge.revocationNotes}
+          isPublicReason={badge.isPublicReason || false}
+          revokedBy={badge.revokedBy}
+        />
       )}
 
+      {/* Expired Badge Alert */}
       {!isRevoked && isExpired && (
         <Alert variant="warning" className="mb-6 border-yellow-600">
           <AlertTriangle className="h-5 w-5 text-yellow-600" />
@@ -158,9 +162,14 @@ export function VerifyBadgePage() {
         </Alert>
       )}
 
-      {/* Badge Details Card */}
-      <Card className="mb-6">
+      {/* Story 9.2 AC3: Badge Details Card - grayed out if revoked */}
+      <Card className={`mb-6 ${isRevoked ? 'opacity-60' : ''}`}>
         <CardHeader>
+          {isRevoked && (
+            <div className="text-sm text-gray-600 italic mb-2">
+              Historical Information Only - This badge is no longer valid
+            </div>
+          )}
           <div className="flex items-start gap-6">
             {/* Badge Image */}
             {badge.badge.imageUrl && (
@@ -275,21 +284,22 @@ export function VerifyBadgePage() {
               </div>
             </div>
           )}
+
+          {/* Story 9.2 AC5: Download Button - disabled for revoked badges */}
+          <div className="flex justify-center">
+            <Button 
+              onClick={downloadAssertion}
+              className="gap-2"
+              variant="outline"
+              disabled={!badge.assertionJson || isRevoked}
+              title={isRevoked ? "This badge has been revoked and cannot be downloaded" : "Download Open Badges 2.0 JSON-LD"}
+            >
+              <Download className="h-4 w-4" />
+              Download Open Badges 2.0 JSON-LD
+            </Button>
+          </div>
         </CardContent>
       </Card>
-
-      {/* Download Button */}
-      <div className="flex justify-center">
-        <Button 
-          onClick={downloadAssertion}
-          className="gap-2"
-          variant="outline"
-          disabled={!badge.assertionJson}
-        >
-          <Download className="h-4 w-4" />
-          Download Open Badges 2.0 JSON-LD
-        </Button>
-      </div>
     </div>
   );
 }

@@ -115,15 +115,20 @@ export class BadgeTemplatesController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get a single badge template by ID' })
+  @ApiOperation({ 
+    summary: 'Get a single badge template by ID',
+    description: 'Returns badge template details. Non-ACTIVE templates (DRAFT, ARCHIVED) are only visible to ADMIN/ISSUER.',
+  })
   @ApiResponse({
     status: 200,
     description: 'Returns badge template details',
     type: BadgeTemplateResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Badge template not found' })
-  async findOne(@Param('id') id: string) {
-    return this.badgeTemplatesService.findOne(id);
+  async findOne(@Param('id') id: string, @Request() req: any) {
+    // ARCH-P0-002: Pass user role for access control (may be undefined for public access)
+    const userRole = req.user?.role;
+    return this.badgeTemplatesService.findOne(id, userRole);
   }
 
   @Post()

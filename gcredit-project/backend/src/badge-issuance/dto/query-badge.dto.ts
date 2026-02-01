@@ -1,5 +1,5 @@
-import { IsOptional, IsInt, Min, Max, IsEnum, IsUUID, IsIn } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsInt, Min, Max, IsEnum, IsUUID, IsIn, IsString, MaxLength, IsBoolean } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { BadgeStatus } from '@prisma/client';
 
@@ -24,10 +24,22 @@ export class QueryBadgeDto {
   @IsEnum(BadgeStatus)
   status?: BadgeStatus;
 
+  @ApiPropertyOptional({ description: 'Filter for active badges only (ISSUED + CLAIMED)', default: false })
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  activeOnly?: boolean;
+
   @ApiPropertyOptional({ description: 'Filter by template ID' })
   @IsOptional()
   @IsUUID()
   templateId?: string;
+
+  @ApiPropertyOptional({ description: 'Search by recipient name, email, or template name (Story 9.5 AC5)' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  search?: string;
 
   @ApiPropertyOptional({ enum: ['issuedAt', 'claimedAt'], default: 'issuedAt' })
   @IsOptional()

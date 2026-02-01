@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 
 interface EvidenceFile {
   id: string;
@@ -76,14 +77,18 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
       window.open(sasUrl, '_blank');
     } catch (err) {
       console.error('Download error:', err);
-      alert('Failed to download file. Please try again.');
+      toast.error('Download failed', {
+        description: 'Unable to download file. Please try again.',
+      });
     }
   };
 
   const handlePreview = async (fileId: string, mimeType: string) => {
     // Only preview images and PDFs
     if (!mimeType.startsWith('image/') && !mimeType.includes('pdf')) {
-      alert('Preview not available for this file type');
+      toast.info('Preview not available', {
+        description: 'This file type cannot be previewed in the browser.',
+      });
       return;
     }
 
@@ -105,7 +110,9 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
       window.open(sasUrl, '_blank');
     } catch (err) {
       console.error('Preview error:', err);
-      alert('Failed to preview file. Please try again.');
+      toast.error('Preview failed', {
+        description: 'Unable to preview file. Please try again.',
+      });
     }
   };
 

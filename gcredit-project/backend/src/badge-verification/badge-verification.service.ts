@@ -55,6 +55,14 @@ export class BadgeVerificationService {
             email: true,
           }
         },
+        revoker: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            role: true,
+          }
+        },
         evidenceFiles: {
           select: {
             id: true,
@@ -135,10 +143,18 @@ export class BadgeVerificationService {
       expiresAt: badge.expiresAt,
       claimedAt: badge.claimedAt,
 
-      // Revocation details (if applicable)
+      // Story 9.2: Revocation details with categorization
+      isValid: badge.status !== BadgeStatus.REVOKED,
       ...(badge.status === BadgeStatus.REVOKED && {
         revokedAt: badge.revokedAt,
         revocationReason: badge.revocationReason,
+        revocationNotes: badge.revocationNotes,
+        // Categorize reason as public or private per DEVELOPER-CONTEXT.md Decision #3
+        isPublicReason: this.isPublicRevocationReason(badge.revocationReason),
+        revokedBy: badge.revoker ? {
+          name: `${badge.revoker.firstName} ${badge.revoker.lastName}`,
+          role: badge.revoker.role,
+        } : null,
       }),
 
       // Evidence files from Sprint 4
@@ -169,5 +185,18 @@ export class BadgeVerificationService {
     }
     const masked = localPart[0] + '***';
     return `${masked}@${domain}`;
+  }
+
+  /**
+   * Story 9.2: Determine if revocation reason is public-safe
+   * Per DEVELOPER-CONTEXT.md Decision #3:
+   * - Public reasons: Expired, Issued in Error → show on verification page
+   * - Private reasons: Policy Violation, Fraud → show generic message
+   */
+  private isPublicRevocationReason(reason: string | null): boolean {
+    if (!reason) return false;
+    
+    const publicReasons = ['Expired', 'Issued in Error'];
+    return publicReasons.includes(reason);
   }
 }

@@ -603,11 +603,13 @@ describe('GraphEmailService', () => {
 - `ChannelMessage.Send` - Post to Teams channels
 - `TeamsAppInstallation.ReadWriteSelfForUser` - Bot installation
 - `User.Read` - Read basic user info
+- `User.Read.All` - **NEW (Sprint 7):** Read all users' full profiles for M365 user sync
 
 **Justification:**
 - All permissions necessary for feature implementation
 - No excessive permissions requested
 - Admin consent required (security checkpoint)
+- **User.Read.All added:** Required for Story U.2a (M365 User Sync) - syncs organization users to GCredit database for UAT test data
 
 ### Data Privacy
 - **No user data stored** (except email in Badge model)

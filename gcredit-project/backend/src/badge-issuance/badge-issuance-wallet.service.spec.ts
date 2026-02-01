@@ -204,6 +204,16 @@ describe('BadgeIssuanceService - Wallet (Story 4.1)', () => {
               email: true,
             },
           },
+          // Story 9.3: Include revoker for REVOKED badges
+          revoker: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              role: true,
+            },
+          },
         },
       });
     });

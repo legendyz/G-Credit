@@ -1,0 +1,92 @@
+﻿[
+    {
+        "TestId":  "S1.1",
+        "TestName":  "Issuer Login",
+        "Status":  "PASS",
+        "Details":  "User: issuer@gcredit.com, Role: ISSUER"
+    },
+    {
+        "TestId":  "S1.2",
+        "TestName":  "Get Badge Templates",
+        "Status":  "PASS",
+        "Details":  "Found 1 template(s): Excellence Award"
+    },
+    {
+        "TestId":  "S1.3",
+        "TestName":  "Issue Badge",
+        "Status":  "PASS",
+        "Details":  "Badge ID: ea8d529a-3aab-43d0-a2ed-2ae5bd4e5b62, Status: PENDING"
+    },
+    {
+        "TestId":  "S1.4",
+        "TestName":  "Get Badge Details",
+        "Status":  "PASS",
+        "Details":  "Badge: Excellence Award -\u003e "
+    },
+    {
+        "TestId":  "S1.5",
+        "TestName":  "Claim Badge",
+        "Status":  "PASS",
+        "Details":  "Badge claimed: CLAIMED"
+    },
+    {
+        "TestId":  "S1.6",
+        "TestName":  "Badge Verification",
+        "Status":  "PASS",
+        "Details":  "Verification Status: "
+    },
+    {
+        "TestId":  "S1.7",
+        "TestName":  "Get Wallet",
+        "Status":  "PASS",
+        "Details":  "Badges in wallet: 0"
+    },
+    {
+        "TestId":  "S1.8",
+        "TestName":  "Revoke Badge",
+        "Status":  "PASS",
+        "Details":  "Badge revoked successfully"
+    },
+    {
+        "TestId":  "S2.1",
+        "TestName":  "Invalid Login Rejected",
+        "Status":  "PASS",
+        "Details":  "Correctly returned 401 Unauthorized"
+    },
+    {
+        "TestId":  "S2.2",
+        "TestName":  "Unauthorized Access Blocked",
+        "Status":  "PASS",
+        "Details":  "Correctly returned 401 Unauthorized"
+    },
+    {
+        "TestId":  "S2.3",
+        "TestName":  "Invalid Badge ID Handled",
+        "Status":  "PASS",
+        "Details":  "Correctly returned 404 Not Found"
+    },
+    {
+        "TestId":  "S3.1",
+        "TestName":  "Claim Revoked Badge Blocked",
+        "Status":  "PASS",
+        "Details":  "Badge not claimable: The remote server returned an error: (404) Not Found."
+    },
+    {
+        "TestId":  "S3.2",
+        "TestName":  "Issue Second Badge",
+        "Status":  "PASS",
+        "Details":  "Badge ID: 37e717bc-0fc0-4bc7-b620-a014d61bed44"
+    },
+    {
+        "TestId":  "S4.1",
+        "TestName":  "Health Check",
+        "Status":  "PASS",
+        "Details":  "Status: ok"
+    },
+    {
+        "TestId":  "S4.2",
+        "TestName":  "Ready Check",
+        "Status":  "PASS",
+        "Details":  "Database: connected, Storage: connected"
+    }
+]

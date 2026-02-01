@@ -35,6 +35,7 @@ model User {
   badgeTemplates        BadgeTemplate[]
   badgesReceived        Badge[]                @relation("BadgesReceived")
   badgesIssued          Badge[]                @relation("BadgesIssued")
+  badgesRevoked         Badge[]                @relation("RevokedBadges")
   milestonesCreated     MilestoneConfig[]      @relation("MilestoneCreator")
   milestoneAchievements MilestoneAchievement[] @relation("MilestoneAchievements")
   evidenceUploads       EvidenceFile[]         @relation("EvidenceUploader")
@@ -169,8 +170,13 @@ model Badge {
   status           BadgeStatus   @default(PENDING)
   claimToken       String?       @unique // 32-char token
   claimedAt        DateTime?
+  
+  // Sprint 7: Revocation fields (Epic 9)
   revokedAt        DateTime?
+  revokedBy        String?
   revocationReason String?       @db.Text
+  revocationNotes  String?       @db.Text
+  
   assertionJson    Json          // Open Badges 2.0 JSON-LD
   recipientHash    String        // SHA-256(email + salt)
   
@@ -181,6 +187,7 @@ model Badge {
   template         BadgeTemplate @relation(fields: [templateId], references: [id])
   recipient        User          @relation("BadgesReceived", fields: [recipientId], references: [id])
   issuer           User          @relation("BadgesIssued", fields: [issuerId], references: [id])
+  revoker          User?         @relation("RevokedBadges", fields: [revokedBy], references: [id])
   evidenceFiles    EvidenceFile[]
   shares           BadgeShare[]  // Sprint 6: Badge sharing analytics
   
@@ -191,6 +198,7 @@ model Badge {
   @@index([issuerId])
   @@index([verificationId]) // Sprint 5: Fast public verification lookup
   @@index([recipientId, status, issuedAt(sort: Desc)], name: "idx_badges_timeline") // Timeline view optimization
+  @@index([revokedAt]) // Sprint 7: Admin reporting queries
   @@map("badges")
 }
 
@@ -273,4 +281,24 @@ model BadgeShare {
   @@index([badgeId, platform])
   @@index([sharedAt])
   @@map("badge_shares")
+}
+
+// Sprint 7: Audit Log (Epic 9 - Badge Revocation)
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  entityType  String   @db.VarChar(50) // "Badge", "Template", "User"
+  entityId    String   @db.VarChar(255) // Badge ID, Template ID, etc.
+  action      String   @db.VarChar(50) // "REVOKED", "ISSUED", "CLAIMED"
+  actorId     String   // User who performed action
+  actorEmail  String?  @db.VarChar(255) // For audit trail
+  timestamp   DateTime @default(now())
+  metadata    Json?    // Flexible storage: { reason, notes, oldStatus, newStatus }
+  
+  // Indexes for efficient querying
+  @@index([entityType, entityId]) // Find all actions on a badge
+  @@index([actorId]) // Find all actions by a user
+  @@index([timestamp]) // Time-based reports
+  @@index([action]) // Filter by action type
+  @@map("audit_logs")
 }

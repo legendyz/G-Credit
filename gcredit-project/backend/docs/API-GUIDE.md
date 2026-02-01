@@ -1,8 +1,8 @@
 # API Usage Guide
 
 **G-Credit Badge Platform REST API**  
-**Version:** 0.2.0  
-**Last Updated:** 2026-01-26
+**Version:** 0.7.0 (Sprint 7 - Badge Revocation)  
+**Last Updated:** 2026-02-01
 
 ---
 
@@ -10,10 +10,13 @@
 
 1. [Authentication](#authentication)
 2. [Badge Templates](#badge-templates)
-3. [Skills Management](#skills-management)
-4. [Skill Categories](#skill-categories)
-5. [Error Handling](#error-handling)
-6. [Rate Limiting](#rate-limiting)
+3. [Badge Issuance](#badge-issuance)
+4. [Badge Revocation](#badge-revocation)
+5. [Badge Verification](#badge-verification)
+6. [Skills Management](#skills-management)
+7. [Skill Categories](#skill-categories)
+8. [Error Handling](#error-handling)
+9. [Rate Limiting](#rate-limiting)
 
 ---
 
@@ -632,6 +635,305 @@ curl -X DELETE "http://localhost:3000/api/badge-templates/categories/cat-soft-00
 
 ---
 
+## Badge Issuance
+
+### Issue Single Badge
+
+**Endpoint:** `POST /api/badges`  
+**Authentication:** Required  
+**Authorization:** ADMIN, ISSUER
+
+```bash
+# PowerShell
+curl -X POST http://localhost:3000/api/badges `
+  -H "Authorization: Bearer $token" `
+  -H "Content-Type: application/json" `
+  -d '{
+    "templateId": "123e4567-e89b-12d3-a456-426614174000",
+    "recipientId": "123e4567-e89b-12d3-a456-426614174001",
+    "evidenceUrl": "https://storage.azure.com/evidence/cert.pdf",
+    "expiresIn": 365
+  }'
+```
+
+**Request Body:**
+- `templateId` (required) - Badge template UUID
+- `recipientId` (required) - Recipient user UUID
+- `evidenceUrl` (optional) - Evidence file URL
+- `expiresIn` (optional) - Expiration in days (1-3650, null = no expiration)
+
+**Response (201 Created):**
+```json
+{
+  "id": "badge-uuid-123",
+  "templateId": "123e4567-e89b-12d3-a456-426614174000",
+  "recipientId": "123e4567-e89b-12d3-a456-426614174001",
+  "issuerId": "issuer-uuid-456",
+  "status": "ISSUED",
+  "claimToken": "claim_abc123def456",
+  "claimUrl": "http://localhost:3000/claim/claim_abc123def456",
+  "evidenceUrl": "https://storage.azure.com/evidence/cert.pdf",
+  "expiresAt": "2027-02-01T12:00:00.000Z",
+  "issuedAt": "2026-02-01T12:00:00.000Z",
+  "template": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "name": "Outstanding Performance",
+    "imageUrl": "https://storage.azure.com/badges/badge.png"
+  }
+}
+```
+
+### Bulk Issue Badges (CSV)
+
+**Endpoint:** `POST /api/badges/bulk`  
+**Authentication:** Required  
+**Authorization:** ADMIN, ISSUER  
+**Content-Type:** multipart/form-data
+
+```bash
+# PowerShell
+curl -X POST http://localhost:3000/api/badges/bulk `
+  -H "Authorization: Bearer $token" `
+  -F "file=@C:\path\to\badges.csv"
+```
+
+**CSV Format:**
+```csv
+recipientEmail,templateId,evidenceUrl,expiresIn
+user1@example.com,123e4567-e89b-12d3-a456-426614174000,https://storage.azure.com/evidence1.pdf,365
+user2@example.com,123e4567-e89b-12d3-a456-426614174000,,730
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "totalRows": 50,
+  "successCount": 48,
+  "failureCount": 2,
+  "results": [
+    {
+      "row": 1,
+      "success": true,
+      "badgeId": "badge-uuid-1",
+      "recipientEmail": "user1@example.com"
+    },
+    {
+      "row": 5,
+      "success": false,
+      "recipientEmail": "invalid@example.com",
+      "error": "Recipient not found"
+    }
+  ]
+}
+```
+
+### Claim Badge (Public)
+
+**Endpoint:** `POST /api/badges/:id/claim`  
+**Authentication:** Not Required  
+**Authorization:** None
+
+```bash
+curl -X POST http://localhost:3000/api/badges/badge-uuid-123/claim \
+  -H "Content-Type: application/json" \
+  -d '{
+    "claimToken": "claim_abc123def456"
+  }'
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "badge-uuid-123",
+  "status": "CLAIMED",
+  "claimedAt": "2026-02-01T12:00:00.000Z",
+  "badge": {
+    "name": "Outstanding Performance",
+    "imageUrl": "https://storage.azure.com/badges/badge.png"
+  },
+  "assertionUrl": "http://localhost:3000/api/badges/badge-uuid-123/assertion",
+  "message": "Badge claimed successfully!"
+}
+```
+
+### Get My Badges
+
+**Endpoint:** `GET /api/badges/my-badges`  
+**Authentication:** Required  
+**Authorization:** Any authenticated user
+
+```bash
+# PowerShell
+curl -X GET "http://localhost:3000/api/badges/my-badges?page=1&limit=10&status=CLAIMED" `
+  -H "Authorization: Bearer $token"
+```
+
+**Query Parameters:**
+- `page` (optional) - Page number (default: 1)
+- `limit` (optional) - Items per page (default: 10, max: 100)
+- `status` (optional) - Filter by ISSUED, CLAIMED, REVOKED
+- `search` (optional) - Search by badge name or description
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "id": "badge-uuid-123",
+      "status": "CLAIMED",
+      "claimedAt": "2026-02-01T12:00:00.000Z",
+      "issuedAt": "2026-02-01T10:00:00.000Z",
+      "template": {
+        "name": "Outstanding Performance",
+        "imageUrl": "https://storage.azure.com/badges/badge.png"
+      },
+      "issuer": {
+        "name": "John Doe",
+        "email": "john@example.com"
+      }
+    }
+  ],
+  "meta": {
+    "total": 25,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 3
+  }
+}
+```
+
+### Get Issued Badges
+
+**Endpoint:** `GET /api/badges/issued`  
+**Authentication:** Required  
+**Authorization:** ADMIN (all badges), ISSUER (own badges only)
+
+```bash
+# PowerShell
+curl -X GET "http://localhost:3000/api/badges/issued?page=1&limit=10" `
+  -H "Authorization: Bearer $token"
+```
+
+**Response:** Same structure as Get My Badges, but shows badges you issued.
+
+---
+
+## Badge Revocation
+
+### Revoke Badge
+
+**Endpoint:** `POST /api/badges/:id/revoke`  
+**Authentication:** Required  
+**Authorization:** ADMIN (any badge), ISSUER (own issued badges only)
+
+```bash
+# PowerShell
+curl -X POST http://localhost:3000/api/badges/badge-uuid-123/revoke `
+  -H "Authorization: Bearer $token" `
+  -H "Content-Type: application/json" `
+  -d '{
+    "reason": "Policy Violation",
+    "notes": "Optional additional context for the revocation"
+  }'
+```
+
+**Request Body:**
+- `reason` (required) - One of: "Policy Violation", "Issued in Error", "Expired", "Duplicate", "Fraud", "Other"
+- `notes` (optional) - Additional explanation (max 1000 chars)
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Badge revoked successfully",
+  "badge": {
+    "id": "badge-uuid-123",
+    "status": "REVOKED",
+    "revokedAt": "2026-02-01T12:00:00.000Z",
+    "revokedBy": "admin-uuid-999",
+    "revocationReason": "Policy Violation",
+    "revocationNotes": "Optional additional context"
+  }
+}
+```
+
+**Error Responses:**
+- **403 Forbidden:** ISSUER trying to revoke another issuer's badge
+- **404 Not Found:** Badge not found
+
+**Note:** Re-revoking an already revoked badge returns 200 OK (idempotent operation).
+
+---
+
+## Badge Verification
+
+### Get Open Badges 2.0 Assertion (Public)
+
+**Endpoint:** `GET /api/badges/:id/assertion`  
+**Authentication:** Not Required  
+**Authorization:** None  
+**Standards:** Open Badges 2.0 compliant
+
+```bash
+curl http://localhost:3000/api/badges/badge-uuid-123/assertion
+```
+
+**Response (200 OK):**
+```json
+{
+  "@context": "https://w3id.org/openbadges/v2",
+  "type": "Assertion",
+  "id": "http://localhost:3000/api/badges/badge-uuid-123/assertion",
+  "badge": {
+    "type": "BadgeClass",
+    "id": "http://localhost:3000/api/badge-templates/template-uuid-1",
+    "name": "Outstanding Performance",
+    "description": "Awarded for exceptional work",
+    "image": "https://storage.azure.com/badges/badge.png",
+    "criteria": {
+      "narrative": "Demonstrates exceptional performance"
+    },
+    "issuer": {
+      "type": "Profile",
+      "id": "http://localhost:3000/api/issuer",
+      "name": "G-Credit Platform",
+      "url": "http://localhost:3000",
+      "email": "admin@gcredit.test"
+    }
+  },
+  "recipient": {
+    "type": "email",
+    "hashed": true,
+    "identity": "sha256$e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "issuedOn": "2026-02-01T10:00:00Z",
+  "verification": {
+    "type": "hosted"
+  }
+}
+```
+
+### Verify Badge (Public Page)
+
+**Endpoint:** `GET /verify/:verificationId`  
+**Authentication:** Not Required  
+**Authorization:** None  
+**Returns:** HTML page with badge details
+
+```bash
+curl http://localhost:3000/verify/verify-uuid-123
+```
+
+Returns a public verification page showing:
+- Badge name, description, and image
+- Recipient information (masked email)
+- Issue date and expiration (if any)
+- Revocation status
+- Open Badges 2.0 assertion link
+
+---
+
 ## Error Handling
 
 ### Standard Error Response Format
@@ -806,6 +1108,11 @@ Import this collection into Postman for quick API testing:
 
 ---
 
-**Last Updated:** 2026-01-26  
-**API Version:** 0.2.0  
-**Author:** G-Credit Development Team
+**Last Updated:** 2026-02-01  
+**API Version:** 0.7.0 (Sprint 7 - Badge Revocation Complete)  
+**Author:** G-Credit Development Team  
+**Coverage:** Sprint 0-7 (Authentication, Templates, Issuance, Verification, Sharing, Revocation)  
+
+**Detailed API Documentation:**
+- [Badge Issuance API](./api/badge-issuance.md) - Complete badge lifecycle documentation
+- Swagger UI: http://localhost:3000/api-docs (Interactive API explorer)

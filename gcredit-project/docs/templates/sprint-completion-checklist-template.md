@@ -3,7 +3,7 @@
 **Sprint:** Sprint N - [Epic Name]  
 **日期:** YYYY-MM-DD  
 **负责人:** [Name/Role]  
-**模板版本:** v1.2 (2026-01-29 + Agent自动化集成)
+**模板版本:** v1.3 (2026-02-01 + DoD/Code Review/Testing 验证 + Planning-Completion 闭环)
 
 ---
 
@@ -58,6 +58,132 @@
 - [ ] 格式化检查通过 (Prettier)
 - [ ] 无 TypeScript 编译错误
 - [ ] 无安全漏洞（或已记录并接受风险）
+
+### 3.5 Definition of Done (DoD) 验证 ✅（🚨 CRITICAL）
+
+**为什么重要：** Sprint Planning 时确认的 DoD 必须在 Completion 时验证。这形成 Planning-Completion 闭环。
+
+**📝 参考：** Sprint Planning 时定义的 DoD (Section 4.5)
+
+**代码质量验证：**
+- [ ] TypeScript 严格模式编译通过（`npm run build` 无错误）
+- [ ] ESLint 检查通过（`npm run lint` 无错误）
+- [ ] 所有 TODO/FIXME 已解决或记录为技术债务
+
+**测试要求验证：**
+- [ ] 单元测试覆盖率 > 80%（新代码）
+- [ ] E2E 测试覆盖所有 Happy Path
+- [ ] 所有测试通过（`npm test` 100% pass）
+- [ ] 无跳过的测试（除非有 ADR 记录原因）
+
+**Code Review 验证：**
+- [ ] 至少进行了自我审查（diff review）
+- [ ] 高风险代码由 AI Agent 或第二人审查
+- [ ] Code Review 问题已记录在 Story 文件中
+
+**文档验证：**
+- [ ] Story 文件已更新（Dev Notes, Completion Notes）
+- [ ] API 端点已在 Swagger 中记录
+- [ ] 架构变更已记录 ADR（如适用）
+
+**部署验证：**
+- [ ] 本地环境可正常运行
+- [ ] 无阻塞性 Bug（P0/P1）
+- [ ] 数据库迁移可安全执行
+
+**验证命令：**
+```powershell
+# 代码质量检查
+cd gcredit-project/backend
+npm run build           # TypeScript 编译
+npm run lint            # ESLint 检查
+
+# 测试检查
+npm test                # 所有测试
+npm run test:cov        # 覆盖率报告
+
+# 检查 TODO/FIXME
+Select-String -Path "src/**/*.ts" -Pattern "TODO|FIXME" -Recurse
+```
+
+**❗ 如果 DoD 未完全满足：**
+- 记录未满足项和原因
+- 在 Retrospective 中讨论是否需要调整 DoD
+- 将未完成项添加到下个 Sprint 或技术债务
+
+### 3.6 Technical Debt Review ✅（🚨 CRITICAL - 防止遗漏）
+
+**为什么重要：** 技术债务如果不在 Sprint Completion 时系统性回顾，很容易在后续 Sprint 中被遗忘。所有技术债务必须被追踪，并在下个 Sprint Planning 时被考虑。
+
+**📝 参考：** `docs/sprints/sprint-N/technical-debt*.md` (如存在)
+
+#### Step 1: 识别本 Sprint 新增的技术债务
+- [ ] 检查是否有新的技术债务文件创建
+- [ ] 检查 Code Review 中发现但未修复的问题
+- [ ] 检查 UAT 中发现但 deferred 的问题
+- [ ] 检查 Security/Architecture/UX Review findings (如本 Sprint 执行了 Review)
+
+**快速检查命令：**
+```powershell
+# 查找本 Sprint 的技术债务文件
+Get-ChildItem -Path "gcredit-project/docs/sprints/sprint-N" -Filter "*technical-debt*" -Recurse
+
+# 查找所有技术债务相关文件
+Get-ChildItem -Path "gcredit-project/docs" -Filter "*technical-debt*" -Recurse | Select-Object FullName, LastWriteTime
+```
+
+#### Step 2: 汇总所有未解决的技术债务
+- [ ] 打开/创建 `docs/sprints/sprint-N/technical-debt-summary.md`
+- [ ] 确认每个技术债务项都有：
+  - **ID** (唯一标识)
+  - **Priority** (P0/P1/P2/P3)
+  - **Effort** (预估工时)
+  - **Target Sprint** (目标解决 Sprint)
+  - **Source** (来源：Code Review / UAT / Security Audit / etc.)
+
+#### Step 3: 确保所有技术债务进入下个 Sprint Backlog
+- [ ] **P0 项目** → 必须在当前 Sprint 解决（不能遗留）
+- [ ] **P1 项目** → 加入下个 Sprint Backlog（必须）
+- [ ] **P2 项目** → 加入下个 Sprint Backlog（作为候选）
+- [ ] **P3 项目** → 加入 Product Backlog（长期追踪）
+
+**⚠️ 关键原则：所有技术债务都必须进入某个 Backlog，不能只存在于技术债务文件中！**
+
+#### Step 4: 更新下个 Sprint 的 Backlog 文件
+- [ ] 在 `docs/sprints/sprint-(N+1)/backlog.md` 中添加 Technical Debt 章节
+- [ ] 列出所有从本 Sprint 继承的技术债务
+- [ ] 标注来源 Sprint 和原始 Issue ID
+
+**模板（添加到下个 Sprint Backlog）：**
+```markdown
+## 🔧 Technical Debt (Carried from Sprint N)
+
+| ID | Issue | Priority | Effort | Source |
+|----|-------|----------|--------|--------|
+| TD-001 | [描述] | P1 | Xh | Sprint N Review |
+| TD-002 | [描述] | P2 | Xh | Sprint N Code Review |
+```
+
+#### Step 5: Sprint Planning 提醒
+- [ ] 在下个 Sprint Planning 会议议程中添加 "Technical Debt Review" 项
+- [ ] 确保 PO 了解技术债务的优先级和影响
+- [ ] 预留足够时间处理 P1 技术债务（建议 Sprint 容量的 15-20%）
+
+**验证清单：**
+```
+✅ 本 Sprint 所有技术债务已识别
+✅ 每个技术债务都有 Target Sprint
+✅ P1 项目已加入下个 Sprint Backlog
+✅ P2/P3 项目已加入 Product Backlog
+✅ 下个 Sprint Planning 议程包含 Tech Debt Review
+```
+
+**❗ 如果发现遗漏的技术债务：**
+- 立即补充到技术债务清单
+- 评估优先级并分配 Target Sprint
+- 在 Retrospective 中讨论为什么会遗漏
+
+---
 
 ### 4. Git 管理 ✅
 - [ ] 所有代码已提交到 Sprint 分支
@@ -145,6 +271,32 @@ Select-String -Path "gcredit-project/backend/CHANGELOG.md" -Pattern "## \[v0\.X\
 - 🔧 技术实现亮点
 - ⚠️ 遇到的挑战和解决方案
 - 📈 关键指标（测试覆盖率、性能、代码质量）
+
+---
+
+### UAT 结果记录（如适用）
+
+**适用条件：** 本 Sprint 包含 UAT 阶段时填写此部分。
+
+**UAT 执行摘要：**
+- [ ] **UAT 执行日期:** YYYY-MM-DD
+- [ ] **测试场景数:** X/X 通过
+- [ ] **发现的问题数:** P0: X, P1: X, P2: X
+- [ ] **已修复问题数:** X/X (100%)
+
+**关键 UAT 发现：**
+| 问题 ID | 严重程度 | 描述 | 状态 | 解决方案 |
+|---------|---------|------|------|----------|
+| UAT-001 | P0/P1/P2 | _描述_ | ✅/⚠️ | _方案_ |
+
+**UAT 参与者反馈：**
+- 正面反馈： _填写_
+- 改进建议： _填写_
+
+**延迟到下个 Sprint 的 UAT 问题：**
+- [ ] _问题描述_ (P2/P3, 非阻塞)
+
+**🔗 参考：** `docs/sprints/sprint-N/uat-test-plan.md` - UAT 测试计划
 
 ---
 
@@ -365,6 +517,13 @@ git push origin vX.X.X
 - [ ] ✅ Velocity Metrics 表格已更新
 - [ ] ✅ Last Updated 日期已更新
 
+**技术债务管理：**（参考 Section 3.6）
+- [ ] ✅ 本 Sprint 所有技术债务已识别并记录
+- [ ] ✅ 每个技术债务都有 Priority 和 Target Sprint
+- [ ] ✅ 所有 P1/P2 项目已加入下个 Sprint Backlog
+- [ ] ✅ P3 项目已加入 Product Backlog
+- [ ] ✅ 下个 Sprint Planning 议程包含 Tech Debt Review
+
 **团队协作：**
 - [ ] ✅ 团队已通知（如适用）
 
@@ -376,6 +535,8 @@ git push origin vX.X.X
 
 1. [ ] 安排 Sprint Planning 会议
 2. [ ] Review Product Backlog
+3. [ ] **Review Technical Debt Backlog** ← 🚨 确保不遗漏！
+4. [ ] 将所有技术债务项目加入 Sprint N+1 候选列表
 3. [ ] 确定下个 Sprint 的 Epic
 4. [ ] 评估团队 Velocity
 5. [ ] 创建 Sprint N+1 Backlog
@@ -439,18 +600,19 @@ git push origin vX.X.X
 
 ---
 
-**模板版本:** v1.2  
+**模板版本:** v1.4  
 **创建日期:** 2026-01-27  
-**最后更新:** 2026-01-29 (精简文档更新部分，委托给documentation-maintenance-checklist.md Scenario A)  
+**最后更新:** 2026-02-01 (添加 Section 3.6 Technical Debt Review、更新验证清单、Sprint N+1 准备)  
 **维护者:** GCredit Development Team
 
 ---
 
-**记住: 没有更新 project-context.md 的 Sprint 不算真正完成！** 🎯
+**记住: 没有更新 project-context.md 的 Sprint 不算真正完成！** 🎯  
+**记住: 没有追踪技术债务的 Sprint 会导致债务累积！** 🔧
 
 ---
 
-## 📚 Sprint 3-5 经验教训总结
+## 📚 Sprint 0-7 经验教训总结
 
 ### Sprint 3: 永远不要跳过失败的测试
 **教训：** UUID验证bug被失败测试发现，如果跳过就会遗漏真实问题  
@@ -467,3 +629,19 @@ git push origin vX.X.X
 ### Sprint 5: 参考Lessons-Learned避免重复错误
 **教训：** 主动回顾Sprint 0-4的retrospectives，成功避免了过往失误  
 **行动：** 每个Sprint Planning前必须复习过往经验教训
+
+### Sprint 6: Story文件是SSOT
+**教训：** Stories 7.2/7.3 没有独立 Story 文件，导致 Story 7.3 完全未实现  
+**行动：** Planning 时必须创建所有 Story 文件，不能只依赖 Backlog 概述
+
+### Sprint 7: 技术债务必须系统性追踪
+**教训：** Pre-UAT Review 发现 37 个问题，如果没有系统性追踪机制，P1/P2 项目容易被遗忘  
+**行动：** 添加 Section 3.6 Technical Debt Review，确保所有技术债务都进入某个 Backlog
+
+### Sprint 7: TDD 方法论对高风险代码有效
+**教训：** Story 9.1 (Badge Revocation API) 使用 TDD，Code Review 发现 4 个 HIGH 级别问题并修复  
+**行动：** 涉及授权/安全的 Story 必须使用 TDD + Code Review
+
+### Sprint 7: DoD 验证必须闭环
+**教训：** Planning 时定义的 DoD 如果不在 Completion 时验证，就失去了意义  
+**行动：** 添加 Section 3.5 强制 DoD 验证，形成 Planning-Completion 闭环

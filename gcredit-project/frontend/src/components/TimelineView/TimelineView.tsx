@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useWallet } from '../../hooks/useWallet';
 import { BadgeStatus } from '../../types/badge';
 import { TimelineLine } from './TimelineLine';
@@ -13,8 +13,17 @@ export type ViewMode = 'timeline' | 'grid';
 
 export function TimelineView() {
   const [viewMode, setViewMode] = useState<ViewMode>('timeline');
-  const [statusFilter, setStatusFilter] = useState<BadgeStatus | undefined>();
+  // Story 9.3 AC4: Default filter to CLAIMED (Active badges only) + persist in sessionStorage
+  const [statusFilter, setStatusFilter] = useState<BadgeStatus | undefined>(() => {
+    const saved = sessionStorage.getItem('badgeWalletFilter');
+    return saved ? (saved === 'ALL' ? undefined : saved as BadgeStatus) : BadgeStatus.CLAIMED;
+  });
   const { data, isLoading, error } = useWallet({ status: statusFilter });
+
+  // Story 9.3 AC4: Persist filter to sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem('badgeWalletFilter', statusFilter || 'ALL');
+  }, [statusFilter]);
 
   if (isLoading) {
     return (
@@ -99,15 +108,20 @@ export function TimelineView() {
           <ViewToggle mode={viewMode} onChange={setViewMode} />
         </div>
 
-        {/* Filter */}
+        {/* Filter - Story 9.3 AC4 */}
         <div className="mb-6">
+          <label htmlFor="badge-status-filter" className="sr-only">
+            Filter badges by status
+          </label>
           <select
+            id="badge-status-filter"
             value={statusFilter || 'ALL'}
             onChange={(e) => setStatusFilter(e.target.value === 'ALL' ? undefined : e.target.value as BadgeStatus)}
             className="px-4 py-2 border border-gray-300 rounded-lg"
+            aria-label="Filter badges by status"
           >
             <option value="ALL">All Badges</option>
-            <option value={BadgeStatus.CLAIMED}>Claimed</option>
+            <option value={BadgeStatus.CLAIMED}>Active</option>
             <option value={BadgeStatus.PENDING}>Pending</option>
             <option value={BadgeStatus.REVOKED}>Revoked</option>
           </select>

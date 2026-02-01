@@ -40,14 +40,15 @@ export class AuthService {  private readonly logger = new Logger(AuthService.nam
     // 2. Hash password with bcrypt (10 salt rounds)
     const passwordHash = await bcrypt.hash(dto.password, 10);
 
-    // 3. Create user with specified role or default EMPLOYEE role
+    // 3. Create user with EMPLOYEE role (SEC-P0-002: Role is always EMPLOYEE for new registrations)
+    // Privilege escalation must go through admin approval workflow
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
         passwordHash,
         firstName: dto.firstName,
         lastName: dto.lastName,
-        role: (dto.role as UserRole) || UserRole.EMPLOYEE, // Use provided role or default to EMPLOYEE
+        role: UserRole.EMPLOYEE,
       },
     });
 

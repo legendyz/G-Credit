@@ -123,9 +123,15 @@ export class BadgeVerificationController {
       verificationStatus,
       verifiedAt: now.toISOString(),
       revoked: isRevoked,
+      
+      // Story 9.2: Revocation details with categorization
+      isValid: badge.isValid,
       ...(isRevoked && {
         revokedAt: badge.revokedAt,
         revocationReason: badge.revocationReason,
+        revocationNotes: badge.revocationNotes,
+        isPublicReason: badge.isPublicReason,
+        revokedBy: badge.revokedBy,
       }),
       
       // Story 6.2: Detailed badge info for web UI

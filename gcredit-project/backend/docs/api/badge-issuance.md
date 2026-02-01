@@ -341,23 +341,25 @@ Same as [Get My Badges](#get-my-badges)
 
 ### Revoke Badge
 
-Revoke a badge (ADMIN only).
+Revoke a badge. ADMIN can revoke any badge, ISSUER can revoke their own issued badges.
 
 **Endpoint:** `POST /api/badges/:id/revoke`  
 **Authentication:** Required  
-**Authorization:** `ADMIN` only
+**Authorization:** `ADMIN` or `ISSUER` (own badges only)
 
 #### Request Body
 
 ```json
 {
-  "reason": "Policy violation detected"
+  "reason": "Policy Violation",
+  "notes": "Optional additional context for the revocation"
 }
 ```
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `reason` | String | Yes | Reason for revocation |
+| `reason` | String (enum) | Yes | Revocation reason: Policy Violation, Issued in Error, Expired, Duplicate, Fraud, Other |
+| `notes` | String | No | Optional additional notes (max 1000 characters) |
 
 #### Response (200 OK)
 
@@ -373,9 +375,10 @@ Revoke a badge (ADMIN only).
 
 #### Error Responses
 
-- **400 Bad Request:** Badge already revoked
-- **403 Forbidden:** User doesn't have ADMIN role
+- **403 Forbidden:** User doesn't have permission (ISSUER trying to revoke another issuer's badge)
 - **404 Not Found:** Badge not found
+
+**Note:** Re-revoking an already revoked badge returns 200 OK with `alreadyRevoked: true` flag (idempotent operation).
 
 #### Example (cURL)
 

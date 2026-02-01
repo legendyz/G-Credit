@@ -29,6 +29,9 @@ describe('BadgeIssuanceService', () => {
       update: jest.fn(),
       findUnique: jest.fn(),
     },
+    auditLog: {
+      create: jest.fn(),
+    },
   };
 
   const mockAssertionGenerator = {
@@ -42,6 +45,7 @@ describe('BadgeIssuanceService', () => {
 
   const mockNotificationService = {
     sendBadgeClaimNotification: jest.fn(),
+    sendBadgeRevocationNotification: jest.fn().mockResolvedValue({ success: true, attempts: 1 }),
   };
 
   const mockCSVParserService = {
@@ -547,6 +551,709 @@ describe('BadgeIssuanceService', () => {
         .rejects
         .toThrow(/Claim token has expired/);
       expect(mockPrismaService.badge.update).not.toHaveBeenCalled();
+    });
+  });
+
+  // Sprint 7: Badge Revocation Tests (Story 9.1)
+  describe('revokeBadge', () => {
+    const mockBadgeId = 'badge-uuid-123';
+    const mockAdminUser = {
+      id: 'admin-id',
+      email: 'admin@test.com',
+      role: 'ADMIN',
+    };
+    const mockIssuerUser = {
+      id: 'issuer-id',
+      email: 'issuer@test.com',
+      role: 'ISSUER',
+    };
+    const mockEmployeeUser = {
+      id: 'employee-id',
+      email: 'employee@test.com',
+      role: 'EMPLOYEE',
+    };
+    const mockBadge = {
+      id: mockBadgeId,
+      status: BadgeStatus.CLAIMED,
+      issuerId: 'issuer-id', // Use issuerId not issuedBy
+      recipientEmail: 'recipient@test.com',
+      name: 'Test Badge',
+      template: {
+        name: 'Test Template',
+        description: 'Test description',
+      },
+      recipient: {
+        email: 'recipient@test.com',
+        firstName: 'John',
+        lastName: 'Doe',
+      },
+    };
+
+    beforeEach(() => {
+      // Reset mocks
+      jest.clearAllMocks();
+      mockPrismaService.badge.findUnique = jest.fn();
+      mockPrismaService.user.findUnique = jest.fn();
+      mockPrismaService.badge.update = jest.fn();
+      mockPrismaService.$transaction = jest.fn();
+    });
+
+    describe('Authorization', () => {
+      it('should allow ADMIN to revoke any badge', async () => {
+        // Arrange
+        mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
+        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+          return callback({
+            badge: {
+              update: jest.fn().mockResolvedValue({
+                ...mockBadge,
+                status: BadgeStatus.REVOKED,
+                revokedBy: mockAdminUser.id,
+                revokedAt: new Date(),
+              }),
+            },
+            auditLog: {
+              create: jest.fn().mockResolvedValue({}),
+            },
+          });
+        });
+
+        // Act
+        const result = await service.revokeBadge(mockBadgeId, {
+          reason: 'POLICY_VIOLATION',
+          actorId: mockAdminUser.id,
+        });
+
+        // Assert
+        expect(result.status).toBe(BadgeStatus.REVOKED);
+        expect(result.revokedBy).toBe(mockAdminUser.id);
+      });
+
+      it('should allow ISSUER to revoke their own badges', async () => {
+        // Arrange
+        const ownBadge = { 
+          ...mockBadge, 
+          issuerId: mockIssuerUser.id, // Correct field name
+        };
+        mockPrismaService.badge.findUnique.mockResolvedValue(ownBadge);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockIssuerUser);
+        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+          return callback({
+            badge: {
+              update: jest.fn().mockResolvedValue({
+                ...ownBadge,
+                status: BadgeStatus.REVOKED,
+              }),
+            },
+            auditLog: {
+              create: jest.fn().mockResolvedValue({}),
+            },
+          });
+        });
+
+        // Act
+        const result = await service.revokeBadge(mockBadgeId, {
+          reason: 'ISSUED_IN_ERROR',
+          actorId: mockIssuerUser.id,
+        });
+
+        // Assert
+        expect(result.status).toBe(BadgeStatus.REVOKED);
+      });
+
+      it('should throw 403 if ISSUER tries to revoke others badge', async () => {
+        // Arrange
+        const otherBadge = { 
+          ...mockBadge, 
+          issuerId: 'other-issuer-id',  // Different issuer
+        };
+        mockPrismaService.badge.findUnique.mockResolvedValue(otherBadge);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockIssuerUser);
+
+        // Act & Assert
+        await expect(
+          service.revokeBadge(mockBadgeId, {
+            reason: 'POLICY_VIOLATION',
+            actorId: mockIssuerUser.id,
+          }),
+        ).rejects.toThrow('cannot revoke badge');
+      });
+
+      it('should throw 403 if EMPLOYEE tries to revoke', async () => {
+        // Arrange
+        mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockEmployeeUser);
+
+        // Act & Assert
+        await expect(
+          service.revokeBadge(mockBadgeId, {
+            reason: 'POLICY_VIOLATION',
+            actorId: mockEmployeeUser.id,
+          }),
+        ).rejects.toThrow('cannot revoke badge');
+      });
+    });
+
+    describe('Idempotency', () => {
+      it('should return 200 if badge already revoked', async () => {
+        // Arrange
+        const revokedBadge = {
+          ...mockBadge,
+          status: BadgeStatus.REVOKED,
+          revokedAt: new Date(),
+          revokedBy: mockAdminUser.id,
+        };
+        mockPrismaService.badge.findUnique.mockResolvedValue(revokedBadge);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
+
+        // Act
+        const result = await service.revokeBadge(mockBadgeId, {
+          reason: 'POLICY_VIOLATION',
+          actorId: mockAdminUser.id,
+        });
+
+        // Assert
+        expect(result.status).toBe(BadgeStatus.REVOKED);
+        expect(result.alreadyRevoked).toBe(true);
+        expect(mockPrismaService.$transaction).not.toHaveBeenCalled();
+      });
+
+      it('should NOT create duplicate audit log on re-revoke', async () => {
+        // Arrange
+        const revokedBadge = { ...mockBadge, status: BadgeStatus.REVOKED };
+        mockPrismaService.badge.findUnique.mockResolvedValue(revokedBadge);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
+
+        // Act
+        await service.revokeBadge(mockBadgeId, {
+          reason: 'POLICY_VIOLATION',
+          actorId: mockAdminUser.id,
+        });
+
+        // Assert
+        expect(mockPrismaService.$transaction).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('Data Integrity', () => {
+      it('should populate all revocation fields', async () => {
+        // Arrange
+        mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
+        const mockTimestamp = new Date();
+        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+          return callback({
+            badge: {
+              update: jest.fn().mockResolvedValue({
+                ...mockBadge,
+                status: BadgeStatus.REVOKED,
+                revokedAt: mockTimestamp,
+                revokedBy: mockAdminUser.id,
+                revocationReason: 'EXPIRED',
+                revocationNotes: 'Badge validity period ended',
+              }),
+            },
+            auditLog: {
+              create: jest.fn().mockResolvedValue({}),
+            },
+          });
+        });
+
+        // Act
+        const result = await service.revokeBadge(mockBadgeId, {
+          reason: 'EXPIRED',
+          notes: 'Badge validity period ended',
+          actorId: mockAdminUser.id,
+        });
+
+        // Assert
+        expect(result.revokedAt).toBeInstanceOf(Date);
+        expect(result.revokedBy).toBe(mockAdminUser.id);
+        expect(result.revocationReason).toBe('EXPIRED');
+        expect(result.revocationNotes).toBe('Badge validity period ended');
+      });
+
+      it('should create audit log entry', async () => {
+        // Arrange
+        mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
+        const mockAuditLogCreate = jest.fn().mockResolvedValue({});
+        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+          return callback({
+            badge: {
+              update: jest.fn().mockResolvedValue({
+                ...mockBadge,
+                status: BadgeStatus.REVOKED,
+              }),
+            },
+            auditLog: {
+              create: mockAuditLogCreate,
+            },
+          });
+        });
+
+        // Act
+        await service.revokeBadge(mockBadgeId, {
+          reason: 'POLICY_VIOLATION',
+          actorId: mockAdminUser.id,
+        });
+
+        // Assert
+        expect(mockAuditLogCreate).toHaveBeenCalledWith({
+          data: expect.objectContaining({
+            entityType: 'Badge',
+            entityId: mockBadgeId,
+            action: 'REVOKED',
+            actorId: mockAdminUser.id,
+            actorEmail: mockAdminUser.email,
+          }),
+        });
+      });
+
+      it('should throw 404 if badge not found', async () => {
+        // Arrange
+        mockPrismaService.badge.findUnique.mockResolvedValue(null);
+
+        // Act & Assert
+        await expect(
+          service.revokeBadge(mockBadgeId, {
+            reason: 'POLICY_VIOLATION',
+            actorId: mockAdminUser.id,
+          }),
+        ).rejects.toThrow(NotFoundException);
+      });
+    });
+
+    // Story 9.4: Badge Revocation Notifications
+    describe('Email Notifications (Story 9.4)', () => {
+      beforeEach(() => {
+        mockNotificationService.sendBadgeRevocationNotification.mockClear();
+      });
+
+      it('should send revocation email notification when badge is revoked', async () => {
+        // Arrange
+        const mockRecipient = {
+          email: 'recipient@test.com',
+          firstName: 'Jane',
+          lastName: 'Doe',
+        };
+        const mockTemplate = {
+          name: 'Advanced React Development',
+        };
+        const mockBadgeWithRecipient = {
+          ...mockBadge,
+          recipient: mockRecipient,
+          template: mockTemplate,
+        };
+
+        mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeWithRecipient);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
+        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+          return callback({
+            badge: {
+              update: jest.fn().mockResolvedValue({
+                ...mockBadgeWithRecipient,
+                status: BadgeStatus.REVOKED,
+                revokedAt: new Date(),
+                revokedBy: mockAdminUser.id,
+                revocationReason: 'Policy Violation',
+                revocationNotes: 'Test notes',
+              }),
+            },
+            auditLog: {
+              create: jest.fn().mockResolvedValue({}),
+            },
+          });
+        });
+
+        // Act
+        await service.revokeBadge(mockBadgeId, {
+          reason: 'Policy Violation',
+          notes: 'Test notes',
+          actorId: mockAdminUser.id,
+        });
+
+        // Assert - Verify email notification was called with correct params
+        expect(mockNotificationService.sendBadgeRevocationNotification).toHaveBeenCalledTimes(1);
+        expect(mockNotificationService.sendBadgeRevocationNotification).toHaveBeenCalledWith(
+          expect.objectContaining({
+            recipientEmail: 'recipient@test.com',
+            recipientName: 'Jane Doe',
+            badgeName: 'Advanced React Development',
+            revocationReason: 'Policy Violation',
+            revocationDate: expect.any(Date),
+            revocationNotes: 'Test notes',
+            walletUrl: expect.stringContaining('/wallet'),
+          }),
+        );
+      });
+
+      it('should send email with reason but no notes if notes not provided', async () => {
+        // Arrange
+        const mockRecipient = {
+          email: 'john@test.com',
+          firstName: 'John',
+          lastName: 'Smith',
+        };
+        const mockTemplate = {
+          name: 'Security Awareness',
+        };
+        const mockBadgeWithRecipient = {
+          ...mockBadge,
+          recipient: mockRecipient,
+          template: mockTemplate,
+        };
+
+        mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeWithRecipient);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
+        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+          return callback({
+            badge: {
+              update: jest.fn().mockResolvedValue({
+                ...mockBadgeWithRecipient,
+                status: BadgeStatus.REVOKED,
+              }),
+            },
+            auditLog: {
+              create: jest.fn().mockResolvedValue({}),
+            },
+          });
+        });
+
+        // Act
+        await service.revokeBadge(mockBadgeId, {
+          reason: 'Expired',
+          actorId: mockAdminUser.id,
+        });
+
+        // Assert
+        expect(mockNotificationService.sendBadgeRevocationNotification).toHaveBeenCalledWith(
+          expect.objectContaining({
+            recipientEmail: 'john@test.com',
+            recipientName: 'John Smith',
+            badgeName: 'Security Awareness',
+            revocationReason: 'Expired',
+            revocationDate: expect.any(Date),
+            revocationNotes: undefined,
+          })
+        );
+      });
+
+      it('should NOT send email if badge already revoked (idempotency)', async () => {
+        // Arrange
+        const revokedBadge = {
+          ...mockBadge,
+          status: BadgeStatus.REVOKED,
+          revokedAt: new Date(),
+        };
+        mockPrismaService.badge.findUnique.mockResolvedValue(revokedBadge);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
+
+        // Act
+        await service.revokeBadge(mockBadgeId, {
+          reason: 'Policy Violation',
+          actorId: mockAdminUser.id,
+        });
+
+        // Assert - Email should NOT be sent for already-revoked badges
+        expect(mockNotificationService.sendBadgeRevocationNotification).not.toHaveBeenCalled();
+      });
+
+      it('should NOT fail revocation if email sending fails', async () => {
+        // Arrange
+        const mockRecipient = {
+          email: 'recipient@test.com',
+          firstName: 'Jane',
+          lastName: 'Doe',
+        };
+        const mockBadgeWithRecipient = {
+          ...mockBadge,
+          recipient: mockRecipient,
+        };
+
+        mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeWithRecipient);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
+        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+          return callback({
+            badge: {
+              update: jest.fn().mockResolvedValue({
+                ...mockBadgeWithRecipient,
+                status: BadgeStatus.REVOKED,
+              }),
+            },
+            auditLog: {
+              create: jest.fn().mockResolvedValue({}),
+            },
+          });
+        });
+
+        // Simulate email service failure
+        mockNotificationService.sendBadgeRevocationNotification.mockRejectedValue(
+          new Error('SMTP connection failed')
+        );
+
+        // Act & Assert - Revocation should succeed even if email fails
+        const result = await service.revokeBadge(mockBadgeId, {
+          reason: 'Policy Violation',
+          actorId: mockAdminUser.id,
+        });
+
+        expect(result.status).toBe(BadgeStatus.REVOKED);
+        expect(mockNotificationService.sendBadgeRevocationNotification).toHaveBeenCalled();
+      });
+
+      it('should create audit log entry for notification result (AC3)', async () => {
+        // Arrange
+        const mockRecipient = {
+          email: 'audit-test@test.com',
+          firstName: 'Audit',
+          lastName: 'Test',
+        };
+        const mockTemplate = { name: 'Audit Badge' };
+        const mockBadgeWithRecipient = {
+          ...mockBadge,
+          recipient: mockRecipient,
+          template: mockTemplate,
+        };
+
+        mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeWithRecipient);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
+        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+          return callback({
+            badge: {
+              update: jest.fn().mockResolvedValue({
+                ...mockBadgeWithRecipient,
+                status: BadgeStatus.REVOKED,
+                revokedAt: new Date(),
+              }),
+            },
+            auditLog: {
+              create: jest.fn().mockResolvedValue({}),
+            },
+          });
+        });
+
+        // Mock notification result for audit
+        mockNotificationService.sendBadgeRevocationNotification.mockResolvedValue({
+          success: true,
+          attempts: 1,
+        });
+        mockPrismaService.auditLog.create.mockResolvedValue({});
+
+        // Act
+        await service.revokeBadge(mockBadgeId, {
+          reason: 'Policy Violation',
+          actorId: mockAdminUser.id,
+        });
+
+        // Wait for async notification handling
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Assert - Audit log should be created for notification
+        expect(mockPrismaService.auditLog.create).toHaveBeenCalledWith({
+          data: expect.objectContaining({
+            entityType: 'BadgeNotification',
+            entityId: mockBadgeId,
+            action: 'NOTIFICATION_SENT',
+            metadata: expect.objectContaining({
+              notificationType: 'REVOCATION',
+              recipientEmail: 'audit-test@test.com',
+              success: true,
+              attempts: 1,
+            }),
+          }),
+        });
+      });
+
+      it('should include revocationDate in notification (AC1 fix)', async () => {
+        // Arrange
+        const revokedAt = new Date('2026-02-01T10:00:00Z');
+        const mockRecipient = {
+          email: 'date-test@test.com',
+          firstName: 'Date',
+          lastName: 'Test',
+        };
+        const mockTemplate = { name: 'Date Test Badge' };
+        const mockBadgeWithRecipient = {
+          ...mockBadge,
+          recipient: mockRecipient,
+          template: mockTemplate,
+        };
+
+        mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeWithRecipient);
+        mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
+        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+          return callback({
+            badge: {
+              update: jest.fn().mockResolvedValue({
+                ...mockBadgeWithRecipient,
+                status: BadgeStatus.REVOKED,
+                revokedAt: revokedAt,
+              }),
+            },
+            auditLog: {
+              create: jest.fn().mockResolvedValue({}),
+            },
+          });
+        });
+
+        // Act
+        await service.revokeBadge(mockBadgeId, {
+          reason: 'Expired',
+          actorId: mockAdminUser.id,
+        });
+
+        // Assert - revocationDate should be passed
+        expect(mockNotificationService.sendBadgeRevocationNotification).toHaveBeenCalledWith(
+          expect.objectContaining({
+            revocationDate: revokedAt,
+          }),
+        );
+      });
+    });
+  });
+
+  // Story 9.3: Employee Wallet Display for Revoked Badges
+  describe('getWalletBadges - Story 9.3', () => {
+    const mockUserId = 'user-uuid-123';
+    
+    describe('Revocation Fields Inclusion', () => {
+      it('should include revocation fields when badge is REVOKED', async () => {
+        // Arrange
+        const revokedBadge = {
+          id: 'badge-1',
+          recipientId: mockUserId,
+          status: BadgeStatus.REVOKED,
+          issuedAt: new Date('2026-01-15'),
+          claimedAt: new Date('2026-01-16'),
+          revokedAt: new Date('2026-02-01'),
+          revocationReason: 'Policy Violation',
+          revocationNotes: 'Violated company code of conduct',
+          revokedBy: 'admin-uuid',
+          template: {
+            id: 'template-1',
+            name: 'Badge 1',
+            description: 'Test Badge',
+            imageUrl: '/badge1.png',
+            category: 'Technical',
+          },
+          issuer: {
+            id: 'issuer-1',
+            firstName: 'John',
+            lastName: 'Manager',
+            email: 'manager@test.com',
+          },
+          revoker: {
+            id: 'admin-uuid',
+            firstName: 'Admin',
+            lastName: 'User',
+            email: 'admin@test.com',
+            role: 'ADMIN',
+          },
+        };
+
+        (mockPrismaService.badge as any).count = jest.fn().mockResolvedValue(1);
+        (mockPrismaService.badge as any).findMany = jest.fn().mockResolvedValue([revokedBadge]);
+        mockMilestonesService.getUserAchievements = jest.fn().mockResolvedValue([]);
+
+        // Act
+        const result = await service.getWalletBadges(mockUserId, {});
+
+        // Assert - Revocation fields should be present
+        expect(result.badges).toHaveLength(1);
+        const badge = result.badges[0];
+        expect(badge.status).toBe(BadgeStatus.REVOKED);
+        expect(badge.revokedAt).toBeDefined();
+        expect(badge.revocationReason).toBe('Policy Violation');
+        expect(badge.revocationNotes).toBe('Violated company code of conduct');
+        expect(badge.revokedBy).toBeDefined();
+      });
+
+      it('should NOT include revocation fields when badge is CLAIMED', async () => {
+        // Arrange
+        const claimedBadge = {
+          id: 'badge-2',
+          recipientId: mockUserId,
+          status: BadgeStatus.CLAIMED,
+          issuedAt: new Date('2026-01-15'),
+          claimedAt: new Date('2026-01-16'),
+          revokedAt: null,
+          revocationReason: null,
+          revocationNotes: null,
+          revokedBy: null,
+          template: {
+            id: 'template-2',
+            name: 'Active Badge',
+            description: 'Active Test Badge',
+            imageUrl: '/badge2.png',
+            category: 'Leadership',
+          },
+          issuer: {
+            id: 'issuer-2',
+            firstName: 'Jane',
+            lastName: 'Smith',
+            email: 'jane@test.com',
+          },
+        };
+
+        (mockPrismaService.badge as any).count = jest.fn().mockResolvedValue(1);
+        (mockPrismaService.badge as any).findMany = jest.fn().mockResolvedValue([claimedBadge]);
+        mockMilestonesService.getUserAchievements = jest.fn().mockResolvedValue([]);
+
+        // Act
+        const result = await service.getWalletBadges(mockUserId, {});
+
+        // Assert - Revocation fields should NOT be present
+        expect(result.badges).toHaveLength(1);
+        const badge = result.badges[0];
+        expect(badge.status).toBe(BadgeStatus.CLAIMED);
+        expect(badge.revokedAt).toBeUndefined();
+        expect(badge.revocationReason).toBeUndefined();
+        expect(badge.revocationNotes).toBeUndefined();
+      });
+
+      it('should support status filter for REVOKED badges', async () => {
+        // Arrange
+        const revokedBadge = {
+          id: 'badge-3',
+          recipientId: mockUserId,
+          status: BadgeStatus.REVOKED,
+          issuedAt: new Date('2026-01-15'),
+          revokedAt: new Date('2026-02-01'),
+          revocationReason: 'Expired',
+          template: {
+            id: 'template-3',
+            name: 'Expired Badge',
+            description: 'Test',
+            imageUrl: '/badge3.png',
+            category: 'Technical',
+          },
+          issuer: {
+            id: 'issuer-3',
+            firstName: 'Manager',
+            lastName: 'One',
+            email: 'manager@test.com',
+          },
+        };
+
+        (mockPrismaService.badge as any).count = jest.fn().mockResolvedValue(1);
+        (mockPrismaService.badge as any).findMany = jest.fn().mockResolvedValue([revokedBadge]);
+        mockMilestonesService.getUserAchievements = jest.fn().mockResolvedValue([]);
+
+        // Act
+        const result = await service.getWalletBadges(mockUserId, { status: BadgeStatus.REVOKED });
+
+        // Assert
+        expect(mockPrismaService.badge.count).toHaveBeenCalledWith({
+          where: {
+            recipientId: mockUserId,
+            status: BadgeStatus.REVOKED,
+          },
+        });
+        expect(result.badges).toHaveLength(1);
+        expect(result.badges[0].status).toBe(BadgeStatus.REVOKED);
+      });
     });
   });
 });

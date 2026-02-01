@@ -20,6 +20,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { PrismaService } from '../../common/prisma.service';
 import { ClaimBadgeActionDto } from './dto/claim-badge-action.dto';
 import { BadgeStatus } from '@prisma/client';
@@ -72,7 +73,10 @@ export class TeamsActionController {
   @ApiResponse({ status: 400, description: 'Badge already claimed or revoked' })
   @ApiResponse({ status: 403, description: 'User not authorized to claim this badge' })
   @ApiResponse({ status: 404, description: 'Badge not found' })
-  async claimBadge(@Body() dto: ClaimBadgeActionDto) {
+  async claimBadge(
+    @Body() dto: ClaimBadgeActionDto,
+    @CurrentUser() user: { userId: string; email: string; role: string },
+  ) {
     // 1. Validate badge exists
     const badge = await this.prisma.badge.findUnique({
       where: { id: dto.badgeId },
@@ -87,8 +91,9 @@ export class TeamsActionController {
       throw new NotFoundException(`Badge ${dto.badgeId} not found`);
     }
 
-    // 2. Validate user is the recipient
-    if (badge.recipientId !== dto.userId) {
+    // 2. Validate user is the recipient (SEC-P0-001: Use JWT user.userId, not dto.userId)
+    // This prevents IDOR attacks where attackers could claim badges for other users
+    if (badge.recipientId !== user.userId) {
       throw new ForbiddenException('Only the badge recipient can claim this badge');
     }
 

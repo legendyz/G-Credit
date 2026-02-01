@@ -63,6 +63,106 @@ Master, execute Sprint N completion documentation maintenance (Scenario A).
 
 ## 📋 Core Documentation Sync Checklist (ALWAYS REQUIRED)
 
+### ✅ Step 0: Verify Current Sprint Status (MANDATORY - Execute FIRST)
+
+**File Location:** `{project-root}/gcredit-project/docs/sprints/sprint-N/sprint-status.yaml`  
+**Priority:** 🔴 CRITICAL - Must complete BEFORE updating any documentation  
+**Purpose:** Prevent incomplete/inaccurate documentation by verifying actual sprint state
+
+**⚠️ CRITICAL RULE:** **ALWAYS read the COMPLETE file** - partial reads lead to missing completed stories!
+
+**Verification Steps:**
+- [ ] **Load sprint-status.yaml COMPLETELY:**
+  - [ ] Read ENTIRE file (not just first 80-100 lines)
+  - [ ] Verify file loaded to end (check for "technical_debt" section at bottom)
+  - [ ] If using read_file tool, ensure endLine covers full file length
+  
+- [ ] **Extract Sprint Metrics:**
+  - [ ] `sprint_info.status` - Current sprint status (in-progress/complete)
+  - [ ] `sprint_metrics.completed_stories` - Number of done stories
+  - [ ] `sprint_metrics.total_stories` - Total story count
+  - [ ] `sprint_metrics.completion_rate` - Percentage complete
+  - [ ] `sprint_metrics.actual_hours` - Hours spent so far
+  - [ ] `sprint_metrics.estimated_hours` - Total estimated hours
+  - [ ] `sprint_metrics.total_tests` - Test count
+  - [ ] `sprint_metrics.core_tests_passing` - Passing tests
+  
+- [ ] **Identify ALL Stories Marked "done":**
+  - [ ] Review `development_status` section completely
+  - [ ] List every story with `status: done` or `status: "done"`
+  - [ ] Count matches `sprint_metrics.completed_stories` (sanity check)
+  - [ ] If counts don't match → STOP and investigate discrepancy
+  
+- [ ] **Extract Each Completed Story's Details:**
+  - [ ] For EACH story marked "done", record:
+    - [ ] `story_points` - Complexity estimate
+    - [ ] `estimated_hours` vs `actual_hours` - Accuracy tracking
+    - [ ] `start_date` and `completion_date` - Timeline
+    - [ ] `tests_added` and `tests_passing` - Quality metrics
+    - [ ] `code_review_issues` and `code_review_fixes` - Code quality
+    - [ ] `acceptance_criteria` - Business value delivered
+    - [ ] `notes` - Key implementation details, decisions, fixes
+    - [ ] `depends_on` and `blocks` - Dependency tracking
+  
+- [ ] **Verify Dependency Chain:**
+  - [ ] Check if completed stories unblock pending stories
+  - [ ] Identify next stories ready for development
+  - [ ] Note any blocked stories and reasons
+
+**Cross-Validation (Data Integrity Check):**
+- [ ] **Test Count Alignment:**
+  - [ ] Sum `tests_added` for all "done" stories
+  - [ ] Should approximately match delta in `total_tests` vs previous sprint
+  - [ ] If mismatch > 10% → investigate (overlapping tests, refactoring, etc.)
+  
+- [ ] **Hours Alignment:**
+  - [ ] Sum `actual_hours` for all "done" stories
+  - [ ] Should match `sprint_metrics.actual_hours`
+  - [ ] If mismatch → STOP and fix sprint-status.yaml first
+  
+- [ ] **Completion Rate Calculation:**
+  - [ ] Manual: `(completed_stories / total_stories) * 100`
+  - [ ] Should match `sprint_metrics.completion_rate`
+  - [ ] If mismatch → use sprint-status.yaml value, note discrepancy
+
+**Common Mistakes to Avoid:**
+- ❌ **Reading only first 80-100 lines** → Stories 2, 3, 4+ will be missed
+- ❌ **Assuming user input is complete** → Always verify against YAML file
+- ❌ **Using cached/stale data** → Read current file, not remembered state
+- ❌ **Skipping cross-validation** → Metrics errors propagate to all docs
+- ❌ **Partial story details** → Missing test counts, hours, or review fixes
+
+**Output Checklist (before proceeding to Step 1):**
+- [ ] **I have a complete list of ALL done stories** (not just the first one)
+- [ ] **I have full details for EACH done story** (hours, tests, review fixes)
+- [ ] **I have verified sprint metrics** (completion %, hours, tests)
+- [ ] **I have cross-validated data integrity** (sums match, no discrepancies)
+- [ ] **I am ready to update documentation with accurate, complete information**
+
+**If ANY checkbox above is unchecked → STOP. Do NOT proceed to Step 1.**
+
+**Example - What Good Verification Looks Like:**
+
+```
+✅ Sprint 7 Status Verified (from sprint-status.yaml):
+
+Completed Stories (4/7 = 57%):
+- Story 0.1: Git Branch (5min, prerequisite)
+- Story 9.1: Badge Revocation API (5h, 47 tests, 4 review fixes)
+- Story 9.2: Revoked Badge Verification (4.5h, 25 tests, 6 review fixes)
+- Story 9.3: Employee Wallet Revoked Display (4.5h, 24 tests, 6 review fixes)
+
+Sprint Metrics:
+- Hours: 14h actual / 20-26h estimated (70% of low estimate)
+- Tests: 278 total, 241 passing core (100% pass rate)
+- Test Delta: +34 tests from Sprint 6 (47+25+24 = 96, overlaps = 62)
+- Completion: 57% (4/7 stories)
+
+Ready to proceed: ✅ All data verified, cross-validation complete
+```
+
+---
+
 ### ✅ Step 1: Update `project-context.md` (Single Source of Truth)
 
 **File Location:** `{project-root}/project-context.md`  
@@ -125,10 +225,27 @@ Master, execute Sprint N completion documentation maintenance (Scenario A).
   - [ ] `Version:` line matches latest tag
   - [ ] `Last Updated:` date current
 
-- [ ] **Bottom Status Summary (Last 5 lines):**
-  - [ ] `Status:` line updated
+- [ ] **Current Phase Section (Lines ~156-280):**
+  - [ ] Latest sprint entry added with COMPLETE details
+  - [ ] Include: completion date, metrics, deliverables, tests
+  - [ ] Previous sprint entries remain accurate
+  - [ ] Remove outdated "Planning" or "Awaiting" text
+  - [ ] Add "In Progress" details for active sprint (if applicable)
+
+- [ ] **Roadmap Section (Lines ~462-480):**
+  - [ ] Phase 3 week number updated (e.g., Week 6 → Week 7)
+  - [ ] All completed sprints marked "✅ Complete" with full metrics
+  - [ ] Current sprint shows "🟡 In Progress" with completion %
+  - [ ] Future sprints remain "⏳ Planned"
+  - [ ] Sprint durations reflect actual time (not estimates)
+
+- [ ] **Bottom Status Summary (Last ~15 lines):**
+  - [ ] `Last Updated:` date is TODAY
+  - [ ] `Status:` line reflects current + completed sprints
+  - [ ] `Version:` matches latest tag
+  - [ ] All sprint links added (Sprint 0-N)
+  - [ ] `Next:` line shows immediate next action
   - [ ] Sprint completion links added
-  - [ ] `Next:` line reflects upcoming work
 
 #### B. `gcredit-project/README.md` (Project Reference - Internal Audience)
 
@@ -183,7 +300,54 @@ Master, execute Sprint N completion documentation maintenance (Scenario A).
 
 ---
 
-### ✅ Step 4: Verify Sprint Documentation Structure
+### ✅ Step 4: Update API Documentation (If New Endpoints Added)
+
+**File Location:** `{project-root}/gcredit-project/backend/docs/API-GUIDE.md`  
+**Priority:** 🔴 CRITICAL (if sprint added/modified API endpoints)  
+**Trigger:** Sprint completed stories that added or modified API endpoints
+
+**Check and Update:**
+- [ ] **Top Metadata (Lines 1-6):**
+  - [ ] `Version:` updated to match sprint version (e.g., 0.7.0)
+  - [ ] `Last Updated:` changed to TODAY
+  - [ ] Add sprint description in version (e.g., "Sprint 7 - Badge Revocation")
+
+- [ ] **Table of Contents:**
+  - [ ] New API chapters added (e.g., Badge Issuance, Badge Revocation)
+  - [ ] Section links work correctly
+
+- [ ] **New API Endpoints Documented:**
+  - [ ] Endpoint path and HTTP method clearly stated
+  - [ ] Authentication requirements specified
+  - [ ] Authorization roles listed (ADMIN, ISSUER, EMPLOYEE, etc.)
+  - [ ] Request body schema with field descriptions
+  - [ ] Response schema with status codes
+  - [ ] Error responses documented
+  - [ ] cURL examples provided (both PowerShell and Bash)
+  - [ ] Query parameters explained (if applicable)
+
+- [ ] **Bottom Metadata:**
+  - [ ] `Last Updated:` is TODAY
+  - [ ] `API Version:` matches sprint version
+  - [ ] `Coverage:` lists sprint range (e.g., "Sprint 0-7")
+  - [ ] Links to detailed API docs (if exists)
+
+**How to Identify New Endpoints:**
+1. Check sprint-status.yaml `story_details` for completed stories
+2. For each "done" story, check its story file for "API Endpoints" section
+3. Look for POST/GET/PUT/DELETE endpoints in story acceptance criteria
+4. Check CHANGELOG.md for "API endpoints added/modified" entries
+
+**Common Mistakes to Avoid:**
+- ❌ Forgetting to update version number and date
+- ❌ Adding endpoint description but missing cURL examples
+- ❌ Not updating Table of Contents when adding new chapters
+- ❌ Copying old date/version from previous section
+- ❌ Missing authorization rules (who can call this endpoint)
+
+---
+
+### ✅ Step 5: Verify Sprint Documentation Structure
 
 **File Location:** `{project-root}/gcredit-project/docs/sprints/sprint-N/`  
 **Priority:** 🟡 HIGH
@@ -626,6 +790,177 @@ Get-ChildItem -Recurse -Filter "*.md" | Where-Object { $_.DirectoryName -notmatc
 - [ ] **Structure Check:**
   - [ ] All docs follow `DOCUMENTATION-STRUCTURE.md`
   - [ ] No files in wrong directories
+
+---
+
+## 📖 Lessons Learned (From Real Incidents)
+
+### Incident #1: Partial sprint-status.yaml Read (2026-02-01)
+
+**What Happened:**
+- Documentation maintenance executed for Sprint 7
+- Only Story 9.1 completion reported in docs
+- Stories 9.2 and 9.3 completion missed entirely
+- Completion rate incorrectly reported as 18% (should be 57%)
+- Test count incorrectly reported as 270 (should be 278)
+
+**Root Cause:**
+- Agent read only first 80 lines of sprint-status.yaml (partial read)
+- Stories 9.2 and 9.3 details located in lines 80-130 (missed)
+- Assumed "user mentioned 9.1 complete" meant only 9.1 done
+- documentation-maintenance-checklist.md lacked explicit Step 0 for status verification
+
+**Impact:**
+- Incomplete documentation published to Git
+- 2 completed stories (9.2, 9.3) not credited
+- 9 hours of work (4.5h + 4.5h) not documented
+- 49 tests (25 + 24) not counted
+- Stakeholder visibility: misleading 18% vs actual 57% progress
+
+**Fix Applied:**
+- Added Step 0: "Verify Current Sprint Status (MANDATORY)"
+- Explicit requirement to read COMPLETE sprint-status.yaml file
+- Cross-validation checklist (test counts, hours, completion rate)
+- "Common Mistakes to Avoid" section with examples
+- Corrective documentation update committed (commit 354a007)
+
+**Prevention Measures:**
+- ✅ Step 0 now MANDATORY before any documentation update
+- ✅ "Read ENTIRE file" emphasized in bold/red priority
+- ✅ Cross-validation checklist catches data integrity issues
+- ✅ Example output provided showing what good verification looks like
+- ✅ "If ANY checkbox unchecked → STOP" enforcement rule
+
+**Lessons for Agents:**
+1. **Never assume based on user input** → Always verify against source files
+2. **Never read files partially** → Use appropriate endLine covering full content
+3. **Always cross-validate metrics** → Sum story hours should match sprint total
+4. **Always follow checklist steps in order** → Step 0 exists for a reason
+5. **When in doubt, read more context** → Partial data leads to incomplete conclusions
+
+**Key Takeaway:**  
+> "Trust, but verify. User says Story X is done? Great! Now verify sprint-status.yaml to see if X+1, X+2 are also done. Complete data > assumptions."
+
+---
+
+### Incident #2: README Section Omissions (2026-02-01)
+
+**What Happened:**
+- Sprint 6 actual hours wrong: 30h in docs, 35h in sprint-status.yaml
+- README.md "Current Phase" section stopped at Sprint 6 Planning (outdated)
+- README.md "Roadmap" section showed Week 6 (actual: Week 7, Sprint 7 in progress)
+- README.md "Last Updated" dated 2026-01-29 (3 days stale, should be 2026-02-01)
+
+**Root Cause:**
+- Step 2 checklist too vague: "Project Overview Section" lacks specific sections
+- No explicit line number references for critical README sections
+- No "Current Phase Section" checklist item (this section often updated)
+- No "Roadmap Section" checklist item (week number + sprint status)
+- No TODAY date enforcement for "Last Updated" field
+- Instructions like "update Status line" too generic
+
+**Impact:**
+- Misleading project status for GitHub visitors (outdated by 3 days)
+- Sprint 6 completion not visible (showed "Planning" instead of "Complete")
+- Sprint 7 progress not documented (86% complete, 6/7 stories)
+- Metrics inaccuracy (30h vs 35h) propagated across files
+- Required full README audit and 3-section correction
+
+**Fix Implemented:**
+- Added **"Current Phase Section (Lines ~156-280)"** with detailed checklist:
+  - Verify latest sprint has COMPLETE details
+  - Remove "Planning" or "Awaiting" text
+  - Add "In Progress" for active sprints
+- Added **"Roadmap Section (Lines ~462-480)"** with detailed checklist:
+  - Update Phase 3 week number
+  - Mark completed sprints "✅ Complete" with metrics
+  - Show current sprint "🟡 In Progress" with %
+- Added **"Bottom Status Summary"** with specific checks:
+  - "Last Updated" must be TODAY
+  - "Status" reflects current + completed
+  - All sprint links present
+- Specific line number ranges provided for easy navigation
+
+**Prevention - 5 Key Lessons:**
+1. **Be specific with sections** - "Lines ~156-280: Current Phase" > vague "Project Overview"
+2. **Check ALL critical sections** - Not just top status, also Roadmap + Last Updated
+3. **Verify dates are current** - "Last Updated" MUST be TODAY when performing update
+4. **Remove stale language** - Delete "Planning" when sprint completes, delete "Awaiting" when started
+5. **Cross-check data sources** - If metrics differ, always trust sprint-status.yaml as source
+
+**Double-check principle:**  
+> After updating README, scan ENTIRE file for ANY occurrence of:
+> - Old sprint numbers (e.g., "Sprint 6 Planning" when 6 is complete)
+> - Stale dates (anything not TODAY in "Last Updated")
+> - Outdated text ("Planning", "Awaiting", old week numbers)
+> - Metric discrepancies (compare with sprint-status.yaml)
+
+---
+
+### Incident #3: API Documentation Not Updated (2026-02-01)
+
+**What Happened:**
+- API-GUIDE.md severely outdated: Last Updated 2026-01-26 (6 days old, Sprint 2 era)
+- Version stuck at 0.2.0 (should be 0.7.0 after Sprint 7)
+- Missing 5 sprints of API endpoints (Sprint 3-7):
+  - ❌ Badge Issuance API (Sprint 3: POST /badges, POST /badges/bulk, POST /badges/:id/claim)
+  - ❌ Badge Verification API (Sprint 5: GET /verify/:id, GET /badges/:id/assertion)
+  - ❌ Badge Sharing API (Sprint 6: POST /badges/:id/share-email)
+  - ❌ Badge Revocation API (Sprint 7: POST /badges/:id/revoke) ← Current sprint core feature!
+- Total: ~15+ new endpoints undocumented
+
+**Root Cause:**
+- documentation-maintenance-checklist.md **completely lacked** API documentation step
+- No Step 4: "Update API Documentation (If New Endpoints Added)"
+- Checklist only had Steps 1-3: project-context.md, READMEs, CHANGELOG.md
+- No trigger to check if sprint added API endpoints
+- No guidance on how to identify new endpoints from sprint files
+
+**Impact:**
+- Developers cannot reference latest API endpoints (manual code inspection required)
+- External integrators see incomplete/outdated API (v0.2.0 vs actual v0.7.0)
+- 5 sprints of API changes invisible to users
+- Core Sprint 7 feature (Badge Revocation) completely undocumented in API-GUIDE.md
+- Required emergency documentation update during sprint
+
+**Fix Implemented:**
+- Added **Step 4: Update API Documentation** to checklist with:
+  - 🔴 CRITICAL priority when sprint adds endpoints
+  - Clear trigger: "Sprint completed stories that added/modified API endpoints"
+  - Detailed checklist: Version, TOC, Endpoint details, cURL examples, Bottom metadata
+  - "How to Identify New Endpoints" guide (4 detection methods)
+  - "Common Mistakes to Avoid" (5 pitfalls)
+  - Line number references for easy navigation
+- Updated API-GUIDE.md to v0.7.0 with 3 new chapters (Badge Issuance, Revocation, Verification)
+- Added 300+ lines of API documentation covering Sprint 3-7
+
+**Prevention - 5 Key Lessons:**
+1. **Check for API changes in every sprint** - Review story files for "API Endpoints" sections
+2. **API docs are as critical as README** - Not optional, same priority as project-context.md
+3. **Version numbers must match sprints** - API-GUIDE.md version = current sprint version
+4. **Date must be TODAY when updating** - Stale dates = stale docs
+5. **Add examples, not just schemas** - cURL examples make API docs actually usable
+
+**Detection Strategy (for agents):**
+```
+After Step 0 verification, before updating project-context.md:
+1. For each "done" story, check story file for keywords:
+   - "POST /api/", "GET /api/", "PUT /api/", "DELETE /api/"
+   - "API Endpoint", "Request Body", "Response"
+2. If ANY match found → Set flag: api_endpoints_added = true
+3. If flag is true → Step 4 becomes MANDATORY (not optional)
+4. Extract endpoint details from story files
+5. Update API-GUIDE.md with new endpoints
+```
+
+**Key Takeaway:**  
+> "API documentation is as critical as README updates. Every sprint that adds endpoints MUST update API-GUIDE.md. No exceptions. Check story files for 'API Endpoints' sections."
+
+---
+
+## 🚨 Red Flags - Stop and Fix Immediately
+
+**Documentation Update is SUCCESSFUL when:**
   - [ ] Naming conventions followed
 
 ---
@@ -711,7 +1046,21 @@ Track when documentation maintenance was last performed:
 
 ## 🎯 Success Criteria
 
-Documentation maintenance is successful when:
+---
+
+## 🎯 Success Criteria for Documentation Maintenance
+
+**Step 0 Verification is SUCCESSFUL when:**
+1. ✅ sprint-status.yaml read COMPLETELY (not partially)
+2. ✅ ALL completed stories identified and listed
+3. ✅ Sprint metrics extracted and verified
+4. ✅ Cross-validation passed (hours sum, test sum, completion rate)
+
+**Documentation Update is SUCCESSFUL when:**
+- ✅ **Accuracy:** ALL completed stories documented (not just some)
+- ✅ **Completeness:** All 4 core files updated (project-context.md, 2 READMEs, CHANGELOG.md)
+- ✅ **Consistency:** Same sprint number, version, dates, completion rate across all files
+- ✅ **Verifiability:** Anyone can reproduce your numbers from sprint-status.yaml
 - ✅ All files pass validation commands
 - ✅ Sprint status consistent across all files
 - ✅ No broken links or missing files
@@ -719,6 +1068,15 @@ Documentation maintenance is successful when:
 - ✅ Infrastructure inventory matches reality
 - ✅ Lessons learned captured
 - ✅ No orphaned or duplicate documents
+
+**Red Flags (Indicates Incomplete/Inaccurate Update):**
+- ❌ You mentioned only 1-2 stories but sprint has 4+ done
+- ❌ Completion rate suspiciously low (<30%) despite multiple stories done
+- ❌ Test count didn't increase despite new stories
+- ❌ Hours much lower than expected
+- ❌ You can't explain where metrics came from
+
+**If you see a red flag → Go back to Step 0 and re-verify sprint-status.yaml**
 
 ---
 

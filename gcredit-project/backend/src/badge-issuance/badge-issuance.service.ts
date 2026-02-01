@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, GoneException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, GoneException, Logger } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { StorageService } from '../common/storage.service';
 import { AssertionGeneratorService } from './services/assertion-generator.service';
@@ -242,6 +242,147 @@ export class BadgeIssuanceService {
   }
 
   /**
+   * Revoke a badge (Sprint 7 - Story 9.1)
+   * Only ADMIN or the original ISSUER can revoke badges
+   */
+  async revokeBadge(
+    badgeId: string,
+    dto: { reason: string; notes?: string; actorId: string },
+  ) {
+    const { reason, notes, actorId } = dto;
+
+    // Step 1: Fetch badge and actor
+    const [badge, actor] = await Promise.all([
+      this.prisma.badge.findUnique({
+        where: { id: badgeId },
+        include: { template: true, recipient: true },
+      }),
+      this.prisma.user.findUnique({ where: { id: actorId } }),
+    ]);
+
+    if (!badge) {
+      throw new NotFoundException(`Badge ${badgeId} not found`);
+    }
+
+    if (!actor) {
+      throw new NotFoundException(`User ${actorId} not found`);
+    }
+
+    // Step 2: Authorization check (must happen before idempotency to prevent info leak)
+    const canRevoke =
+      actor.role === UserRole.ADMIN ||
+      (actor.role === UserRole.ISSUER && badge.issuerId === actorId);
+
+    if (!canRevoke) {
+      throw new ForbiddenException(
+        `User ${actorId} (${actor.role}) cannot revoke badge ${badgeId}`,
+      );
+    }
+
+    // Step 3: Check if already revoked (idempotency)
+    if (badge.status === BadgeStatus.REVOKED) {
+      this.logger.warn(`Badge ${badgeId} already revoked, skipping`);
+      return { ...badge, alreadyRevoked: true };
+    }
+
+    // Step 4: Update badge (transaction for safety)
+    const updatedBadge = await this.prisma.$transaction(async (tx) => {
+      // 4a: Update badge
+      const updated = await tx.badge.update({
+        where: { id: badgeId },
+        data: {
+          status: BadgeStatus.REVOKED,
+          revokedAt: new Date(),
+          revokedBy: actorId,
+          revocationReason: reason,
+          revocationNotes: notes,
+        },
+        include: {
+          template: true,
+          recipient: true,
+        },
+      });
+
+      // 4b: Create audit log entry
+      await tx.auditLog.create({
+        data: {
+          entityType: 'Badge',
+          entityId: badgeId,
+          action: 'REVOKED',
+          actorId: actorId,
+          actorEmail: actor.email,
+          timestamp: new Date(),
+          metadata: {
+            reason,
+            notes,
+            badgeName: badge.template.name,
+            recipientEmail: badge.recipient.email,
+          },
+        },
+      });
+
+      return updated;
+    });
+
+    this.logger.log(
+      `Badge ${badgeId} revoked by ${actor.email} (reason: ${reason})`,
+    );
+
+    // Story 9.4: Send revocation email notification asynchronously
+    // Email failure should NOT block revocation operation
+    // HIGH #2: Implements 3 retry attempts per AC3
+    // HIGH #3: Creates audit log for notification result per AC3
+    // HIGH #4: Manager CC prepared for future use (requires User.managerId field)
+    this.notificationService
+      .sendBadgeRevocationNotification({
+        recipientEmail: badge.recipient.email,
+        recipientName: `${badge.recipient.firstName} ${badge.recipient.lastName}`.trim() || badge.recipient.email,
+        badgeName: badge.template.name,
+        revocationReason: reason,
+        revocationDate: updatedBadge.revokedAt || new Date(),
+        revocationNotes: notes,
+        walletUrl: `${this.configService.get('PLATFORM_URL', 'http://localhost:5173')}/wallet`,
+        // managerEmail: Future - requires User.managerId relationship in schema
+      })
+      .then(async (result) => {
+        // HIGH #3: Create audit log entry for notification result
+        try {
+          await this.prisma.auditLog.create({
+            data: {
+              entityType: 'BadgeNotification',
+              entityId: badgeId,
+              action: result.success ? 'NOTIFICATION_SENT' : 'NOTIFICATION_FAILED',
+              actorId: actorId,
+              actorEmail: actor.email,
+              timestamp: new Date(),
+              metadata: {
+                notificationType: 'REVOCATION',
+                recipientEmail: badge.recipient.email,
+                success: result.success,
+                attempts: result.attempts,
+                error: result.error || null,
+              },
+            },
+          });
+        } catch (auditErr) {
+          this.logger.error(
+            `Failed to create notification audit log:`,
+            auditErr.message,
+          );
+        }
+      })
+      .catch((err) => {
+        this.logger.error(
+          `Failed to send revocation notification to ${badge.recipient.email}:`,
+          err.message,
+        );
+        // Do not throw - email failure should not fail revocation
+      });
+
+    return updatedBadge;
+  }
+
+  /**
    * Get badges received by a user
    */
   async getMyBadges(userId: string, query: QueryBadgeDto) {
@@ -327,6 +468,7 @@ export class BadgeIssuanceService {
 
   /**
    * Get badges issued by user (ISSUER sees own, ADMIN sees all)
+   * Story 9.5 AC5: Supports search and filter
    */
   async getIssuedBadges(userId: string, userRole: UserRole, query: QueryBadgeDto) {
     // Build where clause based on role
@@ -341,10 +483,24 @@ export class BadgeIssuanceService {
     // Add optional filters
     if (query.status) {
       where.status = query.status;
+    } else if (query.activeOnly) {
+      // Story 9.5 AC5: Filter for active badges (PENDING or CLAIMED)
+      where.status = { in: [BadgeStatus.PENDING, BadgeStatus.CLAIMED] };
     }
 
     if (query.templateId) {
       where.templateId = query.templateId;
+    }
+
+    // Story 9.5 AC5: Add search filter
+    if (query.search) {
+      const searchTerm = query.search.trim();
+      where.OR = [
+        { recipient: { email: { contains: searchTerm, mode: 'insensitive' } } },
+        { recipient: { firstName: { contains: searchTerm, mode: 'insensitive' } } },
+        { recipient: { lastName: { contains: searchTerm, mode: 'insensitive' } } },
+        { template: { name: { contains: searchTerm, mode: 'insensitive' } } },
+      ];
     }
 
     // Get total count
@@ -359,7 +515,7 @@ export class BadgeIssuanceService {
       [query.sortBy]: query.sortOrder,
     };
 
-    // Get badges
+    // Get badges with all fields needed for Admin UI (Story 9.5)
     const badges = await this.prisma.badge.findMany({
       where,
       skip,
@@ -383,34 +539,65 @@ export class BadgeIssuanceService {
             lastName: true,
           },
         },
+        issuer: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        revoker: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
       },
     });
 
-    // Format response
+    // Format response - include all fields for Admin UI (Story 9.5)
     return {
-      data: badges.map((badge) => ({
+      badges: badges.map((badge) => ({
         id: badge.id,
+        templateId: badge.templateId,
+        recipientId: badge.recipientId,
+        issuerId: badge.issuerId,
         status: badge.status,
         issuedAt: badge.issuedAt,
         claimedAt: badge.claimedAt,
         expiresAt: badge.expiresAt,
+        revokedAt: badge.revokedAt,
+        revocationReason: badge.revocationReason,
+        revocationNotes: badge.revocationNotes,
+        revokedBy: badge.revokedBy,
         evidenceUrl: badge.evidenceUrl,
         template: badge.template,
         recipient: {
           id: badge.recipient.id,
-          name: badge.recipient.firstName && badge.recipient.lastName
-            ? `${badge.recipient.firstName} ${badge.recipient.lastName}`
-            : badge.recipient.email,
           email: badge.recipient.email,
+          firstName: badge.recipient.firstName,
+          lastName: badge.recipient.lastName,
         },
+        issuer: {
+          id: badge.issuer.id,
+          email: badge.issuer.email,
+          firstName: badge.issuer.firstName,
+          lastName: badge.issuer.lastName,
+        },
+        revoker: badge.revoker ? {
+          id: badge.revoker.id,
+          email: badge.revoker.email,
+          firstName: badge.revoker.firstName,
+          lastName: badge.revoker.lastName,
+        } : undefined,
       })),
-      pagination: {
-        page: query.page,
-        limit: query.limit,
-        totalCount,
-        totalPages: Math.ceil(totalCount / query.limit),
-        hasMore: skip + take < totalCount,
-      },
+      total: totalCount,
+      page: query.page,
+      limit: query.limit,
+      totalPages: Math.ceil(totalCount / query.limit),
     };
   }
 
@@ -418,71 +605,45 @@ export class BadgeIssuanceService {
    * Find badge by ID (helper method)
    */
   async findOne(id: string) {
-    return this.prisma.badge.findUnique({
+    const badge = await this.prisma.badge.findUnique({
       where: { id },
       include: {
         template: true,
         recipient: true,
         issuer: true,
+        // Story 9.3: Include revoker for badge details
+        revoker: true,
       },
     });
+
+    if (!badge) {
+      return null;
+    }
+
+    // Story 9.3: Transform response to include/exclude revocation fields
+    const response: any = {
+      ...badge,
+    };
+
+    // Story 9.3 AC2: Add categorized revocation details
+    if (badge.status === BadgeStatus.REVOKED) {
+      const publicReasons = ['Expired', 'Issued in Error'];
+      response.isPublicReason = badge.revocationReason ? publicReasons.includes(badge.revocationReason) : false;
+      
+      if (badge.revoker) {
+        response.revokedBy = {
+          name: `${badge.revoker.firstName} ${badge.revoker.lastName}`,
+          role: badge.revoker.role,
+        };
+      }
+    }
+
+    return response;
   }
 
   /**
    * Revoke a badge (ADMIN only)
    */
-  async revokeBadge(badgeId: string, reason: string, adminId: string) {
-    // 1. Find badge
-    const badge = await this.prisma.badge.findUnique({
-      where: { id: badgeId },
-      include: {
-        template: true,
-        recipient: true,
-      },
-    });
-
-    if (!badge) {
-      throw new NotFoundException(`Badge ${badgeId} not found`);
-    }
-
-    // 2. Check if already revoked
-    if (badge.status === BadgeStatus.REVOKED) {
-      throw new BadRequestException('Badge is already revoked');
-    }
-
-    // 3. Revoke badge
-    const revokedBadge = await this.prisma.badge.update({
-      where: { id: badgeId },
-      data: {
-        status: BadgeStatus.REVOKED,
-        revokedAt: new Date(),
-        revocationReason: reason,
-        claimToken: null, // Clear token
-      },
-    });
-
-    // 4. Send revocation notification email
-    await this.notificationService.sendBadgeRevocationNotification({
-      recipientEmail: badge.recipient.email,
-      recipientName: badge.recipient.firstName && badge.recipient.lastName
-        ? `${badge.recipient.firstName} ${badge.recipient.lastName}`
-        : badge.recipient.email,
-      badgeName: badge.template.name,
-      revocationReason: reason,
-    });
-
-    // 5. Log revocation (audit trail)
-    this.logger.log(`Badge ${badgeId} revoked by admin ${adminId}: ${reason}`);
-
-    return {
-      id: revokedBadge.id,
-      status: revokedBadge.status,
-      revokedAt: revokedBadge.revokedAt,
-      revocationReason: revokedBadge.revocationReason,
-      message: 'Badge revoked successfully',
-    };
-  }
-
   /**
    * Bulk issue badges from CSV file
    */
@@ -614,15 +775,52 @@ export class BadgeIssuanceService {
             email: true,
           },
         },
+        // Story 9.3: Include revoker for REVOKED badges
+        revoker: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            role: true,
+          },
+        },
       },
     });
 
     // Merge badges and milestones, sorted by date
-    const badgeItems = badges.map(b => ({
-      type: 'badge',
-      sortDate: b.issuedAt,
-      data: b,
-    }));
+    const badgeItems = badges.map(b => {
+      // Story 9.3: Transform badge to include/exclude revocation fields
+      const badgeData: any = {
+        id: b.id,
+        recipientId: b.recipientId,
+        status: b.status,
+        issuedAt: b.issuedAt,
+        claimedAt: b.claimedAt,
+        template: b.template,
+        issuer: b.issuer,
+      };
+
+      // Story 9.3 AC5: Include revocation fields only for REVOKED badges
+      if (b.status === BadgeStatus.REVOKED) {
+        badgeData.revokedAt = b.revokedAt;
+        badgeData.revocationReason = b.revocationReason;
+        badgeData.revocationNotes = b.revocationNotes;
+        // Include revoker info if available
+        if (b.revoker) {
+          badgeData.revokedBy = {
+            name: `${b.revoker.firstName} ${b.revoker.lastName}`,
+            role: b.revoker.role,
+          };
+        }
+      }
+
+      return {
+        type: 'badge',
+        sortDate: b.issuedAt,
+        data: badgeData,
+      };
+    });
 
     const milestoneItems = milestones.map(m => ({
       type: 'milestone',
