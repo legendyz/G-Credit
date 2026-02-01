@@ -259,16 +259,28 @@
 - **Testing:** 68 tests (24 unit + 6 integration + 38 E2E)
 - **Git Tag:** v0.5.0
 
-**🟡 Sprint 6 Planning Complete (2026-01-29):**
-- Epic 7: Badge Sharing & Social Proof
-- Estimated: 56-76 hours, 2.5-3 weeks
-- MS Graph email integration, Teams Adaptive Cards, Embeddable widget
-- 3,781 lines of planning documentation created
-- Awaiting kickoff after rest period
+**✅ Sprint 6 Completed (2026-01-31, v0.6.0):**
+- ✅ Microsoft Graph Email Integration (Epic 7)
+- ✅ Badge sharing via email
+- ✅ Embeddable badge widgets
+- ✅ Sharing analytics tracking
+- ✅ Teams notifications (deferred as technical debt)
+- **Total: 35h / 56-76h estimated (46-62% efficiency)**
+- **Testing:** 244 tests (190 core passing, 16 Teams deferred)
+- **Git Tag:** v0.6.0
+- **Technical Debt:** Teams integration pending Graph API permissions
 
-**🔜 Future Sprints:**
-- **Sprint 7:** LinkedIn Integration, Advanced Analytics
-- **Sprint 8+:** Production Deployment, Enterprise Features
+**🟡 Sprint 7 In Progress (2026-02-01, 86% complete):**
+- ✅ Story 9.1: Badge Revocation API (5h, 47 tests)
+- ✅ Story 9.2: Revoked Badge Verification Display (4.5h, 25 tests)
+- ✅ Story 9.3: Employee Wallet Revoked Display (4.5h, 24 tests)
+- ✅ Story 9.4: Revocation Email Notifications (2.5h, 8 tests)
+- ✅ Story 9.5: Admin Revocation UI (5.5h, 52 tests)
+- 🔵 Story U.1: Complete Lifecycle UAT (pending, 8h estimated)
+- **Total: 22h / 20-26h estimated (6/7 stories complete)**
+- **Testing:** 334 tests total, 297 core passing (100% pass rate)
+- **Branch:** sprint-7/epic-9-revocation-lifecycle-uat
+- **Next:** UAT testing and Sprint 7 completion
 
 ---
 
@@ -465,15 +477,16 @@ This project uses the **BMAD (Business Model Agent Development) Framework** v6.0
 |-------|----------|--------------|--------|
 | Phase 1 - Discovery | 4-6 weeks | PRD, Product Brief, KPIs | ✅ Complete |
 | Phase 2 - Design & Architecture | 4 weeks | Architecture doc, UX Design, Wireframes | ✅ Complete |
-| **Phase 3 - MVP Development** | **8-12 weeks** | **Working MVP** | **🔄 In Progress (Week 6)** |
-| → Sprint 0 | 1 day | Infrastructure Setup | ✅ Complete (2026-01-24, 9.5h/10h, 95%) |
-| → Sprint 1 | 1 day | JWT Auth & User Management (Epic 2) | ✅ Complete (2026-01-25, 21h/21h, 100%) |
-| → Sprint 2 | 1 day | Badge Template Management (Epic 3) | ✅ Complete (2026-01-26, 29h/32h, 110%) |
-| → Sprint 3 | 1 day | Badge Issuance System (Epic 4) | ✅ Complete (2026-01-28, 13h/12.5h, 104%, v0.3.0) |
+| **Phase 3 - MVP Development** | **8-12 weeks** | **Working MVP** | **🔄 In Progress (Week 7)** |
+| → Sprint 0 | 1 day | Infrastructure Setup | ✅ Complete (2026-01-24, actual 9.5h / estimated 10h, 95%) |
+| → Sprint 1 | 1 day | JWT Auth & User Management (Epic 2) | ✅ Complete (2026-01-25, actual 21h / estimated 21h, 100%) |
+| → Sprint 2 | 1 day | Badge Template Management (Epic 3) | ✅ Complete (2026-01-26, actual 29h / estimated 32h, 110%) |
+| → Sprint 3 | 1 day | Badge Issuance System (Epic 4) | ✅ Complete (2026-01-28, actual 13h / estimated 12.5h, 104%, v0.3.0) |
 | → Sprint 4 | 2 weeks | Employee Badge Wallet (Epic 5) | ✅ Complete (2026-01-28, 48h, 58 tests, v0.4.0) |
-| → Sprint 5 | 1 day | Badge Verification & Open Badges 2.0 (Epic 6) | ✅ Complete (2026-01-29, 30h/28h, 107%, v0.5.0) |
-| → Sprint 6 | TBD | Social Sharing & Integrations (Epic 7) | 🔜 Planning |
-| → Sprint 7+ | TBD | Analytics & Advanced Features | ⏳ Planned |
+| → Sprint 5 | 1 day | Badge Verification & Open Badges 2.0 (Epic 6) | ✅ Complete (2026-01-29, actual 30h / estimated 28h, 107%, v0.5.0) |
+| → Sprint 6 | 3 days | Social Sharing & Integrations (Epic 7) | ✅ Complete (2026-01-31, actual 35h / estimated 56-76h, v0.6.0) |
+| → Sprint 7 | 5 days | Badge Revocation & Complete Lifecycle (Epic 9) | 🟡 In Progress (86%, 6/7 stories, 22h/20-26h) |
+| → Sprint 8+ | TBD | Analytics & Advanced Features | ⏳ Planned |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ Pending |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
@@ -576,14 +589,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Last Updated:** 2026-01-29  
-**Status:** Sprint 5 Complete ✅ | Sprint 6 Planning Complete 🟡 (Awaiting Kickoff)  
-**Version:** v0.5.0 (Released 2026-01-29)  
-**Sprint 0:** ✅ Complete (9.5h/10h, 95%) - [Retrospective](./_bmad-output/implementation-artifacts/sprint-0-retrospective.md)  
-**Sprint 1:** ✅ Complete (21h/21h, 100%) - [Retrospective](./_bmad-output/implementation-artifacts/sprint-1-retrospective.md)  
-**Sprint 2:** ✅ Complete (29h/32h, 110%) - [Final Report](./gcredit-project/backend/docs/sprints/sprint-2/final-report.md) | [Retrospective](./gcredit-project/backend/docs/sprints/sprint-2/retrospective.md)  
-**Sprint 3:** ✅ Complete (13h/12.5h, 104%, v0.3.0) - [Summary](./gcredit-project/docs/sprints/sprint-3/summary.md) | [Retrospective](./gcredit-project/docs/sprints/sprint-3/retrospective.md)  
+**Last Updated:** 2026-02-01  
+**Status:** Sprint 7 In Progress ⚠️ | Sprint 6 Complete ✅ (v0.6.0)  
+**Version:** v0.6.0 (Released 2026-01-31)  
+**Sprint 0:** ✅ Complete (actual 9.5h / estimated 10h, 95%) - [Retrospective](./_bmad-output/implementation-artifacts/sprint-0-retrospective.md)  
+**Sprint 1:** ✅ Complete (actual 21h / estimated 21h, 100%) - [Retrospective](./_bmad-output/implementation-artifacts/sprint-1-retrospective.md)  
+**Sprint 2:** ✅ Complete (actual 29h / estimated 32h, 110%) - [Final Report](./gcredit-project/backend/docs/sprints/sprint-2/final-report.md) | [Retrospective](./gcredit-project/backend/docs/sprints/sprint-2/retrospective.md)  
+**Sprint 3:** ✅ Complete (actual 13h / estimated 12.5h, 104%, v0.3.0) - [Summary](./gcredit-project/docs/sprints/sprint-3/summary.md) | [Retrospective](./gcredit-project/docs/sprints/sprint-3/retrospective.md)  
 **Sprint 4:** ✅ Complete (48h, 58 tests, v0.4.0) - [Retrospective](./gcredit-project/docs/sprints/sprint-4/retrospective.md)  
-**Sprint 5:** ✅ Complete (30h/28h, 107%, v0.5.0) - [Summary](./gcredit-project/docs/sprints/sprint-5/sprint-5-completion-summary.md) | [Retrospective](./gcredit-project/docs/sprints/sprint-5/retrospective.md)  
-**Sprint 6:** 🟡 Planning Complete (56-76h estimated, Epic 7 - Badge Sharing & Social Proof) - [Planning Artifacts](./gcredit-project/docs/sprints/sprint-6/)  
-**Next:** Sprint 6 Kickoff (after rest period) → Epic 7 Implementation 🚀
+**Sprint 5:** ✅ Complete (actual 30h / estimated 28h, 107%, v0.5.0) - [Summary](./gcredit-project/docs/sprints/sprint-5/sprint-5-completion-summary.md) | [Retrospective](./gcredit-project/docs/sprints/sprint-5/retrospective.md)  
+**Sprint 6:** ✅ Complete (actual 35h / estimated 56-76h, 46-62%, v0.6.0) - [Completion Report](./gcredit-project/docs/sprints/sprint-6/sprint-6-completion-report.md)  
+**Sprint 7:** 🟡 In Progress (86%, 6/7 stories, actual 22h / estimated 20-26h, Epic 9 - Badge Revocation) - [Sprint Tracking](./gcredit-project/docs/sprints/sprint-7/sprint-tracking.md)  
+**Next:** Story U.1 UAT Testing → Sprint 7 Completion → v0.7.0 Release 🚀
