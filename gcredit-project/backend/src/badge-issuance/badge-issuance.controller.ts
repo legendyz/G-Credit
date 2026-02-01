@@ -156,9 +156,12 @@ export class BadgeIssuanceController {
       actorId: req.user.userId,
     });
 
+    // LOW #9 fix: Check for alreadyRevoked using 'in' operator for type safety
+    const alreadyRevoked = 'alreadyRevoked' in badge && badge.alreadyRevoked === true;
+
     return {
       success: true,
-      message: badge.alreadyRevoked
+      message: alreadyRevoked
         ? 'Badge was already revoked'
         : 'Badge revoked successfully',
       badge,

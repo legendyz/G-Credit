@@ -328,6 +328,57 @@ export class BadgeIssuanceService {
       `Badge ${badgeId} revoked by ${actor.email} (reason: ${reason})`,
     );
 
+    // Story 9.4: Send revocation email notification asynchronously
+    // Email failure should NOT block revocation operation
+    // HIGH #2: Implements 3 retry attempts per AC3
+    // HIGH #3: Creates audit log for notification result per AC3
+    // HIGH #4: Manager CC prepared for future use (requires User.managerId field)
+    this.notificationService
+      .sendBadgeRevocationNotification({
+        recipientEmail: badge.recipient.email,
+        recipientName: `${badge.recipient.firstName} ${badge.recipient.lastName}`.trim() || badge.recipient.email,
+        badgeName: badge.template.name,
+        revocationReason: reason,
+        revocationDate: updatedBadge.revokedAt || new Date(),
+        revocationNotes: notes,
+        walletUrl: `${this.configService.get('PLATFORM_URL', 'http://localhost:5173')}/wallet`,
+        // managerEmail: Future - requires User.managerId relationship in schema
+      })
+      .then(async (result) => {
+        // HIGH #3: Create audit log entry for notification result
+        try {
+          await this.prisma.auditLog.create({
+            data: {
+              entityType: 'BadgeNotification',
+              entityId: badgeId,
+              action: result.success ? 'NOTIFICATION_SENT' : 'NOTIFICATION_FAILED',
+              actorId: actorId,
+              actorEmail: actor.email,
+              timestamp: new Date(),
+              metadata: {
+                notificationType: 'REVOCATION',
+                recipientEmail: badge.recipient.email,
+                success: result.success,
+                attempts: result.attempts,
+                error: result.error || null,
+              },
+            },
+          });
+        } catch (auditErr) {
+          this.logger.error(
+            `Failed to create notification audit log:`,
+            auditErr.message,
+          );
+        }
+      })
+      .catch((err) => {
+        this.logger.error(
+          `Failed to send revocation notification to ${badge.recipient.email}:`,
+          err.message,
+        );
+        // Do not throw - email failure should not fail revocation
+      });
+
     return updatedBadge;
   }
 

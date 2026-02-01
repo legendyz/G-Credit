@@ -2,39 +2,59 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Badge Revoked</title>
+  <title>Badge Revocation Notification</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background: #dc3545; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-    .content { background: white; padding: 30px; border: 1px solid #e0e0e0; border-top: none; }
-    .info-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }
-    .footer { text-align: center; color: #666; font-size: 14px; margin-top: 30px; }
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5; }
+    .container { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .header { background: #dc3545; color: white; padding: 30px 20px; text-align: center; }
+    .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+    .content { padding: 30px; line-height: 1.6; color: #333; }
+    .info-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px; }
+    .info-box strong { color: #856404; }
+    .info-box p { margin: 8px 0; }
+    .notes-section { background: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; margin: 20px 0; border-radius: 4px; }
+    .notes-section strong { display: block; margin-bottom: 8px; color: #495057; }
+    .button { display: inline-block; background: #0078d4; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin: 20px 0; font-weight: 500; }
+    .button:hover { background: #005a9e; }
+    .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; background: #f8f9fa; }
+    .footer strong { color: #333; }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1 style="margin: 0;">⚠️ Badge Revoked</h1>
-  </div>
-  
-  <div class="content">
-    <p>Hi {{recipientName}},</p>
-    
-    <p>We're writing to inform you that your <strong>{{badgeName}}</strong> badge has been revoked.</p>
-    
-    <div class="info-box">
-      <p><strong>Reason for Revocation:</strong></p>
-      <p>{{revocationReason}}</p>
+  <div class="container">
+    <div class="header">
+      <h1>⚠️ Badge Revocation Notification</h1>
     </div>
     
-    <p>This badge is no longer valid and cannot be verified or shared.</p>
+    <div class="content">
+      <p>Hi {{recipientName}},</p>
+      
+      <p>We're writing to inform you that your <strong>{{badgeName}}</strong> badge has been revoked.</p>
+      
+      <div class="info-box">
+        <p><strong>Revocation Date:</strong> {{revocationDate}}</p>
+        <p><strong>Reason for Revocation:</strong></p>
+        <p>{{revocationReason}}</p>
+      </div>
+      
+      <div class="notes-section">
+        <strong>Additional Information:</strong>
+        <p>{{revocationNotes}}</p>
+      </div>
+      
+      <p>This badge is no longer valid and cannot be verified or shared. You can view your badge history in your wallet:</p>
+      
+      <a href="{{walletUrl}}" class="button">View Wallet</a>
+      
+      <p>If you believe this is an error or have questions about this revocation, please contact our support team at <a href="mailto:badges@gcredit.example.com">badges@gcredit.example.com</a>.</p>
+      
+      <p>Thank you for your understanding.</p>
+    </div>
     
-    <p>If you believe this is an error or have questions, please contact our support team at <a href="mailto:badges@gcredit.example.com">badges@gcredit.example.com</a>.</p>
-    
-    <p>We appreciate your understanding.</p>
-  </div>
-  
-  <div class="footer">
-    <p><strong>G-Credit Digital Credentialing Platform</strong></p>
+    <div class="footer">
+      <p><strong>G-Credit Digital Credentialing Platform</strong></p>
+      <p>Internal Badge Management System</p>
+    </div>
   </div>
 </body>
 </html>

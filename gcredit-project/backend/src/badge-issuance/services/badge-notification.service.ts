@@ -101,38 +101,109 @@ export class BadgeNotificationService {
   }
 
   /**
-   * Send badge revocation notification
+   * Send badge revocation notification with retry logic (AC3)
    * 
    * @param params Revocation notification parameters
+   * @param maxRetries Maximum retry attempts (default: 3 per AC3)
+   * @returns Object with success status for audit logging
    */
-  async sendBadgeRevocationNotification(params: {
-    recipientEmail: string;
-    recipientName: string;
-    badgeName: string;
-    revocationReason: string;
-  }): Promise<void> {
-    try {
-      // Replace template variables with actual values
-      const html = this.badgeRevocationTemplate
-        .replace(/\{\{recipientName\}\}/g, params.recipientName || 'there')
-        .replace(/\{\{badgeName\}\}/g, params.badgeName)
-        .replace(/\{\{revocationReason\}\}/g, params.revocationReason);
+  async sendBadgeRevocationNotification(
+    params: {
+      recipientEmail: string;
+      recipientName: string;
+      badgeName: string;
+      revocationReason: string;
+      revocationDate: Date;
+      revocationNotes?: string;
+      walletUrl?: string;
+      managerEmail?: string;
+    },
+    maxRetries: number = 3,
+  ): Promise<{ success: boolean; attempts: number; error?: string }> {
+    let lastError: Error | null = null;
+    let attempts = 0;
 
-      // Send email via Microsoft Graph Email Service
-      if (this.useGraphEmail && this.graphEmailService.isGraphEmailEnabled()) {
-        await this.graphEmailService.sendEmail(
-          this.fromEmail,
-          [params.recipientEmail],
-          `Badge Revoked: ${params.badgeName}`,
-          html,
-        );
-        this.logger.log(`✅ Revocation notification sent via Graph Email to ${params.recipientEmail}`);
-      } else {
-        this.logger.warn(`⚠️ Graph Email disabled, revocation notification not sent to ${params.recipientEmail}`);
-      }
-    } catch (error) {
-      this.logger.error(`❌ Failed to send revocation notification:`, error);
-      // Don't throw - email failure shouldn't block revocation operation
+    // Format revocation date for display
+    const formattedDate = params.revocationDate.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    // Build notes section conditionally (MEDIUM #5 fix)
+    const notesSection = params.revocationNotes
+      ? `<div class="notes-section">
+        <strong>Additional Information:</strong>
+        <p>${params.revocationNotes}</p>
+      </div>`
+      : '';
+
+    // Replace template variables with actual values
+    let html = this.badgeRevocationTemplate
+      .replace(/\{\{recipientName\}\}/g, params.recipientName || 'there')
+      .replace(/\{\{badgeName\}\}/g, params.badgeName)
+      .replace(/\{\{revocationReason\}\}/g, params.revocationReason)
+      .replace(/\{\{revocationDate\}\}/g, formattedDate)
+      .replace(/\{\{walletUrl\}\}/g, params.walletUrl || '#');
+
+    // Replace the notes section placeholder or remove it
+    html = html.replace(
+      /<div class="notes-section">\s*<strong>Additional Information:<\/strong>\s*<p>\{\{revocationNotes\}\}<\/p>\s*<\/div>/,
+      notesSection,
+    );
+
+    // Build recipient list (HIGH #4 fix: include manager if provided)
+    const recipients = [params.recipientEmail];
+    if (params.managerEmail) {
+      recipients.push(params.managerEmail);
     }
+
+    // Retry loop (HIGH #2 fix: 3 attempts per AC3)
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      attempts = attempt;
+      try {
+        if (this.useGraphEmail && this.graphEmailService.isGraphEmailEnabled()) {
+          await this.graphEmailService.sendEmail(
+            this.fromEmail,
+            recipients,
+            `⚠️ Badge Revocation Notification - ${params.badgeName}`,
+            html,
+          );
+          this.logger.log(
+            `✅ Revocation notification sent via Graph Email to ${recipients.join(', ')} (attempt ${attempt}/${maxRetries})`,
+          );
+          return { success: true, attempts };
+        } else {
+          this.logger.warn(
+            `⚠️ Graph Email disabled, revocation notification not sent to ${params.recipientEmail}`,
+          );
+          return { success: false, attempts, error: 'Graph Email disabled' };
+        }
+      } catch (error) {
+        lastError = error;
+        this.logger.warn(
+          `⚠️ Revocation notification attempt ${attempt}/${maxRetries} failed: ${error.message}`,
+        );
+
+        if (attempt < maxRetries) {
+          // Exponential backoff: 1s, 2s, 4s
+          const delayMs = Math.pow(2, attempt - 1) * 1000;
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+        }
+      }
+    }
+
+    // All retries exhausted
+    this.logger.error(
+      `❌ Failed to send revocation notification after ${maxRetries} attempts:`,
+      lastError,
+    );
+    return {
+      success: false,
+      attempts,
+      error: lastError?.message || 'Unknown error',
+    };
   }
 }
