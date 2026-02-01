@@ -3,7 +3,7 @@
 **Created:** 2026-02-01  
 **Source:** Pre-UAT Reviews + Historical Sprint Debt (Sprint 0-6)  
 **Status:** Consolidated master list for Sprint 8+ planning  
-**Last Updated:** 2026-02-01 (Phase B complete, bundle size warning added)
+**Last Updated:** 2026-02-02 (Sprint 7 Complete - All P0 Fixed)
 
 ---
 
@@ -11,7 +11,7 @@
 
 | Priority | Count | Source | Target Sprint | Status |
 |----------|-------|--------|---------------|--------|
-| **P0 (UAT Blocker)** | 9 | Pre-UAT Reviews | Sprint 7 | **4/9 Fixed** (Phase A) |
+| **P0 (UAT Blocker)** | 9 | Pre-UAT Reviews | Sprint 7 | ✅ **9/9 Fixed** |
 | **P1 (Must Fix)** | 17 | Reviews + Historical | Sprint 8 | Pending |
 | **P2 (Medium)** | 22 | Reviews + Historical + TD-009~013 | Sprint 8-9 | +5 new items |
 | **P3 (Low/Future)** | 8 | Historical | Sprint 9+ | Pending |
@@ -83,16 +83,16 @@
 |----|-------|----------|--------|--------|
 | ARCH-P0-002 | Badge Template findOne exposes DRAFT | `badge-templates.service.ts` | 1h | ✅ Fixed |
 
-### UX P0 (4 items)
+### UX P0 (4 items) ✅ COMPLETED 2026-02-01 (Phase B)
 
 | ID | Issue | Location | Effort | Status |
-|----|-------|----------|--------|--------|
-| UX-P0-001 | No login page - relies on localStorage hack | No login component | 4h | ⏳ Pending (= Story 0.2a) |
-| UX-P0-002 | alert() used for errors | `BadgeDetailModal.tsx`, `EvidenceSection.tsx` | 2h | ⏳ Pending |
-| UX-P0-003 | Form labels missing (accessibility) | `TimelineView.tsx`, `BadgeShareModal.tsx` | 2h | ⏳ Pending |
-| UX-P0-004 | Badge claiming lacks celebration feedback | No claim component | 4h | ⏳ Pending |
+|----|-------|----------|--------|---------|
+| UX-P0-001 | No login page - relies on localStorage hack | `LoginPage.tsx` (created) | 4h | ✅ Fixed |
+| UX-P0-002 | alert() used for errors | `BadgeDetailModal.tsx`, `EvidenceSection.tsx` | 2h | ✅ Fixed |
+| UX-P0-003 | Form labels missing (accessibility) | `TimelineView.tsx`, `BadgeShareModal.tsx` | 2h | ✅ Fixed |
+| UX-P0-004 | Badge claiming lacks celebration feedback | `ClaimSuccessModal.tsx` (created) | 4h | ✅ Fixed |
 
-**P0 Total: 15.25h**
+**P0 Total: 15.25h** ✅ ALL COMPLETED
 
 ---
 
