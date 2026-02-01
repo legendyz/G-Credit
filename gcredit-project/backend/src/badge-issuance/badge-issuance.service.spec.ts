@@ -821,4 +821,147 @@ describe('BadgeIssuanceService', () => {
       });
     });
   });
+
+  // Story 9.3: Employee Wallet Display for Revoked Badges
+  describe('getWalletBadges - Story 9.3', () => {
+    const mockUserId = 'user-uuid-123';
+    
+    describe('Revocation Fields Inclusion', () => {
+      it('should include revocation fields when badge is REVOKED', async () => {
+        // Arrange
+        const revokedBadge = {
+          id: 'badge-1',
+          recipientId: mockUserId,
+          status: BadgeStatus.REVOKED,
+          issuedAt: new Date('2026-01-15'),
+          claimedAt: new Date('2026-01-16'),
+          revokedAt: new Date('2026-02-01'),
+          revocationReason: 'Policy Violation',
+          revocationNotes: 'Violated company code of conduct',
+          revokedBy: 'admin-uuid',
+          template: {
+            id: 'template-1',
+            name: 'Badge 1',
+            description: 'Test Badge',
+            imageUrl: '/badge1.png',
+            category: 'Technical',
+          },
+          issuer: {
+            id: 'issuer-1',
+            firstName: 'John',
+            lastName: 'Manager',
+            email: 'manager@test.com',
+          },
+          revoker: {
+            id: 'admin-uuid',
+            firstName: 'Admin',
+            lastName: 'User',
+            email: 'admin@test.com',
+            role: 'ADMIN',
+          },
+        };
+
+        (mockPrismaService.badge as any).count = jest.fn().mockResolvedValue(1);
+        (mockPrismaService.badge as any).findMany = jest.fn().mockResolvedValue([revokedBadge]);
+        mockMilestonesService.getUserAchievements = jest.fn().mockResolvedValue([]);
+
+        // Act
+        const result = await service.getWalletBadges(mockUserId, {});
+
+        // Assert - Revocation fields should be present
+        expect(result.badges).toHaveLength(1);
+        const badge = result.badges[0];
+        expect(badge.status).toBe(BadgeStatus.REVOKED);
+        expect(badge.revokedAt).toBeDefined();
+        expect(badge.revocationReason).toBe('Policy Violation');
+        expect(badge.revocationNotes).toBe('Violated company code of conduct');
+        expect(badge.revokedBy).toBeDefined();
+      });
+
+      it('should NOT include revocation fields when badge is CLAIMED', async () => {
+        // Arrange
+        const claimedBadge = {
+          id: 'badge-2',
+          recipientId: mockUserId,
+          status: BadgeStatus.CLAIMED,
+          issuedAt: new Date('2026-01-15'),
+          claimedAt: new Date('2026-01-16'),
+          revokedAt: null,
+          revocationReason: null,
+          revocationNotes: null,
+          revokedBy: null,
+          template: {
+            id: 'template-2',
+            name: 'Active Badge',
+            description: 'Active Test Badge',
+            imageUrl: '/badge2.png',
+            category: 'Leadership',
+          },
+          issuer: {
+            id: 'issuer-2',
+            firstName: 'Jane',
+            lastName: 'Smith',
+            email: 'jane@test.com',
+          },
+        };
+
+        (mockPrismaService.badge as any).count = jest.fn().mockResolvedValue(1);
+        (mockPrismaService.badge as any).findMany = jest.fn().mockResolvedValue([claimedBadge]);
+        mockMilestonesService.getUserAchievements = jest.fn().mockResolvedValue([]);
+
+        // Act
+        const result = await service.getWalletBadges(mockUserId, {});
+
+        // Assert - Revocation fields should NOT be present
+        expect(result.badges).toHaveLength(1);
+        const badge = result.badges[0];
+        expect(badge.status).toBe(BadgeStatus.CLAIMED);
+        expect(badge.revokedAt).toBeUndefined();
+        expect(badge.revocationReason).toBeUndefined();
+        expect(badge.revocationNotes).toBeUndefined();
+      });
+
+      it('should support status filter for REVOKED badges', async () => {
+        // Arrange
+        const revokedBadge = {
+          id: 'badge-3',
+          recipientId: mockUserId,
+          status: BadgeStatus.REVOKED,
+          issuedAt: new Date('2026-01-15'),
+          revokedAt: new Date('2026-02-01'),
+          revocationReason: 'Expired',
+          template: {
+            id: 'template-3',
+            name: 'Expired Badge',
+            description: 'Test',
+            imageUrl: '/badge3.png',
+            category: 'Technical',
+          },
+          issuer: {
+            id: 'issuer-3',
+            firstName: 'Manager',
+            lastName: 'One',
+            email: 'manager@test.com',
+          },
+        };
+
+        (mockPrismaService.badge as any).count = jest.fn().mockResolvedValue(1);
+        (mockPrismaService.badge as any).findMany = jest.fn().mockResolvedValue([revokedBadge]);
+        mockMilestonesService.getUserAchievements = jest.fn().mockResolvedValue([]);
+
+        // Act
+        const result = await service.getWalletBadges(mockUserId, { status: BadgeStatus.REVOKED });
+
+        // Assert
+        expect(mockPrismaService.badge.count).toHaveBeenCalledWith({
+          where: {
+            recipientId: mockUserId,
+            status: BadgeStatus.REVOKED,
+          },
+        });
+        expect(result.badges).toHaveLength(1);
+        expect(result.badges[0].status).toBe(BadgeStatus.REVOKED);
+      });
+    });
+  });
 });

@@ -508,14 +508,40 @@ export class BadgeIssuanceService {
    * Find badge by ID (helper method)
    */
   async findOne(id: string) {
-    return this.prisma.badge.findUnique({
+    const badge = await this.prisma.badge.findUnique({
       where: { id },
       include: {
         template: true,
         recipient: true,
         issuer: true,
+        // Story 9.3: Include revoker for badge details
+        revoker: true,
       },
     });
+
+    if (!badge) {
+      return null;
+    }
+
+    // Story 9.3: Transform response to include/exclude revocation fields
+    const response: any = {
+      ...badge,
+    };
+
+    // Story 9.3 AC2: Add categorized revocation details
+    if (badge.status === BadgeStatus.REVOKED) {
+      const publicReasons = ['Expired', 'Issued in Error'];
+      response.isPublicReason = badge.revocationReason ? publicReasons.includes(badge.revocationReason) : false;
+      
+      if (badge.revoker) {
+        response.revokedBy = {
+          name: `${badge.revoker.firstName} ${badge.revoker.lastName}`,
+          role: badge.revoker.role,
+        };
+      }
+    }
+
+    return response;
   }
 
   /**
@@ -652,15 +678,52 @@ export class BadgeIssuanceService {
             email: true,
           },
         },
+        // Story 9.3: Include revoker for REVOKED badges
+        revoker: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            role: true,
+          },
+        },
       },
     });
 
     // Merge badges and milestones, sorted by date
-    const badgeItems = badges.map(b => ({
-      type: 'badge',
-      sortDate: b.issuedAt,
-      data: b,
-    }));
+    const badgeItems = badges.map(b => {
+      // Story 9.3: Transform badge to include/exclude revocation fields
+      const badgeData: any = {
+        id: b.id,
+        recipientId: b.recipientId,
+        status: b.status,
+        issuedAt: b.issuedAt,
+        claimedAt: b.claimedAt,
+        template: b.template,
+        issuer: b.issuer,
+      };
+
+      // Story 9.3 AC5: Include revocation fields only for REVOKED badges
+      if (b.status === BadgeStatus.REVOKED) {
+        badgeData.revokedAt = b.revokedAt;
+        badgeData.revocationReason = b.revocationReason;
+        badgeData.revocationNotes = b.revocationNotes;
+        // Include revoker info if available
+        if (b.revoker) {
+          badgeData.revokedBy = {
+            name: `${b.revoker.firstName} ${b.revoker.lastName}`,
+            role: b.revoker.role,
+          };
+        }
+      }
+
+      return {
+        type: 'badge',
+        sortDate: b.issuedAt,
+        data: badgeData,
+      };
+    });
 
     const milestoneItems = milestones.map(m => ({
       type: 'milestone',

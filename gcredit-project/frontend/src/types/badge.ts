@@ -14,6 +14,15 @@ export interface BadgeDetail {
   claimedAt: string | null;
   expiresAt: string | null;
   issuerMessage: string | null;
+  // Story 9.3: Revocation fields (only present when status = REVOKED)
+  revokedAt?: string;
+  revocationReason?: string;
+  revocationNotes?: string;
+  isPublicReason?: boolean;
+  revokedBy?: {
+    name: string;
+    role: string;
+  };
   template: {
     name: string;
     description: string;

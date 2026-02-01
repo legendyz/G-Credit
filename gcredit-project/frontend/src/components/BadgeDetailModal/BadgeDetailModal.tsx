@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useBadgeDetailModal } from '../../stores/badgeDetailModal';
 import type { BadgeDetail } from '../../types/badge';
+import { BadgeStatus } from '../../types/badge';
 import ModalHero from './ModalHero';
 import IssuerMessage from './IssuerMessage';
 import BadgeInfo from './BadgeInfo';
@@ -11,6 +12,7 @@ import SimilarBadgesSection from './SimilarBadgesSection';
 import ReportIssueForm from './ReportIssueForm';
 import BadgeAnalytics from './BadgeAnalytics';
 import BadgeShareModal from '../BadgeShareModal';
+import RevocationSection from './RevocationSection';
 
 const BadgeDetailModal: React.FC = () => {
   const { isOpen, badgeId, closeModal } = useBadgeDetailModal();
@@ -251,6 +253,17 @@ const BadgeDetailModal: React.FC = () => {
                 {/* AC 4.4: Evidence Files Section (from Story 4.3) */}
                 <EvidenceSection badgeId={badge.id} />
 
+                {/* Story 9.3 AC2: Revocation Details Section */}
+                {badge.status === BadgeStatus.REVOKED && badge.revokedAt && badge.revocationReason && (
+                  <RevocationSection
+                    revokedAt={badge.revokedAt}
+                    revocationReason={badge.revocationReason}
+                    revocationNotes={badge.revocationNotes}
+                    isPublicReason={badge.isPublicReason || false}
+                    revokedBy={badge.revokedBy}
+                  />
+                )}
+
                 {/* AC 4.5: Timeline Section */}
                 <TimelineSection
                   issuedAt={badge.issuedAt}
@@ -290,7 +303,7 @@ const BadgeDetailModal: React.FC = () => {
             )}
           </div>
 
-          {/* AC 4.8: Action Footer (Share/Download buttons - future enhancement) */}
+          {/* AC 4.8: Action Footer (Share/Download buttons) | Story 9.3 AC3: Disable for revoked badges */}
           <footer style={{
             padding: '1rem 1.5rem',
             borderTop: '1px solid #e5e7eb',
@@ -299,32 +312,52 @@ const BadgeDetailModal: React.FC = () => {
             justifyContent: 'space-between',
             alignItems: 'center'
           }}>
+            {/* Story 9.3 AC3: Disable Share button for revoked badges */}
             <button
               onClick={() => setShareModalOpen(true)}
+              disabled={badge?.status === BadgeStatus.REVOKED}
+              title={badge?.status === BadgeStatus.REVOKED ? 'Revoked badges cannot be shared' : 'Share this badge'}
               style={{
                 padding: '0.625rem 1.5rem',
                 fontSize: '0.875rem',
                 fontWeight: 500,
                 color: 'white',
-                backgroundColor: '#2563eb',
+                backgroundColor: badge?.status === BadgeStatus.REVOKED ? '#9ca3af' : '#2563eb',
                 borderRadius: '0.5rem',
                 display: 'flex',
                 alignItems: 'center',
-                cursor: 'pointer',
+                cursor: badge?.status === BadgeStatus.REVOKED ? 'not-allowed' : 'pointer',
                 border: 'none',
+                opacity: badge?.status === BadgeStatus.REVOKED ? 0.5 : 1,
                 transition: 'background-color 0.2s'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d4ed8'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
+              onMouseEnter={(e) => {
+                if (badge?.status !== BadgeStatus.REVOKED) {
+                  e.currentTarget.style.backgroundColor = '#1d4ed8';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (badge?.status !== BadgeStatus.REVOKED) {
+                  e.currentTarget.style.backgroundColor = '#2563eb';
+                }
+              }}
             >
               <svg style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
               </svg>
               Share Badge
             </button>
+            {/* Story 9.3 AC3: Disable Download button for revoked badges */}
             <button
               onClick={handleDownloadBadge}
-              disabled={downloading}
+              disabled={downloading || badge?.status === BadgeStatus.REVOKED}
+              title={
+                badge?.status === BadgeStatus.REVOKED 
+                  ? 'Revoked badges cannot be downloaded' 
+                  : downloading 
+                    ? 'Downloading...' 
+                    : 'Download badge as PNG'
+              }
               style={{
                 padding: '0.625rem 1.5rem',
                 fontSize: '0.875rem',
@@ -335,12 +368,20 @@ const BadgeDetailModal: React.FC = () => {
                 borderRadius: '0.5rem',
                 display: 'flex',
                 alignItems: 'center',
-                cursor: downloading ? 'not-allowed' : 'pointer',
-                opacity: downloading ? 0.5 : 1,
+                cursor: (downloading || badge?.status === BadgeStatus.REVOKED) ? 'not-allowed' : 'pointer',
+                opacity: (downloading || badge?.status === BadgeStatus.REVOKED) ? 0.5 : 1,
                 transition: 'background-color 0.2s'
               }}
-              onMouseEnter={(e) => !downloading && (e.currentTarget.style.backgroundColor = '#f3f4f6')}
-              onMouseLeave={(e) => !downloading && (e.currentTarget.style.backgroundColor = 'white')}
+              onMouseEnter={(e) => {
+                if (!downloading && badge?.status !== BadgeStatus.REVOKED) {
+                  e.currentTarget.style.backgroundColor = '#f3f4f6';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!downloading && badge?.status !== BadgeStatus.REVOKED) {
+                  e.currentTarget.style.backgroundColor = 'white';
+                }
+              }}
             >
               {downloading ? (
                 <>

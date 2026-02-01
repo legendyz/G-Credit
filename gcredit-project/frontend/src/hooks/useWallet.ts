@@ -7,6 +7,14 @@ export interface Badge {
   issuedAt: string;
   status: BadgeStatus;
   claimedAt?: string;
+  // Story 9.3: Revocation fields (only present when status = REVOKED)
+  revokedAt?: string;
+  revocationReason?: string;
+  revocationNotes?: string;
+  revokedBy?: {
+    name: string;
+    role: string;
+  };
   template: {
     id: string;
     name: string;

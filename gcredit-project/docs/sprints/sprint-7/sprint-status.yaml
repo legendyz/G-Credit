@@ -23,7 +23,7 @@ development_status:
   0-1-git-branch: done  # Git branch creation (prerequisite)
   9-1-revoke-api: done  # Badge Revocation API - COMPLETE
   9-2-verification-status: done  # Revoked Badge Display in Verification Page - DONE
-  9-3-wallet-display: ready-for-dev  # Employee Wallet Display
+  9-3-wallet-display: in-progress  # Employee Wallet Display - IN PROGRESS
   9-4-notifications: ready-for-dev  # Revocation Email Notifications
   9-5-admin-ui: ready-for-dev  # Admin Revocation UI
   U-1-lifecycle-uat: ready-for-dev  # Complete Lifecycle UAT

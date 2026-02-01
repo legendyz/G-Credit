@@ -13,7 +13,8 @@ export type ViewMode = 'timeline' | 'grid';
 
 export function TimelineView() {
   const [viewMode, setViewMode] = useState<ViewMode>('timeline');
-  const [statusFilter, setStatusFilter] = useState<BadgeStatus | undefined>();
+  // Story 9.3 AC4: Default filter to CLAIMED (Active badges only)
+  const [statusFilter, setStatusFilter] = useState<BadgeStatus | undefined>(BadgeStatus.CLAIMED);
   const { data, isLoading, error } = useWallet({ status: statusFilter });
 
   if (isLoading) {
@@ -99,7 +100,7 @@ export function TimelineView() {
           <ViewToggle mode={viewMode} onChange={setViewMode} />
         </div>
 
-        {/* Filter */}
+        {/* Filter - Story 9.3 AC4 */}
         <div className="mb-6">
           <select
             value={statusFilter || 'ALL'}
@@ -107,7 +108,7 @@ export function TimelineView() {
             className="px-4 py-2 border border-gray-300 rounded-lg"
           >
             <option value="ALL">All Badges</option>
-            <option value={BadgeStatus.CLAIMED}>Claimed</option>
+            <option value={BadgeStatus.CLAIMED}>Active</option>
             <option value={BadgeStatus.PENDING}>Pending</option>
             <option value={BadgeStatus.REVOKED}>Revoked</option>
           </select>
