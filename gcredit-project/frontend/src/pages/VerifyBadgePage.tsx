@@ -282,24 +282,24 @@ export function VerifyBadgePage() {
                   </a>
                 ))}
               </div>
-          Story 9.2 AC5: Download Button - disabled for revoked badges */}
-      <div className="flex justify-center">
-        <Button 
-          onClick={downloadAssertion}
-          className="gap-2"
-          variant="outline"
-          disabled={!badge.assertionJson || isRevoked}
-          title={isRevoked ? "This badge has been revoked and cannot be downloaded" : "Download Open Badges 2.0 JSON-LD"r">
-        <Button 
-          onClick={downloadAssertion}
-          className="gap-2"
-          variant="outline"
-          disabled={!badge.assertionJson}
-        >
-          <Download className="h-4 w-4" />
-          Download Open Badges 2.0 JSON-LD
-        </Button>
-      </div>
+            </div>
+          )}
+
+          {/* Story 9.2 AC5: Download Button - disabled for revoked badges */}
+          <div className="flex justify-center">
+            <Button 
+              onClick={downloadAssertion}
+              className="gap-2"
+              variant="outline"
+              disabled={!badge.assertionJson || isRevoked}
+              title={isRevoked ? "This badge has been revoked and cannot be downloaded" : "Download Open Badges 2.0 JSON-LD"}
+            >
+              <Download className="h-4 w-4" />
+              Download Open Badges 2.0 JSON-LD
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

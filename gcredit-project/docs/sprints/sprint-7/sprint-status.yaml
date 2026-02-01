@@ -25,36 +25,37 @@ development_status:
   9-2-verification-status: done  # Revoked Badge Display in Verification Page - DONE
   9-3-wallet-display: done  # Employee Wallet Display - DONE
   9-4-notifications: review  # Revocation Email Notifications - COMPLETE
-  9-5-admin-ui: ready-for-dev  # Admin Revocation UI
+  9-5-admin-ui: done  # Admin Revocation UI - COMPLETE (code review fixes done)
   U-1-lifecycle-uat: ready-for-dev  # Complete Lifecycle UAT
 
 sprint_metrics:
   total_stories: 7  # Including Story 0.1 (git branch)
-  completed_stories: 5  # 0.1 + 9.1 + 9.2 + 9.3 + 9.4
+  completed_stories: 6  # 0.1 + 9.1 + 9.2 + 9.3 + 9.4 (review) + 9.5 (done)
   in_progress_stories: 0
-  completion_rate: 71%  # 5/7
+  completion_rate: 86%  # 6/7
   estimated_hours: 20-26  # Epic 9 total estimate
-  actual_hours: 16.5  # Story 9.1 (5h) + 9.2 (4.5h) + 9.3 (4.5h) + 9.4 (2.5h)
+  actual_hours: 22  # Story 9.1 (5h) + 9.2 (4.5h) + 9.3 (4.5h) + 9.4 (2.5h) + 9.5 (5.5h)
   
-  backend_completion: 57%  # Story 9.1 + 9.2 + 9.3 + 9.4 backend done
-  frontend_completion: 29%  # Story 9.2 + 9.3 frontend done
+  backend_completion: 86%  # All Stories except U.1
+  frontend_completion: 86%  # All Stories except U.1
   
-  # Test Results (as of 2026-02-01 after Story 9.4)
-  total_tests: 282  # 278 from 9.3 + 4 new unit tests
-  core_tests_passing: 245  # 241 from 9.3 + 4 new unit tests
+  # Test Results (as of 2026-02-01 after Story 9.5 tests)
+  total_tests: 334  # 282 backend + 52 frontend
+  core_tests_passing: 297  # 245 backend + 52 frontend
   teams_tests_failing: 16  # Teams integration (Sprint 6 technical debt)
   teams_test_suites_skipped: 4
   story_9_1_tests: 47  # 21 unit + 26 E2E
   story_9_2_tests: 25  # 8 unit (4 new) + 17 E2E (5 new)
-  story_9_4_tests: 5   # 4 unit + 1 E2E
-  core_pass_rate: "100% (245/245)"
-  overall_status: "Stories 9.1-9.4 complete, core functionality clean"
+  story_9_4_tests: 8   # 7 unit + 1 E2E (expanded)
+  story_9_5_tests: 52  # 17 API + 13 modal + 22 page (frontend)
+  core_pass_rate: "100% (297/297)"
+  overall_status: "Stories 9.1-9.5 complete with tests, only U.1 UAT remaining"
   
 quality_metrics:
   build_status: "clean"
   typescript_errors: 0
   unit_test_coverage: ">80%"
-  code_review_status: "complete (Story 9.1)"
+  code_review_status: "complete (Story 9.1-9.5)"
   security_issues_fixed: 4  # Authorization ordering, HTTP status, tests, docs
 
 story_details:
@@ -129,11 +130,22 @@ story_details:
     notes: "Email notification integrated with retry logic (3 attempts), audit logging, revocationDate, conditional notes display. Code review issues fixed: revocationDate added, retry logic, audit log, manager CC prepared, template conditional, E2E enhanced, type safety fixed"
     
   9-5-admin-ui:
-    status: "ready-for-dev"
+    status: "done"
     priority: "HIGH"
-    story_points: 5
-    estimated_hours: 5.5
+    story_points: 4
+    estimated_hours: 4
+    actual_hours: 5.5  # Including code review fixes and tests
+    start_date: "2026-02-01"
+    completion_date: "2026-02-01"
+    developer: "Amelia (Dev Agent)"
+    code_review_issues: 5  # 1 HIGH, 3 MEDIUM, 1 LOW
+    code_review_fixes: 5   # All fixed
+    tests_added: 52        # 17 API + 13 modal + 22 page (frontend unit tests)
+    tests_passing: 52
+    acceptance_criteria: "5/5 met"
     depends_on: ["9-1-revoke-api"]
+    blocks: ["U-1-lifecycle-uat"]
+    notes: "BadgeManagementPage with table, RevokeBadgeModal with form validation, search/filter/pagination, backend search + activeOnly support. Code review fixes applied. 52 frontend unit tests added (vitest + testing-library)"
     
   U-1-lifecycle-uat:
     status: "ready-for-dev"
@@ -143,7 +155,6 @@ story_details:
     depends_on: ["9-1-revoke-api", "9-2-verification-status", "9-3-wallet-display", "9-4-notifications", "9-5-admin-ui"]
 
 next_steps:
-  - "Story 9.5: Admin Revocation UI (5.5h)"
   - "Story U.1: Complete Lifecycle UAT (8h)"
 
 technical_debt:
@@ -174,7 +185,12 @@ notes:
   - "Authorization: ADMIN (any badge) + ISSUER (own badges only)"
   - "Idempotency: Returns 200 OK with alreadyRevoked flag"
   - "Security hardening: Authorization check before idempotency to prevent info leak"
-  - "Next: Story 9.5 (Admin UI) - estimated 5.5h"
+  - "Story 9.5: Admin Revocation UI - COMPLETE (5.5h including code review + tests)"
+  - "Code review completed on Story 9.5: 5 issues fixed (1 HIGH, 3 MEDIUM, 1 LOW)"
+  - "Fixes: revocation reasons sync, EXPIRED blocked, search label, toast notifications, Active filter"
+  - "Frontend test infrastructure setup: vitest + testing-library"
+  - "52 frontend unit tests added (17 API + 13 modal + 22 page)"
+  - "Next: Story U.1 (Lifecycle UAT) - estimated 8h"
   
 achievements:
   - "✅ First story of Epic 9 complete with full test coverage"
@@ -185,5 +201,6 @@ achievements:
   - "✅ Story 9.2: Verification page displays revoked badges correctly"
   - "✅ Story 9.3: Employee wallet shows revoked badges distinctively"
   - "✅ Story 9.4: Email notifications integrated asynchronously"
-  - "✅ 71% sprint completion (5/7 stories done)"
-  - "✅ All core tests passing (245/245 tests, 100% pass rate)"
+  - "✅ Story 9.5: Admin UI complete with 52 frontend unit tests"
+  - "✅ 86% sprint completion (6/7 stories done)"
+  - "✅ All core tests passing (297/297 tests, 100% pass rate)"

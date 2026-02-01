@@ -468,6 +468,7 @@ export class BadgeIssuanceService {
 
   /**
    * Get badges issued by user (ISSUER sees own, ADMIN sees all)
+   * Story 9.5 AC5: Supports search and filter
    */
   async getIssuedBadges(userId: string, userRole: UserRole, query: QueryBadgeDto) {
     // Build where clause based on role
@@ -482,10 +483,24 @@ export class BadgeIssuanceService {
     // Add optional filters
     if (query.status) {
       where.status = query.status;
+    } else if (query.activeOnly) {
+      // Story 9.5 AC5: Filter for active badges (PENDING or CLAIMED)
+      where.status = { in: [BadgeStatus.PENDING, BadgeStatus.CLAIMED] };
     }
 
     if (query.templateId) {
       where.templateId = query.templateId;
+    }
+
+    // Story 9.5 AC5: Add search filter
+    if (query.search) {
+      const searchTerm = query.search.trim();
+      where.OR = [
+        { recipient: { email: { contains: searchTerm, mode: 'insensitive' } } },
+        { recipient: { firstName: { contains: searchTerm, mode: 'insensitive' } } },
+        { recipient: { lastName: { contains: searchTerm, mode: 'insensitive' } } },
+        { template: { name: { contains: searchTerm, mode: 'insensitive' } } },
+      ];
     }
 
     // Get total count
@@ -500,7 +515,7 @@ export class BadgeIssuanceService {
       [query.sortBy]: query.sortOrder,
     };
 
-    // Get badges
+    // Get badges with all fields needed for Admin UI (Story 9.5)
     const badges = await this.prisma.badge.findMany({
       where,
       skip,
@@ -524,34 +539,65 @@ export class BadgeIssuanceService {
             lastName: true,
           },
         },
+        issuer: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        revoker: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
       },
     });
 
-    // Format response
+    // Format response - include all fields for Admin UI (Story 9.5)
     return {
-      data: badges.map((badge) => ({
+      badges: badges.map((badge) => ({
         id: badge.id,
+        templateId: badge.templateId,
+        recipientId: badge.recipientId,
+        issuerId: badge.issuerId,
         status: badge.status,
         issuedAt: badge.issuedAt,
         claimedAt: badge.claimedAt,
         expiresAt: badge.expiresAt,
+        revokedAt: badge.revokedAt,
+        revocationReason: badge.revocationReason,
+        revocationNotes: badge.revocationNotes,
+        revokedBy: badge.revokedBy,
         evidenceUrl: badge.evidenceUrl,
         template: badge.template,
         recipient: {
           id: badge.recipient.id,
-          name: badge.recipient.firstName && badge.recipient.lastName
-            ? `${badge.recipient.firstName} ${badge.recipient.lastName}`
-            : badge.recipient.email,
           email: badge.recipient.email,
+          firstName: badge.recipient.firstName,
+          lastName: badge.recipient.lastName,
         },
+        issuer: {
+          id: badge.issuer.id,
+          email: badge.issuer.email,
+          firstName: badge.issuer.firstName,
+          lastName: badge.issuer.lastName,
+        },
+        revoker: badge.revoker ? {
+          id: badge.revoker.id,
+          email: badge.revoker.email,
+          firstName: badge.revoker.firstName,
+          lastName: badge.revoker.lastName,
+        } : undefined,
       })),
-      pagination: {
-        page: query.page,
-        limit: query.limit,
-        totalCount,
-        totalPages: Math.ceil(totalCount / query.limit),
-        hasMore: skip + take < totalCount,
-      },
+      total: totalCount,
+      page: query.page,
+      limit: query.limit,
+      totalPages: Math.ceil(totalCount / query.limit),
     };
   }
 
