@@ -347,17 +347,11 @@ const BadgeDetailModal: React.FC = () => {
               </svg>
               Share Badge
             </button>
-            {/* Story 9.3 AC3: Disable Download button for revoked badges */}
+            {/* Story 9.3 AC3: Download button remains enabled for revoked badges (employees can keep records) */}
             <button
               onClick={handleDownloadBadge}
-              disabled={downloading || badge?.status === BadgeStatus.REVOKED}
-              title={
-                badge?.status === BadgeStatus.REVOKED 
-                  ? 'Revoked badges cannot be downloaded' 
-                  : downloading 
-                    ? 'Downloading...' 
-                    : 'Download badge as PNG'
-              }
+              disabled={downloading}
+              title={downloading ? 'Downloading...' : 'Download badge as PNG'}
               style={{
                 padding: '0.625rem 1.5rem',
                 fontSize: '0.875rem',
@@ -368,17 +362,17 @@ const BadgeDetailModal: React.FC = () => {
                 borderRadius: '0.5rem',
                 display: 'flex',
                 alignItems: 'center',
-                cursor: (downloading || badge?.status === BadgeStatus.REVOKED) ? 'not-allowed' : 'pointer',
-                opacity: (downloading || badge?.status === BadgeStatus.REVOKED) ? 0.5 : 1,
+                cursor: downloading ? 'not-allowed' : 'pointer',
+                opacity: downloading ? 0.5 : 1,
                 transition: 'background-color 0.2s'
               }}
               onMouseEnter={(e) => {
-                if (!downloading && badge?.status !== BadgeStatus.REVOKED) {
+                if (!downloading) {
                   e.currentTarget.style.backgroundColor = '#f3f4f6';
                 }
               }}
               onMouseLeave={(e) => {
-                if (!downloading && badge?.status !== BadgeStatus.REVOKED) {
+                if (!downloading) {
                   e.currentTarget.style.backgroundColor = 'white';
                 }
               }}

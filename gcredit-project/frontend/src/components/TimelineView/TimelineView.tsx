@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useWallet } from '../../hooks/useWallet';
 import { BadgeStatus } from '../../types/badge';
 import { TimelineLine } from './TimelineLine';
@@ -13,9 +13,17 @@ export type ViewMode = 'timeline' | 'grid';
 
 export function TimelineView() {
   const [viewMode, setViewMode] = useState<ViewMode>('timeline');
-  // Story 9.3 AC4: Default filter to CLAIMED (Active badges only)
-  const [statusFilter, setStatusFilter] = useState<BadgeStatus | undefined>(BadgeStatus.CLAIMED);
+  // Story 9.3 AC4: Default filter to CLAIMED (Active badges only) + persist in sessionStorage
+  const [statusFilter, setStatusFilter] = useState<BadgeStatus | undefined>(() => {
+    const saved = sessionStorage.getItem('badgeWalletFilter');
+    return saved ? (saved === 'ALL' ? undefined : saved as BadgeStatus) : BadgeStatus.CLAIMED;
+  });
   const { data, isLoading, error } = useWallet({ status: statusFilter });
+
+  // Story 9.3 AC4: Persist filter to sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem('badgeWalletFilter', statusFilter || 'ALL');
+  }, [statusFilter]);
 
   if (isLoading) {
     return (

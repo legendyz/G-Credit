@@ -96,7 +96,10 @@ Hiding revoked badges without notice would confuse employees. Showing them with 
 - [x] Filter persists in session storage
 
 ### AC5: API Integration
-- [x] Call `GET /api/badges/my-badges` includes `status` field
+- [x] Call `GET /api/badges/wallet` includes `status` field for all badges
+  - _Note: Story originally specified `/my-badges` endpoint, but implementation uses `/wallet` endpoint which is already established in the codebase_
+- [x] Conditionally include revocation data fields only when `status === 'REVOKED'`: `revokedAt`, `revocationReason`, `revocationNotes`, `revokedBy`
+- [x] Display proper fallback for missing revoker data
 - [x] Frontend filters badges by status client-side
 - [x] Response format:
   ```json
@@ -302,8 +305,8 @@ async getMyBadges(userId: string) {
 
 ### Testing Complete
 - [x] Unit tests for frontend components (>80% coverage)
-- [x] Unit tests for backend API
-- [x] E2E test with revoked badges
+- [x] Unit tests for backend API (24/24 passing, 3 new tests for Story 9.3)
+- [ ] E2E test with revoked badges _(pending UAT phase)_
 - [x] Manual testing with real data
 - [x] Cross-browser testing
 

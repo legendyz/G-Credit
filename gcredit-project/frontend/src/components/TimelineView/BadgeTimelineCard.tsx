@@ -51,6 +51,7 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
           className={`flex-1 bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${
             isRevoked ? 'opacity-50' : ''
           }`}
+          aria-label={isRevoked && badge.revokedAt ? `Badge revoked on ${new Date(badge.revokedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}` : undefined}
           onClick={() => {
             openModal(badge.id);
           }}
