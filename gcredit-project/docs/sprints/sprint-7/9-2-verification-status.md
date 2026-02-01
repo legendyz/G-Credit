@@ -5,8 +5,8 @@
 **Sprint:** Sprint 7  
 **Priority:** HIGH  
 **Story Points:** 3 → **4** ⚠️ **UPDATED**  
-**Status:** Backlog  
-**Last Updated:** February 1, 2026 (Post-Technical Review)
+**Status:** Review  
+**Last Updated:** February 1, 2026
 
 ---
 
@@ -312,8 +312,76 @@ High - Mostly UI work, backend changes minimal
 
 **Estimated Start:** February 3, 2026 (Day 1 - after Story 9.1)  
 **Estimated Completion:** February 3, 2026 (Day 1)  
-**Actual Start:** [TBD]  
-**Actual Completion:** [TBD]
+**Actual Start:** February 1, 2026  
+**Actual Completion:** February 1, 2026
+
+---
+
+## Dev Agent Record
+
+### Implementation Approach
+**TDD Methodology:** Frontend-first approach with component creation before integration
+
+**Key Technical Decisions:**
+1. Created dedicated `RevokedBadgeAlert` component following shadcn/ui Alert pattern
+2. Implemented reason categorization in backend service per DEVELOPER-CONTEXT.md Decision #3
+3. Used opacity-60 for grayed-out effect (AC3) instead of strikethrough for better readability
+4. Added `isPublicReason` flag to backend response for frontend conditional rendering
+
+### Completion Notes
+**✅ Implementation Complete - February 1, 2026**
+
+**Backend Changes:**
+- Updated `badge-verification.service.ts` with revocation categorization logic
+- Added `revoker` to include query to fetch revocation author details
+- Implemented `isPublicRevocationReason()` helper method
+- Added `isValid`, `revocationNotes`, `isPublicReason`, `revokedBy` to API response
+- Updated controller to pass Story 9.2 fields to frontend
+
+**Frontend Changes:**
+- Created `RevokedBadgeAlert.tsx` component with ARIA role="alert"
+- Created `RevokedBadgeAlert.test.tsx` with 4 unit test cases
+- Updated `VerifyBadgePage.tsx` to use new component
+- Implemented AC3: opacity-60 for grayed-out badge details
+- Implemented AC5: Disabled Download button with tooltip for revoked badges
+- Updated `VerificationResponse` type with new revocation fields
+
+**Public vs Private Reason Logic:**
+```typescript
+const publicReasons = ['Expired', 'Issued in Error', 'Duplicate'];
+// Private reasons: 'Policy Violation', 'Fraud' → show generic message
+```
+
+**Test Results:**
+- Backend unit tests: 8/8 passing ✅
+  - 4 existing tests
+  - 4 new Story 9.2 tests (reason categorization)
+- E2E tests: 17/17 passing ✅
+  - 12 existing tests
+  - 5 new Story 9.2 tests (public/private reason display)
+- Total: 25/25 tests passing ✅
+
+**Files Modified:**
+- `backend/src/badge-verification/badge-verification.service.ts` - Added revocation categorization
+- `backend/src/badge-verification/badge-verification.service.spec.ts` - Added 4 unit tests
+- `backend/src/badge-verification/badge-verification.controller.ts` - Added Story 9.2 fields to response
+- `backend/test/badge-verification.e2e-spec.ts` - Added 5 E2E tests
+- `frontend/src/components/badges/RevokedBadgeAlert.tsx` - NEW component
+- `frontend/src/components/badges/RevokedBadgeAlert.test.tsx` - NEW tests
+- `frontend/src/pages/VerifyBadgePage.tsx` - Integration with alert component
+- `frontend/src/types/badge.ts` - Updated VerificationResponse interface
+
+**Acceptance Criteria Status:**
+- ✅ AC1: Visual Status Indicator (Red alert, warning icon, REVOKED text, date)
+- ✅ AC2: Revocation Details (Reason categorized, notes, revokedBy)
+- ✅ AC3: Original Badge Information (Grayed out with opacity-60)
+- ✅ AC4: API Integration (isValid, isPublicReason, all metadata)
+- ✅ AC5: No Download for Revoked (Button disabled with tooltip)
+
+**Non-Functional Requirements:**
+- ✅ Performance: No extra queries, integrated into existing API
+- ✅ Accessibility: ARIA role="alert", color + icon + text
+- ✅ UX: Professional tone, clear hierarchy
 
 ---
 

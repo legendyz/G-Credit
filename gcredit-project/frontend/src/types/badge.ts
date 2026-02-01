@@ -34,7 +34,7 @@ export interface BadgeDetail {
   assertionUrl: string;
 }
 
-// Sprint 5 Story 6.2: Public verification response type
+// Sprint 5 Story 6.2 + Sprint 7 Story 9.2: Public verification response type
 export interface VerificationResponse {
   id: string;
   verificationId: string;
@@ -58,8 +58,16 @@ export interface VerificationResponse {
   issuedAt: string;
   expiresAt: string | null;
   claimedAt: string | null;
+  // Story 9.2: Revocation details
+  isValid?: boolean;
   revokedAt?: string;
   revocationReason?: string;
+  revocationNotes?: string;
+  isPublicReason?: boolean;
+  revokedBy?: {
+    name: string;
+    role: string;
+  };
   evidenceFiles: Array<{
     filename: string;
     blobUrl: string;

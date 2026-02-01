@@ -22,7 +22,7 @@ sprint_info:
 development_status:
   0-1-git-branch: done  # Git branch creation (prerequisite)
   9-1-revoke-api: done  # Badge Revocation API - COMPLETE
-  9-2-verification-status: ready-for-dev  # Revoked Badge Display in Verification Page
+  9-2-verification-status: review  # Revoked Badge Display in Verification Page - REVIEW
   9-3-wallet-display: ready-for-dev  # Employee Wallet Display
   9-4-notifications: ready-for-dev  # Revocation Email Notifications
   9-5-admin-ui: ready-for-dev  # Admin Revocation UI

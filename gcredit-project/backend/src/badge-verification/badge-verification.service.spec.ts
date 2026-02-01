@@ -195,4 +195,199 @@ describe('BadgeVerificationService - Story 6.3', () => {
       expect(result?.recipient.email).toMatch(/^t\*\*\*@example\.com$/);
     });
   });
+
+  describe('Story 9.2: Revocation Reason Categorization', () => {
+    const mockVerificationId = '550e8400-e29b-41d4-a716-446655440000';
+
+    it('should mark public reasons (Issued in Error) as isPublicReason=true', async () => {
+      const mockBadge = {
+        id: 'badge-uuid',
+        verificationId: mockVerificationId,
+        status: BadgeStatus.REVOKED,
+        revokedAt: new Date('2026-02-01T10:00:00Z'),
+        revocationReason: 'Issued in Error',
+        revocationNotes: 'Badge issued to wrong person',
+        issuedAt: new Date(),
+        expiresAt: null,
+        claimedAt: null,
+        assertionJson: {},
+        template: {
+          id: 'template-uuid',
+          name: 'Test Badge',
+          description: 'Test',
+          imageUrl: 'https://example.com/badge.png',
+          issuanceCriteria: {},
+          category: 'test',
+          skillIds: [],
+        },
+        recipient: {
+          id: 'recipient-uuid',
+          firstName: 'Jane',
+          lastName: 'Doe',
+          email: 'jane@example.com',
+        },
+        issuer: {
+          id: 'issuer-uuid',
+          firstName: 'Admin',
+          lastName: 'User',
+          email: 'admin@gcredit.com',
+        },
+        revoker: {
+          id: 'admin-uuid',
+          firstName: 'System',
+          lastName: 'Admin',
+          role: 'ADMIN',
+        },
+        evidenceFiles: [],
+      };
+
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+
+      const result = await service.verifyBadge(mockVerificationId);
+
+      expect(result?.isValid).toBe(false);
+      expect(result?.revocationReason).toBe('Issued in Error');
+      expect(result?.isPublicReason).toBe(true);
+      expect(result?.revocationNotes).toBe('Badge issued to wrong person');
+      expect(result?.revokedBy).toEqual({
+        name: 'System Admin',
+        role: 'ADMIN',
+      });
+    });
+
+    it('should mark private reasons (Policy Violation) as isPublicReason=false', async () => {
+      const mockBadge = {
+        id: 'badge-uuid',
+        verificationId: mockVerificationId,
+        status: BadgeStatus.REVOKED,
+        revokedAt: new Date('2026-02-01T10:00:00Z'),
+        revocationReason: 'Policy Violation',
+        revocationNotes: 'Confidential information',
+        issuedAt: new Date(),
+        expiresAt: null,
+        claimedAt: null,
+        assertionJson: {},
+        template: {
+          id: 'template-uuid',
+          name: 'Test Badge',
+          description: 'Test',
+          imageUrl: 'https://example.com/badge.png',
+          issuanceCriteria: {},
+          category: 'test',
+          skillIds: [],
+        },
+        recipient: {
+          id: 'recipient-uuid',
+          firstName: 'Jane',
+          lastName: 'Doe',
+          email: 'jane@example.com',
+        },
+        issuer: {
+          id: 'issuer-uuid',
+          firstName: 'Admin',
+          lastName: 'User',
+          email: 'admin@gcredit.com',
+        },
+        revoker: {
+          id: 'admin-uuid',
+          firstName: 'System',
+          lastName: 'Admin',
+          role: 'ADMIN',
+        },
+        evidenceFiles: [],
+      };
+
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+
+      const result = await service.verifyBadge(mockVerificationId);
+
+      expect(result?.isPublicReason).toBe(false);
+      expect(result?.revocationReason).toBe('Policy Violation');
+    });
+
+    it('should include isValid=false for revoked badges', async () => {
+      const mockBadge = {
+        id: 'badge-uuid',
+        verificationId: mockVerificationId,
+        status: BadgeStatus.REVOKED,
+        revokedAt: new Date(),
+        revocationReason: 'Expired',
+        issuedAt: new Date(),
+        expiresAt: null,
+        claimedAt: null,
+        assertionJson: {},
+        template: {
+          id: 'template-uuid',
+          name: 'Test Badge',
+          description: 'Test',
+          imageUrl: 'https://example.com/badge.png',
+          issuanceCriteria: {},
+          category: 'test',
+          skillIds: [],
+        },
+        recipient: {
+          id: 'recipient-uuid',
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+        },
+        issuer: {
+          id: 'issuer-uuid',
+          firstName: 'Admin',
+          lastName: 'User',
+          email: 'admin@gcredit.com',
+        },
+        revoker: null,
+        evidenceFiles: [],
+      };
+
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+
+      const result = await service.verifyBadge(mockVerificationId);
+
+      expect(result?.isValid).toBe(false);
+      expect(result?.status).toBe(BadgeStatus.REVOKED);
+    });
+
+    it('should include isValid=true for active badges', async () => {
+      const mockBadge = {
+        id: 'badge-uuid',
+        verificationId: mockVerificationId,
+        status: BadgeStatus.CLAIMED,
+        issuedAt: new Date(),
+        expiresAt: null,
+        claimedAt: new Date(),
+        assertionJson: {},
+        template: {
+          id: 'template-uuid',
+          name: 'Test Badge',
+          description: 'Test',
+          imageUrl: 'https://example.com/badge.png',
+          issuanceCriteria: {},
+          category: 'test',
+          skillIds: [],
+        },
+        recipient: {
+          id: 'recipient-uuid',
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+        },
+        issuer: {
+          id: 'issuer-uuid',
+          firstName: 'Admin',
+          lastName: 'User',
+          email: 'admin@gcredit.com',
+        },
+        evidenceFiles: [],
+      };
+
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+
+      const result = await service.verifyBadge(mockVerificationId);
+
+      expect(result?.isValid).toBe(true);
+      expect(result?.status).toBe(BadgeStatus.CLAIMED);
+    });
+  });
 });

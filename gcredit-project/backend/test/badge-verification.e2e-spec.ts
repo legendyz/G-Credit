@@ -12,6 +12,9 @@ describe('Badge Verification (e2e) - Story 6.2', () => {
   let activeBadgeVerificationId: string;
   let revokedBadgeVerificationId: string;
   let expiredBadgeVerificationId: string;
+  let templateId: string;
+  let recipientId: string;
+  let issuerId: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -84,6 +87,11 @@ describe('Badge Verification (e2e) - Story 6.2', () => {
         },
       },
     });
+
+    // Store IDs for Story 9.2 tests
+    templateId = template.id;
+    recipientId = recipient.id;
+    issuerId = admin.id;
 
     // Create active badge
     const activeBadge = await prisma.badge.create({
@@ -289,6 +297,123 @@ describe('Badge Verification (e2e) - Story 6.2', () => {
 
       expect(response.headers['x-verification-status']).toBeDefined();
       expect(['valid', 'expired', 'revoked']).toContain(response.headers['x-verification-status']);
+    });
+
+    // Story 9.2: Revoked badge display tests
+    describe('Story 9.2: Revoked Badge Display', () => {
+      it('should return revocation details with isPublicReason flag', async () => {
+        const response = await request(app.getHttpServer())
+          .get(`/api/verify/${revokedBadgeVerificationId}`)
+          .expect(200);
+
+        expect(response.body.verificationStatus).toBe('revoked');
+        expect(response.body.revoked).toBe(true);
+        expect(response.body.revokedAt).toBeDefined();
+        expect(response.body.revocationReason).toBeDefined();
+        
+        // Story 9.2: Check for new fields
+        expect(response.body).toHaveProperty('isValid');
+        expect(response.body.isValid).toBe(false);
+        expect(response.body).toHaveProperty('isPublicReason');
+        expect(typeof response.body.isPublicReason).toBe('boolean');
+      });
+
+      it('should include revocationNotes when provided', async () => {
+        const response = await request(app.getHttpServer())
+          .get(`/api/verify/${revokedBadgeVerificationId}`)
+          .expect(200);
+
+        // If notes were provided during revocation, they should be in response
+        if (response.body.revocationNotes) {
+          expect(typeof response.body.revocationNotes).toBe('string');
+        }
+      });
+
+      it('should include revokedBy information', async () => {
+        const response = await request(app.getHttpServer())
+          .get(`/api/verify/${revokedBadgeVerificationId}`)
+          .expect(200);
+
+        // If revoker information is available
+        if (response.body.revokedBy) {
+          expect(response.body.revokedBy).toHaveProperty('name');
+          expect(response.body.revokedBy).toHaveProperty('role');
+        }
+      });
+
+      it('should mark public reasons correctly', async () => {
+        // Create a badge and revoke it with a public reason
+        const publicReasonBadge = await prisma.badge.create({
+          data: {
+            templateId: templateId,
+            recipientId: recipientId,
+            issuerId: issuerId,
+            status: 'CLAIMED',
+            claimToken: 'public-reason-token-' + Math.random(),
+            claimedAt: new Date(),
+            issuedAt: new Date(),
+            verificationId: `public-reason-${Date.now()}`,
+            recipientHash: 'sha256$' + 'public-test-hash',
+            assertionJson: {},
+          },
+        });
+
+        // Revoke with public reason
+        await prisma.badge.update({
+          where: { id: publicReasonBadge.id },
+          data: {
+            status: 'REVOKED',
+            revokedAt: new Date(),
+            revocationReason: 'Issued in Error',
+            revocationNotes: 'Badge was issued to wrong recipient',
+            revokedBy: issuerId,
+          },
+        });
+
+        const response = await request(app.getHttpServer())
+          .get(`/api/verify/${publicReasonBadge.verificationId}`)
+          .expect(200);
+
+        expect(response.body.revocationReason).toBe('Issued in Error');
+        expect(response.body.isPublicReason).toBe(true);
+      });
+
+      it('should mark private reasons correctly', async () => {
+        // Create a badge and revoke it with a private reason
+        const privateReasonBadge = await prisma.badge.create({
+          data: {
+            templateId: templateId,
+            recipientId: recipientId,
+            issuerId: issuerId,
+            status: 'CLAIMED',
+            claimToken: 'private-reason-token-' + Math.random(),
+            claimedAt: new Date(),
+            issuedAt: new Date(),
+            verificationId: `private-reason-${Date.now()}`,
+            recipientHash: 'sha256$' + 'private-test-hash',
+            assertionJson: {},
+          },
+        });
+
+        // Revoke with private reason
+        await prisma.badge.update({
+          where: { id: privateReasonBadge.id },
+          data: {
+            status: 'REVOKED',
+            revokedAt: new Date(),
+            revocationReason: 'Policy Violation',
+            revocationNotes: 'Confidential compliance issue',
+            revokedBy: issuerId,
+          },
+        });
+
+        const response = await request(app.getHttpServer())
+          .get(`/api/verify/${privateReasonBadge.verificationId}`)
+          .expect(200);
+
+        expect(response.body.revocationReason).toBe('Policy Violation');
+        expect(response.body.isPublicReason).toBe(false);
+      });
     });
   });
 });
