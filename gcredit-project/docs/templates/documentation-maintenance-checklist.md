@@ -63,6 +63,106 @@ Master, execute Sprint N completion documentation maintenance (Scenario A).
 
 ## 📋 Core Documentation Sync Checklist (ALWAYS REQUIRED)
 
+### ✅ Step 0: Verify Current Sprint Status (MANDATORY - Execute FIRST)
+
+**File Location:** `{project-root}/gcredit-project/docs/sprints/sprint-N/sprint-status.yaml`  
+**Priority:** 🔴 CRITICAL - Must complete BEFORE updating any documentation  
+**Purpose:** Prevent incomplete/inaccurate documentation by verifying actual sprint state
+
+**⚠️ CRITICAL RULE:** **ALWAYS read the COMPLETE file** - partial reads lead to missing completed stories!
+
+**Verification Steps:**
+- [ ] **Load sprint-status.yaml COMPLETELY:**
+  - [ ] Read ENTIRE file (not just first 80-100 lines)
+  - [ ] Verify file loaded to end (check for "technical_debt" section at bottom)
+  - [ ] If using read_file tool, ensure endLine covers full file length
+  
+- [ ] **Extract Sprint Metrics:**
+  - [ ] `sprint_info.status` - Current sprint status (in-progress/complete)
+  - [ ] `sprint_metrics.completed_stories` - Number of done stories
+  - [ ] `sprint_metrics.total_stories` - Total story count
+  - [ ] `sprint_metrics.completion_rate` - Percentage complete
+  - [ ] `sprint_metrics.actual_hours` - Hours spent so far
+  - [ ] `sprint_metrics.estimated_hours` - Total estimated hours
+  - [ ] `sprint_metrics.total_tests` - Test count
+  - [ ] `sprint_metrics.core_tests_passing` - Passing tests
+  
+- [ ] **Identify ALL Stories Marked "done":**
+  - [ ] Review `development_status` section completely
+  - [ ] List every story with `status: done` or `status: "done"`
+  - [ ] Count matches `sprint_metrics.completed_stories` (sanity check)
+  - [ ] If counts don't match → STOP and investigate discrepancy
+  
+- [ ] **Extract Each Completed Story's Details:**
+  - [ ] For EACH story marked "done", record:
+    - [ ] `story_points` - Complexity estimate
+    - [ ] `estimated_hours` vs `actual_hours` - Accuracy tracking
+    - [ ] `start_date` and `completion_date` - Timeline
+    - [ ] `tests_added` and `tests_passing` - Quality metrics
+    - [ ] `code_review_issues` and `code_review_fixes` - Code quality
+    - [ ] `acceptance_criteria` - Business value delivered
+    - [ ] `notes` - Key implementation details, decisions, fixes
+    - [ ] `depends_on` and `blocks` - Dependency tracking
+  
+- [ ] **Verify Dependency Chain:**
+  - [ ] Check if completed stories unblock pending stories
+  - [ ] Identify next stories ready for development
+  - [ ] Note any blocked stories and reasons
+
+**Cross-Validation (Data Integrity Check):**
+- [ ] **Test Count Alignment:**
+  - [ ] Sum `tests_added` for all "done" stories
+  - [ ] Should approximately match delta in `total_tests` vs previous sprint
+  - [ ] If mismatch > 10% → investigate (overlapping tests, refactoring, etc.)
+  
+- [ ] **Hours Alignment:**
+  - [ ] Sum `actual_hours` for all "done" stories
+  - [ ] Should match `sprint_metrics.actual_hours`
+  - [ ] If mismatch → STOP and fix sprint-status.yaml first
+  
+- [ ] **Completion Rate Calculation:**
+  - [ ] Manual: `(completed_stories / total_stories) * 100`
+  - [ ] Should match `sprint_metrics.completion_rate`
+  - [ ] If mismatch → use sprint-status.yaml value, note discrepancy
+
+**Common Mistakes to Avoid:**
+- ❌ **Reading only first 80-100 lines** → Stories 2, 3, 4+ will be missed
+- ❌ **Assuming user input is complete** → Always verify against YAML file
+- ❌ **Using cached/stale data** → Read current file, not remembered state
+- ❌ **Skipping cross-validation** → Metrics errors propagate to all docs
+- ❌ **Partial story details** → Missing test counts, hours, or review fixes
+
+**Output Checklist (before proceeding to Step 1):**
+- [ ] **I have a complete list of ALL done stories** (not just the first one)
+- [ ] **I have full details for EACH done story** (hours, tests, review fixes)
+- [ ] **I have verified sprint metrics** (completion %, hours, tests)
+- [ ] **I have cross-validated data integrity** (sums match, no discrepancies)
+- [ ] **I am ready to update documentation with accurate, complete information**
+
+**If ANY checkbox above is unchecked → STOP. Do NOT proceed to Step 1.**
+
+**Example - What Good Verification Looks Like:**
+
+```
+✅ Sprint 7 Status Verified (from sprint-status.yaml):
+
+Completed Stories (4/7 = 57%):
+- Story 0.1: Git Branch (5min, prerequisite)
+- Story 9.1: Badge Revocation API (5h, 47 tests, 4 review fixes)
+- Story 9.2: Revoked Badge Verification (4.5h, 25 tests, 6 review fixes)
+- Story 9.3: Employee Wallet Revoked Display (4.5h, 24 tests, 6 review fixes)
+
+Sprint Metrics:
+- Hours: 14h actual / 20-26h estimated (70% of low estimate)
+- Tests: 278 total, 241 passing core (100% pass rate)
+- Test Delta: +34 tests from Sprint 6 (47+25+24 = 96, overlaps = 62)
+- Completion: 57% (4/7 stories)
+
+Ready to proceed: ✅ All data verified, cross-validation complete
+```
+
+---
+
 ### ✅ Step 1: Update `project-context.md` (Single Source of Truth)
 
 **File Location:** `{project-root}/project-context.md`  
@@ -626,6 +726,62 @@ Get-ChildItem -Recurse -Filter "*.md" | Where-Object { $_.DirectoryName -notmatc
 - [ ] **Structure Check:**
   - [ ] All docs follow `DOCUMENTATION-STRUCTURE.md`
   - [ ] No files in wrong directories
+
+---
+
+## 📖 Lessons Learned (From Real Incidents)
+
+### Incident #1: Partial sprint-status.yaml Read (2026-02-01)
+
+**What Happened:**
+- Documentation maintenance executed for Sprint 7
+- Only Story 9.1 completion reported in docs
+- Stories 9.2 and 9.3 completion missed entirely
+- Completion rate incorrectly reported as 18% (should be 57%)
+- Test count incorrectly reported as 270 (should be 278)
+
+**Root Cause:**
+- Agent read only first 80 lines of sprint-status.yaml (partial read)
+- Stories 9.2 and 9.3 details located in lines 80-130 (missed)
+- Assumed "user mentioned 9.1 complete" meant only 9.1 done
+- documentation-maintenance-checklist.md lacked explicit Step 0 for status verification
+
+**Impact:**
+- Incomplete documentation published to Git
+- 2 completed stories (9.2, 9.3) not credited
+- 9 hours of work (4.5h + 4.5h) not documented
+- 49 tests (25 + 24) not counted
+- Stakeholder visibility: misleading 18% vs actual 57% progress
+
+**Fix Applied:**
+- Added Step 0: "Verify Current Sprint Status (MANDATORY)"
+- Explicit requirement to read COMPLETE sprint-status.yaml file
+- Cross-validation checklist (test counts, hours, completion rate)
+- "Common Mistakes to Avoid" section with examples
+- Corrective documentation update committed (commit 354a007)
+
+**Prevention Measures:**
+- ✅ Step 0 now MANDATORY before any documentation update
+- ✅ "Read ENTIRE file" emphasized in bold/red priority
+- ✅ Cross-validation checklist catches data integrity issues
+- ✅ Example output provided showing what good verification looks like
+- ✅ "If ANY checkbox unchecked → STOP" enforcement rule
+
+**Lessons for Agents:**
+1. **Never assume based on user input** → Always verify against source files
+2. **Never read files partially** → Use appropriate endLine covering full content
+3. **Always cross-validate metrics** → Sum story hours should match sprint total
+4. **Always follow checklist steps in order** → Step 0 exists for a reason
+5. **When in doubt, read more context** → Partial data leads to incomplete conclusions
+
+**Key Takeaway:**  
+> "Trust, but verify. User says Story X is done? Great! Now verify sprint-status.yaml to see if X+1, X+2 are also done. Complete data > assumptions."
+
+---
+
+## 🎯 Success Criteria for Documentation Maintenance
+
+**Documentation Update is SUCCESSFUL when:**
   - [ ] Naming conventions followed
 
 ---
@@ -711,7 +867,21 @@ Track when documentation maintenance was last performed:
 
 ## 🎯 Success Criteria
 
-Documentation maintenance is successful when:
+---
+
+## 🎯 Success Criteria for Documentation Maintenance
+
+**Step 0 Verification is SUCCESSFUL when:**
+1. ✅ sprint-status.yaml read COMPLETELY (not partially)
+2. ✅ ALL completed stories identified and listed
+3. ✅ Sprint metrics extracted and verified
+4. ✅ Cross-validation passed (hours sum, test sum, completion rate)
+
+**Documentation Update is SUCCESSFUL when:**
+- ✅ **Accuracy:** ALL completed stories documented (not just some)
+- ✅ **Completeness:** All 4 core files updated (project-context.md, 2 READMEs, CHANGELOG.md)
+- ✅ **Consistency:** Same sprint number, version, dates, completion rate across all files
+- ✅ **Verifiability:** Anyone can reproduce your numbers from sprint-status.yaml
 - ✅ All files pass validation commands
 - ✅ Sprint status consistent across all files
 - ✅ No broken links or missing files
@@ -719,6 +889,15 @@ Documentation maintenance is successful when:
 - ✅ Infrastructure inventory matches reality
 - ✅ Lessons learned captured
 - ✅ No orphaned or duplicate documents
+
+**Red Flags (Indicates Incomplete/Inaccurate Update):**
+- ❌ You mentioned only 1-2 stories but sprint has 4+ done
+- ❌ Completion rate suspiciously low (<30%) despite multiple stories done
+- ❌ Test count didn't increase despite new stories
+- ❌ Hours much lower than expected
+- ❌ You can't explain where metrics came from
+
+**If you see a red flag → Go back to Step 0 and re-verify sprint-status.yaml**
 
 ---
 
