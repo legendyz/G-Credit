@@ -134,20 +134,94 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Filter Default:** Active badges only (reduce visual clutter, focus on valid credentials)
 - **Reason Display:** Only public reasons shown (privacy protection)
 
-### Technical Notes (Stories 9.1-9.3)
-- **TDD Approach:** Test-first development for all three stories
-- **Code Quality:** 18 code review issues identified and fixed across stories
-- **Test Coverage:** >80% for all new code, 278 total tests (241 passing core)
+### Added - Revocation Email Notifications (Story 9.4) - 2026-02-01
+
+#### Email Notification System
+- **Asynchronous Delivery:** Non-blocking email notifications for badge revocation
+- **Retry Logic:** 3 attempts with exponential backoff for failed deliveries
+- **Enhanced Template:** Revocation date, reason (conditional), notes, wallet URL
+- **Audit Logging:** All notification attempts logged to AuditLog
+- **Manager CC Infrastructure:** Prepared for future manager notifications
+
+#### Email Template Features
+- **Personalization:** Recipient name, badge name, issuer name
+- **Revocation Details:**
+  - Revocation date displayed
+  - Reason shown only if provided and not sensitive
+  - Optional notes included conditionally
+- **Action Links:** Direct link to employee badge wallet
+- **Professional Tone:** Supportive messaging, not punitive
+
+#### Testing (8 tests, 100% pass rate)
+- **Unit Tests (7):** Email service, template rendering, retry logic, audit logging
+- **E2E Tests (1):** Full revocation flow with email delivery (expanded)
+- **Code Review:** 9 issues identified and fixed (4 HIGH, 4 MEDIUM, 1 LOW)
+  - revocationDate added to email template
+  - Retry logic with 3 attempts
+  - Audit logging for all attempts
+  - Manager CC prepared but not implemented
+  - Conditional notes display
+  - E2E test expanded
+  - Type safety improvements
+
+### Added - Admin Badge Management UI (Story 9.5) - 2026-02-01
+
+#### Badge Management Page
+- **Table View:** Badge name, recipient, template, status, issued date, actions
+- **Search:** Search by recipient name/email or template name
+- **Filter:** By status (All/Active/Pending/Claimed/Revoked/Expired)
+- **Pagination:** 10 badges per page with navigation controls
+- **Role-Based Actions:** Admin can revoke any badge, Issuer only their own
+
+#### Revocation Modal
+- **Form Fields:**
+  - Reason dropdown (6 options: Policy Violation, Issued in Error, Expired, Duplicate, Fraud, Other)
+  - Notes textarea (optional, 1000 character limit)
+  - Character count indicator
+- **Validation:** Required reason, optional notes
+- **Feedback:** Toast notifications for success/error
+- **Accessibility:** Keyboard navigation, ARIA labels, focus management
+
+#### Backend Enhancements
+- **Query Parameters:** Added `search` and `activeOnly` to QueryBadgeDto
+- **Search Implementation:** Filter by recipient name/email and template name
+- **Active Filter:** Combined PENDING + CLAIMED statuses
+- **GET /api/badge-issuance/issued-badges** - Enhanced with search and filter support
+
+#### Frontend Architecture
+- **API Client:** badgesApi.ts with getAllBadges, revokeBadge functions
+- **Components:**
+  - BadgeManagementPage.tsx - Main page with table
+  - RevokeBadgeModal.tsx - Modal form component
+- **State Management:** React Query for data fetching and cache invalidation
+- **UI Components:** Radix UI Dialog, Select, Label, Textarea (shadcn/ui)
+- **Toast System:** Sonner for notifications
+
+#### Testing (52 tests, 100% pass rate)
+- **API Client Tests (17):** Badge operations, auth, error handling
+- **Modal Tests (13):** Form validation, rendering, accessibility
+- **Page Tests (22):** Table rendering, revoke logic, search, filter, error states
+- **Test Infrastructure:** Vitest + jsdom + @testing-library/react
+
+#### Code Review Fixes (5 issues)
+- **HIGH:** Revocation reasons synced with backend enum
+- **MEDIUM:** EXPIRED badges blocked from revocation (AC1 compliance)
+- **MEDIUM:** Search label corrected (removed unsupported "badge ID" claim)
+- **MEDIUM:** Toast notifications added (sonner integration)
+- **LOW:** "Active" filter option added (PENDING + CLAIMED combined)
+
+### Technical Notes (Stories 9.1-9.5)
+- **TDD Approach:** Test-first development for all five stories
+- **Code Quality:** 30 code review issues identified and fixed (4+6+6+9+5 across stories)
+- **Test Coverage:** >80% for all new code, 334 total tests (297 passing core, 100% pass rate)
 - **Idempotency Design:** Safe revocation operations (Story 9.1)
 - **Reason Categorization:** Privacy-aware display logic (Stories 9.2, 9.3)
-- **UX Consistency:** Unified revocation display across verification + wallet
-- **Audit Logging:** Foundation for future compliance requirements (GDPR, SOX)
-- **Accessibility:** ARIA labels and role attributes for screen readers
-- **Future Enhancement:** Stories 9.4 (notifications) and 9.5 (admin UI) will complete Epic 9
-- **TDD Approach:** Test-first development for high-risk authorization story
-- **Idempotency Design:** Safe to retry revocation operations (important for UI/automation)
-- **Audit Logging:** Foundation for future compliance requirements (GDPR, SOX)
-- **Future Enhancement:** Story 9.2 will add revocation display in public verification page
+- **Async Notifications:** Non-blocking email delivery with retry (Story 9.4)
+- **UX Consistency:** Unified revocation display across verification + wallet + admin UI
+- **Audit Logging:** Comprehensive compliance foundation (GDPR, SOX ready)
+- **Accessibility:** ARIA labels, keyboard navigation, screen reader support
+- **Frontend Testing:** Full test suite with vitest + testing-library (Story 9.5: 52 tests)
+- **Future Enhancement:** Story U.1 (UAT testing) will validate complete Epic 9
 
 ---
 
