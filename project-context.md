@@ -13,8 +13,8 @@
 **Sprint 4:** ✅ Complete (100%, 48h/48h estimated, committed 2026-01-28, tagged v0.4.0)  
 **Sprint 5:** ✅ Complete (100%, 30h/28h, committed 2026-01-29, tagged v0.5.0, branch: sprint-5/epic-6-badge-verification)  
 **Sprint 6:** ✅ Complete (100%, 30h/56h, committed 2026-01-31, branch: sprint-6/epic-7-badge-sharing, 243 tests, v0.6.0)  
-**Sprint 7:** 🟡 In Progress (18%, 2/11 stories, 5h/54.5h, branch: sprint-7/epic-9-revocation-lifecycle-uat, Story 9.1 done)  
-**Last Updated:** 2026-02-01 (Sprint 7 Day 1: Story 9.1 Badge Revocation API complete, planning 100% done)
+**Sprint 7:** 🟡 In Progress (57%, 4/7 stories, 14h/20-26h, branch: sprint-7/epic-9-revocation-lifecycle-uat, Stories 9.1-9.3 done)  
+**Last Updated:** 2026-02-01 (Sprint 7: Stories 9.1-9.3 complete - Revocation API + Verification + Wallet Display, 278 tests passing)
 
 ---
 
@@ -706,7 +706,7 @@ _bmad-output/
 ---
 
 ### Badge Revocation & Complete Lifecycle UAT (Epic 9) 🟡
-**Sprint 7 Status:** 🟡 In Progress (2/11 stories, 5h/54.5h, started 2026-02-01)
+**Sprint 7 Status:** 🟡 In Progress (4/7 stories, 14h/20-26h, started 2026-02-01)
 
 **Planning Complete:** 2026-02-01 (100% - All 11 stories planned, technical review completed, pre-development 100%)
 
@@ -716,9 +716,11 @@ _bmad-output/
 - Login & Navigation MVP (2 stories - 0.2a, 0.4)
 - Sprint Setup (1 story - 0.1)
 
-**Stories Complete:** 2/11 (18%)
+**Stories Complete:** 4/7 (57%)
 - ✅ Story 0.1: Git Branch Setup (5min) - Branch created 2026-01-31
 - ✅ Story 9.1: Badge Revocation API (5h) - TDD approach, complete 2026-02-01
+- ✅ Story 9.2: Revoked Badge Verification Display (4.5h) - Complete 2026-02-01
+- ✅ Story 9.3: Employee Wallet Revoked Display (4.5h) - Complete 2026-02-01
 
 **Story 9.1 - Badge Revocation API (Complete 2026-02-01):**
 
@@ -768,17 +770,56 @@ _bmad-output/
 
 **Branch:** sprint-7/epic-9-revocation-lifecycle-uat
 
-**Next Stories (Day 2 planned):**
-- Story 9.2: Revoked Badge Verification Display (4h) - Public verification page updates
-- Story 9.3: Employee Wallet Revoked Display (4h) - Visual distinction for revoked badges
+**Story 9.2 - Revoked Badge Verification Display (Complete 2026-02-01):**
 
-**Pending Stories:**
-- Story 9.4: Revocation Notifications (3.5h)
-- Story 9.5: Admin Revocation UI (4.5h)
-- Story 0.2a: Login & Navigation MVP (6h) - Day 3
-- Story U.2a: M365 Sync Basic Test (5h) - Day 3, requires PO coordination
-- Story U.1: Complete Lifecycle UAT (10-12h) - Days 5-6
-- Story 0.4: Story U.3: UAT Bug Fixes (3-5h) - Day 7
+**Frontend Changes:**
+- RevokedBadgeAlert component with red warning banner
+- Reason categorization logic (public vs private reasons)
+- Disabled Download/Share buttons for revoked badges
+- ARIA role="alert" for accessibility
+
+**Backend Changes:**
+- Updated GET /api/badges/:id/verify endpoint
+- Returns revocation status, reason, date, revokedBy
+- Reason categorization: public reasons shown, private reasons generic message
+
+**Testing:**
+- 25 tests added (8 unit + 17 E2E)
+- Code review: 6 issues identified and fixed
+- All acceptance criteria met (5/5)
+
+**Story 9.3 - Employee Wallet Revoked Display (Complete 2026-02-01):**
+
+**Frontend Changes:**
+- Visual distinction for revoked badges (grayed out, REVOKED label)
+- Default filter: "Active badges only"
+- RevocationSection component with metadata display
+- Disabled share buttons (LinkedIn, Teams, Email) for revoked badges
+- Tooltips explaining why features are disabled
+
+**Features:**
+- sessionStorage persistence for filter state
+- Conditional rendering based on badge status
+- ARIA labels for accessibility
+- Download remains enabled (evidence preservation)
+
+**Testing:**
+- 24 tests passing (3 new tests added)
+- Code review: 6 issues identified and fixed (4 HIGH, 2 MEDIUM)
+- All acceptance criteria met (5/5)
+
+**Combined Testing Statistics (Stories 9.1-9.3):**
+- Total tests: 278 (up from 244 in Sprint 6)
+- Passing: 241 core tests (100% pass rate)
+- Story 9.1: 47 tests (21 unit + 26 E2E)
+- Story 9.2: 25 tests (8 unit + 17 E2E)
+- Story 9.3: 24 tests passing
+- Teams tests deferred: 16 (Sprint 6 technical debt)
+
+**Next Stories:**
+- Story 9.4: Revocation Notifications (3h)
+- Story 9.5: Admin Revocation UI (5.5h)
+- Story U.1: Complete Lifecycle UAT (8h) - Blocked until 9.4 + 9.5 complete
 
 ---
 

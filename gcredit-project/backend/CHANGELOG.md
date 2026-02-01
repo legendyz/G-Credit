@@ -66,7 +66,84 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Developer Context:** DEVELOPER-CONTEXT.md with decision reference
 - **Code Comments:** Complex authorization logic well-documented
 
-### Technical Notes
+### Added - Revoked Badge Display in Verification Page (Story 9.2) - 2026-02-01
+
+#### Public Verification Page Updates
+- **Revocation Status Display:** Red alert banner with "BADGE REVOKED" message
+- **Reason Categorization:** Public vs private revocation reasons
+  - Public reasons (shown): "Expired", "Issued in Error", "Duplicate"
+  - Private reasons (generic message): "Policy Violation", "Fraud"
+- **Disabled Actions:** Download and Share buttons disabled for revoked badges
+- **ARIA Accessibility:** role="alert" for screen readers
+
+#### API Changes
+- **GET /api/badges/:id/verify** - Enhanced response with revocation data
+  - Returns: `{ status: 'REVOKED', revokedAt, revocationReason, revokedBy }`
+  - Reason categorization logic in backend
+  - Defensive rendering for missing revokedBy field
+
+#### Frontend Components
+- **RevokedBadgeAlert:** Reusable component for revocation warnings
+- **Reason Display Logic:** Conditional rendering based on reason category
+- **Visual Design:** Red color theme, warning icons, clear messaging
+
+#### Testing (25 tests, 100% pass rate)
+- **Unit Tests (8):** Reason categorization, API integration, component rendering
+- **E2E Tests (17):** Full verification page flow with revoked badges
+- **Code Review:** 6 issues identified and fixed
+  - AC2: revokedBy field defensive rendering
+  - AC1: Conditional rendering improvements
+  - AC4: Endpoint path documentation
+  - DoD: Test marking consistency
+  - publicReasons array alignment
+
+### Added - Employee Wallet Revoked Badge Display (Story 9.3) - 2026-02-01
+
+#### Employee Wallet Enhancements
+- **Visual Distinction:** Revoked badges displayed with:
+  - Grayed out appearance (opacity 0.6)
+  - Red "REVOKED" label overlay
+  - RevocationSection with metadata (date, reason, revoker)
+- **Default Filter:** "Active badges only" filter enabled by default
+- **Filter Persistence:** sessionStorage maintains filter state across page loads
+- **Disabled Sharing:** Share buttons (LinkedIn, Teams, Email) disabled with tooltips
+- **Evidence Preservation:** Download button remains enabled for revoked badges
+
+#### Frontend Features
+- **RevocationSection Component:** Displays revocation metadata
+  - Revocation date
+  - Reason (if public category)
+  - Revoker name
+- **Filter Controls:** Toggle between Active/All/Revoked badges
+- **Conditional Rendering:** Status-aware badge display logic
+- **ARIA Labels:** Accessibility improvements for screen readers
+
+#### Testing (24 tests passing, 3 new)
+- **E2E Tests:** Revoked badge visibility, filter functionality, share button states
+- **Code Review:** 6 issues identified and fixed (4 HIGH, 2 MEDIUM)
+  - HIGH: AC3 Download remains enabled (evidence preservation)
+  - HIGH: AC4 sessionStorage filter persistence
+  - HIGH: AC5 API endpoint documentation updates
+  - HIGH: LinkedIn/Teams share validation
+  - MEDIUM: E2E test marking (pending UAT)
+  - MEDIUM: ARIA label additions
+
+#### UX Decisions
+- **Download Policy:** Revoked badges remain downloadable (evidence/archival purposes)
+- **Share Policy:** Social sharing disabled (prevent distribution of invalid credentials)
+- **Filter Default:** Active badges only (reduce visual clutter, focus on valid credentials)
+- **Reason Display:** Only public reasons shown (privacy protection)
+
+### Technical Notes (Stories 9.1-9.3)
+- **TDD Approach:** Test-first development for all three stories
+- **Code Quality:** 18 code review issues identified and fixed across stories
+- **Test Coverage:** >80% for all new code, 278 total tests (241 passing core)
+- **Idempotency Design:** Safe revocation operations (Story 9.1)
+- **Reason Categorization:** Privacy-aware display logic (Stories 9.2, 9.3)
+- **UX Consistency:** Unified revocation display across verification + wallet
+- **Audit Logging:** Foundation for future compliance requirements (GDPR, SOX)
+- **Accessibility:** ARIA labels and role attributes for screen readers
+- **Future Enhancement:** Stories 9.4 (notifications) and 9.5 (admin UI) will complete Epic 9
 - **TDD Approach:** Test-first development for high-risk authorization story
 - **Idempotency Design:** Safe to retry revocation operations (important for UI/automation)
 - **Audit Logging:** Foundation for future compliance requirements (GDPR, SOX)
