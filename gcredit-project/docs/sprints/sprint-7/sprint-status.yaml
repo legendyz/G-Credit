@@ -100,12 +100,14 @@ story_details:
     start_date: "2026-02-01"
     completion_date: "2026-02-01"
     developer: "Amelia (Dev Agent)"
+    code_review_issues: 6
+    code_review_fixes: 6
     tests_added: 3
     tests_passing: 24
     acceptance_criteria: "5/5 met"
     depends_on: ["9-1-revoke-api"]
     blocks: ["U-1-lifecycle-uat"]
-    notes: "TDD approach, conditional field inclusion, default filter to Active, RevocationSection component created, Download/Share disabled with tooltips"
+    notes: "TDD approach, code review完成，6个问题已修复（4 HIGH: AC3 Download保持启用, AC4 sessionStorage持久化, AC5 API端点文档, LinkedIn/Teams验证; 2 MEDIUM: E2E测试标记pending UAT, ARIA标签添加）。条件字段包含、默认filter为Active、RevocationSection组件、Share禁用+tooltips"
     
   9-4-notifications:
     status: "ready-for-dev"
