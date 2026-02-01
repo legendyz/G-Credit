@@ -426,10 +426,11 @@ Medium-High - UI work with some complexity in filtering
 - Updated `BadgeDetailModal`:
   - Integrated RevocationSection before Timeline section
   - Disabled Share button for revoked badges with tooltip
-  - Disabled Download button for revoked badges with tooltip
+  - **Download button remains enabled** (AC3: employees can keep records)
   - Added proper hover states and cursor styles
 - Updated `TimelineView` filter:
   - Default filter set to BadgeStatus.CLAIMED (Active badges)
+  - **Filter persists in sessionStorage** (AC4)
   - Changed dropdown label from "Claimed" to "Active"
 
 **Reason Categorization Logic:**
@@ -475,7 +476,60 @@ const publicReasons = ['Expired', 'Issued in Error'];
 |------|--------|--------|-------|
 | 2026-01-31 | Backlog | Bob (Scrum Master) | Story created during planning |
 | 2026-02-01 | In Progress | Dev Agent | Implementation started |
-| 2026-02-01 | Done | Dev Agent | All ACs met, 24/24 tests passing |
+| 2026-02-01 | Code Review | Dev Agent | Adversarial code review executed |
+| 2026-02-01 | Done | Dev Agent | All ACs met, code review fixes applied, 24/24 tests passing |
+
+---
+
+## Code Review Fixes (2026-02-01)
+
+**Issues Found & Resolved:**
+
+1. **HIGH #1 - Download Button Incorrectly Disabled**
+   - **Issue:** AC3 requires "Download button still enabled (employees can keep records)" but implementation disabled it for REVOKED badges
+   - **Fix:** Removed `|| badge?.status === BadgeStatus.REVOKED` from disabled condition in BadgeDetailModal.tsx line 353
+   - **Commit:** 7572d2e
+
+2. **HIGH #2 - Filter Not Persisted to sessionStorage**
+   - **Issue:** AC4 requires "Filter persists in session storage" but only useState was implemented
+   - **Fix:** Added sessionStorage.setItem/getItem with useEffect hooks in TimelineView.tsx
+   - **Implementation:**
+     ```typescript
+     const [statusFilter, setStatusFilter] = useState<BadgeStatus | undefined>(() => {
+       const saved = sessionStorage.getItem('badgeWalletFilter');
+       return saved ? (saved === 'ALL' ? undefined : saved as BadgeStatus) : BadgeStatus.CLAIMED;
+     });
+     useEffect(() => {
+       sessionStorage.setItem('badgeWalletFilter', statusFilter || 'ALL');
+     }, [statusFilter]);
+     ```
+   - **Commit:** 7572d2e
+
+3. **HIGH #3 - API Endpoint Documentation Mismatch**
+   - **Issue:** AC5 specified `GET /api/badges/my-badges` but implementation uses `/api/badges/wallet`
+   - **Fix:** Updated story AC5 documentation to reflect actual `/wallet` endpoint (already established in codebase)
+   - **Note:** Implementation is correct, documentation was outdated
+   - **Commit:** 7572d2e
+
+4. **MEDIUM #5 - E2E Test Claims Without Evidence**
+   - **Issue:** DoD claimed "E2E test with revoked badges" ✅ but only backend unit tests exist
+   - **Fix:** Marked E2E tests as "pending UAT phase" in DoD section
+   - **Commit:** 7572d2e
+
+5. **MEDIUM #6 - Missing ARIA Accessibility Labels**
+   - **Issue:** Non-Functional Requirements specify `aria-label="Badge revoked on [date]"` but revoked cards lacked this
+   - **Fix:** Added aria-label with formatted revocation date to BadgeTimelineCard.tsx
+   - **Implementation:**
+     ```tsx
+     aria-label={isRevoked && badge.revokedAt ? 
+       `Badge revoked on ${new Date(badge.revokedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}` 
+       : undefined}
+     ```
+   - **Commit:** 7572d2e
+
+**Test Updates:**
+- Updated `badge-issuance-wallet.service.spec.ts` to include `revoker` relation in mock expectations
+- All tests passing: 9/9 wallet tests, 24/24 backend total ✅
 
 ---
 
