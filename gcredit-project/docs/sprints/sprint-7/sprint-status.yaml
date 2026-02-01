@@ -28,32 +28,34 @@ development_status:
   9-3-wallet-display: done  # Employee Wallet Display - DONE
   9-4-notifications: review  # Revocation Email Notifications - COMPLETE
   9-5-admin-ui: done  # Admin Revocation UI - COMPLETE (code review fixes done)
-  P0-fixes: ready-for-dev  # Pre-UAT P0 Fixes from Security/Architecture/UX Reviews
-  U-1-lifecycle-uat: blocked  # Complete Lifecycle UAT - blocked on P0-fixes
+  P0-fixes-phase-a: done  # Security & Architecture P0 Fixes (SEC-P0-001/002/003, ARCH-P0-002)
+  P0-fixes-phase-b: ready-for-dev  # UX P0 Fixes (Login, alert→toast, form labels)
+  U-1-lifecycle-uat: blocked  # Complete Lifecycle UAT - blocked on P0-fixes-phase-b
 
 sprint_metrics:
-  total_stories: 9  # 0.1 + 0.2a + 9.1-9.5 + P0-fixes + U.1
-  completed_stories: 6  # 0.1 + 9.1 + 9.2 + 9.3 + 9.4 (review) + 9.5 (done)
+  total_stories: 10  # 0.1 + 0.2a + 9.1-9.5 + P0-A + P0-B + U.1
+  completed_stories: 7  # 0.1 + 9.1 + 9.2 + 9.3 + 9.4 (review) + 9.5 + P0-A
   in_progress_stories: 0
-  blocked_stories: 1  # U.1 blocked on P0-fixes
-  completion_rate: 67%  # 6/9
+  blocked_stories: 1  # U.1 blocked on P0-fixes-phase-b
+  completion_rate: 70%  # 7/10
   estimated_hours: "41-47"  # Original 20-26 + P0-fixes 15h + Story 0.2a 6h
-  actual_hours: 22  # Story 9.1 (5h) + 9.2 (4.5h) + 9.3 (4.5h) + 9.4 (2.5h) + 9.5 (5.5h)
+  actual_hours: 25  # Story 9.1 (5h) + 9.2 (4.5h) + 9.3 (4.5h) + 9.4 (2.5h) + 9.5 (5.5h) + P0-A (3h)
   
-  backend_completion: 86%  # All Stories except U.1
+  backend_completion: 90%  # All backend Stories + Phase A complete
   frontend_completion: 86%  # All Stories except U.1
   
-  # Test Results (as of 2026-02-01 after Story 9.5 tests)
+  # Test Results (as of 2026-02-01 after Phase A P0 fixes)
   total_tests: 334  # 282 backend + 52 frontend
-  core_tests_passing: 297  # 245 backend + 52 frontend
+  core_tests_passing: 302  # 250 backend + 52 frontend
   teams_tests_failing: 16  # Teams integration (Sprint 6 technical debt)
   teams_test_suites_skipped: 4
   story_9_1_tests: 47  # 21 unit + 26 E2E
   story_9_2_tests: 25  # 8 unit (4 new) + 17 E2E (5 new)
   story_9_4_tests: 8   # 7 unit + 1 E2E (expanded)
   story_9_5_tests: 52  # 17 API + 13 modal + 22 page (frontend)
-  core_pass_rate: "100% (297/297)"
-  overall_status: "Stories 9.1-9.5 complete with tests, only U.1 UAT remaining"
+  phase_a_tests_fixed: 7  # SEC-P0-001 claimBadge tests updated
+  core_pass_rate: "100% (302/302)"
+  overall_status: "Phase A P0 Security fixes complete, Phase B UX fixes pending"
   
 quality_metrics:
   build_status: "clean"
@@ -159,34 +161,48 @@ story_details:
     blocked_by: "P0-fixes"
     depends_on: ["9-1-revoke-api", "9-2-verification-status", "9-3-wallet-display", "9-4-notifications", "9-5-admin-ui", "P0-fixes"]
 
-  P0-fixes:
+  P0-fixes-phase-a:
+    status: "done"
+    priority: "P0 - Critical"
+    story_points: 3
+    estimated_hours: 3.25
+    actual_hours: 3
+    start_date: "2026-02-01"
+    completion_date: "2026-02-01"
+    developer: "Amelia (Dev Agent)"
+    depends_on: ["9-5-admin-ui"]
+    blocks: ["P0-fixes-phase-b", "U-1-lifecycle-uat"]
+    commits:
+      - "d7c19f7 - fix(security): Phase A P0 security & architecture fixes"
+      - "5f2ad7a - test(SEC-P0-001): Update teams-action.controller tests"
+      - "82ac475 - docs(sprint-7): Mark Phase A P0 fixes as complete"
+    fixes_completed:
+      - id: "SEC-P0-002"
+        task: "Remove role from RegisterDto, hardcode EMPLOYEE"
+        files: ["register.dto.ts", "auth.service.ts"]
+        status: "done"
+      - id: "SEC-P0-001"
+        task: "IDOR fix: Teams badge claiming - use @CurrentUser()"
+        files: ["teams-action.controller.ts", "teams-action.controller.spec.ts"]
+        status: "done"
+      - id: "SEC-P0-003"
+        task: "JWT Secret validation - throw error if missing or <32 chars"
+        files: ["jwt.strategy.ts"]
+        status: "done"
+      - id: "ARCH-P0-002"
+        task: "Badge Template findOne() add status check for non-ACTIVE"
+        files: ["badge-templates.service.ts", "badge-templates.controller.ts"]
+        status: "done"
+
+  P0-fixes-phase-b:
     status: "ready-for-dev"
     priority: "P0 - Critical"
-    story_points: 13
-    estimated_hours: 15
+    story_points: 10
+    estimated_hours: 12
     developer: "TBD"
-    depends_on: ["9-5-admin-ui"]
+    depends_on: ["P0-fixes-phase-a"]
     blocks: ["U-1-lifecycle-uat"]
     breakdown:
-      security:
-        - id: "SEC-P0-001"
-          task: "IDOR fix: Teams badge claiming - use @CurrentUser()"
-          file: "teams-action.controller.ts"
-          effort: "1h"
-        - id: "SEC-P0-002"
-          task: "Remove role from RegisterDto, hardcode EMPLOYEE"
-          file: "register.dto.ts, auth.service.ts"
-          effort: "1h"
-        - id: "SEC-P0-003"
-          task: "JWT Secret validation - throw error if missing"
-          file: "jwt.strategy.ts"
-          effort: "15m"
-      architecture:
-        - id: "ARCH-P0-002"
-          task: "Badge Template findOne() add status check for DRAFT"
-          file: "badge-templates.service.ts"
-          effort: "1h"
-      ux:
         - id: "UX-P0-001"
           task: "Create minimal login page for UAT"
           effort: "4h"
@@ -201,12 +217,15 @@ story_details:
         - id: "UX-P0-004"
           task: "Add basic celebration feedback on badge claiming"
           effort: "4h"
-    notes: "Pre-UAT fixes identified by Security/Architecture/UX reviews on 2026-02-01"
+    notes: "Pre-UAT UX fixes identified by Security/Architecture/UX reviews on 2026-02-01"
 
 next_steps:
-  - "Phase A: P0 Security Fixes (3.25h) - SEC-P0-001, SEC-P0-002, SEC-P0-003, ARCH-P0-002"
-  - "Phase B: P0 UX Fixes (12h) - UX-P0-001, UX-P0-002, UX-P0-003, UX-P0-004"
-  - "Phase C: Story U.1 - Complete Lifecycle UAT (8h)"
+  - \"✅ Phase A: P0 Security Fixes (3h) - COMPLETED 2026-02-01\"
+  - \"🔴 Phase B: P0 UX Fixes (12h) - UX-P0-001 (Login), UX-P0-002 (toast), UX-P0-003 (labels), UX-P0-004 (celebration)\"
+  - \"⏳ Phase C: Story U.1 - Complete Lifecycle UAT (8h) - blocked on Phase B\"
+
+last_updated: \"2026-02-01T23:30:00\"
+updated_by: \"Amelia (Dev Agent)\"
 
 technical_debt:
   teams_channel_sharing:
