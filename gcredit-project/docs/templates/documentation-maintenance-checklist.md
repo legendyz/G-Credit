@@ -300,7 +300,54 @@ Ready to proceed: ✅ All data verified, cross-validation complete
 
 ---
 
-### ✅ Step 4: Verify Sprint Documentation Structure
+### ✅ Step 4: Update API Documentation (If New Endpoints Added)
+
+**File Location:** `{project-root}/gcredit-project/backend/docs/API-GUIDE.md`  
+**Priority:** 🔴 CRITICAL (if sprint added/modified API endpoints)  
+**Trigger:** Sprint completed stories that added or modified API endpoints
+
+**Check and Update:**
+- [ ] **Top Metadata (Lines 1-6):**
+  - [ ] `Version:` updated to match sprint version (e.g., 0.7.0)
+  - [ ] `Last Updated:` changed to TODAY
+  - [ ] Add sprint description in version (e.g., "Sprint 7 - Badge Revocation")
+
+- [ ] **Table of Contents:**
+  - [ ] New API chapters added (e.g., Badge Issuance, Badge Revocation)
+  - [ ] Section links work correctly
+
+- [ ] **New API Endpoints Documented:**
+  - [ ] Endpoint path and HTTP method clearly stated
+  - [ ] Authentication requirements specified
+  - [ ] Authorization roles listed (ADMIN, ISSUER, EMPLOYEE, etc.)
+  - [ ] Request body schema with field descriptions
+  - [ ] Response schema with status codes
+  - [ ] Error responses documented
+  - [ ] cURL examples provided (both PowerShell and Bash)
+  - [ ] Query parameters explained (if applicable)
+
+- [ ] **Bottom Metadata:**
+  - [ ] `Last Updated:` is TODAY
+  - [ ] `API Version:` matches sprint version
+  - [ ] `Coverage:` lists sprint range (e.g., "Sprint 0-7")
+  - [ ] Links to detailed API docs (if exists)
+
+**How to Identify New Endpoints:**
+1. Check sprint-status.yaml `story_details` for completed stories
+2. For each "done" story, check its story file for "API Endpoints" section
+3. Look for POST/GET/PUT/DELETE endpoints in story acceptance criteria
+4. Check CHANGELOG.md for "API endpoints added/modified" entries
+
+**Common Mistakes to Avoid:**
+- ❌ Forgetting to update version number and date
+- ❌ Adding endpoint description but missing cURL examples
+- ❌ Not updating Table of Contents when adding new chapters
+- ❌ Copying old date/version from previous section
+- ❌ Missing authorization rules (who can call this endpoint)
+
+---
+
+### ✅ Step 5: Verify Sprint Documentation Structure
 
 **File Location:** `{project-root}/gcredit-project/docs/sprints/sprint-N/`  
 **Priority:** 🟡 HIGH
@@ -847,6 +894,67 @@ Get-ChildItem -Recurse -Filter "*.md" | Where-Object { $_.DirectoryName -notmatc
 > - Stale dates (anything not TODAY in "Last Updated")
 > - Outdated text ("Planning", "Awaiting", old week numbers)
 > - Metric discrepancies (compare with sprint-status.yaml)
+
+---
+
+### Incident #3: API Documentation Not Updated (2026-02-01)
+
+**What Happened:**
+- API-GUIDE.md severely outdated: Last Updated 2026-01-26 (6 days old, Sprint 2 era)
+- Version stuck at 0.2.0 (should be 0.7.0 after Sprint 7)
+- Missing 5 sprints of API endpoints (Sprint 3-7):
+  - ❌ Badge Issuance API (Sprint 3: POST /badges, POST /badges/bulk, POST /badges/:id/claim)
+  - ❌ Badge Verification API (Sprint 5: GET /verify/:id, GET /badges/:id/assertion)
+  - ❌ Badge Sharing API (Sprint 6: POST /badges/:id/share-email)
+  - ❌ Badge Revocation API (Sprint 7: POST /badges/:id/revoke) ← Current sprint core feature!
+- Total: ~15+ new endpoints undocumented
+
+**Root Cause:**
+- documentation-maintenance-checklist.md **completely lacked** API documentation step
+- No Step 4: "Update API Documentation (If New Endpoints Added)"
+- Checklist only had Steps 1-3: project-context.md, READMEs, CHANGELOG.md
+- No trigger to check if sprint added API endpoints
+- No guidance on how to identify new endpoints from sprint files
+
+**Impact:**
+- Developers cannot reference latest API endpoints (manual code inspection required)
+- External integrators see incomplete/outdated API (v0.2.0 vs actual v0.7.0)
+- 5 sprints of API changes invisible to users
+- Core Sprint 7 feature (Badge Revocation) completely undocumented in API-GUIDE.md
+- Required emergency documentation update during sprint
+
+**Fix Implemented:**
+- Added **Step 4: Update API Documentation** to checklist with:
+  - 🔴 CRITICAL priority when sprint adds endpoints
+  - Clear trigger: "Sprint completed stories that added/modified API endpoints"
+  - Detailed checklist: Version, TOC, Endpoint details, cURL examples, Bottom metadata
+  - "How to Identify New Endpoints" guide (4 detection methods)
+  - "Common Mistakes to Avoid" (5 pitfalls)
+  - Line number references for easy navigation
+- Updated API-GUIDE.md to v0.7.0 with 3 new chapters (Badge Issuance, Revocation, Verification)
+- Added 300+ lines of API documentation covering Sprint 3-7
+
+**Prevention - 5 Key Lessons:**
+1. **Check for API changes in every sprint** - Review story files for "API Endpoints" sections
+2. **API docs are as critical as README** - Not optional, same priority as project-context.md
+3. **Version numbers must match sprints** - API-GUIDE.md version = current sprint version
+4. **Date must be TODAY when updating** - Stale dates = stale docs
+5. **Add examples, not just schemas** - cURL examples make API docs actually usable
+
+**Detection Strategy (for agents):**
+```
+After Step 0 verification, before updating project-context.md:
+1. For each "done" story, check story file for keywords:
+   - "POST /api/", "GET /api/", "PUT /api/", "DELETE /api/"
+   - "API Endpoint", "Request Body", "Response"
+2. If ANY match found → Set flag: api_endpoints_added = true
+3. If flag is true → Step 4 becomes MANDATORY (not optional)
+4. Extract endpoint details from story files
+5. Update API-GUIDE.md with new endpoints
+```
+
+**Key Takeaway:**  
+> "API documentation is as critical as README updates. Every sprint that adds endpoints MUST update API-GUIDE.md. No exceptions. Check story files for 'API Endpoints' sections."
 
 ---
 
