@@ -3,10 +3,17 @@ import {
   IsString,
   MinLength,
   Matches,
-  IsOptional,
-  IsIn,
 } from 'class-validator';
 
+/**
+ * Registration DTO
+ * 
+ * SECURITY: Role field intentionally removed.
+ * New users are always assigned EMPLOYEE role.
+ * Privilege escalation must go through admin approval.
+ * 
+ * @see SEC-P0-002
+ */
 export class RegisterDto {
   @IsEmail({}, { message: 'Invalid email format' })
   email: string;
@@ -25,11 +32,4 @@ export class RegisterDto {
   @IsString()
   @MinLength(1, { message: 'Last name is required' })
   lastName: string;
-
-  @IsOptional()
-  @IsString()
-  @IsIn(['ADMIN', 'ISSUER', 'MANAGER', 'EMPLOYEE'], {
-    message: 'Role must be one of: ADMIN, ISSUER, MANAGER, EMPLOYEE',
-  })
-  role?: string;
 }

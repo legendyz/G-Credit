@@ -168,8 +168,14 @@ export class BadgeTemplatesService {
 
   /**
    * Get a single badge template by ID with associated skills
+   * 
+   * ARCH-P0-002: Non-ACTIVE templates are only visible to ADMIN/ISSUER
+   * This prevents DRAFT/ARCHIVED templates from being exposed to regular users.
+   * 
+   * @param id - Badge template ID
+   * @param userRole - Optional user role for access control
    */
-  async findOne(id: string) {
+  async findOne(id: string, userRole?: string) {
     const badgeTemplate = await this.prisma.badgeTemplate.findUnique({
       where: { id },
       include: {
@@ -186,6 +192,15 @@ export class BadgeTemplatesService {
     });
 
     if (!badgeTemplate) {
+      throw new NotFoundException(`Badge template with ID ${id} not found`);
+    }
+
+    // ARCH-P0-002: Only ADMIN/ISSUER can see non-ACTIVE templates
+    if (
+      badgeTemplate.status !== TemplateStatus.ACTIVE &&
+      !['ADMIN', 'ISSUER'].includes(userRole || '')
+    ) {
+      // Return generic 404 to avoid leaking existence of draft templates
       throw new NotFoundException(`Badge template with ID ${id} not found`);
     }
 
