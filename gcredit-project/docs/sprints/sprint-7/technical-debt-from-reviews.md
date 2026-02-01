@@ -3,7 +3,7 @@
 **Created:** 2026-02-01  
 **Source:** Pre-UAT Reviews + Historical Sprint Debt (Sprint 0-6)  
 **Status:** Consolidated master list for Sprint 8+ planning  
-**Last Updated:** 2026-02-01 (Phase A complete, 4 Teams test issues added)
+**Last Updated:** 2026-02-01 (Phase B complete, bundle size warning added)
 
 ---
 
@@ -13,9 +13,9 @@
 |----------|-------|--------|---------------|--------|
 | **P0 (UAT Blocker)** | 9 | Pre-UAT Reviews | Sprint 7 | **4/9 Fixed** (Phase A) |
 | **P1 (Must Fix)** | 17 | Reviews + Historical | Sprint 8 | Pending |
-| **P2 (Medium)** | 21 | Reviews + Historical + TD-009~012 | Sprint 8-9 | +4 Teams tests |
+| **P2 (Medium)** | 22 | Reviews + Historical + TD-009~013 | Sprint 8-9 | +5 new items |
 | **P3 (Low/Future)** | 8 | Historical | Sprint 9+ | Pending |
-| **Total** | **55** | - | - | - |
+| **Total** | **56** | - | - | - |
 
 ---
 
@@ -192,13 +192,19 @@
 | TD-006 | Teams Channel Permissions | Graph API | 1d | Needs `ChannelMessage.Send` permission |
 | TODO | Audit logging for auth | `auth.service.ts:54` | 2h | Task 2.2.8 incomplete |
 
+### Build/Performance - NEW 2026-02-01 (Phase B)
+
+| ID | Issue | Location | Effort | Notes |
+|----|-------|----------|--------|-------|
+| TD-013 | Frontend bundle exceeds 500KB | `vite.config.ts` | 3h | 579KB minified (176KB gzip). Implement code splitting + vendor chunks |
+
 ### Code Quality (1 item)
 
 | ID | Issue | Location | Effort | Notes |
 |----|-------|----------|--------|-------|
 | TODO | Skill deletion reference check | `skills.service.ts:153` | 2h | Check badge template references before delete |
 
-**P2 Total: ~35h**
+**P2 Total: ~38h** (+3h TD-013)
 
 ---
 
