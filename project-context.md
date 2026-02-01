@@ -5,15 +5,16 @@
 **Project Type:** Enterprise Internal Platform (Greenfield)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
 **License:** MIT License (Open Source)  
-**Status:** ✅ Sprint 6 COMPLETE - Badge Sharing & Social Proof (Epic 7, 100% backend complete, 5/5 stories done, 243 tests passing)  
+**Status:** 🟡 Sprint 7 IN PROGRESS - Badge Revocation & Complete Lifecycle UAT (Epic 9, 2/11 stories done, Story 9.1 complete)  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, committed 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, committed 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, committed 2026-01-26)  
 **Sprint 3:** ✅ Complete (100%, 13h/12.5h, committed 2026-01-28, tagged v0.3.0)  
 **Sprint 4:** ✅ Complete (100%, 48h/48h estimated, committed 2026-01-28, tagged v0.4.0)  
 **Sprint 5:** ✅ Complete (100%, 30h/28h, committed 2026-01-29, tagged v0.5.0, branch: sprint-5/epic-6-badge-verification)  
-**Sprint 6:** ✅ Complete (100%, 30h/56h, committed 2026-01-31, branch: sprint-6/epic-7-badge-sharing, 243 tests, v0.6.0 pending)  
-**Last Updated:** 2026-01-31 (Sprint 6 Complete: All 5 stories done, badge sharing & analytics fully implemented)
+**Sprint 6:** ✅ Complete (100%, 30h/56h, committed 2026-01-31, branch: sprint-6/epic-7-badge-sharing, 243 tests, v0.6.0)  
+**Sprint 7:** 🟡 In Progress (18%, 2/11 stories, 5h/54.5h, branch: sprint-7/epic-9-revocation-lifecycle-uat, Story 9.1 done)  
+**Last Updated:** 2026-02-01 (Sprint 7 Day 1: Story 9.1 Badge Revocation API complete, planning 100% done)
 
 ---
 
@@ -701,6 +702,83 @@ _bmad-output/
 - Frontend UI: Badge sharing modal, widget generator, analytics dashboard
 - Manual testing: Integration tests (CORS, embedding), cross-browser tests
 - Production deployment: Azure App Service, environment configuration
+
+---
+
+### Badge Revocation & Complete Lifecycle UAT (Epic 9) 🟡
+**Sprint 7 Status:** 🟡 In Progress (2/11 stories, 5h/54.5h, started 2026-02-01)
+
+**Planning Complete:** 2026-02-01 (100% - All 11 stories planned, technical review completed, pre-development 100%)
+
+**Sprint 7 Scope:**
+- Epic 9: Badge Revocation (5 stories - 9.1 through 9.5)
+- Complete Lifecycle UAT (3 stories - U.1, U.2a, U.3)
+- Login & Navigation MVP (2 stories - 0.2a, 0.4)
+- Sprint Setup (1 story - 0.1)
+
+**Stories Complete:** 2/11 (18%)
+- ✅ Story 0.1: Git Branch Setup (5min) - Branch created 2026-01-31
+- ✅ Story 9.1: Badge Revocation API (5h) - TDD approach, complete 2026-02-01
+
+**Story 9.1 - Badge Revocation API (Complete 2026-02-01):**
+
+**API Endpoints (1 new):**
+- POST /api/badges/:id/revoke - Revoke badge with reason and notes (Manager authorization only)
+
+**Database Changes:**
+- New table: AuditLog (action, entityType, entityId, userId, metadata JSONB, timestamp)
+- Badge enum update: BadgeStatus now includes 'REVOKED' status
+- Migration: 20260201_add_revoked_status_and_audit_log
+
+**Key Features:**
+- **Authorization:** Only Manager role can revoke badges (403 for Employee/Admin)
+- **Idempotency:** Repeated revoke calls return 200 OK (safe to retry)
+- **Audit Logging:** Every revocation creates AuditLog entry with WHO/WHAT/WHEN/WHY
+- **TDD Implementation:** Test-first development with 47 tests (21 unit + 26 E2E)
+- **Metadata Tracking:** Revocation reason, notes, timestamp, revoker ID
+
+**Testing:**
+- 47 new tests (100% pass rate)
+- 21 unit tests (service + controller layers)
+- 26 E2E tests (full revocation flow)
+- Test coverage: >80% for new code
+- Security: 4 code review issues identified and fixed (authorization ordering, HTTP status, test completeness, docs)
+
+**Code Review Fixes:**
+- Authorization ordering improved (check permissions before database queries)
+- HTTP status standardization (200 OK for idempotent operations)
+- Test completeness enhancements (authorization, idempotency, error cases)
+- Documentation clarity improvements
+
+**Documentation (12,000+ lines created):**
+- Sprint 7 planning: 4,305 lines (11 stories fully specified)
+- Technical review meeting: 5,800 lines (18 decisions documented)
+- Pre-development checklist: 16/16 action items complete (100%)
+- Developer context guide: DEVELOPER-CONTEXT.md (400+ lines)
+- Architect TDD guide: 500 lines implementation guidance in story 9.1
+- UX specifications: login-ux-spec.md (500+ lines wireframes + ARIA specs)
+- Activation prompts: amelia-activation-simple.md, amelia-day1-prompt.md (1,600+ lines)
+
+**Sprint 7 Key Decisions (Technical Review):**
+- Decision #3: Public verification page - reason display categorization (public vs private reasons)
+- Decision #11: Story splitting strategy (MVP 'a' stories vs Enhancement 'b' stories in Sprint 8)
+- Decision #14: M365 auto role detection (Graph API `/users/{id}/directReports`)
+- Decision #16: TDD mandatory for Story 9.1 (high-risk authorization story)
+- Decision #18: Accessibility MVP scope (basic ARIA Sprint 7, full WCAG 2.1 AA Sprint 8)
+
+**Branch:** sprint-7/epic-9-revocation-lifecycle-uat
+
+**Next Stories (Day 2 planned):**
+- Story 9.2: Revoked Badge Verification Display (4h) - Public verification page updates
+- Story 9.3: Employee Wallet Revoked Display (4h) - Visual distinction for revoked badges
+
+**Pending Stories:**
+- Story 9.4: Revocation Notifications (3.5h)
+- Story 9.5: Admin Revocation UI (4.5h)
+- Story 0.2a: Login & Navigation MVP (6h) - Day 3
+- Story U.2a: M365 Sync Basic Test (5h) - Day 3, requires PO coordination
+- Story U.1: Complete Lifecycle UAT (10-12h) - Days 5-6
+- Story 0.4: Story U.3: UAT Bug Fixes (3-5h) - Day 7
 
 ---
 

@@ -7,6 +7,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased] - Sprint 7 (In Progress)
+
+### Added - Badge Revocation (Story 9.1) - 2026-02-01
+
+#### Badge Revocation API
+- **POST /api/badges/:id/revoke** - Revoke a badge with reason and notes
+  - Authorization: Manager role only (403 for Employee/Admin)
+  - Idempotency: Repeated revoke calls return 200 OK (safe to retry)
+  - Audit Logging: Creates AuditLog entry for every revocation
+  - Request: `{ reason: string, notes?: string }`
+  - Response: `{ id, status: 'REVOKED', revokedAt, revocationReason, revocationNotes, revokedBy }`
+  - Validation: Cannot revoke already REVOKED badges (idempotent)
+
+#### Database Changes
+- **New Table: AuditLog**
+  - Columns: `id, action, entityType, entityId, userId, metadata (JSONB), createdAt`
+  - Purpose: Comprehensive audit trail for all sensitive operations
+  - Indexed: `entityType, entityId` for fast entity history queries
+  
+- **Badge Status Enum Update**
+  - Added `REVOKED` status to BadgeStatus enum
+  - Existing statuses: DRAFT, PENDING, CLAIMED, REVOKED
+  - Migration: `20260201_add_revoked_status_and_audit_log`
+
+#### Authorization & Security
+- **Manager-Only Revocation:** Only users with Manager role can revoke badges
+- **Authorization Ordering:** Checks permissions before database queries (security best practice)
+- **HTTP Status Standardization:** 200 OK for idempotent operations, 403 for unauthorized
+- **Audit Trail:** WHO (userId), WHAT (revoke badge), WHEN (timestamp), WHY (reason + notes)
+
+#### Testing (47 tests, 100% pass rate)
+- **Unit Tests (21):**
+  - Service layer: Authorization, idempotency, audit logging, error cases
+  - Controller layer: DTO validation, HTTP status codes, response format
+  - Security: Role-based access control tests
+  
+- **E2E Tests (26):**
+  - Full revocation flow: Manager revokes badge successfully
+  - Authorization: Employee/Admin get 403 errors
+  - Idempotency: Repeated revoke returns 200 OK with same data
+  - Audit logging: AuditLog entry created correctly
+  - Error cases: Invalid badge ID (404), unauthorized (403)
+
+#### Code Quality
+- **Code Review:** 4 issues identified and fixed
+  - Authorization ordering improved
+  - HTTP status code standardization
+  - Test completeness enhancements
+  - Documentation clarity improvements
+- **Test Coverage:** >80% for all new code
+- **TypeScript:** Strict mode, zero compilation errors
+- **ESLint:** Zero warnings
+
+#### Documentation
+- **Swagger API Docs:** Complete endpoint documentation with examples
+- **Architect TDD Guide:** 500-line implementation guide in story file
+- **Developer Context:** DEVELOPER-CONTEXT.md with decision reference
+- **Code Comments:** Complex authorization logic well-documented
+
+### Technical Notes
+- **TDD Approach:** Test-first development for high-risk authorization story
+- **Idempotency Design:** Safe to retry revocation operations (important for UI/automation)
+- **Audit Logging:** Foundation for future compliance requirements (GDPR, SOX)
+- **Future Enhancement:** Story 9.2 will add revocation display in public verification page
+
+---
+
 ## [0.6.0] - 2026-01-31
 
 ### Added - Badge Sharing & Social Proof (Sprint 6, Epic 7)
