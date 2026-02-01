@@ -5,8 +5,9 @@
 **Sprint:** Sprint 7  
 **Priority:** HIGH  
 **Story Points:** 3 → **4** ⚠️ **UPDATED**  
-**Status:** In Progress  
-**Last Updated:** February 1, 2026
+**Status:** Done  
+**Last Updated:** February 1, 2026  
+**Actual Hours:** 4.5h
 
 ---
 
@@ -385,11 +386,93 @@ Medium-High - UI work with some complexity in filtering
 
 ---
 
+## Dev Agent Record
+
+### Implementation Approach
+**TDD Methodology:** Backend-first with unit tests, then frontend integration
+
+**Key Technical Decisions:**
+1. Used conditional field inclusion in getWalletBadges() - revocation fields only present when status = REVOKED
+2. Implemented reason categorization matching Story 9.2 logic (public vs private)
+3. Created dedicated RevocationSection component following shadcn/ui Alert pattern
+4. Default filter changed to "Active" (CLAIMED) for better UX
+5. Disabled buttons with cursor-not-allowed and tooltips for accessibility
+
+### Completion Notes
+**✅ Implementation Complete - February 1, 2026**
+
+**Backend Changes:**
+- Updated `getWalletBadges()` service method to conditionally include revocation fields
+- Modified badge transformation to exclude revocation fields for non-REVOKED badges
+- Added `revoker` relation to Prisma query in both wallet and findOne endpoints
+- Implemented `isPublicReason` categorization in findOne() for badge detail modal
+- Added 3 comprehensive unit tests for Story 9.3
+
+**Frontend Changes:**
+- Updated `Badge` and `BadgeDetail` interfaces with optional revocation fields
+- Enhanced `BadgeTimelineCard` component:
+  - Added 50% opacity for revoked badges (grayed out effect)
+  - Added red "🚫 REVOKED" banner overlay positioned at top-right
+  - Changed timeline dot color to red for REVOKED status
+  - Added formatted revoked date display
+- Created new `RevocationSection` component:
+  - Categorized reason display (public shows details, private shows generic message)
+  - ARIA role="alert" for accessibility
+  - Professional tone with empathetic messaging
+  - Displays revokedBy information when available
+- Updated `BadgeDetailModal`:
+  - Integrated RevocationSection before Timeline section
+  - Disabled Share button for revoked badges with tooltip
+  - Disabled Download button for revoked badges with tooltip
+  - Added proper hover states and cursor styles
+- Updated `TimelineView` filter:
+  - Default filter set to BadgeStatus.CLAIMED (Active badges)
+  - Changed dropdown label from "Claimed" to "Active"
+
+**Reason Categorization Logic:**
+```typescript
+const publicReasons = ['Expired', 'Issued in Error'];
+// Private reasons: 'Policy Violation', 'Fraud' → show generic message
+```
+
+**Test Results:**
+- Backend unit tests: 24/24 passing ✅
+  - 21 existing tests
+  - 3 new Story 9.3 tests (revocation field inclusion logic)
+- TypeScript: Zero errors ✅
+- All existing functionality preserved ✅
+
+**Files Modified:**
+- `backend/src/badge-issuance/badge-issuance.service.ts` - Conditional field inclusion
+- `backend/src/badge-issuance/badge-issuance.service.spec.ts` - Added 3 unit tests
+- `frontend/src/hooks/useWallet.ts` - Updated Badge interface
+- `frontend/src/types/badge.ts` - Updated BadgeDetail interface
+- `frontend/src/components/TimelineView/BadgeTimelineCard.tsx` - Visual treatment
+- `frontend/src/components/TimelineView/TimelineView.tsx` - Default filter
+- `frontend/src/components/BadgeDetailModal/BadgeDetailModal.tsx` - Integration
+- `frontend/src/components/BadgeDetailModal/RevocationSection.tsx` - NEW component
+
+**Acceptance Criteria Status:**
+- ✅ AC1: Visual Status Badge (50% opacity + red banner overlay)
+- ✅ AC2: Revocation Details (categorized display with public/private logic)
+- ✅ AC3: Download/Share disabled (with tooltips)
+- ✅ AC4: Filtering and Sorting (defaults to Active)
+- ✅ AC5: API Integration (conditional field inclusion)
+
+**Non-Functional Requirements:**
+- ✅ Performance: No extra queries, integrated into existing endpoints
+- ✅ Accessibility: ARIA labels, tooltips, keyboard navigation preserved
+- ✅ UX: Default to Active filter, empathetic messaging, not overwhelming
+
+---
+
 ## Story History
 
 | Date | Status | Author | Notes |
 |------|--------|--------|-------|
 | 2026-01-31 | Backlog | Bob (Scrum Master) | Story created during planning |
+| 2026-02-01 | In Progress | Dev Agent | Implementation started |
+| 2026-02-01 | Done | Dev Agent | All ACs met, 24/24 tests passing |
 
 ---
 
