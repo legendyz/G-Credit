@@ -225,10 +225,27 @@ Ready to proceed: ✅ All data verified, cross-validation complete
   - [ ] `Version:` line matches latest tag
   - [ ] `Last Updated:` date current
 
-- [ ] **Bottom Status Summary (Last 5 lines):**
-  - [ ] `Status:` line updated
+- [ ] **Current Phase Section (Lines ~156-280):**
+  - [ ] Latest sprint entry added with COMPLETE details
+  - [ ] Include: completion date, metrics, deliverables, tests
+  - [ ] Previous sprint entries remain accurate
+  - [ ] Remove outdated "Planning" or "Awaiting" text
+  - [ ] Add "In Progress" details for active sprint (if applicable)
+
+- [ ] **Roadmap Section (Lines ~462-480):**
+  - [ ] Phase 3 week number updated (e.g., Week 6 → Week 7)
+  - [ ] All completed sprints marked "✅ Complete" with full metrics
+  - [ ] Current sprint shows "🟡 In Progress" with completion %
+  - [ ] Future sprints remain "⏳ Planned"
+  - [ ] Sprint durations reflect actual time (not estimates)
+
+- [ ] **Bottom Status Summary (Last ~15 lines):**
+  - [ ] `Last Updated:` date is TODAY
+  - [ ] `Status:` line reflects current + completed sprints
+  - [ ] `Version:` matches latest tag
+  - [ ] All sprint links added (Sprint 0-N)
+  - [ ] `Next:` line shows immediate next action
   - [ ] Sprint completion links added
-  - [ ] `Next:` line reflects upcoming work
 
 #### B. `gcredit-project/README.md` (Project Reference - Internal Audience)
 
@@ -779,7 +796,61 @@ Get-ChildItem -Recurse -Filter "*.md" | Where-Object { $_.DirectoryName -notmatc
 
 ---
 
-## 🎯 Success Criteria for Documentation Maintenance
+### Incident #2: README Section Omissions (2026-02-01)
+
+**What Happened:**
+- Sprint 6 actual hours wrong: 30h in docs, 35h in sprint-status.yaml
+- README.md "Current Phase" section stopped at Sprint 6 Planning (outdated)
+- README.md "Roadmap" section showed Week 6 (actual: Week 7, Sprint 7 in progress)
+- README.md "Last Updated" dated 2026-01-29 (3 days stale, should be 2026-02-01)
+
+**Root Cause:**
+- Step 2 checklist too vague: "Project Overview Section" lacks specific sections
+- No explicit line number references for critical README sections
+- No "Current Phase Section" checklist item (this section often updated)
+- No "Roadmap Section" checklist item (week number + sprint status)
+- No TODAY date enforcement for "Last Updated" field
+- Instructions like "update Status line" too generic
+
+**Impact:**
+- Misleading project status for GitHub visitors (outdated by 3 days)
+- Sprint 6 completion not visible (showed "Planning" instead of "Complete")
+- Sprint 7 progress not documented (86% complete, 6/7 stories)
+- Metrics inaccuracy (30h vs 35h) propagated across files
+- Required full README audit and 3-section correction
+
+**Fix Implemented:**
+- Added **"Current Phase Section (Lines ~156-280)"** with detailed checklist:
+  - Verify latest sprint has COMPLETE details
+  - Remove "Planning" or "Awaiting" text
+  - Add "In Progress" for active sprints
+- Added **"Roadmap Section (Lines ~462-480)"** with detailed checklist:
+  - Update Phase 3 week number
+  - Mark completed sprints "✅ Complete" with metrics
+  - Show current sprint "🟡 In Progress" with %
+- Added **"Bottom Status Summary"** with specific checks:
+  - "Last Updated" must be TODAY
+  - "Status" reflects current + completed
+  - All sprint links present
+- Specific line number ranges provided for easy navigation
+
+**Prevention - 5 Key Lessons:**
+1. **Be specific with sections** - "Lines ~156-280: Current Phase" > vague "Project Overview"
+2. **Check ALL critical sections** - Not just top status, also Roadmap + Last Updated
+3. **Verify dates are current** - "Last Updated" MUST be TODAY when performing update
+4. **Remove stale language** - Delete "Planning" when sprint completes, delete "Awaiting" when started
+5. **Cross-check data sources** - If metrics differ, always trust sprint-status.yaml as source
+
+**Double-check principle:**  
+> After updating README, scan ENTIRE file for ANY occurrence of:
+> - Old sprint numbers (e.g., "Sprint 6 Planning" when 6 is complete)
+> - Stale dates (anything not TODAY in "Last Updated")
+> - Outdated text ("Planning", "Awaiting", old week numbers)
+> - Metric discrepancies (compare with sprint-status.yaml)
+
+---
+
+## 🚨 Red Flags - Stop and Fix Immediately
 
 **Documentation Update is SUCCESSFUL when:**
   - [ ] Naming conventions followed
