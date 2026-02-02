@@ -126,12 +126,36 @@ jobs:
         run: npx prisma db push --skip-generate
 
       - name: Run E2E Tests (Parallel)
-        run: npm run test:e2e -- --maxWorkers=2 --forceExit
+        run: |
+          npm run test:e2e -- --maxWorkers=2 --forceExit 2>&1 | tee e2e-test-output.log
+          exit ${PIPESTATUS[0]}
         env:
           # Mock Azure Storage for CI - prevents initialization errors
           AZURE_STORAGE_CONNECTION_STRING: "DefaultEndpointsProtocol=https;AccountName=mockaccount;AccountKey=bW9ja2tleQ==;EndpointSuffix=core.windows.net"
           AZURE_STORAGE_CONTAINER_BADGES: "badges"
           AZURE_STORAGE_ACCOUNT_NAME: "mockaccount"
+        continue-on-error: true
+
+      - name: Upload E2E test log
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-test-log
+          path: ./gcredit-project/backend/e2e-test-output.log
+          retention-days: 7
+
+      - name: Check E2E test result
+        run: |
+          if grep -q "Test Suites:.*failed" e2e-test-output.log 2>/dev/null; then
+            echo "❌ E2E tests failed - check e2e-test-log artifact for details"
+            exit 1
+          elif grep -q "Tests:.*passed" e2e-test-output.log 2>/dev/null; then
+            echo "✅ All E2E tests passed"
+          else
+            echo "⚠️ Could not determine test result"
+            cat e2e-test-output.log
+            exit 1
+          fi
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
