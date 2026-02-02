@@ -1,10 +1,12 @@
 /**
  * Badge Share Modal Component
  * Sprint 6 - Story 7.2, 7.3, 7.4: Share badge via Email, Widget, Teams
+ * Sprint 8 - Story 8.3 (UX-P1-006): Tab keyboard navigation
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { shareBadgeViaEmail, shareBadgeToTeams } from '../../lib/badgeShareApi';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 interface BadgeShareModalProps {
   isOpen: boolean;
@@ -14,6 +16,8 @@ interface BadgeShareModalProps {
 }
 
 type ShareTab = 'email' | 'teams' | 'widget';
+
+const TABS: ShareTab[] = ['email', 'teams', 'widget'];
 
 const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
   isOpen,
@@ -25,6 +29,44 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Story 8.3: Focus trap for modal (AC1)
+  const modalRef = useFocusTrap<HTMLDivElement>({
+    isActive: isOpen,
+    onEscape: onClose,
+  });
+
+  // Story 8.3 (UX-P1-006): Tab keyboard navigation
+  const handleTabKeyDown = useCallback((e: React.KeyboardEvent, currentTab: ShareTab) => {
+    const currentIndex = TABS.indexOf(currentTab);
+    let newIndex = currentIndex;
+
+    switch (e.key) {
+      case 'ArrowLeft':
+        e.preventDefault();
+        newIndex = currentIndex === 0 ? TABS.length - 1 : currentIndex - 1;
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        newIndex = currentIndex === TABS.length - 1 ? 0 : currentIndex + 1;
+        break;
+      case 'Home':
+        e.preventDefault();
+        newIndex = 0;
+        break;
+      case 'End':
+        e.preventDefault();
+        newIndex = TABS.length - 1;
+        break;
+      default:
+        return;
+    }
+
+    setActiveTab(TABS[newIndex]);
+    // Focus the new tab button
+    const tabButton = document.querySelector(`[data-tab="${TABS[newIndex]}"]`) as HTMLElement;
+    tabButton?.focus();
+  }, []);
 
   // Email sharing state
   const [emailRecipients, setEmailRecipients] = useState('');
@@ -131,8 +173,13 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
         padding: '1rem'
       }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
+      role="presentation"
     >
       <div 
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="share-modal-title"
         style={{
           backgroundColor: 'white',
           borderRadius: '0.5rem',
@@ -156,7 +203,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
           background: 'linear-gradient(to right, #eff6ff, #eef2ff)'
         }}>
           <div>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#111827' }}>Share Badge</h2>
+            <h2 id="share-modal-title" style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#111827' }}>Share Badge</h2>
             <p style={{ fontSize: '0.875rem', color: '#4b5563', marginTop: '0.25rem' }}>{badgeName}</p>
           </div>
           <button
@@ -172,18 +219,29 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
             }}
             onMouseEnter={(e) => { e.currentTarget.style.color = '#374151'; e.currentTarget.style.backgroundColor = 'white'; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = '#6b7280'; e.currentTarget.style.backgroundColor = 'transparent'; }}
-            aria-label="Close"
+            aria-label="Close share modal"
           >
-            <svg style={{ width: '1.5rem', height: '1.5rem' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg style={{ width: '1.5rem', height: '1.5rem' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </header>
 
-        {/* Tabs */}
-        <div style={{ display: 'flex', borderBottom: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }}>
+        {/* Tabs - Story 8.3 UX-P1-006: Keyboard navigation */}
+        <div 
+          role="tablist" 
+          aria-label="Share options"
+          style={{ display: 'flex', borderBottom: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }}
+        >
           <button
+            role="tab"
+            data-tab="email"
+            id="share-tab-email"
+            aria-selected={activeTab === 'email'}
+            aria-controls="share-panel-email"
+            tabIndex={activeTab === 'email' ? 0 : -1}
             onClick={() => setActiveTab('email')}
+            onKeyDown={(e) => handleTabKeyDown(e, 'email')}
             style={{
               flex: 1,
               padding: '0.75rem 1rem',
@@ -200,7 +258,14 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
             📧 Email
           </button>
           <button
+            role="tab"
+            data-tab="teams"
+            id="share-tab-teams"
+            aria-selected={activeTab === 'teams'}
+            aria-controls="share-panel-teams"
+            tabIndex={activeTab === 'teams' ? 0 : -1}
             onClick={() => setActiveTab('teams')}
+            onKeyDown={(e) => handleTabKeyDown(e, 'teams')}
             style={{
               flex: 1,
               padding: '0.75rem 1rem',
@@ -217,7 +282,14 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
             👥 Teams
           </button>
           <button
+            role="tab"
+            data-tab="widget"
+            id="share-tab-widget"
+            aria-selected={activeTab === 'widget'}
+            aria-controls="share-panel-widget"
+            tabIndex={activeTab === 'widget' ? 0 : -1}
             onClick={() => setActiveTab('widget')}
+            onKeyDown={(e) => handleTabKeyDown(e, 'widget')}
             style={{
               flex: 1,
               padding: '0.75rem 1rem',
@@ -235,25 +307,33 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
           </button>
         </div>
 
-        {/* Content */}
+        {/* Content - Tab Panels */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
-          {/* Success Message */}
-          {success && (
-            <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '0.5rem' }}>
-              <p style={{ color: '#15803d', fontWeight: 500 }}>✅ {activeTab === 'widget' ? 'Link copied!' : 'Badge shared successfully!'}</p>
-            </div>
-          )}
+          {/* Status Messages - Live Region for Screen Readers */}
+          <div role="status" aria-live="polite" aria-atomic="true">
+            {/* Success Message */}
+            {success && (
+              <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '0.5rem' }}>
+                <p style={{ color: '#166534', fontWeight: 500 }}>✅ {activeTab === 'widget' ? 'Link copied!' : 'Badge shared successfully!'}</p>
+              </div>
+            )}
 
-          {/* Error Message */}
-          {error && (
-            <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '0.5rem' }}>
-              <p style={{ color: '#b91c1c' }}>{error}</p>
-            </div>
-          )}
+            {/* Error Message */}
+            {error && (
+              <div role="alert" style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '0.5rem' }}>
+                <p style={{ color: '#991b1b' }}>{error}</p>
+              </div>
+            )}
+          </div>
 
-          {/* Email Tab */}
+          {/* Email Tab Panel */}
           {activeTab === 'email' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div
+              role="tabpanel"
+              id="share-panel-email"
+              aria-labelledby="share-tab-email"
+              style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+            >
               <div>
                 <label htmlFor="share-email-recipients" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#374151', marginBottom: '0.5rem' }}>
                   Recipient Emails *
@@ -336,9 +416,14 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
             </div>
           )}
 
-          {/* Teams Tab */}
+          {/* Teams Tab Panel */}
           {activeTab === 'teams' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div
+              role="tabpanel"
+              id="share-panel-teams"
+              aria-labelledby="share-tab-teams"
+              style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+            >
               <div style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '0.5rem', padding: '1rem', marginBottom: '1rem' }}>
                 <p style={{ fontSize: '0.875rem', color: '#1e40af' }}>
                   💡 Leave Team ID and Channel ID empty to use default settings configured by your administrator.
@@ -434,7 +519,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
               >
                 {loading ? (
                   <>
-                    <svg style={{ animation: 'spin 1s linear infinite', marginLeft: '-0.25rem', marginRight: '0.75rem', width: '1.25rem', height: '1.25rem' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg style={{ animation: 'spin 1s linear infinite', marginLeft: '-0.25rem', marginRight: '0.75rem', width: '1.25rem', height: '1.25rem' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                       <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -447,9 +532,14 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
             </div>
           )}
 
-          {/* Widget Tab */}
+          {/* Widget Tab Panel */}
           {activeTab === 'widget' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div
+              role="tabpanel"
+              id="share-panel-widget"
+              aria-labelledby="share-tab-widget"
+              style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+            >
               <div style={{ background: 'linear-gradient(to right, #f0fdf4, #eff6ff)', border: '1px solid #bbf7d0', borderRadius: '0.5rem', padding: '1rem' }}>
                 <h3 style={{ fontWeight: 500, color: '#111827', marginBottom: '0.5rem' }}>🎨 Embeddable Badge Widget</h3>
                 <p style={{ fontSize: '0.875rem', color: '#374151' }}>
@@ -475,14 +565,14 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                     transition: 'all 0.2s'
                   }}
                 >
-                  <svg style={{ width: '1.25rem', height: '1.25rem', marginRight: '0.5rem' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg style={{ width: '1.25rem', height: '1.25rem', marginRight: '0.5rem' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                   </svg>
                   Open Widget Generator
                 </button>
 
                 <div style={{ position: 'relative' }}>
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}>
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }} aria-hidden="true">
                     <div style={{ width: '100%', borderTop: '1px solid #d1d5db' }}></div>
                   </div>
                   <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', fontSize: '0.875rem' }}>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useWallet } from '../../hooks/useWallet';
 import { BadgeStatus } from '../../types/badge';
 import { TimelineLine } from './TimelineLine';
@@ -8,6 +8,8 @@ import { DateNavigationSidebar } from './DateNavigationSidebar';
 import { ViewToggle } from './ViewToggle';
 import EmptyState, { detectEmptyStateScenario } from '../BadgeWallet/EmptyState';
 import BadgeDetailModal from '../BadgeDetailModal/BadgeDetailModal';
+import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
+import { useBadgeDetailModal } from '../../stores/badgeDetailModal';
 
 export type ViewMode = 'timeline' | 'grid';
 
@@ -156,26 +158,115 @@ export function TimelineView() {
           </div>
         )}
 
-        {/* Grid View - Simple fallback */}
+        {/* Grid View - With keyboard navigation (Story 8.3 UX-P1-005) */}
         {viewMode === 'grid' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {data.badges.map((badge) => (
-              <div key={badge.id} className="border border-gray-200 rounded-lg p-4">
-                <img 
-                  src={badge.template.imageUrl} 
-                  alt={badge.template.name}
-                  className="w-32 h-32 mx-auto mb-3"
-                />
-                <h3 className="font-semibold text-center">{badge.template.name}</h3>
-                <p className="text-sm text-gray-500 text-center">{badge.template.category}</p>
-              </div>
-            ))}
-          </div>
+          <GridView badges={data.badges} />
         )}
       </div>
       
       {/* Badge Detail Modal - renders via Portal to document.body */}
       <BadgeDetailModal />
+    </div>
+  );
+}
+
+/**
+ * Grid View with Keyboard Navigation (Story 8.3 - AC1, UX-P1-005)
+ * WCAG 2.1.1 - Arrow keys navigate between cards
+ * Enter/Space activates selected card
+ */
+interface GridViewProps {
+  badges: Array<{
+    id: string;
+    template: {
+      imageUrl?: string;
+      name: string;
+      category: string;
+    };
+  }>;
+}
+
+/**
+ * Hook to detect responsive column count
+ * Returns current number of grid columns based on screen width
+ */
+function useResponsiveColumns(): number {
+  const [columns, setColumns] = useState(3);
+
+  useEffect(() => {
+    const updateColumns = () => {
+      // Match Tailwind breakpoints: sm=640, md=768, lg=1024
+      if (window.innerWidth >= 1024) {
+        setColumns(3); // lg:grid-cols-3
+      } else if (window.innerWidth >= 768) {
+        setColumns(2); // md:grid-cols-2
+      } else {
+        setColumns(1); // grid-cols-1
+      }
+    };
+
+    updateColumns();
+    window.addEventListener('resize', updateColumns);
+    return () => window.removeEventListener('resize', updateColumns);
+  }, []);
+
+  return columns;
+}
+
+function GridView({ badges }: GridViewProps) {
+  const openModal = useBadgeDetailModal((s) => s.openModal);
+  const columns = useResponsiveColumns(); // Story 8.3: Dynamic column count
+  
+  const handleActivate = useCallback((badge: GridViewProps['badges'][0]) => {
+    openModal(badge.id);
+  }, [openModal]);
+
+  const { focusedIndex, handleKeyDown, getItemProps } = useKeyboardNavigation({
+    items: badges,
+    columns, // Dynamic columns based on screen width
+    onActivate: handleActivate,
+  });
+
+  return (
+    <div
+      role="grid"
+      aria-label="Badge collection grid"
+      onKeyDown={handleKeyDown}
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+    >
+      {badges.map((badge, index) => {
+        const itemProps = getItemProps(index);
+        return (
+          <div
+            key={badge.id}
+            role="gridcell"
+            {...itemProps}
+            data-keyboard-nav-index={index}
+            onClick={() => handleActivate(badge)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleActivate(badge);
+              }
+            }}
+            className={`
+              border rounded-lg p-4 cursor-pointer
+              transition-all duration-150
+              hover:border-blue-400 hover:shadow-md
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
+              ${focusedIndex === index ? 'border-blue-400 shadow-md' : 'border-gray-200'}
+            `}
+          >
+            <img
+              src={badge.template.imageUrl || '/placeholder-badge.png'}
+              alt={`Badge: ${badge.template.name}`}
+              className="w-32 h-32 mx-auto mb-3 object-contain"
+            />
+            <h3 className="font-semibold text-center">{badge.template.name}</h3>
+            <p className="text-sm text-gray-500 text-center">{badge.template.category}</p>
+          </div>
+        );
+      })}
     </div>
   );
 }

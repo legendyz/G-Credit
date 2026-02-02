@@ -1,6 +1,15 @@
+/**
+ * Badge Timeline Card Component
+ * Sprint 8 - Story 8.3: WCAG 2.1 AA Accessibility
+ * 
+ * Keyboard accessible card with proper ARIA attributes.
+ */
+
+import { useCallback } from 'react';
 import type { Badge } from '../../hooks/useWallet';
 import { BadgeStatus } from '../../types/badge';
 import { useBadgeDetailModal } from '../../stores/badgeDetailModal';
+import { StatusBadge } from '../ui/StatusBadge';
 
 interface BadgeTimelineCardProps {
   badge: Badge;
@@ -14,47 +23,43 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
   const getStatusColor = (status: BadgeStatus) => {
     switch (status) {
       case BadgeStatus.CLAIMED:
-        return 'bg-green-500';
+        return 'bg-green-600'; // WCAG AA compliant
       case BadgeStatus.PENDING:
-        return 'bg-yellow-500';
+        return 'bg-amber-600'; // WCAG AA compliant
       case BadgeStatus.REVOKED:
-        return 'bg-red-600'; // Story 9.3: Red for revoked
+        return 'bg-red-600';
       default:
-        return 'bg-gray-300';
+        return 'bg-gray-500';
     }
   };
 
-  const getStatusLabel = (status: BadgeStatus) => {
-    switch (status) {
-      case BadgeStatus.CLAIMED:
-        return '✅ Claimed';
-      case BadgeStatus.PENDING:
-        return '🟡 Pending';
-      case BadgeStatus.REVOKED:
-        return '🚫 Revoked'; // Story 9.3: Updated icon
-      default:
-        return status;
+  // Story 8.3: Keyboard handler for Enter/Space activation
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openModal(badge.id);
     }
-  };
+  }, [openModal, badge.id]);
 
   return (
     <div className="relative flex items-start gap-4 pl-16">
       {/* Timeline Dot - AC 1.2 */}
       <div
         className={`absolute left-[26px] w-4 h-4 rounded-full border-2 border-white ${getStatusColor(badge.status)}`}
-        aria-label={`Badge status: ${badge.status}`}
+        aria-hidden="true"
       />
 
-      {/* Card Content - AC 1.4 | Story 9.3 AC1: Grayed out if revoked */}
+      {/* Card Content - Story 8.3: Keyboard accessible */}
       <div className="relative">
         <div 
-          className={`flex-1 bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${
+          role="button"
+          tabIndex={0}
+          className={`flex-1 bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
             isRevoked ? 'opacity-50' : ''
           }`}
-          aria-label={isRevoked && badge.revokedAt ? `Badge revoked on ${new Date(badge.revokedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}` : undefined}
-          onClick={() => {
-            openModal(badge.id);
-          }}
+          aria-label={`${badge.template.name} badge, ${badge.status.toLowerCase()}${isRevoked && badge.revokedAt ? `, revoked on ${new Date(badge.revokedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}` : ''}`}
+          onClick={() => openModal(badge.id)}
+          onKeyDown={handleKeyDown}
         >
           <div className="flex gap-4">
             {/* Badge Image */}
@@ -71,12 +76,11 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
                 Issued by {badge.issuer.firstName} {badge.issuer.lastName}
               </p>
 
-              {/* Status Badge */}
-              <div className={`inline-flex items-center gap-1 px-2 py-1 rounded text-sm mb-2 ${
-                isRevoked ? 'bg-red-100 text-red-800 font-semibold' : 'bg-gray-100'
-              }`}>
-                {getStatusLabel(badge.status)}
-              </div>
+              {/* Status Badge - Story 8.3: WCAG AA compliant colors */}
+              <StatusBadge 
+                status={badge.status as 'CLAIMED' | 'PENDING' | 'REVOKED' | 'EXPIRED'} 
+                className="mb-2"
+              />
 
               {/* Category Tag */}
               <div className="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-700 rounded text-sm ml-2">
