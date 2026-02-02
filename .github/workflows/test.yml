@@ -93,9 +93,10 @@ jobs:
       JWT_REFRESH_SECRET: test-refresh-secret-for-ci-testing-only
       JWT_EXPIRES_IN: 15m
       JWT_REFRESH_EXPIRES_IN: 7d
-      # Disable Azure Storage for tests (use mocks)
-      AZURE_STORAGE_CONNECTION_STRING: ""
-      AZURE_STORAGE_ACCOUNT_NAME: ""
+      # Mock Azure Storage for CI (prevents initialization errors)
+      AZURE_STORAGE_CONNECTION_STRING: "DefaultEndpointsProtocol=https;AccountName=mockaccount;AccountKey=bW9ja2tleQ==;EndpointSuffix=core.windows.net"
+      AZURE_STORAGE_CONTAINER_BADGES: "badges"
+      AZURE_STORAGE_ACCOUNT_NAME: "mockaccount"
       # Rate limiting (increase for tests) - both naming conventions
       THROTTLE_TTL: 60000
       THROTTLE_LIMIT: 1000
@@ -125,25 +126,12 @@ jobs:
         run: npx prisma db push --skip-generate
 
       - name: Run E2E Tests (Parallel)
-        run: |
-          npm run test:e2e -- --maxWorkers=2 --forceExit --json --outputFile=test-results.json 2>&1 | tee e2e-output.log || true
-          
-          # Check test results from JSON output
-          if [ -f test-results.json ]; then
-            FAILED=$(cat test-results.json | jq '.numFailedTests')
-            if [ "$FAILED" != "0" ] && [ "$FAILED" != "null" ]; then
-              echo "❌ $FAILED tests failed"
-              exit 1
-            fi
-            echo "✅ All E2E tests passed"
-          else
-            # Fallback: check log output
-            if grep -q "Test Suites:.*failed" e2e-output.log; then
-              echo "❌ Some tests failed"
-              exit 1
-            fi
-            echo "✅ Tests passed (no JSON output)"
-          fi
+        run: npm run test:e2e -- --maxWorkers=2 --forceExit
+        env:
+          # Mock Azure Storage for CI - prevents initialization errors
+          AZURE_STORAGE_CONNECTION_STRING: "DefaultEndpointsProtocol=https;AccountName=mockaccount;AccountKey=bW9ja2tleQ==;EndpointSuffix=core.windows.net"
+          AZURE_STORAGE_CONTAINER_BADGES: "badges"
+          AZURE_STORAGE_ACCOUNT_NAME: "mockaccount"
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
