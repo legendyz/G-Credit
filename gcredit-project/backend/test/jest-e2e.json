@@ -16,5 +16,7 @@
   "testTimeout": 60000,
   "setupFilesAfterEnv": ["<rootDir>/setup.ts"],
   "globalTeardown": "<rootDir>/teardown.ts",
-  "verbose": true
+  "verbose": true,
+  "forceExit": true,
+  "detectOpenHandles": false
 }

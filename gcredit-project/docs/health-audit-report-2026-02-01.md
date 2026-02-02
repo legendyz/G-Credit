@@ -569,7 +569,7 @@
 | TD-003 | metadataHash Index | S5 | Low | 2h | 📋 Planned |
 | TD-004 | Baked Badge Caching | S5 | Low | 4-6h | ⏸️ Backlog |
 | TD-005 | Test Data Factory | S5 | Low | 4h | ⏸️ Backlog |
-| TD-006 | Teams Channel Permissions | S6 | Medium | 1d | ⏸️ Documented |
+| TD-006 | Teams Channel Permissions | S6 | Medium | 1d | ⏸️ Documented + **4 tests skipped** |
 | TD-007 | Badge PNG Generation | S6 | Low | 2d | ⏸️ Future |
 | TD-008 | Tailwind CSS Modal Issues | S6 | Low | 0.5d | ⏸️ Investigate |
 

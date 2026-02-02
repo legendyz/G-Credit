@@ -8,10 +8,37 @@ This document tracks known technical debt and future enhancements for Sprint 6.
 
 **Status**: Deferred to Future Sprint  
 **Priority**: Medium  
-**Estimated Effort**: 2-3 days
+**Estimated Effort**: 2-3 days  
+**ID**: TD-006
 
 #### Background
 Teams channel sharing for badges was attempted but requires additional Microsoft Graph API permissions that need proper configuration and tenant admin approval.
+
+#### 🧪 Skipped Tests (Must Re-enable When Resolved)
+
+The following 4 test files are currently skipped due to missing permissions:
+
+1. **`badge-issuance-teams-integration.spec.ts`**
+   - Tests: Teams badge issuance notifications
+   - Reason: Requires `ChannelMessage.Send` permission
+
+2. **`graph-teams.service.spec.ts`**
+   - Tests: Microsoft Graph Teams service methods
+   - Reason: Requires `ChannelMessage.Send` permission
+
+3. **`teams-sharing.controller.spec.ts`**
+   - Tests: Teams sharing controller endpoints
+   - Reason: Requires `ChannelMessage.Send` permission
+
+4. **`teams-badge-notification.service.spec.ts`**
+   - Tests: Teams notification service implementation
+   - Reason: Requires `ChannelMessage.Send` permission
+
+**⚠️ Important:** When TD-006 is resolved, remember to:
+- [ ] Remove `.skip()` from all 4 test files
+- [ ] Verify tests pass with real Teams environment
+- [ ] Update this document status to ✅ Resolved
+- [ ] Update `technical-debt-from-reviews.md` in Sprint 7
 
 #### Current Implementation
 - ✅ **Badge Issuance Notifications**: Email-based (private, working)

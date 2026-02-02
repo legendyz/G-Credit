@@ -36,7 +36,20 @@
 | ID | Issue | Sprint | Effort | Status | Notes |
 |----|-------|--------|--------|--------|-------|
 | TD-002 | Badge Issuance Tests Update | S5 | 2-4h | 📋 Planned | metadataHash migration impact |
-| TD-006 | Teams Channel Permissions | S6 | 1d | ⏸️ Documented | Needs `ChannelMessage.Send` permission |
+| TD-006 | Teams Channel Permissions | S6 | 1d | ⏸️ Documented | Needs `ChannelMessage.Send` permission + **4 tests skipped** |
+
+**🧪 TD-006 Skipped Tests (Must Re-enable When Fixed):**
+1. `badge-issuance-teams-integration.spec.ts` - Teams badge issuance notifications
+2. `graph-teams.service.spec.ts` - Microsoft Graph Teams service
+3. `teams-sharing.controller.spec.ts` - Teams sharing controller endpoints
+4. `teams-badge-notification.service.spec.ts` - Teams notification service
+
+**Re-enable Checklist:**
+- [ ] Tenant admin approves `ChannelMessage.Send` permission
+- [ ] Azure AD app registration updated
+- [ ] Remove `.skip()` from all 4 test files
+- [ ] Verify tests pass with real Teams channel
+- [ ] Update Sprint 6 technical-debt.md status to ✅ Resolved
 
 ### Low Priority (Sprint 9+ / Backlog)
 
@@ -189,8 +202,13 @@
 
 | ID | Issue | Location | Effort | Notes |
 |----|-------|----------|--------|-------|
-| TD-006 | Teams Channel Permissions | Graph API | 1d | Needs `ChannelMessage.Send` permission |
+| TD-006 | Teams Channel Permissions | Graph API | 1d | Needs `ChannelMessage.Send` permission + **4 tests skipped** |
 | TODO | Audit logging for auth | `auth.service.ts:54` | 2h | Task 2.2.8 incomplete |
+
+**🧪 TD-006 Impact:**
+- **Skipped Tests:** 4 Teams integration tests (see Medium Priority section for list)
+- **Code References:** `teams-sharing.controller.ts:92`, service implementations ready
+- **Blocked Features:** Teams channel badge sharing (email sharing works as workaround)
 
 ### Build/Performance - NEW 2026-02-01 (Phase B)
 
