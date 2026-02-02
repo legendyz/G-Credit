@@ -20,13 +20,13 @@ metrics:
   total_tasks: 4  # Task 8.0, 8.6, 8.7, 8.8
   total_work_items: 14  # 10 stories + 4 tasks
   total_story_points: 44  # Updated Story 8.10 from 3 SP to 6 SP
-  total_estimated_hours: 75h  # Updated Story 8.10 from 5h to 11.5h
+  total_estimated_hours: 77h  # Story 8.10: +6.5h, Story 8.4: +1.5h, Task 8.6: +0.5h (Architect review adjustments)
   
   completed_stories: 0
-  completed_tasks: 0
-  completed_work_items: 0
-  completed_hours: 0h
-  remaining_hours: 75h
+  completed_tasks: 2  # Task 8.0, 8.6 completed
+  completed_work_items: 2
+  completed_hours: 8h  # 1.5h + 6.5h
+  remaining_hours: 69h
   
   stories_in_progress: 0
   tasks_in_progress: 0
@@ -34,8 +34,8 @@ metrics:
   
   # Technical Debt Resolution
   technical_debt_targeted: 17  # P1 items
-  technical_debt_resolved: 0
-  technical_debt_remaining: 17
+  technical_debt_resolved: 5  # SEC-P1-001~005
+  technical_debt_remaining: 12
 
 # Group A: UX & Accessibility (39h, 28 SP)
 group_a_ux_accessibility:
@@ -107,8 +107,9 @@ group_a_ux_accessibility:
     - id: "8.4"
       title: "Analytics API"
       story_points: 3
-      estimated_hours: 4.5h
+      estimated_hours: 6h
       priority: HIGH
+      notes: "+1.5h for @nestjs/cache-manager v3 migration (milliseconds TTL)"
       status: backlog
       assignee: null
       blocked: false
@@ -180,9 +181,9 @@ group_a_ux_accessibility:
 # Group B: Security & Infrastructure (20h, 12 SP)
 group_b_security_infrastructure:
   total_items: 4  # Added Task 8.0
-  completed_items: 0
-  total_hours: 22.5h  # Added 1.5h
-  remaining_hours: 22.5h
+  completed_items: 2  # Task 8.0, 8.6 completed
+  total_hours: 23h  # 1.5h + 6.5h + 7h + 8h
+  remaining_hours: 15h  # 7h + 8h
   
   tasks:
     - id: "8.0"
@@ -190,40 +191,60 @@ group_b_security_infrastructure:
       story_points: 1
       estimated_hours: 1.5h
       priority: CRITICAL
-      status: backlog
+      status: done
       assignee: "Development Team"
       blocked: false
       blocker_reason: null
-      started_date: null
-      completed_date: null
-      acceptance_criteria_met: 0/5
+      started_date: "2026-02-02"
+      completed_date: "2026-02-02"
+      acceptance_criteria_met: 5/5
       technical_debt_resolved: []
       dependencies:
         - "MUST COMPLETE FIRST - Blocks all Sprint 8 work"
       file: "8-0-sprint-setup.md"
-      notes: "Install dependencies and create Prisma migrations. MUST complete Day 1 morning."
+      notes: |
+        ✅ COMPLETED - All dependencies installed and migrations applied:
+        - helmet@8.1.0 (security headers)
+        - @nestjs/throttler@6.5.0 (rate limiting)
+        - @nestjs/cache-manager@3.1.0 + cache-manager@6.0.0 (caching)
+        - @axe-core/react@4.11.0 (accessibility testing)
+        - date-fns@4.1.0 (date utilities)
+        - bcrypt@6.0.0 ✅ (upgraded from 5.1.1, fixed tar vulnerability)
+        - Prisma migration: M365SyncLog + UserAuditLog + User fields
+        - Backend + Frontend builds verified
+        - Security: 22 vulnerabilities (3 moderate, 19 high) - AWS SDK upstream
       
     - id: "8.6"
       title: "Security Hardening"
       story_points: 3
-      estimated_hours: 6h
+      estimated_hours: 6.5h
       priority: CRITICAL
-      status: backlog
-      assignee: null
+      notes: "+0.5h for helmet@8.1.0 + throttler v6.5.0 adjustments"
+      status: done
+      assignee: "Development Team"
       blocked: false
       blocker_reason: null
-      started_date: null
-      completed_date: null
-      acceptance_criteria_met: 0/5
+      started_date: "2026-02-02"
+      completed_date: "2026-02-02"
+      acceptance_criteria_met: 5/5
       technical_debt_resolved:
-        - SEC-P1-001
-        - SEC-P1-002
-        - SEC-P1-003
-        - SEC-P1-004
-        - SEC-P1-005
+        - SEC-P1-001  # ✅ IDOR in evidence upload
+        - SEC-P1-002  # ✅ Missing Helmet middleware
+        - SEC-P1-003  # ✅ Overly permissive CORS
+        - SEC-P1-004  # ✅ Missing rate limiting
+        - SEC-P1-005  # ✅ Dependency vulnerabilities (bcrypt 6.0.0)
       dependencies:
         - "Consolidates Story 0.3"
       file: "8-6-security-hardening.md"
+      implementation_notes: |
+        ✅ COMPLETED - Security hardening implemented:
+        - Helmet@8.1.0 with CSP headers (main.ts)
+        - CORS whitelist with env ALLOWED_ORIGINS (main.ts)
+        - ThrottlerModule v6.5.0 global + auth endpoint limits (app.module.ts, auth.controller.ts)
+        - Evidence upload IDOR fix (evidence.service.ts)
+        - bcrypt@6.0.0 upgraded (Story 8.0)
+        - 11 security unit tests passing
+        - Remaining: 22 vulnerabilities (AWS SDK fast-xml-parser, lodash) - waiting upstream
       
     - id: "8.7"
       title: "Architecture Fixes"

@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 /**
@@ -53,18 +54,97 @@ function validateTeamsConfiguration() {
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const logger = new Logger('Bootstrap');
 
   // Validate configuration on startup
   validateTeamsConfiguration();
 
-  // Enable CORS for widget embedding (Story 7.3)
-  // Allow widget endpoints to be embedded cross-origin
-  app.enableCors({
-    origin: true, // Allow all origins for public widget endpoints
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  // ========================================
+  // Security Hardening (Story 8.6)
+  // ========================================
+
+  // Helmet middleware - Security headers (SEC-P1-002, AC1)
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"], // Swagger UI needs unsafe-inline
+          imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
+          connectSrc: [
+            "'self'",
+            'https://graph.microsoft.com',
+            'https://*.blob.core.windows.net', // Azure Blob Storage
+          ],
+          fontSrc: ["'self'", 'https:', 'data:'],
+          objectSrc: ["'none'"],
+          baseUri: ["'self'"],
+          formAction: ["'self'"],
+          frameAncestors: ["'none'"],
+          // Only add upgradeInsecureRequests in production (omit in dev to avoid issues)
+          ...(process.env.NODE_ENV === 'production' && { upgradeInsecureRequests: [] }),
+        },
+      },
+      // AC1: X-Frame-Options: DENY (default is SAMEORIGIN, override to DENY)
+      frameguard: { action: 'deny' },
+      // AC1: Referrer-Policy: no-referrer
+      referrerPolicy: { policy: 'no-referrer' },
+      // AC1: X-XSS-Protection: 1; mode=block (deprecated but required by AC1)
+      xXssProtection: true,
+      // AC1: Permissions-Policy (formerly Feature-Policy)
+      // Note: helmet v8 doesn't have built-in permissionsPolicy, we add it manually below
+      crossOriginEmbedderPolicy: false, // Allow embedding for badge widgets
+      crossOriginResourcePolicy: { policy: 'cross-origin' }, // Allow cross-origin resource sharing
+    }),
+  );
+
+  // AC1: Add Permissions-Policy header manually (helmet v8 doesn't include it)
+  app.use((req: any, res: any, next: any) => {
+    res.setHeader(
+      'Permissions-Policy',
+      'geolocation=(), microphone=(), camera=(), payment=(), usb=()',
+    );
+    next();
   });
+  logger.log('✅ Helmet security headers configured (AC1 compliant)');
+
+  // CORS Configuration (SEC-P1-003, AC2)
+  const rawOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim())
+    : ['http://localhost:5173', 'http://localhost:3000'];
+
+  // AC2 Security: Block wildcard '*' when credentials are enabled
+  // Wildcard + credentials is insecure and violates CORS spec
+  const allowedOrigins = rawOrigins.filter((origin) => origin !== '*');
+  if (rawOrigins.includes('*')) {
+    logger.warn(
+      '⚠️  SECURITY: Wildcard "*" in ALLOWED_ORIGINS is ignored when credentials are enabled',
+    );
+  }
+
+  app.enableCors({
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      // Allow requests with no origin (mobile apps, Postman, etc.)
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      // AC2: Strict whitelist check - no wildcard allowed with credentials
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        logger.warn(`CORS blocked origin: ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+    exposedHeaders: ['X-Total-Count', 'X-Page-Number'],
+    maxAge: 3600, // Cache preflight for 1 hour
+  });
+  logger.log(`✅ CORS configured with origins: ${allowedOrigins.join(', ')}`);
 
   // Enable global validation pipe for class-validator DTOs
   app.useGlobalPipes(

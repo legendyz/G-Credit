@@ -23,7 +23,9 @@ model User {
   passwordHash  String
   firstName     String?
   lastName      String?
+  department    String?   // Sprint 8: M365 sync field
   role          UserRole  @default(EMPLOYEE)
+  azureId       String?   @unique // Sprint 8: M365 Azure AD ID
   isActive      Boolean   @default(true)
   emailVerified Boolean   @default(false)
   lastLoginAt   DateTime?
@@ -42,6 +44,8 @@ model User {
 
   @@index([email])
   @@index([role])
+  @@index([azureId])
+  @@index([isActive])
   @@map("users")
 }
 
@@ -301,4 +305,41 @@ model AuditLog {
   @@index([timestamp]) // Time-based reports
   @@index([action]) // Filter by action type
   @@map("audit_logs")
+}
+
+// Sprint 8: M365 Sync Logging (Story 8.9)
+
+model M365SyncLog {
+  id           String   @id @default(uuid())
+  syncDate     DateTime @default(now())
+  syncType     String   @default("FULL") @db.VarChar(20) // 'FULL' | 'INCREMENTAL'
+  userCount    Int      // Total users in M365
+  syncedCount  Int      // Successfully synced users
+  createdCount Int      @default(0) // New users created
+  updatedCount Int      @default(0) // Existing users updated
+  status       String   @db.VarChar(20) // 'SUCCESS' | 'PARTIAL_SUCCESS' | 'FAILURE'
+  errorMessage String?  @db.Text
+  durationMs   Int?     // Sync duration in milliseconds
+  createdAt    DateTime @default(now())
+
+  @@index([syncDate])
+  @@index([status])
+  @@map("m365_sync_logs")
+}
+
+// Sprint 8: User Audit Log (Story 8.9)
+
+model UserAuditLog {
+  id         String   @id @default(uuid())
+  userId     String   // User being audited
+  action     String   @db.VarChar(50) // 'CREATED', 'UPDATED', 'DEACTIVATED', 'REACTIVATED'
+  changes    Json?    // Field changes: { field: { old, new } }
+  source     String   @db.VarChar(20) // 'M365_SYNC', 'MANUAL', 'SYSTEM'
+  actorId    String?  // User who made the change (null for system)
+  timestamp  DateTime @default(now())
+
+  @@index([userId])
+  @@index([timestamp])
+  @@index([action])
+  @@map("user_audit_logs")
 }

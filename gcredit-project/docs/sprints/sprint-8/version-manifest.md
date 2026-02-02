@@ -100,9 +100,10 @@
 | **passport** | 0.7.0 | Sprint 1 | Authentication middleware |
 | **passport-jwt** | 4.0.1 | Sprint 1 | JWT strategy |
 | **passport-local** | 1.0.0 | Sprint 1 | Local strategy |
-| **bcrypt** | 5.1.1 → **6.0.0+** | Sprint 1 → **Sprint 8** | **UPGRADE in Sprint 8** (SEC-P1-005) |
-| **@nestjs/helmet** | **1.1.0+** | **Sprint 8** | **NEW** Security headers (Task 8.6) |
-| **@nestjs/throttler** | **5.0.0+** | **Sprint 8** | **NEW** Rate limiting (Task 8.6) |
+| **bcrypt** | 5.1.1 → **6.0.0** | Sprint 1 → **Sprint 8** | ✅ **UPGRADED** (SEC-P1-005 - tar vulnerability fixed) |
+| **helmet** | **8.1.0** | **Sprint 8** | **NEW** Security headers (Task 8.6) - ⚠️ Use helmet directly, @nestjs/helmet@1.1.0 does not exist |
+| **@nestjs/throttler** | **6.5.0** | **Sprint 8** | **NEW** Rate limiting (Task 8.6) - v5 not compatible with NestJS 11 |
+| **@nestjs/cache-manager** | **3.1.0** | **Sprint 8** | **NEW** Caching (Story 8.4) - v2 not compatible with NestJS 11 |
 
 ### API Documentation
 | Dependency | Version | Sprint Added | Notes |

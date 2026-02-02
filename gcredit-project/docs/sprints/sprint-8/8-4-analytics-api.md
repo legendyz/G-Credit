@@ -5,9 +5,10 @@
 **Sprint:** Sprint 8  
 **Priority:** MEDIUM  
 **Story Points:** 3  
-**Estimated Hours:** 5h  
+**Estimated Hours:** 6h (+1.5h for cache-manager v3 migration)  
 **Status:** backlog  
-**Created:** 2026-02-02
+**Created:** 2026-02-02  
+**Updated:** 2026-02-02 (Architect review - dependency version adjustments)
 
 ---
 
@@ -23,8 +24,9 @@ Admin Dashboard (Story 8.1) needs backend API endpoints to display key metrics. 
 **Reference:** PRD FR-23 (Analytics & Reporting), Story 8.1 (Dashboard API requirements)
 
 **Caching Implementation:**
-- Uses @nestjs/cache-manager (install required: `npm install @nestjs/cache-manager cache-manager`)
-- Cache TTL: 900 seconds (15 minutes)
+- Uses @nestjs/cache-manager v3.1.0 (installed in Story 8.0)
+- Dependencies: cache-manager v6 + keyv (auto-installed)
+- Cache TTL: 900000 milliseconds (15 minutes) - ⚠️ v3 uses milliseconds, not seconds
 - Cache key format: `analytics:{endpoint}:{userId}:{queryParams}`
 - Invalidation: On badge issuance/revocation, user updates
 

@@ -68,7 +68,13 @@ export class EvidenceController {
       throw new BadRequestException('File is required');
     }
 
-    return this.evidenceService.uploadEvidence(badgeId, file, req.user.userId);
+    // SEC-P1-001: Pass user role for IDOR protection (Story 8.6)
+    return this.evidenceService.uploadEvidence(
+      badgeId,
+      file,
+      req.user.userId,
+      req.user.role,
+    );
   }
 
   @Get()

@@ -277,7 +277,7 @@ Production security implementation with Helmet (CSP headers), CORS whitelist, ra
 2. ✅ **CORS Whitelist** - Frontend origin only (no wildcards)
 3. ✅ **Rate Limiting** - @nestjs/throttler (10 req/min login, 100 req/min general)
 4. ✅ **IDOR Fix** - Evidence download authorization check
-5. ✅ **bcrypt Upgrade** - v5.1.1 → v6.0.0+ (security patch)
+5. ✅ **bcrypt Upgrade** - v5.1.1 → v6.0.0 (security patch - COMPLETED in Story 8.0)
 
 **Technical Debt Resolved:**
 - SEC-P1-001: No CSP headers
