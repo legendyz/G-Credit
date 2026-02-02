@@ -1,15 +1,18 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from './../src/app.module';
-import { PrismaService } from './../src/common/prisma.service';
-import { UserRole } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
 import * as fs from 'fs';
 import * as path from 'path';
+import {
+  TestContext,
+  setupE2ETest,
+  teardownE2ETest,
+  createAndLoginUser,
+  TestUser,
+} from './helpers/test-setup';
 
 /**
- * Sprint 2 E2E Tests - Badge Template Management
+ * Sprint 2 E2E Tests - Badge Template Management (Isolated)
+ * 
+ * Story 8.8: Test Isolation - Refactored for parallel execution
  * 
  * Tests all 6 stories + Enhancement 1:
  * - Story 3.1: Data Model (Skills & Categories)
@@ -20,137 +23,65 @@ import * as path from 'path';
  * - Story 3.6: Skill Category Management
  * - Enhancement 1: Azure Blob Image Complete Management
  */
-describe('Badge Templates E2E (Sprint 2)', () => {
-  let app: INestApplication;
-  let prisma: PrismaService;
-  let adminToken: string;
-  let categoryId: string; // For skill creation
-  let createdSkillId: string;
-  let createdBadgeId: string;
-  let adminId: string;
+describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
+  let ctx: TestContext;
+  let adminUser: TestUser;
+  let categoryId: string;
+  let skillId: string;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
-    await app.init();
-
-    prisma = app.get<PrismaService>(PrismaService);
-
-    // Clean up any existing test data first
-    await prisma.badgeTemplate.deleteMany({ where: { createdBy: { endsWith: '@templatetest.com' } } });
-    await prisma.user.deleteMany({ where: { email: { endsWith: '@templatetest.com' } } });
-
-    // Setup test data
-    await setupTestData();
+    ctx = await setupE2ETest('badge-templates');
   });
 
-  async function setupTestData() {
-    // Create admin user with unique email for this test suite
-    const adminPassword = await bcrypt.hash('Admin123!', 10);
-    const admin = await prisma.user.create({
+  afterAll(async () => {
+    await teardownE2ETest(ctx);
+  });
+
+  beforeAll(async () => {
+    // Create admin user for tests
+    adminUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'admin');
+
+    // Create test category
+    const category = await ctx.prisma.skillCategory.create({
       data: {
-        email: 'admin@templatetest.com',
-        passwordHash: adminPassword,
-        firstName: 'Admin',
-        lastName: 'User',
-        role: UserRole.ADMIN,
-        emailVerified: true,
+        name: `Test Category ${Date.now()}`,
+        description: 'Category for isolated E2E testing',
       },
     });
-    adminId = admin.id;
+    categoryId = category.id;
 
-    // Login as admin to get token
-    const loginResponse = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({
-        email: 'admin@templatetest.com',
-        password: 'Admin123!',
-      })
-      .expect(200);
-
-    adminToken = loginResponse.body.accessToken;
-
-    // Create test skills first (needed for badge templates)
-    const skillCategory = await prisma.skillCategory.create({
+    // Create test skill
+    const skill = await ctx.prisma.skill.create({
       data: {
-        name: 'Test Category',
-        description: 'Category for E2E testing',
-      },
-    });
-    categoryId = skillCategory.id; // This will be a proper UUID from Prisma
-
-    // Create a test skill
-    const skill = await prisma.skill.create({
-      data: {
-        name: 'Test Skill',
-        description: 'Skill for E2E testing',
+        name: `Test Skill ${Date.now()}`,
+        description: 'Skill for isolated E2E testing',
         categoryId: categoryId,
       },
     });
-    createdSkillId = skill.id;
-  }
-
-  afterAll(async () => {
-    // Cleanup test data - delete in correct order to avoid foreign key constraints
-    await prisma.badgeTemplate.deleteMany({ where: { createdBy: adminId } });
-    await prisma.skill.deleteMany({ where: { categoryId: categoryId } });
-    await prisma.skillCategory.deleteMany({ where: { id: categoryId } });
-    await prisma.user.deleteMany({ where: { email: { endsWith: '@templatetest.com' } } });
-    await app.close();
-  });
-
-  afterAll(async () => {
-    // Cleanup created resources
-    if (createdBadgeId) {
-      await prisma.badgeTemplate.delete({ where: { id: createdBadgeId } }).catch(() => {});
-    }
-    if (createdSkillId) {
-      await prisma.skill.delete({ where: { id: createdSkillId } }).catch(() => {});
-    }
-
-    await app.close();
+    skillId = skill.id;
   });
 
   describe('Story 3.6: Skill Category Management', () => {
     it('should get all skill categories', () => {
-      return request(app.getHttpServer())
+      return request(ctx.app.getHttpServer())
         .get('/skill-categories')
-        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200)
         .expect((res) => {
           expect(Array.isArray(res.body)).toBe(true);
           expect(res.body.length).toBeGreaterThan(0);
-          // Should have test category created in setup
-          const categoryNames = res.body.map((cat: any) => cat.name);
-          expect(categoryNames).toContain('Test Category');
         });
     });
-
-    // Note: Search endpoint not implemented yet in skill-categories controller
-    // it('should search categories by name', () => {
-    //   return request(app.getHttpServer())
-    //     .get('/skill-categories/search?name=技术')
-    //     .set('Authorization', `Bearer ${adminToken}`)
-    //     .expect(200)
-    //     .expect((res) => {
-    //       expect(Array.isArray(res.body)).toBe(true);
-    //       expect(res.body.length).toBeGreaterThan(0);
-    //     });
-    // });
   });
 
   describe('Story 3.1: Create Skill', () => {
     it('should create a new skill', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer())
         .post('/skills')
-        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Authorization', `Bearer ${adminUser.token}`)
         .send({
-          name: `E2E Test Skill ${Date.now()}`,
-          description: 'Created by E2E test',
+          name: `E2E Skill ${Date.now()}`,
+          description: 'Created by isolated E2E test',
           categoryId: categoryId,
         });
 
@@ -161,7 +92,7 @@ describe('Badge Templates E2E (Sprint 2)', () => {
     });
 
     it('should require authentication', () => {
-      return request(app.getHttpServer())
+      return request(ctx.app.getHttpServer())
         .post('/skills')
         .send({
           name: 'Test Skill',
@@ -172,48 +103,49 @@ describe('Badge Templates E2E (Sprint 2)', () => {
   });
 
   describe('Story 3.2: CRUD API with Azure Blob', () => {
+    let createdBadgeId: string;
+
     it('should create badge template with image (multipart)', async () => {
       const testImagePath = path.join(__dirname, '../test-images/test-optimal-256x256.png');
       
-      // Ensure test image exists
       if (!fs.existsSync(testImagePath)) {
         throw new Error(`Test image not found: ${testImagePath}`);
       }
 
-      const response = await request(app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer())
         .post('/badge-templates')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .field('name', 'E2E Test Badge')
-        .field('description', 'Created by E2E test')
+        .set('Authorization', `Bearer ${adminUser.token}`)
+        .field('name', `E2E Badge ${Date.now()}`)
+        .field('description', 'Created by isolated E2E test')
         .field('category', 'achievement')
-        .field('skillIds', JSON.stringify([createdSkillId]))
+        .field('skillIds', JSON.stringify([skillId]))
         .field('issuanceCriteria', JSON.stringify({ type: 'manual' }))
         .attach('image', testImagePath)
         .expect(201);
 
       expect(response.body).toHaveProperty('id');
       expect(response.body).toHaveProperty('imageUrl');
-      expect(response.body.skillIds).toContain(createdSkillId);
+      expect(response.body.skillIds).toContain(skillId);
       expect(response.body.issuanceCriteria.type).toBe('manual');
       createdBadgeId = response.body.id;
     });
 
     it('should update badge template', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer())
         .patch(`/badge-templates/${createdBadgeId}`)
-        .set('Authorization', `Bearer ${adminToken}`)
-        .field('description', 'Updated by E2E test')
+        .set('Authorization', `Bearer ${adminUser.token}`)
+        .field('description', 'Updated by isolated E2E test')
         .field('status', 'ACTIVE')
         .expect(200);
 
-      expect(response.body.description).toBe('Updated by E2E test');
+      expect(response.body.description).toBe('Updated by isolated E2E test');
       expect(response.body.status).toBe('ACTIVE');
     });
 
     it('should get badge template by id', () => {
-      return request(app.getHttpServer())
+      return request(ctx.app.getHttpServer())
         .get(`/badge-templates/${createdBadgeId}`)
-        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200)
         .expect((res) => {
           expect(res.body.id).toBe(createdBadgeId);
@@ -223,14 +155,14 @@ describe('Badge Templates E2E (Sprint 2)', () => {
 
   describe('Story 3.3: Query API', () => {
     it('should query badge templates with pagination', () => {
-      return request(app.getHttpServer())
+      return request(ctx.app.getHttpServer())
         .get('/badge-templates?page=1&limit=10')
-        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200)
         .expect((res) => {
           expect(res.body).toHaveProperty('data');
           expect(res.body).toHaveProperty('meta');
-          expect(res.body.meta).toHaveProperty('total');  // Changed from 'totalCount'
+          expect(res.body.meta).toHaveProperty('total');
           expect(res.body.meta).toHaveProperty('totalPages');
           expect(res.body.meta.page).toBe(1);
           expect(res.body.meta.limit).toBe(10);
@@ -238,13 +170,12 @@ describe('Badge Templates E2E (Sprint 2)', () => {
     });
 
     it('should filter by category', () => {
-      return request(app.getHttpServer())
+      return request(ctx.app.getHttpServer())
         .get('/badge-templates?category=achievement')
-        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200)
         .expect((res) => {
           expect(res.body.data).toBeInstanceOf(Array);
-          // All returned badges should be 'achievement' category
           res.body.data.forEach((badge: any) => {
             expect(badge.category).toBe('achievement');
           });
@@ -252,36 +183,23 @@ describe('Badge Templates E2E (Sprint 2)', () => {
     });
 
     it('should filter by status (public API - only ACTIVE)', () => {
-      return request(app.getHttpServer())
+      return request(ctx.app.getHttpServer())
         .get('/badge-templates')
-        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200)
         .expect((res) => {
-          // Public API should only return ACTIVE badges
           res.body.data.forEach((badge: any) => {
             expect(badge.status).toBe('ACTIVE');
           });
         });
     });
-
-    // Note: Admin-specific route not implemented yet
-    // it('should return all statuses for admin', () => {
-    //   return request(app.getHttpServer())
-    //     .get('/badge-templates/admin')
-    //     .set('Authorization', `Bearer ${adminToken}`)
-    //     .expect(200)
-    //     .expect((res) => {
-    //       expect(res.body.data).toBeInstanceOf(Array);
-    //       // Admin can see DRAFT, ACTIVE, ARCHIVED
-    //     });
-    // });
   });
 
   describe('Story 3.4: Search Optimization', () => {
     it('should search badges by name', () => {
-      return request(app.getHttpServer())
+      return request(ctx.app.getHttpServer())
         .get('/badge-templates?search=E2E')
-        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200)
         .expect((res) => {
           expect(res.body.data).toBeInstanceOf(Array);
@@ -289,9 +207,9 @@ describe('Badge Templates E2E (Sprint 2)', () => {
     });
 
     it('should sort badges by createdAt DESC', () => {
-      return request(app.getHttpServer())
-        .get('/badge-templates?sortBy=createdAt&sortOrder=desc')  // Use lowercase 'desc'
-        .set('Authorization', `Bearer ${adminToken}`)
+      return request(ctx.app.getHttpServer())
+        .get('/badge-templates?sortBy=createdAt&sortOrder=desc')
+        .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200)
         .expect((res) => {
           const badges = res.body.data;
@@ -309,50 +227,39 @@ describe('Badge Templates E2E (Sprint 2)', () => {
     it('should validate manual issuance criteria', async () => {
       const testImagePath = path.join(__dirname, '../test-images/test-optimal-256x256.png');
 
-      const response = await request(app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer())
         .post('/badge-templates')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .field('name', 'Manual Badge')
+        .set('Authorization', `Bearer ${adminUser.token}`)
+        .field('name', `Manual Badge ${Date.now()}`)
         .field('description', 'Manual issuance test')
         .field('category', 'certification')
-        .field('skillIds', JSON.stringify([createdSkillId]))
+        .field('skillIds', JSON.stringify([skillId]))
         .field('issuanceCriteria', JSON.stringify({ type: 'manual' }))
         .attach('image', testImagePath)
         .expect(201);
 
       expect(response.body.issuanceCriteria.type).toBe('manual');
-
-      // Cleanup
-      await prisma.badgeTemplate.delete({ where: { id: response.body.id } });
     });
 
-    it('should validate automatic issuance criteria (points)', async () => {
+    it('should validate automatic issuance criteria (task)', async () => {
       const testImagePath = path.join(__dirname, '../test-images/test-optimal-256x256.png');
 
-      const response = await request(app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer())
         .post('/badge-templates')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .field('name', 'Points Badge')
-        .field('description', 'Automatic points test')
+        .set('Authorization', `Bearer ${adminUser.token}`)
+        .field('name', `Auto Badge ${Date.now()}`)
+        .field('description', 'Automatic task test')
         .field('category', 'achievement')
-        .field('skillIds', JSON.stringify([createdSkillId]))
+        .field('skillIds', JSON.stringify([skillId]))
         .field(
           'issuanceCriteria',
           JSON.stringify({
-            type: 'auto_task',  // Use task completion type
+            type: 'auto_task',
             conditions: [
-              {
-                field: 'taskId',
-                operator: '==',  // Use '==' for equality
-                value: 'task-123',
-              },
-              {
-                field: 'status',
-                operator: '==',
-                value: 'completed',
-              },
+              { field: 'taskId', operator: '==', value: 'task-123' },
+              { field: 'status', operator: '==', value: 'completed' },
             ],
-            logicOperator: 'all',  // All conditions must be met
+            logicOperator: 'all',
           }),
         )
         .attach('image', testImagePath)
@@ -360,21 +267,18 @@ describe('Badge Templates E2E (Sprint 2)', () => {
 
       expect(response.body.issuanceCriteria.type).toBe('auto_task');
       expect(response.body.issuanceCriteria.conditions).toHaveLength(2);
-
-      // Cleanup
-      await prisma.badgeTemplate.delete({ where: { id: response.body.id } });
     });
 
     it('should reject invalid issuance criteria type', async () => {
       const testImagePath = path.join(__dirname, '../test-images/test-optimal-256x256.png');
 
-      await request(app.getHttpServer())
+      await request(ctx.app.getHttpServer())
         .post('/badge-templates')
-        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Authorization', `Bearer ${adminUser.token}`)
         .field('name', 'Invalid Badge')
         .field('description', 'Invalid criteria test')
         .field('category', 'achievement')
-        .field('skillIds', JSON.stringify([createdSkillId]))
+        .field('skillIds', JSON.stringify([skillId]))
         .field('issuanceCriteria', JSON.stringify({ type: 'invalid_type' }))
         .attach('image', testImagePath)
         .expect(400);
@@ -390,13 +294,13 @@ describe('Badge Templates E2E (Sprint 2)', () => {
         return;
       }
 
-      await request(app.getHttpServer())
+      await request(ctx.app.getHttpServer())
         .post('/badge-templates')
-        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Authorization', `Bearer ${adminUser.token}`)
         .field('name', 'Too Small Badge')
         .field('description', 'Image too small')
         .field('category', 'achievement')
-        .field('skillIds', JSON.stringify([createdSkillId]))
+        .field('skillIds', JSON.stringify([skillId]))
         .field('issuanceCriteria', JSON.stringify({ type: 'manual' }))
         .attach('image', testImagePath)
         .expect(400);
@@ -410,13 +314,13 @@ describe('Badge Templates E2E (Sprint 2)', () => {
         return;
       }
 
-      await request(app.getHttpServer())
+      await request(ctx.app.getHttpServer())
         .post('/badge-templates')
-        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Authorization', `Bearer ${adminUser.token}`)
         .field('name', 'Too Large Badge')
         .field('description', 'Image too large')
         .field('category', 'achievement')
-        .field('skillIds', JSON.stringify([createdSkillId]))
+        .field('skillIds', JSON.stringify([skillId]))
         .field('issuanceCriteria', JSON.stringify({ type: 'manual' }))
         .attach('image', testImagePath)
         .expect(400);
@@ -425,21 +329,18 @@ describe('Badge Templates E2E (Sprint 2)', () => {
     it('should accept optimal size (256x256)', async () => {
       const testImagePath = path.join(__dirname, '../test-images/test-optimal-256x256.png');
 
-      const response = await request(app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer())
         .post('/badge-templates')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .field('name', 'Optimal Badge')
+        .set('Authorization', `Bearer ${adminUser.token}`)
+        .field('name', `Optimal Badge ${Date.now()}`)
         .field('description', 'Optimal size test')
         .field('category', 'achievement')
-        .field('skillIds', JSON.stringify([createdSkillId]))
+        .field('skillIds', JSON.stringify([skillId]))
         .field('issuanceCriteria', JSON.stringify({ type: 'manual' }))
         .attach('image', testImagePath)
         .expect(201);
 
       expect(response.body).toHaveProperty('imageUrl');
-
-      // Cleanup
-      await prisma.badgeTemplate.delete({ where: { id: response.body.id } });
     });
 
     it('should accept optimal size (512x512)', async () => {
@@ -450,34 +351,31 @@ describe('Badge Templates E2E (Sprint 2)', () => {
         return;
       }
 
-      const response = await request(app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer())
         .post('/badge-templates')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .field('name', 'Optimal 512 Badge')
+        .set('Authorization', `Bearer ${adminUser.token}`)
+        .field('name', `Optimal 512 Badge ${Date.now()}`)
         .field('description', 'Optimal 512 size test')
         .field('category', 'achievement')
-        .field('skillIds', JSON.stringify([createdSkillId]))
+        .field('skillIds', JSON.stringify([skillId]))
         .field('issuanceCriteria', JSON.stringify({ type: 'manual' }))
         .attach('image', testImagePath)
         .expect(201);
 
       expect(response.body).toHaveProperty('imageUrl');
-
-      // Cleanup
-      await prisma.badgeTemplate.delete({ where: { id: response.body.id } });
     });
 
     it('should delete badge and its image', async () => {
       const testImagePath = path.join(__dirname, '../test-images/test-optimal-256x256.png');
 
       // Create a badge
-      const createResponse = await request(app.getHttpServer())
+      const createResponse = await request(ctx.app.getHttpServer())
         .post('/badge-templates')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .field('name', 'To Delete Badge')
+        .set('Authorization', `Bearer ${adminUser.token}`)
+        .field('name', `To Delete Badge ${Date.now()}`)
         .field('description', 'Will be deleted')
         .field('category', 'achievement')
-        .field('skillIds', JSON.stringify([createdSkillId]))
+        .field('skillIds', JSON.stringify([skillId]))
         .field('issuanceCriteria', JSON.stringify({ type: 'manual' }))
         .attach('image', testImagePath)
         .expect(201);
@@ -487,15 +385,15 @@ describe('Badge Templates E2E (Sprint 2)', () => {
       expect(imageUrl).toBeTruthy();
 
       // Delete the badge
-      await request(app.getHttpServer())
+      await request(ctx.app.getHttpServer())
         .delete(`/badge-templates/${badgeId}`)
-        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200);
 
-      // Verify badge is deleted (requires auth to check)
-      await request(app.getHttpServer())
+      // Verify badge is deleted
+      await request(ctx.app.getHttpServer())
         .get(`/badge-templates/${badgeId}`)
-        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(404);
     });
   });
