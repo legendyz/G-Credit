@@ -3,8 +3,8 @@
 **目的：** 确保Sprint Planning全面、准确，避免重复工作和资源浪费  
 **使用时机：** 每个Sprint开始前的Planning阶段  
 **责任人：** Product Manager + Scrum Master  
-**版本：** v1.3  
-**最后更新：** 2026-02-01（基于Sprint 0-7全面回顾 + 完整优化）
+**版本：** v1.4  
+**最后更新：** 2026-02-02（新增Section 6.6 UX/Architecture Review）
 
 ---
 
@@ -25,14 +25,24 @@
      - 填充基本结构（Story、AC、Tasks从Backlog提取）
    - 标记 Section 6.5 完成 ✅
 
-3. **到达 Section 9（版本清单创建）时：**
+3. **到达 Section 6.6（UX/Architecture Review）时：** ⭐ NEW
+   - ⚡ **自动评估** 哪些Story需要审查（基于优先级、领域、复杂度）
+   - 向用户建议："Story X.Y建议进行[UX/架构/双重]审查，是否执行？"
+   - 如果用户同意：
+     - 使用runSubagent启动专业审查（Amelia/Technical Architect）
+     - 收集审查结果（APPROVED / APPROVED WITH CHANGES / CHANGES REQUIRED）
+     - 如发现问题，询问修复策略（立即修复/推迟/拆分Story）
+     - 创建审查文档（可选）：`UX-REVIEW-SPRINT-N.md` / `ARCHITECTURE-REVIEW-SPRINT-N.md`
+   - 标记 Section 6.6 完成 ✅
+
+4. **到达 Section 9（版本清单创建）时：**
    - ⚡ **自动运行** `gcredit-project/scripts/check-versions.ps1`
    - 展示版本输出给用户 review
    - 询问是否需要添加特殊注释（如：Prisma锁定原因）
    - 创建 `docs/sprints/sprint-N/version-manifest.md` 文件
    - 标记 Section 9 完成 ✅
 
-4. **到达 Section 12（Sprint Backlog创建）时：**
+5. **到达 Section 12（Sprint Backlog创建）时：**
    - ⚡ **自动使用** `sprint-backlog-template.md` 模板
    - 填充已知信息（Sprint目标、Story列表、版本清单引用等）
    - **重要：** 如果Section 6.5创建了Story文件，在Backlog中添加链接引用
@@ -40,11 +50,11 @@
    - 创建 `docs/sprints/sprint-N/backlog.md` 文件
    - 标记 Section 12 完成 ✅
 
-5. **引导用户** 完成其他手动检查项（资源清单回顾、Story分解等）
+6. **引导用户** 完成其他手动检查项（资源清单回顾、Story分解等）
 
-6. **最终确认** 所有必填项（标记🚨 MANDATORY）已完成
+7. **最终确认** 所有必填项（标记🚨 MANDATORY）已完成
 
-**Agent 无需等待用户单独说 "创建Story文件" 或 "创建版本清单" 或 "创建Sprint Backlog"** - 这些都应该是 Planning 流程的自动化部分。
+**Agent 无需等待用户单独说 "创建Story文件" 或 "运行UX审查" 或 "创建版本清单" 或 "创建Sprint Backlog"** - 这些都应该是 Planning 流程的自动化部分。
 
 ---
 
@@ -294,6 +304,143 @@ So that [benefit].
 2. **开发时更新** - 实施过程中补充Dev Notes和完成记录
 3. **回顾时完善** - Sprint结束时添加Retrospective Notes
 4. **保持一致性** - 同一Sprint内的Story文件使用相同格式
+
+---
+
+### 6.6. UX/Architecture Review（条件性）⚡ [NEW - Added 2026-02-02]
+
+**🤖 Agent 建议：** 当Story文件创建完成后，Agent应主动评估是否需要UX/Architecture审查。
+
+**为什么重要（Sprint 8 经验教训）：**
+Story 8.10创建后进行UX和架构审查，发现12个关键问题（7个UX + 5个架构），避免了：
+- 开发后返工（节省6.5h rework时间）
+- WCAG合规性问题（无障碍性不达标）
+- 生产环境数据完整性风险（缺少事务边界、级联删除）
+- 性能瓶颈（分页策略问题）
+- 竞态条件（缺少乐观锁定）
+
+**审查价值：**
+- ⏰ **早期发现问题** - Planning阶段修正比开发后修正成本低10倍
+- 🎨 **UX一致性** - 确保新Story与现有设计系统一致
+- 🏗️ **架构完整性** - 识别技术债务、安全漏洞、性能风险
+- 📋 **需求完善** - 补充遗漏的AC和技术任务
+
+---
+
+**何时需要审查（适用条件）：**
+
+**🚨 MANDATORY Review（必须审查）：**
+- [ ] **CRITICAL优先级Story** - 影响系统核心功能
+- [ ] **安全相关Story** - 涉及认证、授权、数据保护
+- [ ] **新用户界面** - 全新UI组件或页面（需要UX审查）
+- [ ] **复杂架构变更** - 数据库schema变更、新服务集成
+
+**🟡 RECOMMENDED Review（推荐审查）：**
+- [ ] **HIGH优先级Story** - 重要功能
+- [ ] **跨模块Story** - 涉及多个系统组件
+- [ ] **性能敏感Story** - 大数据量处理、实时功能
+- [ ] **无障碍性要求** - 需要WCAG合规的Story
+
+**🟢 OPTIONAL Review（可选审查）：**
+- [ ] MEDIUM/LOW优先级的简单CRUD
+- [ ] 纯后端API（无UI变更）
+- [ ] Bug修复（非重构）
+- [ ] 技术债务清理
+
+---
+
+**审查类型选择：**
+
+| Story类型 | UX审查 | 架构审查 | 审查人 |
+|-----------|--------|----------|--------|
+| 新UI组件/页面 | ✅ 必须 | ✅ 推荐 | UX Designer + Architect |
+| 后端API（无UI） | ❌ 不需要 | ✅ 必须 | Technical Architect |
+| 安全/授权功能 | 🟡 推荐 | ✅ 必须 | Security Architect |
+| CRUD操作 | ❌ 不需要 | 🟡 可选 | Self-review |
+| 性能优化 | ❌ 不需要 | ✅ 必须 | Performance Architect |
+| 无障碍性功能 | ✅ 必须 | 🟡 推荐 | Accessibility Specialist |
+
+---
+
+**审查执行步骤：**
+
+**1. Agent自动评估（Planning阶段）：**
+- Agent读取Story文件（标题、AC、优先级、涉及领域）
+- 自动评估是否符合审查条件（使用上述规则）
+- 向用户建议："Story X.Y建议进行[UX/架构/双重]审查，是否执行？"
+
+**2. 启动审查（如用户同意）：**
+```markdown
+# Agent命令示例
+"对Story 8.10进行UX审查"
+"对Story 8.6进行架构审查"
+"对所有CRITICAL优先级Story进行双重审查"
+```
+
+**3. UX审查重点（Amelia - UX Designer）：**
+- [ ] **WCAG 2.1 合规** - 键盘导航、ARIA标签、颜色对比度
+- [ ] **响应式设计** - 移动/平板/桌面一致性
+- [ ] **设计系统一致性** - 组件、颜色、字体与现有UI匹配
+- [ ] **用户流程** - 操作流畅性、确认对话框合理性
+- [ ] **空状态/错误状态** - 边界情况的UX处理
+- [ ] **性能感知** - 加载状态、乐观更新
+
+**4. 架构审查重点（Technical Architect）：**
+- [ ] **数据完整性** - 事务边界、级联删除、外键约束
+- [ ] **并发控制** - 乐观锁定、竞态条件防范
+- [ ] **性能** - 分页策略、N+1查询、索引优化
+- [ ] **安全** - 授权检查、输入验证、敏感数据保护
+- [ ] **可维护性** - 代码结构、错误处理、日志记录
+- [ ] **可测试性** - 依赖注入、模拟策略
+
+**5. 审查结果处理：**
+- **APPROVED** - 无问题，继续Planning
+- **APPROVED WITH CHANGES** - 有建议但不阻塞，记录改进点
+- **CHANGES REQUIRED** - 有阻塞问题，必须修改Story文件后再继续
+
+**6. 修复决策（如发现问题）：**
+- **选项A：** 立即修复所有问题（更新Story文件、调整估算）
+- **选项B：** 修复阻塞问题，其他问题记录为技术债务
+- **选项C：** 拆分Story（MVP + Enhancement）
+
+---
+
+**审查输出文档（可选）：**
+- 创建 `docs/sprints/sprint-N/UX-REVIEW-SPRINT-N.md`（如有UX审查）
+- 创建 `docs/sprints/sprint-N/ARCHITECTURE-REVIEW-SPRINT-N.md`（如有架构审查）
+- 审查发现记录在Story文件的 `Dev Notes > Review Findings` 部分
+
+---
+
+**检查清单：**
+- [ ] **审查条件评估完成** - 确定哪些Story需要审查
+- [ ] **审查执行完成** - UX/架构审查已完成（如适用）
+- [ ] **审查发现已记录** - 问题清单、严重程度、修复建议
+- [ ] **Story文件已更新** - 根据审查结果更新AC、任务、估算
+- [ ] **修复决策已确定** - 立即修复/推迟/拆分Story
+- [ ] **估算已调整** - 如修复增加工作量，更新SP和小时数
+- [ ] **审查文档已创建**（可选）- 保存完整审查记录
+
+---
+
+**🔗 参考：**
+- Sprint 8 示例: [UX-REVIEW-SPRINT-8.md](../sprints/sprint-8/UX-REVIEW-SPRINT-8.md)
+- Sprint 8 示例: [ARCHITECTURE-REVIEW-SPRINT-8.md](../sprints/sprint-8/ARCHITECTURE-REVIEW-SPRINT-8.md)
+- Sprint 8 Story 8.10: 应用了12个审查修复（6.5h额外工作）
+
+**🎓 最佳实践：**
+1. **不要过度审查** - 简单CRUD不需要审查，专注于高风险Story
+2. **Planning阶段完成** - 不要等到开发时才审查
+3. **使用Agent自动化** - Agent可以运行subagent进行专业审查
+4. **记录审查结果** - 即使APPROVED也要记录审查日期和审查人
+5. **成本效益平衡** - 审查应节省时间而不是增加负担
+
+**🚨 反面案例（不审查的风险）：**
+- Sprint 8 Story 8.10如果不审查：
+  - 开发完成后发现无障碍性不合规（需要返工2h）
+  - 生产环境出现数据完整性问题（级联删除缺失）
+  - 1000+用户时性能崩溃（分页策略错误）
+  - 竞态条件导致数据丢失（缺少乐观锁定）
 
 ---
 
@@ -801,7 +948,8 @@ Planning阶段: 创建Story文件框架（Story、AC、Tasks基本结构）
 | Sprint 5 | 2026-01-29 | 100% | 架构预先准备成功 | Winston的ADRs节省大量开发时间 |
 | Sprint 6 | 2026-01-30 | ~90% | **未创建Story文件** | Stories 7.2/7.3无独立文件，导致Story 7.3未实现 |
 | Sprint 7 | 2026-01-31 | 100% | 无重大问题 | 使用v1.2 + 12,000行文档，28个Story文件 |
-| Sprint 8 | TBD | TBD | TBD | 计划使用v1.3（含完整优化） |
+| Sprint 8 | 2026-02-02 | 100% | 无重大问题 | 使用v1.4（新增UX/Arch审查），发现12个问题并修复 |
+| Sprint 9 | TBD | TBD | TBD | 计划使用v1.4（含UX/Arch审查） |
 
 ---
 
@@ -816,3 +964,9 @@ Planning阶段: 创建Story文件框架（Story、AC、Tasks基本结构）
   - 新增 Section 11.5：UAT 早期规划（条件性）
   - 新增 Section 22：Sprint 闭环准备（Planning-Completion 联动）
   - 修复：Section 20 重复问题（现为 20 + 20a）
+- **v1.4（2026-02-02）- 新增Section 6.6"UX/Architecture Review"（条件性）** ⭐ NEW
+  - 基于Sprint 8 Story 8.10经验教训
+  - 添加审查条件矩阵（MANDATORY/RECOMMENDED/OPTIONAL）
+  - 添加Agent自动化评估逻辑
+  - 发现12个问题（7个UX + 5个架构），避免6.5h返工时间
+  - 包含详细审查清单（WCAG、响应式、数据完整性、并发控制等）

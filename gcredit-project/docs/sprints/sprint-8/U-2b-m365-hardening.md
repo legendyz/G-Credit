@@ -250,19 +250,21 @@ Add M365SyncLog table:
 
 ```prisma
 model M365SyncLog {
-  id            String   @id @default(uuid())
-  syncedAt      DateTime @default(now())
-  syncedBy      String   // Admin user ID or 'SYSTEM'
-  usersAdded    Int
-  usersUpdated  Int
-  usersFailed   Int
-  totalUsers    Int
-  durationMs    Int
-  status        String   // 'SUCCESS' | 'PARTIAL_SUCCESS' | 'FAILED'
-  errorMessage  String?
-  metadata      Json?    // Additional context
+  id           String   @id @default(uuid())
+  syncDate     DateTime @default(now())
+  syncType     String   @default("FULL") // 'FULL' | 'INCREMENTAL'
+  userCount    Int      // Total users in M365
+  syncedCount  Int      // Successfully synced users
+  createdCount Int      @default(0) // New users created
+  updatedCount Int      @default(0) // Existing users updated
+  status       String   // 'SUCCESS' | 'PARTIAL_SUCCESS' | 'FAILURE'
+  errorMessage String?  @db.Text
+  durationMs   Int?     // Sync duration in milliseconds
+  createdAt    DateTime @default(now())
 
   @@map("m365_sync_logs")
+  @@index([syncDate])
+  @@index([status])
 }
 ```
 
@@ -275,7 +277,10 @@ model User {
   name       String
   role       Role
   isActive   Boolean  @default(true) // NEW FIELD
+  azureId    String?  @unique
   // ... rest of fields
+  
+  @@index([isActive])  // NEW INDEX
 }
 ```
 

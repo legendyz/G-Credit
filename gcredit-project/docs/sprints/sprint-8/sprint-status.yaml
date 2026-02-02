@@ -1,0 +1,536 @@
+# Sprint 8 Status Tracker
+# Auto-generated during Sprint Planning (2026-02-02)
+# Update this file daily during standups
+
+metadata:
+  sprint_number: 8
+  sprint_goal: "Production-Ready MVP with UX Excellence, Security Hardening & M365 Integration"
+  epic: "Epic 10 - Production-Ready MVP"
+  version_target: "v0.8.0"
+  start_date: "2026-02-03"
+  end_date: "2026-02-14"
+  total_days: 10
+  team_capacity: 71h
+  planning_complete: true
+  planning_date: "2026-02-02"
+
+# Sprint Metrics (updated daily)
+metrics:
+  total_stories: 10  # Added Story 8.10 (User Management)
+  total_tasks: 4  # Task 8.0, 8.6, 8.7, 8.8
+  total_work_items: 14  # 10 stories + 4 tasks
+  total_story_points: 44  # Updated Story 8.10 from 3 SP to 6 SP
+  total_estimated_hours: 75h  # Updated Story 8.10 from 5h to 11.5h
+  
+  completed_stories: 0
+  completed_tasks: 0
+  completed_work_items: 0
+  completed_hours: 0h
+  remaining_hours: 75h
+  
+  stories_in_progress: 0
+  tasks_in_progress: 0
+  work_items_blocked: 0
+  
+  # Technical Debt Resolution
+  technical_debt_targeted: 17  # P1 items
+  technical_debt_resolved: 0
+  technical_debt_remaining: 17
+
+# Group A: UX & Accessibility (39h, 28 SP)
+group_a_ux_accessibility:
+  total_items: 7  # Added Story 8.10
+  completed_items: 0
+  total_hours: 52.5h  # Updated Story 8.10 from 5h to 11.5h
+  remaining_hours: 52.5h
+  
+  stories:
+    - id: "8.1"
+      title: "Dashboard Homepage"
+      story_points: 5
+      estimated_hours: 9h
+      priority: HIGH
+      status: backlog  # backlog | in_progress | in_review | done
+      assignee: null
+      blocked: false
+      blocker_reason: null
+      started_date: null
+      completed_date: null
+      acceptance_criteria_met: 0/6
+      technical_debt_resolved:
+        - UX-P1-001
+        - UX-P1-002
+        - UX-P1-003
+      dependencies:
+        - "8.4 (Analytics API)"
+        - "8.5 (Responsive Design)"
+      file: "8-1-dashboard-homepage.md"
+      
+    - id: "8.2"
+      title: "Badge Search Enhancement"
+      story_points: 3
+      estimated_hours: 5.5h
+      priority: MEDIUM
+      status: backlog
+      assignee: null
+      blocked: false
+      blocker_reason: null
+      started_date: null
+      completed_date: null
+      acceptance_criteria_met: 0/5
+      technical_debt_resolved: []
+      dependencies:
+        - "8.5 (Responsive Design)"
+      file: "8-2-badge-search-enhancement.md"
+      
+    - id: "8.3"
+      title: "WCAG 2.1 Accessibility"
+      story_points: 5
+      estimated_hours: 8.5h
+      priority: CRITICAL
+      status: backlog
+      assignee: null
+      blocked: false
+      blocker_reason: null
+      started_date: null
+      completed_date: null
+      acceptance_criteria_met: 0/6
+      technical_debt_resolved:
+        - UX-P1-004
+        - UX-P1-005
+        - UX-P1-006
+        - UX-P1-007
+      dependencies:
+        - "Applies to 8.1, 8.2, 8.5"
+      file: "8-3-wcag-accessibility.md"
+      
+    - id: "8.4"
+      title: "Analytics API"
+      story_points: 3
+      estimated_hours: 4.5h
+      priority: HIGH
+      status: backlog
+      assignee: null
+      blocked: false
+      blocker_reason: null
+      started_date: null
+      completed_date: null
+      acceptance_criteria_met: 0/5
+      technical_debt_resolved: []
+      dependencies:
+        - "Used by 8.1"
+      file: "8-4-analytics-api.md"
+      
+    - id: "8.5"
+      title: "Responsive Design"
+      story_points: 3
+      estimated_hours: 5h
+      priority: HIGH
+      status: backlog
+      assignee: null
+      blocked: false
+      blocker_reason: null
+      started_date: null
+      completed_date: null
+      acceptance_criteria_met: 0/6
+      technical_debt_resolved: []
+      dependencies:
+        - "Applies to 8.1, 8.2, 8.3"
+      file: "8-5-responsive-design.md"
+      
+    - id: "8.9"
+      title: "M365 Production Hardening"
+      story_points: 6
+      estimated_hours: 8.5h
+      priority: MEDIUM
+      status: backlog
+      assignee: null
+      blocked: false
+      blocker_reason: null
+      started_date: null
+      completed_date: null
+      acceptance_criteria_met: 0/5
+      technical_debt_resolved: []
+      dependencies:
+        - "Story U.2a (Sprint 7)"
+        - "Prisma migration: M365SyncLog + User.isActive"
+      file: "U-2b-m365-hardening.md"
+      notes: "Originally Story U.2b, renamed to 8.9 for Sprint 8"
+      
+    - id: "8.10"
+      title: "Admin User Management Panel"
+      story_points: 6  # Updated from 3 SP (applied all UX+Arch fixes)
+      estimated_hours: 11.5h  # Updated from 5h (added 6.5h for fixes)
+      priority: HIGH
+      status: backlog
+      assignee: null
+      blocked: false
+      blocker_reason: null
+      started_date: null
+      completed_date: null
+      acceptance_criteria_met: 0/6
+      technical_debt_resolved:
+        - "SEC-HIGH-003: Role self-assignment on registration"
+      dependencies:
+        - "8.0 (Sprint Setup - Prisma migration)"
+        - "8.1 (Dashboard - Admin navigation)"
+      file: "8-10-user-management-panel.md"
+      notes: "Addresses security audit finding: Admin-only role management"
+
+# Group B: Security & Infrastructure (20h, 12 SP)
+group_b_security_infrastructure:
+  total_items: 4  # Added Task 8.0
+  completed_items: 0
+  total_hours: 22.5h  # Added 1.5h
+  remaining_hours: 22.5h
+  
+  tasks:
+    - id: "8.0"
+      title: "Sprint 8 Development Environment Setup"
+      story_points: 1
+      estimated_hours: 1.5h
+      priority: CRITICAL
+      status: backlog
+      assignee: "Development Team"
+      blocked: false
+      blocker_reason: null
+      started_date: null
+      completed_date: null
+      acceptance_criteria_met: 0/5
+      technical_debt_resolved: []
+      dependencies:
+        - "MUST COMPLETE FIRST - Blocks all Sprint 8 work"
+      file: "8-0-sprint-setup.md"
+      notes: "Install dependencies and create Prisma migrations. MUST complete Day 1 morning."
+      
+    - id: "8.6"
+      title: "Security Hardening"
+      story_points: 3
+      estimated_hours: 6h
+      priority: CRITICAL
+      status: backlog
+      assignee: null
+      blocked: false
+      blocker_reason: null
+      started_date: null
+      completed_date: null
+      acceptance_criteria_met: 0/5
+      technical_debt_resolved:
+        - SEC-P1-001
+        - SEC-P1-002
+        - SEC-P1-003
+        - SEC-P1-004
+        - SEC-P1-005
+      dependencies:
+        - "Consolidates Story 0.3"
+      file: "8-6-security-hardening.md"
+      
+    - id: "8.7"
+      title: "Architecture Fixes"
+      story_points: 4
+      estimated_hours: 7h
+      priority: HIGH
+      status: backlog
+      assignee: null
+      blocked: false
+      blocker_reason: null
+      started_date: null
+      completed_date: null
+      acceptance_criteria_met: 0/4
+      technical_debt_resolved:
+        - ARCH-P1-001
+        - ARCH-P1-003
+        - ARCH-P1-004
+      dependencies:
+        - "Blocks Story 0.2b frontend"
+      file: "8-7-architecture-fixes.md"
+      
+    - id: "8.8"
+      title: "E2E Test Isolation"
+      story_points: 5
+      estimated_hours: 8h
+      priority: CRITICAL
+      status: backlog
+      assignee: null
+      blocked: false
+      blocker_reason: null
+      started_date: null
+      completed_date: null
+      acceptance_criteria_met: 0/5
+      technical_debt_resolved:
+        - TD-001
+      dependencies:
+        - "Blocks CI/CD reliability"
+      file: "8-8-e2e-test-isolation.md"
+
+# Group C: Legacy Stories (Retained for Reference)
+group_c_legacy:
+  notes: "Original Sprint 8 stories from Feb 1 planning"
+  consolidated: true
+  
+  legacy_stories:
+    - id: "0.2b"
+      title: "Auth Enhancements"
+      story_points: 3
+      estimated_hours: 5.75h
+      status: consolidated
+      consolidated_into:
+        - "8.3 (WCAG compliance)"
+        - "8.7 (Token refresh)"
+      file: "0-2b-auth-enhancements.md"
+      
+    - id: "0.3"
+      title: "CSP Security Headers"
+      story_points: 1
+      estimated_hours: 1h
+      status: consolidated
+      consolidated_into:
+        - "8.6 (Security Hardening)"
+      file: "0-3-csp-headers.md"
+
+# Daily Standup Tracking (Update each morning)
+daily_progress:
+  day_1:
+    date: "2026-02-03"
+    completed_work_items: []
+    work_items_started: []
+    work_items_blocked: []
+    notes: "Sprint kickoff"
+    
+  day_2:
+    date: "2026-02-04"
+    completed_work_items: []
+    work_items_started: []
+    work_items_blocked: []
+    notes: ""
+    
+  day_3:
+    date: "2026-02-05"
+    completed_work_items: []
+    work_items_started: []
+    work_items_blocked: []
+    notes: ""
+    
+  day_4:
+    date: "2026-02-06"
+    completed_work_items: []
+    work_items_started: []
+    work_items_blocked: []
+    notes: ""
+    
+  day_5:
+    date: "2026-02-07"
+    completed_work_items: []
+    work_items_started: []
+    work_items_blocked: []
+    notes: ""
+    
+  day_6:
+    date: "2026-02-08"
+    completed_work_items: []
+    work_items_started: []
+    work_items_blocked: []
+    notes: "Weekend"
+    
+  day_7:
+    date: "2026-02-09"
+    completed_work_items: []
+    work_items_started: []
+    work_items_blocked: []
+    notes: "Weekend"
+    
+  day_8:
+    date: "2026-02-10"
+    completed_work_items: []
+    work_items_started: []
+    work_items_blocked: []
+    notes: ""
+    
+  day_9:
+    date: "2026-02-11"
+    completed_work_items: []
+    work_items_started: []
+    work_items_blocked: []
+    notes: ""
+    
+  day_10:
+    date: "2026-02-12"
+    completed_work_items: []
+    work_items_started: []
+    work_items_blocked: []
+    notes: ""
+    
+  day_11:
+    date: "2026-02-13"
+    completed_work_items: []
+    work_items_started: []
+    work_items_blocked: []
+    notes: ""
+    
+  day_12:
+    date: "2026-02-14"
+    completed_work_items: []
+    work_items_started: []
+    work_items_blocked: []
+    notes: "Sprint end - Retrospective"
+
+# Risk & Blockers
+risks:
+  - id: RISK-8-001
+    description: "E2E test isolation (Task 8.8) may take longer than 8h estimate if schema isolation strategy fails"
+    impact: HIGH
+    probability: MEDIUM
+    mitigation: "Allocate 2h buffer from sprint capacity (9h available)"
+    owner: "Development Team"
+    
+  - id: RISK-8-002
+    description: "WCAG 2.1 compliance (Story 8.3) may reveal additional accessibility issues during testing"
+    impact: MEDIUM
+    probability: MEDIUM
+    mitigation: "Prioritize critical violations first, defer minor issues to Sprint 9"
+    owner: "Development Team"
+    
+  - id: RISK-8-003
+    description: "M365 pagination (Story 8.9) depends on Prisma migration success"
+    impact: MEDIUM
+    probability: LOW
+    mitigation: "Test migration in dev environment first"
+    owner: "Backend Developer"
+
+blockers:
+  # Add blockers during sprint execution
+  # Example:
+  # - id: BLOCKER-8-001
+  #   work_item: "8.1"
+  #   description: "Waiting for design approval on dashboard layout"
+  #   created_date: "2026-02-04"
+  #   resolved_date: null
+  #   owner: "Product Owner"
+
+# Sprint Burndown Data (Hours Remaining)
+burndown:
+  day_0: 62h  # Sprint start
+  day_1: 62h  # After Day 1
+  day_2: 62h
+  day_3: 62h
+  day_4: 62h
+  day_5: 62h
+  day_6: 62h  # Weekend
+  day_7: 62h  # Weekend
+  day_8: 62h
+  day_9: 62h
+  day_10: 0h  # Target: All work complete
+
+# Definition of Done Checklist (Sprint-Level)
+definition_of_done:
+  story_level:
+    - criterion: "All acceptance criteria met (100% completion)"
+      met: false
+    - criterion: "Unit tests written and passing (≥80% coverage)"
+      met: false
+    - criterion: "E2E tests written and passing"
+      met: false
+    - criterion: "Code review approved"
+      met: false
+    - criterion: "Documentation updated"
+      met: false
+    - criterion: "No regressions from Sprint 7"
+      met: false
+      
+  sprint_level:
+    - criterion: "All 12 work items completed"
+      met: false
+    - criterion: "Resolves 17 P1 technical debt items"
+      met: false
+    - criterion: "100% WCAG 2.1 Level AA compliance"
+      met: false
+    - criterion: "E2E tests run reliably in parallel"
+      met: false
+    - criterion: "Version manifest locked"
+      met: true  # Completed during planning
+    - criterion: "100% UAT pass"
+      met: false
+    - criterion: "Deployed to dev environment"
+      met: false
+    - criterion: "Sprint retrospective completed"
+      met: false
+      
+  production_ready:
+    - criterion: "Security audit passed (Helmet, CORS, rate limiting)"
+      met: false
+    - criterion: "Performance testing completed (dashboard <2s load)"
+      met: false
+    - criterion: "Accessibility audit passed (axe-core 0 violations)"
+      met: false
+    - criterion: "Mobile testing completed"
+      met: false
+    - criterion: "Browser testing completed (Chrome, Firefox, Safari, Edge)"
+      met: false
+    - criterion: "Error monitoring configured"
+      met: false
+
+# Sprint Review & Retrospective (Completed at sprint end)
+sprint_review:
+  scheduled_date: "2026-02-14"
+  completed: false
+  demo_prepared: false
+  stakeholders_invited: false
+  
+sprint_retrospective:
+  scheduled_date: "2026-02-14"
+  completed: false
+  action_items: []
+
+# Version Control & Dependencies
+dependencies:
+  external_dependencies:
+    - name: "Sprint 7 completion (v0.7.0)"
+      status: complete
+      verified: true
+    - name: "@nestjs/helmet installation"
+      status: pending
+      required_for: ["8.6"]
+    - name: "@nestjs/throttler installation"
+      status: pending
+      required_for: ["8.6"]
+    - name: "@axe-core/react installation"
+      status: pending
+      required_for: ["8.3"]
+    - name: "react-router installation"
+      status: pending
+      required_for: ["8.1"]
+    - name: "Prisma migration (M365SyncLog + User.isActive)"
+      status: pending
+      required_for: ["8.9"]
+      
+  version_locks:
+    - package: "prisma"
+      version: "6.19.2"
+      locked: true
+      reason: "Prisma 7 breaking changes"
+    - package: "@prisma/client"
+      version: "6.19.2"
+      locked: true
+      reason: "Must match prisma version"
+    - package: "react"
+      version: "19.2.3"
+      locked: true
+      reason: "Project standard"
+    - package: "vite"
+      version: "7.3.1"
+      locked: true
+      reason: "Project standard"
+
+# Links & References
+references:
+  backlog: "backlog.md"
+  version_manifest: "version-manifest.md"
+  epic: "../epic-10/"
+  previous_sprint: "../sprint-7/retrospective.md"
+  technical_debt_report: "../../health-audit-report-2026-02-01.md"
+  sprint_planning_checklist: "@_bmad/bmm/workflows/sprint-planning-checklist.md"
+
+# Metadata
+last_updated: "2026-02-02"
+updated_by: "Bob (Scrum Master)"
+status: "Planning Complete - Ready for Development"
