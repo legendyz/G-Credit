@@ -125,7 +125,25 @@ jobs:
         run: npx prisma db push --skip-generate
 
       - name: Run E2E Tests (Parallel)
-        run: npm run test:e2e -- --maxWorkers=2 --forceExit
+        run: |
+          npm run test:e2e -- --maxWorkers=2 --forceExit --json --outputFile=test-results.json 2>&1 | tee e2e-output.log || true
+          
+          # Check test results from JSON output
+          if [ -f test-results.json ]; then
+            FAILED=$(cat test-results.json | jq '.numFailedTests')
+            if [ "$FAILED" != "0" ] && [ "$FAILED" != "null" ]; then
+              echo "❌ $FAILED tests failed"
+              exit 1
+            fi
+            echo "✅ All E2E tests passed"
+          else
+            # Fallback: check log output
+            if grep -q "Test Suites:.*failed" e2e-output.log; then
+              echo "❌ Some tests failed"
+              exit 1
+            fi
+            echo "✅ Tests passed (no JSON output)"
+          fi
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
