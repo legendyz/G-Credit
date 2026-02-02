@@ -1,9 +1,9 @@
 /**
  * Teams Action Controller
- * 
+ *
  * Story 7.4 Task 5
  * Handles Adaptive Card action button callbacks from Microsoft Teams
- * 
+ *
  * @see docs/sprints/sprint-6/adaptive-card-specs.md
  */
 
@@ -18,7 +18,12 @@ import {
   BadRequestException,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { PrismaService } from '../../common/prisma.service';
@@ -34,10 +39,10 @@ export class TeamsActionController {
 
   /**
    * Handle Claim Badge action from Teams Adaptive Card
-   * 
+   *
    * When user clicks "Claim Badge" button in Teams notification,
    * this endpoint updates badge status from PENDING to CLAIMED.
-   * 
+   *
    * @param dto - Contains badgeId and userId
    * @returns Updated Adaptive Card JSON showing claimed status
    */
@@ -45,7 +50,8 @@ export class TeamsActionController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Claim badge from Teams notification',
-    description: 'Updates badge status to CLAIMED when user clicks action button in Teams',
+    description:
+      'Updates badge status to CLAIMED when user clicks action button in Teams',
   })
   @ApiResponse({
     status: 200,
@@ -71,7 +77,10 @@ export class TeamsActionController {
     },
   })
   @ApiResponse({ status: 400, description: 'Badge already claimed or revoked' })
-  @ApiResponse({ status: 403, description: 'User not authorized to claim this badge' })
+  @ApiResponse({
+    status: 403,
+    description: 'User not authorized to claim this badge',
+  })
   @ApiResponse({ status: 404, description: 'Badge not found' })
   async claimBadge(
     @Body() dto: ClaimBadgeActionDto,
@@ -94,7 +103,9 @@ export class TeamsActionController {
     // 2. Validate user is the recipient (SEC-P0-001: Use JWT user.userId, not dto.userId)
     // This prevents IDOR attacks where attackers could claim badges for other users
     if (badge.recipientId !== user.userId) {
-      throw new ForbiddenException('Only the badge recipient can claim this badge');
+      throw new ForbiddenException(
+        'Only the badge recipient can claim this badge',
+      );
     }
 
     // 3. Check badge status
@@ -103,11 +114,15 @@ export class TeamsActionController {
     }
 
     if (badge.status === BadgeStatus.REVOKED) {
-      throw new BadRequestException('Badge has been revoked and cannot be claimed');
+      throw new BadRequestException(
+        'Badge has been revoked and cannot be claimed',
+      );
     }
 
     if (badge.status !== BadgeStatus.PENDING) {
-      throw new BadRequestException(`Badge status is ${badge.status}, expected PENDING`);
+      throw new BadRequestException(
+        `Badge status is ${badge.status}, expected PENDING`,
+      );
     }
 
     // 4. Update badge status to CLAIMED
@@ -144,13 +159,15 @@ export class TeamsActionController {
    * Replaces action buttons with "Claimed" status badge
    */
   private buildClaimedBadgeCard(badge: any) {
-    const recipientName = badge.recipient.firstName && badge.recipient.lastName
-      ? `${badge.recipient.firstName} ${badge.recipient.lastName}`
-      : badge.recipient.email;
+    const recipientName =
+      badge.recipient.firstName && badge.recipient.lastName
+        ? `${badge.recipient.firstName} ${badge.recipient.lastName}`
+        : badge.recipient.email;
 
-    const issuerName = badge.issuer.firstName && badge.issuer.lastName
-      ? `${badge.issuer.firstName} ${badge.issuer.lastName}`
-      : badge.issuer.email;
+    const issuerName =
+      badge.issuer.firstName && badge.issuer.lastName
+        ? `${badge.issuer.firstName} ${badge.issuer.lastName}`
+        : badge.issuer.email;
 
     return {
       type: 'AdaptiveCard',
@@ -165,7 +182,8 @@ export class TeamsActionController {
               items: [
                 {
                   type: 'Image',
-                  url: badge.template.imageUrl || 'https://via.placeholder.com/80',
+                  url:
+                    badge.template.imageUrl || 'https://via.placeholder.com/80',
                   size: 'Medium',
                   style: 'default',
                 },

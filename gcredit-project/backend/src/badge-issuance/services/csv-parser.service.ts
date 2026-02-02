@@ -42,13 +42,17 @@ export class CSVParserService {
     const actualHeaders = Object.keys(firstRow);
 
     // Check for required headers
-    const missingHeaders = requiredHeaders.filter((h) => !actualHeaders.includes(h));
+    const missingHeaders = requiredHeaders.filter(
+      (h) => !actualHeaders.includes(h),
+    );
     if (missingHeaders.length > 0) {
       throw new Error(`Missing required headers: ${missingHeaders.join(', ')}`);
     }
 
     // Check for unexpected headers
-    const unexpectedHeaders = actualHeaders.filter((h) => !allHeaders.includes(h));
+    const unexpectedHeaders = actualHeaders.filter(
+      (h) => !allHeaders.includes(h),
+    );
     if (unexpectedHeaders.length > 0) {
       throw new Error(`Unexpected headers: ${unexpectedHeaders.join(', ')}`);
     }
@@ -79,7 +83,9 @@ export class CSVParserService {
     if (row.expiresIn) {
       const days = parseInt(row.expiresIn);
       if (isNaN(days) || days < 1 || days > 3650) {
-        errors.push(`Invalid expiresIn (must be 1-3650 days): ${row.expiresIn}`);
+        errors.push(
+          `Invalid expiresIn (must be 1-3650 days): ${row.expiresIn}`,
+        );
       }
     }
 
@@ -107,7 +113,8 @@ export class CSVParserService {
    * Validate UUID format
    */
   private isValidUUID(uuid: string): boolean {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     return uuidRegex.test(uuid);
   }
 

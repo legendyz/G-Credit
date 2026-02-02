@@ -1,4 +1,13 @@
-import { IsString, IsEnum, IsBoolean, IsOptional, ValidateNested, IsInt, Min, IsUUID } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsBoolean,
+  IsOptional,
+  ValidateNested,
+  IsInt,
+  Min,
+  IsUUID,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -70,7 +79,7 @@ export class CreateMilestoneDto {
 
   @ApiProperty({
     description: 'Milestone description',
-    example: 'You\'ve earned 10 badges! Keep up the great work!',
+    example: "You've earned 10 badges! Keep up the great work!",
   })
   @IsString()
   description: string;

@@ -35,9 +35,7 @@ describe('GraphTokenProviderService', () => {
       ],
     }).compile();
 
-    service = module.get<GraphTokenProviderService>(
-      GraphTokenProviderService,
-    );
+    service = module.get<GraphTokenProviderService>(GraphTokenProviderService);
     configService = module.get<ConfigService>(ConfigService);
   });
 
@@ -61,7 +59,8 @@ describe('GraphTokenProviderService', () => {
         if (key === 'AZURE_TENANT_ID') return undefined;
         if (key === 'AZURE_CLIENT_ID') return 'test-client-id';
         if (key === 'AZURE_CLIENT_SECRET') return 'test-client-secret';
-        if (key === 'GRAPH_API_SCOPE') return 'https://graph.microsoft.com/.default';
+        if (key === 'GRAPH_API_SCOPE')
+          return 'https://graph.microsoft.com/.default';
         return undefined;
       });
 
@@ -75,7 +74,8 @@ describe('GraphTokenProviderService', () => {
         if (key === 'AZURE_TENANT_ID') return 'test-tenant-id';
         if (key === 'AZURE_CLIENT_ID') return undefined;
         if (key === 'AZURE_CLIENT_SECRET') return 'test-client-secret';
-        if (key === 'GRAPH_API_SCOPE') return 'https://graph.microsoft.com/.default';
+        if (key === 'GRAPH_API_SCOPE')
+          return 'https://graph.microsoft.com/.default';
         return undefined;
       });
 
@@ -89,7 +89,8 @@ describe('GraphTokenProviderService', () => {
         if (key === 'AZURE_TENANT_ID') return 'test-tenant-id';
         if (key === 'AZURE_CLIENT_ID') return 'test-client-id';
         if (key === 'AZURE_CLIENT_SECRET') return undefined;
-        if (key === 'GRAPH_API_SCOPE') return 'https://graph.microsoft.com/.default';
+        if (key === 'GRAPH_API_SCOPE')
+          return 'https://graph.microsoft.com/.default';
         return undefined;
       });
 

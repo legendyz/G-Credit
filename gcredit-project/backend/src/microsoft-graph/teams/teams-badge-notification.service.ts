@@ -1,10 +1,10 @@
 /**
  * Teams Badge Notification Service
- * 
+ *
  * Story 7.4 - Microsoft Teams Notifications
  * Sends badge issuance notifications to Microsoft Teams with Adaptive Cards
  * Task 6: Implements email fallback when Teams notification fails
- * 
+ *
  * @see ADR-008: Microsoft Graph Integration Strategy
  * @see docs/sprints/sprint-6/adaptive-card-specs.md
  */
@@ -32,10 +32,10 @@ export class TeamsBadgeNotificationService {
 
   /**
    * Send badge issuance notification via email
-   * 
+   *
    * Sends email notification when a badge is issued.
    * For Teams channel sharing, use shareBadgeToTeamsChannel() instead.
-   * 
+   *
    * @param badgeId - Badge ID that was issued
    * @param recipientUserId - User ID of badge recipient
    */
@@ -66,16 +66,18 @@ export class TeamsBadgeNotificationService {
     }
 
     // Send email notification
-    const platformUrl = this.configService.get<string>('PLATFORM_URL', 'http://localhost:5173');
-    const claimUrl = badge.status === 'PENDING'
-      ? `${platformUrl}/claim?token=${badge.claimToken}`
-      : undefined;
+    const platformUrl = this.configService.get<string>(
+      'PLATFORM_URL',
+      'http://localhost:5173',
+    );
+    const claimUrl =
+      badge.status === 'PENDING'
+        ? `${platformUrl}/claim?token=${badge.claimToken}`
+        : undefined;
 
     try {
       await this.sendEmailFallback(badge, recipient, claimUrl);
-      this.logger.log(
-        `✅ Badge issuance email sent to ${recipient.email}`,
-      );
+      this.logger.log(`✅ Badge issuance email sent to ${recipient.email}`);
     } catch (error) {
       this.logger.error(
         `❌ Failed to send badge issuance email to ${recipient.email}: ${error.message}`,
@@ -86,11 +88,11 @@ export class TeamsBadgeNotificationService {
 
   /**
    * Share badge to Microsoft Teams Channel
-   * 
+   *
    * Fetches badge, recipient, and credential data, then sends Teams channel message
    * with Adaptive Card showing badge details and action buttons.
    * This method does NOT require a Teams App to be installed.
-   * 
+   *
    * @param badgeId - Badge ID to share
    * @param recipientUserId - User ID of badge recipient
    * @param teamId - Target Teams team ID
@@ -143,7 +145,8 @@ export class TeamsBadgeNotificationService {
     const badgeWalletUrl = `${platformUrl}/wallet`;
 
     const cardData: BadgeNotificationCardData = {
-      badgeImageUrl: badge.template.imageUrl || 'https://default-badge-image.png',
+      badgeImageUrl:
+        badge.template.imageUrl || 'https://default-badge-image.png',
       badgeName: badge.template.name,
       issuerName: this.getFullName(badge.issuer),
       recipientName: this.getFullName(recipient),
@@ -178,12 +181,12 @@ export class TeamsBadgeNotificationService {
       this.logger.error(
         `❌ Failed to send Teams channel message for badge ${badgeId}: ${error.message}`,
       );
-      
+
       // Task 6: Email fallback
       this.logger.log(
         `📧 Attempting email fallback for badge ${badgeId} → ${recipient.email}`,
       );
-      
+
       try {
         await this.sendEmailFallback(badge, recipient, cardData.claimUrl);
         this.logger.log(
@@ -200,7 +203,7 @@ export class TeamsBadgeNotificationService {
 
   /**
    * Send email notification as fallback when Teams notification fails
-   * 
+   *
    * Task 6: Email Fallback
    * Uses existing email template from Story 7.2
    */
@@ -210,14 +213,17 @@ export class TeamsBadgeNotificationService {
     claimUrl?: string,
   ): Promise<void> {
     const platformUrl = this.configService.get<string>('PLATFORM_URL');
-    const finalClaimUrl = claimUrl || `${platformUrl}/claim?token=${badge.claimToken}`;
+    const finalClaimUrl =
+      claimUrl || `${platformUrl}/claim?token=${badge.claimToken}`;
 
     await this.emailNotificationService.sendBadgeClaimNotification({
       recipientEmail: recipient.email,
       recipientName: this.getFullName(recipient),
       badgeName: badge.template.name,
-      badgeDescription: badge.template.description || 'Congratulations on earning this badge!',
-      badgeImageUrl: badge.template.imageUrl || 'https://default-badge-image.png',
+      badgeDescription:
+        badge.template.description || 'Congratulations on earning this badge!',
+      badgeImageUrl:
+        badge.template.imageUrl || 'https://default-badge-image.png',
       claimUrl: finalClaimUrl,
     });
   }
@@ -225,7 +231,11 @@ export class TeamsBadgeNotificationService {
   /**
    * Helper to get full name from user object
    */
-  private getFullName(user: { firstName: string | null; lastName: string | null; email: string }): string {
+  private getFullName(user: {
+    firstName: string | null;
+    lastName: string | null;
+    email: string;
+  }): string {
     const parts = [];
     if (user.firstName) parts.push(user.firstName);
     if (user.lastName) parts.push(user.lastName);

@@ -1,6 +1,6 @@
 /**
  * Graph Teams Service Tests
- * 
+ *
  * TECHNICAL DEBT: Tests depend on Teams channel functionality.
  * Requires ChannelMessage.Send Graph API permission (not yet approved).
  * See: docs/sprints/sprint-6/technical-debt.md
@@ -84,8 +84,7 @@ describe('GraphTeamsService', () => {
         ],
       }).compile();
 
-      const disabledService =
-        module.get<GraphTeamsService>(GraphTeamsService);
+      const disabledService = module.get<GraphTeamsService>(GraphTeamsService);
       expect(disabledService.isGraphTeamsEnabled()).toBe(false);
     });
   });
@@ -113,8 +112,7 @@ describe('GraphTeamsService', () => {
         ],
       }).compile();
 
-      const disabledService =
-        module.get<GraphTeamsService>(GraphTeamsService);
+      const disabledService = module.get<GraphTeamsService>(GraphTeamsService);
 
       await expect(
         disabledService.sendActivityNotification(
@@ -170,8 +168,7 @@ describe('GraphTeamsService', () => {
         ],
       }).compile();
 
-      const disabledService =
-        module.get<GraphTeamsService>(GraphTeamsService);
+      const disabledService = module.get<GraphTeamsService>(GraphTeamsService);
       expect(disabledService.isGraphTeamsEnabled()).toBe(false);
     });
   });

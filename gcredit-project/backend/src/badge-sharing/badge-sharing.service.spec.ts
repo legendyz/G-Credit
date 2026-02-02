@@ -92,8 +92,11 @@ describe('BadgeSharingService', () => {
     service = module.get<BadgeSharingService>(BadgeSharingService);
     prismaService = module.get<PrismaService>(PrismaService);
     graphEmailService = module.get<GraphEmailService>(GraphEmailService);
-    emailTemplateService = module.get<EmailTemplateService>(EmailTemplateService);
-    badgeAnalyticsService = module.get<BadgeAnalyticsService>(BadgeAnalyticsService);
+    emailTemplateService =
+      module.get<EmailTemplateService>(EmailTemplateService);
+    badgeAnalyticsService = module.get<BadgeAnalyticsService>(
+      BadgeAnalyticsService,
+    );
   });
 
   it('should be defined', () => {

@@ -1,6 +1,6 @@
 /**
  * Claim Badge Action DTO
- * 
+ *
  * Story 7.4 Task 5
  * Request body for Teams Adaptive Card "Claim Badge" action
  */

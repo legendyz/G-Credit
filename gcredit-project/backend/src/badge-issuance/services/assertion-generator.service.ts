@@ -48,11 +48,21 @@ export class AssertionGeneratorService {
     evidenceUrl?: string;
     evidenceUrls?: string[]; // Sprint 5: Support multiple evidence files
   }) {
-    const { badgeId, verificationId, template, recipient, issuer, issuedAt, expiresAt, evidenceUrl, evidenceUrls } = params;
+    const {
+      badgeId,
+      verificationId,
+      template,
+      recipient,
+      issuer,
+      issuedAt,
+      expiresAt,
+      evidenceUrl,
+      evidenceUrls,
+    } = params;
 
     // Salt for email hashing
     const salt = this.getSalt();
-    
+
     // Hash recipient email (privacy-preserving)
     const emailHash = crypto
       .createHash('sha256')
@@ -86,13 +96,15 @@ export class AssertionGeneratorService {
       },
 
       // Evidence URLs (optional, array of strings)
-      ...(evidenceUrls && evidenceUrls.length > 0 && {
-        evidence: evidenceUrls,
-      }),
+      ...(evidenceUrls &&
+        evidenceUrls.length > 0 && {
+          evidence: evidenceUrls,
+        }),
       // Backward compatibility: single evidenceUrl
-      ...(evidenceUrl && !evidenceUrls && {
-        evidence: [evidenceUrl],
-      }),
+      ...(evidenceUrl &&
+        !evidenceUrls && {
+          evidence: [evidenceUrl],
+        }),
     };
 
     return assertion;
@@ -153,7 +165,7 @@ export class AssertionGeneratorService {
   /**
    * Verify assertion integrity by comparing stored hash with computed hash
    * Sprint 5 Story 6.5: Integrity validation
-   * 
+   *
    * @returns true if hashes match, false if tampered
    */
   verifyAssertionIntegrity(assertion: any, storedHash: string): boolean {

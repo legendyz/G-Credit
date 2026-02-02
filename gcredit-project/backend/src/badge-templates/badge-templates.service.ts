@@ -41,12 +41,18 @@ export class BadgeTemplatesService {
 
     // Upload image if provided
     if (imageFile) {
-      const uploadResult = await this.blobStorage.uploadImage(imageFile, 'templates', false);
+      const uploadResult = await this.blobStorage.uploadImage(
+        imageFile,
+        'templates',
+        false,
+      );
       imageUrl = uploadResult.url;
-      
+
       // Log image metadata and suggestions
       if (uploadResult.metadata.suggestions) {
-        console.log(`Image optimization suggestions: ${uploadResult.metadata.suggestions.join('; ')}`);
+        console.log(
+          `Image optimization suggestions: ${uploadResult.metadata.suggestions.join('; ')}`,
+        );
       }
     }
 
@@ -168,10 +174,10 @@ export class BadgeTemplatesService {
 
   /**
    * Get a single badge template by ID with associated skills
-   * 
+   *
    * ARCH-P0-002: Non-ACTIVE templates are only visible to ADMIN/ISSUER
    * This prevents DRAFT/ARCHIVED templates from being exposed to regular users.
-   * 
+   *
    * @param id - Badge template ID
    * @param userRole - Optional user role for access control
    */
@@ -271,12 +277,18 @@ export class BadgeTemplatesService {
       }
 
       // Upload new image
-      const uploadResult = await this.blobStorage.uploadImage(imageFile, 'templates', false);
+      const uploadResult = await this.blobStorage.uploadImage(
+        imageFile,
+        'templates',
+        false,
+      );
       imageUrl = uploadResult.url;
-      
+
       // Log image metadata and suggestions
       if (uploadResult.metadata.suggestions) {
-        console.log(`Image optimization suggestions: ${uploadResult.metadata.suggestions.join('; ')}`);
+        console.log(
+          `Image optimization suggestions: ${uploadResult.metadata.suggestions.join('; ')}`,
+        );
       }
     }
 

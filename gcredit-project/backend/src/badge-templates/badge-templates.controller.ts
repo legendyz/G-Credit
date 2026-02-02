@@ -115,9 +115,10 @@ export class BadgeTemplatesController {
   }
 
   @Get(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get a single badge template by ID',
-    description: 'Returns badge template details. Non-ACTIVE templates (DRAFT, ARCHIVED) are only visible to ADMIN/ISSUER.',
+    description:
+      'Returns badge template details. Non-ACTIVE templates (DRAFT, ARCHIVED) are only visible to ADMIN/ISSUER.',
   })
   @ApiResponse({
     status: 200,
@@ -200,7 +201,7 @@ export class BadgeTemplatesController {
   ) {
     // JSON fields (skillIds, issuanceCriteria) are automatically parsed by MultipartJsonInterceptor
     const createDto: CreateBadgeTemplateDto = body;
-    
+
     return this.badgeTemplatesService.create(createDto, req.user.userId, image);
   }
 
@@ -264,7 +265,7 @@ export class BadgeTemplatesController {
   ) {
     // JSON fields are automatically parsed by MultipartJsonInterceptor
     const updateDto: UpdateBadgeTemplateDto = body;
-    
+
     return this.badgeTemplatesService.update(id, updateDto, image);
   }
 

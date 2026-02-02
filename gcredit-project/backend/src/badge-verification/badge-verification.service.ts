@@ -37,7 +37,7 @@ export class BadgeVerificationService {
             issuanceCriteria: true,
             category: true,
             skillIds: true,
-          }
+          },
         },
         recipient: {
           select: {
@@ -45,7 +45,7 @@ export class BadgeVerificationService {
             firstName: true,
             lastName: true,
             email: true,
-          }
+          },
         },
         issuer: {
           select: {
@@ -53,7 +53,7 @@ export class BadgeVerificationService {
             firstName: true,
             lastName: true,
             email: true,
-          }
+          },
         },
         revoker: {
           select: {
@@ -61,7 +61,7 @@ export class BadgeVerificationService {
             firstName: true,
             lastName: true,
             role: true,
-          }
+          },
         },
         evidenceFiles: {
           select: {
@@ -69,7 +69,7 @@ export class BadgeVerificationService {
             fileName: true,
             blobUrl: true,
             uploadedAt: true,
-          }
+          },
         },
       },
     });
@@ -94,9 +94,11 @@ export class BadgeVerificationService {
     // Sprint 5 Story 6.5: Verify assertion integrity
     let integrityStatus = null;
     if (badge.metadataHash && badge.assertionJson) {
-      const computedHash = this.assertionGenerator.computeAssertionHash(badge.assertionJson);
+      const computedHash = this.assertionGenerator.computeAssertionHash(
+        badge.assertionJson,
+      );
       const integrityVerified = computedHash === badge.metadataHash;
-      
+
       integrityStatus = {
         verified: integrityVerified,
         hash: badge.metadataHash,
@@ -118,12 +120,14 @@ export class BadgeVerificationService {
       id: badge.id,
       verificationId: badge.verificationId,
       status: badge.status,
-      
+
       badge: {
         name: badge.template.name,
         description: badge.template.description,
         imageUrl: badge.template.imageUrl,
-        criteria: (badge.template.issuanceCriteria as any)?.description || 'No criteria specified',
+        criteria:
+          (badge.template.issuanceCriteria as any)?.description ||
+          'No criteria specified',
         category: badge.template.category,
         skills: badge.template.skillIds || [],
       },
@@ -151,10 +155,12 @@ export class BadgeVerificationService {
         revocationNotes: badge.revocationNotes,
         // Categorize reason as public or private per DEVELOPER-CONTEXT.md Decision #3
         isPublicReason: this.isPublicRevocationReason(badge.revocationReason),
-        revokedBy: badge.revoker ? {
-          name: `${badge.revoker.firstName} ${badge.revoker.lastName}`,
-          role: badge.revoker.role,
-        } : null,
+        revokedBy: badge.revoker
+          ? {
+              name: `${badge.revoker.firstName} ${badge.revoker.lastName}`,
+              role: badge.revoker.role,
+            }
+          : null,
       }),
 
       // Evidence files from Sprint 4
@@ -195,7 +201,7 @@ export class BadgeVerificationService {
    */
   private isPublicRevocationReason(reason: string | null): boolean {
     if (!reason) return false;
-    
+
     const publicReasons = ['Expired', 'Issued in Error'];
     return publicReasons.includes(reason);
   }

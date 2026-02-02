@@ -199,7 +199,9 @@ describe('Baked Badge PNG (e2e) - Story 6.4', () => {
         .expect(500);
 
       // Should get error about downloading blob
-      expect(response.body.message).toMatch(/Internal server error|Failed to download/i);
+      expect(response.body.message).toMatch(
+        /Internal server error|Failed to download/i,
+      );
     });
   });
 
@@ -211,11 +213,11 @@ describe('Baked Badge PNG (e2e) - Story 6.4', () => {
           width: 100,
           height: 100,
           channels: 4,
-          background: { r: 0, g: 0, b: 255, alpha: 1 }
-        }
+          background: { r: 0, g: 0, b: 255, alpha: 1 },
+        },
       })
-      .png()
-      .toBuffer();
+        .png()
+        .toBuffer();
 
       // Mock assertion data
       const assertion = {
@@ -231,8 +233,8 @@ describe('Baked Badge PNG (e2e) - Story 6.4', () => {
           exif: {
             IFD0: {
               ImageDescription: JSON.stringify(assertion),
-            }
-          }
+            },
+          },
         })
         .toBuffer();
 
@@ -253,11 +255,11 @@ describe('Baked Badge PNG (e2e) - Story 6.4', () => {
           width: 200,
           height: 200,
           channels: 4,
-          background: { r: 255, g: 0, b: 0, alpha: 1 }
-        }
+          background: { r: 255, g: 0, b: 0, alpha: 1 },
+        },
       })
-      .png()
-      .toBuffer();
+        .png()
+        .toBuffer();
 
       const originalMetadata = await sharp(originalImage).metadata();
 
@@ -268,8 +270,8 @@ describe('Baked Badge PNG (e2e) - Story 6.4', () => {
           exif: {
             IFD0: {
               ImageDescription: 'test metadata',
-            }
-          }
+            },
+          },
         })
         .toBuffer();
 
@@ -287,13 +289,15 @@ describe('Baked Badge PNG (e2e) - Story 6.4', () => {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
-      
+
       expect(sanitized).toBe('excellence-award-2026');
 
       const dateString = new Date().toISOString().split('T')[0];
       const filename = `badge-${sanitized}-${dateString}.png`;
-      
-      expect(filename).toMatch(/^badge-excellence-award-2026-\d{4}-\d{2}-\d{2}\.png$/);
+
+      expect(filename).toMatch(
+        /^badge-excellence-award-2026-\d{4}-\d{2}-\d{2}\.png$/,
+      );
     });
   });
 });

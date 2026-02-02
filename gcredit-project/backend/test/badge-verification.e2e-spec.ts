@@ -9,9 +9,9 @@ import {
 
 /**
  * Badge Verification E2E Tests - Story 6.2, 6.3, 9.2 (Isolated)
- * 
+ *
  * Story 8.8: Test Isolation - Refactored for parallel execution
- * 
+ *
  * Tests:
  * - Story 6.2: Public badge verification endpoint
  * - Story 6.3: Open Badges 2.0 JSON-LD response format
@@ -21,7 +21,7 @@ describe('Badge Verification E2E (Isolated)', () => {
   let ctx: TestContext;
   let adminUser: TestUser;
   let recipientUser: TestUser;
-  
+
   // Badge IDs for tests
   let templateId: string;
   let activeBadgeVerificationId: string;
@@ -39,7 +39,11 @@ describe('Badge Verification E2E (Isolated)', () => {
   beforeAll(async () => {
     // Create users
     adminUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'admin');
-    recipientUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'employee');
+    recipientUser = await createAndLoginUser(
+      ctx.app,
+      ctx.userFactory,
+      'employee',
+    );
 
     // Create badge template
     const template = await ctx.templateFactory.createActive({
@@ -82,15 +86,18 @@ describe('Badge Verification E2E (Isolated)', () => {
         .expect(200);
 
       // Story 6.3: Response is Open Badges 2.0 assertion + metadata
-      expect(response.body).toHaveProperty('@context', 'https://w3id.org/openbadges/v2');
+      expect(response.body).toHaveProperty(
+        '@context',
+        'https://w3id.org/openbadges/v2',
+      );
       expect(response.body).toHaveProperty('type', 'Assertion');
       expect(response.body).toHaveProperty('badge');
       expect(response.body.badge).toMatch(/\/api\/badge-templates\//);
-      
+
       // Story 6.3: Verification metadata
       expect(response.body).toHaveProperty('verificationStatus');
       expect(response.body).toHaveProperty('verifiedAt');
-      
+
       // Story 6.2: Badge details in _meta
       expect(response.body._meta.badge).toHaveProperty('name');
       expect(response.body._meta.badge).toHaveProperty('description');
@@ -104,7 +111,10 @@ describe('Badge Verification E2E (Isolated)', () => {
       expect(response.body).toHaveProperty('verificationStatus', 'revoked');
       expect(response.body).toHaveProperty('revoked', true);
       expect(response.body).toHaveProperty('revokedAt');
-      expect(response.body).toHaveProperty('revocationReason', 'Test revocation for E2E testing');
+      expect(response.body).toHaveProperty(
+        'revocationReason',
+        'Test revocation for E2E testing',
+      );
       expect(response.body).toHaveProperty('verifiedAt');
     });
 
@@ -115,12 +125,15 @@ describe('Badge Verification E2E (Isolated)', () => {
 
       expect(response.body).toHaveProperty('verificationStatus', 'expired');
       expect(response.body).toHaveProperty('verifiedAt');
-      expect(response.body).toHaveProperty('@context', 'https://w3id.org/openbadges/v2');
+      expect(response.body).toHaveProperty(
+        '@context',
+        'https://w3id.org/openbadges/v2',
+      );
     });
 
     it('should return 404 for invalid verificationId', async () => {
       const fakeId = '00000000-0000-0000-0000-000000000000';
-      
+
       const response = await request(ctx.app.getHttpServer())
         .get(`/api/verify/${fakeId}`)
         .expect(404);
@@ -161,9 +174,11 @@ describe('Badge Verification E2E (Isolated)', () => {
         .expect(200);
 
       expect(response.body).toHaveProperty('verificationStatus');
-      expect(['valid', 'expired', 'revoked']).toContain(response.body.verificationStatus);
+      expect(['valid', 'expired', 'revoked']).toContain(
+        response.body.verificationStatus,
+      );
       expect(response.body).toHaveProperty('verifiedAt');
-      
+
       const verifiedAt = new Date(response.body.verifiedAt);
       expect(verifiedAt.getTime()).toBeGreaterThan(0);
     });
@@ -184,7 +199,7 @@ describe('Badge Verification E2E (Isolated)', () => {
 
       expect(response.headers['cache-control']).toBeDefined();
       expect(response.headers['cache-control']).toMatch(/no-cache/);
-      
+
       // Story 9.2: Also verify revocation details are returned
       expect(response.body.verificationStatus).toBe('revoked');
       expect(response.body.revoked).toBe(true);

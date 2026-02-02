@@ -5,10 +5,10 @@ import { TokenCredentialAuthenticationProvider } from '@microsoft/microsoft-grap
 
 /**
  * Microsoft Graph Token Provider Service
- * 
+ *
  * Manages OAuth 2.0 Client Credentials authentication for Microsoft Graph API.
  * Implements token caching and automatic refresh via @azure/identity.
- * 
+ *
  * @see ADR-008: Microsoft Graph Integration Strategy
  * @see Sprint 6 Story 0.4: Microsoft Graph Module Foundation
  */
@@ -22,7 +22,7 @@ export class GraphTokenProviderService implements OnModuleInit {
 
   /**
    * Initialize Azure Identity credential on module startup
-   * 
+   *
    * Creates ClientSecretCredential with tenant/client/secret from environment.
    * Validates required configuration is present.
    */
@@ -69,10 +69,10 @@ export class GraphTokenProviderService implements OnModuleInit {
 
   /**
    * Get authentication provider for Microsoft Graph Client
-   * 
+   *
    * Returns TokenCredentialAuthenticationProvider configured with
    * Client Credentials flow. Token caching/refresh handled by @azure/identity.
-   * 
+   *
    * @returns Authentication provider for Graph Client
    */
   getAuthProvider(): TokenCredentialAuthenticationProvider {
@@ -84,10 +84,10 @@ export class GraphTokenProviderService implements OnModuleInit {
 
   /**
    * Get access token directly (for debugging/testing)
-   * 
+   *
    * Requests fresh token from Azure AD. Use sparingly - prefer getAuthProvider()
    * which handles caching automatically.
-   * 
+   *
    * @returns Promise resolving to access token
    */
   async getAccessToken(): Promise<string> {

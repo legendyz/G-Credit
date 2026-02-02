@@ -24,7 +24,8 @@ export class ShareBadgeTeamsDto {
   channelId: string;
 
   @ApiPropertyOptional({
-    description: 'Optional personal message to include with the badge notification',
+    description:
+      'Optional personal message to include with the badge notification',
     example: 'I just earned this badge! Check it out!',
   })
   @IsString()

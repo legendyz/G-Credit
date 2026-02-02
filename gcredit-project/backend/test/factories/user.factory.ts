@@ -77,7 +77,9 @@ export class UserFactory {
       data: {
         email,
         passwordHash,
-        firstName: options.firstName || `Test${role.charAt(0)}${role.slice(1).toLowerCase()}`,
+        firstName:
+          options.firstName ||
+          `Test${role.charAt(0)}${role.slice(1).toLowerCase()}`,
         lastName: options.lastName || `User${uniqueId}`,
         role,
         emailVerified: options.emailVerified ?? true,
@@ -118,7 +120,10 @@ export class UserFactory {
   /**
    * Login helper - returns JWT token for user
    */
-  static getTestCredentials(email: string, password = 'TestPassword123!'): {
+  static getTestCredentials(
+    email: string,
+    password = 'TestPassword123!',
+  ): {
     email: string;
     password: string;
   } {

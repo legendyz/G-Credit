@@ -1,7 +1,7 @@
 /**
  * Security Hardening Tests (Story 8.6)
  * Unit tests for SEC-P1-001~005 fixes
- * 
+ *
  * Note: Full E2E security testing is done via manual testing and OWASP ZAP
  * These tests validate the configuration patterns used in security fixes
  */
@@ -48,7 +48,8 @@ describe('Security Hardening (Story 8.6)', () => {
 
     it('should have Permissions-Policy header configured per AC1', () => {
       // AC1 requires Permissions-Policy with restricted features
-      const permissionsPolicy = 'geolocation=(), microphone=(), camera=(), payment=(), usb=()';
+      const permissionsPolicy =
+        'geolocation=(), microphone=(), camera=(), payment=(), usb=()';
       expect(permissionsPolicy).toContain('geolocation=()');
       expect(permissionsPolicy).toContain('camera=()');
     });
@@ -56,10 +57,14 @@ describe('Security Hardening (Story 8.6)', () => {
 
   describe('AC2: CORS Configuration', () => {
     it('should have allowed origins defined (no wildcard with credentials)', () => {
-      const rawOrigins = ['http://localhost:5173', 'http://localhost:3000', '*'];
+      const rawOrigins = [
+        'http://localhost:5173',
+        'http://localhost:3000',
+        '*',
+      ];
       // AC2: Filter out wildcard when credentials enabled
       const allowedOrigins = rawOrigins.filter((origin) => origin !== '*');
-      
+
       expect(allowedOrigins).toContain('http://localhost:5173');
       expect(allowedOrigins).not.toContain('*');
     });
@@ -67,7 +72,7 @@ describe('Security Hardening (Story 8.6)', () => {
     it('should block wildcard when credentials are enabled per AC2', () => {
       const credentialsEnabled = true;
       const wildcardPresent = true;
-      
+
       // AC2: Wildcard + credentials is insecure
       const shouldBlockWildcard = credentialsEnabled && wildcardPresent;
       expect(shouldBlockWildcard).toBe(true);
@@ -128,7 +133,8 @@ describe('Evidence Upload Authorization (SEC-P1-001)', () => {
       const userRole = 'ISSUER';
 
       // Logic: non-admin AND not the issuer = DENY
-      const shouldDeny = userRole !== 'ADMIN' && mockBadge.issuerId !== uploaderId;
+      const shouldDeny =
+        userRole !== 'ADMIN' && mockBadge.issuerId !== uploaderId;
       expect(shouldDeny).toBe(true);
     });
 
@@ -168,13 +174,13 @@ describe('Evidence Upload Authorization (SEC-P1-001)', () => {
 describe('Dependency Security (SEC-P1-005)', () => {
   /**
    * AC5 Status: PARTIAL
-   * 
+   *
    * bcrypt@6.0.0 upgrade resolved the tar vulnerability (was HIGH).
-   * 
+   *
    * Remaining vulnerabilities are in TRANSITIVE dependencies:
    * - fast-xml-parser (HIGH) - via @aws-sdk/* - WAITING FOR UPSTREAM FIX
    * - lodash (MODERATE) - via @nestjs/config, @nestjs/swagger - WAITING FOR UPSTREAM
-   * 
+   *
    * These cannot be fixed without breaking changes or waiting for upstream releases.
    * AC5 is considered MET for direct dependencies; transitive issues are documented.
    */
@@ -207,7 +213,9 @@ describe('Dependency Security (SEC-P1-005)', () => {
     };
 
     // Verify documentation of known issues
-    expect(transitiveVulnerabilities['fast-xml-parser'].status).toBe('WAITING_UPSTREAM');
+    expect(transitiveVulnerabilities['fast-xml-parser'].status).toBe(
+      'WAITING_UPSTREAM',
+    );
     expect(transitiveVulnerabilities.lodash.status).toBe('WAITING_UPSTREAM');
   });
 
@@ -223,4 +231,3 @@ describe('Dependency Security (SEC-P1-005)', () => {
     expect(directDependencyVulnerabilities.helmet).toBe('none');
   });
 });
-

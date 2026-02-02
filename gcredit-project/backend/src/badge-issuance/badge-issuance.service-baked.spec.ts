@@ -59,11 +59,20 @@ describe('BadgeIssuanceService - Baked Badge (Story 6.4)', () => {
         BadgeIssuanceService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: StorageService, useValue: mockStorageService },
-        { provide: AssertionGeneratorService, useValue: mockAssertionGenerator },
-        { provide: BadgeNotificationService, useValue: mockNotificationService },
+        {
+          provide: AssertionGeneratorService,
+          useValue: mockAssertionGenerator,
+        },
+        {
+          provide: BadgeNotificationService,
+          useValue: mockNotificationService,
+        },
         { provide: CSVParserService, useValue: mockCSVParser },
         { provide: MilestonesService, useValue: mockMilestonesService },
-        { provide: TeamsBadgeNotificationService, useValue: mockTeamsNotificationService },
+        {
+          provide: TeamsBadgeNotificationService,
+          useValue: mockTeamsNotificationService,
+        },
         { provide: GraphEmailService, useValue: mockGraphEmailService },
         { provide: ConfigService, useValue: mockConfigService },
       ],
@@ -116,7 +125,7 @@ describe('BadgeIssuanceService - Baked Badge (Story 6.4)', () => {
 
       // Act & Assert
       await expect(
-        service.generateBakedBadge(mockBadgeId, mockUserId)
+        service.generateBakedBadge(mockBadgeId, mockUserId),
       ).rejects.toThrow(NotFoundException);
 
       expect(mockPrismaService.badge.findUnique).toHaveBeenCalledWith({
@@ -131,11 +140,11 @@ describe('BadgeIssuanceService - Baked Badge (Story 6.4)', () => {
 
       // Act & Assert
       await expect(
-        service.generateBakedBadge(mockBadgeId, mockOtherUserId)
+        service.generateBakedBadge(mockBadgeId, mockOtherUserId),
       ).rejects.toThrow(BadRequestException);
-      
+
       await expect(
-        service.generateBakedBadge(mockBadgeId, mockOtherUserId)
+        service.generateBakedBadge(mockBadgeId, mockOtherUserId),
       ).rejects.toThrow('only download your own badges');
     });
 
@@ -152,11 +161,11 @@ describe('BadgeIssuanceService - Baked Badge (Story 6.4)', () => {
 
       // Act & Assert
       await expect(
-        service.generateBakedBadge(mockBadgeId, mockUserId)
+        service.generateBakedBadge(mockBadgeId, mockUserId),
       ).rejects.toThrow(BadRequestException);
-      
+
       await expect(
-        service.generateBakedBadge(mockBadgeId, mockUserId)
+        service.generateBakedBadge(mockBadgeId, mockUserId),
       ).rejects.toThrow('no image');
     });
 
@@ -166,22 +175,24 @@ describe('BadgeIssuanceService - Baked Badge (Story 6.4)', () => {
         ...mockBadge,
         assertionJson: null,
       };
-      mockPrismaService.badge.findUnique.mockResolvedValue(badgeWithoutAssertion);
+      mockPrismaService.badge.findUnique.mockResolvedValue(
+        badgeWithoutAssertion,
+      );
 
       // Act & Assert
       await expect(
-        service.generateBakedBadge(mockBadgeId, mockUserId)
+        service.generateBakedBadge(mockBadgeId, mockUserId),
       ).rejects.toThrow(BadRequestException);
-      
+
       await expect(
-        service.generateBakedBadge(mockBadgeId, mockUserId)
+        service.generateBakedBadge(mockBadgeId, mockUserId),
       ).rejects.toThrow('no assertion');
     });
 
     it('should successfully generate baked badge for valid request', async () => {
       // Arrange
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
-      
+
       // Mock image buffer (simple PNG-like data)
       const mockImageBuffer = Buffer.from('fake-png-data');
       mockStorageService.downloadBlobBuffer.mockResolvedValue(mockImageBuffer);
@@ -190,7 +201,7 @@ describe('BadgeIssuanceService - Baked Badge (Story 6.4)', () => {
       // Note: This will fail because sharp needs real PNG data
       // But we verify the flow is correct up to sharp processing
       await expect(
-        service.generateBakedBadge(mockBadgeId, mockUserId)
+        service.generateBakedBadge(mockBadgeId, mockUserId),
       ).rejects.toThrow(); // Will throw from sharp, not our validation
 
       // Verify all steps were called correctly
@@ -198,29 +209,87 @@ describe('BadgeIssuanceService - Baked Badge (Story 6.4)', () => {
         where: { id: mockBadgeId },
         include: expect.any(Object),
       });
-      
+
       expect(mockStorageService.downloadBlobBuffer).toHaveBeenCalledWith(
-        mockBadge.template.imageUrl
+        mockBadge.template.imageUrl,
       );
     });
 
     it('should generate filename with sanitized badge name and date', async () => {
       // Arrange
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
-      
+
       // Create a real minimal PNG for sharp to process
       const realPngBuffer = Buffer.from([
-        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-        0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, // IHDR chunk
-        0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, // 1x1 pixel
-        0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4,
-        0x89, 0x00, 0x00, 0x00, 0x0A, 0x49, 0x44, 0x41, // IDAT chunk
-        0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
-        0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00,
-        0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, // IEND chunk
-        0x42, 0x60, 0x82
+        0x89,
+        0x50,
+        0x4e,
+        0x47,
+        0x0d,
+        0x0a,
+        0x1a,
+        0x0a, // PNG signature
+        0x00,
+        0x00,
+        0x00,
+        0x0d,
+        0x49,
+        0x48,
+        0x44,
+        0x52, // IHDR chunk
+        0x00,
+        0x00,
+        0x00,
+        0x01,
+        0x00,
+        0x00,
+        0x00,
+        0x01, // 1x1 pixel
+        0x08,
+        0x06,
+        0x00,
+        0x00,
+        0x00,
+        0x1f,
+        0x15,
+        0xc4,
+        0x89,
+        0x00,
+        0x00,
+        0x00,
+        0x0a,
+        0x49,
+        0x44,
+        0x41, // IDAT chunk
+        0x54,
+        0x78,
+        0x9c,
+        0x63,
+        0x00,
+        0x01,
+        0x00,
+        0x00,
+        0x05,
+        0x00,
+        0x01,
+        0x0d,
+        0x0a,
+        0x2d,
+        0xb4,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x49,
+        0x45,
+        0x4e,
+        0x44,
+        0xae, // IEND chunk
+        0x42,
+        0x60,
+        0x82,
       ]);
-      
+
       mockStorageService.downloadBlobBuffer.mockResolvedValue(realPngBuffer);
 
       // Act
@@ -229,7 +298,9 @@ describe('BadgeIssuanceService - Baked Badge (Story 6.4)', () => {
       // Assert
       expect(result).toHaveProperty('buffer');
       expect(result).toHaveProperty('filename');
-      expect(result.filename).toMatch(/^badge-excellence-badge-\d{4}-\d{2}-\d{2}\.png$/);
+      expect(result.filename).toMatch(
+        /^badge-excellence-badge-\d{4}-\d{2}-\d{2}\.png$/,
+      );
       expect(Buffer.isBuffer(result.buffer)).toBe(true);
     });
   });

@@ -19,7 +19,8 @@ export class ReportBadgeIssueDto {
   @ApiProperty({
     description: 'Detailed description of the issue',
     maxLength: 500,
-    example: 'The badge shows incorrect skills that do not match the actual training completed.',
+    example:
+      'The badge shows incorrect skills that do not match the actual training completed.',
   })
   @IsString()
   @MaxLength(500)

@@ -1,11 +1,11 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { 
-  BlobServiceClient, 
-  ContainerClient, 
-  BlobSASPermissions, 
+import {
+  BlobServiceClient,
+  ContainerClient,
+  BlobSASPermissions,
   generateBlobSASQueryParameters,
-  StorageSharedKeyCredential 
+  StorageSharedKeyCredential,
 } from '@azure/storage-blob';
 
 @Injectable()
@@ -93,24 +93,41 @@ export class StorageService implements OnModuleInit {
    * Generate SAS token for evidence file download (Story 4.3 - AC 3.6)
    * 5-minute expiry, read-only permission
    */
-  async generateEvidenceSasUrl(fileName: string): Promise<{ url: string; expiresAt: Date }> {
-    const accountName = this.configService.get<string>('AZURE_STORAGE_ACCOUNT_NAME');
-    const accountKey = this.configService.get<string>('AZURE_STORAGE_ACCOUNT_KEY');
-    
+  async generateEvidenceSasUrl(
+    fileName: string,
+  ): Promise<{ url: string; expiresAt: Date }> {
+    const accountName = this.configService.get<string>(
+      'AZURE_STORAGE_ACCOUNT_NAME',
+    );
+    const accountKey = this.configService.get<string>(
+      'AZURE_STORAGE_ACCOUNT_KEY',
+    );
+
     if (!accountName || !accountKey) {
-      throw new Error('Azure Storage credentials not configured for SAS token generation');
+      throw new Error(
+        'Azure Storage credentials not configured for SAS token generation',
+      );
     }
 
-    const sharedKeyCredential = new StorageSharedKeyCredential(accountName, accountKey);
+    const sharedKeyCredential = new StorageSharedKeyCredential(
+      accountName,
+      accountKey,
+    );
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 5); // 5-minute expiry
 
-    const sasToken = generateBlobSASQueryParameters({
-      containerName: this.configService.get<string>('AZURE_STORAGE_CONTAINER_EVIDENCE', 'evidence'),
-      blobName: fileName,
-      permissions: BlobSASPermissions.parse('r'), // Read-only
-      expiresOn: expiresAt,
-    }, sharedKeyCredential).toString();
+    const sasToken = generateBlobSASQueryParameters(
+      {
+        containerName: this.configService.get<string>(
+          'AZURE_STORAGE_CONTAINER_EVIDENCE',
+          'evidence',
+        ),
+        blobName: fileName,
+        permissions: BlobSASPermissions.parse('r'), // Read-only
+        expiresOn: expiresAt,
+      },
+      sharedKeyCredential,
+    ).toString();
 
     const url = `https://${accountName}.blob.core.windows.net/${this.configService.get('AZURE_STORAGE_CONTAINER_EVIDENCE', 'evidence')}/${fileName}?${sasToken}`;
 
@@ -127,7 +144,7 @@ export class StorageService implements OnModuleInit {
       // URL format: https://{account}.blob.core.windows.net/{container}/{blobName}
       const url = new URL(blobUrl);
       const pathParts = url.pathname.split('/').filter(Boolean);
-      
+
       if (pathParts.length < 2) {
         throw new Error(`Invalid blob URL format: ${blobUrl}`);
       }
@@ -135,13 +152,14 @@ export class StorageService implements OnModuleInit {
       const containerName = pathParts[0];
       const blobName = pathParts.slice(1).join('/');
 
-      const containerClient = this.blobServiceClient.getContainerClient(containerName);
+      const containerClient =
+        this.blobServiceClient.getContainerClient(containerName);
       const blobClient = containerClient.getBlobClient(blobName);
 
       // Download blob to buffer
       const downloadResponse = await blobClient.download();
       const chunks: Buffer[] = [];
-      
+
       for await (const chunk of downloadResponse.readableStreamBody!) {
         chunks.push(Buffer.from(chunk));
       }

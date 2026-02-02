@@ -1,6 +1,6 @@
 /**
  * Badge Issuance E2E Tests (Refactored with Story 8.8 Isolation)
- * 
+ *
  * Uses schema-based isolation to prevent data conflicts in parallel execution.
  */
 import request from 'supertest';
@@ -33,8 +33,16 @@ describe('Badge Issuance (e2e)', () => {
 
     // Create test users
     adminUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'admin');
-    employeeUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'employee');
-    recipientUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'employee');
+    employeeUser = await createAndLoginUser(
+      ctx.app,
+      ctx.userFactory,
+      'employee',
+    );
+    recipientUser = await createAndLoginUser(
+      ctx.app,
+      ctx.userFactory,
+      'employee',
+    );
     issuerUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'issuer');
 
     // Create badge template
@@ -287,7 +295,7 @@ describe('Badge Issuance (e2e)', () => {
 
       expect(response.body.data).toBeInstanceOf(Array);
       expect(response.body.data.length).toBeGreaterThanOrEqual(1);
-      
+
       // All badges should be CLAIMED
       response.body.data.forEach((badge: any) => {
         expect(badge.status).toBe('CLAIMED');
@@ -351,7 +359,9 @@ describe('Badge Issuance (e2e)', () => {
 
       expect(response.body.badge.status).toBe('REVOKED');
       expect(response.body.badge.revokedAt).toBeDefined();
-      expect(response.body.badge.revocationReason).toBe(RevocationReason.ISSUED_IN_ERROR);
+      expect(response.body.badge.revocationReason).toBe(
+        RevocationReason.ISSUED_IN_ERROR,
+      );
       expect(response.body.message).toContain('revoked successfully');
     });
 
@@ -362,7 +372,7 @@ describe('Badge Issuance (e2e)', () => {
         .set('Authorization', `Bearer ${issuerUser.token}`)
         .send({
           reason: RevocationReason.POLICY_VIOLATION,
-          notes: 'Attempting to revoke another issuer\'s badge',
+          notes: "Attempting to revoke another issuer's badge",
         })
         .expect(403);
     });
@@ -418,7 +428,10 @@ describe('Badge Issuance (e2e)', () => {
         .expect(200);
 
       // Sprint 5 Story 6.1: Validate Open Badges 2.0 JSON-LD structure
-      expect(response.body).toHaveProperty('@context', 'https://w3id.org/openbadges/v2');
+      expect(response.body).toHaveProperty(
+        '@context',
+        'https://w3id.org/openbadges/v2',
+      );
       expect(response.body).toHaveProperty('type', 'Assertion');
       expect(response.body).toHaveProperty('id');
       expect(response.body.id).toMatch(/\/api\/badges\/.+\/assertion$/);
@@ -438,7 +451,9 @@ describe('Badge Issuance (e2e)', () => {
       // Verification (hosted type)
       expect(response.body.verification).toHaveProperty('type', 'hosted');
       expect(response.body.verification).toHaveProperty('verificationUrl');
-      expect(response.body.verification.verificationUrl).toMatch(/\/verify\/.+$/);
+      expect(response.body.verification.verificationUrl).toMatch(
+        /\/verify\/.+$/,
+      );
 
       // Issuance date
       expect(response.body).toHaveProperty('issuedOn');

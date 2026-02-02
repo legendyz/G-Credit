@@ -11,9 +11,9 @@ import {
 
 /**
  * Sprint 2 E2E Tests - Badge Template Management (Isolated)
- * 
+ *
  * Story 8.8: Test Isolation - Refactored for parallel execution
- * 
+ *
  * Tests all 6 stories + Enhancement 1:
  * - Story 3.1: Data Model (Skills & Categories)
  * - Story 3.2: CRUD API with Azure Blob
@@ -106,8 +106,11 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
     let createdBadgeId: string;
 
     it('should create badge template with image (multipart)', async () => {
-      const testImagePath = path.join(__dirname, '../test-images/test-optimal-256x256.png');
-      
+      const testImagePath = path.join(
+        __dirname,
+        '../test-images/test-optimal-256x256.png',
+      );
+
       if (!fs.existsSync(testImagePath)) {
         throw new Error(`Test image not found: ${testImagePath}`);
       }
@@ -214,7 +217,9 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
         .expect((res) => {
           const badges = res.body.data;
           if (badges.length > 1) {
-            const dates = badges.map((b: any) => new Date(b.createdAt).getTime());
+            const dates = badges.map((b: any) =>
+              new Date(b.createdAt).getTime(),
+            );
             for (let i = 1; i < dates.length; i++) {
               expect(dates[i - 1]).toBeGreaterThanOrEqual(dates[i]);
             }
@@ -225,7 +230,10 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
 
   describe('Story 3.5: Issuance Criteria Validation', () => {
     it('should validate manual issuance criteria', async () => {
-      const testImagePath = path.join(__dirname, '../test-images/test-optimal-256x256.png');
+      const testImagePath = path.join(
+        __dirname,
+        '../test-images/test-optimal-256x256.png',
+      );
 
       const response = await request(ctx.app.getHttpServer())
         .post('/badge-templates')
@@ -242,7 +250,10 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
     });
 
     it('should validate automatic issuance criteria (task)', async () => {
-      const testImagePath = path.join(__dirname, '../test-images/test-optimal-256x256.png');
+      const testImagePath = path.join(
+        __dirname,
+        '../test-images/test-optimal-256x256.png',
+      );
 
       const response = await request(ctx.app.getHttpServer())
         .post('/badge-templates')
@@ -270,7 +281,10 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
     });
 
     it('should reject invalid issuance criteria type', async () => {
-      const testImagePath = path.join(__dirname, '../test-images/test-optimal-256x256.png');
+      const testImagePath = path.join(
+        __dirname,
+        '../test-images/test-optimal-256x256.png',
+      );
 
       await request(ctx.app.getHttpServer())
         .post('/badge-templates')
@@ -287,7 +301,10 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
 
   describe('Enhancement 1: Azure Blob Image Complete Management', () => {
     it('should reject image too small (<128px)', async () => {
-      const testImagePath = path.join(__dirname, '../test-images/test-too-small-64x64.png');
+      const testImagePath = path.join(
+        __dirname,
+        '../test-images/test-too-small-64x64.png',
+      );
 
       if (!fs.existsSync(testImagePath)) {
         console.warn('Skipping test: test image not found');
@@ -307,7 +324,10 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
     });
 
     it('should reject image too large (>2048px)', async () => {
-      const testImagePath = path.join(__dirname, '../test-images/test-too-large-3000x3000.png');
+      const testImagePath = path.join(
+        __dirname,
+        '../test-images/test-too-large-3000x3000.png',
+      );
 
       if (!fs.existsSync(testImagePath)) {
         console.warn('Skipping test: test image not found');
@@ -327,7 +347,10 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
     });
 
     it('should accept optimal size (256x256)', async () => {
-      const testImagePath = path.join(__dirname, '../test-images/test-optimal-256x256.png');
+      const testImagePath = path.join(
+        __dirname,
+        '../test-images/test-optimal-256x256.png',
+      );
 
       const response = await request(ctx.app.getHttpServer())
         .post('/badge-templates')
@@ -344,7 +367,10 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
     });
 
     it('should accept optimal size (512x512)', async () => {
-      const testImagePath = path.join(__dirname, '../test-images/test-optimal-512x512.png');
+      const testImagePath = path.join(
+        __dirname,
+        '../test-images/test-optimal-512x512.png',
+      );
 
       if (!fs.existsSync(testImagePath)) {
         console.warn('Skipping test: test image not found');
@@ -366,7 +392,10 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
     });
 
     it('should delete badge and its image', async () => {
-      const testImagePath = path.join(__dirname, '../test-images/test-optimal-256x256.png');
+      const testImagePath = path.join(
+        __dirname,
+        '../test-images/test-optimal-256x256.png',
+      );
 
       // Create a badge
       const createResponse = await request(ctx.app.getHttpServer())

@@ -58,7 +58,9 @@ describe('BadgeSharingController', () => {
         shareDto,
         userId,
       );
-      expect(mockBadgeSharingService.shareBadgeViaEmail).toHaveBeenCalledTimes(1);
+      expect(mockBadgeSharingService.shareBadgeViaEmail).toHaveBeenCalledTimes(
+        1,
+      );
     });
 
     it('should pass userId from JWT token', async () => {
@@ -66,7 +68,9 @@ describe('BadgeSharingController', () => {
         expectedResponse,
       );
 
-      await controller.shareBadgeViaEmail(shareDto, { userId: 'different-user-id' });
+      await controller.shareBadgeViaEmail(shareDto, {
+        userId: 'different-user-id',
+      });
 
       expect(mockBadgeSharingService.shareBadgeViaEmail).toHaveBeenCalledWith(
         shareDto,

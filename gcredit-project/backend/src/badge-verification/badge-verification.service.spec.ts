@@ -26,7 +26,10 @@ describe('BadgeVerificationService - Story 6.3', () => {
       providers: [
         BadgeVerificationService,
         { provide: PrismaService, useValue: mockPrismaService },
-        { provide: AssertionGeneratorService, useValue: mockAssertionGeneratorService },
+        {
+          provide: AssertionGeneratorService,
+          useValue: mockAssertionGeneratorService,
+        },
       ],
     }).compile();
 

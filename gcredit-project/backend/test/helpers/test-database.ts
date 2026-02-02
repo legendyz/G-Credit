@@ -35,7 +35,9 @@ export async function createTestSchema(suiteName: string): Promise<{
 
   // Create schema URL (append schema parameter)
   const schemaUrl = appendSchemaToUrl(baseUrl, schemaName);
-  console.log(`📝 Creating schema with URL: ${schemaUrl.replace(/:[^:@]*@/, ':****@')}`); // Hide password
+  console.log(
+    `📝 Creating schema with URL: ${schemaUrl.replace(/:[^:@]*@/, ':****@')}`,
+  ); // Hide password
 
   // Create Prisma client with isolated schema
   const prisma = new PrismaClient({
@@ -48,8 +50,10 @@ export async function createTestSchema(suiteName: string): Promise<{
 
   try {
     // Create the schema in the base database
-    await prisma.$executeRawUnsafe(`CREATE SCHEMA IF NOT EXISTS "${schemaName}"`);
-    
+    await prisma.$executeRawUnsafe(
+      `CREATE SCHEMA IF NOT EXISTS "${schemaName}"`,
+    );
+
     // Disconnect initial connection
     await prisma.$disconnect();
 
@@ -62,10 +66,10 @@ export async function createTestSchema(suiteName: string): Promise<{
       stdio: 'pipe', // Suppress output
       cwd: process.cwd(),
     });
-    
+
     // Reconnect to the schema
     await prisma.$connect();
-    
+
     // Set default search_path for all operations in this client
     await prisma.$executeRawUnsafe(`SET search_path TO "${schemaName}"`);
 
@@ -141,7 +145,9 @@ export async function cleanupAllTestSchemas(): Promise<void> {
       await adminPrisma.$executeRawUnsafe(
         `DROP SCHEMA IF EXISTS "${schemaName}" CASCADE`,
       );
-      console.log(`🗑️ Cleaned up orphaned schema: ${schemaName} (${suiteName})`);
+      console.log(
+        `🗑️ Cleaned up orphaned schema: ${schemaName} (${suiteName})`,
+      );
     } catch (error) {
       console.error(`⚠️ Failed to cleanup schema: ${schemaName}`, error);
     }

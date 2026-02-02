@@ -32,8 +32,12 @@ describe('Badge Issuance (e2e) - Isolated', () => {
 
     // Create test users using factories
     adminUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'admin');
-    employeeUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'employee');
-    
+    employeeUser = await createAndLoginUser(
+      ctx.app,
+      ctx.userFactory,
+      'employee',
+    );
+
     // Create recipient (without login)
     recipientUser = {
       user: await ctx.userFactory.createEmployee(),
@@ -204,7 +208,9 @@ describe('Badge Issuance (e2e) - Isolated', () => {
 
       expect(response.body.badge.status).toBe('REVOKED');
       expect(response.body.badge.revokedAt).toBeDefined();
-      expect(response.body.badge.revocationReason).toBe(RevocationReason.POLICY_VIOLATION);
+      expect(response.body.badge.revocationReason).toBe(
+        RevocationReason.POLICY_VIOLATION,
+      );
     });
 
     it('should return 403 when EMPLOYEE tries to revoke', async () => {

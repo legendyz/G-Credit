@@ -70,12 +70,20 @@ describe('AssertionGeneratorService - Sprint 5 Story 6.1', () => {
       const assertion = service.generateAssertion(params);
 
       // Assert - Check JSON-LD structure
-      expect(assertion).toHaveProperty('@context', 'https://w3id.org/openbadges/v2');
+      expect(assertion).toHaveProperty(
+        '@context',
+        'https://w3id.org/openbadges/v2',
+      );
       expect(assertion).toHaveProperty('type', 'Assertion');
-      expect(assertion).toHaveProperty('id', 'https://g-credit.example.com/api/badges/badge-uuid-abc/assertion');
+      expect(assertion).toHaveProperty(
+        'id',
+        'https://g-credit.example.com/api/badges/badge-uuid-abc/assertion',
+      );
 
       // Badge should be URL string (NOT embedded object)
-      expect(assertion.badge).toBe('https://g-credit.example.com/api/badge-templates/template-uuid-123');
+      expect(assertion.badge).toBe(
+        'https://g-credit.example.com/api/badge-templates/template-uuid-123',
+      );
       expect(typeof assertion.badge).toBe('string');
 
       // Recipient should be hashed
@@ -90,7 +98,10 @@ describe('AssertionGeneratorService - Sprint 5 Story 6.1', () => {
 
       // Verification (hosted type)
       expect(assertion.verification).toHaveProperty('type', 'hosted');
-      expect(assertion.verification).toHaveProperty('verificationUrl', 'https://g-credit.example.com/verify/verification-uuid-def');
+      expect(assertion.verification).toHaveProperty(
+        'verificationUrl',
+        'https://g-credit.example.com/verify/verification-uuid-def',
+      );
     });
 
     it('should hash recipient email correctly with salt', () => {
@@ -188,9 +199,15 @@ describe('AssertionGeneratorService - Sprint 5 Story 6.1', () => {
       const assertionB = service.generateAssertion(paramsB);
 
       // Assert - Different verification URLs
-      expect(assertionA.verification.verificationUrl).toBe('https://g-credit.example.com/verify/verification-123');
-      expect(assertionB.verification.verificationUrl).toBe('https://g-credit.example.com/verify/verification-456');
-      expect(assertionA.verification.verificationUrl).not.toBe(assertionB.verification.verificationUrl);
+      expect(assertionA.verification.verificationUrl).toBe(
+        'https://g-credit.example.com/verify/verification-123',
+      );
+      expect(assertionB.verification.verificationUrl).toBe(
+        'https://g-credit.example.com/verify/verification-456',
+      );
+      expect(assertionA.verification.verificationUrl).not.toBe(
+        assertionB.verification.verificationUrl,
+      );
     });
   });
 

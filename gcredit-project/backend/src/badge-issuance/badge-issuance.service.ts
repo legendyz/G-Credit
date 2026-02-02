@@ -1,4 +1,11 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException, GoneException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+  GoneException,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { StorageService } from '../common/storage.service';
 import { AssertionGeneratorService } from './services/assertion-generator.service';
@@ -10,7 +17,11 @@ import { ConfigService } from '@nestjs/config';
 import { IssueBadgeDto } from './dto/issue-badge.dto';
 import { QueryBadgeDto } from './dto/query-badge.dto';
 import { BulkIssuanceResult } from './dto/bulk-issue-badges.dto';
-import { WalletQueryDto, WalletResponse, DateGroup } from './dto/wallet-query.dto';
+import {
+  WalletQueryDto,
+  WalletResponse,
+  DateGroup,
+} from './dto/wallet-query.dto';
 import { ReportBadgeIssueDto } from './dto/report-badge-issue.dto';
 import { BadgeStatus, UserRole } from '@prisma/client';
 import { randomUUID } from 'crypto';
@@ -47,7 +58,9 @@ export class BadgeIssuanceService {
     }
 
     if (template.status !== 'ACTIVE') {
-      throw new BadRequestException(`Badge template ${template.name} is not active`);
+      throw new BadRequestException(
+        `Badge template ${template.name} is not active`,
+      );
     }
 
     // 2. Validate recipient exists
@@ -97,9 +110,10 @@ export class BadgeIssuanceService {
     });
 
     // 7. Generate Open Badges 2.0 assertion with real IDs
-    const evidenceUrls = badge.evidenceFiles?.map(e => e.blobUrl) ||  // Sprint 4: blobUrl field
-                         (dto.evidenceUrl ? [dto.evidenceUrl] : []);
-    
+    const evidenceUrls =
+      badge.evidenceFiles?.map((e) => e.blobUrl) || // Sprint 4: blobUrl field
+      (dto.evidenceUrl ? [dto.evidenceUrl] : []);
+
     const assertion = this.assertionGenerator.generateAssertion({
       badgeId: badge.id,
       verificationId: badge.verificationId, // Sprint 5: Use auto-generated verificationId
@@ -112,7 +126,8 @@ export class BadgeIssuanceService {
     });
 
     // Sprint 5 Story 6.5: Compute metadata hash for integrity
-    const metadataHash = this.assertionGenerator.computeAssertionHash(assertion);
+    const metadataHash =
+      this.assertionGenerator.computeAssertionHash(assertion);
 
     // 8. Update badge with final assertion JSON and metadata hash
     await this.prisma.badge.update({
@@ -128,15 +143,17 @@ export class BadgeIssuanceService {
     // Story 7.4: Unified notification through TeamsNotificationService
     this.teamsNotificationService
       .sendBadgeIssuanceNotification(badge.id, recipient.id)
-      .catch(err => {
+      .catch((err) => {
         this.logger.warn(
           `Email notification failed for badge ${badge.id}: ${err.message}`,
         );
       });
 
     // 11. Check milestones (non-blocking)
-    this.milestonesService.checkMilestones(dto.recipientId).catch(err => {
-      this.logger.warn(`Milestone check failed after badge issuance: ${err.message}`);
+    this.milestonesService.checkMilestones(dto.recipientId).catch((err) => {
+      this.logger.warn(
+        `Milestone check failed after badge issuance: ${err.message}`,
+      );
     });
 
     // 12. Return badge response
@@ -155,9 +172,10 @@ export class BadgeIssuanceService {
       },
       recipient: {
         id: badge.recipient.id,
-        name: badge.recipient.firstName && badge.recipient.lastName 
-          ? `${badge.recipient.firstName} ${badge.recipient.lastName}` 
-          : badge.recipient.email,
+        name:
+          badge.recipient.firstName && badge.recipient.lastName
+            ? `${badge.recipient.firstName} ${badge.recipient.lastName}`
+            : badge.recipient.email,
         email: badge.recipient.email,
       },
     };
@@ -204,7 +222,9 @@ export class BadgeIssuanceService {
     const tokenExpirationDate = new Date(badge.issuedAt);
     tokenExpirationDate.setDate(tokenExpirationDate.getDate() + 7);
     if (tokenExpirationDate < new Date()) {
-      throw new GoneException('Claim token has expired. Tokens must be claimed within 7 days of issuance.');
+      throw new GoneException(
+        'Claim token has expired. Tokens must be claimed within 7 days of issuance.',
+      );
     }
 
     // 6. Claim the badge
@@ -222,9 +242,13 @@ export class BadgeIssuanceService {
     });
 
     // 6b. Check milestones (non-blocking)
-    this.milestonesService.checkMilestones(claimedBadge.recipientId).catch(err => {
-      this.logger.warn(`Milestone check failed after badge claim: ${err.message}`);
-    });
+    this.milestonesService
+      .checkMilestones(claimedBadge.recipientId)
+      .catch((err) => {
+        this.logger.warn(
+          `Milestone check failed after badge claim: ${err.message}`,
+        );
+      });
 
     // 7. Return badge details
     return {
@@ -237,7 +261,8 @@ export class BadgeIssuanceService {
         imageUrl: claimedBadge.template.imageUrl,
       },
       assertionUrl: this.assertionGenerator.getAssertionUrl(claimedBadge.id),
-      message: 'Badge claimed successfully! You can now view it in your wallet.',
+      message:
+        'Badge claimed successfully! You can now view it in your wallet.',
     };
   }
 
@@ -336,7 +361,9 @@ export class BadgeIssuanceService {
     this.notificationService
       .sendBadgeRevocationNotification({
         recipientEmail: badge.recipient.email,
-        recipientName: `${badge.recipient.firstName} ${badge.recipient.lastName}`.trim() || badge.recipient.email,
+        recipientName:
+          `${badge.recipient.firstName} ${badge.recipient.lastName}`.trim() ||
+          badge.recipient.email,
         badgeName: badge.template.name,
         revocationReason: reason,
         revocationDate: updatedBadge.revokedAt || new Date(),
@@ -351,7 +378,9 @@ export class BadgeIssuanceService {
             data: {
               entityType: 'BadgeNotification',
               entityId: badgeId,
-              action: result.success ? 'NOTIFICATION_SENT' : 'NOTIFICATION_FAILED',
+              action: result.success
+                ? 'NOTIFICATION_SENT'
+                : 'NOTIFICATION_FAILED',
               actorId: actorId,
               actorEmail: actor.email,
               timestamp: new Date(),
@@ -451,9 +480,10 @@ export class BadgeIssuanceService {
         template: badge.template,
         issuer: {
           id: badge.issuer.id,
-          name: badge.issuer.firstName && badge.issuer.lastName
-            ? `${badge.issuer.firstName} ${badge.issuer.lastName}`
-            : badge.issuer.email,
+          name:
+            badge.issuer.firstName && badge.issuer.lastName
+              ? `${badge.issuer.firstName} ${badge.issuer.lastName}`
+              : badge.issuer.email,
         },
       })),
       pagination: {
@@ -470,7 +500,11 @@ export class BadgeIssuanceService {
    * Get badges issued by user (ISSUER sees own, ADMIN sees all)
    * Story 9.5 AC5: Supports search and filter
    */
-  async getIssuedBadges(userId: string, userRole: UserRole, query: QueryBadgeDto) {
+  async getIssuedBadges(
+    userId: string,
+    userRole: UserRole,
+    query: QueryBadgeDto,
+  ) {
     // Build where clause based on role
     const where: any = {};
 
@@ -497,8 +531,16 @@ export class BadgeIssuanceService {
       const searchTerm = query.search.trim();
       where.OR = [
         { recipient: { email: { contains: searchTerm, mode: 'insensitive' } } },
-        { recipient: { firstName: { contains: searchTerm, mode: 'insensitive' } } },
-        { recipient: { lastName: { contains: searchTerm, mode: 'insensitive' } } },
+        {
+          recipient: {
+            firstName: { contains: searchTerm, mode: 'insensitive' },
+          },
+        },
+        {
+          recipient: {
+            lastName: { contains: searchTerm, mode: 'insensitive' },
+          },
+        },
         { template: { name: { contains: searchTerm, mode: 'insensitive' } } },
       ];
     }
@@ -587,12 +629,14 @@ export class BadgeIssuanceService {
           firstName: badge.issuer.firstName,
           lastName: badge.issuer.lastName,
         },
-        revoker: badge.revoker ? {
-          id: badge.revoker.id,
-          email: badge.revoker.email,
-          firstName: badge.revoker.firstName,
-          lastName: badge.revoker.lastName,
-        } : undefined,
+        revoker: badge.revoker
+          ? {
+              id: badge.revoker.id,
+              email: badge.revoker.email,
+              firstName: badge.revoker.firstName,
+              lastName: badge.revoker.lastName,
+            }
+          : undefined,
       })),
       total: totalCount,
       page: query.page,
@@ -628,8 +672,10 @@ export class BadgeIssuanceService {
     // Story 9.3 AC2: Add categorized revocation details
     if (badge.status === BadgeStatus.REVOKED) {
       const publicReasons = ['Expired', 'Issued in Error'];
-      response.isPublicReason = badge.revocationReason ? publicReasons.includes(badge.revocationReason) : false;
-      
+      response.isPublicReason = badge.revocationReason
+        ? publicReasons.includes(badge.revocationReason)
+        : false;
+
       if (badge.revoker) {
         response.revokedBy = {
           name: `${badge.revoker.firstName} ${badge.revoker.lastName}`,
@@ -647,7 +693,10 @@ export class BadgeIssuanceService {
   /**
    * Bulk issue badges from CSV file
    */
-  async bulkIssueBadges(fileBuffer: Buffer, issuerId: string): Promise<BulkIssuanceResult> {
+  async bulkIssueBadges(
+    fileBuffer: Buffer,
+    issuerId: string,
+  ): Promise<BulkIssuanceResult> {
     // 1. Parse CSV
     let rows;
     try {
@@ -658,7 +707,9 @@ export class BadgeIssuanceService {
 
     // 2. Limit to 1000 badges per upload
     if (rows.length > 1000) {
-      throw new BadRequestException(`Too many rows (${rows.length}). Maximum 1000 badges per upload.`);
+      throw new BadRequestException(
+        `Too many rows (${rows.length}). Maximum 1000 badges per upload.`,
+      );
     }
 
     this.logger.log(`Processing bulk issuance: ${rows.length} badges`);
@@ -712,7 +763,9 @@ export class BadgeIssuanceService {
       }
     }
 
-    this.logger.log(`Bulk issuance complete: ${successCount} successful, ${failCount} failed`);
+    this.logger.log(
+      `Bulk issuance complete: ${successCount} successful, ${failCount} failed`,
+    );
 
     // 4. Return summary
     return {
@@ -727,7 +780,10 @@ export class BadgeIssuanceService {
    * Get wallet badges for authenticated user (Story 4.1)
    * Timeline View with date grouping and pagination
    */
-  async getWalletBadges(userId: string, query: WalletQueryDto): Promise<WalletResponse> {
+  async getWalletBadges(
+    userId: string,
+    query: WalletQueryDto,
+  ): Promise<WalletResponse> {
     const { page = 1, limit = 50, status, sort = 'issuedAt_desc' } = query;
 
     // Build where clause
@@ -789,7 +845,7 @@ export class BadgeIssuanceService {
     });
 
     // Merge badges and milestones, sorted by date
-    const badgeItems = badges.map(b => {
+    const badgeItems = badges.map((b) => {
       // Story 9.3: Transform badge to include/exclude revocation fields
       const badgeData: any = {
         id: b.id,
@@ -822,7 +878,7 @@ export class BadgeIssuanceService {
       };
     });
 
-    const milestoneItems = milestones.map(m => ({
+    const milestoneItems = milestones.map((m) => ({
       type: 'milestone',
       sortDate: m.achievedAt,
       data: {
@@ -845,13 +901,15 @@ export class BadgeIssuanceService {
     const paginatedItems = allItems.slice(skip, skip + limit);
 
     // Extract final timeline items
-    const timelineItems = paginatedItems.map(item => item.data);
+    const timelineItems = paginatedItems.map((item) => item.data);
 
     // Generate date groups from paginated items
-    const dateGroups = this.generateDateGroups(paginatedItems.map(item => ({
-      ...item.data,
-      issuedAt: item.sortDate,
-    })));
+    const dateGroups = this.generateDateGroups(
+      paginatedItems.map((item) => ({
+        ...item.data,
+        issuedAt: item.sortDate,
+      })),
+    );
 
     return {
       badges: timelineItems, // Contains both badges and milestone objects
@@ -873,7 +931,10 @@ export class BadgeIssuanceService {
 
     badges.forEach((badge, index) => {
       const date = new Date(badge.issuedAt);
-      const monthYear = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      const monthYear = date.toLocaleDateString('en-US', {
+        month: 'long',
+        year: 'numeric',
+      });
 
       if (!groups.has(monthYear)) {
         groups.set(monthYear, { count: 0, startIndex: index });
@@ -932,14 +993,18 @@ export class BadgeIssuanceService {
 
     // Verify user is the badge recipient
     if (badge.recipientId !== userId) {
-      throw new BadRequestException('You can only report issues for your own badges');
+      throw new BadRequestException(
+        'You can only report issues for your own badges',
+      );
     }
 
     const reportId = randomUUID();
 
     // Prepare email content
-    const reporterName = `${badge.recipient.firstName || ''} ${badge.recipient.lastName || ''}`.trim();
-    const issuerName = `${badge.issuer.firstName || ''} ${badge.issuer.lastName || ''}`.trim();
+    const reporterName =
+      `${badge.recipient.firstName || ''} ${badge.recipient.lastName || ''}`.trim();
+    const issuerName =
+      `${badge.issuer.firstName || ''} ${badge.issuer.lastName || ''}`.trim();
 
     const emailContent = `
       <h2>Badge Issue Report</h2>
@@ -981,7 +1046,10 @@ export class BadgeIssuanceService {
 
     try {
       // AC 4.11: Send report via Microsoft Graph Email
-      const fromEmail = this.configService.get<string>('GRAPH_EMAIL_FROM', 'M365DevAdmin@2wjh85.onmicrosoft.com');
+      const fromEmail = this.configService.get<string>(
+        'GRAPH_EMAIL_FROM',
+        'M365DevAdmin@2wjh85.onmicrosoft.com',
+      );
       await this.graphEmailService.sendEmail(
         fromEmail,
         ['g-credit@outlook.com'],
@@ -989,7 +1057,9 @@ export class BadgeIssuanceService {
         emailContent,
       );
 
-      this.logger.log(`Badge issue report ${reportId} submitted for badge ${badgeId}`);
+      this.logger.log(
+        `Badge issue report ${reportId} submitted for badge ${badgeId}`,
+      );
 
       return {
         message: "Report submitted. We'll review within 2 business days.",
@@ -997,7 +1067,9 @@ export class BadgeIssuanceService {
       };
     } catch (error) {
       this.logger.error(`Failed to send badge issue report: ${error.message}`);
-      throw new BadRequestException('Failed to submit report. Please try again later.');
+      throw new BadRequestException(
+        'Failed to submit report. Please try again later.',
+      );
     }
   }
 
@@ -1023,7 +1095,10 @@ export class BadgeIssuanceService {
    * Embeds JSON-LD in PNG iTXt chunk following Open Badges baking specification
    * https://www.imsglobal.org/spec/ob/v2p0/#baking
    */
-  async generateBakedBadge(badgeId: string, userId: string): Promise<{ buffer: Buffer; filename: string }> {
+  async generateBakedBadge(
+    badgeId: string,
+    userId: string,
+  ): Promise<{ buffer: Buffer; filename: string }> {
     // 1. Get badge with full details
     const badge = await this.prisma.badge.findUnique({
       where: { id: badgeId },
@@ -1035,7 +1110,7 @@ export class BadgeIssuanceService {
             description: true,
             imageUrl: true,
             issuanceCriteria: true,
-          }
+          },
         },
         recipient: {
           select: {
@@ -1043,7 +1118,7 @@ export class BadgeIssuanceService {
             email: true,
             firstName: true,
             lastName: true,
-          }
+          },
         },
         issuer: {
           select: {
@@ -1051,12 +1126,12 @@ export class BadgeIssuanceService {
             email: true,
             firstName: true,
             lastName: true,
-          }
+          },
         },
         evidenceFiles: {
           select: {
             blobUrl: true,
-          }
+          },
         },
       },
     });
@@ -1076,25 +1151,29 @@ export class BadgeIssuanceService {
     }
 
     let imageBuffer: Buffer;
-    
+
     // Handle placeholder URLs for demo/testing
     if (badge.template.imageUrl.includes('placeholder.com')) {
       this.logger.log('Using placeholder - generating default badge image');
-      
+
       // Create a simple 400x400 purple badge with text
       imageBuffer = await sharp({
         create: {
           width: 400,
           height: 400,
           channels: 4,
-          background: { r: 79, g: 70, b: 229, alpha: 1 } // #4F46E5
-        }
+          background: { r: 79, g: 70, b: 229, alpha: 1 }, // #4F46E5
+        },
       })
-      .png()
-      .toBuffer();
+        .png()
+        .toBuffer();
     } else {
-      this.logger.log(`Downloading badge image from: ${badge.template.imageUrl}`);
-      imageBuffer = await this.storageService.downloadBlobBuffer(badge.template.imageUrl);
+      this.logger.log(
+        `Downloading badge image from: ${badge.template.imageUrl}`,
+      );
+      imageBuffer = await this.storageService.downloadBlobBuffer(
+        badge.template.imageUrl,
+      );
     }
 
     // 4. Get Open Badges 2.0 assertion (already stored in badge.assertionJson)
@@ -1107,7 +1186,7 @@ export class BadgeIssuanceService {
     // 5. Embed assertion in PNG iTXt chunk with key "openbadges"
     // Per Open Badges 2.0 baking spec: https://www.imsglobal.org/spec/ob/v2p0/#baking
     this.logger.log(`Baking badge ${badgeId} with Open Badges 2.0 assertion`);
-    
+
     const bakedBadge = await sharp(imageBuffer)
       .png({
         // Preserve quality, no compression
@@ -1118,8 +1197,8 @@ export class BadgeIssuanceService {
         exif: {
           IFD0: {
             ImageDescription: JSON.stringify(assertion),
-          }
-        }
+          },
+        },
       })
       .toBuffer();
 
@@ -1131,11 +1210,15 @@ export class BadgeIssuanceService {
     const dateString = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
     const filename = `badge-${sanitizedBadgeName}-${dateString}.png`;
 
-    this.logger.log(`Generated baked badge: ${filename} (${(bakedBadge.length / 1024).toFixed(2)} KB)`);
+    this.logger.log(
+      `Generated baked badge: ${filename} (${(bakedBadge.length / 1024).toFixed(2)} KB)`,
+    );
 
     // Verify file size is reasonable (<5MB as per AC)
     if (bakedBadge.length > 5 * 1024 * 1024) {
-      this.logger.warn(`Baked badge ${badgeId} exceeds 5MB: ${(bakedBadge.length / 1024 / 1024).toFixed(2)} MB`);
+      this.logger.warn(
+        `Baked badge ${badgeId} exceeds 5MB: ${(bakedBadge.length / 1024 / 1024).toFixed(2)} MB`,
+      );
     }
 
     return { buffer: bakedBadge, filename };
@@ -1144,7 +1227,7 @@ export class BadgeIssuanceService {
   /**
    * Verify badge assertion integrity
    * Sprint 5 Story 6.5: Metadata immutability & integrity verification
-   * 
+   *
    * @param badgeId - Badge ID to verify
    * @returns Object with integrity status and details
    */
@@ -1170,12 +1253,16 @@ export class BadgeIssuanceService {
       throw new BadRequestException('Badge has no assertion data');
     }
 
-    const computedHash = this.assertionGenerator.computeAssertionHash(badge.assertionJson);
+    const computedHash = this.assertionGenerator.computeAssertionHash(
+      badge.assertionJson,
+    );
     const storedHash = badge.metadataHash;
 
     // If no stored hash, badge was created before Story 6.5
     if (!storedHash) {
-      this.logger.warn(`Badge ${badgeId} has no stored hash (created before Story 6.5)`);
+      this.logger.warn(
+        `Badge ${badgeId} has no stored hash (created before Story 6.5)`,
+      );
       return {
         integrityVerified: false,
         storedHash: null,
@@ -1189,9 +1276,9 @@ export class BadgeIssuanceService {
     if (!integrityVerified) {
       this.logger.error(
         `🔴 INTEGRITY VIOLATION: Badge ${badgeId} assertion hash mismatch!\n` +
-        `  Stored:   ${storedHash}\n` +
-        `  Computed: ${computedHash}\n` +
-        `  This indicates potential data tampering.`
+          `  Stored:   ${storedHash}\n` +
+          `  Computed: ${computedHash}\n` +
+          `  This indicates potential data tampering.`,
       );
     }
 
@@ -1203,4 +1290,3 @@ export class BadgeIssuanceService {
     };
   }
 }
-

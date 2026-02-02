@@ -9,7 +9,10 @@ import { ConfigService } from '@nestjs/config';
 import { GraphEmailService } from '../microsoft-graph/services/graph-email.service';
 import { EmailTemplateService } from './services/email-template.service';
 import { BadgeAnalyticsService } from './services/badge-analytics.service';
-import { ShareBadgeEmailDto, ShareBadgeEmailResponseDto } from './dto/share-badge-email.dto';
+import {
+  ShareBadgeEmailDto,
+  ShareBadgeEmailResponseDto,
+} from './dto/share-badge-email.dto';
 
 @Injectable()
 export class BadgeSharingService {
@@ -70,8 +73,10 @@ export class BadgeSharingService {
     }
 
     // Verify user has permission to share this badge (must be recipient or issuer)
-    this.logger.log(`Permission check: userId=${userId}, recipientId=${badge.recipientId}, issuerId=${badge.issuerId}`);
-    
+    this.logger.log(
+      `Permission check: userId=${userId}, recipientId=${badge.recipientId}, issuerId=${badge.issuerId}`,
+    );
+
     if (badge.recipientId !== userId && badge.issuerId !== userId) {
       throw new BadRequestException(
         'You do not have permission to share this badge',
@@ -125,8 +130,7 @@ export class BadgeSharingService {
       badgeId: badge.id,
       badgeImageUrl,
       badgeName: badge.template.name,
-      badgeDescription:
-        badge.template.description || 'No description provided',
+      badgeDescription: badge.template.description || 'No description provided',
       issuerName: `${badge.issuer.firstName} ${badge.issuer.lastName}`,
       recipientName: `${badge.recipient.firstName} ${badge.recipient.lastName}`,
       recipientEmail: dto.recipientEmail,
@@ -154,12 +158,15 @@ export class BadgeSharingService {
       // MOCK MODE: For development/testing only
       // Set MOCK_EMAIL_SERVICE=true in .env to skip actual email sending
       // WARNING: Never enable in production!
-      const isMockMode = this.configService.get<string>('MOCK_EMAIL_SERVICE') === 'true';
-      
+      const isMockMode =
+        this.configService.get<string>('MOCK_EMAIL_SERVICE') === 'true';
+
       if (isMockMode) {
         this.logger.log('MOCK MODE: Skipping actual email send');
         this.logger.log(`Would send to: ${dto.recipientEmail}`);
-        this.logger.log(`Subject: 🎉 ${sender.firstName} ${sender.lastName} shared a badge with you: "${badge.template.name}"`);
+        this.logger.log(
+          `Subject: 🎉 ${sender.firstName} ${sender.lastName} shared a badge with you: "${badge.template.name}"`,
+        );
       } else {
         await this.graphEmailService.sendEmail(
           fromEmail,
@@ -201,9 +208,7 @@ export class BadgeSharingService {
         `Failed to send badge via email: ${error.message}`,
         error.stack,
       );
-      throw new BadRequestException(
-        `Failed to send email: ${error.message}`,
-      );
+      throw new BadRequestException(`Failed to send email: ${error.message}`);
     }
   }
 

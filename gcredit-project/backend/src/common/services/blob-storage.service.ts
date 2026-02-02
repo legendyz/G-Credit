@@ -174,7 +174,10 @@ export class BlobStorageService {
       let isOptimal = true;
 
       // Check if dimensions are optimal
-      if (!this.OPTIMAL_SIZES.includes(width) || !this.OPTIMAL_SIZES.includes(height)) {
+      if (
+        !this.OPTIMAL_SIZES.includes(width) ||
+        !this.OPTIMAL_SIZES.includes(height)
+      ) {
         isOptimal = false;
         suggestions.push(
           `Recommended dimensions: ${this.OPTIMAL_SIZES.join('x')} or ${this.OPTIMAL_SIZES.join('x')} pixels (square images work best for badges)`,
@@ -223,13 +226,19 @@ export class BlobStorageService {
    * @param metadata - Image metadata
    */
   private validateDimensions(metadata: ImageMetadata): void {
-    if (metadata.width < this.MIN_DIMENSION || metadata.height < this.MIN_DIMENSION) {
+    if (
+      metadata.width < this.MIN_DIMENSION ||
+      metadata.height < this.MIN_DIMENSION
+    ) {
       throw new BadRequestException(
         `Image too small. Minimum dimensions: ${this.MIN_DIMENSION}x${this.MIN_DIMENSION} pixels. Current: ${metadata.width}x${metadata.height}`,
       );
     }
 
-    if (metadata.width > this.MAX_DIMENSION || metadata.height > this.MAX_DIMENSION) {
+    if (
+      metadata.width > this.MAX_DIMENSION ||
+      metadata.height > this.MAX_DIMENSION
+    ) {
       throw new BadRequestException(
         `Image too large. Maximum dimensions: ${this.MAX_DIMENSION}x${this.MAX_DIMENSION} pixels. Current: ${metadata.width}x${metadata.height}`,
       );
@@ -257,7 +266,8 @@ export class BlobStorageService {
       .toBuffer();
 
     const thumbnailFileName = `${folder}/thumbnails/${uuidv4()}${extension}`;
-    const blockBlobClient = this.containerClient.getBlockBlobClient(thumbnailFileName);
+    const blockBlobClient =
+      this.containerClient.getBlockBlobClient(thumbnailFileName);
 
     await blockBlobClient.upload(thumbnailBuffer, thumbnailBuffer.length, {
       blobHTTPHeaders: {

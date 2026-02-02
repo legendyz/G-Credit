@@ -96,7 +96,7 @@ describe('WidgetEmbedController', () => {
       });
 
       // Analytics should be recorded (async)
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       expect(badgeAnalyticsService.recordShare).toHaveBeenCalledWith(
         'badge-123',
         'widget',
@@ -122,12 +122,12 @@ describe('WidgetEmbedController', () => {
         status: 'PENDING',
       });
 
-      await expect(
-        controller.getBadgeEmbedData('badge-123'),
-      ).rejects.toThrow(NotFoundException);
-      await expect(
-        controller.getBadgeEmbedData('badge-123'),
-      ).rejects.toThrow('Badge is not available for embedding');
+      await expect(controller.getBadgeEmbedData('badge-123')).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(controller.getBadgeEmbedData('badge-123')).rejects.toThrow(
+        'Badge is not available for embedding',
+      );
     });
 
     it('should handle missing referer header', async () => {
@@ -139,7 +139,7 @@ describe('WidgetEmbedController', () => {
       expect(result.badgeId).toBe('badge-123');
 
       // Analytics should be recorded with 'unknown' referrer
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       expect(badgeAnalyticsService.recordShare).toHaveBeenCalledWith(
         'badge-123',
         'widget',
@@ -278,7 +278,7 @@ describe('WidgetEmbedController', () => {
       );
 
       // Analytics should be recorded with referer
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       expect(badgeAnalyticsService.recordShare).toHaveBeenCalledWith(
         'badge-123',
         'widget',

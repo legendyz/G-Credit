@@ -27,12 +27,12 @@ jest.setTimeout(60000);
 // global.console.log = jest.fn();
 
 // Add custom matchers or global utilities here
-beforeAll(async () => {
+beforeAll(() => {
   // Any global setup needed before all tests
   console.log('🧪 E2E Test Suite Starting...');
 });
 
-afterAll(async () => {
+afterAll(() => {
   // Any global cleanup needed after all tests
   console.log('🧪 E2E Test Suite Complete');
 });

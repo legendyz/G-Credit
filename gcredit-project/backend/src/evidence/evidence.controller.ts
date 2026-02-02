@@ -10,7 +10,14 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiBody,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -41,8 +48,8 @@ export class EvidenceController {
       },
     },
   })
-  @ApiResponse({ 
-    status: 201, 
+  @ApiResponse({
+    status: 201,
     description: 'Evidence file uploaded successfully',
     schema: {
       example: {
@@ -51,10 +58,11 @@ export class EvidenceController {
         originalName: 'certificate.pdf',
         fileSize: 1234567,
         mimeType: 'application/pdf',
-        blobUrl: 'https://gcreditdevstoragelz.blob.core.windows.net/evidence/...',
-        uploadedAt: '2026-01-28T10:00:00.000Z'
-      }
-    }
+        blobUrl:
+          'https://gcreditdevstoragelz.blob.core.windows.net/evidence/...',
+        uploadedAt: '2026-01-28T10:00:00.000Z',
+      },
+    },
   })
   @ApiResponse({ status: 400, description: 'File too large or invalid type' })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
@@ -78,9 +86,11 @@ export class EvidenceController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'List evidence files for badge (Story 4.3 - AC 3.8)' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiOperation({
+    summary: 'List evidence files for badge (Story 4.3 - AC 3.8)',
+  })
+  @ApiResponse({
+    status: 200,
     description: 'Evidence files retrieved',
     schema: {
       example: [
@@ -91,17 +101,14 @@ export class EvidenceController {
           fileSize: 1234567,
           mimeType: 'application/pdf',
           blobUrl: 'https://...',
-          uploadedAt: '2026-01-28T10:00:00.000Z'
-        }
-      ]
-    }
+          uploadedAt: '2026-01-28T10:00:00.000Z',
+        },
+      ],
+    },
   })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
   @ApiResponse({ status: 404, description: 'Badge not found' })
-  async listEvidence(
-    @Param('badgeId') badgeId: string,
-    @Request() req: any,
-  ) {
+  async listEvidence(@Param('badgeId') badgeId: string, @Request() req: any) {
     return this.evidenceService.listEvidence(
       badgeId,
       req.user.userId,
@@ -111,16 +118,16 @@ export class EvidenceController {
 
   @Get(':fileId/download')
   @ApiOperation({ summary: 'Generate download SAS token (Story 4.3 - AC 3.9)' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'SAS token generated (5-minute expiry)',
     schema: {
       example: {
         url: 'https://gcreditdevstoragelz.blob.core.windows.net/evidence/...?sasToken...',
         expiresAt: '2026-01-28T10:05:00.000Z',
-        isImage: false
-      }
-    }
+        isImage: false,
+      },
+    },
   })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
   @ApiResponse({ status: 404, description: 'File not found' })
@@ -139,16 +146,16 @@ export class EvidenceController {
 
   @Get(':fileId/preview')
   @ApiOperation({ summary: 'Generate preview SAS token (Story 4.3 - AC 3.10)' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'SAS token generated for preview',
     schema: {
       example: {
         url: 'https://gcreditdevstoragelz.blob.core.windows.net/evidence/...?sasToken...',
         expiresAt: '2026-01-28T10:05:00.000Z',
-        isImage: true
-      }
-    }
+        isImage: true,
+      },
+    },
   })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
   @ApiResponse({ status: 404, description: 'File not found' })

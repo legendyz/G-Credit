@@ -61,7 +61,9 @@ describe('EmailTemplateService', () => {
       expect(html).toContain('Congrats on this achievement!');
       expect(html).toContain('Badge Shared With You');
       expect(html).toContain('123'); // earnedCount
-      expect(html).toContain('https://test.g-credit.com/verify/test-verification-id');
+      expect(html).toContain(
+        'https://test.g-credit.com/verify/test-verification-id',
+      );
       // Handlebars HTML-escapes URLs, so = becomes &#x3D;
       expect(html).toContain('https://test.g-credit.com/claim?token');
       expect(html).toContain('test-claim-token');
@@ -115,8 +117,12 @@ describe('EmailTemplateService', () => {
       expect(text).toContain('John Doe');
       expect(text).toContain('Congrats on this achievement!');
       expect(text).toContain('123 professionals have earned this badge');
-      expect(text).toContain('https://test.g-credit.com/verify/test-verification-id');
-      expect(text).toContain('https://test.g-credit.com/claim?token=test-claim-token');
+      expect(text).toContain(
+        'https://test.g-credit.com/verify/test-verification-id',
+      );
+      expect(text).toContain(
+        'https://test.g-credit.com/claim?token=test-claim-token',
+      );
     });
 
     it('should render plain text without optional fields', () => {

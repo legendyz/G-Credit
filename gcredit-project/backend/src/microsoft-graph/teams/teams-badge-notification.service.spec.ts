@@ -2,7 +2,7 @@
  * Unit tests for TeamsBadgeNotificationService
  * Story 7.4 - Microsoft Teams Notifications
  * Task 6: Email Fallback Testing
- * 
+ *
  * NOTE: Some tests may fail due to Teams channel sharing being technical debt.
  * Teams channel sharing requires ChannelMessage.Send Graph API permission.
  * See: docs/sprints/sprint-6/technical-debt.md
@@ -65,7 +65,8 @@ describe('TeamsBadgeNotificationService - Story 7.4', () => {
     template: {
       id: 'template-001',
       name: 'Full-Stack Developer Certification',
-      description: 'This badge recognizes proficiency in full-stack development.',
+      description:
+        'This badge recognizes proficiency in full-stack development.',
       imageUrl: 'https://storage.azure.com/badges/test-badge.png',
     },
     issuer: {
@@ -112,7 +113,9 @@ describe('TeamsBadgeNotificationService - Story 7.4', () => {
     graphTeamsService = module.get<GraphTeamsService>(GraphTeamsService);
     prismaService = module.get<PrismaService>(PrismaService);
     configService = module.get<ConfigService>(ConfigService);
-    emailNotificationService = module.get<BadgeNotificationService>(BadgeNotificationService);
+    emailNotificationService = module.get<BadgeNotificationService>(
+      BadgeNotificationService,
+    );
 
     // Reset mocks
     jest.clearAllMocks();
@@ -174,7 +177,11 @@ describe('TeamsBadgeNotificationService - Story 7.4', () => {
     });
 
     it('should not include claim URL when badge is CLAIMED', async () => {
-      const claimedBadge = { ...mockBadgeData, status: 'CLAIMED', claimToken: null };
+      const claimedBadge = {
+        ...mockBadgeData,
+        status: 'CLAIMED',
+        claimToken: null,
+      };
       mockPrismaService.badge.findUnique.mockResolvedValue(claimedBadge);
       mockPrismaService.user.findUnique.mockResolvedValue(mockRecipient);
 
@@ -195,35 +202,42 @@ describe('TeamsBadgeNotificationService - Story 7.4', () => {
 
       await service.sendBadgeIssuanceNotification('badge-123', 'user-789');
 
-      expect(mockGraphTeamsService.sendActivityNotification).not.toHaveBeenCalled();
+      expect(
+        mockGraphTeamsService.sendActivityNotification,
+      ).not.toHaveBeenCalled();
     });
 
     it('should handle Graph API errors gracefully', async () => {
       // Task 6: Updated - now sends email fallback instead of throwing
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeData);
       mockPrismaService.user.findUnique.mockResolvedValue(mockRecipient);
-      
+
       // Mock the error AFTER enabling Teams
       mockGraphTeamsService.isGraphTeamsEnabled.mockReturnValue(true);
       mockGraphTeamsService.sendActivityNotification.mockRejectedValueOnce(
         new Error('Graph API rate limit exceeded'),
       );
-      mockEmailNotificationService.sendBadgeClaimNotification.mockResolvedValue(undefined);
+      mockEmailNotificationService.sendBadgeClaimNotification.mockResolvedValue(
+        undefined,
+      );
 
       // Should NOT throw - email fallback handles it
       await expect(
         service.sendBadgeIssuanceNotification('badge-123', 'user-789'),
       ).resolves.not.toThrow();
-      
+
       // Verify Teams was attempted
       expect(mockGraphTeamsService.sendActivityNotification).toHaveBeenCalled();
-      
+
       // Verify email fallback was triggered
-      expect(mockEmailNotificationService.sendBadgeClaimNotification).toHaveBeenCalledWith({
+      expect(
+        mockEmailNotificationService.sendBadgeClaimNotification,
+      ).toHaveBeenCalledWith({
         recipientEmail: 'john.smith@example.com',
         recipientName: 'John Smith',
         badgeName: 'Full-Stack Developer Certification',
-        badgeDescription: 'This badge recognizes proficiency in full-stack development.',
+        badgeDescription:
+          'This badge recognizes proficiency in full-stack development.',
         badgeImageUrl: 'https://storage.azure.com/badges/test-badge.png',
         claimUrl: 'https://g-credit.com/claim?token=claim-token-xyz',
       });
@@ -238,13 +252,19 @@ describe('TeamsBadgeNotificationService - Story 7.4', () => {
       mockGraphTeamsService.sendActivityNotification.mockRejectedValueOnce(
         new Error('Teams service unavailable'),
       );
-      mockEmailNotificationService.sendBadgeClaimNotification.mockResolvedValue(undefined);
+      mockEmailNotificationService.sendBadgeClaimNotification.mockResolvedValue(
+        undefined,
+      );
 
       await service.sendBadgeIssuanceNotification('badge-123', 'user-789');
 
       // Verify email was sent
-      expect(mockEmailNotificationService.sendBadgeClaimNotification).toHaveBeenCalledTimes(1);
-      expect(mockEmailNotificationService.sendBadgeClaimNotification).toHaveBeenCalledWith(
+      expect(
+        mockEmailNotificationService.sendBadgeClaimNotification,
+      ).toHaveBeenCalledTimes(1);
+      expect(
+        mockEmailNotificationService.sendBadgeClaimNotification,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           recipientEmail: 'john.smith@example.com',
           recipientName: 'John Smith',
@@ -267,23 +287,27 @@ describe('TeamsBadgeNotificationService - Story 7.4', () => {
         service.sendBadgeIssuanceNotification('badge-123', 'user-789'),
       ).rejects.toThrow('Email service down');
 
-      expect(mockEmailNotificationService.sendBadgeClaimNotification).toHaveBeenCalled();
+      expect(
+        mockEmailNotificationService.sendBadgeClaimNotification,
+      ).toHaveBeenCalled();
     });
 
     it('should format date correctly in Adaptive Card', async () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeData);
       mockPrismaService.user.findUnique.mockResolvedValue(mockRecipient);
-      
+
       // Ensure Teams is enabled for this test
       mockGraphTeamsService.isGraphTeamsEnabled.mockReturnValue(true);
-      mockGraphTeamsService.sendActivityNotification.mockResolvedValueOnce(undefined);
+      mockGraphTeamsService.sendActivityNotification.mockResolvedValueOnce(
+        undefined,
+      );
 
       await service.sendBadgeIssuanceNotification('badge-123', 'user-789');
 
       expect(mockGraphTeamsService.sendActivityNotification).toHaveBeenCalled();
       const callArgs =
         mockGraphTeamsService.sendActivityNotification.mock.calls[0];
-      
+
       // The adaptive card is the 5th argument (index 4)
       expect(callArgs).toHaveLength(5);
       const adaptiveCard = callArgs[4];
@@ -292,9 +316,7 @@ describe('TeamsBadgeNotificationService - Story 7.4', () => {
       // Find the FactSet container
       const detailsContainer = adaptiveCard.body[1];
       const factSet = detailsContainer.items[0];
-      const issueDateFact = factSet.facts.find(
-        (f) => f.title === 'Issued On:',
-      );
+      const issueDateFact = factSet.facts.find((f) => f.title === 'Issued On:');
 
       expect(issueDateFact.value).toBe('January 30, 2026');
     });

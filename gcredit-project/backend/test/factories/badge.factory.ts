@@ -93,30 +93,31 @@ export class BadgeFactory {
       options.claimToken || crypto.randomBytes(16).toString('hex');
 
     // Default expiration: 1 year from now
-    const expiresAt = options.expiresAt || new Date(Date.now() + 365 * 86400000);
+    const expiresAt =
+      options.expiresAt || new Date(Date.now() + 365 * 86400000);
     const issuedAt = new Date();
-    
+
     // Salt for email hashing (matches AssertionGeneratorService)
     const salt = crypto.randomBytes(16).toString('hex');
-    
+
     // Generate recipient hash (SHA-256 of recipient ID + salt for privacy)
     const recipientHash = crypto
       .createHash('sha256')
       .update(`${options.recipientId}:${salt}`)
       .digest('hex');
-    
+
     const baseUrl = process.env.APP_URL || 'http://localhost:3000';
-    
+
     // Generate Open Badges 2.0 JSON-LD assertion (matches AssertionGeneratorService format)
     // Reference: https://www.imsglobal.org/spec/ob/v2p0/
     const assertionJson = {
       '@context': 'https://w3id.org/openbadges/v2',
       type: 'Assertion',
       id: `${baseUrl}/api/badges/${badgeId}/assertion`,
-      
+
       // Badge Class URL (not embedded object - per Open Badges 2.0 spec)
       badge: `${baseUrl}/api/badge-templates/${options.templateId}`,
-      
+
       // Recipient (hashed for privacy)
       recipient: {
         type: 'email',
@@ -124,11 +125,11 @@ export class BadgeFactory {
         salt: salt,
         identity: `sha256$${recipientHash}`,
       },
-      
+
       // Issuance metadata
       issuedOn: issuedAt.toISOString(),
       ...(expiresAt && { expires: expiresAt.toISOString() }),
-      
+
       // Verification (hosted type with verification URL)
       verification: {
         type: 'hosted',

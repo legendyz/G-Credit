@@ -72,7 +72,9 @@ export class BadgeAnalyticsService {
         platform,
         sharedBy: userId,
         recipientEmail: metadata?.recipientEmail || null,
-        metadata: (metadataToStore && Object.keys(metadataToStore).length > 0 ? metadataToStore : null) as any,
+        metadata: (metadataToStore && Object.keys(metadataToStore).length > 0
+          ? metadataToStore
+          : null) as any,
       },
     });
   }
@@ -83,10 +85,7 @@ export class BadgeAnalyticsService {
    * @param userId User ID requesting stats (for authorization)
    * @returns Share counts by platform
    */
-  async getShareStats(
-    badgeId: string,
-    userId: string,
-  ): Promise<ShareStatsDto> {
+  async getShareStats(badgeId: string, userId: string): Promise<ShareStatsDto> {
     // Verify user is authorized (badge owner or issuer)
     await this.verifyAuthorization(badgeId, userId);
 

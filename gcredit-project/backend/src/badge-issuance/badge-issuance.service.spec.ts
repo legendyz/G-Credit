@@ -9,7 +9,11 @@ import { MilestonesService } from '../milestones/milestones.service';
 import { TeamsBadgeNotificationService } from '../microsoft-graph/teams/teams-badge-notification.service';
 import { GraphEmailService } from '../microsoft-graph/services/graph-email.service';
 import { ConfigService } from '@nestjs/config';
-import { NotFoundException, BadRequestException, GoneException } from '@nestjs/common';
+import {
+  NotFoundException,
+  BadRequestException,
+  GoneException,
+} from '@nestjs/common';
 import { BadgeStatus } from '@prisma/client';
 
 describe('BadgeIssuanceService', () => {
@@ -45,7 +49,9 @@ describe('BadgeIssuanceService', () => {
 
   const mockNotificationService = {
     sendBadgeClaimNotification: jest.fn(),
-    sendBadgeRevocationNotification: jest.fn().mockResolvedValue({ success: true, attempts: 1 }),
+    sendBadgeRevocationNotification: jest
+      .fn()
+      .mockResolvedValue({ success: true, attempts: 1 }),
   };
 
   const mockCSVParserService = {
@@ -125,7 +131,9 @@ describe('BadgeIssuanceService', () => {
 
     service = module.get<BadgeIssuanceService>(BadgeIssuanceService);
     prismaService = module.get<PrismaService>(PrismaService);
-    assertionGenerator = module.get<AssertionGeneratorService>(AssertionGeneratorService);
+    assertionGenerator = module.get<AssertionGeneratorService>(
+      AssertionGeneratorService,
+    );
 
     // Reset all mocks
     jest.clearAllMocks();
@@ -199,15 +207,21 @@ describe('BadgeIssuanceService', () => {
 
     it('should issue badge successfully with valid inputs', async () => {
       // Arrange
-      mockPrismaService.badgeTemplate.findUnique.mockResolvedValue(mockTemplate);
+      mockPrismaService.badgeTemplate.findUnique.mockResolvedValue(
+        mockTemplate,
+      );
       mockPrismaService.user.findUnique
         .mockResolvedValueOnce(mockRecipient)
         .mockResolvedValueOnce(mockIssuer);
       mockAssertionGenerator.generateClaimToken.mockReturnValue('a'.repeat(32));
       mockAssertionGenerator.generateAssertion.mockReturnValue(mockAssertion);
       mockAssertionGenerator.hashEmail.mockReturnValue('sha256$hashvalue');
-      mockAssertionGenerator.getAssertionUrl.mockReturnValue('https://example.com/assertion');
-      mockAssertionGenerator.getClaimUrl.mockReturnValue('https://example.com/claim?token=aaa');
+      mockAssertionGenerator.getAssertionUrl.mockReturnValue(
+        'https://example.com/assertion',
+      );
+      mockAssertionGenerator.getClaimUrl.mockReturnValue(
+        'https://example.com/claim?token=aaa',
+      );
 
       const mockCreatedBadge = {
         id: 'badge-uuid',
@@ -263,7 +277,9 @@ describe('BadgeIssuanceService', () => {
     it('should throw BadRequestException if template not ACTIVE', async () => {
       // Arrange
       const inactiveTemplate = { ...mockTemplate, status: 'DRAFT' };
-      mockPrismaService.badgeTemplate.findUnique.mockResolvedValue(inactiveTemplate);
+      mockPrismaService.badgeTemplate.findUnique.mockResolvedValue(
+        inactiveTemplate,
+      );
 
       // Act & Assert
       await expect(service.issueBadge(issueDto, mockIssuer.id)).rejects.toThrow(
@@ -276,7 +292,9 @@ describe('BadgeIssuanceService', () => {
 
     it('should throw NotFoundException if recipient not found', async () => {
       // Arrange
-      mockPrismaService.badgeTemplate.findUnique.mockResolvedValue(mockTemplate);
+      mockPrismaService.badgeTemplate.findUnique.mockResolvedValue(
+        mockTemplate,
+      );
       mockPrismaService.user.findUnique.mockResolvedValue(null);
 
       // Act & Assert
@@ -290,21 +308,27 @@ describe('BadgeIssuanceService', () => {
 
     it('should generate unique claim token', async () => {
       // Arrange
-      mockPrismaService.badgeTemplate.findUnique.mockResolvedValue(mockTemplate);
+      mockPrismaService.badgeTemplate.findUnique.mockResolvedValue(
+        mockTemplate,
+      );
       mockPrismaService.user.findUnique
         .mockResolvedValueOnce(mockRecipient)
         .mockResolvedValueOnce(mockIssuer);
-      
+
       const token1 = 'a'.repeat(32);
       const token2 = 'b'.repeat(32);
       mockAssertionGenerator.generateClaimToken
         .mockReturnValueOnce(token1)
         .mockReturnValueOnce(token2);
-      
+
       mockAssertionGenerator.generateAssertion.mockReturnValue(mockAssertion);
       mockAssertionGenerator.hashEmail.mockReturnValue('sha256$hashvalue');
-      mockAssertionGenerator.getAssertionUrl.mockReturnValue('https://example.com/assertion');
-      mockAssertionGenerator.getClaimUrl.mockReturnValue('https://example.com/claim?token=aaa');
+      mockAssertionGenerator.getAssertionUrl.mockReturnValue(
+        'https://example.com/assertion',
+      );
+      mockAssertionGenerator.getClaimUrl.mockReturnValue(
+        'https://example.com/claim?token=aaa',
+      );
 
       const mockCreatedBadge = {
         id: 'badge-uuid',
@@ -336,7 +360,9 @@ describe('BadgeIssuanceService', () => {
       );
 
       // Reset for second call
-      mockPrismaService.badgeTemplate.findUnique.mockResolvedValue(mockTemplate);
+      mockPrismaService.badgeTemplate.findUnique.mockResolvedValue(
+        mockTemplate,
+      );
       mockPrismaService.user.findUnique
         .mockResolvedValueOnce(mockRecipient)
         .mockResolvedValueOnce(mockIssuer);
@@ -358,18 +384,26 @@ describe('BadgeIssuanceService', () => {
 
     it('should calculate expiration date correctly', async () => {
       // Arrange
-      mockPrismaService.badgeTemplate.findUnique.mockResolvedValue(mockTemplate);
+      mockPrismaService.badgeTemplate.findUnique.mockResolvedValue(
+        mockTemplate,
+      );
       mockPrismaService.user.findUnique
         .mockResolvedValueOnce(mockRecipient)
         .mockResolvedValueOnce(mockIssuer);
       mockAssertionGenerator.generateClaimToken.mockReturnValue('a'.repeat(32));
       mockAssertionGenerator.generateAssertion.mockReturnValue(mockAssertion);
       mockAssertionGenerator.hashEmail.mockReturnValue('sha256$hashvalue');
-      mockAssertionGenerator.getAssertionUrl.mockReturnValue('https://example.com/assertion');
-      mockAssertionGenerator.getClaimUrl.mockReturnValue('https://example.com/claim?token=aaa');
+      mockAssertionGenerator.getAssertionUrl.mockReturnValue(
+        'https://example.com/assertion',
+      );
+      mockAssertionGenerator.getClaimUrl.mockReturnValue(
+        'https://example.com/claim?token=aaa',
+      );
 
       const now = new Date();
-      const expectedExpiresAt = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
+      const expectedExpiresAt = new Date(
+        now.getTime() + 365 * 24 * 60 * 60 * 1000,
+      );
 
       const mockCreatedBadge = {
         id: 'badge-uuid',
@@ -445,7 +479,9 @@ describe('BadgeIssuanceService', () => {
 
       mockPrismaService.badge.findUnique.mockResolvedValue(mockPendingBadge);
       mockPrismaService.badge.update.mockResolvedValue(mockClaimedBadge);
-      mockAssertionGenerator.getAssertionUrl.mockReturnValue('http://localhost:3000/api/badges/badge-uuid/assertion');
+      mockAssertionGenerator.getAssertionUrl.mockReturnValue(
+        'http://localhost:3000/api/badges/badge-uuid/assertion',
+      );
 
       // Act
       const result = await service.claimBadge(mockClaimToken);
@@ -474,9 +510,9 @@ describe('BadgeIssuanceService', () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(service.claimBadge('invalid-token-' + 'x'.repeat(19)))
-        .rejects
-        .toThrow(NotFoundException);
+      await expect(
+        service.claimBadge('invalid-token-' + 'x'.repeat(19)),
+      ).rejects.toThrow(NotFoundException);
       expect(mockPrismaService.badge.findUnique).toHaveBeenCalledWith({
         where: { claimToken: 'invalid-token-' + 'x'.repeat(19) },
         include: {
@@ -500,9 +536,9 @@ describe('BadgeIssuanceService', () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(mockClaimedBadge);
 
       // Act & Assert
-      await expect(service.claimBadge(mockClaimToken))
-        .rejects
-        .toThrow(BadRequestException);
+      await expect(service.claimBadge(mockClaimToken)).rejects.toThrow(
+        BadRequestException,
+      );
       expect(mockPrismaService.badge.update).not.toHaveBeenCalled();
     });
 
@@ -520,9 +556,9 @@ describe('BadgeIssuanceService', () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(mockRevokedBadge);
 
       // Act & Assert
-      await expect(service.claimBadge(mockClaimToken))
-        .rejects
-        .toThrow(GoneException);
+      await expect(service.claimBadge(mockClaimToken)).rejects.toThrow(
+        GoneException,
+      );
       expect(mockPrismaService.badge.update).not.toHaveBeenCalled();
     });
 
@@ -541,15 +577,17 @@ describe('BadgeIssuanceService', () => {
         recipient: mockRecipient,
       };
 
-      mockPrismaService.badge.findUnique.mockResolvedValue(mockExpiredTokenBadge);
+      mockPrismaService.badge.findUnique.mockResolvedValue(
+        mockExpiredTokenBadge,
+      );
 
       // Act & Assert
-      await expect(service.claimBadge(mockClaimToken))
-        .rejects
-        .toThrow(GoneException);
-      await expect(service.claimBadge(mockClaimToken))
-        .rejects
-        .toThrow(/Claim token has expired/);
+      await expect(service.claimBadge(mockClaimToken)).rejects.toThrow(
+        GoneException,
+      );
+      await expect(service.claimBadge(mockClaimToken)).rejects.toThrow(
+        /Claim token has expired/,
+      );
       expect(mockPrismaService.badge.update).not.toHaveBeenCalled();
     });
   });
@@ -632,8 +670,8 @@ describe('BadgeIssuanceService', () => {
 
       it('should allow ISSUER to revoke their own badges', async () => {
         // Arrange
-        const ownBadge = { 
-          ...mockBadge, 
+        const ownBadge = {
+          ...mockBadge,
           issuerId: mockIssuerUser.id, // Correct field name
         };
         mockPrismaService.badge.findUnique.mockResolvedValue(ownBadge);
@@ -664,9 +702,9 @@ describe('BadgeIssuanceService', () => {
 
       it('should throw 403 if ISSUER tries to revoke others badge', async () => {
         // Arrange
-        const otherBadge = { 
-          ...mockBadge, 
-          issuerId: 'other-issuer-id',  // Different issuer
+        const otherBadge = {
+          ...mockBadge,
+          issuerId: 'other-issuer-id', // Different issuer
         };
         mockPrismaService.badge.findUnique.mockResolvedValue(otherBadge);
         mockPrismaService.user.findUnique.mockResolvedValue(mockIssuerUser);
@@ -847,7 +885,9 @@ describe('BadgeIssuanceService', () => {
           template: mockTemplate,
         };
 
-        mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeWithRecipient);
+        mockPrismaService.badge.findUnique.mockResolvedValue(
+          mockBadgeWithRecipient,
+        );
         mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
         mockPrismaService.$transaction.mockImplementation(async (callback) => {
           return callback({
@@ -875,8 +915,12 @@ describe('BadgeIssuanceService', () => {
         });
 
         // Assert - Verify email notification was called with correct params
-        expect(mockNotificationService.sendBadgeRevocationNotification).toHaveBeenCalledTimes(1);
-        expect(mockNotificationService.sendBadgeRevocationNotification).toHaveBeenCalledWith(
+        expect(
+          mockNotificationService.sendBadgeRevocationNotification,
+        ).toHaveBeenCalledTimes(1);
+        expect(
+          mockNotificationService.sendBadgeRevocationNotification,
+        ).toHaveBeenCalledWith(
           expect.objectContaining({
             recipientEmail: 'recipient@test.com',
             recipientName: 'Jane Doe',
@@ -905,7 +949,9 @@ describe('BadgeIssuanceService', () => {
           template: mockTemplate,
         };
 
-        mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeWithRecipient);
+        mockPrismaService.badge.findUnique.mockResolvedValue(
+          mockBadgeWithRecipient,
+        );
         mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
         mockPrismaService.$transaction.mockImplementation(async (callback) => {
           return callback({
@@ -928,7 +974,9 @@ describe('BadgeIssuanceService', () => {
         });
 
         // Assert
-        expect(mockNotificationService.sendBadgeRevocationNotification).toHaveBeenCalledWith(
+        expect(
+          mockNotificationService.sendBadgeRevocationNotification,
+        ).toHaveBeenCalledWith(
           expect.objectContaining({
             recipientEmail: 'john@test.com',
             recipientName: 'John Smith',
@@ -936,7 +984,7 @@ describe('BadgeIssuanceService', () => {
             revocationReason: 'Expired',
             revocationDate: expect.any(Date),
             revocationNotes: undefined,
-          })
+          }),
         );
       });
 
@@ -957,7 +1005,9 @@ describe('BadgeIssuanceService', () => {
         });
 
         // Assert - Email should NOT be sent for already-revoked badges
-        expect(mockNotificationService.sendBadgeRevocationNotification).not.toHaveBeenCalled();
+        expect(
+          mockNotificationService.sendBadgeRevocationNotification,
+        ).not.toHaveBeenCalled();
       });
 
       it('should NOT fail revocation if email sending fails', async () => {
@@ -972,7 +1022,9 @@ describe('BadgeIssuanceService', () => {
           recipient: mockRecipient,
         };
 
-        mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeWithRecipient);
+        mockPrismaService.badge.findUnique.mockResolvedValue(
+          mockBadgeWithRecipient,
+        );
         mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
         mockPrismaService.$transaction.mockImplementation(async (callback) => {
           return callback({
@@ -990,7 +1042,7 @@ describe('BadgeIssuanceService', () => {
 
         // Simulate email service failure
         mockNotificationService.sendBadgeRevocationNotification.mockRejectedValue(
-          new Error('SMTP connection failed')
+          new Error('SMTP connection failed'),
         );
 
         // Act & Assert - Revocation should succeed even if email fails
@@ -1000,7 +1052,9 @@ describe('BadgeIssuanceService', () => {
         });
 
         expect(result.status).toBe(BadgeStatus.REVOKED);
-        expect(mockNotificationService.sendBadgeRevocationNotification).toHaveBeenCalled();
+        expect(
+          mockNotificationService.sendBadgeRevocationNotification,
+        ).toHaveBeenCalled();
       });
 
       it('should create audit log entry for notification result (AC3)', async () => {
@@ -1017,7 +1071,9 @@ describe('BadgeIssuanceService', () => {
           template: mockTemplate,
         };
 
-        mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeWithRecipient);
+        mockPrismaService.badge.findUnique.mockResolvedValue(
+          mockBadgeWithRecipient,
+        );
         mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
         mockPrismaService.$transaction.mockImplementation(async (callback) => {
           return callback({
@@ -1035,10 +1091,12 @@ describe('BadgeIssuanceService', () => {
         });
 
         // Mock notification result for audit
-        mockNotificationService.sendBadgeRevocationNotification.mockResolvedValue({
-          success: true,
-          attempts: 1,
-        });
+        mockNotificationService.sendBadgeRevocationNotification.mockResolvedValue(
+          {
+            success: true,
+            attempts: 1,
+          },
+        );
         mockPrismaService.auditLog.create.mockResolvedValue({});
 
         // Act
@@ -1081,7 +1139,9 @@ describe('BadgeIssuanceService', () => {
           template: mockTemplate,
         };
 
-        mockPrismaService.badge.findUnique.mockResolvedValue(mockBadgeWithRecipient);
+        mockPrismaService.badge.findUnique.mockResolvedValue(
+          mockBadgeWithRecipient,
+        );
         mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
         mockPrismaService.$transaction.mockImplementation(async (callback) => {
           return callback({
@@ -1105,7 +1165,9 @@ describe('BadgeIssuanceService', () => {
         });
 
         // Assert - revocationDate should be passed
-        expect(mockNotificationService.sendBadgeRevocationNotification).toHaveBeenCalledWith(
+        expect(
+          mockNotificationService.sendBadgeRevocationNotification,
+        ).toHaveBeenCalledWith(
           expect.objectContaining({
             revocationDate: revokedAt,
           }),
@@ -1117,7 +1179,7 @@ describe('BadgeIssuanceService', () => {
   // Story 9.3: Employee Wallet Display for Revoked Badges
   describe('getWalletBadges - Story 9.3', () => {
     const mockUserId = 'user-uuid-123';
-    
+
     describe('Revocation Fields Inclusion', () => {
       it('should include revocation fields when badge is REVOKED', async () => {
         // Arrange
@@ -1154,8 +1216,12 @@ describe('BadgeIssuanceService', () => {
         };
 
         (mockPrismaService.badge as any).count = jest.fn().mockResolvedValue(1);
-        (mockPrismaService.badge as any).findMany = jest.fn().mockResolvedValue([revokedBadge]);
-        mockMilestonesService.getUserAchievements = jest.fn().mockResolvedValue([]);
+        (mockPrismaService.badge as any).findMany = jest
+          .fn()
+          .mockResolvedValue([revokedBadge]);
+        mockMilestonesService.getUserAchievements = jest
+          .fn()
+          .mockResolvedValue([]);
 
         // Act
         const result = await service.getWalletBadges(mockUserId, {});
@@ -1198,8 +1264,12 @@ describe('BadgeIssuanceService', () => {
         };
 
         (mockPrismaService.badge as any).count = jest.fn().mockResolvedValue(1);
-        (mockPrismaService.badge as any).findMany = jest.fn().mockResolvedValue([claimedBadge]);
-        mockMilestonesService.getUserAchievements = jest.fn().mockResolvedValue([]);
+        (mockPrismaService.badge as any).findMany = jest
+          .fn()
+          .mockResolvedValue([claimedBadge]);
+        mockMilestonesService.getUserAchievements = jest
+          .fn()
+          .mockResolvedValue([]);
 
         // Act
         const result = await service.getWalletBadges(mockUserId, {});
@@ -1238,11 +1308,17 @@ describe('BadgeIssuanceService', () => {
         };
 
         (mockPrismaService.badge as any).count = jest.fn().mockResolvedValue(1);
-        (mockPrismaService.badge as any).findMany = jest.fn().mockResolvedValue([revokedBadge]);
-        mockMilestonesService.getUserAchievements = jest.fn().mockResolvedValue([]);
+        (mockPrismaService.badge as any).findMany = jest
+          .fn()
+          .mockResolvedValue([revokedBadge]);
+        mockMilestonesService.getUserAchievements = jest
+          .fn()
+          .mockResolvedValue([]);
 
         // Act
-        const result = await service.getWalletBadges(mockUserId, { status: BadgeStatus.REVOKED });
+        const result = await service.getWalletBadges(mockUserId, {
+          status: BadgeStatus.REVOKED,
+        });
 
         // Assert
         expect(mockPrismaService.badge.count).toHaveBeenCalledWith({

@@ -38,28 +38,36 @@ export class BadgeTemplateFactory {
   /**
    * Creates an active badge template
    */
-  async createActive(options: CreateBadgeTemplateOptions): Promise<BadgeTemplate> {
+  async createActive(
+    options: CreateBadgeTemplateOptions,
+  ): Promise<BadgeTemplate> {
     return this.createTemplate({ status: 'ACTIVE', ...options });
   }
 
   /**
    * Creates a draft badge template
    */
-  async createDraft(options: CreateBadgeTemplateOptions): Promise<BadgeTemplate> {
+  async createDraft(
+    options: CreateBadgeTemplateOptions,
+  ): Promise<BadgeTemplate> {
     return this.createTemplate({ status: 'DRAFT', ...options });
   }
 
   /**
    * Creates an archived badge template
    */
-  async createArchived(options: CreateBadgeTemplateOptions): Promise<BadgeTemplate> {
+  async createArchived(
+    options: CreateBadgeTemplateOptions,
+  ): Promise<BadgeTemplate> {
     return this.createTemplate({ status: 'ARCHIVED', ...options });
   }
 
   /**
    * Creates a badge template with specified options
    */
-  async createTemplate(options: CreateBadgeTemplateOptions): Promise<BadgeTemplate> {
+  async createTemplate(
+    options: CreateBadgeTemplateOptions,
+  ): Promise<BadgeTemplate> {
     const uniqueId = uuidv4().substring(0, 8);
     const status = options.status || 'ACTIVE';
 

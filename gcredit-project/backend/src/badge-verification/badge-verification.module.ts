@@ -8,7 +8,11 @@ import { ConfigModule } from '@nestjs/config';
 @Module({
   imports: [ConfigModule],
   controllers: [BadgeVerificationController],
-  providers: [BadgeVerificationService, PrismaService, AssertionGeneratorService],
+  providers: [
+    BadgeVerificationService,
+    PrismaService,
+    AssertionGeneratorService,
+  ],
   exports: [BadgeVerificationService],
 })
 export class BadgeVerificationModule {}

@@ -83,7 +83,9 @@ async function bootstrap() {
           formAction: ["'self'"],
           frameAncestors: ["'none'"],
           // Only add upgradeInsecureRequests in production (omit in dev to avoid issues)
-          ...(process.env.NODE_ENV === 'production' && { upgradeInsecureRequests: [] }),
+          ...(process.env.NODE_ENV === 'production' && {
+            upgradeInsecureRequests: [],
+          }),
         },
       },
       // AC1: X-Frame-Options: DENY (default is SAMEORIGIN, override to DENY)
@@ -124,7 +126,10 @@ async function bootstrap() {
   }
 
   app.enableCors({
-    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
       // Allow requests with no origin (mobile apps, Postman, etc.)
       if (!origin) {
         callback(null, true);
@@ -140,7 +145,12 @@ async function bootstrap() {
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'X-Requested-With',
+    ],
     exposedHeaders: ['X-Total-Count', 'X-Page-Number'],
     maxAge: 3600, // Cache preflight for 1 hour
   });
@@ -160,14 +170,26 @@ async function bootstrap() {
     .setTitle('G-Credit Digital Badge Platform API')
     .setDescription(
       'API documentation for G-Credit Digital Badge Management System. ' +
-      'This platform enables organizations to create, issue, and manage digital badges.',
+        'This platform enables organizations to create, issue, and manage digital badges.',
     )
     .setVersion('1.0')
     .addTag('Authentication', 'User authentication and authorization')
-    .addTag('Badge Templates', 'Badge template management (CRUD, query, image upload)')
-    .addTag('Badge Sharing', 'Share badges to Teams and other platforms (Story 7.4)')
-    .addTag('Badge Widget', 'PUBLIC API - Embeddable badge widgets for external websites (Story 7.3)')
-    .addTag('Teams Actions', 'Handle Adaptive Card actions from Microsoft Teams (Story 7.4)')
+    .addTag(
+      'Badge Templates',
+      'Badge template management (CRUD, query, image upload)',
+    )
+    .addTag(
+      'Badge Sharing',
+      'Share badges to Teams and other platforms (Story 7.4)',
+    )
+    .addTag(
+      'Badge Widget',
+      'PUBLIC API - Embeddable badge widgets for external websites (Story 7.3)',
+    )
+    .addTag(
+      'Teams Actions',
+      'Handle Adaptive Card actions from Microsoft Teams (Story 7.4)',
+    )
     .addTag('Skills', 'Skill management and categories')
     .addTag('Users', 'User profile and management')
     .addBearerAuth(
@@ -194,6 +216,8 @@ async function bootstrap() {
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
   console.log(`🚀 Application is running on: http://localhost:${port}`);
-  console.log(`📚 API Documentation available at: http://localhost:${port}/api-docs`);
+  console.log(
+    `📚 API Documentation available at: http://localhost:${port}/api-docs`,
+  );
 }
 bootstrap();

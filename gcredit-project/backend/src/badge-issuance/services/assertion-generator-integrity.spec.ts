@@ -193,7 +193,10 @@ describe('AssertionGeneratorService - Integrity (Story 6.5)', () => {
         },
       };
 
-      const isValid = service.verifyAssertionIntegrity(tamperedAssertion, storedHash);
+      const isValid = service.verifyAssertionIntegrity(
+        tamperedAssertion,
+        storedHash,
+      );
 
       expect(isValid).toBe(false);
     });
