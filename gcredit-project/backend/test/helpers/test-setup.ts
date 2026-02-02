@@ -89,7 +89,7 @@ export async function teardownE2ETest(context: TestContext): Promise<void> {
 export async function createAndLoginUser(
   app: INestApplication,
   userFactory: UserFactory,
-  role: 'admin' | 'manager' | 'employee' = 'employee',
+  role: 'admin' | 'manager' | 'issuer' | 'employee' = 'employee',
   password = 'TestPassword123!',
 ): Promise<TestUser> {
   let user: User;
@@ -100,6 +100,9 @@ export async function createAndLoginUser(
       break;
     case 'manager':
       user = await userFactory.createManager({ password });
+      break;
+    case 'issuer':
+      user = await userFactory.createIssuer({ password });
       break;
     default:
       user = await userFactory.createEmployee({ password });

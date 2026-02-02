@@ -96,9 +96,11 @@ jobs:
       # Disable Azure Storage for tests (use mocks)
       AZURE_STORAGE_CONNECTION_STRING: ""
       AZURE_STORAGE_ACCOUNT_NAME: ""
-      # Rate limiting (increase for tests)
+      # Rate limiting (increase for tests) - both naming conventions
       THROTTLE_TTL: 60000
       THROTTLE_LIMIT: 1000
+      RATE_LIMIT_TTL: 60000
+      RATE_LIMIT_MAX: 1000
       # Test environment
       NODE_ENV: test
 
@@ -123,15 +125,7 @@ jobs:
         run: npx prisma db push --skip-generate
 
       - name: Run E2E Tests (Parallel)
-        run: npm run test:e2e -- --maxWorkers=2 --forceExit || echo "Jest exited with code $?"
-        continue-on-error: true
-        id: e2e
-
-      - name: Check E2E Results
-        run: |
-          echo "E2E test step outcome: ${{ steps.e2e.outcome }}"
-          # E2E tests with forceExit may return 1 even on success
-          # This is acceptable as long as Lint/Unit and Build pass
+        run: npm run test:e2e -- --maxWorkers=2 --forceExit
 
       - name: Upload test results
         uses: actions/upload-artifact@v4

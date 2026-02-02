@@ -40,10 +40,10 @@ export class UserFactory {
   }
 
   /**
-   * Creates an issuer/manager user
+   * Creates an issuer user (can issue badges)
    */
   async createIssuer(options: CreateUserOptions = {}): Promise<User> {
-    return this.createUser({ role: UserRole.MANAGER, ...options });
+    return this.createUser({ role: UserRole.ISSUER, ...options });
   }
 
   /**

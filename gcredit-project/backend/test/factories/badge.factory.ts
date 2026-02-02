@@ -200,7 +200,7 @@ export class BadgeFactory {
    */
   static getVerificationUrl(badge: Badge): string {
     const baseUrl = process.env.API_URL || 'http://localhost:3000';
-    return `${baseUrl}/api/verify/${badge.id}`;
+    return `${baseUrl}/api/verify/${badge.verificationId}`;
   }
 }
 
