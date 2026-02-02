@@ -55,6 +55,7 @@ describe('EvidenceService - Story 4.3', () => {
     const mockBadge = {
       id: 'badge-123',
       recipientId: 'user-123',
+      issuerId: 'user-admin', // Required for authorization check
     };
 
     const mockFile: Express.Multer.File = {
