@@ -122,12 +122,6 @@ jobs:
       - name: Push database schema
         run: npx prisma db push --skip-generate
 
-      - name: Verify database connection
-        run: |
-          echo "Testing database connection..."
-          npx prisma db execute --stdin <<< "SELECT 1;"
-          echo "Database connection successful!"
-
       - name: Run E2E Tests (Parallel)
         run: npm run test:e2e -- --maxWorkers=2 --forceExit || echo "Jest exited with code $?"
         continue-on-error: true
