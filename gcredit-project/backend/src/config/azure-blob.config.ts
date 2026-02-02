@@ -5,9 +5,10 @@ export const azureBlobConfig = {
   containerName: process.env.AZURE_STORAGE_CONTAINER_BADGES, // 'badges'
 };
 
-export const getBlobServiceClient = (): BlobServiceClient => {
+export const getBlobServiceClient = (): BlobServiceClient | null => {
   if (!azureBlobConfig.connectionString) {
-    throw new Error('AZURE_STORAGE_CONNECTION_STRING is not configured');
+    console.warn('⚠️ AZURE_STORAGE_CONNECTION_STRING is not configured - blob storage operations will be mocked');
+    return null;
   }
 
   return BlobServiceClient.fromConnectionString(
@@ -15,11 +16,16 @@ export const getBlobServiceClient = (): BlobServiceClient => {
   );
 };
 
-export const getBadgesContainerClient = (): ContainerClient => {
+export const getBadgesContainerClient = (): ContainerClient | null => {
   const blobServiceClient = getBlobServiceClient();
 
+  if (!blobServiceClient) {
+    return null;
+  }
+
   if (!azureBlobConfig.containerName) {
-    throw new Error('AZURE_STORAGE_CONTAINER_BADGES is not configured');
+    console.warn('⚠️ AZURE_STORAGE_CONTAINER_BADGES is not configured');
+    return null;
   }
 
   return blobServiceClient.getContainerClient(azureBlobConfig.containerName);

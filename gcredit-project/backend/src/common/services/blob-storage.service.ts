@@ -23,7 +23,8 @@ export interface UploadImageResult {
 @Injectable()
 export class BlobStorageService {
   private readonly logger = new Logger(BlobStorageService.name);
-  private containerClient: ContainerClient;
+  private containerClient: ContainerClient | null = null;
+  private initialized = false;
 
   // Recommended dimensions for badge images
   private readonly RECOMMENDED_SIZES = [256, 512, 1024];
@@ -32,7 +33,39 @@ export class BlobStorageService {
   private readonly MAX_DIMENSION = 2048;
 
   constructor() {
-    this.containerClient = getBadgesContainerClient();
+    // Lazy initialization - don't throw in constructor
+    this.initializeClient();
+  }
+
+  private initializeClient(): void {
+    if (this.initialized) return;
+    this.initialized = true;
+    
+    try {
+      this.containerClient = getBadgesContainerClient();
+      if (!this.containerClient) {
+        this.logger.warn('Azure Blob Storage not configured - operations will return mock data');
+      }
+    } catch (error) {
+      this.logger.warn(`Failed to initialize Azure Blob Storage: ${error.message}`);
+      this.containerClient = null;
+    }
+  }
+
+  private ensureClient(): ContainerClient {
+    this.initializeClient();
+    if (!this.containerClient) {
+      throw new BadRequestException('Azure Blob Storage is not configured');
+    }
+    return this.containerClient;
+  }
+
+  /**
+   * Check if Azure Blob Storage is available
+   */
+  isAvailable(): boolean {
+    this.initializeClient();
+    return this.containerClient !== null;
   }
 
   /**
@@ -61,7 +94,7 @@ export class BlobStorageService {
     const fileName = `${folder}/${uuidv4()}${fileExtension}`;
 
     // Get blob client
-    const blockBlobClient = this.containerClient.getBlockBlobClient(fileName);
+    const blockBlobClient = this.ensureClient().getBlockBlobClient(fileName);
 
     // Upload to Azure Blob
     await blockBlobClient.upload(file.buffer, file.size, {
@@ -111,7 +144,7 @@ export class BlobStorageService {
    */
   async deleteImage(url: string): Promise<void> {
     const blobName = this.extractBlobName(url);
-    const blockBlobClient = this.containerClient.getBlockBlobClient(blobName);
+    const blockBlobClient = this.ensureClient().getBlockBlobClient(blobName);
 
     const exists = await blockBlobClient.exists();
     if (!exists) {
@@ -128,7 +161,7 @@ export class BlobStorageService {
   async imageExists(url: string): Promise<boolean> {
     try {
       const blobName = this.extractBlobName(url);
-      const blockBlobClient = this.containerClient.getBlockBlobClient(blobName);
+      const blockBlobClient = this.ensureClient().getBlockBlobClient(blobName);
       return await blockBlobClient.exists();
     } catch (error) {
       return false;
@@ -267,7 +300,7 @@ export class BlobStorageService {
 
     const thumbnailFileName = `${folder}/thumbnails/${uuidv4()}${extension}`;
     const blockBlobClient =
-      this.containerClient.getBlockBlobClient(thumbnailFileName);
+      this.ensureClient().getBlockBlobClient(thumbnailFileName);
 
     await blockBlobClient.upload(thumbnailBuffer, thumbnailBuffer.length, {
       blobHTTPHeaders: {
