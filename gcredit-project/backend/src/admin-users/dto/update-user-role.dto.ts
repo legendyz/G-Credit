@@ -5,7 +5,14 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString, MaxLength, IsInt, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsOptional,
+  IsString,
+  MaxLength,
+  IsInt,
+  Min,
+} from 'class-validator';
 import { UserRole } from '@prisma/client';
 
 export class UpdateUserRoleDto {

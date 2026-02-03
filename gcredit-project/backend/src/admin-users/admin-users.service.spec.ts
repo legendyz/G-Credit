@@ -10,7 +10,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AdminUsersService } from './admin-users.service';
 import { PrismaService } from '../common/prisma.service';
-import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 
 describe('AdminUsersService', () => {
@@ -140,7 +144,12 @@ describe('AdminUsersService', () => {
       prisma.user.count.mockResolvedValue(1);
       prisma.user.findMany.mockResolvedValue([mockUser]);
 
-      await service.findAll({ page: 1, limit: 25, sortBy: 'email', sortOrder: 'desc' });
+      await service.findAll({
+        page: 1,
+        limit: 25,
+        sortBy: 'email',
+        sortOrder: 'desc',
+      });
 
       expect(prisma.user.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -188,7 +197,9 @@ describe('AdminUsersService', () => {
     it('should throw NotFoundException when user not found', async () => {
       prisma.user.findUnique.mockResolvedValue(null);
 
-      await expect(service.findOne('invalid-id')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('invalid-id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -292,7 +303,9 @@ describe('AdminUsersService', () => {
         return callback({
           user: {
             updateMany: jest.fn().mockResolvedValue({ count: 1 }),
-            findUnique: jest.fn().mockResolvedValue({ ...mockUser, role: UserRole.ISSUER }),
+            findUnique: jest
+              .fn()
+              .mockResolvedValue({ ...mockUser, role: UserRole.ISSUER }),
           },
           userRoleAuditLog: {
             create: mockAuditCreate,
@@ -302,7 +315,11 @@ describe('AdminUsersService', () => {
 
       await service.updateRole(
         'user-123',
-        { role: UserRole.ISSUER, roleVersion: 0, auditNote: 'Promoted to issuer' },
+        {
+          role: UserRole.ISSUER,
+          roleVersion: 0,
+          auditNote: 'Promoted to issuer',
+        },
         mockAdmin.id,
       );
 
@@ -387,7 +404,9 @@ describe('AdminUsersService', () => {
       prisma.$transaction.mockImplementation(async (callback: any) => {
         return callback({
           user: {
-            update: jest.fn().mockResolvedValue({ ...mockUser, isActive: false }),
+            update: jest
+              .fn()
+              .mockResolvedValue({ ...mockUser, isActive: false }),
           },
           userRoleAuditLog: {
             create: mockAuditCreate,

@@ -82,7 +82,7 @@ export class AdminUsersService {
    *
    * Implements hybrid pagination:
    * - <1000 users: offset-based pagination
-   * - ≥1000 users: cursor-based pagination
+   * - 鈮?000 users: cursor-based pagination
    */
   async findAll(query: AdminUsersQueryDto): Promise<UserListResponse> {
     const { page, limit, search, roleFilter, statusFilter, sortBy, sortOrder, cursor } = query;
@@ -233,16 +233,30 @@ export class AdminUsersService {
       );
     }
 
-    // No change needed if same role
+    // No change needed if same role - return actual persisted values
     if (currentUser.role === dto.role) {
+      // Fetch full user data to return actual persisted state
+      const fullUser = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          email: true,
+          role: true,
+          roleSetManually: true,
+          roleUpdatedAt: true,
+          roleUpdatedBy: true,
+          roleVersion: true,
+        },
+      });
+
       return {
-        id: currentUser.id,
-        email: currentUser.email,
-        role: currentUser.role,
-        roleSetManually: true,
-        roleUpdatedAt: new Date(),
-        roleUpdatedBy: adminId,
-        roleVersion: currentUser.roleVersion,
+        id: fullUser.id,
+        email: fullUser.email,
+        role: fullUser.role,
+        roleSetManually: fullUser.roleSetManually,
+        roleUpdatedAt: fullUser.roleUpdatedAt,
+        roleUpdatedBy: fullUser.roleUpdatedBy,
+        roleVersion: fullUser.roleVersion,
       };
     }
 
@@ -301,7 +315,7 @@ export class AdminUsersService {
     });
 
     this.logger.log(
-      `Role updated for user ${result.email}: ${currentUser.role} → ${dto.role} by admin ${adminId}`,
+      `Role updated for user ${result.email}: ${currentUser.role} 鈫?${dto.role} by admin ${adminId}`,
     );
 
     return result as RoleUpdateResponse;
@@ -439,5 +453,3 @@ export class AdminUsersService {
     }
   }
 }
-/ /   S t o r y   8 . 1 0   v e r i f i e d  
- 

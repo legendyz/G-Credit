@@ -72,14 +72,54 @@ export class AdminUsersController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'List all users with pagination and filtering' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (default: 1)' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page (default: 25, max: 100)' })
-  @ApiQuery({ name: 'search', required: false, type: String, description: 'Search by name or email' })
-  @ApiQuery({ name: 'roleFilter', required: false, enum: UserRole, description: 'Filter by role' })
-  @ApiQuery({ name: 'statusFilter', required: false, type: Boolean, description: 'Filter by active status' })
-  @ApiQuery({ name: 'sortBy', required: false, enum: ['name', 'email', 'role', 'lastLogin', 'createdAt'], description: 'Sort field' })
-  @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'], description: 'Sort order' })
-  @ApiQuery({ name: 'cursor', required: false, type: String, description: 'Cursor for pagination (large datasets)' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 25, max: 100)',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Search by name or email',
+  })
+  @ApiQuery({
+    name: 'roleFilter',
+    required: false,
+    enum: UserRole,
+    description: 'Filter by role',
+  })
+  @ApiQuery({
+    name: 'statusFilter',
+    required: false,
+    type: Boolean,
+    description: 'Filter by active status',
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    enum: ['name', 'email', 'role', 'lastLogin', 'createdAt'],
+    description: 'Sort field',
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    enum: ['asc', 'desc'],
+    description: 'Sort order',
+  })
+  @ApiQuery({
+    name: 'cursor',
+    required: false,
+    type: String,
+    description: 'Cursor for pagination (large datasets)',
+  })
   @ApiResponse({
     status: 200,
     description: 'User list retrieved successfully',
@@ -90,7 +130,9 @@ export class AdminUsersController {
     @Query() query: AdminUsersQueryDto,
     @Request() req: RequestWithUser,
   ): Promise<UserListResponse> {
-    this.logger.log(`Admin ${req.user.email} listing users with filters: ${JSON.stringify(query)}`);
+    this.logger.log(
+      `Admin ${req.user.email} listing users with filters: ${JSON.stringify(query)}`,
+    );
     return this.adminUsersService.findAll(query);
   }
 
@@ -129,17 +171,25 @@ export class AdminUsersController {
     status: 200,
     description: 'User role updated successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad Request - Cannot change own role or invalid role' })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Cannot change own role or invalid role',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
   @ApiResponse({ status: 404, description: 'User not found' })
-  @ApiResponse({ status: 409, description: 'Conflict - Role was modified by another process' })
+  @ApiResponse({
+    status: 409,
+    description: 'Conflict - Role was modified by another process',
+  })
   async updateRole(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateUserRoleDto,
     @Request() req: RequestWithUser,
   ): Promise<RoleUpdateResponse> {
-    this.logger.log(`Admin ${req.user.email} updating role for user ${id} to ${dto.role}`);
+    this.logger.log(
+      `Admin ${req.user.email} updating role for user ${id} to ${dto.role}`,
+    );
     return this.adminUsersService.updateRole(id, dto, req.user.userId);
   }
 
@@ -155,7 +205,10 @@ export class AdminUsersController {
     status: 200,
     description: 'User status updated successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad Request - Cannot deactivate own account' })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Cannot deactivate own account',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
   @ApiResponse({ status: 404, description: 'User not found' })

@@ -84,10 +84,9 @@ describe('AdminUsersController', () => {
       };
       service.findAll.mockResolvedValue(mockResponse);
 
-      const result = await controller.findAll(
-        { page: 1, limit: 25 },
-        { user: mockAdmin } as any,
-      );
+      const result = await controller.findAll({ page: 1, limit: 25 }, {
+        user: mockAdmin,
+      } as any);
 
       expect(result).toEqual(mockResponse);
       expect(service.findAll).toHaveBeenCalledWith({ page: 1, limit: 25 });
@@ -96,7 +95,13 @@ describe('AdminUsersController', () => {
     it('should pass query parameters to service', async () => {
       service.findAll.mockResolvedValue({
         users: [],
-        pagination: { total: 0, page: 1, limit: 25, totalPages: 0, hasMore: false },
+        pagination: {
+          total: 0,
+          page: 1,
+          limit: 25,
+          totalPages: 0,
+          hasMore: false,
+        },
       });
 
       await controller.findAll(
@@ -117,7 +122,9 @@ describe('AdminUsersController', () => {
     it('should return single user', async () => {
       service.findOne.mockResolvedValue(mockUser);
 
-      const result = await controller.findOne('user-123', { user: mockAdmin } as any);
+      const result = await controller.findOne('user-123', {
+        user: mockAdmin,
+      } as any);
 
       expect(result).toEqual(mockUser);
       expect(service.findOne).toHaveBeenCalledWith('user-123');
@@ -164,13 +171,21 @@ describe('AdminUsersController', () => {
 
       await controller.updateRole(
         'user-123',
-        { role: UserRole.ADMIN, roleVersion: 0, auditNote: 'Promoted to admin' },
+        {
+          role: UserRole.ADMIN,
+          roleVersion: 0,
+          auditNote: 'Promoted to admin',
+        },
         { user: mockAdmin } as any,
       );
 
       expect(service.updateRole).toHaveBeenCalledWith(
         'user-123',
-        { role: UserRole.ADMIN, roleVersion: 0, auditNote: 'Promoted to admin' },
+        {
+          role: UserRole.ADMIN,
+          roleVersion: 0,
+          auditNote: 'Promoted to admin',
+        },
         mockAdmin.userId,
       );
     });

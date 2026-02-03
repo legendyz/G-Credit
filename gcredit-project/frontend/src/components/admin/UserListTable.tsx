@@ -15,7 +15,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { formatDistanceToNow, format } from 'date-fns';
-import { ArrowUpDown, ArrowUp, ArrowDown, Pencil, UserX, UserCheck } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, Pencil, UserX, UserCheck, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RoleBadge } from './RoleBadge';
 import { StatusBadge } from './StatusBadge';
@@ -45,7 +45,21 @@ export function UserListTable({
   const isTablet = useIsTablet();
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [dialogType, setDialogType] = useState<'role' | 'status' | null>(null);
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const triggerRef = useRef<HTMLButtonElement | null>(null);
+
+  // Toggle card expansion (mobile only)
+  const toggleCardExpand = useCallback((userId: string) => {
+    setExpandedCards((prev) => {
+      const next = new Set(prev);
+      if (next.has(userId)) {
+        next.delete(userId);
+      } else {
+        next.add(userId);
+      }
+      return next;
+    });
+  }, []);
 
   // Format last login time
   const formatLastLogin = (dateString: string | null) => {
@@ -127,69 +141,98 @@ export function UserListTable({
     setDialogType(null);
   }, []);
 
-  // Mobile card view
+  // Mobile card view with tap-to-expand (AC1)
   if (isMobile) {
     return (
       <>
         <div className="space-y-3">
           {users.map((user) => {
             const lastLogin = formatLastLogin(user.lastLoginAt);
+            const isExpanded = expandedCards.has(user.id);
             return (
               <div
                 key={user.id}
-                className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                className="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
               >
-                <div className="mb-3 flex items-start justify-between">
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {getDisplayName(user)}
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
+                {/* Collapsed view: Name + Role + Actions only (AC1 compliant) */}
+                <button
+                  onClick={() => toggleCardExpand(user.id)}
+                  className="w-full p-4 text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                  aria-expanded={isExpanded}
+                  aria-controls={`user-details-${user.id}`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          {getDisplayName(user)}
+                        </p>
+                        <div className="mt-1">
+                          <RoleBadge role={user.role} />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <StatusBadge isActive={user.isActive} />
+                      {isExpanded ? (
+                        <ChevronUp className="h-5 w-5 text-gray-400" />
+                      ) : (
+                        <ChevronDown className="h-5 w-5 text-gray-400" />
+                      )}
+                    </div>
                   </div>
-                  <StatusBadge isActive={user.isActive} />
-                </div>
-                <div className="mb-3 flex items-center gap-2">
-                  <RoleBadge role={user.role} />
-                  {user.department && (
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      • {user.department}
-                    </span>
-                  )}
-                </div>
-                <div className="mb-3 text-sm text-gray-500 dark:text-gray-400" title={lastLogin.absolute}>
-                  Last login: {lastLogin.relative}
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="min-h-[44px] min-w-[44px] flex-1 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                    onClick={(e) => openRoleDialog(user, e.currentTarget)}
+                </button>
+
+                {/* Expanded view: Additional details */}
+                {isExpanded && (
+                  <div
+                    id={`user-details-${user.id}`}
+                    className="border-t border-gray-200 p-4 dark:border-gray-700"
                   >
-                    <Pencil className="mr-1 h-4 w-4" />
-                    Edit Role
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className={`min-h-[44px] min-w-[44px] flex-1 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                      user.isActive ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'
-                    }`}
-                    onClick={(e) => openStatusDialog(user, e.currentTarget)}
-                  >
-                    {user.isActive ? (
-                      <>
-                        <UserX className="mr-1 h-4 w-4" />
-                        Deactivate
-                      </>
-                    ) : (
-                      <>
-                        <UserCheck className="mr-1 h-4 w-4" />
-                        Activate
-                      </>
-                    )}
-                  </Button>
-                </div>
+                    <div className="mb-3 space-y-2 text-sm text-gray-500 dark:text-gray-400">
+                      <p>{user.email}</p>
+                      {user.department && <p>Department: {user.department}</p>}
+                      <p title={lastLogin.absolute}>Last login: {lastLogin.relative}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="min-h-[44px] min-w-[44px] flex-1 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openRoleDialog(user, e.currentTarget);
+                        }}
+                      >
+                        <Pencil className="mr-1 h-4 w-4" />
+                        Edit Role
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={`min-h-[44px] min-w-[44px] flex-1 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                          user.isActive ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openStatusDialog(user, e.currentTarget);
+                        }}
+                      >
+                        {user.isActive ? (
+                          <>
+                            <UserX className="mr-1 h-4 w-4" />
+                            Deactivate
+                          </>
+                        ) : (
+                          <>
+                            <UserCheck className="mr-1 h-4 w-4" />
+                            Activate
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -218,7 +261,7 @@ export function UserListTable({
     );
   }
 
-  // Tablet/Desktop table view
+  // Tablet/Desktop table view with pinned actions column (AC1)
   return (
     <>
       <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
@@ -233,7 +276,10 @@ export function UserListTable({
               {!isTablet && <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Department</th>}
               <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Status</th>
               <SortHeader field="lastLogin">Last Login</SortHeader>
-              <th className="px-4 py-3 text-right font-medium text-gray-500 dark:text-gray-400">Actions</th>
+              {/* Pinned Actions column with sticky positioning */}
+              <th className="sticky right-0 bg-gray-50 px-4 py-3 text-right font-medium text-gray-500 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)] dark:bg-gray-800 dark:text-gray-400">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
@@ -288,7 +334,8 @@ export function UserListTable({
                   >
                     {lastLogin.relative}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-right">
+                  {/* Pinned Actions cell with sticky positioning */}
+                  <td className="sticky right-0 whitespace-nowrap bg-white px-4 py-3 text-right shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)] dark:bg-gray-900">
                     <div className="flex justify-end gap-2">
                       <Button
                         variant="ghost"

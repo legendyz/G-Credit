@@ -50,6 +50,7 @@ export function EditRoleDialog({
 }: EditRoleDialogProps) {
   const [selectedRole, setSelectedRole] = useState<UserRole>(user.role);
   const [auditNote, setAuditNote] = useState('');
+  const [showAdminConfirm, setShowAdminConfirm] = useState(false);
   const dialogRef = useFocusTrap<HTMLDivElement>({
     isActive: isOpen,
     onEscape: onClose,
@@ -73,6 +74,7 @@ export function EditRoleDialog({
     if (isOpen) {
       setSelectedRole(user.role);
       setAuditNote('');
+      setShowAdminConfirm(false);
     }
   }, [isOpen, user.role]);
 
@@ -90,6 +92,12 @@ export function EditRoleDialog({
   const handleSave = useCallback(async () => {
     if (selectedRole === user.role) {
       onClose();
+      return;
+    }
+
+    // AC2: Require confirmation for Admin role changes
+    if (isAdminRoleChange && !showAdminConfirm) {
+      setShowAdminConfirm(true);
       return;
     }
 
@@ -116,7 +124,7 @@ export function EditRoleDialog({
         toast.error('Failed to update role');
       }
     }
-  }, [selectedRole, user, auditNote, updateRoleMutation, onClose]);
+  }, [selectedRole, user, auditNote, updateRoleMutation, onClose, isAdminRoleChange, showAdminConfirm]);
 
   if (!isOpen) return null;
 
@@ -207,16 +215,28 @@ export function EditRoleDialog({
           )}
         </div>
 
-        {/* Admin Role Warning (Inline - not separate confirmation) */}
+        {/* Admin Role Warning and Confirmation Step */}
         {isAdminRoleChange && !isOwnRole && (
           <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-900/20">
             <div className="flex items-start gap-2">
               <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
-              <p className="text-sm text-amber-800 dark:text-amber-200">
-                {selectedRole === 'ADMIN'
-                  ? '⚠️ This user will gain full administrative access including user management.'
-                  : '⚠️ You are demoting an Admin. This will remove their access to user management.'}
-              </p>
+              <div>
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                  {selectedRole === 'ADMIN'
+                    ? '⚠️ Admin Promotion Warning'
+                    : '⚠️ Admin Demotion Warning'}
+                </p>
+                <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
+                  {selectedRole === 'ADMIN'
+                    ? 'This user will gain full administrative access including user management.'
+                    : 'This will remove their access to user management functions.'}
+                </p>
+                {showAdminConfirm && (
+                  <p className="mt-2 text-sm font-semibold text-amber-900 dark:text-amber-100">
+                    Click "Confirm Change" again to proceed.
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -264,9 +284,15 @@ export function EditRoleDialog({
           <Button
             onClick={handleSave}
             disabled={isOwnRole || selectedRole === user.role || updateRoleMutation.isPending}
-            className="min-w-[80px] focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className={`min-w-[80px] focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+              showAdminConfirm ? 'bg-amber-600 hover:bg-amber-700' : ''
+            }`}
           >
-            {updateRoleMutation.isPending ? 'Saving...' : 'Save'}
+            {updateRoleMutation.isPending
+              ? 'Saving...'
+              : showAdminConfirm
+                ? 'Confirm Change'
+                : 'Save'}
           </Button>
         </div>
       </div>
