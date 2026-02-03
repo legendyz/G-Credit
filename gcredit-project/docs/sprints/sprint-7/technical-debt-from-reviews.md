@@ -27,9 +27,13 @@
 
 | ID | Issue | Sprint | Effort | Status | Notes |
 |----|-------|--------|--------|--------|-------|
-| **TD-001** | E2E Test Isolation | S5 | 8-10h | 📋 Planned | Database cleanup race conditions in parallel test runs |
+| **TD-001** | E2E Test Isolation | S5 | 6h actual | ✅ Resolved | Fixed in Sprint 8 (Task 8.8) - Schema-based isolation |
 
-**Impact:** 45/71 parallel tests failing due to isolation issues. Blocks reliable CI/CD.
+**Resolution (Sprint 8):** 
+- Implemented schema-based test isolation
+- 83/83 parallel tests passing (was 45/71 failing)
+- CI/CD pipeline first successful run: 2026-02-03
+- See: `docs/sprints/sprint-8/8-8-e2e-test-isolation.md`
 
 ### Medium Priority (Sprint 8 Candidates)
 

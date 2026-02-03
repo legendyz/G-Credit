@@ -325,7 +325,7 @@ Transaction rollback was considered but rejected because:
 ## Files Created/Modified
 
 ### New Files
-- `.github/workflows/test.yml` - CI/CD pipeline (180 lines)
+- `.github/workflows/test.yml` - CI/CD pipeline (206 lines)
 - `test/helpers/test-database.ts` - Schema isolation (206 lines)
 - `test/helpers/test-setup.ts` - Test context setup (169 lines)
 - `test/helpers/index.ts` - Exports
@@ -335,10 +335,19 @@ Transaction rollback was considered but rejected because:
 - `test/factories/index.ts` - Exports
 - `test/setup.ts` - Global Jest setup
 - `test/teardown.ts` - Global Jest teardown
-- `docs/testing/e2e-test-guidelines.md` - Developer guide
+- `docs/testing/e2e-test-guidelines.md` - Developer guide (393 lines)
+- `docs/testing/CICD-log/e2e-test-output.log` - CI debug log archive
 - `docs/sprints/sprint-8/8-9-eslint-type-safety.md` - TD-002 ESLint cleanup
 
-### Refactored Files
+### Modified Files (CI Graceful Degradation)
+- `src/config/azure-blob.config.ts` - Returns null when not configured
+- `src/common/services/blob-storage.service.ts` - Mock URLs for CI environment
+- `src/microsoft-graph/services/graph-token-provider.service.ts` - Graceful degradation
+- `src/microsoft-graph/services/graph-token-provider.service.spec.ts` - Updated tests
+- `src/microsoft-graph/services/graph-email.service.ts` - Handle null authProvider
+- `src/microsoft-graph/services/graph-teams.service.ts` - Handle null authProvider
+
+### Refactored Test Files
 - `test/badge-issuance.e2e-spec.ts` - 26 tests (full rewrite)
 - `test/badge-issuance-isolated.e2e-spec.ts` - 13 tests
 - `test/badge-templates.e2e-spec.ts` - 19 tests (full rewrite)

@@ -564,11 +564,11 @@
 | ID | Item | Sprint | Severity | Effort | Status |
 |----|------|--------|----------|--------|--------|
 | ADR-002 | lodash Prototype Pollution | S0 | Moderate | 2-4h | ✅ Risk Accepted |
-| TD-001 | E2E Test Isolation | S5 | High | 8-10h | 📋 Planned |
+| TD-001 | E2E Test Isolation | S5→S8 | High | 6h actual | ✅ Resolved (2026-02-03) |
 | TD-002 | Badge Issuance Tests Update | S5 | Medium | 2-4h | 📋 Planned |
 | TD-003 | metadataHash Index | S5 | Low | 2h | 📋 Planned |
 | TD-004 | Baked Badge Caching | S5 | Low | 4-6h | ⏸️ Backlog |
-| TD-005 | Test Data Factory | S5 | Low | 4h | ⏸️ Backlog |
+| TD-005 | Test Data Factory | S5→S8 | Low | - | ✅ Resolved (Part of TD-001) |
 | TD-006 | Teams Channel Permissions | S6 | Medium | 1d | ⏸️ Documented + **4 tests skipped** |
 | TD-007 | Badge PNG Generation | S6 | Low | 2d | ⏸️ Future |
 | TD-008 | Tailwind CSS Modal Issues | S6 | Low | 0.5d | ⏸️ Investigate |
