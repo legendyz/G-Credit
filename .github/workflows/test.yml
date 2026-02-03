@@ -1,8 +1,10 @@
 # GCredit CI Pipeline
 # Story 8.8: E2E Test Isolation - CI/CD Integration
+# Updated: 2026-02-03
 # 
 # Triggers on:
 # - Push to main branch
+# - Push to sprint branches
 # - Pull requests to main branch
 
 name: Tests
