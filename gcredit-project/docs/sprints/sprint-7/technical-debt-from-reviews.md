@@ -129,10 +129,10 @@
 
 | ID | Issue | Location | Effort | Notes |
 |----|-------|----------|--------|-------|
-| ARCH-P1-001 | Token rotation not implemented on refresh | `auth.service.ts` | 3h | Generate new refresh token on each use |
+| ARCH-P1-001 | Token rotation not implemented on refresh | `auth.service.ts` | 3h | ✅ **Resolved Sprint 8 (Task 8.7)** - New refresh token on each use, old revoked |
 | ARCH-P1-002 | No rate limiting on auth endpoints | `auth.controller.ts` | - | Same as SEC-P1-004 (deduplicated) |
-| ARCH-P1-003 | JWT secret validation at startup | `jwt.strategy.ts`, `main.ts` | 1h | Require minimum 32 char secret |
-| ARCH-P1-004 | Missing ownership check on template update/delete | `badge-templates.controller.ts` | 2h | ISSUER can only modify own templates |
+| ARCH-P1-003 | JWT secret validation at startup | `jwt.strategy.ts`, `main.ts` | 1h | ✅ **Resolved Sprint 8 (Task 8.7)** - Startup validation for ≥32 char secret |
+| ARCH-P1-004 | Missing ownership check on template update/delete | `badge-templates.controller.ts` | 2h | ✅ **Resolved Sprint 8 (Task 8.7)** - ISSUER can only modify own templates |
 
 ### Testing - Historical (1 item) ⚠️ HIGH PRIORITY
 

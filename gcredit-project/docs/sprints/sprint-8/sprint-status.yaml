@@ -23,10 +23,10 @@ metrics:
   total_estimated_hours: 76h  # Story 8.7 corrected from 7h to 6h
   
   completed_stories: 0
-  completed_tasks: 3  # Task 8.0, 8.6, 8.8 completed
-  completed_work_items: 3
-  completed_hours: 24.5h  # 1.5h + 6.5h + 8.5h + 8h (Tasks 8.0, 8.6, Story 8.3, Task 8.8)
-  remaining_hours: 51.5h  # 76h - 24.5h
+  completed_tasks: 4  # Task 8.0, 8.6, 8.7, 8.8 completed
+  completed_work_items: 4
+  completed_hours: 29.5h  # 1.5h + 6.5h + 8.5h + 8h + 5h (Tasks 8.0, 8.6, Story 8.3, Task 8.8, Task 8.7)
+  remaining_hours: 46.5h  # 76h - 29.5h
   
   stories_in_progress: 0
   tasks_in_progress: 0
@@ -34,8 +34,8 @@ metrics:
   
   # Technical Debt Resolution
   technical_debt_targeted: 17  # P1 items
-  technical_debt_resolved: 5  # SEC-P1-001~005
-  technical_debt_remaining: 12
+  technical_debt_resolved: 8  # SEC-P1-001~005 + ARCH-P1-001/003/004
+  technical_debt_remaining: 9
 
 # Group A: UX & Accessibility (39h, 28 SP)
 group_a_ux_accessibility:
@@ -250,21 +250,29 @@ group_b_security_infrastructure:
       title: "Architecture Fixes"
       story_points: 4
       estimated_hours: 6h
+      actual_hours: 5h
       priority: HIGH
-      status: backlog
-      assignee: null
+      status: done
+      assignee: Amelia
       blocked: false
       blocker_reason: null
-      started_date: null
-      completed_date: null
-      acceptance_criteria_met: 0/4
+      started_date: "2026-02-04"
+      completed_date: "2026-02-04"
+      acceptance_criteria_met: 4/4
       technical_debt_resolved:
         - ARCH-P1-001
         - ARCH-P1-003
         - ARCH-P1-004
       dependencies:
-        - "Blocks Story 0.2b frontend"
+        - "Blocks Story 0.2b frontend - ✅ Backend ready"
       file: "8-7-architecture-fixes.md"
+      notes: |
+        ✅ COMPLETED - Architecture improvements implemented:
+        - Token rotation: refreshAccessToken() returns new refresh token, old revoked
+        - JWT validation: Startup check for ≥32 char secret (both access + refresh)
+        - Ownership check: ISSUER can only update/delete own templates
+        - 17 new unit tests (auth.service.spec.ts, jwt-validation.spec.ts)
+        - 273 unit tests, 83 E2E tests all passing
       
     - id: "8.8"
       title: "E2E Test Isolation"

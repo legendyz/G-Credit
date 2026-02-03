@@ -101,13 +101,14 @@ export class AuthService {
     const accessToken = this.jwtService.sign(payload);
 
     // 5. Generate refresh token with longer expiry
+    const refreshExpiresIn = this.config.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
     const refreshToken = this.jwtService.sign({ sub: user.id }, {
       secret: this.config.get<string>('JWT_REFRESH_SECRET'),
-      expiresIn: this.config.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d',
+      expiresIn: refreshExpiresIn,
     } as any);
 
-    // 6. Store refresh token in database (7 days expiration)
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    // 6. Store refresh token in database (use same expiry as JWT)
+    const expiresAt = this.calculateExpiryDate(refreshExpiresIn);
     await this.prisma.refreshToken.create({
       data: {
         token: refreshToken,
@@ -241,6 +242,8 @@ export class AuthService {
    * Refresh access token using refresh token
    *
    * Validates refresh token and issues new access token.
+   * ARCH-P1-001: Implements token rotation - old refresh token is invalidated
+   * and a new refresh token is issued with each refresh request.
    */
   async refreshAccessToken(refreshToken: string) {
     // 1. Verify refresh token JWT signature
@@ -264,6 +267,10 @@ export class AuthService {
     }
 
     if (tokenRecord.isRevoked) {
+      // SECURITY: Potential token reuse attack detected
+      this.logger.warn(
+        `[SECURITY] Revoked refresh token reuse attempt for user: ${tokenRecord.user.email}`,
+      );
       throw new UnauthorizedException('Refresh token has been revoked');
     }
 
@@ -285,9 +292,40 @@ export class AuthService {
 
     const accessToken = this.jwtService.sign(newPayload);
 
-    console.log(`[AUDIT] Token refreshed: ${tokenRecord.user.email}`);
+    // 5. ARCH-P1-001: Token Rotation - Invalidate old refresh token
+    await this.prisma.refreshToken.update({
+      where: { id: tokenRecord.id },
+      data: { isRevoked: true },
+    });
 
-    return { accessToken };
+    // 6. ARCH-P1-001: Generate and store new refresh token
+    const refreshExpiresIn = this.config.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
+    const newRefreshToken = this.jwtService.sign(
+      { sub: tokenRecord.user.id },
+      {
+        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+        expiresIn: refreshExpiresIn,
+      } as any,
+    );
+
+    const expiresAt = this.calculateExpiryDate(refreshExpiresIn);
+    await this.prisma.refreshToken.create({
+      data: {
+        token: newRefreshToken,
+        userId: tokenRecord.user.id,
+        expiresAt,
+      },
+    });
+
+    this.logger.log(
+      `[AUDIT] Token rotated: ${tokenRecord.user.email} (old token revoked, new token issued)`,
+    );
+
+    // 7. Return both tokens (frontend must update both)
+    return {
+      accessToken,
+      refreshToken: newRefreshToken,
+    };
   }
 
   /**
@@ -438,5 +476,30 @@ export class AuthService {
     console.log(`[AUDIT] Password changed: ${user.email} (${userId})`);
 
     return { message: 'Password changed successfully' };
+  }
+
+  /**
+   * Calculate expiry date from JWT expiry string (e.g., '7d', '24h', '30m')
+   * @param expiresIn - JWT expiry string format
+   * @returns Date object for database storage
+   */
+  private calculateExpiryDate(expiresIn: string): Date {
+    const match = expiresIn.match(/^(\d+)([dhms])$/);
+    if (!match) {
+      // Default to 7 days if format is invalid
+      return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    }
+
+    const value = parseInt(match[1], 10);
+    const unit = match[2];
+
+    const multipliers: Record<string, number> = {
+      d: 24 * 60 * 60 * 1000, // days
+      h: 60 * 60 * 1000, // hours
+      m: 60 * 1000, // minutes
+      s: 1000, // seconds
+    };
+
+    return new Date(Date.now() + value * multipliers[unit]);
   }
 }

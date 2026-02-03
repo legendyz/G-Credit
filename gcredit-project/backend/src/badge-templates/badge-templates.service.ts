@@ -236,6 +236,31 @@ export class BadgeTemplatesService {
   }
 
   /**
+   * Find badge template by ID (raw, no access control)
+   * ARCH-P1-004: Used for ownership checks in controller
+   *
+   * @param id - Badge template ID
+   * @returns Badge template with createdBy field
+   * @throws NotFoundException if template not found
+   */
+  async findOneRaw(id: string) {
+    const template = await this.prisma.badgeTemplate.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        createdBy: true,
+        status: true,
+      },
+    });
+
+    if (!template) {
+      throw new NotFoundException(`Badge template with ID ${id} not found`);
+    }
+
+    return template;
+  }
+
+  /**
    * Update a badge template
    */
   async update(

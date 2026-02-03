@@ -5,6 +5,75 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 /**
+ * Validate JWT_SECRET at startup (ARCH-P1-003)
+ * Security requirement: JWT secret must be strong enough for production use
+ *
+ * @throws Error if JWT_SECRET is missing, too short, or a default value
+ */
+function validateJwtSecret(): void {
+  const logger = new Logger('JwtValidation');
+  const jwtSecret = process.env.JWT_SECRET;
+  const jwtRefreshSecret = process.env.JWT_REFRESH_SECRET;
+  const isProduction = process.env.NODE_ENV === 'production';
+  const isTest = process.env.NODE_ENV === 'test';
+
+  // Skip validation in test environment (tests use mock secrets)
+  if (isTest) {
+    logger.log('⏭️  JWT validation skipped in test environment');
+    return;
+  }
+
+  // Check JWT_SECRET exists
+  if (!jwtSecret) {
+    const errorMsg =
+      'JWT_SECRET environment variable is required. ' +
+      'Generate a strong secret with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"';
+    logger.error(`❌ ${errorMsg}`);
+    throw new Error(errorMsg);
+  }
+
+  // Check minimum length (32 characters = 256 bits)
+  if (jwtSecret.length < 32) {
+    const errorMsg = `JWT_SECRET must be at least 32 characters for security (current: ${jwtSecret.length} chars)`;
+    logger.error(`❌ ${errorMsg}`);
+    throw new Error(errorMsg);
+  }
+
+  // Check for default/weak values (ARCH-P1-003: fail in ALL environments per AC2)
+  const weakSecrets = [
+    'your-secret-key-here',
+    'secret',
+    'jwt-secret',
+    'changeme',
+    '12345678901234567890123456789012',
+  ];
+  if (weakSecrets.some((weak) => jwtSecret.toLowerCase().includes(weak))) {
+    const errorMsg =
+      'JWT_SECRET cannot be a default/weak value. Generate a strong random secret.';
+    logger.error(`❌ ${errorMsg}`);
+    throw new Error(errorMsg);
+  }
+
+  // Validate JWT_REFRESH_SECRET similarly
+  if (!jwtRefreshSecret) {
+    const errorMsg =
+      'JWT_REFRESH_SECRET environment variable is required for token rotation';
+    logger.error(`❌ ${errorMsg}`);
+    throw new Error(errorMsg);
+  }
+
+  if (jwtRefreshSecret.length < 32) {
+    const errorMsg = `JWT_REFRESH_SECRET must be at least 32 characters (current: ${jwtRefreshSecret.length} chars)`;
+    logger.error(`❌ ${errorMsg}`);
+    throw new Error(errorMsg);
+  }
+
+  logger.log(
+    `✅ JWT secrets validated (JWT_SECRET: ${jwtSecret.length} chars, JWT_REFRESH_SECRET: ${jwtRefreshSecret.length} chars)`,
+  );
+}
+
+/**
  * Validate required Teams notification configuration
  * Story 7.4 Task 7
  */
@@ -56,7 +125,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
 
-  // Validate configuration on startup
+  // ARCH-P1-003: Validate JWT secrets at startup (MUST be first validation)
+  validateJwtSecret();
+
+  // Validate Teams configuration on startup
   validateTeamsConfiguration();
 
   // ========================================
