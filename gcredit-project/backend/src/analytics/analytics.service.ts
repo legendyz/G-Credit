@@ -417,6 +417,19 @@ export class AnalyticsService {
       },
     });
 
+    // Collect unique actor IDs to batch-fetch user names
+    const actorIds = [...new Set(auditLogs.map((log) => log.actorId))];
+    const actors = await this.prisma.user.findMany({
+      where: { id: { in: actorIds } },
+      select: { id: true, firstName: true, lastName: true, email: true },
+    });
+    const actorMap = new Map(
+      actors.map((u) => [
+        u.id,
+        `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email,
+      ]),
+    );
+
     // Transform to activity items
     const activities = auditLogs.map((log) => {
       // Map action to activity type
@@ -434,7 +447,7 @@ export class AnalyticsService {
         type: typeMap[log.action] || log.action,
         actor: {
           userId: log.actorId,
-          name: log.actorEmail || 'Unknown',
+          name: actorMap.get(log.actorId) || log.actorEmail || 'Unknown',
         },
         target: metadata
           ? {

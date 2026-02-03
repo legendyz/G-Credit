@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsUUID, Min, Max } from 'class-validator';
+import { IsIn, IsOptional, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class IssuanceTrendsQueryDto {
@@ -7,10 +7,9 @@ export class IssuanceTrendsQueryDto {
     description: 'Period in days (7, 30, 90, 365)',
     example: 30,
     default: 30,
+    enum: [7, 30, 90, 365],
   })
-  @IsInt()
-  @Min(7)
-  @Max(365)
+  @IsIn([7, 30, 90, 365], { message: 'Period must be one of: 7, 30, 90, 365' })
   @Type(() => Number)
   period: number = 30;
 

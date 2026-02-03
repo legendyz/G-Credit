@@ -1,14 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsUUID, Min, Max } from 'class-validator';
+import { IsInt, IsOptional, IsString, Min, Max } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class TopPerformersQueryDto {
   @ApiPropertyOptional({
-    description: 'Team/Department ID to filter (Manager must use their own team)',
-    example: 'uuid',
+    description: 'Team/Department name to filter (Manager must use their own team)',
+    example: 'Engineering',
   })
   @IsOptional()
-  @IsUUID()
+  @IsString()
   teamId?: string;
 
   @ApiProperty({

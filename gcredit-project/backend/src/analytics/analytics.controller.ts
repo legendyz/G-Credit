@@ -62,10 +62,10 @@ export class AnalyticsController {
   /**
    * AC2: Badge Issuance Trends API
    * Returns badge issuance data over time for charts
+   * Note: No auto-cache - user-scoped data requires manual cache with user-specific keys
    */
   @Get('issuance-trends')
   @Roles('ADMIN', 'ISSUER')
-  @CacheTTL(CACHE_TTL_15_MIN)
   @ApiOperation({
     summary: 'Get badge issuance trends',
     description:
@@ -99,10 +99,10 @@ export class AnalyticsController {
   /**
    * AC3: Top Performers API
    * Returns ranked list of employees by badge count
+   * Note: No auto-cache - user-scoped data requires manual cache with user-specific keys
    */
   @Get('top-performers')
   @Roles('ADMIN', 'MANAGER')
-  @CacheTTL(CACHE_TTL_15_MIN)
   @ApiOperation({
     summary: 'Get top performers by badge count',
     description:

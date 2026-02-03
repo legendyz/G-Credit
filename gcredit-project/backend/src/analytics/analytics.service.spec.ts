@@ -378,7 +378,7 @@ describe('AnalyticsService', () => {
   });
 
   describe('getRecentActivity (AC5)', () => {
-    it('should return paginated activity feed', async () => {
+    it('should return paginated activity feed with actor names', async () => {
       const mockLogs = [
         {
           id: 'log-1',
@@ -402,14 +402,21 @@ describe('AnalyticsService', () => {
         },
       ];
 
+      const mockUsers = [
+        { id: 'issuer-1', firstName: 'John', lastName: 'Issuer', email: 'issuer@test.com' },
+        { id: 'user-1', firstName: 'Jane', lastName: 'User', email: 'user@test.com' },
+      ];
+
       mockPrismaService.auditLog.count.mockResolvedValue(100);
       mockPrismaService.auditLog.findMany.mockResolvedValue(mockLogs);
+      mockPrismaService.user.findMany.mockResolvedValue(mockUsers);
 
       const result = await service.getRecentActivity(20, 0);
 
       expect(result.activities.length).toBe(2);
       expect(result.activities[0].type).toBe('BADGE_ISSUED');
-      expect(result.activities[0].actor.name).toBe('issuer@test.com');
+      expect(result.activities[0].actor.name).toBe('John Issuer'); // Uses display name, not email
+      expect(result.activities[1].actor.name).toBe('Jane User');
       expect(result.pagination.total).toBe(100);
       expect(result.pagination.limit).toBe(20);
       expect(result.pagination.offset).toBe(0);
@@ -418,6 +425,7 @@ describe('AnalyticsService', () => {
     it('should handle pagination offset', async () => {
       mockPrismaService.auditLog.count.mockResolvedValue(100);
       mockPrismaService.auditLog.findMany.mockResolvedValue([]);
+      mockPrismaService.user.findMany.mockResolvedValue([]);
 
       await service.getRecentActivity(20, 40);
 
@@ -439,6 +447,7 @@ describe('AnalyticsService', () => {
 
       mockPrismaService.auditLog.count.mockResolvedValue(4);
       mockPrismaService.auditLog.findMany.mockResolvedValue(mockLogs);
+      mockPrismaService.user.findMany.mockResolvedValue([]); // No users found, falls back to email
 
       const result = await service.getRecentActivity(20, 0);
 
@@ -451,11 +460,34 @@ describe('AnalyticsService', () => {
     it('should handle empty audit log', async () => {
       mockPrismaService.auditLog.count.mockResolvedValue(0);
       mockPrismaService.auditLog.findMany.mockResolvedValue([]);
+      mockPrismaService.user.findMany.mockResolvedValue([]);
 
       const result = await service.getRecentActivity(20, 0);
 
       expect(result.activities).toEqual([]);
       expect(result.pagination.total).toBe(0);
+    });
+
+    it('should fallback to email when user not found', async () => {
+      const mockLogs = [
+        {
+          id: 'log-1',
+          entityType: 'Badge',
+          action: 'ISSUED',
+          actorId: 'unknown-user',
+          actorEmail: 'unknown@test.com',
+          timestamp: new Date(),
+          metadata: null,
+        },
+      ];
+
+      mockPrismaService.auditLog.count.mockResolvedValue(1);
+      mockPrismaService.auditLog.findMany.mockResolvedValue(mockLogs);
+      mockPrismaService.user.findMany.mockResolvedValue([]); // User not found
+
+      const result = await service.getRecentActivity(20, 0);
+
+      expect(result.activities[0].actor.name).toBe('unknown@test.com'); // Falls back to email
     });
   });
 });
