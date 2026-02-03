@@ -22,11 +22,11 @@ metrics:
   total_story_points: 44  # Updated Story 8.10 from 3 SP to 6 SP
   total_estimated_hours: 76h  # Story 8.7 corrected from 7h to 6h
   
-  completed_stories: 2  # Story 8.4, 8.5 completed
+  completed_stories: 3  # Story 8.1, 8.4, 8.5 completed
   completed_tasks: 5  # Task 8.0, 8.6, 8.7, 8.8, Story 8.3 completed
-  completed_work_items: 7
-  completed_hours: 39.5h  # 35.5h + 4h (Story 8.5)
-  remaining_hours: 36.5h  # 76h - 39.5h
+  completed_work_items: 8
+  completed_hours: 48.5h  # 39.5h + 9h (Story 8.1)
+  remaining_hours: 27.5h  # 76h - 48.5h
   
   stories_in_progress: 0
   tasks_in_progress: 0
@@ -34,37 +34,50 @@ metrics:
   
   # Technical Debt Resolution
   technical_debt_targeted: 17  # P1 items
-  technical_debt_resolved: 11  # SEC-P1-001~005 (5) + TD-001 (1) + ARCH-P1-001/003/004 (3) + Story 8.3 UX items (2)
-  technical_debt_remaining: 6
+  technical_debt_resolved: 14  # 11 + UX-P1-001/002/003 (3)
+  technical_debt_remaining: 3
 
 # Group A: UX & Accessibility (39h, 28 SP)
 group_a_ux_accessibility:
   total_items: 7  # Added Story 8.10
-  completed_items: 1  # Story 8.5 completed
+  completed_items: 2  # Story 8.1, 8.5 completed
   total_hours: 52.5h  # Updated Story 8.10 from 5h to 11.5h
-  remaining_hours: 48.5h  # 52.5h - 4h (Story 8.5)
+  remaining_hours: 39.5h  # 52.5h - 9h (Story 8.1) - 4h (Story 8.5)
   
   stories:
     - id: "8.1"
       title: "Dashboard Homepage"
       story_points: 5
       estimated_hours: 9h
+      actual_hours: 9h
       priority: HIGH
-      status: backlog  # backlog | in_progress | in_review | done
-      assignee: null
+      status: done
+      assignee: Amelia
       blocked: false
       blocker_reason: null
-      started_date: null
-      completed_date: null
-      acceptance_criteria_met: 0/6
+      started_date: "2026-02-03"
+      completed_date: "2026-02-03"
+      acceptance_criteria_met: 6/6
       technical_debt_resolved:
         - UX-P1-001
         - UX-P1-002
         - UX-P1-003
       dependencies:
-        - "8.4 (Analytics API)"
-        - "8.5 (Responsive Design)"
+        - "8.4 (Analytics API) - ✅"
+        - "8.5 (Responsive Design) - ✅"
       file: "8-1-dashboard-homepage.md"
+      completion_notes: |
+        ✅ COMPLETED - Dashboard Homepage with Key Metrics:
+        - AC1: Employee Dashboard (badge summary, milestones, recent badges)
+        - AC2: Issuer Dashboard (issuance stats, claim rate, activity)
+        - AC3: Manager Dashboard (team insights, top performers, alerts)
+        - AC4: Admin Dashboard (system overview, health, quick actions)
+        - AC5: Shared Components (LoadingSpinner, EmptyState, ErrorDisplay, ErrorBoundary)
+        - AC6: CelebrationModal with confetti animation
+        - Backend: 4 endpoints, 41 tests (23 unit + 18 E2E)
+        - Frontend: 4 dashboards, 54+ tests (201 total passing)
+        - UX-P1-001/002/003 resolved
+        - Commit: 19bfc80
       
     - id: "8.2"
       title: "Badge Search Enhancement"
