@@ -31,11 +31,21 @@ export interface MilestoneProgress {
   icon?: string;
 }
 
+// Recent Achievement (AC1 requirement)
+export interface RecentAchievement {
+  id: string;
+  title: string;
+  description: string;
+  icon?: string;
+  unlockedAt: string;
+}
+
 // Employee Dashboard
 export interface EmployeeDashboard {
   badgeSummary: BadgeSummary;
   currentMilestone?: MilestoneProgress;
   recentBadges: BadgePreview[];
+  recentAchievements?: RecentAchievement[];
 }
 
 // Issuance Activity (Issuer dashboard)

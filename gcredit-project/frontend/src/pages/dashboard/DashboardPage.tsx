@@ -3,6 +3,7 @@
  * 
  * Main dashboard page that renders the appropriate dashboard
  * based on the current user's role.
+ * AC5: All dashboards wrapped in ErrorBoundary for error handling.
  */
 
 import React from 'react';
@@ -13,6 +14,7 @@ import { ManagerDashboard } from './ManagerDashboard';
 import { AdminDashboard } from './AdminDashboard';
 import { PageLoader } from '../../components/common/LoadingSpinner';
 import { ErrorDisplay } from '../../components/common/ErrorDisplay';
+import { ErrorBoundary } from '../../components/common/ErrorBoundary';
 import { useNavigate } from 'react-router-dom';
 
 export const DashboardPage: React.FC = () => {
@@ -41,41 +43,51 @@ export const DashboardPage: React.FC = () => {
   switch (role) {
     case 'ADMIN':
       return (
-        <div className="space-y-8">
-          {/* Admin sees all dashboards */}
-          <AdminDashboard />
-        </div>
+        <ErrorBoundary>
+          <div className="space-y-8">
+            {/* Admin sees all dashboards */}
+            <AdminDashboard />
+          </div>
+        </ErrorBoundary>
       );
 
     case 'MANAGER':
       return (
-        <div className="space-y-8">
-          <ManagerDashboard />
-          <div className="border-t pt-8">
-            <h2 className="text-lg font-semibold mb-4 px-4 md:px-6 lg:px-8">
-              Your Personal Dashboard
-            </h2>
-            <EmployeeDashboard />
+        <ErrorBoundary>
+          <div className="space-y-8">
+            <ManagerDashboard />
+            <div className="border-t pt-8">
+              <h2 className="text-lg font-semibold mb-4 px-4 md:px-6 lg:px-8">
+                Your Personal Dashboard
+              </h2>
+              <EmployeeDashboard />
+            </div>
           </div>
-        </div>
+        </ErrorBoundary>
       );
 
     case 'ISSUER':
       return (
-        <div className="space-y-8">
-          <IssuerDashboard />
-          <div className="border-t pt-8">
-            <h2 className="text-lg font-semibold mb-4 px-4 md:px-6 lg:px-8">
-              Your Personal Dashboard
-            </h2>
-            <EmployeeDashboard />
+        <ErrorBoundary>
+          <div className="space-y-8">
+            <IssuerDashboard />
+            <div className="border-t pt-8">
+              <h2 className="text-lg font-semibold mb-4 px-4 md:px-6 lg:px-8">
+                Your Personal Dashboard
+              </h2>
+              <EmployeeDashboard />
+            </div>
           </div>
-        </div>
+        </ErrorBoundary>
       );
 
     case 'EMPLOYEE':
     default:
-      return <EmployeeDashboard />;
+      return (
+        <ErrorBoundary>
+          <EmployeeDashboard />
+        </ErrorBoundary>
+      );
   }
 };
 

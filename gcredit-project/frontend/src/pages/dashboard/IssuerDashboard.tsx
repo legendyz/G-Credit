@@ -7,16 +7,25 @@
  * - Recent issuance activity
  */
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useIssuerDashboard } from '../../hooks/useDashboard';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
 import { PageLoader } from '../../components/common/LoadingSpinner';
 import { ErrorDisplay } from '../../components/common/ErrorDisplay';
 import { EmptyState, NoActivityState } from '../../components/common/EmptyState';
 import { cn } from '../../lib/utils';
+import { useNavigate } from 'react-router-dom';
+import { RefreshCw, PlusCircle, List } from 'lucide-react';
 
 export const IssuerDashboard: React.FC = () => {
-  const { data, isLoading, error, refetch } = useIssuerDashboard();
+  const { data, isLoading, error, refetch, isFetching } = useIssuerDashboard();
+  const navigate = useNavigate();
+
+  // AC2: Manual refresh handler
+  const handleRefresh = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   if (isLoading) {
     return <PageLoader text="Loading issuer dashboard..." />;
@@ -41,15 +50,55 @@ export const IssuerDashboard: React.FC = () => {
 
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-6">
-      {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">
-          Issuer Dashboard
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Track your badge issuance activity
-        </p>
+      {/* Page Header with Refresh Button */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">
+            Issuer Dashboard
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Track your badge issuance activity
+          </p>
+        </div>
+        {/* Manual refresh button (desktop) */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRefresh}
+          disabled={isFetching}
+          className="hidden sm:flex items-center gap-2"
+          aria-label="Refresh dashboard"
+        >
+          <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} />
+          {isFetching ? 'Refreshing...' : 'Refresh'}
+        </Button>
       </div>
+
+      {/* AC2: Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              onClick={() => navigate('/badges/issue')}
+              className="flex items-center gap-2 min-h-[44px]"
+            >
+              <PlusCircle className="h-4 w-4" />
+              Issue New Badge
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/badges/manage')}
+              className="flex items-center gap-2 min-h-[44px]"
+            >
+              <List className="h-4 w-4" />
+              View Issued Badges
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Issuance Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

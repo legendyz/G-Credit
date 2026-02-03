@@ -7,15 +7,17 @@
  * - Recent badges earned
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useEmployeeDashboard } from '../../hooks/useDashboard';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
 import { PageLoader } from '../../components/common/LoadingSpinner';
 import { ErrorDisplay } from '../../components/common/ErrorDisplay';
 import { EmptyState, NoBadgesState } from '../../components/common/EmptyState';
 import { BadgeEarnedCelebration } from '../../components/common/CelebrationModal';
 import { cn } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { RefreshCw, Wallet, Search, CheckCircle } from 'lucide-react';
 
 // Celebration tracking localStorage key (AC1 requirement)
 const CELEBRATED_BADGES_KEY = 'celebratedBadges';
@@ -68,10 +70,12 @@ function getProgressBarColor(percentage: number): string {
 }
 
 export const EmployeeDashboard: React.FC = () => {
-  const { data, isLoading, error, refetch } = useEmployeeDashboard();
+  const { data, isLoading, error, refetch, isFetching } = useEmployeeDashboard();
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebratingBadgeId, setCelebratingBadgeId] = useState<string | null>(null);
+  const [highlightedBadgeId, setHighlightedBadgeId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const latestBadgeRef = useRef<HTMLDivElement>(null);
 
   // AC1: Celebration feedback - trigger for recently issued uncelebrated badges
   const checkAndTriggerCelebration = useCallback(() => {
@@ -87,7 +91,13 @@ export const EmployeeDashboard: React.FC = () => {
       wasIssuedRecently(latestBadge.issuedAt, 5)
     ) {
       setCelebratingBadgeId(latestBadge.id);
+      setHighlightedBadgeId(latestBadge.id);
       setShowCelebration(true);
+      
+      // AC6: Auto-scroll to latest badge section after celebration starts
+      setTimeout(() => {
+        latestBadgeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 500);
     }
   }, [data]);
 
@@ -103,7 +113,14 @@ export const EmployeeDashboard: React.FC = () => {
     }
     setShowCelebration(false);
     setCelebratingBadgeId(null);
+    // Keep highlight for a few seconds after modal closes
+    setTimeout(() => setHighlightedBadgeId(null), 5000);
   }, [celebratingBadgeId]);
+
+  // AC1: Manual refresh handler
+  const handleRefresh = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   if (isLoading) {
     return <PageLoader text="Loading your dashboard..." />;
@@ -124,19 +141,59 @@ export const EmployeeDashboard: React.FC = () => {
     return <NoBadgesState onExplore={() => navigate('/badges')} />;
   }
 
-  const { badgeSummary, currentMilestone, recentBadges } = data;
+  const { badgeSummary, currentMilestone, recentBadges, recentAchievements } = data;
 
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-6">
-      {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">
-          My Dashboard
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Track your badges and achievements
-        </p>
+      {/* Page Header with Refresh Button */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">
+            My Dashboard
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Track your badges and achievements
+          </p>
+        </div>
+        {/* AC1: Manual refresh button (desktop) */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRefresh}
+          disabled={isFetching}
+          className="hidden sm:flex items-center gap-2"
+          aria-label="Refresh dashboard"
+        >
+          <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} />
+          {isFetching ? 'Refreshing...' : 'Refresh'}
+        </Button>
       </div>
+
+      {/* AC1: Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              onClick={() => navigate('/wallet')}
+              className="flex items-center gap-2 min-h-[44px]"
+            >
+              <Wallet className="h-4 w-4" />
+              View All My Badges
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/catalog')}
+              className="flex items-center gap-2 min-h-[44px]"
+            >
+              <Search className="h-4 w-4" />
+              Browse Badge Catalog
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Badge Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -209,6 +266,103 @@ export const EmployeeDashboard: React.FC = () => {
         </Card>
       )}
 
+      {/* AC1: Latest Badge Preview with Claim Button and Highlight */}
+      {badgeSummary.latestBadge && (
+        <div ref={latestBadgeRef}>
+          <Card className={cn(
+            'transition-all duration-500',
+            highlightedBadgeId === badgeSummary.latestBadge.id && 'ring-2 ring-green-500 bg-green-50 dark:bg-green-950'
+          )}>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                {highlightedBadgeId === badgeSummary.latestBadge.id && (
+                  <CheckCircle className="h-5 w-5 text-green-500" />
+                )}
+                Latest Badge
+                {highlightedBadgeId === badgeSummary.latestBadge.id && (
+                  <span className="text-sm font-normal text-green-600 dark:text-green-400">
+                    Congratulations!
+                  </span>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                {badgeSummary.latestBadge.imageUrl ? (
+                  <img
+                    src={badgeSummary.latestBadge.imageUrl}
+                    alt={badgeSummary.latestBadge.templateName}
+                    className={cn(
+                      'w-16 h-16 rounded-lg object-cover',
+                      highlightedBadgeId === badgeSummary.latestBadge.id && 'ring-2 ring-green-400'
+                    )}
+                  />
+                ) : (
+                  <div className={cn(
+                    'w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center',
+                    highlightedBadgeId === badgeSummary.latestBadge.id && 'ring-2 ring-green-400'
+                  )}>
+                    <span className="text-3xl">🏆</span>
+                  </div>
+                )}
+                <div className="flex-1">
+                  <p className="font-semibold text-lg">{badgeSummary.latestBadge.templateName}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Issued {new Date(badgeSummary.latestBadge.issuedAt).toLocaleDateString()}
+                  </p>
+                  <div className="mt-2">
+                    {badgeSummary.latestBadge.status === 'PENDING' ? (
+                      <Button
+                        size="sm"
+                        onClick={() => navigate(`/wallet?claim=${badgeSummary.latestBadge!.id}`)}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        Claim Badge
+                      </Button>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
+                        <CheckCircle className="h-4 w-4" />
+                        Claimed
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* AC1: Recent Achievements Unlocked */}
+      {recentAchievements && recentAchievements.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              🎯 Recent Achievements Unlocked
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {recentAchievements.map((achievement) => (
+                <div
+                  key={achievement.id}
+                  className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950 dark:to-yellow-950 border border-amber-200 dark:border-amber-800"
+                >
+                  <span className="text-2xl">{achievement.icon || '🏆'}</span>
+                  <div className="flex-1">
+                    <p className="font-medium">{achievement.title}</p>
+                    <p className="text-sm text-muted-foreground">{achievement.description}</p>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(achievement.unlockedAt).toLocaleDateString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Recent Badges */}
       <Card>
         <CardHeader>
@@ -224,12 +378,30 @@ export const EmployeeDashboard: React.FC = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {recentBadges.map((badge) => (
-                <BadgeCard key={badge.id} badge={badge} />
+                <BadgeCard
+                  key={badge.id}
+                  badge={badge}
+                  isHighlighted={highlightedBadgeId === badge.id}
+                  onClaim={() => navigate(`/wallet?claim=${badge.id}`)}
+                />
               ))}
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Mobile Refresh Button (AC1) */}
+      <div className="sm:hidden flex justify-center pb-4">
+        <Button
+          variant="outline"
+          onClick={handleRefresh}
+          disabled={isFetching}
+          className="flex items-center gap-2 min-h-[44px]"
+        >
+          <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} />
+          {isFetching ? 'Refreshing...' : 'Refresh Dashboard'}
+        </Button>
+      </div>
 
       {/* Celebration Modal */}
       <BadgeEarnedCelebration
@@ -299,9 +471,11 @@ interface BadgeCardProps {
     issuedAt: string;
     claimedAt?: string;
   };
+  isHighlighted?: boolean;
+  onClaim?: () => void;
 }
 
-const BadgeCard: React.FC<BadgeCardProps> = ({ badge }) => {
+const BadgeCard: React.FC<BadgeCardProps> = ({ badge, isHighlighted, onClaim }) => {
   const statusColors = {
     CLAIMED: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
     PENDING: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
@@ -310,7 +484,10 @@ const BadgeCard: React.FC<BadgeCardProps> = ({ badge }) => {
   };
 
   return (
-    <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+    <div className={cn(
+      'flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-all',
+      isHighlighted && 'ring-2 ring-green-500 bg-green-50 dark:bg-green-950'
+    )}>
       {badge.imageUrl ? (
         <img
           src={badge.imageUrl}
@@ -324,7 +501,10 @@ const BadgeCard: React.FC<BadgeCardProps> = ({ badge }) => {
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <p className="font-medium truncate">{badge.templateName}</p>
+        <div className="flex items-center gap-2">
+          <p className="font-medium truncate">{badge.templateName}</p>
+          {isHighlighted && <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />}
+        </div>
         <div className="flex items-center gap-2 mt-1">
           <span
             className={cn(
@@ -338,6 +518,17 @@ const BadgeCard: React.FC<BadgeCardProps> = ({ badge }) => {
             {new Date(badge.issuedAt).toLocaleDateString()}
           </span>
         </div>
+        {/* AC1: Claim button for pending badges */}
+        {badge.status === 'PENDING' && onClaim && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onClaim}
+            className="mt-2 h-8 text-xs"
+          >
+            Claim
+          </Button>
+        )}
       </div>
     </div>
   );

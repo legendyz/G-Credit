@@ -7,16 +7,25 @@
  * - Revocation alerts
  */
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useManagerDashboard } from '../../hooks/useDashboard';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
 import { PageLoader } from '../../components/common/LoadingSpinner';
 import { ErrorDisplay } from '../../components/common/ErrorDisplay';
 import { EmptyState, NoTeamMembersState } from '../../components/common/EmptyState';
 import { cn } from '../../lib/utils';
+import { useNavigate } from 'react-router-dom';
+import { RefreshCw, Award, Users } from 'lucide-react';
 
 export const ManagerDashboard: React.FC = () => {
-  const { data, isLoading, error, refetch } = useManagerDashboard();
+  const { data, isLoading, error, refetch, isFetching } = useManagerDashboard();
+  const navigate = useNavigate();
+
+  // AC3: Manual refresh handler
+  const handleRefresh = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   if (isLoading) {
     return <PageLoader text="Loading team dashboard..." />;
@@ -41,15 +50,56 @@ export const ManagerDashboard: React.FC = () => {
 
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-6">
-      {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">
-          Team Dashboard
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Monitor your team's badge performance
-        </p>
+      {/* Page Header with Refresh Button */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">
+            Team Dashboard
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Monitor your team's badge performance
+          </p>
+        </div>
+        {/* Manual refresh button (desktop) */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRefresh}
+          disabled={isFetching}
+          className="hidden sm:flex items-center gap-2"
+          aria-label="Refresh dashboard"
+        >
+          <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} />
+          {isFetching ? 'Refreshing...' : 'Refresh'}
+        </Button>
       </div>
+
+      {/* AC3: Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/team/nominate')}
+              className="flex items-center gap-2 min-h-[44px]"
+            >
+              <Award className="h-4 w-4" />
+              Nominate Team Member
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/team/skills')}
+              className="flex items-center gap-2 min-h-[44px]"
+            >
+              <Users className="h-4 w-4" />
+              View Team Skills
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Team Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
