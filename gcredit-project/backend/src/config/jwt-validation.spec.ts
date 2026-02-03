@@ -75,7 +75,9 @@ describe('JWT Secret Validation (ARCH-P1-003)', () => {
         'development',
       );
       expect(result.valid).toBe(false);
-      expect(result.error).toContain('JWT_SECRET environment variable is required');
+      expect(result.error).toContain(
+        'JWT_SECRET environment variable is required',
+      );
     });
 
     it('should reject JWT_SECRET shorter than 32 characters', () => {
@@ -125,7 +127,9 @@ describe('JWT Secret Validation (ARCH-P1-003)', () => {
         'development',
       );
       expect(result.valid).toBe(false);
-      expect(result.error).toContain('JWT_REFRESH_SECRET environment variable is required');
+      expect(result.error).toContain(
+        'JWT_REFRESH_SECRET environment variable is required',
+      );
     });
 
     it('should reject JWT_REFRESH_SECRET shorter than 32 characters', () => {
@@ -135,7 +139,9 @@ describe('JWT Secret Validation (ARCH-P1-003)', () => {
         'development',
       );
       expect(result.valid).toBe(false);
-      expect(result.error).toContain('JWT_REFRESH_SECRET must be at least 32 characters');
+      expect(result.error).toContain(
+        'JWT_REFRESH_SECRET must be at least 32 characters',
+      );
     });
 
     it('should skip validation in test environment', () => {

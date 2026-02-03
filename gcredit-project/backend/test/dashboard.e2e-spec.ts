@@ -35,7 +35,11 @@ describe('Dashboard E2E (Isolated)', () => {
 
   beforeAll(async () => {
     // Create users with different roles
-    employeeUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'employee');
+    employeeUser = await createAndLoginUser(
+      ctx.app,
+      ctx.userFactory,
+      'employee',
+    );
     issuerUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'issuer');
     managerUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'manager');
     adminUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'admin');
@@ -198,9 +202,13 @@ describe('Dashboard E2E (Isolated)', () => {
       expect(response.body).toHaveProperty('systemOverview');
       expect(response.body.systemOverview).toHaveProperty('totalUsers');
       expect(response.body.systemOverview).toHaveProperty('totalBadgesIssued');
-      expect(response.body.systemOverview).toHaveProperty('activeBadgeTemplates');
+      expect(response.body.systemOverview).toHaveProperty(
+        'activeBadgeTemplates',
+      );
       expect(response.body.systemOverview).toHaveProperty('systemHealth');
-      expect(response.body.systemOverview).toHaveProperty('activeUsersThisMonth');
+      expect(response.body.systemOverview).toHaveProperty(
+        'activeUsersThisMonth',
+      );
       expect(response.body.systemOverview).toHaveProperty('newUsersThisMonth');
       expect(response.body).toHaveProperty('recentActivity');
       expect(Array.isArray(response.body.recentActivity)).toBe(true);

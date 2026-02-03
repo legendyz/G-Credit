@@ -1,6 +1,6 @@
 /**
  * Dashboard DTOs - Story 8.1
- * 
+ *
  * Data Transfer Objects for all dashboard endpoints.
  */
 
@@ -18,7 +18,10 @@ export class BadgePreviewDto {
   @ApiPropertyOptional({ description: 'Template image URL' })
   imageUrl?: string;
 
-  @ApiProperty({ description: 'Badge status', enum: ['PENDING', 'CLAIMED', 'REVOKED', 'EXPIRED'] })
+  @ApiProperty({
+    description: 'Badge status',
+    enum: ['PENDING', 'CLAIMED', 'REVOKED', 'EXPIRED'],
+  })
   status: string;
 
   @ApiProperty({ description: 'When the badge was issued' })
@@ -57,10 +60,16 @@ export class BadgeSummaryDto {
   @ApiProperty({ description: 'Badges claimed this month', example: 3 })
   claimedThisMonth: number;
 
-  @ApiProperty({ description: 'Pending badges waiting to be claimed', example: 1 })
+  @ApiProperty({
+    description: 'Pending badges waiting to be claimed',
+    example: 1,
+  })
   pendingCount: number;
 
-  @ApiPropertyOptional({ description: 'Latest badge preview', type: BadgePreviewDto })
+  @ApiPropertyOptional({
+    description: 'Latest badge preview',
+    type: BadgePreviewDto,
+  })
   latestBadge?: BadgePreviewDto;
 }
 
@@ -82,13 +91,22 @@ export class MilestoneProgressDto {
 }
 
 export class EmployeeDashboardDto {
-  @ApiProperty({ description: 'Badge summary statistics', type: BadgeSummaryDto })
+  @ApiProperty({
+    description: 'Badge summary statistics',
+    type: BadgeSummaryDto,
+  })
   badgeSummary: BadgeSummaryDto;
 
-  @ApiPropertyOptional({ description: 'Current milestone progress', type: MilestoneProgressDto })
+  @ApiPropertyOptional({
+    description: 'Current milestone progress',
+    type: MilestoneProgressDto,
+  })
   currentMilestone?: MilestoneProgressDto;
 
-  @ApiProperty({ description: 'Recent badge activity', type: [BadgePreviewDto] })
+  @ApiProperty({
+    description: 'Recent badge activity',
+    type: [BadgePreviewDto],
+  })
   recentBadges: BadgePreviewDto[];
 }
 
@@ -129,10 +147,16 @@ export class IssuanceActivityDto {
 }
 
 export class IssuerDashboardDto {
-  @ApiProperty({ description: 'Issuance summary statistics', type: IssuanceSummaryDto })
+  @ApiProperty({
+    description: 'Issuance summary statistics',
+    type: IssuanceSummaryDto,
+  })
   issuanceSummary: IssuanceSummaryDto;
 
-  @ApiProperty({ description: 'Recent issuance activity', type: [IssuanceActivityDto] })
+  @ApiProperty({
+    description: 'Recent issuance activity',
+    type: [IssuanceActivityDto],
+  })
   recentActivity: IssuanceActivityDto[];
 }
 
@@ -159,7 +183,10 @@ export class TeamInsightsDto {
   @ApiProperty({ description: 'Team badges this month', example: 28 })
   teamBadgesThisMonth: number;
 
-  @ApiProperty({ description: 'Top performers by badge count', type: [TopPerformerDto] })
+  @ApiProperty({
+    description: 'Top performers by badge count',
+    type: [TopPerformerDto],
+  })
   topPerformers: TopPerformerDto[];
 }
 
@@ -181,10 +208,16 @@ export class RevocationAlertDto {
 }
 
 export class ManagerDashboardDto {
-  @ApiProperty({ description: 'Team insights statistics', type: TeamInsightsDto })
+  @ApiProperty({
+    description: 'Team insights statistics',
+    type: TeamInsightsDto,
+  })
   teamInsights: TeamInsightsDto;
 
-  @ApiProperty({ description: 'Recent revocation alerts', type: [RevocationAlertDto] })
+  @ApiProperty({
+    description: 'Recent revocation alerts',
+    type: [RevocationAlertDto],
+  })
   revocationAlerts: RevocationAlertDto[];
 }
 
@@ -200,7 +233,10 @@ export class SystemOverviewDto {
   @ApiProperty({ description: 'Active badge templates', example: 23 })
   activeBadgeTemplates: number;
 
-  @ApiProperty({ description: 'System health status', enum: ['healthy', 'degraded', 'down'] })
+  @ApiProperty({
+    description: 'System health status',
+    enum: ['healthy', 'degraded', 'down'],
+  })
   systemHealth: string;
 
   @ApiProperty({ description: 'Active users this month', example: 320 })
@@ -214,7 +250,16 @@ export class AdminActivityDto {
   @ApiProperty({ description: 'Activity ID' })
   id: string;
 
-  @ApiProperty({ description: 'Activity type', enum: ['BADGE_ISSUED', 'BADGE_CLAIMED', 'BADGE_REVOKED', 'USER_CREATED', 'TEMPLATE_CREATED'] })
+  @ApiProperty({
+    description: 'Activity type',
+    enum: [
+      'BADGE_ISSUED',
+      'BADGE_CLAIMED',
+      'BADGE_REVOKED',
+      'USER_CREATED',
+      'TEMPLATE_CREATED',
+    ],
+  })
   type: string;
 
   @ApiProperty({ description: 'Activity description' })
@@ -228,9 +273,15 @@ export class AdminActivityDto {
 }
 
 export class AdminDashboardDto {
-  @ApiProperty({ description: 'System overview statistics', type: SystemOverviewDto })
+  @ApiProperty({
+    description: 'System overview statistics',
+    type: SystemOverviewDto,
+  })
   systemOverview: SystemOverviewDto;
 
-  @ApiProperty({ description: 'Recent system activity', type: [AdminActivityDto] })
+  @ApiProperty({
+    description: 'Recent system activity',
+    type: [AdminActivityDto],
+  })
   recentActivity: AdminActivityDto[];
 }

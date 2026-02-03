@@ -89,7 +89,9 @@ export class AnalyticsService {
     }
     const claimRate =
       badgeCounts.totalIssued > 0
-        ? Math.round((badgeCounts.claimedCount / badgeCounts.totalIssued) * 100) / 100
+        ? Math.round(
+            (badgeCounts.claimedCount / badgeCounts.totalIssued) * 100,
+          ) / 100
         : 0;
 
     // Transform template counts
@@ -171,7 +173,11 @@ export class AnalyticsService {
     const dataPointsMap = new Map<string, TrendDataPointDto>();
 
     // Initialize all dates in period
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    for (
+      let d = new Date(startDate);
+      d <= endDate;
+      d.setDate(d.getDate() + 1)
+    ) {
       const dateKey = d.toISOString().split('T')[0];
       dataPointsMap.set(dateKey, {
         date: dateKey,
@@ -204,8 +210,8 @@ export class AnalyticsService {
       }
     }
 
-    const dataPoints = Array.from(dataPointsMap.values()).sort(
-      (a, b) => a.date.localeCompare(b.date),
+    const dataPoints = Array.from(dataPointsMap.values()).sort((a, b) =>
+      a.date.localeCompare(b.date),
     );
 
     return {
@@ -217,7 +223,10 @@ export class AnalyticsService {
         issued: totalIssued,
         claimed: totalClaimed,
         revoked: totalRevoked,
-        claimRate: totalIssued > 0 ? Math.round((totalClaimed / totalIssued) * 100) / 100 : 0,
+        claimRate:
+          totalIssued > 0
+            ? Math.round((totalClaimed / totalIssued) * 100) / 100
+            : 0,
       },
     };
   }
@@ -245,13 +254,13 @@ export class AnalyticsService {
         where: { id: currentUserId },
         select: { department: true },
       });
-      
+
       if (!manager?.department) {
         throw new ForbiddenException('Manager has no assigned department');
       }
-      
+
       filterDepartment = manager.department;
-      
+
       // If teamId provided, verify it matches manager's department
       if (teamId && teamId !== filterDepartment) {
         throw new ForbiddenException('You can only view your own team');
@@ -298,7 +307,8 @@ export class AnalyticsService {
     const performers = usersWithBadges
       .map((user) => ({
         userId: user.id,
-        name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+        name:
+          `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
         badgeCount: user.badgesReceived.length,
         latestBadge: user.badgesReceived[0]
           ? {
@@ -348,7 +358,13 @@ export class AnalyticsService {
     // Count badges and employees per skill
     const skillStats = new Map<
       string,
-      { skillId: string; skillName: string; categoryName: string; badgeCount: number; employees: Set<string> }
+      {
+        skillId: string;
+        skillName: string;
+        categoryName: string;
+        badgeCount: number;
+        employees: Set<string>;
+      }
     >();
 
     for (const skill of skills) {
@@ -388,7 +404,8 @@ export class AnalyticsService {
     const skillsByCategory: Record<string, number> = {};
     for (const stat of skillStats.values()) {
       const categoryName = stat.categoryName;
-      skillsByCategory[categoryName] = (skillsByCategory[categoryName] || 0) + stat.badgeCount;
+      skillsByCategory[categoryName] =
+        (skillsByCategory[categoryName] || 0) + stat.badgeCount;
     }
 
     return {
@@ -404,7 +421,10 @@ export class AnalyticsService {
    * @param limit - Max results (default 20)
    * @param offset - Pagination offset
    */
-  async getRecentActivity(limit: number = 20, offset: number = 0): Promise<RecentActivityDto> {
+  async getRecentActivity(
+    limit: number = 20,
+    offset: number = 0,
+  ): Promise<RecentActivityDto> {
     // Query total count
     const total = await this.prisma.auditLog.count();
 
@@ -437,7 +457,10 @@ export class AnalyticsService {
         ISSUED: 'BADGE_ISSUED',
         CLAIMED: 'BADGE_CLAIMED',
         REVOKED: 'BADGE_REVOKED',
-        CREATED: log.entityType === 'Template' ? 'TEMPLATE_CREATED' : 'USER_REGISTERED',
+        CREATED:
+          log.entityType === 'Template'
+            ? 'TEMPLATE_CREATED'
+            : 'USER_REGISTERED',
       };
 
       const metadata = log.metadata as Record<string, unknown> | null;

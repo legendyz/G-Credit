@@ -257,7 +257,10 @@ export class BadgeTemplatesController {
   })
   @ApiResponse({ status: 400, description: 'Invalid input' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Cannot modify templates created by others' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Cannot modify templates created by others',
+  })
   @ApiResponse({ status: 404, description: 'Badge template not found' })
   async update(
     @Param('id') id: string,
@@ -293,7 +296,10 @@ export class BadgeTemplatesController {
   @ApiOperation({ summary: 'Delete a badge template' })
   @ApiResponse({ status: 200, description: 'Badge template deleted' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Cannot delete templates created by others' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Cannot delete templates created by others',
+  })
   @ApiResponse({ status: 404, description: 'Badge template not found' })
   async remove(@Param('id') id: string, @Request() req: any) {
     // ARCH-P1-004: Ownership check - ISSUER can only delete own templates

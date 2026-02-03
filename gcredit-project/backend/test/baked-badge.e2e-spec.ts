@@ -35,8 +35,16 @@ describe('Baked Badge PNG (e2e) - Story 6.4', () => {
   beforeAll(async () => {
     // Create test users using factories
     adminUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'admin');
-    recipientUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'employee');
-    otherEmployeeUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'employee');
+    recipientUser = await createAndLoginUser(
+      ctx.app,
+      ctx.userFactory,
+      'employee',
+    );
+    otherEmployeeUser = await createAndLoginUser(
+      ctx.app,
+      ctx.userFactory,
+      'employee',
+    );
 
     // Create badge template using factory
     const template = await ctx.templateFactory.createTemplate({

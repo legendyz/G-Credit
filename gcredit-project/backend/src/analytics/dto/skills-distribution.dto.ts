@@ -31,7 +31,10 @@ export class SkillsDistributionDto {
   @ApiProperty({ example: 45, description: 'Total unique skills' })
   totalSkills: number;
 
-  @ApiProperty({ type: [TopSkillDto], description: 'Top 20 skills by badge count' })
+  @ApiProperty({
+    type: [TopSkillDto],
+    description: 'Top 20 skills by badge count',
+  })
   topSkills: TopSkillDto[];
 
   @ApiProperty({

@@ -138,89 +138,137 @@ describe('DashboardController', () => {
       .compile();
 
     controller = module.get<DashboardController>(DashboardController);
-    dashboardService = module.get(DashboardService) as jest.Mocked<DashboardService>;
+    dashboardService = module.get(DashboardService);
   });
 
   describe('getEmployeeDashboard', () => {
     it('should return employee dashboard data', async () => {
       // Arrange
-      dashboardService.getEmployeeDashboard.mockResolvedValue(mockEmployeeDashboard);
-      const req = { user: { userId: 'user-1', email: 'test@example.com', role: 'EMPLOYEE' } };
+      dashboardService.getEmployeeDashboard.mockResolvedValue(
+        mockEmployeeDashboard,
+      );
+      const req = {
+        user: { userId: 'user-1', email: 'test@example.com', role: 'EMPLOYEE' },
+      };
 
       // Act
       const result = await controller.getEmployeeDashboard(req as any);
 
       // Assert
       expect(result).toEqual(mockEmployeeDashboard);
-      expect(dashboardService.getEmployeeDashboard).toHaveBeenCalledWith('user-1');
+      expect(dashboardService.getEmployeeDashboard).toHaveBeenCalledWith(
+        'user-1',
+      );
     });
 
     it('should pass user id from JWT token', async () => {
       // Arrange
-      dashboardService.getEmployeeDashboard.mockResolvedValue(mockEmployeeDashboard);
-      const req = { user: { userId: 'different-user', email: 'other@example.com', role: 'EMPLOYEE' } };
+      dashboardService.getEmployeeDashboard.mockResolvedValue(
+        mockEmployeeDashboard,
+      );
+      const req = {
+        user: {
+          userId: 'different-user',
+          email: 'other@example.com',
+          role: 'EMPLOYEE',
+        },
+      };
 
       // Act
       await controller.getEmployeeDashboard(req as any);
 
       // Assert
-      expect(dashboardService.getEmployeeDashboard).toHaveBeenCalledWith('different-user');
+      expect(dashboardService.getEmployeeDashboard).toHaveBeenCalledWith(
+        'different-user',
+      );
     });
   });
 
   describe('getIssuerDashboard', () => {
     it('should return issuer dashboard data', async () => {
       // Arrange
-      dashboardService.getIssuerDashboard.mockResolvedValue(mockIssuerDashboard);
-      const req = { user: { userId: 'issuer-1', email: 'issuer@example.com', role: 'ISSUER' } };
+      dashboardService.getIssuerDashboard.mockResolvedValue(
+        mockIssuerDashboard,
+      );
+      const req = {
+        user: {
+          userId: 'issuer-1',
+          email: 'issuer@example.com',
+          role: 'ISSUER',
+        },
+      };
 
       // Act
       const result = await controller.getIssuerDashboard(req as any);
 
       // Assert
       expect(result).toEqual(mockIssuerDashboard);
-      expect(dashboardService.getIssuerDashboard).toHaveBeenCalledWith('issuer-1');
+      expect(dashboardService.getIssuerDashboard).toHaveBeenCalledWith(
+        'issuer-1',
+      );
     });
 
     it('should work for admin users accessing issuer dashboard', async () => {
       // Arrange
-      dashboardService.getIssuerDashboard.mockResolvedValue(mockIssuerDashboard);
-      const req = { user: { userId: 'admin-1', email: 'admin@example.com', role: 'ADMIN' } };
+      dashboardService.getIssuerDashboard.mockResolvedValue(
+        mockIssuerDashboard,
+      );
+      const req = {
+        user: { userId: 'admin-1', email: 'admin@example.com', role: 'ADMIN' },
+      };
 
       // Act
       const result = await controller.getIssuerDashboard(req as any);
 
       // Assert
       expect(result).toEqual(mockIssuerDashboard);
-      expect(dashboardService.getIssuerDashboard).toHaveBeenCalledWith('admin-1');
+      expect(dashboardService.getIssuerDashboard).toHaveBeenCalledWith(
+        'admin-1',
+      );
     });
   });
 
   describe('getManagerDashboard', () => {
     it('should return manager dashboard data', async () => {
       // Arrange
-      dashboardService.getManagerDashboard.mockResolvedValue(mockManagerDashboard);
-      const req = { user: { userId: 'manager-1', email: 'manager@example.com', role: 'MANAGER' } };
+      dashboardService.getManagerDashboard.mockResolvedValue(
+        mockManagerDashboard,
+      );
+      const req = {
+        user: {
+          userId: 'manager-1',
+          email: 'manager@example.com',
+          role: 'MANAGER',
+        },
+      };
 
       // Act
       const result = await controller.getManagerDashboard(req as any);
 
       // Assert
       expect(result).toEqual(mockManagerDashboard);
-      expect(dashboardService.getManagerDashboard).toHaveBeenCalledWith('manager-1');
+      expect(dashboardService.getManagerDashboard).toHaveBeenCalledWith(
+        'manager-1',
+      );
     });
 
     it('should work for admin users accessing manager dashboard', async () => {
       // Arrange
-      dashboardService.getManagerDashboard.mockResolvedValue(mockManagerDashboard);
-      const req = { user: { userId: 'admin-1', email: 'admin@example.com', role: 'ADMIN' } };
+      dashboardService.getManagerDashboard.mockResolvedValue(
+        mockManagerDashboard,
+      );
+      const req = {
+        user: { userId: 'admin-1', email: 'admin@example.com', role: 'ADMIN' },
+      };
 
       // Act
       const result = await controller.getManagerDashboard(req as any);
 
       // Assert
       expect(result).toEqual(mockManagerDashboard);
-      expect(dashboardService.getManagerDashboard).toHaveBeenCalledWith('admin-1');
+      expect(dashboardService.getManagerDashboard).toHaveBeenCalledWith(
+        'admin-1',
+      );
     });
   });
 

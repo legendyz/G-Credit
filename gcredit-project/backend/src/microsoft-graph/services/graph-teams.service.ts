@@ -59,7 +59,9 @@ export class GraphTeamsService implements OnModuleInit {
       const authProvider = this.tokenProvider.getAuthProvider();
 
       if (!authProvider) {
-        this.logger.warn('⚠️ Graph Teams Service disabled - Azure AD not configured');
+        this.logger.warn(
+          '⚠️ Graph Teams Service disabled - Azure AD not configured',
+        );
         this.isEnabled = false;
         return;
       }

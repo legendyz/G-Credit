@@ -144,9 +144,24 @@ describe('AnalyticsService', () => {
   describe('getIssuanceTrends (AC2)', () => {
     it('should return badge issuance trends for given period', async () => {
       const mockBadges = [
-        { issuedAt: new Date('2026-01-15'), status: 'CLAIMED', claimedAt: new Date('2026-01-16'), revokedAt: null },
-        { issuedAt: new Date('2026-01-15'), status: 'PENDING', claimedAt: null, revokedAt: null },
-        { issuedAt: new Date('2026-01-16'), status: 'CLAIMED', claimedAt: new Date('2026-01-17'), revokedAt: null },
+        {
+          issuedAt: new Date('2026-01-15'),
+          status: 'CLAIMED',
+          claimedAt: new Date('2026-01-16'),
+          revokedAt: null,
+        },
+        {
+          issuedAt: new Date('2026-01-15'),
+          status: 'PENDING',
+          claimedAt: null,
+          revokedAt: null,
+        },
+        {
+          issuedAt: new Date('2026-01-16'),
+          status: 'CLAIMED',
+          claimedAt: new Date('2026-01-17'),
+          revokedAt: null,
+        },
       ];
 
       mockPrismaService.badge.findMany.mockResolvedValue(mockBadges);
@@ -176,7 +191,12 @@ describe('AnalyticsService', () => {
     it('should force issuerId filter for ISSUER role', async () => {
       mockPrismaService.badge.findMany.mockResolvedValue([]);
 
-      await service.getIssuanceTrends(7, 'other-issuer', 'my-issuer-id', 'ISSUER');
+      await service.getIssuanceTrends(
+        7,
+        'other-issuer',
+        'my-issuer-id',
+        'ISSUER',
+      );
 
       // ISSUER should only see their own data, not the requested issuerId
       expect(mockPrismaService.badge.findMany).toHaveBeenCalledWith(
@@ -203,10 +223,30 @@ describe('AnalyticsService', () => {
 
     it('should calculate correct totals', async () => {
       const mockBadges = [
-        { issuedAt: new Date(), status: 'CLAIMED', claimedAt: new Date(), revokedAt: null },
-        { issuedAt: new Date(), status: 'CLAIMED', claimedAt: new Date(), revokedAt: null },
-        { issuedAt: new Date(), status: 'REVOKED', claimedAt: null, revokedAt: new Date() },
-        { issuedAt: new Date(), status: 'PENDING', claimedAt: null, revokedAt: null },
+        {
+          issuedAt: new Date(),
+          status: 'CLAIMED',
+          claimedAt: new Date(),
+          revokedAt: null,
+        },
+        {
+          issuedAt: new Date(),
+          status: 'CLAIMED',
+          claimedAt: new Date(),
+          revokedAt: null,
+        },
+        {
+          issuedAt: new Date(),
+          status: 'REVOKED',
+          claimedAt: null,
+          revokedAt: new Date(),
+        },
+        {
+          issuedAt: new Date(),
+          status: 'PENDING',
+          claimedAt: null,
+          revokedAt: null,
+        },
       ];
 
       mockPrismaService.badge.findMany.mockResolvedValue(mockBadges);
@@ -230,8 +270,16 @@ describe('AnalyticsService', () => {
           email: 'jane@test.com',
           department: 'Engineering',
           badgesReceived: [
-            { id: 'b1', claimedAt: new Date('2026-02-01'), template: { name: 'Python Expert' } },
-            { id: 'b2', claimedAt: new Date('2026-01-15'), template: { name: 'AWS Certified' } },
+            {
+              id: 'b1',
+              claimedAt: new Date('2026-02-01'),
+              template: { name: 'Python Expert' },
+            },
+            {
+              id: 'b2',
+              claimedAt: new Date('2026-01-15'),
+              template: { name: 'AWS Certified' },
+            },
           ],
         },
         {
@@ -241,19 +289,30 @@ describe('AnalyticsService', () => {
           email: 'john@test.com',
           department: 'Engineering',
           badgesReceived: [
-            { id: 'b3', claimedAt: new Date('2026-01-20'), template: { name: 'Leadership' } },
+            {
+              id: 'b3',
+              claimedAt: new Date('2026-01-20'),
+              template: { name: 'Leadership' },
+            },
           ],
         },
       ];
 
       mockPrismaService.user.findMany.mockResolvedValue(mockUsers);
 
-      const result = await service.getTopPerformers(undefined, 10, 'admin-1', 'ADMIN');
+      const result = await service.getTopPerformers(
+        undefined,
+        10,
+        'admin-1',
+        'ADMIN',
+      );
 
       expect(result.topPerformers.length).toBe(2);
       expect(result.topPerformers[0].name).toBe('Jane Smith');
       expect(result.topPerformers[0].badgeCount).toBe(2);
-      expect(result.topPerformers[0].latestBadge?.templateName).toBe('Python Expert');
+      expect(result.topPerformers[0].latestBadge?.templateName).toBe(
+        'Python Expert',
+      );
       expect(result.topPerformers[1].badgeCount).toBe(1);
     });
 
@@ -269,13 +328,20 @@ describe('AnalyticsService', () => {
 
       mockPrismaService.user.findMany.mockResolvedValue(mockUsers);
 
-      const result = await service.getTopPerformers(undefined, 5, 'admin-1', 'ADMIN');
+      const result = await service.getTopPerformers(
+        undefined,
+        5,
+        'admin-1',
+        'ADMIN',
+      );
 
       expect(result.topPerformers.length).toBe(5);
     });
 
     it('should filter by department for MANAGER role', async () => {
-      mockPrismaService.user.findUnique.mockResolvedValue({ department: 'Engineering' });
+      mockPrismaService.user.findUnique.mockResolvedValue({
+        department: 'Engineering',
+      });
       mockPrismaService.user.findMany.mockResolvedValue([]);
 
       await service.getTopPerformers(undefined, 10, 'manager-1', 'MANAGER');
@@ -290,7 +356,9 @@ describe('AnalyticsService', () => {
     });
 
     it('should throw ForbiddenException if MANAGER requests different team', async () => {
-      mockPrismaService.user.findUnique.mockResolvedValue({ department: 'Engineering' });
+      mockPrismaService.user.findUnique.mockResolvedValue({
+        department: 'Engineering',
+      });
 
       await expect(
         service.getTopPerformers('Sales', 10, 'manager-1', 'MANAGER'),
@@ -310,7 +378,11 @@ describe('AnalyticsService', () => {
     it('should return skills with badge counts', async () => {
       const mockSkills = [
         { id: 'skill-1', name: 'Python', category: { name: 'Technical' } },
-        { id: 'skill-2', name: 'Leadership', category: { name: 'Soft Skills' } },
+        {
+          id: 'skill-2',
+          name: 'Leadership',
+          category: { name: 'Soft Skills' },
+        },
       ];
 
       const mockBadges = [
@@ -358,7 +430,9 @@ describe('AnalyticsService', () => {
     });
 
     it('should count unique employees per skill', async () => {
-      const mockSkills = [{ id: 'skill-1', name: 'Python', category: { name: 'Tech' } }];
+      const mockSkills = [
+        { id: 'skill-1', name: 'Python', category: { name: 'Tech' } },
+      ];
 
       // Same user gets 3 badges with same skill - should count as 1 employee
       const mockBadges = [
@@ -403,8 +477,18 @@ describe('AnalyticsService', () => {
       ];
 
       const mockUsers = [
-        { id: 'issuer-1', firstName: 'John', lastName: 'Issuer', email: 'issuer@test.com' },
-        { id: 'user-1', firstName: 'Jane', lastName: 'User', email: 'user@test.com' },
+        {
+          id: 'issuer-1',
+          firstName: 'John',
+          lastName: 'Issuer',
+          email: 'issuer@test.com',
+        },
+        {
+          id: 'user-1',
+          firstName: 'Jane',
+          lastName: 'User',
+          email: 'user@test.com',
+        },
       ];
 
       mockPrismaService.auditLog.count.mockResolvedValue(100);
@@ -439,10 +523,42 @@ describe('AnalyticsService', () => {
 
     it('should map action types correctly', async () => {
       const mockLogs = [
-        { id: '1', entityType: 'Badge', action: 'ISSUED', actorId: 'a', actorEmail: 'a@t.com', timestamp: new Date(), metadata: null },
-        { id: '2', entityType: 'Badge', action: 'CLAIMED', actorId: 'b', actorEmail: 'b@t.com', timestamp: new Date(), metadata: null },
-        { id: '3', entityType: 'Badge', action: 'REVOKED', actorId: 'c', actorEmail: 'c@t.com', timestamp: new Date(), metadata: null },
-        { id: '4', entityType: 'Template', action: 'CREATED', actorId: 'd', actorEmail: 'd@t.com', timestamp: new Date(), metadata: null },
+        {
+          id: '1',
+          entityType: 'Badge',
+          action: 'ISSUED',
+          actorId: 'a',
+          actorEmail: 'a@t.com',
+          timestamp: new Date(),
+          metadata: null,
+        },
+        {
+          id: '2',
+          entityType: 'Badge',
+          action: 'CLAIMED',
+          actorId: 'b',
+          actorEmail: 'b@t.com',
+          timestamp: new Date(),
+          metadata: null,
+        },
+        {
+          id: '3',
+          entityType: 'Badge',
+          action: 'REVOKED',
+          actorId: 'c',
+          actorEmail: 'c@t.com',
+          timestamp: new Date(),
+          metadata: null,
+        },
+        {
+          id: '4',
+          entityType: 'Template',
+          action: 'CREATED',
+          actorId: 'd',
+          actorEmail: 'd@t.com',
+          timestamp: new Date(),
+          metadata: null,
+        },
       ];
 
       mockPrismaService.auditLog.count.mockResolvedValue(4);

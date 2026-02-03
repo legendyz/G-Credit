@@ -89,7 +89,7 @@ describe('DashboardService', () => {
     }).compile();
 
     service = module.get<DashboardService>(DashboardService);
-    prisma = module.get(PrismaService) as jest.Mocked<PrismaService>;
+    prisma = module.get(PrismaService);
   });
 
   describe('getEmployeeDashboard', () => {
@@ -130,8 +130,7 @@ describe('DashboardService', () => {
 
     it('should return recent badges', async () => {
       // Arrange
-      (prisma.badge.count as jest.Mock)
-        .mockResolvedValue(5);
+      (prisma.badge.count as jest.Mock).mockResolvedValue(5);
       (prisma.badge.findMany as jest.Mock).mockResolvedValue([mockBadge]);
 
       // Act
@@ -273,7 +272,10 @@ describe('DashboardService', () => {
 
     it('should handle manager without department', async () => {
       // Arrange
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue({ ...mockUser, department: null });
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        ...mockUser,
+        department: null,
+      });
       (prisma.user.findMany as jest.Mock).mockResolvedValue([]);
 
       // Act
@@ -314,7 +316,13 @@ describe('DashboardService', () => {
       (prisma.badgeTemplate.count as jest.Mock).mockResolvedValue(10);
       (prisma.auditLog.findMany as jest.Mock).mockResolvedValue([mockAuditLog]);
       (prisma.user.findMany as jest.Mock).mockResolvedValue([
-        { ...mockUser, id: 'issuer-1', firstName: 'Admin', lastName: 'User', email: 'admin@example.com' },
+        {
+          ...mockUser,
+          id: 'issuer-1',
+          firstName: 'Admin',
+          lastName: 'User',
+          email: 'admin@example.com',
+        },
       ]);
 
       // Act

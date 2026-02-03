@@ -1,11 +1,24 @@
 /**
  * Dashboard Controller - Story 8.1
- * 
+ *
  * Provides role-specific dashboard endpoints for Employee, Issuer, Manager, and Admin.
  */
 
-import { Controller, Get, UseGuards, Request, Logger, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  UseGuards,
+  Request,
+  Logger,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -50,7 +63,9 @@ export class DashboardController {
     type: EmployeeDashboardDto,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getEmployeeDashboard(@Request() req: RequestWithUser): Promise<EmployeeDashboardDto> {
+  async getEmployeeDashboard(
+    @Request() req: RequestWithUser,
+  ): Promise<EmployeeDashboardDto> {
     this.logger.log(`Getting employee dashboard for user ${req.user.userId}`);
     return this.dashboardService.getEmployeeDashboard(req.user.userId);
   }
@@ -70,7 +85,9 @@ export class DashboardController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Issuer role required' })
-  async getIssuerDashboard(@Request() req: RequestWithUser): Promise<IssuerDashboardDto> {
+  async getIssuerDashboard(
+    @Request() req: RequestWithUser,
+  ): Promise<IssuerDashboardDto> {
     this.logger.log(`Getting issuer dashboard for user ${req.user.userId}`);
     return this.dashboardService.getIssuerDashboard(req.user.userId);
   }
@@ -89,8 +106,13 @@ export class DashboardController {
     type: ManagerDashboardDto,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Manager role required' })
-  async getManagerDashboard(@Request() req: RequestWithUser): Promise<ManagerDashboardDto> {
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Manager role required',
+  })
+  async getManagerDashboard(
+    @Request() req: RequestWithUser,
+  ): Promise<ManagerDashboardDto> {
     this.logger.log(`Getting manager dashboard for user ${req.user.userId}`);
     return this.dashboardService.getManagerDashboard(req.user.userId);
   }

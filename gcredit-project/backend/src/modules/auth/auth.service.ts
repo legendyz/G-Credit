@@ -101,7 +101,8 @@ export class AuthService {
     const accessToken = this.jwtService.sign(payload);
 
     // 5. Generate refresh token with longer expiry
-    const refreshExpiresIn = this.config.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
+    const refreshExpiresIn =
+      this.config.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
     const refreshToken = this.jwtService.sign({ sub: user.id }, {
       secret: this.config.get<string>('JWT_REFRESH_SECRET'),
       expiresIn: refreshExpiresIn,
@@ -299,14 +300,12 @@ export class AuthService {
     });
 
     // 6. ARCH-P1-001: Generate and store new refresh token
-    const refreshExpiresIn = this.config.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
-    const newRefreshToken = this.jwtService.sign(
-      { sub: tokenRecord.user.id },
-      {
-        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
-        expiresIn: refreshExpiresIn,
-      } as any,
-    );
+    const refreshExpiresIn =
+      this.config.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
+    const newRefreshToken = this.jwtService.sign({ sub: tokenRecord.user.id }, {
+      secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+      expiresIn: refreshExpiresIn,
+    } as any);
 
     const expiresAt = this.calculateExpiryDate(refreshExpiresIn);
     await this.prisma.refreshToken.create({

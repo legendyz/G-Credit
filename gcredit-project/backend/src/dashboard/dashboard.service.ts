@@ -1,6 +1,6 @@
 /**
  * Dashboard Service - Story 8.1
- * 
+ *
  * Provides role-specific dashboard data for Employee, Issuer, Manager, and Admin.
  * Resolves technical debt: UX-P1-001 (celebration), UX-P1-002 (loading), UX-P1-003 (retry)
  */
@@ -34,41 +34,42 @@ export class DashboardService {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     // Get badge counts for this user
-    const [totalBadges, claimedThisMonth, pendingBadges, recentBadgesRaw] = await Promise.all([
-      // Total badges
-      this.prisma.badge.count({
-        where: { recipientId: userId },
-      }),
-      // Claimed this month
-      this.prisma.badge.count({
-        where: {
-          recipientId: userId,
-          status: 'CLAIMED',
-          claimedAt: { gte: startOfMonth },
-        },
-      }),
-      // Pending badges
-      this.prisma.badge.count({
-        where: {
-          recipientId: userId,
-          status: 'PENDING',
-        },
-      }),
-      // Recent badges (last 5)
-      this.prisma.badge.findMany({
-        where: { recipientId: userId },
-        orderBy: { issuedAt: 'desc' },
-        take: 5,
-        include: {
-          template: {
-            select: {
-              name: true,
-              imageUrl: true,
+    const [totalBadges, claimedThisMonth, pendingBadges, recentBadgesRaw] =
+      await Promise.all([
+        // Total badges
+        this.prisma.badge.count({
+          where: { recipientId: userId },
+        }),
+        // Claimed this month
+        this.prisma.badge.count({
+          where: {
+            recipientId: userId,
+            status: 'CLAIMED',
+            claimedAt: { gte: startOfMonth },
+          },
+        }),
+        // Pending badges
+        this.prisma.badge.count({
+          where: {
+            recipientId: userId,
+            status: 'PENDING',
+          },
+        }),
+        // Recent badges (last 5)
+        this.prisma.badge.findMany({
+          where: { recipientId: userId },
+          orderBy: { issuedAt: 'desc' },
+          take: 5,
+          include: {
+            template: {
+              select: {
+                name: true,
+                imageUrl: true,
+              },
             },
           },
-        },
-      }),
-    ]);
+        }),
+      ]);
 
     // Transform recent badges to DTOs
     const recentBadges: BadgePreviewDto[] = recentBadgesRaw.map((badge) => ({
@@ -84,7 +85,6 @@ export class DashboardService {
     const latestBadge = recentBadges.length > 0 ? recentBadges[0] : undefined;
 
     // Calculate milestone progress (simple: every 5 badges is a milestone)
-    const milestoneTarget = Math.ceil((totalBadges + 1) / 5) * 5;
     const milestoneProgress = totalBadges % 5 || (totalBadges > 0 ? 5 : 0);
     const milestonePercentage = Math.round((milestoneProgress / 5) * 100);
 
@@ -115,7 +115,13 @@ export class DashboardService {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     // Get issuance statistics
-    const [issuedThisMonth, pendingClaims, totalIssued, claimedCount, recentIssuances] = await Promise.all([
+    const [
+      issuedThisMonth,
+      pendingClaims,
+      totalIssued,
+      claimedCount,
+      recentIssuances,
+    ] = await Promise.all([
       // Badges issued this month by this issuer
       this.prisma.badge.count({
         where: {
@@ -171,17 +177,24 @@ export class DashboardService {
     });
 
     // Calculate claim rate
-    const claimRate = totalIssued > 0 ? Math.round((claimedCount / totalIssued) * 100) / 100 : 0;
+    const claimRate =
+      totalIssued > 0
+        ? Math.round((claimedCount / totalIssued) * 100) / 100
+        : 0;
 
     // Transform recent issuances to DTOs
-    const recentActivity: IssuanceActivityDto[] = recentIssuances.map((badge) => ({
-      badgeId: badge.id,
-      recipientName: `${badge.recipient.firstName || ''} ${badge.recipient.lastName || ''}`.trim() || badge.recipient.email,
-      recipientEmail: badge.recipient.email,
-      templateName: badge.template.name,
-      status: badge.status,
-      issuedAt: badge.issuedAt,
-    }));
+    const recentActivity: IssuanceActivityDto[] = recentIssuances.map(
+      (badge) => ({
+        badgeId: badge.id,
+        recipientName:
+          `${badge.recipient.firstName || ''} ${badge.recipient.lastName || ''}`.trim() ||
+          badge.recipient.email,
+        recipientEmail: badge.recipient.email,
+        templateName: badge.template.name,
+        status: badge.status,
+        issuedAt: badge.issuedAt,
+      }),
+    );
 
     return {
       issuanceSummary: {
@@ -230,78 +243,88 @@ export class DashboardService {
     const teamMemberIds = teamMembers.map((m) => m.id);
 
     // Get team badges this month
-    const teamBadgesThisMonth = teamMemberIds.length > 0
-      ? await this.prisma.badge.count({
-          where: {
-            recipientId: { in: teamMemberIds },
-            issuedAt: { gte: startOfMonth },
-          },
-        })
-      : 0;
+    const teamBadgesThisMonth =
+      teamMemberIds.length > 0
+        ? await this.prisma.badge.count({
+            where: {
+              recipientId: { in: teamMemberIds },
+              issuedAt: { gte: startOfMonth },
+            },
+          })
+        : 0;
 
     // Get top performers (by badge count)
-    const topPerformersRaw = teamMemberIds.length > 0
-      ? await this.prisma.badge.groupBy({
-          by: ['recipientId'],
-          where: {
-            recipientId: { in: teamMemberIds },
-            status: 'CLAIMED',
-          },
-          _count: true,
-          orderBy: {
-            _count: {
-              recipientId: 'desc',
+    const topPerformersRaw =
+      teamMemberIds.length > 0
+        ? await this.prisma.badge.groupBy({
+            by: ['recipientId'],
+            where: {
+              recipientId: { in: teamMemberIds },
+              status: 'CLAIMED',
             },
-          },
-          take: 5,
-        })
-      : [];
+            _count: true,
+            orderBy: {
+              _count: {
+                recipientId: 'desc',
+              },
+            },
+            take: 5,
+          })
+        : [];
 
     // Map to TopPerformerDto
     const topPerformers: TopPerformerDto[] = topPerformersRaw.map((item) => {
       const member = teamMembers.find((m) => m.id === item.recipientId);
       return {
         userId: item.recipientId,
-        name: member ? `${member.firstName || ''} ${member.lastName || ''}`.trim() || member.email : 'Unknown',
+        name: member
+          ? `${member.firstName || ''} ${member.lastName || ''}`.trim() ||
+            member.email
+          : 'Unknown',
         email: member?.email || '',
         badgeCount: item._count,
       };
     });
 
     // Get recent revocations for team members
-    const revocationAlertsRaw = teamMemberIds.length > 0
-      ? await this.prisma.badge.findMany({
-          where: {
-            recipientId: { in: teamMemberIds },
-            status: 'REVOKED',
-            revokedAt: { not: null },
-          },
-          orderBy: { revokedAt: 'desc' },
-          take: 5,
-          include: {
-            recipient: {
-              select: {
-                firstName: true,
-                lastName: true,
-                email: true,
+    const revocationAlertsRaw =
+      teamMemberIds.length > 0
+        ? await this.prisma.badge.findMany({
+            where: {
+              recipientId: { in: teamMemberIds },
+              status: 'REVOKED',
+              revokedAt: { not: null },
+            },
+            orderBy: { revokedAt: 'desc' },
+            take: 5,
+            include: {
+              recipient: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                },
+              },
+              template: {
+                select: {
+                  name: true,
+                },
               },
             },
-            template: {
-              select: {
-                name: true,
-              },
-            },
-          },
-        })
-      : [];
+          })
+        : [];
 
-    const revocationAlerts: RevocationAlertDto[] = revocationAlertsRaw.map((badge) => ({
-      badgeId: badge.id,
-      recipientName: `${badge.recipient.firstName || ''} ${badge.recipient.lastName || ''}`.trim() || badge.recipient.email,
-      templateName: badge.template.name,
-      reason: badge.revocationReason || 'Not specified',
-      revokedAt: badge.revokedAt!,
-    }));
+    const revocationAlerts: RevocationAlertDto[] = revocationAlertsRaw.map(
+      (badge) => ({
+        badgeId: badge.id,
+        recipientName:
+          `${badge.recipient.firstName || ''} ${badge.recipient.lastName || ''}`.trim() ||
+          badge.recipient.email,
+        templateName: badge.template.name,
+        reason: badge.revocationReason || 'Not specified',
+        revokedAt: badge.revokedAt!,
+      }),
+    );
 
     return {
       teamInsights: {
@@ -364,13 +387,18 @@ export class DashboardService {
       where: { id: { in: actorIds } },
       select: { id: true, firstName: true, lastName: true, email: true },
     });
-    const actorMap = new Map(actors.map((a) => [a.id, `${a.firstName || ''} ${a.lastName || ''}`.trim() || a.email]));
+    const actorMap = new Map(
+      actors.map((a) => [
+        a.id,
+        `${a.firstName || ''} ${a.lastName || ''}`.trim() || a.email,
+      ]),
+    );
 
     // Transform audit logs to activity DTOs
     const recentActivity: AdminActivityDto[] = recentActivityRaw.map((log) => ({
       id: log.id,
       type: log.action,
-      description: log.metadata ? String(log.metadata) : log.action,
+      description: log.metadata ? JSON.stringify(log.metadata) : log.action,
       actorName: actorMap.get(log.actorId) || 'System',
       timestamp: log.timestamp,
     }));

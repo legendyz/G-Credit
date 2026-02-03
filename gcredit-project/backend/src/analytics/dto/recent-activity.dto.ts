@@ -54,7 +54,13 @@ export class ActivityItemDto {
 
   @ApiProperty({
     example: 'BADGE_ISSUED',
-    enum: ['BADGE_ISSUED', 'BADGE_CLAIMED', 'BADGE_REVOKED', 'TEMPLATE_CREATED', 'USER_REGISTERED'],
+    enum: [
+      'BADGE_ISSUED',
+      'BADGE_CLAIMED',
+      'BADGE_REVOKED',
+      'TEMPLATE_CREATED',
+      'USER_REGISTERED',
+    ],
   })
   type: string;
 

@@ -60,10 +60,16 @@ export class TemplatesOverviewDto {
 }
 
 export class SystemHealthDto {
-  @ApiProperty({ example: 'healthy', enum: ['healthy', 'degraded', 'unhealthy'] })
+  @ApiProperty({
+    example: 'healthy',
+    enum: ['healthy', 'degraded', 'unhealthy'],
+  })
   status: 'healthy' | 'degraded' | 'unhealthy';
 
-  @ApiProperty({ example: '2026-02-02T09:00:00Z', description: 'Last sync timestamp' })
+  @ApiProperty({
+    example: '2026-02-02T09:00:00Z',
+    description: 'Last sync timestamp',
+  })
   lastSync: string;
 
   @ApiProperty({ example: '120ms', description: 'Average API response time' })

@@ -27,7 +27,7 @@ function validateJwtSecret(): void {
   if (!jwtSecret) {
     const errorMsg =
       'JWT_SECRET environment variable is required. ' +
-      'Generate a strong secret with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"';
+      "Generate a strong secret with: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"";
     logger.error(`❌ ${errorMsg}`);
     throw new Error(errorMsg);
   }

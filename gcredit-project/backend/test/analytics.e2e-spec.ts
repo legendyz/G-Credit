@@ -39,7 +39,11 @@ describe('Analytics API (e2e) - Story 8.4', () => {
     adminUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'admin');
     issuerUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'issuer');
     managerUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'manager');
-    employeeUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'employee');
+    employeeUser = await createAndLoginUser(
+      ctx.app,
+      ctx.userFactory,
+      'employee',
+    );
 
     // Update manager with department for AC3 testing
     await ctx.prisma.user.update({
@@ -255,9 +259,7 @@ describe('Analytics API (e2e) - Story 8.4', () => {
       ];
 
       for (const endpoint of endpoints) {
-        await request(ctx.app.getHttpServer())
-          .get(endpoint)
-          .expect(401);
+        await request(ctx.app.getHttpServer()).get(endpoint).expect(401);
       }
     });
   });

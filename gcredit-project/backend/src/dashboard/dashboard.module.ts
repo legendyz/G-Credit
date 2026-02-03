@@ -1,6 +1,6 @@
 /**
  * Dashboard Module - Story 8.1
- * 
+ *
  * Provides role-specific dashboard functionality.
  */
 

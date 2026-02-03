@@ -4,7 +4,8 @@ import { Type } from 'class-transformer';
 
 export class TopPerformersQueryDto {
   @ApiPropertyOptional({
-    description: 'Team/Department name to filter (Manager must use their own team)',
+    description:
+      'Team/Department name to filter (Manager must use their own team)',
     example: 'Engineering',
   })
   @IsOptional()

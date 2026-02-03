@@ -47,7 +47,8 @@ export class AnalyticsController {
   @CacheTTL(CACHE_TTL_15_MIN)
   @ApiOperation({
     summary: 'Get system overview statistics',
-    description: 'Returns user counts, badge statistics, template counts, and system health. Admin only.',
+    description:
+      'Returns user counts, badge statistics, template counts, and system health. Admin only.',
   })
   @ApiResponse({
     status: 200,
@@ -71,8 +72,17 @@ export class AnalyticsController {
     description:
       'Returns daily badge issuance statistics for specified period. Admin can filter by issuer, Issuer sees only their own data.',
   })
-  @ApiQuery({ name: 'period', required: false, description: 'Period in days (7, 30, 90, 365)', example: 30 })
-  @ApiQuery({ name: 'issuerId', required: false, description: 'Filter by issuer ID (Admin only)' })
+  @ApiQuery({
+    name: 'period',
+    required: false,
+    description: 'Period in days (7, 30, 90, 365)',
+    example: 30,
+  })
+  @ApiQuery({
+    name: 'issuerId',
+    required: false,
+    description: 'Filter by issuer ID (Admin only)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Issuance trend data',
@@ -84,7 +94,11 @@ export class AnalyticsController {
     @CurrentUser() user: { userId: string; role: string },
   ): Promise<IssuanceTrendsDto> {
     // Issuer cannot filter by other issuerId
-    if (user.role === 'ISSUER' && query.issuerId && query.issuerId !== user.userId) {
+    if (
+      user.role === 'ISSUER' &&
+      query.issuerId &&
+      query.issuerId !== user.userId
+    ) {
       throw new ForbiddenException('Issuers can only view their own data');
     }
 
@@ -108,14 +122,26 @@ export class AnalyticsController {
     description:
       'Returns employees ranked by claimed badge count. Manager sees only their team, Admin sees all.',
   })
-  @ApiQuery({ name: 'teamId', required: false, description: 'Filter by team/department (Manager must use own team)' })
-  @ApiQuery({ name: 'limit', required: false, description: 'Max results (1-100)', example: 10 })
+  @ApiQuery({
+    name: 'teamId',
+    required: false,
+    description: 'Filter by team/department (Manager must use own team)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Max results (1-100)',
+    example: 10,
+  })
   @ApiResponse({
     status: 200,
     description: 'Top performers list',
     type: TopPerformersDto,
   })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin or Manager only' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin or Manager only',
+  })
   async getTopPerformers(
     @Query() query: TopPerformersQueryDto,
     @CurrentUser() user: { userId: string; role: string },
@@ -138,7 +164,8 @@ export class AnalyticsController {
   @CacheTTL(CACHE_TTL_15_MIN)
   @ApiOperation({
     summary: 'Get skills distribution statistics',
-    description: 'Returns skills ranked by badge count and grouped by category. Admin only.',
+    description:
+      'Returns skills ranked by badge count and grouped by category. Admin only.',
   })
   @ApiResponse({
     status: 200,
@@ -159,10 +186,21 @@ export class AnalyticsController {
   @CacheTTL(CACHE_TTL_15_MIN)
   @ApiOperation({
     summary: 'Get recent system activity',
-    description: 'Returns paginated system activity feed from audit log. Admin only.',
+    description:
+      'Returns paginated system activity feed from audit log. Admin only.',
   })
-  @ApiQuery({ name: 'limit', required: false, description: 'Max results (1-100)', example: 20 })
-  @ApiQuery({ name: 'offset', required: false, description: 'Pagination offset', example: 0 })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Max results (1-100)',
+    example: 20,
+  })
+  @ApiQuery({
+    name: 'offset',
+    required: false,
+    description: 'Pagination offset',
+    example: 0,
+  })
   @ApiResponse({
     status: 200,
     description: 'Recent activity list',

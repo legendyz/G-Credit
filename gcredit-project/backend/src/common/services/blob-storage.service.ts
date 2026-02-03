@@ -164,9 +164,7 @@ export class BlobStorageService {
   async deleteImage(url: string): Promise<void> {
     // Skip deletion if Azure Storage is not available (mock URLs)
     if (!this.isAvailable()) {
-      this.logger.warn(
-        'Azure Storage not available - skipping image deletion',
-      );
+      this.logger.warn('Azure Storage not available - skipping image deletion');
       return;
     }
 
@@ -193,7 +191,8 @@ export class BlobStorageService {
 
     try {
       const blobName = this.extractBlobName(url);
-      const blockBlobClient = this.containerClient!.getBlockBlobClient(blobName);
+      const blockBlobClient =
+        this.containerClient!.getBlockBlobClient(blobName);
       return await blockBlobClient.exists();
     } catch (error) {
       return false;
