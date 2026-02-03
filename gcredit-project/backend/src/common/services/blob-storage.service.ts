@@ -97,8 +97,23 @@ export class BlobStorageService {
     const fileExtension = this.getFileExtension(file.originalname);
     const fileName = `${folder}/${uuidv4()}${fileExtension}`;
 
+    // Check if Azure Storage is available - return mock URL for test/CI environments
+    if (!this.isAvailable()) {
+      this.logger.warn(
+        'Azure Storage not available - returning mock URL for image upload',
+      );
+      const mockUrl = `https://mock-storage.blob.core.windows.net/badges/${fileName}`;
+      return {
+        url: mockUrl,
+        metadata,
+        thumbnailUrl: generateThumbnail
+          ? `https://mock-storage.blob.core.windows.net/badges/${folder}/thumbnails/${uuidv4()}${fileExtension}`
+          : undefined,
+      };
+    }
+
     // Get blob client
-    const blockBlobClient = this.ensureClient().getBlockBlobClient(fileName);
+    const blockBlobClient = this.containerClient!.getBlockBlobClient(fileName);
 
     // Upload to Azure Blob
     await blockBlobClient.upload(file.buffer, file.size, {
@@ -147,8 +162,16 @@ export class BlobStorageService {
    * @param url - Full URL of the image
    */
   async deleteImage(url: string): Promise<void> {
+    // Skip deletion if Azure Storage is not available (mock URLs)
+    if (!this.isAvailable()) {
+      this.logger.warn(
+        'Azure Storage not available - skipping image deletion',
+      );
+      return;
+    }
+
     const blobName = this.extractBlobName(url);
-    const blockBlobClient = this.ensureClient().getBlockBlobClient(blobName);
+    const blockBlobClient = this.containerClient!.getBlockBlobClient(blobName);
 
     const exists = await blockBlobClient.exists();
     if (!exists) {
@@ -163,9 +186,14 @@ export class BlobStorageService {
    * @param url - Full URL of the image
    */
   async imageExists(url: string): Promise<boolean> {
+    // Return true for mock URLs when storage is not available
+    if (!this.isAvailable()) {
+      return url.includes('mock-storage.blob.core.windows.net');
+    }
+
     try {
       const blobName = this.extractBlobName(url);
-      const blockBlobClient = this.ensureClient().getBlockBlobClient(blobName);
+      const blockBlobClient = this.containerClient!.getBlockBlobClient(blobName);
       return await blockBlobClient.exists();
     } catch (error) {
       return false;
@@ -303,8 +331,14 @@ export class BlobStorageService {
       .toBuffer();
 
     const thumbnailFileName = `${folder}/thumbnails/${uuidv4()}${extension}`;
+
+    // Return mock URL if storage is not available
+    if (!this.isAvailable()) {
+      return `https://mock-storage.blob.core.windows.net/badges/${thumbnailFileName}`;
+    }
+
     const blockBlobClient =
-      this.ensureClient().getBlockBlobClient(thumbnailFileName);
+      this.containerClient!.getBlockBlobClient(thumbnailFileName);
 
     await blockBlobClient.upload(thumbnailBuffer, thumbnailBuffer.length, {
       blobHTTPHeaders: {

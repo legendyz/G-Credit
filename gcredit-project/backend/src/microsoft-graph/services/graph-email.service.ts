@@ -56,6 +56,12 @@ export class GraphEmailService implements OnModuleInit {
     try {
       const authProvider = this.tokenProvider.getAuthProvider();
 
+      if (!authProvider) {
+        this.logger.warn('⚠️ Graph Email Service disabled - Azure AD not configured');
+        this.isEnabled = false;
+        return;
+      }
+
       this.graphClient = Client.initWithMiddleware({
         authProvider,
       });
