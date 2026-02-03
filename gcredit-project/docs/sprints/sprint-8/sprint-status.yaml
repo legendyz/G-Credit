@@ -20,13 +20,13 @@ metrics:
   total_tasks: 4  # Task 8.0, 8.6, 8.7, 8.8
   total_work_items: 14  # 10 stories + 4 tasks
   total_story_points: 44  # Updated Story 8.10 from 3 SP to 6 SP
-  total_estimated_hours: 77h  # Story 8.10: +6.5h, Story 8.4: +1.5h, Task 8.6: +0.5h (Architect review adjustments)
+  total_estimated_hours: 76h  # Story 8.7 corrected from 7h to 6h
   
   completed_stories: 0
   completed_tasks: 3  # Task 8.0, 8.6, 8.8 completed
   completed_work_items: 3
-  completed_hours: 14h  # 1.5h + 6.5h + 6h (Task 8.8 actual)
-  remaining_hours: 63h
+  completed_hours: 24.5h  # 1.5h + 6.5h + 8.5h + 8h (Tasks 8.0, 8.6, Story 8.3, Task 8.8)
+  remaining_hours: 51.5h  # 76h - 24.5h
   
   stories_in_progress: 0
   tasks_in_progress: 0
@@ -181,9 +181,9 @@ group_a_ux_accessibility:
 # Group B: Security & Infrastructure (20h, 12 SP)
 group_b_security_infrastructure:
   total_items: 4  # Added Task 8.0
-  completed_items: 2  # Task 8.0, 8.6 completed
-  total_hours: 23h  # 1.5h + 6.5h + 7h + 8h
-  remaining_hours: 15h  # 7h + 8h
+  completed_items: 3  # Task 8.0, 8.6, 8.8 completed
+  total_hours: 22h  # 1.5h + 6.5h + 6h + 8h
+  remaining_hours: 6h  # Only 8.7 remaining
   
   tasks:
     - id: "8.0"
@@ -249,7 +249,7 @@ group_b_security_infrastructure:
     - id: "8.7"
       title: "Architecture Fixes"
       story_points: 4
-      estimated_hours: 7h
+      estimated_hours: 6h
       priority: HIGH
       status: backlog
       assignee: null

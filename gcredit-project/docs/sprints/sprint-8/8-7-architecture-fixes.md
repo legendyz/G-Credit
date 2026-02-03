@@ -3,7 +3,7 @@
 **Task ID:** Task 8.7  
 **Epic:** Epic 10 - Production-Ready MVP  
 **Sprint:** Sprint 8  
-**Priority:** MEDIUM  
+**Priority:** HIGH  
 **Estimated Hours:** 6h  
 **Status:** backlog  
 **Created:** 2026-02-02
