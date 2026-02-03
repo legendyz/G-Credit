@@ -1,8 +1,8 @@
 # API Usage Guide
 
 **G-Credit Badge Platform REST API**  
-**Version:** 0.7.0 (Sprint 7 - Badge Revocation)  
-**Last Updated:** 2026-02-01
+**Version:** 0.8.0 (Sprint 8 - Production Ready MVP)  
+**Last Updated:** 2026-02-03
 
 ---
 
@@ -15,8 +15,9 @@
 5. [Badge Verification](#badge-verification)
 6. [Skills Management](#skills-management)
 7. [Skill Categories](#skill-categories)
-8. [Error Handling](#error-handling)
-9. [Rate Limiting](#rate-limiting)
+8. [Analytics API](#analytics-api) ⭐ NEW
+9. [Error Handling](#error-handling)
+10. [Rate Limiting](#rate-limiting)
 
 ---
 
@@ -1060,9 +1061,318 @@ All errors follow this structure:
 
 ---
 
+## Analytics API
+
+**Added in Sprint 8 (Story 8.4)**
+
+Analytics endpoints provide system-wide metrics and statistics for monitoring platform health and usage.
+
+**Features:**
+- System overview statistics
+- Badge issuance trends
+- Top performers ranking
+- Skills distribution analysis
+- Recent activity feed
+
+**Caching:** Most endpoints cached for 15 minutes (900,000ms) to optimize performance.
+
+### System Overview
+
+**GET** `/api/analytics/system-overview`
+
+Returns system-wide statistics including user counts, badge metrics, and template counts.
+
+**Authorization:** Admin only
+
+```bash
+# PowerShell
+curl -X GET http://localhost:3000/api/analytics/system-overview `
+  -H "Authorization: Bearer $token"
+
+# Bash
+curl -X GET http://localhost:3000/api/analytics/system-overview \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "users": {
+    "total": 450,
+    "activeThisMonth": 320,
+    "newThisMonth": 25,
+    "byRole": {
+      "ADMIN": 5,
+      "ISSUER": 20,
+      "MANAGER": 45,
+      "EMPLOYEE": 380
+    }
+  },
+  "badges": {
+    "totalIssued": 1234,
+    "claimedCount": 1015,
+    "pendingCount": 189,
+    "revokedCount": 30,
+    "claimRate": 0.82
+  },
+  "badgeTemplates": {
+    "total": 23,
+    "active": 18,
+    "draft": 3,
+    "archived": 2
+  },
+  "systemHealth": {
+    "status": "healthy",
+    "lastSync": "2026-02-03T09:00:00Z",
+    "apiResponseTime": "120ms"
+  }
+}
+```
+
+**Error Responses:**
+- `403 Forbidden` - Non-admin user
+- `401 Unauthorized` - Missing or invalid token
+
+---
+
+### Issuance Trends
+
+**GET** `/api/analytics/issuance-trends`
+
+Returns badge issuance statistics over specified time period.
+
+**Authorization:** Admin and Issuer (Issuer sees only their own data)
+
+**Query Parameters:**
+- `period` (optional) - Time period in days: `7`, `30`, `90`, or `365` (default: 30)
+- `issuerId` (optional) - Filter by issuer UUID (Admin only)
+
+```bash
+# PowerShell - Last 30 days
+curl -X GET "http://localhost:3000/api/analytics/issuance-trends?period=30" `
+  -H "Authorization: Bearer $token"
+
+# PowerShell - Filter by issuer (Admin only)
+curl -X GET "http://localhost:3000/api/analytics/issuance-trends?period=90&issuerId=550e8400-e29b-41d4-a716-446655440000" `
+  -H "Authorization: Bearer $token"
+```
+
+**Response (200 OK):**
+```json
+{
+  "period": "last30days",
+  "startDate": "2026-01-04",
+  "endDate": "2026-02-03",
+  "dataPoints": [
+    {
+      "date": "2026-01-04",
+      "issued": 15,
+      "claimed": 12,
+      "revoked": 0
+    },
+    {
+      "date": "2026-01-05",
+      "issued": 20,
+      "claimed": 18,
+      "revoked": 1
+    }
+    // ... 30 data points total
+  ],
+  "totals": {
+    "issued": 456,
+    "claimed": 380,
+    "revoked": 8,
+    "claimRate": 0.83
+  }
+}
+```
+
+**Error Responses:**
+- `403 Forbidden` - Issuer trying to view other issuer's data
+- `400 Bad Request` - Invalid period value
+
+---
+
+### Top Performers
+
+**GET** `/api/analytics/top-performers`
+
+Returns employees ranked by badge count.
+
+**Authorization:** Admin and Manager (Manager sees only their team)
+
+**Query Parameters:**
+- `teamId` (optional) - Filter by team/department (Manager must use own team)
+- `limit` (optional) - Max results (1-100, default: 10)
+
+```bash
+# PowerShell - Top 10 performers
+curl -X GET "http://localhost:3000/api/analytics/top-performers?limit=10" `
+  -H "Authorization: Bearer $token"
+
+# PowerShell - Top performers in Engineering team
+curl -X GET "http://localhost:3000/api/analytics/top-performers?teamId=Engineering&limit=20" `
+  -H "Authorization: Bearer $token"
+```
+
+**Response (200 OK):**
+```json
+{
+  "teamId": "Engineering",
+  "teamName": "Engineering Team",
+  "period": "allTime",
+  "topPerformers": [
+    {
+      "userId": "550e8400-e29b-41d4-a716-446655440001",
+      "name": "Jane Smith",
+      "badgeCount": 15,
+      "latestBadge": {
+        "templateName": "Python Expert",
+        "claimedAt": "2026-02-01T10:00:00Z"
+      }
+    },
+    {
+      "userId": "550e8400-e29b-41d4-a716-446655440002",
+      "name": "John Doe",
+      "badgeCount": 12,
+      "latestBadge": {
+        "templateName": "AWS Certified",
+        "claimedAt": "2026-01-28T14:30:00Z"
+      }
+    }
+    // ... up to 'limit' performers
+  ]
+}
+```
+
+**Error Responses:**
+- `403 Forbidden` - Manager trying to view different team
+- `403 Forbidden` - Manager has no department assigned
+
+---
+
+### Skills Distribution
+
+**GET** `/api/analytics/skills-distribution`
+
+Returns aggregated skills statistics ranked by badge count.
+
+**Authorization:** Admin only
+
+```bash
+# PowerShell
+curl -X GET http://localhost:3000/api/analytics/skills-distribution `
+  -H "Authorization: Bearer $token"
+```
+
+**Response (200 OK):**
+```json
+{
+  "totalSkills": 45,
+  "topSkills": [
+    {
+      "skillId": "550e8400-e29b-41d4-a716-446655440010",
+      "skillName": "Python",
+      "badgeCount": 120,
+      "employeeCount": 85
+    },
+    {
+      "skillId": "550e8400-e29b-41d4-a716-446655440011",
+      "skillName": "Leadership",
+      "badgeCount": 95,
+      "employeeCount": 72
+    }
+    // ... top 20 skills
+  ],
+  "skillsByCategory": {
+    "Technical": 180,
+    "Soft Skills": 95,
+    "Leadership": 60
+  }
+}
+```
+
+**Error Responses:**
+- `403 Forbidden` - Non-admin user
+
+---
+
+### Recent Activity Feed
+
+**GET** `/api/analytics/recent-activity`
+
+Returns system-wide activity log with pagination.
+
+**Authorization:** Admin only
+
+**Query Parameters:**
+- `limit` (optional) - Max results (1-100, default: 20)
+- `offset` (optional) - Pagination offset (default: 0)
+
+```bash
+# PowerShell - Get last 20 activities
+curl -X GET "http://localhost:3000/api/analytics/recent-activity?limit=20" `
+  -H "Authorization: Bearer $token"
+
+# PowerShell - Pagination (skip first 20)
+curl -X GET "http://localhost:3000/api/analytics/recent-activity?limit=20&offset=20" `
+  -H "Authorization: Bearer $token"
+```
+
+**Response (200 OK):**
+```json
+{
+  "activities": [
+    {
+      "id": "act-001",
+      "type": "BADGE_ISSUED",
+      "actor": {
+        "userId": "550e8400-e29b-41d4-a716-446655440020",
+        "name": "John Issuer"
+      },
+      "target": {
+        "userId": "550e8400-e29b-41d4-a716-446655440021",
+        "name": "Jane Recipient",
+        "badgeTemplateName": "Python Expert"
+      },
+      "timestamp": "2026-02-03T09:30:00Z"
+    },
+    {
+      "id": "act-002",
+      "type": "TEMPLATE_CREATED",
+      "actor": {
+        "userId": "550e8400-e29b-41d4-a716-446655440022",
+        "name": "Admin User"
+      },
+      "templateName": "New Leadership Badge",
+      "timestamp": "2026-02-03T09:00:00Z"
+    }
+    // ... up to 'limit' activities
+  ],
+  "pagination": {
+    "limit": 20,
+    "offset": 0,
+    "total": 1250
+  }
+}
+```
+
+**Activity Types:**
+- `BADGE_ISSUED` - Badge issued to recipient
+- `BADGE_CLAIMED` - Recipient claimed badge
+- `BADGE_REVOKED` - Badge revoked
+- `TEMPLATE_CREATED` - New badge template created
+- `USER_REGISTERED` - New user registered
+
+**Error Responses:**
+- `403 Forbidden` - Non-admin user
+- `400 Bad Request` - Invalid limit or offset
+
+---
+
 ## Rate Limiting
 
-**Current Configuration:** No rate limiting implemented (to be added in future sprint)
+**Current Configuration:** Global rate limiting implemented (Sprint 8)
 
 **Recommended Limits for Production:**
 - Authentication endpoints: 5 requests per minute per IP
@@ -1108,10 +1418,10 @@ Import this collection into Postman for quick API testing:
 
 ---
 
-**Last Updated:** 2026-02-01  
-**API Version:** 0.7.0 (Sprint 7 - Badge Revocation Complete)  
+**Last Updated:** 2026-02-03  
+**API Version:** 0.8.0 (Sprint 8 - Production Ready MVP)  
 **Author:** G-Credit Development Team  
-**Coverage:** Sprint 0-7 (Authentication, Templates, Issuance, Verification, Sharing, Revocation)  
+**Coverage:** Sprint 0-8 (Authentication, Templates, Issuance, Verification, Sharing, Revocation, Analytics)  
 
 **Detailed API Documentation:**
 - [Badge Issuance API](./api/badge-issuance.md) - Complete badge lifecycle documentation
