@@ -14,8 +14,8 @@
 **Sprint 5:** ✅ Complete (100%, actual 30h / estimated 28h, committed 2026-01-29, tagged v0.5.0, branch: sprint-5/epic-6-badge-verification)  
 **Sprint 6:** ✅ Complete (100%, actual 35h / estimated 56-76h, committed 2026-01-31, branch: sprint-6/epic-7-badge-sharing, 243 tests, v0.6.0)  
 **Sprint 7:** ✅ Complete (100%, actual 38.5h / estimated 41-47h, committed 2026-02-02, branch: sprint-7/epic-9-revocation-lifecycle-uat, 302 tests, 100% UAT pass, v0.7.0)  
-**Sprint 8:** 🔄 In Progress (6/14 items, 43%, 35.5h/76h, branch: sprint-8/epic-10-production-ready-mvp, target: v0.8.0)  
-**Last Updated:** 2026-02-03 (Sprint 8 in progress - Story 8.4 Complete: Analytics API, 5 endpoints, 35 tests, cache-manager v3)
+**Sprint 8:** 🔄 In Progress (7/14 items, 50%, 39.5h/76h, branch: sprint-8/epic-10-production-ready-mvp, target: v0.8.0)  
+**Last Updated:** 2026-02-03 (Sprint 8 in progress - Story 8.5 Complete: Responsive Design, Mobile-First, 58 tests, 44×44px touch targets)
 
 ---
 
