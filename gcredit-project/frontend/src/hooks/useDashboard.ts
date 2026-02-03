@@ -38,12 +38,15 @@ async function fetchWithAuth<T>(endpoint: string): Promise<T> {
 /**
  * AC1: Employee Dashboard Hook
  * Fetches badge summary, milestones, and recent badges
+ * Auto-refreshes every 60 seconds when tab is active
  */
 export function useEmployeeDashboard() {
   return useQuery({
     queryKey: ['dashboard', 'employee'],
     queryFn: () => fetchWithAuth<EmployeeDashboard>('/api/dashboard/employee'),
     staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 60 * 1000, // 60 seconds auto-refresh (AC1 requirement)
+    refetchIntervalInBackground: false, // Only when tab is active
     refetchOnWindowFocus: true,
   });
 }
@@ -51,12 +54,15 @@ export function useEmployeeDashboard() {
 /**
  * AC2: Issuer Dashboard Hook
  * Fetches issuance summary and recent activity
+ * Auto-refreshes every 60 seconds when tab is active
  */
 export function useIssuerDashboard() {
   return useQuery({
     queryKey: ['dashboard', 'issuer'],
     queryFn: () => fetchWithAuth<IssuerDashboard>('/api/dashboard/issuer'),
     staleTime: 5 * 60 * 1000,
+    refetchInterval: 60 * 1000, // 60 seconds auto-refresh
+    refetchIntervalInBackground: false,
     refetchOnWindowFocus: true,
   });
 }
@@ -64,12 +70,15 @@ export function useIssuerDashboard() {
 /**
  * AC3: Manager Dashboard Hook
  * Fetches team insights and revocation alerts
+ * Auto-refreshes every 60 seconds when tab is active
  */
 export function useManagerDashboard() {
   return useQuery({
     queryKey: ['dashboard', 'manager'],
     queryFn: () => fetchWithAuth<ManagerDashboard>('/api/dashboard/manager'),
     staleTime: 5 * 60 * 1000,
+    refetchInterval: 60 * 1000, // 60 seconds auto-refresh
+    refetchIntervalInBackground: false,
     refetchOnWindowFocus: true,
   });
 }
@@ -77,12 +86,15 @@ export function useManagerDashboard() {
 /**
  * AC4: Admin Dashboard Hook
  * Fetches system overview and recent activity
+ * Auto-refreshes every 60 seconds when tab is active
  */
 export function useAdminDashboard() {
   return useQuery({
     queryKey: ['dashboard', 'admin'],
     queryFn: () => fetchWithAuth<AdminDashboard>('/api/dashboard/admin'),
     staleTime: 5 * 60 * 1000,
+    refetchInterval: 60 * 1000, // 60 seconds auto-refresh
+    refetchIntervalInBackground: false,
     refetchOnWindowFocus: true,
   });
 }

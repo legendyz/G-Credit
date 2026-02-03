@@ -7,7 +7,7 @@
  * - Recent badges earned
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useEmployeeDashboard } from '../../hooks/useDashboard';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { PageLoader } from '../../components/common/LoadingSpinner';
@@ -17,10 +17,93 @@ import { BadgeEarnedCelebration } from '../../components/common/CelebrationModal
 import { cn } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
 
+// Celebration tracking localStorage key (AC1 requirement)
+const CELEBRATED_BADGES_KEY = 'celebratedBadges';
+
+/**
+ * Get list of badge IDs that have already been celebrated
+ */
+function getCelebratedBadges(): string[] {
+  try {
+    const stored = localStorage.getItem(CELEBRATED_BADGES_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Mark a badge as celebrated in localStorage
+ */
+function markBadgeAsCelebrated(badgeId: string): void {
+  const celebrated = getCelebratedBadges();
+  if (!celebrated.includes(badgeId)) {
+    localStorage.setItem(CELEBRATED_BADGES_KEY, JSON.stringify([...celebrated, badgeId]));
+  }
+}
+
+/**
+ * Check if a badge was issued within the last N minutes
+ */
+function wasIssuedRecently(issuedAt: string, minutesAgo: number = 5): boolean {
+  const issuedDate = new Date(issuedAt);
+  const now = new Date();
+  const diffMs = now.getTime() - issuedDate.getTime();
+  const diffMinutes = diffMs / (1000 * 60);
+  return diffMinutes <= minutesAgo;
+}
+
+/**
+ * Get progress bar color based on percentage (AC1 requirement)
+ * 0-25%: red, 25-75%: yellow, 75-100%: green
+ */
+function getProgressBarColor(percentage: number): string {
+  if (percentage < 25) {
+    return 'bg-red-500';
+  } else if (percentage < 75) {
+    return 'bg-yellow-500';
+  } else {
+    return 'bg-green-500';
+  }
+}
+
 export const EmployeeDashboard: React.FC = () => {
   const { data, isLoading, error, refetch } = useEmployeeDashboard();
   const [showCelebration, setShowCelebration] = useState(false);
+  const [celebratingBadgeId, setCelebratingBadgeId] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  // AC1: Celebration feedback - trigger for recently issued uncelebrated badges
+  const checkAndTriggerCelebration = useCallback(() => {
+    if (!data?.badgeSummary?.latestBadge) return;
+    
+    const latestBadge = data.badgeSummary.latestBadge;
+    const celebratedBadges = getCelebratedBadges();
+    
+    // Check if badge was issued within last 5 minutes and not yet celebrated
+    if (
+      latestBadge.id &&
+      !celebratedBadges.includes(latestBadge.id) &&
+      wasIssuedRecently(latestBadge.issuedAt, 5)
+    ) {
+      setCelebratingBadgeId(latestBadge.id);
+      setShowCelebration(true);
+    }
+  }, [data]);
+
+  // Trigger celebration check when data loads
+  useEffect(() => {
+    checkAndTriggerCelebration();
+  }, [checkAndTriggerCelebration]);
+
+  // Mark badge as celebrated when modal closes
+  const handleCelebrationClose = useCallback(() => {
+    if (celebratingBadgeId) {
+      markBadgeAsCelebrated(celebratingBadgeId);
+    }
+    setShowCelebration(false);
+    setCelebratingBadgeId(null);
+  }, [celebratingBadgeId]);
 
   if (isLoading) {
     return <PageLoader text="Loading your dashboard..." />;
@@ -104,7 +187,10 @@ export const EmployeeDashboard: React.FC = () => {
               </div>
               <div className="w-full bg-secondary rounded-full h-3 overflow-hidden">
                 <div
-                  className="bg-primary h-full rounded-full transition-all duration-500"
+                  className={cn(
+                    'h-full rounded-full transition-all duration-500',
+                    getProgressBarColor(currentMilestone.percentage)
+                  )}
                   style={{ width: `${currentMilestone.percentage}%` }}
                   role="progressbar"
                   aria-valuenow={currentMilestone.percentage}
@@ -148,11 +234,11 @@ export const EmployeeDashboard: React.FC = () => {
       {/* Celebration Modal */}
       <BadgeEarnedCelebration
         isOpen={showCelebration}
-        onClose={() => setShowCelebration(false)}
+        onClose={handleCelebrationClose}
         badgeName={badgeSummary.latestBadge?.templateName || ''}
         badgeImageUrl={badgeSummary.latestBadge?.imageUrl}
         onViewBadge={() => {
-          setShowCelebration(false);
+          handleCelebrationClose();
           navigate('/wallet');
         }}
       />
