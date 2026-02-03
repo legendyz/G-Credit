@@ -1,0 +1,229 @@
+# GCredit CI Pipeline
+# Story 8.8: E2E Test Isolation - CI/CD Integration
+# Updated: 2026-02-04
+# 
+# Triggers on:
+# - Push to main branch
+# - Push to sprint branches
+# - Pull requests to main branch
+
+name: Tests
+
+on:
+  workflow_dispatch:  # Allow manual trigger
+  push:
+    branches: 
+      - main
+      - 'sprint-*'
+      - 'sprint-*/**'
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ===========================================
+  # Job 1: Lint and Unit Tests (Fast Feedback)
+  # ===========================================
+  lint-and-unit:
+    name: Lint & Unit Tests
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./gcredit-project/backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: './gcredit-project/backend/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run Unit Tests
+        run: npm run test -- --coverage --passWithNoTests
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: ./gcredit-project/backend/coverage/
+          retention-days: 7
+
+  # ===========================================
+  # Job 2: E2E Tests (Requires Database)
+  # ===========================================
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: lint-and-unit  # Only run if lint passes
+    
+    defaults:
+      run:
+        working-directory: ./gcredit-project/backend
+
+    # PostgreSQL service container
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: gcredit_test
+        ports:
+          - 5432:5432
+        # Health check to wait for postgres to be ready
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      # Database connection for tests
+      DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/gcredit_test
+      # JWT secrets for testing
+      JWT_SECRET: test-jwt-secret-for-ci-testing-only
+      JWT_REFRESH_SECRET: test-refresh-secret-for-ci-testing-only
+      JWT_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 7d
+      # Mock Azure Storage for CI (prevents initialization errors)
+      AZURE_STORAGE_CONNECTION_STRING: "DefaultEndpointsProtocol=https;AccountName=mockaccount;AccountKey=bW9ja2tleQ==;EndpointSuffix=core.windows.net"
+      AZURE_STORAGE_CONTAINER_BADGES: "badges"
+      AZURE_STORAGE_ACCOUNT_NAME: "mockaccount"
+      # Rate limiting (increase for tests) - both naming conventions
+      THROTTLE_TTL: 60000
+      THROTTLE_LIMIT: 1000
+      RATE_LIMIT_TTL: 60000
+      RATE_LIMIT_MAX: 1000
+      # Test environment
+      NODE_ENV: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: './gcredit-project/backend/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Push database schema
+        run: npx prisma db push --skip-generate
+
+      - name: Run E2E Tests (Parallel)
+        run: |
+          npm run test:e2e -- --maxWorkers=2 --forceExit 2>&1 | tee e2e-test-output.log
+          exit ${PIPESTATUS[0]}
+        env:
+          # Mock Azure Storage for CI - prevents initialization errors
+          AZURE_STORAGE_CONNECTION_STRING: "DefaultEndpointsProtocol=https;AccountName=mockaccount;AccountKey=bW9ja2tleQ==;EndpointSuffix=core.windows.net"
+          AZURE_STORAGE_CONTAINER_BADGES: "badges"
+          AZURE_STORAGE_ACCOUNT_NAME: "mockaccount"
+        continue-on-error: true  # Allow step to fail so we can upload logs and check results
+
+      - name: Upload E2E test log
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-test-log
+          path: ./gcredit-project/backend/e2e-test-output.log
+          retention-days: 7
+
+      - name: Check E2E test result
+        run: |
+          echo "📊 Analyzing E2E test results..."
+          
+          # Check for test failures
+          if grep -q "Test Suites:.*failed" e2e-test-output.log 2>/dev/null; then
+            echo "❌ E2E tests failed - check e2e-test-log artifact for details"
+            
+            # Extract and display failure summary
+            echo ""
+            echo "Test Summary:"
+            grep -E "Test Suites:|Tests:" e2e-test-output.log | tail -3 || true
+            
+            # Display failed test names if available
+            echo ""
+            echo "Failed Tests:"
+            grep -E "●|FAIL test/" e2e-test-output.log | head -20 || true
+            
+            exit 1
+          elif grep -q "Tests:.*passed" e2e-test-output.log 2>/dev/null; then
+            echo "✅ All E2E tests passed"
+            
+            # Display success summary
+            grep -E "Test Suites:|Tests:" e2e-test-output.log | tail -3 || true
+          else
+            echo "⚠️ Could not determine test result - test output may be incomplete"
+            echo "Showing last 50 lines of log:"
+            tail -50 e2e-test-output.log || cat e2e-test-output.log
+            exit 1
+          fi
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-test-results
+          path: ./gcredit-project/backend/test-results/
+          retention-days: 7
+
+  # ===========================================
+  # Job 3: Build Check
+  # ===========================================
+  build:
+    name: Build Check
+    runs-on: ubuntu-latest
+    needs: lint-and-unit
+    
+    defaults:
+      run:
+        working-directory: ./gcredit-project/backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: './gcredit-project/backend/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Check build output
+        run: |
+          if [ -d "dist" ]; then
+            echo "✅ Build successful - dist folder created"
+            ls -la dist/
+          else
+            echo "❌ Build failed - no dist folder"
+            exit 1
+          fi
