@@ -336,7 +336,6 @@ Transaction rollback was considered but rejected because:
 - `test/setup.ts` - Global Jest setup
 - `test/teardown.ts` - Global Jest teardown
 - `docs/testing/e2e-test-guidelines.md` - Developer guide (393 lines)
-- `docs/testing/CICD-log/e2e-test-output.log` - CI debug log archive
 - `docs/sprints/sprint-8/8-9-eslint-type-safety.md` - TD-002 ESLint cleanup
 
 ### Modified Files (CI Graceful Degradation)
