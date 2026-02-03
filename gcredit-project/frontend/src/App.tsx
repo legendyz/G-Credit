@@ -6,6 +6,7 @@ import { VerifyBadgePage } from '@/pages/VerifyBadgePage';
 import BadgeEmbedPage from '@/pages/BadgeEmbedPage';
 import AdminAnalyticsPage from '@/pages/AdminAnalyticsPage';
 import BadgeManagementPage from '@/pages/admin/BadgeManagementPage';
+import { DashboardPage } from '@/pages/dashboard';
 import { LoginPage } from '@/pages/LoginPage';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Layout } from '@/components/layout/Layout';
@@ -26,6 +27,16 @@ function App() {
           {/* Protected Routes */}
           <Route 
             path="/" 
+            element={
+              <ProtectedRoute>
+                <Layout pageTitle="Dashboard">
+                  <DashboardPage />
+                </Layout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/wallet" 
             element={
               <ProtectedRoute>
                 <Layout pageTitle="My Badge Wallet">
