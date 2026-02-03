@@ -129,8 +129,10 @@ group_a_ux_accessibility:
         - AC3: Top Performers (Admin + Manager)
         - AC4: Skills Distribution (Admin only)
         - AC5: Recent Activity Feed (Admin only)
-        - 35 tests: 22 unit + 13 E2E
+        - 36 tests: 23 unit + 13 E2E
         - Cache TTL: 900000ms (15 minutes)
+        - Code Review: 4 findings fixed (commit 25150b8)
+        - CI: GitHub Actions passed
       
     - id: "8.5"
       title: "Responsive Design"

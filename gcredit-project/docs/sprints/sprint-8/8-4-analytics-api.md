@@ -517,9 +517,15 @@ backend/src/
 - `src/app.module.ts` - Added AnalyticsModule import
 
 ### Test Results
-- **Unit Tests:** 296 passed (22 new for analytics)
+- **Unit Tests:** 297 passed (23 new for analytics)
 - **E2E Tests:** 96 passed (13 new for analytics)
 - **Build:** Passed
+
+### Code Review Fixes (Commit `25150b8`)
+- **#1 HIGH:** Removed auto-cache from user-scoped endpoints (`issuance-trends`, `top-performers`)
+- **#3 MEDIUM:** Strict period validation using `@IsIn([7, 30, 90, 365])`
+- **#4 MEDIUM:** Changed `teamId` from UUID to string (department name)
+- **#5 LOW:** Added actor name lookup from user table with email fallback
 
 ### Caching Configuration
 - Using @nestjs/cache-manager v3.1.0
