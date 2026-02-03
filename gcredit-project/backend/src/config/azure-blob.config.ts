@@ -7,7 +7,9 @@ export const azureBlobConfig = {
 
 export const getBlobServiceClient = (): BlobServiceClient | null => {
   if (!azureBlobConfig.connectionString) {
-    console.warn('⚠️ AZURE_STORAGE_CONNECTION_STRING is not configured - blob storage operations will be mocked');
+    console.warn(
+      '⚠️ AZURE_STORAGE_CONNECTION_STRING is not configured - blob storage operations will be mocked',
+    );
     return null;
   }
 

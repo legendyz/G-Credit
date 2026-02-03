@@ -64,12 +64,12 @@ describe('GraphTokenProviderService', () => {
         return undefined;
       });
 
-      await expect(service.onModuleInit()).rejects.toThrow(
-        'Azure AD credentials not configured',
-      );
+      // Now gracefully degrades - should NOT throw
+      await expect(service.onModuleInit()).resolves.not.toThrow();
+      expect(service.isAvailable()).toBe(false);
     });
 
-    it('should throw error if AZURE_CLIENT_ID missing', async () => {
+    it('should gracefully degrade if AZURE_CLIENT_ID missing', async () => {
       jest.spyOn(configService, 'get').mockImplementation((key: string) => {
         if (key === 'AZURE_TENANT_ID') return 'test-tenant-id';
         if (key === 'AZURE_CLIENT_ID') return undefined;
@@ -79,12 +79,12 @@ describe('GraphTokenProviderService', () => {
         return undefined;
       });
 
-      await expect(service.onModuleInit()).rejects.toThrow(
-        'Azure AD credentials not configured',
-      );
+      // Now gracefully degrades - should NOT throw
+      await expect(service.onModuleInit()).resolves.not.toThrow();
+      expect(service.isAvailable()).toBe(false);
     });
 
-    it('should throw error if AZURE_CLIENT_SECRET missing', async () => {
+    it('should gracefully degrade if AZURE_CLIENT_SECRET missing', async () => {
       jest.spyOn(configService, 'get').mockImplementation((key: string) => {
         if (key === 'AZURE_TENANT_ID') return 'test-tenant-id';
         if (key === 'AZURE_CLIENT_ID') return 'test-client-id';
@@ -94,9 +94,9 @@ describe('GraphTokenProviderService', () => {
         return undefined;
       });
 
-      await expect(service.onModuleInit()).rejects.toThrow(
-        'Azure AD credentials not configured',
-      );
+      // Now gracefully degrades - should NOT throw
+      await expect(service.onModuleInit()).resolves.not.toThrow();
+      expect(service.isAvailable()).toBe(false);
     });
   });
 
@@ -147,17 +147,16 @@ describe('GraphTokenProviderService', () => {
       expect(authProvider).toBeDefined();
     });
 
-    it('should throw error if called before initialization', () => {
-      expect(() => service.getAuthProvider()).toThrow(
-        'GraphTokenProviderService not initialized',
-      );
+    it('should return null if called when not configured', () => {
+      // Now returns null instead of throwing
+      expect(service.getAuthProvider()).toBeNull();
     });
   });
 
   describe('getAccessToken', () => {
-    it('should throw error if called before initialization', async () => {
+    it('should throw error if called when not configured', async () => {
       await expect(service.getAccessToken()).rejects.toThrow(
-        'GraphTokenProviderService not initialized',
+        'Graph API not configured - Azure AD credentials missing',
       );
     });
 

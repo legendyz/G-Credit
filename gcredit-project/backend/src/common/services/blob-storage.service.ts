@@ -40,14 +40,18 @@ export class BlobStorageService {
   private initializeClient(): void {
     if (this.initialized) return;
     this.initialized = true;
-    
+
     try {
       this.containerClient = getBadgesContainerClient();
       if (!this.containerClient) {
-        this.logger.warn('Azure Blob Storage not configured - operations will return mock data');
+        this.logger.warn(
+          'Azure Blob Storage not configured - operations will return mock data',
+        );
       }
     } catch (error) {
-      this.logger.warn(`Failed to initialize Azure Blob Storage: ${error.message}`);
+      this.logger.warn(
+        `Failed to initialize Azure Blob Storage: ${error.message}`,
+      );
       this.containerClient = null;
     }
   }

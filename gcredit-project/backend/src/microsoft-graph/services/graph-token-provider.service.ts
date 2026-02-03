@@ -33,8 +33,12 @@ export class GraphTokenProviderService implements OnModuleInit {
     const clientSecret = this.configService.get<string>('AZURE_CLIENT_SECRET');
 
     if (!tenantId || !clientId || !clientSecret) {
-      this.logger.warn('⚠️ Azure AD configuration not set - Graph API features disabled');
-      this.logger.warn('Set AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET to enable');
+      this.logger.warn(
+        '⚠️ Azure AD configuration not set - Graph API features disabled',
+      );
+      this.logger.warn(
+        'Set AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET to enable',
+      );
       this.initialized = true;
       return;
     }
@@ -99,7 +103,9 @@ export class GraphTokenProviderService implements OnModuleInit {
    */
   async getAccessToken(): Promise<string> {
     if (!this.credential) {
-      throw new Error('Graph API not configured - Azure AD credentials missing');
+      throw new Error(
+        'Graph API not configured - Azure AD credentials missing',
+      );
     }
 
     try {
