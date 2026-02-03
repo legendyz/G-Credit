@@ -1,5 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useWallet } from '../../hooks/useWallet';
+import { useSkills } from '../../hooks/useSkills';
+import { useBadgeSearch } from '../../hooks/useBadgeSearch';
 import { BadgeStatus } from '../../types/badge';
 import { TimelineLine } from './TimelineLine';
 import { BadgeTimelineCard } from './BadgeTimelineCard';
@@ -10,22 +12,121 @@ import EmptyState, { detectEmptyStateScenario } from '../BadgeWallet/EmptyState'
 import BadgeDetailModal from '../BadgeDetailModal/BadgeDetailModal';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useBadgeDetailModal } from '../../stores/badgeDetailModal';
+import { BadgeSearchBar } from '../search/BadgeSearchBar';
+import type { BadgeForFilter } from '../../utils/searchFilters';
 
 export type ViewMode = 'timeline' | 'grid';
 
 export function TimelineView() {
   const [viewMode, setViewMode] = useState<ViewMode>('timeline');
-  // Story 9.3 AC4: Default filter to CLAIMED (Active badges only) + persist in sessionStorage
-  const [statusFilter, setStatusFilter] = useState<BadgeStatus | undefined>(() => {
-    const saved = sessionStorage.getItem('badgeWalletFilter');
-    return saved ? (saved === 'ALL' ? undefined : saved as BadgeStatus) : BadgeStatus.CLAIMED;
+  
+  // Fetch all badges initially (status filter will be handled by search)
+  const { data, isLoading, error } = useWallet({});
+  
+  // Fetch available skills for filter dropdown
+  const { data: skills = [] } = useSkills();
+  
+  // Convert badges to BadgeForFilter format for client-side filtering
+  const badgesForFilter: BadgeForFilter[] = useMemo(() => {
+    if (!data?.badges) return [];
+    return data.badges.map((badge) => ({
+      id: badge.id,
+      template: {
+        id: badge.template.id,
+        name: badge.template.name,
+        skillIds: [], // TODO: Get from API when available
+        category: badge.template.category,
+      },
+      issuer: {
+        id: badge.issuer.id,
+        firstName: badge.issuer.firstName,
+        lastName: badge.issuer.lastName,
+        email: badge.issuer.email,
+      },
+      issuedAt: badge.issuedAt,
+      claimedAt: badge.claimedAt,
+      status: badge.status,
+    }));
+  }, [data?.badges]);
+  
+  // Create skill names map for chip display
+  const skillNames = useMemo(() => {
+    return skills.reduce(
+      (acc, skill) => {
+        acc[skill.id] = skill.name;
+        return acc;
+      },
+      {} as Record<string, string>
+    );
+  }, [skills]);
+  
+  // Story 8.2: Badge search hook
+  const {
+    searchTerm,
+    setSearchTerm,
+    selectedSkills,
+    setSelectedSkills,
+    dateRange,
+    setDateRange,
+    statusFilter,
+    setStatusFilter,
+    filteredBadges,
+    hasFilters,
+    filterChips,
+    clearAllFilters,
+    removeFilter,
+    isServerSearch,
+    isSearching,
+  } = useBadgeSearch({
+    allBadges: badgesForFilter,
+    totalCount: data?.pagination?.total,
+    skillNames,
   });
-  const { data, isLoading, error } = useWallet({ status: statusFilter });
-
-  // Story 9.3 AC4: Persist filter to sessionStorage
+  
+  // Story 9.3 AC4: Persist status filter to sessionStorage
   useEffect(() => {
-    sessionStorage.setItem('badgeWalletFilter', statusFilter || 'ALL');
+    sessionStorage.setItem('badgeWalletFilter', statusFilter || 'all');
   }, [statusFilter]);
+  
+  // Restore status filter from sessionStorage on mount
+  useEffect(() => {
+    const saved = sessionStorage.getItem('badgeWalletFilter');
+    if (saved && saved !== 'all') {
+      setStatusFilter(saved);
+    }
+  }, [setStatusFilter]);
+  
+  // Map filtered badges back to original badge objects for display
+  const displayBadges = useMemo(() => {
+    if (!data?.badges) return [];
+    const filteredIds = new Set(filteredBadges.map((b) => b.id));
+    return data.badges.filter((badge) => filteredIds.has(badge.id));
+  }, [data?.badges, filteredBadges]);
+  
+  // Group badges by date for timeline display
+  const dateGroups = useMemo(() => {
+    if (!displayBadges.length) return [];
+    
+    const groups: Array<{ label: string; count: number; startIndex: number }> = [];
+    let currentLabel = '';
+    
+    displayBadges.forEach((badge, index) => {
+      const date = new Date(badge.issuedAt);
+      const label = date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long' 
+      });
+      
+      if (label !== currentLabel) {
+        groups.push({ label, count: 1, startIndex: index });
+        currentLabel = label;
+      } else if (groups.length > 0) {
+        groups[groups.length - 1].count++;
+      }
+    });
+    
+    return groups;
+  }, [displayBadges]);
 
   if (isLoading) {
     return (
@@ -53,7 +154,7 @@ export function TimelineView() {
     const claimedBadges = 0; // TODO: Get from API response if available
     const pendingBadges = 0; // TODO: Get from API response if available
     const revokedBadges = 0; // TODO: Get from API response if available
-    const hasActiveFilter = statusFilter !== undefined;
+    const hasActiveFilter = hasFilters;
 
     const emptyScenario = detectEmptyStateScenario(
       totalBadges,
@@ -68,7 +169,7 @@ export function TimelineView() {
         <EmptyState
           scenario={emptyScenario}
           pendingCount={pendingBadges}
-          currentFilter={statusFilter ? `Status: ${statusFilter}` : null}
+          currentFilter={hasFilters ? 'Active filters' : null}
           onExploreCatalog={() => {
             window.location.href = '/badges/templates';
           }}
@@ -76,11 +177,9 @@ export function TimelineView() {
             window.location.href = '/docs/help/earning-badges';
           }}
           onViewPending={() => {
-            setStatusFilter(BadgeStatus.PENDING);
+            setStatusFilter('PENDING');
           }}
-          onClearFilters={() => {
-            setStatusFilter(undefined);
-          }}
+          onClearFilters={clearAllFilters}
         />
       );
     }
@@ -93,12 +192,15 @@ export function TimelineView() {
       </div>
     );
   }
+  
+  // Story 8.2: Empty state when filters return no results
+  const showNoResults = displayBadges.length === 0 && hasFilters;
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
       {/* Date Navigation Sidebar - AC 1.6 (hidden on mobile, visible on desktop) */}
       <DateNavigationSidebar 
-        dateGroups={data.dateGroups}
+        dateGroups={dateGroups}
         className="hidden lg:block w-60 flex-shrink-0"
       />
 
@@ -110,33 +212,56 @@ export function TimelineView() {
           <ViewToggle mode={viewMode} onChange={setViewMode} />
         </div>
 
-        {/* Filter - Story 9.3 AC4, Story 8.5: Touch-friendly height (44px) */}
-        <div className="mb-4 md:mb-6">
-          <label htmlFor="badge-status-filter" className="sr-only">
-            Filter badges by status
-          </label>
-          <select
-            id="badge-status-filter"
-            value={statusFilter || 'ALL'}
-            onChange={(e) => setStatusFilter(e.target.value === 'ALL' ? undefined : e.target.value as BadgeStatus)}
-            className="w-full sm:w-auto h-11 px-4 py-2 border border-gray-300 rounded-lg text-base
-                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            aria-label="Filter badges by status"
-          >
-            <option value="ALL">All Badges</option>
-            <option value={BadgeStatus.CLAIMED}>Active</option>
-            <option value={BadgeStatus.PENDING}>Pending</option>
-            <option value={BadgeStatus.REVOKED}>Revoked</option>
-          </select>
+        {/* Story 8.2 AC1 & AC4: Badge Search Bar with sticky positioning */}
+        <div className="sticky top-0 z-10 bg-white pb-4 -mx-4 px-4 md:-mx-6 md:px-6 pt-2 shadow-sm">
+          <BadgeSearchBar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            onSearchClear={() => setSearchTerm('')}
+            isSearchLoading={isSearching}
+            skills={skills}
+            selectedSkills={selectedSkills}
+            onSkillsChange={setSelectedSkills}
+            dateRange={dateRange}
+            onDateRangeChange={setDateRange}
+            statusFilter={statusFilter}
+            onStatusChange={setStatusFilter}
+            filterChips={filterChips}
+            onRemoveFilter={removeFilter}
+            onClearAllFilters={clearAllFilters}
+            placeholder="Search your badges..."
+          />
         </div>
+        
+        {/* Search results count - Story 8.2 */}
+        {hasFilters && !showNoResults && (
+          <p className="text-sm text-gray-500 mb-4">
+            Showing {displayBadges.length} of {data.badges.length} badges
+          </p>
+        )}
+        
+        {/* No results state */}
+        {showNoResults && (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">No badges match your filters</p>
+            <p className="text-gray-400 mt-2">Try adjusting your search criteria</p>
+            <button
+              onClick={clearAllFilters}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              Clear all filters
+            </button>
+          </div>
+        )}
 
         {/* Timeline View - AC 1.1-1.4 */}
-        {viewMode === 'timeline' && (
+        {viewMode === 'timeline' && !showNoResults && (
           <div className="relative">
             <TimelineLine />
             <div className="space-y-8">
-              {data.dateGroups.map((group) => {
-                const groupBadges = data.badges.slice(
+              {dateGroups.map((group) => {
+                const groupBadges = displayBadges.slice(
                   group.startIndex,
                   group.startIndex + group.count
                 );
@@ -160,8 +285,8 @@ export function TimelineView() {
         )}
 
         {/* Grid View - With keyboard navigation (Story 8.3 UX-P1-005) */}
-        {viewMode === 'grid' && (
-          <GridView badges={data.badges} />
+        {viewMode === 'grid' && !showNoResults && (
+          <GridView badges={displayBadges} />
         )}
       </div>
       

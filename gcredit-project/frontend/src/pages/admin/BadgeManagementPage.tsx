@@ -1,9 +1,10 @@
 /**
  * Badge Management Page
  * Sprint 7 - Story 9.5: Admin Badge Revocation UI
+ * Sprint 8 - Story 8.2: Badge Search & Filter Enhancement (AC2)
  * 
  * Admin/Issuer page for managing badges with search, filter, and revocation.
- * Implements AC1, AC4, AC5
+ * Implements AC1, AC2, AC4, AC5
  */
 
 import { useState, useCallback, useMemo } from 'react';
@@ -16,17 +17,8 @@ import {
 } from '@/lib/badgesApi';
 import { RevokeBadgeModal } from '@/components/admin/RevokeBadgeModal';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { 
-  Search, 
   ChevronLeft, 
   ChevronRight,
   Loader2,
@@ -36,6 +28,10 @@ import {
   Clock,
   XCircle,
 } from 'lucide-react';
+import { useSkills } from '@/hooks/useSkills';
+import { useBadgeSearch } from '@/hooks/useBadgeSearch';
+import { BadgeSearchBar } from '@/components/search/BadgeSearchBar';
+import type { BadgeForFilter } from '@/utils/searchFilters';
 
 // For demo purposes - in production this would come from auth context
 const MOCK_USER_ROLE = 'ADMIN'; // or 'ISSUER'
@@ -116,33 +112,15 @@ export function BadgeManagementPage({
   const queryClient = useQueryClient();
   
   // State
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedBadge, setSelectedBadge] = useState<BadgeType | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Query params - handle special 'active' filter (ISSUED + CLAIMED)
-  const queryParams: BadgeQueryParams = useMemo(() => {
-    let status: BadgeStatus | 'all' | undefined;
-    if (statusFilter === 'all') {
-      status = undefined;
-    } else if (statusFilter === 'active') {
-      // 'active' filter handled by backend or client-side
-      // For now, we pass undefined and filter client-side if needed
-      status = undefined;
-    } else {
-      status = statusFilter as BadgeStatus;
-    }
-    return {
-      page: currentPage,
-      limit: PAGE_SIZE,
-      status,
-      search: searchTerm || undefined,
-      // Pass active flag for backend to filter ISSUED + CLAIMED
-      ...(statusFilter === 'active' ? { activeOnly: true } : {}),
-    };
-  }, [currentPage, statusFilter, searchTerm]);
+  // Fetch all badges for client-side filtering
+  const queryParams: BadgeQueryParams = useMemo(() => ({
+    page: currentPage,
+    limit: PAGE_SIZE,
+  }), [currentPage]);
 
   // Fetch badges - Admin sees all, Issuer sees only their issued badges
   const { data, isLoading, isError, error } = useQuery({
@@ -151,6 +129,78 @@ export function BadgeManagementPage({
       ? getAllBadges(queryParams) 
       : getIssuedBadges(queryParams),
   });
+  
+  // Fetch skills for filter dropdown (Story 8.2 AC2)
+  const { data: skills = [] } = useSkills();
+  
+  // Create skill names map for chip display
+  const skillNames = useMemo(() => {
+    return skills.reduce(
+      (acc, skill) => {
+        acc[skill.id] = skill.name;
+        return acc;
+      },
+      {} as Record<string, string>
+    );
+  }, [skills]);
+  
+  // Convert badges to BadgeForFilter format for client-side filtering
+  const badgesForFilter: BadgeForFilter[] = useMemo(() => {
+    if (!data?.badges) return [];
+    return data.badges.map((badge) => ({
+      id: badge.id,
+      template: {
+        id: badge.template.id,
+        name: badge.template.name,
+        skillIds: badge.template.skillIds || [],
+        category: badge.template.category,
+      },
+      issuer: {
+        id: badge.issuerId,
+        firstName: null, // TODO: Get from API when available
+        lastName: null,
+        email: '', // TODO: Get from API when available
+      },
+      recipient: {
+        id: badge.recipient.id,
+        firstName: badge.recipient.firstName,
+        lastName: badge.recipient.lastName,
+        email: badge.recipient.email,
+      },
+      issuedAt: badge.issuedAt,
+      claimedAt: badge.claimedAt,
+      status: badge.status,
+    }));
+  }, [data?.badges]);
+  
+  // Story 8.2 AC2: Badge search hook with enhanced filtering
+  const {
+    searchTerm,
+    setSearchTerm,
+    selectedSkills,
+    setSelectedSkills,
+    dateRange,
+    setDateRange,
+    statusFilter,
+    setStatusFilter,
+    filteredBadges,
+    hasFilters,
+    filterChips,
+    clearAllFilters,
+    removeFilter,
+    isSearching,
+  } = useBadgeSearch({
+    allBadges: badgesForFilter,
+    totalCount: data?.total,
+    skillNames,
+  });
+  
+  // Map filtered badges back to original badge objects for display
+  const displayBadges = useMemo(() => {
+    if (!data?.badges) return [];
+    const filteredIds = new Set(filteredBadges.map((b) => b.id));
+    return data.badges.filter((badge) => filteredIds.has(badge.id));
+  }, [data?.badges, filteredBadges]);
 
   // Check if user can revoke a specific badge
   const canRevokeBadge = useCallback((badge: BadgeType): boolean => {
@@ -169,18 +219,6 @@ export function BadgeManagementPage({
     
     return false;
   }, [userRole, userId]);
-
-  // Handle search with debounce effect
-  const handleSearch = useCallback((value: string) => {
-    setSearchTerm(value);
-    setCurrentPage(1); // Reset to first page on search
-  }, []);
-
-  // Handle filter change
-  const handleFilterChange = useCallback((value: string) => {
-    setStatusFilter(value);
-    setCurrentPage(1); // Reset to first page on filter change
-  }, []);
 
   // Handle revoke button click
   const handleRevokeClick = useCallback((badge: BadgeType) => {
@@ -201,10 +239,17 @@ export function BadgeManagementPage({
     handleModalClose();
   }, [queryClient, handleModalClose]);
 
-  // Pagination
-  const totalPages = data?.totalPages || 1;
+  // Pagination based on filtered results
+  const displayTotal = displayBadges.length;
+  const totalPages = Math.ceil(displayTotal / PAGE_SIZE) || 1;
   const canGoBack = currentPage > 1;
   const canGoForward = currentPage < totalPages;
+  
+  // Paginate display badges
+  const paginatedBadges = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return displayBadges.slice(start, start + PAGE_SIZE);
+  }, [displayBadges, currentPage]);
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-6">
@@ -219,42 +264,32 @@ export function BadgeManagementPage({
           </p>
         </div>
 
-        {/* Controls */}
+        {/* Story 8.2 AC2: Enhanced Search & Filter Controls */}
         <Card className="mb-6 p-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            {/* Search */}
-            <div className="relative flex-1 sm:max-w-xs">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                type="search"
-                placeholder="Search by recipient or template..."
-                value={searchTerm}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="pl-10"
-                aria-label="Search badges by recipient name, email, or template name"
-              />
-            </div>
-
-            {/* Filter */}
-            <div className="flex items-center gap-2">
-              <label htmlFor="status-filter" className="text-sm text-slate-600">
-                Status:
-              </label>
-              <Select value={statusFilter} onValueChange={handleFilterChange}>
-                <SelectTrigger id="status-filter" className="w-[140px]" aria-label="Filter by status">
-                  <SelectValue placeholder="All" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value={BadgeStatus.PENDING}>Pending</SelectItem>
-                  <SelectItem value={BadgeStatus.CLAIMED}>Claimed</SelectItem>
-                  <SelectItem value={BadgeStatus.REVOKED}>Revoked</SelectItem>
-                  <SelectItem value={BadgeStatus.EXPIRED}>Expired</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <BadgeSearchBar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            onSearchClear={() => setSearchTerm('')}
+            isSearchLoading={isSearching}
+            skills={skills}
+            selectedSkills={selectedSkills}
+            onSkillsChange={setSelectedSkills}
+            dateRange={dateRange}
+            onDateRangeChange={setDateRange}
+            statusFilter={statusFilter}
+            onStatusChange={setStatusFilter}
+            filterChips={filterChips}
+            onRemoveFilter={removeFilter}
+            onClearAllFilters={clearAllFilters}
+            placeholder="Search by recipient or template..."
+          />
+          
+          {/* Results count */}
+          {hasFilters && displayBadges.length > 0 && (
+            <p className="mt-3 text-sm text-slate-500">
+              Showing {displayBadges.length} of {data?.badges?.length || 0} badges
+            </p>
+          )}
         </Card>
 
         {/* Table */}
@@ -278,18 +313,17 @@ export function BadgeManagementPage({
                 Retry
               </Button>
             </div>
-          ) : !data?.badges || data.badges.length === 0 ? (
+          ) : displayBadges.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <ShieldX className="h-12 w-12 text-slate-300" />
-              <p className="mt-2 text-slate-600">No badges found</p>
-              {(searchTerm || statusFilter !== 'all') && (
+              <p className="mt-2 text-slate-600">
+                {hasFilters ? 'No badges match your filters' : 'No badges found'}
+              </p>
+              {hasFilters && (
                 <Button 
                   variant="outline" 
                   className="mt-4"
-                  onClick={() => {
-                    setSearchTerm('');
-                    setStatusFilter('all');
-                  }}
+                  onClick={clearAllFilters}
                 >
                   Clear Filters
                 </Button>
@@ -299,7 +333,7 @@ export function BadgeManagementPage({
             <>
               {/* Mobile Card Layout (< 768px) - Story 8.5 AC2 */}
               <div className="md:hidden divide-y divide-slate-200">
-                {data.badges.map((badge) => {
+                {paginatedBadges.map((badge) => {
                   const isRevoked = badge.status === BadgeStatus.REVOKED;
                   return (
                     <div
@@ -378,7 +412,7 @@ export function BadgeManagementPage({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200">
-                    {data.badges.map((badge) => {
+                    {paginatedBadges.map((badge) => {
                       const isRevoked = badge.status === BadgeStatus.REVOKED;
                       return (
                         <tr 
@@ -452,7 +486,7 @@ export function BadgeManagementPage({
               <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-3">
                 <div className="text-sm text-slate-600">
                   Showing {((currentPage - 1) * PAGE_SIZE) + 1} to{' '}
-                  {Math.min(currentPage * PAGE_SIZE, data.total)} of {data.total} badges
+                  {Math.min(currentPage * PAGE_SIZE, displayTotal)} of {displayTotal} badges
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
