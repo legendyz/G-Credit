@@ -207,12 +207,12 @@ export function BadgeManagementPage({
   const canGoForward = currentPage < totalPages;
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
+    <div className="min-h-screen bg-slate-50 p-4 md:p-6">
       <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-900">Badge Management</h1>
-          <p className="text-slate-600">
+        {/* Header - Story 8.5 AC6: Responsive typography */}
+        <div className="mb-4 md:mb-6">
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-slate-900">Badge Management</h1>
+          <p className="text-sm md:text-base text-slate-600">
             {userRole === 'ADMIN' 
               ? 'Manage all badges in the system' 
               : 'Manage badges you have issued'}
@@ -297,8 +297,66 @@ export function BadgeManagementPage({
             </div>
           ) : (
             <>
-              {/* Table */}
-              <div className="overflow-x-auto">
+              {/* Mobile Card Layout (< 768px) - Story 8.5 AC2 */}
+              <div className="md:hidden divide-y divide-slate-200">
+                {data.badges.map((badge) => {
+                  const isRevoked = badge.status === BadgeStatus.REVOKED;
+                  return (
+                    <div
+                      key={badge.id}
+                      className={`p-4 ${isRevoked ? 'bg-slate-50 opacity-60' : ''}`}
+                    >
+                      <div className="flex items-start gap-3">
+                        {badge.template.imageUrl && (
+                          <img
+                            src={badge.template.imageUrl}
+                            alt=""
+                            loading="lazy"
+                            className="h-12 w-12 rounded object-cover flex-shrink-0"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-slate-900 truncate">
+                            {badge.template.name}
+                          </div>
+                          <div className="text-sm text-slate-600 truncate">
+                            {getRecipientName(badge)}
+                          </div>
+                          <div className="text-xs text-slate-500">
+                            {formatDate(badge.issuedAt)}
+                          </div>
+                        </div>
+                        <StatusBadge status={badge.status} />
+                      </div>
+                      {/* Action Row */}
+                      <div className="mt-3 flex items-center justify-between">
+                        <span className="text-xs text-slate-500">{badge.recipient.email}</span>
+                        {canRevokeBadge(badge) ? (
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleRevokeClick(badge)}
+                            className="min-h-[44px] px-4"
+                            aria-label={`Revoke badge ${badge.template.name}`}
+                          >
+                            Revoke
+                          </Button>
+                        ) : isRevoked ? (
+                          <span className="text-xs text-slate-400">Revoked</span>
+                        ) : null}
+                      </div>
+                      {isRevoked && badge.revocationReason && (
+                        <div className="mt-2 text-xs text-slate-500">
+                          Reason: {badge.revocationReason}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop Table (>= 768px) */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-slate-100">
                     <tr>
@@ -390,7 +448,7 @@ export function BadgeManagementPage({
                 </table>
               </div>
 
-              {/* Pagination */}
+              {/* Pagination - Story 8.5: Touch-friendly buttons */}
               <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-3">
                 <div className="text-sm text-slate-600">
                   Showing {((currentPage - 1) * PAGE_SIZE) + 1} to{' '}

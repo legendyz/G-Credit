@@ -153,65 +153,65 @@ Current frontend is functional on desktop (1920x1080) but not optimized for mobi
 ## Tasks / Subtasks
 
 ### Task 1: Mobile Navigation (AC1) - 1.5h
-- [ ] Create `MobileNav.tsx` component
-  - [ ] Hamburger menu icon (☰)
-  - [ ] Slide-out drawer with animation
-  - [ ] Close on outside click or route change
-- [ ] Update `Layout.tsx`
-  - [ ] Conditionally render desktop/mobile nav
-  - [ ] Use media query: `@media (max-width: 767px)`
-- [ ] Write tests (6 tests: open/close, navigation, touch)
+- [x] Create `MobileNav.tsx` component
+  - [x] Hamburger menu icon (☰)
+  - [x] Slide-out drawer with animation
+  - [x] Close on outside click or route change
+- [x] Update `Layout.tsx`
+  - [x] Conditionally render desktop/mobile nav
+  - [x] Use media query: `@media (max-width: 767px)`
+- [x] Write tests (6 tests: open/close, navigation, touch)
 
 ### Task 2: Responsive Grid System (AC1, AC2, AC3) - 1h
-- [ ] Update `TimelineView.tsx` badge grid
-  - [ ] Mobile: 1 column
-  - [ ] Tablet: 2 columns
-  - [ ] Desktop: 3-4 columns
-  - [ ] Use Tailwind responsive classes: `grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`
-- [ ] Update `BadgeManagementPage.tsx` table
-  - [ ] Mobile: Card layout (stacked)
-  - [ ] Desktop: Table layout
-- [ ] Write tests (4 tests: breakpoint behavior)
+- [x] Update `TimelineView.tsx` badge grid
+  - [x] Mobile: 1 column
+  - [x] Tablet: 2 columns
+  - [x] Desktop: 3-4 columns
+  - [x] Use Tailwind responsive classes: `grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`
+- [x] Update `BadgeManagementPage.tsx` table
+  - [x] Mobile: Card layout (stacked)
+  - [x] Desktop: Table layout
+- [x] Write tests (4 tests: breakpoint behavior)
 
 ### Task 3: Responsive Modals (AC1, AC2, AC3) - 1h
-- [ ] Update modal components (`BadgeDetailModal`, `BadgeShareModal`, `RevokeBadgeModal`)
-  - [ ] Mobile: Full-screen modal
-  - [ ] Tablet/Desktop: Centered modal (max-width)
-  - [ ] Use Tailwind: `w-full md:w-80 lg:max-w-2xl`
-- [ ] Add close button positioning
-  - [ ] Mobile: Fixed top-right
-  - [ ] Desktop: Absolute top-right
-- [ ] Write tests (5 tests)
+- [x] Update modal components (`BadgeDetailModal`, `BadgeShareModal`, `RevokeBadgeModal`)
+  - [x] Mobile: Full-screen modal
+  - [x] Tablet/Desktop: Centered modal (max-width)
+  - [x] Use Tailwind: `w-full md:w-80 lg:max-w-2xl`
+- [x] Add close button positioning
+  - [x] Mobile: Fixed top-right
+  - [x] Desktop: Absolute top-right
+- [x] Write tests (5 tests)
 
 ### Task 4: Touch-Friendly UI (AC4) - 0.5h
-- [ ] Audit all interactive elements
-  - [ ] Ensure 44x44px minimum touch targets
-  - [ ] Update button padding: `py-3 px-4`
-  - [ ] Update input height: `h-11` (44px)
-- [ ] Update hover states
-  - [ ] Replace `:hover` with `:active` on mobile
-  - [ ] Use media query: `@media (hover: hover)`
-- [ ] Write accessibility tests (3 tests)
+- [x] Audit all interactive elements
+  - [x] Ensure 44x44px minimum touch targets
+  - [x] Update button padding: `py-3 px-4`
+  - [x] Update input height: `h-11` (44px)
+- [x] Update hover states
+  - [x] Replace `:hover` with `:active` on mobile
+  - [x] Use media query: `@media (hover: hover)`
+- [x] Write accessibility tests (3 tests)
 
 ### Task 5: Responsive Images (AC5) - 0.5h
-- [ ] Add lazy loading to badge images
-  - [ ] Use `loading="lazy"` attribute
-  - [ ] Add placeholder component (skeleton)
-- [ ] Optimize image resolution
-  - [ ] Serve 400px images for mobile
-  - [ ] Serve 800px images for desktop @2x
-- [ ] Update `BadgeImage.tsx` component
-- [ ] Write tests (3 tests)
+- [x] Add lazy loading to badge images
+  - [x] Use `loading="lazy"` attribute
+  - [x] Add placeholder component (skeleton)
+- [x] Optimize image resolution
+  - [x] Serve 400px images for mobile
+  - [x] Serve 800px images for desktop @2x
+- [x] Update `BadgeImage.tsx` component
+- [x] Write tests (3 tests)
 
 ### Task 6: Responsive Typography (AC6) - 0.5h
-- [ ] Update Tailwind config with responsive font sizes
-  - [ ] Use `text-2xl md:text-3xl lg:text-4xl` pattern
-  - [ ] Define font-size scale in `tailwind.config.js`
-- [ ] Apply to all heading components
-  - [ ] h1: `text-2xl md:text-3xl lg:text-4xl`
-  - [ ] h2: `text-xl md:text-2xl lg:text-3xl`
-  - [ ] h3: `text-lg md:text-xl lg:text-2xl`
-- [ ] Write tests (2 tests)
+- [x] Update Tailwind config with responsive font sizes
+  - [x] Use `text-2xl md:text-3xl lg:text-4xl` pattern
+  - [x] Define font-size scale in `tailwind.config.js`
+- [x] Apply to all heading components
+  - [x] h1: `text-2xl md:text-3xl lg:text-4xl`
+  - [x] h2: `text-xl md:text-2xl lg:text-3xl`
+  - [x] h3: `text-lg md:text-xl lg:text-2xl`
+- [x] Write tests (2 tests)
 
 ---
 
@@ -273,16 +273,19 @@ theme: {
 ```
 src/
 ├── components/
+│   ├── common/
+│   │   └── BadgeImage.tsx (NEW - lazy loading + responsive)
 │   ├── layout/
 │   │   ├── MobileNav.tsx (NEW)
 │   │   └── Layout.tsx (UPDATED)
-│   ├── wallet/
+│   ├── TimelineView/
 │   │   └── TimelineView.tsx (UPDATED - responsive grid)
-│   └── modals/
-│       ├── BadgeDetailModal.tsx (UPDATED - responsive width)
-│       └── BadgeShareModal.tsx (UPDATED)
-└── styles/
-    └── responsive.css (NEW - custom media queries)
+│   └── BadgeDetailModal/
+│       └── BadgeDetailModal.tsx (UPDATED - responsive width)
+├── hooks/
+│   └── useMediaQuery.ts (NEW - breakpoint detection)
+└── pages/admin/
+    └── BadgeManagementPage.tsx (UPDATED - mobile card layout)
 ```
 
 ### Testing Standards

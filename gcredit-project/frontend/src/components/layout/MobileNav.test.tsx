@@ -230,7 +230,7 @@ describe('MobileNav', () => {
   });
 
   describe('Accessibility', () => {
-    it('drawer has proper ARIA attributes', async () => {
+    it('drawer has proper ARIA attributes when open', async () => {
       const user = userEvent.setup();
       renderMobileNav();
       
@@ -239,6 +239,14 @@ describe('MobileNav', () => {
       const drawer = screen.getByRole('dialog');
       expect(drawer).toHaveAttribute('aria-modal', 'true');
       expect(drawer).toHaveAttribute('aria-label', 'Navigation menu');
+      expect(drawer).toHaveAttribute('aria-hidden', 'false');
+    });
+
+    it('drawer has aria-hidden when closed', () => {
+      renderMobileNav();
+      
+      const drawer = document.getElementById('mobile-nav-drawer');
+      expect(drawer).toHaveAttribute('aria-hidden', 'true');
     });
 
     it('nav has proper landmark role', () => {

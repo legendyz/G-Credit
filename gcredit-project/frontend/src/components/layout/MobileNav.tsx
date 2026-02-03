@@ -178,18 +178,19 @@ export function MobileNav({ className = '' }: MobileNavProps) {
         />
       )}
 
-      {/* Slide-out Drawer */}
+      {/* Slide-out Drawer - Story 8.5: aria-hidden when closed for assistive tech */}
       <div
         ref={drawerRef}
         id="mobile-nav-drawer"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Navigation menu"
+        role={isOpen ? 'dialog' : undefined}
+        aria-modal={isOpen ? true : undefined}
+        aria-hidden={!isOpen}
+        aria-label={isOpen ? 'Navigation menu' : undefined}
         className={`
           fixed top-0 right-0 h-full w-72 max-w-[80vw]
           bg-white shadow-xl z-50
           transform transition-transform duration-300 ease-in-out
-          ${isOpen ? 'translate-x-0' : 'translate-x-full'}
+          ${isOpen ? 'translate-x-0' : 'translate-x-full pointer-events-none'}
         `}
       >
         {/* Drawer Header */}
