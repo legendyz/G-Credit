@@ -18,6 +18,7 @@ import { MilestonesModule } from './milestones/milestones.module';
 import { BadgeVerificationModule } from './badge-verification/badge-verification.module';
 import { MicrosoftGraphModule } from './microsoft-graph/microsoft-graph.module';
 import { BadgeSharingModule } from './badge-sharing/badge-sharing.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { BadgeSharingModule } from './badge-sharing/badge-sharing.module';
     BadgeVerificationModule,
     MicrosoftGraphModule,
     BadgeSharingModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -22,11 +22,11 @@ metrics:
   total_story_points: 44  # Updated Story 8.10 from 3 SP to 6 SP
   total_estimated_hours: 76h  # Story 8.7 corrected from 7h to 6h
   
-  completed_stories: 0
+  completed_stories: 1  # Story 8.4 Analytics API
   completed_tasks: 5  # Task 8.0, 8.6, 8.7, 8.8, Story 8.3 completed
-  completed_work_items: 5
-  completed_hours: 30.5h  # 1.5h + 6.5h + 8.5h + 8h + 5h (Tasks 8.0, 8.6, Story 8.3, Task 8.8, Task 8.7)
-  remaining_hours: 45.5h  # 76h - 30.5h
+  completed_work_items: 6
+  completed_hours: 35.5h  # 30.5h + 5h (Story 8.4)
+  remaining_hours: 40.5h  # 76h - 35.5h
   
   stories_in_progress: 0
   tasks_in_progress: 0
@@ -108,19 +108,29 @@ group_a_ux_accessibility:
       title: "Analytics API"
       story_points: 3
       estimated_hours: 6h
+      actual_hours: 5h
       priority: HIGH
       notes: "+1.5h for @nestjs/cache-manager v3 migration (milliseconds TTL)"
-      status: backlog
-      assignee: null
+      status: done
+      assignee: Amelia
       blocked: false
       blocker_reason: null
-      started_date: null
-      completed_date: null
-      acceptance_criteria_met: 0/5
+      started_date: "2026-02-03"
+      completed_date: "2026-02-03"
+      acceptance_criteria_met: 5/5
       technical_debt_resolved: []
       dependencies:
-        - "Used by 8.1"
+        - "Used by 8.1 - ✅ API Ready"
       file: "8-4-analytics-api.md"
+      notes_completion: |
+        ✅ COMPLETED - 5 Analytics API endpoints implemented:
+        - AC1: System Overview (Admin only)
+        - AC2: Issuance Trends (Admin + Issuer)
+        - AC3: Top Performers (Admin + Manager)
+        - AC4: Skills Distribution (Admin only)
+        - AC5: Recent Activity Feed (Admin only)
+        - 35 tests: 22 unit + 13 E2E
+        - Cache TTL: 900000ms (15 minutes)
       
     - id: "8.5"
       title: "Responsive Design"
