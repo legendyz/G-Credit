@@ -64,6 +64,14 @@
 | TD-005 | Test Data Factory Pattern | S5 | 4h | ⏸️ Backlog | Improve test maintainability |
 | TD-007 | Badge PNG Generation | S6 | 2d | ⏸️ Future | `GET /api/badges/:id/download/png` placeholder |
 | TD-008 | Tailwind CSS Modal Issues | S6 | 0.5d | ⏸️ Investigate | Frontend styling |
+| TD-014 | Dual Email System (SMTP + M365) | S8 | 2h | 📋 Sprint 9 | Unify to GraphEmailService, remove nodemailer |
+
+**TD-014 Details:**
+- **Issue**: System maintains two email mechanisms - `EmailService` (SMTP/nodemailer) for password reset and `GraphEmailService` (M365) for badge notifications
+- **Impact**: Increased maintenance, unused SMTP config in .env, potential Ethereal initialization warnings in dev
+- **Solution**: Migrate password reset emails to `GraphEmailService`, remove `EmailService` and nodemailer dependency
+- **Files**: `auth.service.ts`, `email.service.ts`, `graph-email.service.ts`, `.env`
+- **Risk**: Low - password reset is low-usage feature, M365 email stable since Sprint 6
 
 ### Accepted Risk (No Action Required)
 
