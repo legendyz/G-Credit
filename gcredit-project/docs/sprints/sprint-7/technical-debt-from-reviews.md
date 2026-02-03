@@ -127,12 +127,12 @@
 
 ### Architecture (4 items)
 
-| ID | Issue | Location | Effort | Notes |
-|----|-------|----------|--------|-------|
-| ARCH-P1-001 | Token rotation not implemented on refresh | `auth.service.ts` | 3h | ✅ **Resolved Sprint 8 (Task 8.7)** - New refresh token on each use, old revoked |
+| ID | Issue | Location | Effort | Status | Notes |
+|----|-------|----------|--------|--------|-------|
+| ARCH-P1-001 | Token rotation not implemented on refresh | `auth.service.ts` | 3h | ✅ Resolved | **Resolved Sprint 8 (Task 8.7, 2026-02-04)** - New refresh token on each use, old revoked, 9 unit tests |
 | ARCH-P1-002 | No rate limiting on auth endpoints | `auth.controller.ts` | - | Same as SEC-P1-004 (deduplicated) |
-| ARCH-P1-003 | JWT secret validation at startup | `jwt.strategy.ts`, `main.ts` | 1h | ✅ **Resolved Sprint 8 (Task 8.7)** - Startup validation for ≥32 char secret |
-| ARCH-P1-004 | Missing ownership check on template update/delete | `badge-templates.controller.ts` | 2h | ✅ **Resolved Sprint 8 (Task 8.7)** - ISSUER can only modify own templates |
+| ARCH-P1-003 | JWT secret validation at startup | `jwt.strategy.ts`, `main.ts` | 1h | ✅ Resolved | **Resolved Sprint 8 (Task 8.7, 2026-02-04)** - Startup validation for ≥32 char secret in all environments, 8 unit tests |
+| ARCH-P1-004 | Missing ownership check on template update/delete | `badge-templates.controller.ts` | 2h | ✅ Resolved | **Resolved Sprint 8 (Task 8.7, 2026-02-04)** - ISSUER can only modify own templates, ADMIN unrestricted, E2E tested |
 
 ### Testing - Historical (1 item) ⚠️ HIGH PRIORITY
 
