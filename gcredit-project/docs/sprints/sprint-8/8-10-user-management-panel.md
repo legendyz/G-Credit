@@ -6,8 +6,9 @@
 **Priority:** HIGH  
 **Story Points:** 6  
 **Estimated Hours:** 11.5h  
-**Status:** Backlog  
-**Created:** 2026-02-02
+**Status:** completed  
+**Actual Hours:** 11.5h  
+**Completed:** 2026-02-04
 
 ---
 

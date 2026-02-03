@@ -2,7 +2,7 @@
 
 **G-Credit Badge Platform REST API**  
 **Version:** 0.8.0 (Sprint 8 - Production Ready MVP)  
-**Last Updated:** 2026-02-03
+**Last Updated:** 2026-02-04
 
 ---
 
@@ -16,8 +16,9 @@
 6. [Skills Management](#skills-management)
 7. [Skill Categories](#skill-categories)
 8. [Analytics API](#analytics-api) ⭐ NEW
-9. [Error Handling](#error-handling)
-10. [Rate Limiting](#rate-limiting)
+9. [Admin User Management](#admin-user-management) ⭐ NEW
+10. [Error Handling](#error-handling)
+11. [Rate Limiting](#rate-limiting)
 
 ---
 
@@ -935,6 +936,283 @@ Returns a public verification page showing:
 
 ---
 
+## Admin User Management
+
+**Story:** 8.10 - Admin User Management Panel  
+**Added:** Sprint 8 (2026-02-04)  
+**Security:** Admin-only endpoints (requires `role: ADMIN`)
+
+Admin users can manage all users in the system: view, search, filter, change roles, and activate/deactivate accounts. All actions are logged in the audit trail.
+
+### List All Users
+
+**Endpoint:** `GET /api/admin/users`  
+**Auth Required:** Yes (Admin only)  
+**Description:** Get paginated list of all users with search, filter, and sort capabilities.
+
+**Query Parameters:**
+- `page` (number, optional): Page number, default: 1
+- `limit` (number, optional): Items per page, default: 25, max: 100
+- `search` (string, optional): Search by name or email
+- `roleFilter` (string, optional): Filter by role (`ADMIN`, `ISSUER`, `MANAGER`, `EMPLOYEE`)
+- `statusFilter` (boolean, optional): Filter by active status
+- `sortBy` (string, optional): Sort field (`name`, `email`, `role`, `lastLogin`), default: `name`
+- `sortOrder` (string, optional): Sort direction (`asc`, `desc`), default: `asc`
+- `cursor` (string, optional): Cursor for pagination (large datasets ≥1000 users)
+
+**Example Request:**
+```bash
+# PowerShell
+curl -X GET "http://localhost:3000/api/admin/users?page=1&limit=25&search=john&roleFilter=EMPLOYEE&sortBy=name&sortOrder=asc" `
+  -H "Authorization: Bearer $token"
+
+# Bash
+curl -X GET "http://localhost:3000/api/admin/users?page=1&limit=25&search=john&roleFilter=EMPLOYEE&sortBy=name&sortOrder=asc" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "users": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "email": "john.doe@example.com",
+      "firstName": "John",
+      "lastName": "Doe",
+      "role": "EMPLOYEE",
+      "department": "Engineering",
+      "isActive": true,
+      "lastLogin": "2026-02-03T15:30:00Z",
+      "roleSetManually": false,
+      "roleUpdatedAt": null,
+      "roleUpdatedBy": null,
+      "roleVersion": 0
+    }
+  ],
+  "pagination": {
+    "total": 150,
+    "page": 1,
+    "limit": 25,
+    "totalPages": 6,
+    "nextCursor": null,
+    "hasMore": true
+  }
+}
+```
+
+**Hybrid Pagination Strategy:**
+- **Small datasets (<1000 users):** Offset-based (page/limit)
+- **Large datasets (≥1000 users):** Cursor-based (cursor/limit)
+- Response includes `nextCursor` and `hasMore` fields for cursor pagination
+
+---
+
+### Get Single User
+
+**Endpoint:** `GET /api/admin/users/:id`  
+**Auth Required:** Yes (Admin only)  
+**Description:** Get detailed information about a specific user.
+
+**Example Request:**
+```bash
+# PowerShell
+curl -X GET "http://localhost:3000/api/admin/users/550e8400-e29b-41d4-a716-446655440000" `
+  -H "Authorization: Bearer $token"
+
+# Bash
+curl -X GET "http://localhost:3000/api/admin/users/550e8400-e29b-41d4-a716-446655440000" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "email": "john.doe@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "role": "EMPLOYEE",
+  "department": "Engineering",
+  "isActive": true,
+  "lastLogin": "2026-02-03T15:30:00Z",
+  "roleSetManually": false,
+  "roleUpdatedAt": null,
+  "roleUpdatedBy": null,
+  "roleVersion": 0,
+  "createdAt": "2026-01-15T10:00:00Z"
+}
+```
+
+---
+
+### Update User Role
+
+**Endpoint:** `PATCH /api/admin/users/:id/role`  
+**Auth Required:** Yes (Admin only)  
+**Description:** Change a user's role. Uses optimistic locking to prevent conflicts with M365 sync. Creates audit log entry.
+
+**Restrictions:**
+- Cannot change your own role (400 Bad Request)
+- Requires `roleVersion` for optimistic locking (409 Conflict if mismatch)
+
+**Request Body:**
+```json
+{
+  "role": "ISSUER",
+  "roleVersion": 0,
+  "auditNote": "Promoted to badge issuer for HR department"
+}
+```
+
+**Example Request:**
+```bash
+# PowerShell
+curl -X PATCH "http://localhost:3000/api/admin/users/550e8400-e29b-41d4-a716-446655440000/role" `
+  -H "Authorization: Bearer $token" `
+  -H "Content-Type: application/json" `
+  -d '{
+    "role": "ISSUER",
+    "roleVersion": 0,
+    "auditNote": "Promoted to badge issuer for HR department"
+  }'
+
+# Bash
+curl -X PATCH "http://localhost:3000/api/admin/users/550e8400-e29b-41d4-a716-446655440000/role" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "role": "ISSUER",
+    "roleVersion": 0,
+    "auditNote": "Promoted to badge issuer for HR department"
+  }'
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "email": "john.doe@example.com",
+  "role": "ISSUER",
+  "roleSetManually": true,
+  "roleUpdatedAt": "2026-02-04T10:30:00Z",
+  "roleUpdatedBy": "admin-user-id",
+  "roleVersion": 1
+}
+```
+
+**Error Responses:**
+- `400 Bad Request`: Cannot change your own role
+- `404 Not Found`: User not found
+- `409 Conflict`: Role version mismatch (another process modified the role)
+
+**Optimistic Locking:**
+```json
+{
+  "statusCode": 409,
+  "message": "User role was modified by another process. Please refresh and try again.",
+  "error": "Conflict"
+}
+```
+
+---
+
+### Update User Status
+
+**Endpoint:** `PATCH /api/admin/users/:id/status`  
+**Auth Required:** Yes (Admin only)  
+**Description:** Activate or deactivate a user account. Deactivated users cannot log in, but their badges remain valid. Creates audit log entry.
+
+**Request Body:**
+```json
+{
+  "isActive": false,
+  "auditNote": "User left organization"
+}
+```
+
+**Example Request (Deactivate):**
+```bash
+# PowerShell
+curl -X PATCH "http://localhost:3000/api/admin/users/550e8400-e29b-41d4-a716-446655440000/status" `
+  -H "Authorization: Bearer $token" `
+  -H "Content-Type: application/json" `
+  -d '{
+    "isActive": false,
+    "auditNote": "User left organization"
+  }'
+
+# Bash
+curl -X PATCH "http://localhost:3000/api/admin/users/550e8400-e29b-41d4-a716-446655440000/status" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "isActive": false,
+    "auditNote": "User left organization"
+  }'
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "email": "john.doe@example.com",
+  "isActive": false
+}
+```
+
+**Example Request (Reactivate):**
+```bash
+# PowerShell
+curl -X PATCH "http://localhost:3000/api/admin/users/550e8400-e29b-41d4-a716-446655440000/status" `
+  -H "Authorization: Bearer $token" `
+  -H "Content-Type: application/json" `
+  -d '{
+    "isActive": true,
+    "auditNote": "User returned to organization"
+  }'
+```
+
+**Effects of Deactivation:**
+- User receives `401 Unauthorized` on login attempts
+- Existing JWT tokens remain valid until expiry
+- User's issued badges remain valid (not revoked)
+- User's claimed badges remain valid
+- User appears with "Inactive" status in admin list
+
+---
+
+### Audit Trail
+
+All role changes and status changes are logged in the `user_role_audit_logs` table:
+
+**Audit Log Fields:**
+- `id`: Unique log entry ID
+- `userId`: Target user ID
+- `performedBy`: Admin user ID who made the change
+- `action`: `ROLE_CHANGED` or `STATUS_CHANGED`
+- `oldValue`: Previous role/status
+- `newValue`: New role/status
+- `note`: Admin's audit note (optional)
+- `createdAt`: Timestamp of the change
+
+**Cascade Delete:** When a user is deleted, all their audit logs are automatically deleted.
+
+---
+
+### Role Priority Logic
+
+When M365 sync runs, roles are determined by this priority:
+
+1. **Manual Admin Assignment (HIGHEST PRIORITY):** If `roleSetManually = true`, preserve the Admin-set role
+2. **`.env` Manual Mapping:** Initial configuration mappings
+3. **M365 Org Structure:** Auto-detect Managers (directReports > 0)
+4. **Default:** Employee role
+
+This ensures that Admin-assigned roles are never overwritten by M365 sync.
+
+---
+
 ## Error Handling
 
 ### Standard Error Response Format
@@ -1418,10 +1696,10 @@ Import this collection into Postman for quick API testing:
 
 ---
 
-**Last Updated:** 2026-02-03  
+**Last Updated:** 2026-02-04  
 **API Version:** 0.8.0 (Sprint 8 - Production Ready MVP)  
 **Author:** G-Credit Development Team  
-**Coverage:** Sprint 0-8 (Authentication, Templates, Issuance, Verification, Sharing, Revocation, Analytics)  
+**Coverage:** Sprint 0-8 (Authentication, Templates, Issuance, Verification, Sharing, Revocation, Analytics, Admin User Management)  
 
 **Detailed API Documentation:**
 - [Badge Issuance API](./api/badge-issuance.md) - Complete badge lifecycle documentation

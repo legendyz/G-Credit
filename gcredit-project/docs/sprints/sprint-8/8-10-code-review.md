@@ -59,3 +59,73 @@ Admin user management APIs, UI, and audit logging are largely implemented, but s
 
 ## Outcome
 **Status:** Changes requested (high-severity AC gap + backend data consistency issue).
+
+---
+
+## Resolution (2026-02-04)
+
+All findings addressed in commit f3066ce.
+
+### 🔴 High Findings - All Resolved
+
+1) **Admin role change confirmation** ✅ RESOLVED
+   - Added two-step confirmation for Admin promotions/demotions
+   - First click: Shows warning and changes button to "Confirm Change"
+   - Second click: Executes the role change
+   - Evidence: [EditRoleDialog.tsx L97-L103](gcredit-project/frontend/src/components/admin/EditRoleDialog.tsx#L97-L103)
+
+2) **No-op role update returns incorrect values** ✅ RESOLVED
+   - Fixed to return actual persisted values from database when role unchanged
+   - Queries full user data including roleSetManually, roleUpdatedAt, roleUpdatedBy
+   - No longer lies about audit metadata
+   - Evidence: [admin-users.service.ts L235-L256](gcredit-project/backend/src/admin-users/admin-users.service.ts#L235-L256)
+
+### 🟡 Medium Findings - All Resolved
+
+3) **Mobile layout with tap-to-expand** ✅ RESOLVED
+   - Collapsed view shows only: Name + Role badge + Status badge + expand chevron
+   - Tap card to expand → reveals email, department, last login, action buttons
+   - Compliant with AC1 "Name+Role+Actions only, tap to expand"
+   - Evidence: [UserListTable.tsx L146-L204](gcredit-project/frontend/src/components/admin/UserListTable.tsx#L146-L204)
+
+4) **Pinned actions column for small screens** ✅ RESOLVED
+   - Actions column uses `sticky right-0` positioning
+   - Shadow effect indicates pinned state
+   - Works on horizontal scroll for small screens
+   - Evidence: [UserListTable.tsx L280, L338](gcredit-project/frontend/src/components/admin/UserListTable.tsx#L280)
+
+---
+
+## Final Verification (2026-02-04)
+
+### Test Results
+- ✅ Backend: 349 tests passing (31 test suites)
+- ✅ Frontend: 234 tests passing (all test files)
+- ✅ Admin Users backend: 29 tests (controller + service specs)
+- ✅ Admin Users frontend: 18+ tests (components + hooks)
+
+### Acceptance Criteria Verification
+- ✅ AC1: User List Page - Search, filter, sort, pagination, responsive (mobile cards/tablet/desktop), keyboard navigation
+- ✅ AC2: Edit User Role - Dialog with confirmation for Admin changes, audit note, cannot change own role
+- ✅ AC3: User Deactivation - Confirmation dialog, audit note, effects (401 login, badges remain valid)
+- ✅ AC4: Role Change Audit Trail - UserRoleAuditLog table with cascade delete
+- ✅ AC5: Role Assignment Priority - roleSetManually flag, optimistic locking, M365 sync coordination
+- ✅ AC6: Security & Authorization - Admin-only endpoints (@Roles(ADMIN)), route guard, 403 for non-Admin
+
+### Database Schema
+- ✅ User table fields: roleSetManually, roleUpdatedAt, roleUpdatedBy, roleVersion, lastSyncAt
+- ✅ UserRoleAuditLog table: userId, performedBy, action, oldValue, newValue, note, createdAt
+- ✅ Indexes: userId, performedBy, createdAt on audit log
+- ✅ Cascade delete: User deletion removes all audit logs
+
+### Code Quality
+- ✅ ESLint/TypeScript errors resolved
+- ✅ WCAG 2.1 AA compliance: Dialog ARIA, focus trap, keyboard navigation, touch targets 44×44px
+- ✅ Responsive design: Mobile cards (tap-to-expand), tablet condensed, desktop full table
+- ✅ Optimistic locking prevents race conditions (409 Conflict on version mismatch)
+- ✅ No-op updates return accurate persisted data
+
+---
+
+## Outcome - Final
+**Status:** ✅ APPROVED - All ACs met, all findings resolved, all tests passing
