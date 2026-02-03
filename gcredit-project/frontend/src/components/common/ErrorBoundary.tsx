@@ -5,7 +5,8 @@
  * Provides retry functionality for error recovery.
  */
 
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { Component } from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
 import { ErrorDisplay } from './ErrorDisplay';
 
 interface ErrorBoundaryProps {

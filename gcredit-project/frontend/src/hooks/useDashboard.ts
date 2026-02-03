@@ -5,7 +5,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import {
+import type {
   EmployeeDashboard,
   IssuerDashboard,
   ManagerDashboard,

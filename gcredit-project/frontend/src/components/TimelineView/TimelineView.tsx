@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useWallet } from '../../hooks/useWallet';
 import { useSkills } from '../../hooks/useSkills';
 import { useBadgeSearch } from '../../hooks/useBadgeSearch';
-import { BadgeStatus } from '../../types/badge';
 import { TimelineLine } from './TimelineLine';
 import { BadgeTimelineCard } from './BadgeTimelineCard';
 import { DateGroupHeader } from './DateGroupHeader';
@@ -75,7 +74,6 @@ export function TimelineView() {
     filterChips,
     clearAllFilters,
     removeFilter,
-    isServerSearch,
     isSearching,
   } = useBadgeSearch({
     allBadges: badgesForFilter,

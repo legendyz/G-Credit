@@ -152,7 +152,7 @@ export function BadgeManagementPage({
       template: {
         id: badge.template.id,
         name: badge.template.name,
-        skillIds: badge.template.skillIds || [],
+        skillIds: [], // TODO: Get from API when available
         category: badge.template.category,
       },
       issuer: {
