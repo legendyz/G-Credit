@@ -22,10 +22,10 @@ metrics:
   total_story_points: 44  # Updated Story 8.10 from 3 SP to 6 SP
   total_estimated_hours: 76h  # Story 8.7 corrected from 7h to 6h
   
-  completed_stories: 3  # Story 8.1, 8.4, 8.5 completed
-  completed_tasks: 5  # Task 8.0, 8.6, 8.7, 8.8, Story 8.3 completed
+  completed_stories: 4  # Story 8.1, 8.4, 8.5, Story 8.3 completed
+  completed_tasks: 4  # Task 8.0, 8.6, 8.7, 8.8 completed
   completed_work_items: 8
-  completed_hours: 48.5h  # 39.5h + 9h (Story 8.1)
+  completed_hours: 48.5h  # 30.5h (tasks) + 18h (stories: 8.1=8h, 8.4=6h, 8.5=4h)
   remaining_hours: 27.5h  # 76h - 48.5h
   
   stories_in_progress: 0
@@ -40,16 +40,16 @@ metrics:
 # Group A: UX & Accessibility (39h, 28 SP)
 group_a_ux_accessibility:
   total_items: 7  # Added Story 8.10
-  completed_items: 2  # Story 8.1, 8.5 completed
+  completed_items: 3  # Story 8.1, 8.3, 8.5 completed
   total_hours: 52.5h  # Updated Story 8.10 from 5h to 11.5h
-  remaining_hours: 39.5h  # 52.5h - 9h (Story 8.1) - 4h (Story 8.5)
+  remaining_hours: 31.5h  # 52.5h - 8h (Story 8.1) - 8.5h (Story 8.3) - 4h (Story 8.5)
   
   stories:
     - id: "8.1"
       title: "Dashboard Homepage"
       story_points: 5
-      estimated_hours: 9h
-      actual_hours: 9h
+      estimated_hours: 8h
+      actual_hours: 8h
       priority: HIGH
       status: done
       assignee: Amelia
@@ -68,16 +68,18 @@ group_a_ux_accessibility:
       file: "8-1-dashboard-homepage.md"
       completion_notes: |
         ✅ COMPLETED - Dashboard Homepage with Key Metrics:
-        - AC1: Employee Dashboard (badge summary, milestones, recent badges)
-        - AC2: Issuer Dashboard (issuance stats, claim rate, activity)
-        - AC3: Manager Dashboard (team insights, top performers, alerts)
+        - AC1: Employee Dashboard (badge summary, quick actions, milestones, recent badges, recent achievements)
+        - AC2: Issuer Dashboard (issuance stats, quick actions, claim rate, activity)
+        - AC3: Manager Dashboard (team insights, quick actions, top performers, alerts)
         - AC4: Admin Dashboard (system overview, health, quick actions)
-        - AC5: Shared Components (LoadingSpinner, EmptyState, ErrorDisplay, ErrorBoundary)
-        - AC6: CelebrationModal with confetti animation
-        - Backend: 4 endpoints, 41 tests (23 unit + 18 E2E)
-        - Frontend: 4 dashboards, 54+ tests (201 total passing)
+        - AC5: All dashboards wrapped in ErrorBoundary component
+        - AC6: Celebration UX (green highlight ring, CheckCircle icon, auto-scroll)
+        - Backend: 4 endpoints, 23 tests (controller + service + E2E)
+        - Frontend: 4 dashboards, 211 tests passing
+        - Manual refresh buttons (desktop + mobile 44×44px)
         - UX-P1-001/002/003 resolved
-        - Commit: 19bfc80
+        - All code review findings addressed (commits 10084ba, 2b7d531)
+        - Commits: 19bfc80 (initial), 8adc2cc, 10084ba, d50505f, 2b7d531
       
     - id: "8.2"
       title: "Badge Search Enhancement"
