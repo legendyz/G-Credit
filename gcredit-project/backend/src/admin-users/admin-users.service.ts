@@ -249,13 +249,18 @@ export class AdminUsersService {
         },
       });
 
+      // Should never be null since we just found currentUser, but TypeScript needs this
+      if (!fullUser) {
+        throw new NotFoundException(`User with ID ${userId} not found`);
+      }
+
       return {
         id: fullUser.id,
         email: fullUser.email,
         role: fullUser.role,
         roleSetManually: fullUser.roleSetManually,
-        roleUpdatedAt: fullUser.roleUpdatedAt,
-        roleUpdatedBy: fullUser.roleUpdatedBy,
+        roleUpdatedAt: fullUser.roleUpdatedAt ?? new Date(),
+        roleUpdatedBy: fullUser.roleUpdatedBy ?? '',
         roleVersion: fullUser.roleVersion,
       };
     }
