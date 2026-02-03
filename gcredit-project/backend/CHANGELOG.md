@@ -7,6 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased] - Sprint 8 In Progress
+
+### Added - Admin User Management (Story 8.10) - 2026-02-03
+
+#### Admin User Management API
+- **GET /api/admin/users** - List users with search, filter, sort, pagination
+  - Query params: search, role, isActive, sortBy, sortOrder, page, limit
+  - Response: Paginated list with user details (excludes sensitive data)
+  - Authorization: Admin role only
+  
+- **GET /api/admin/users/:id** - Get single user details
+  - Includes role audit history
+  - Authorization: Admin role only
+  
+- **PATCH /api/admin/users/:id/role** - Update user role
+  - Request: `{ role: UserRole, note?: string }`
+  - Optimistic locking: Uses roleVersion to prevent conflicts with M365 sync
+  - Audit logging: Creates UserRoleAuditLog entry
+  - Validation: Cannot change own role
+  - Authorization: Admin role only
+  
+- **PATCH /api/admin/users/:id/status** - Activate/deactivate user
+  - Request: `{ isActive: boolean, reason?: string }`
+  - Soft delete: Sets isActive flag, does not delete user data
+  - Authorization: Admin role only
+
+#### Database Changes
+- **New Table: UserRoleAuditLog**
+  - Columns: `id, userId, previousRole, newRole, changedBy, changeReason, createdAt`
+  - Purpose: Track all role changes for compliance and audit
+  - Relations: Cascade delete with User
+  
+- **User Model Updates**
+  - `roleSetManually` (Boolean): Flag to preserve manual role during M365 sync
+  - `roleUpdatedAt` (DateTime?): When role was last changed
+  - `roleUpdatedBy` (String?): Who changed the role
+  - `roleVersion` (Int): Optimistic locking version for M365 sync conflicts
+  - `lastSyncAt` (DateTime?): Last M365 sync timestamp
+  - Migration: `20260203153938_add_user_management`
+
+#### Security
+- **SEC-HIGH-003 Resolved:** Role self-assignment vulnerability fixed
+- **Admin-Only Access:** All endpoints protected by RolesGuard
+- **Self-Edit Prevention:** Admins cannot modify their own role
+
+#### Testing (29 tests, 100% pass rate)
+- **Controller Tests (16):** HTTP status codes, DTO validation, authorization
+- **Service Tests (13):** Business logic, optimistic locking, audit logging
+
+---
+
 ## [0.7.0] - 2026-02-02 (Sprint 7 Complete)
 
 ### Sprint 7 Summary - Badge Revocation & Lifecycle UAT
