@@ -32,6 +32,13 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  // Story 8.10: Admin User Management
+  roleSetManually Boolean   @default(false) // True if Admin manually set role
+  roleUpdatedAt   DateTime? // When role was last updated
+  roleUpdatedBy   String?   // Admin user ID who updated role
+  roleVersion     Int       @default(0) // Optimistic locking for role changes
+  lastSyncAt      DateTime? // Last M365 sync timestamp
+
   passwordResetTokens   PasswordResetToken[]
   refreshTokens         RefreshToken[]
   badgeTemplates        BadgeTemplate[]
@@ -42,10 +49,15 @@ model User {
   milestoneAchievements MilestoneAchievement[] @relation("MilestoneAchievements")
   evidenceUploads       EvidenceFile[]         @relation("EvidenceUploader")
 
+  // Story 8.10: User Audit Log relations
+  auditLogsTarget    UserRoleAuditLog[] @relation("AuditTarget")
+  auditLogsPerformer UserRoleAuditLog[] @relation("AuditPerformer")
+
   @@index([email])
   @@index([role])
   @@index([azureId])
   @@index([isActive])
+  @@index([roleUpdatedAt])
   @@map("users")
 }
 
@@ -342,4 +354,26 @@ model UserAuditLog {
   @@index([timestamp])
   @@index([action])
   @@map("user_audit_logs")
+}
+
+// Sprint 8: User Role Audit Log (Story 8.10)
+// Separate table for Admin-driven role/status changes with proper relations
+
+model UserRoleAuditLog {
+  id          String   @id @default(uuid())
+  userId      String   // Target user
+  performedBy String   // Admin who made the change
+  action      String   @db.VarChar(50) // 'ROLE_CHANGED' | 'STATUS_CHANGED'
+  oldValue    String?  @db.VarChar(50) // Old role or status
+  newValue    String   @db.VarChar(50) // New role or status
+  note        String?  @db.Text // Admin's note
+  createdAt   DateTime @default(now())
+
+  user  User @relation("AuditTarget", fields: [userId], references: [id], onDelete: Cascade)
+  admin User @relation("AuditPerformer", fields: [performedBy], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([performedBy])
+  @@index([createdAt])
+  @@map("user_role_audit_logs")
 }

@@ -20,6 +20,7 @@ import { MicrosoftGraphModule } from './microsoft-graph/microsoft-graph.module';
 import { BadgeSharingModule } from './badge-sharing/badge-sharing.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { AdminUsersModule } from './admin-users/admin-users.module';
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     BadgeSharingModule,
     AnalyticsModule,
     DashboardModule,
+    AdminUsersModule,
   ],
   controllers: [AppController],
   providers: [

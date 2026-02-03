@@ -6,6 +6,7 @@ import { VerifyBadgePage } from '@/pages/VerifyBadgePage';
 import BadgeEmbedPage from '@/pages/BadgeEmbedPage';
 import AdminAnalyticsPage from '@/pages/AdminAnalyticsPage';
 import BadgeManagementPage from '@/pages/admin/BadgeManagementPage';
+import AdminUserManagementPage from '@/pages/AdminUserManagementPage';
 import { DashboardPage } from '@/pages/dashboard';
 import { LoginPage } from '@/pages/LoginPage';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -61,6 +62,16 @@ function App() {
               <ProtectedRoute requiredRoles={['ADMIN', 'ISSUER']}>
                 <Layout pageTitle="Badge Management">
                   <BadgeManagementPage />
+                </Layout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/users" 
+            element={
+              <ProtectedRoute requiredRoles={['ADMIN']}>
+                <Layout pageTitle="User Management">
+                  <AdminUserManagementPage />
                 </Layout>
               </ProtectedRoute>
             } 
