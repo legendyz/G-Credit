@@ -168,74 +168,36 @@ const BadgeDetailModal: React.FC = () => {
 
   return (
     <>
+      {/* Story 8.5: Responsive modal - full screen on mobile, centered on desktop */}
       <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          zIndex: 9999,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '1rem'
-        }}
+        className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-0 md:p-4"
         onClick={handleBackdropClick}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
       >
-        {/* AC 4.12: Desktop 800px width, centered */}
-        {/* AC 4.13: Mobile full-screen */}
+        {/* AC1: Full screen on mobile (<768px), AC2-3: Centered max-width on tablet/desktop */}
         <div 
-          style={{
-            backgroundColor: 'white',
-            borderRadius: '0.5rem',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            width: '100%',
-            maxWidth: '48rem',
-            maxHeight: '90vh',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column'
-          }}
+          className="bg-white md:rounded-lg shadow-2xl 
+                     w-full h-full md:h-auto md:max-h-[90vh] md:max-w-3xl
+                     overflow-hidden flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* AC 4.1: Header with close button */}
-          <header style={{
-            padding: '1rem 1.5rem',
-            borderBottom: '1px solid #e5e7eb',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            position: 'sticky',
-            top: 0,
-            backgroundColor: 'white',
-            zIndex: 10
-          }}>
-            <h1 id="modal-title" style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#111827' }}>
+          {/* AC 4.1: Header with close button - Story 8.5: Touch-friendly close button */}
+          <header className="px-4 py-3 md:px-6 md:py-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
+            <h1 id="modal-title" className="text-lg md:text-xl font-bold text-gray-900">
               Badge Details
             </h1>
             <button
               onClick={closeModal}
-              style={{
-                padding: '0.5rem',
-                color: '#6b7280',
-                backgroundColor: 'transparent',
-                border: 'none',
-                borderRadius: '9999px',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = '#374151'; e.currentTarget.style.backgroundColor = '#f3f4f6'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = '#6b7280'; e.currentTarget.style.backgroundColor = 'transparent'; }}
+              className="flex items-center justify-center w-11 h-11 -mr-2
+                         text-gray-500 hover:text-gray-700 hover:bg-gray-100 
+                         active:bg-gray-200 rounded-full transition-all"
               aria-label="Close modal"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                style={{ width: '1.5rem', height: '1.5rem' }}
+                className="w-6 h-6"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -251,23 +213,17 @@ const BadgeDetailModal: React.FC = () => {
           </header>
 
           {/* AC 4.16: Scrollable content */}
-          <div style={{ flex: 1, overflowY: 'auto' }}>
+          <div className="flex-1 overflow-y-auto">
             {loading && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '5rem 0' }}>
-                <div style={{
-                  animation: 'spin 1s linear infinite',
-                  borderRadius: '9999px',
-                  width: '3rem',
-                  height: '3rem',
-                  borderBottom: '2px solid #2563eb'
-                }}></div>
+              <div className="flex items-center justify-center py-20">
+                <div className="animate-spin rounded-full w-12 h-12 border-b-2 border-blue-600"></div>
               </div>
             )}
 
             {error && (
-              <div style={{ padding: '1.5rem' }}>
-                <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '0.5rem', padding: '1rem' }}>
-                  <p style={{ color: '#b91c1c' }}>Error: {error}</p>
+              <div className="p-4 md:p-6">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-red-700">Error: {error}</p>
                 </div>
               </div>
             )}

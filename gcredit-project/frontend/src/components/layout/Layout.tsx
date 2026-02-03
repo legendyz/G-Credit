@@ -1,8 +1,9 @@
 /**
- * Layout Component (Story 8.3 - AC2, AC5)
+ * Layout Component (Story 8.3 - AC2, AC5, Story 8.5 - AC1)
  * WCAG 1.3.1 - Info and Relationships (Landmarks)
  * WCAG 2.4.1 - Bypass Blocks (Skip Links)
- * 
+ * Story 8.5: Responsive Design - Mobile/Desktop navigation
+ *
  * Provides semantic HTML structure with proper landmarks
  * and skip navigation for accessibility.
  */
@@ -10,6 +11,7 @@
 import type { ReactNode } from 'react';
 import { SkipLink } from '@/components/ui/SkipLink';
 import { Navbar } from '@/components/Navbar';
+import { MobileNav } from '@/components/layout/MobileNav';
 
 interface LayoutProps {
   /** Page content */
@@ -33,19 +35,24 @@ export function Layout({
       {/* Skip Link - First focusable element (AC5) */}
       <SkipLink targetId="main-content" />
 
-      {/* Header with Banner role */}
+      {/* Header with Banner role - Story 8.5: Responsive Navigation */}
       {showNavbar && (
         <header role="banner">
-          <Navbar />
+          {/* Mobile Navigation (< 768px) - AC1 */}
+          <MobileNav className="md:hidden" />
+          {/* Desktop Navigation (≥ 768px) - AC3 */}
+          <div className="hidden md:block">
+            <Navbar />
+          </div>
         </header>
       )}
 
-      {/* Main Content Area */}
+      {/* Main Content Area - Story 8.5: Responsive padding */}
       <main
         id="main-content"
         role="main"
         tabIndex={-1}
-        className={`p-6 ${className}`}
+        className={`px-4 py-4 md:px-6 md:py-6 ${className}`}
         aria-label={pageTitle || 'Main content'}
       >
         <div className="max-w-7xl mx-auto">

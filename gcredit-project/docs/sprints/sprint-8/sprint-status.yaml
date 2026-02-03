@@ -22,11 +22,11 @@ metrics:
   total_story_points: 44  # Updated Story 8.10 from 3 SP to 6 SP
   total_estimated_hours: 76h  # Story 8.7 corrected from 7h to 6h
   
-  completed_stories: 1  # Story 8.4 Analytics API
+  completed_stories: 2  # Story 8.4 Analytics API, Story 8.5 Responsive Design
   completed_tasks: 5  # Task 8.0, 8.6, 8.7, 8.8, Story 8.3 completed
-  completed_work_items: 6
-  completed_hours: 35.5h  # 30.5h + 5h (Story 8.4)
-  remaining_hours: 40.5h  # 76h - 35.5h
+  completed_work_items: 7
+  completed_hours: 39.5h  # 35.5h + 4h (Story 8.5)
+  remaining_hours: 36.5h  # 76h - 39.5h
   
   stories_in_progress: 0
   tasks_in_progress: 0
@@ -138,18 +138,29 @@ group_a_ux_accessibility:
       title: "Responsive Design"
       story_points: 3
       estimated_hours: 5h
+      actual_hours: 4h
       priority: HIGH
-      status: backlog
-      assignee: null
+      status: done
+      assignee: Amelia
       blocked: false
       blocker_reason: null
-      started_date: null
-      completed_date: null
-      acceptance_criteria_met: 0/6
+      started_date: "2026-02-03"
+      completed_date: "2026-02-03"
+      acceptance_criteria_met: 6/6
       technical_debt_resolved: []
       dependencies:
         - "Applies to 8.1, 8.2, 8.3"
       file: "8-5-responsive-design.md"
+      notes_completion: |
+        ✅ COMPLETED - Mobile-First Responsive Design:
+        - AC1: Mobile layout (hamburger + drawer, full-width modals)
+        - AC2: Tablet layout (2-col grid, 80% modal width)
+        - AC3: Desktop layout (3-4 col grid, centered modals)
+        - AC4: Touch targets ≥44×44px (h-11, py-3 px-4)
+        - AC5: Lazy loading images with skeleton placeholders
+        - AC6: Responsive typography (text-xl md:text-2xl lg:text-3xl)
+        - 58 new tests: useMediaQuery(12) + MobileNav(19) + Layout(11) + BadgeImage(16)
+        - Total frontend tests: 146 passing
       
     - id: "8.9"
       title: "M365 Production Hardening"

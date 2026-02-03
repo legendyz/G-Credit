@@ -95,23 +95,23 @@ export function TimelineView() {
   }
 
   return (
-    <div className="flex gap-6">
-      {/* Date Navigation Sidebar - AC 1.6 */}
+    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+      {/* Date Navigation Sidebar - AC 1.6 (hidden on mobile, visible on desktop) */}
       <DateNavigationSidebar 
         dateGroups={data.dateGroups}
-        className="w-60 flex-shrink-0"
+        className="hidden lg:block w-60 flex-shrink-0"
       />
 
       {/* Main Content */}
-      <div className="flex-1">
-        {/* Header with View Toggle - AC 1.5 */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">My Badge Wallet</h1>
+      <div className="flex-1 min-w-0">
+        {/* Header with View Toggle - AC 1.5, Story 8.5: Responsive typography */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4 md:mb-6">
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">My Badge Wallet</h1>
           <ViewToggle mode={viewMode} onChange={setViewMode} />
         </div>
 
-        {/* Filter - Story 9.3 AC4 */}
-        <div className="mb-6">
+        {/* Filter - Story 9.3 AC4, Story 8.5: Touch-friendly height (44px) */}
+        <div className="mb-4 md:mb-6">
           <label htmlFor="badge-status-filter" className="sr-only">
             Filter badges by status
           </label>
@@ -119,7 +119,8 @@ export function TimelineView() {
             id="badge-status-filter"
             value={statusFilter || 'ALL'}
             onChange={(e) => setStatusFilter(e.target.value === 'ALL' ? undefined : e.target.value as BadgeStatus)}
-            className="px-4 py-2 border border-gray-300 rounded-lg"
+            className="w-full sm:w-auto h-11 px-4 py-2 border border-gray-300 rounded-lg text-base
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             aria-label="Filter badges by status"
           >
             <option value="ALL">All Badges</option>
@@ -189,19 +190,22 @@ interface GridViewProps {
 /**
  * Hook to detect responsive column count
  * Returns current number of grid columns based on screen width
+ * Story 8.5: AC1 (1 col), AC2 (2 col), AC3 (3-4 col)
  */
 function useResponsiveColumns(): number {
   const [columns, setColumns] = useState(3);
 
   useEffect(() => {
     const updateColumns = () => {
-      // Match Tailwind breakpoints: sm=640, md=768, lg=1024
-      if (window.innerWidth >= 1024) {
+      // Match Tailwind breakpoints: md=768, lg=1024, xl=1280
+      if (window.innerWidth >= 1280) {
+        setColumns(4); // xl:grid-cols-4
+      } else if (window.innerWidth >= 1024) {
         setColumns(3); // lg:grid-cols-3
       } else if (window.innerWidth >= 768) {
         setColumns(2); // md:grid-cols-2
       } else {
-        setColumns(1); // grid-cols-1
+        setColumns(1); // grid-cols-1 (mobile)
       }
     };
 
@@ -232,7 +236,7 @@ function GridView({ badges }: GridViewProps) {
       role="grid"
       aria-label="Badge collection grid"
       onKeyDown={handleKeyDown}
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4"
     >
       {badges.map((badge, index) => {
         const itemProps = getItemProps(index);
@@ -250,9 +254,11 @@ function GridView({ badges }: GridViewProps) {
               }
             }}
             className={`
-              border rounded-lg p-4 cursor-pointer
+              border rounded-lg p-3 md:p-4 cursor-pointer
               transition-all duration-150
+              min-h-[44px]
               hover:border-blue-400 hover:shadow-md
+              active:bg-gray-50
               focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
               ${focusedIndex === index ? 'border-blue-400 shadow-md' : 'border-gray-200'}
             `}
@@ -260,10 +266,11 @@ function GridView({ badges }: GridViewProps) {
             <img
               src={badge.template.imageUrl || '/placeholder-badge.png'}
               alt={`Badge: ${badge.template.name}`}
-              className="w-32 h-32 mx-auto mb-3 object-contain"
+              loading="lazy"
+              className="w-24 h-24 md:w-32 md:h-32 mx-auto mb-2 md:mb-3 object-contain"
             />
-            <h3 className="font-semibold text-center">{badge.template.name}</h3>
-            <p className="text-sm text-gray-500 text-center">{badge.template.category}</p>
+            <h3 className="font-semibold text-center text-sm md:text-base">{badge.template.name}</h3>
+            <p className="text-xs md:text-sm text-gray-500 text-center">{badge.template.category}</p>
           </div>
         );
       })}
