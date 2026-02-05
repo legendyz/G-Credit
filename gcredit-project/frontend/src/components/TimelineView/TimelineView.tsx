@@ -33,7 +33,8 @@ export function TimelineView() {
       template: {
         id: badge.template.id,
         name: badge.template.name,
-        skillIds: [], // TODO: Get from API when available
+        // Story 8.2: Use actual skillIds from API
+        skillIds: badge.template.skillIds || [],
         category: badge.template.category,
       },
       issuer: {

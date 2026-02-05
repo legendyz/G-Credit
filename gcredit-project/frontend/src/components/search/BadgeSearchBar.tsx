@@ -6,6 +6,7 @@
  * - Skills multi-select filter
  * - Date range picker
  * - Status filter
+ * - Issuer filter (Admin only - AC2)
  * - Active filter chips
  *
  * Used in Employee Wallet (AC1) and Badge Management (AC2)
@@ -18,6 +19,11 @@ import { SkillsFilter } from './SkillsFilter';
 import type { FilterChip } from './FilterChips';
 import type { DateRange } from './DateRangePicker';
 import type { Skill } from './SkillsFilter';
+
+export interface Issuer {
+  id: string;
+  name: string;
+}
 
 export interface BadgeSearchBarProps {
   /** Search term value */
@@ -44,6 +50,12 @@ export interface BadgeSearchBarProps {
   statusOptions?: Array<{ value: string; label: string }>;
   /** Status change handler */
   onStatusChange: (status: string) => void;
+  /** Story 8.2 AC2: Available issuers for filter (Admin only) */
+  issuers?: Issuer[];
+  /** Selected issuer ID */
+  selectedIssuer?: string;
+  /** Issuer change handler */
+  onIssuerChange?: (issuerId: string | undefined) => void;
   /** Active filter chips */
   filterChips: FilterChip[];
   /** Remove filter handler */
@@ -78,6 +90,9 @@ export function BadgeSearchBar({
   statusFilter,
   statusOptions = defaultStatusOptions,
   onStatusChange,
+  issuers = [],
+  selectedIssuer,
+  onIssuerChange,
   filterChips,
   onRemoveFilter,
   onClearAllFilters,
@@ -153,6 +168,27 @@ export function BadgeSearchBar({
               ))}
             </select>
           </div>
+
+          {/* Story 8.2 AC2: Issuer Filter (Admin only) */}
+          {issuers.length > 0 && onIssuerChange && (
+            <div className="w-full sm:w-40">
+              <select
+                value={selectedIssuer || ''}
+                onChange={(e) => onIssuerChange(e.target.value || undefined)}
+                className="w-full h-11 px-3 py-2 border border-gray-300 rounded-lg text-sm
+                           bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                           cursor-pointer"
+                aria-label="Filter by issuer"
+              >
+                <option value="">All Issuers</option>
+                {issuers.map((issuer) => (
+                  <option key={issuer.id} value={issuer.id}>
+                    {issuer.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       </div>
 

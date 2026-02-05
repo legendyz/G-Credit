@@ -9,6 +9,8 @@ import {
   IsString,
   MaxLength,
   IsBoolean,
+  IsArray,
+  IsDateString,
 } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
@@ -69,6 +71,43 @@ export class QueryBadgeDto {
   @IsString()
   @MaxLength(200)
   search?: string;
+
+  // Story 8.2: Enhanced search filters
+  @ApiPropertyOptional({
+    description: 'Filter by skill IDs (comma-separated or array)',
+    type: [String],
+  })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      return value.split(',').map((s) => s.trim()).filter(Boolean);
+    }
+    return value;
+  })
+  @IsArray()
+  @IsUUID('4', { each: true })
+  skills?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Filter badges issued on or after this date (ISO 8601)',
+  })
+  @IsOptional()
+  @IsDateString()
+  fromDate?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter badges issued on or before this date (ISO 8601)',
+  })
+  @IsOptional()
+  @IsDateString()
+  toDate?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter by issuer ID (Admin only)',
+  })
+  @IsOptional()
+  @IsUUID()
+  issuerId?: string;
 
   @ApiPropertyOptional({ enum: ['issuedAt', 'claimedAt'], default: 'issuedAt' })
   @IsOptional()

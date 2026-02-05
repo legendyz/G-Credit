@@ -413,6 +413,7 @@ export class BadgeIssuanceService {
 
   /**
    * Get badges received by a user
+   * Story 8.2: Enhanced search/filter support
    */
   async getMyBadges(userId: string, query: QueryBadgeDto) {
     // Build where clause
@@ -427,6 +428,40 @@ export class BadgeIssuanceService {
 
     if (query.templateId) {
       where.templateId = query.templateId;
+    }
+
+    // Story 8.2: Add search filter (template name or issuer name)
+    if (query.search) {
+      const searchTerm = query.search.trim();
+      where.OR = [
+        { template: { name: { contains: searchTerm, mode: 'insensitive' } } },
+        { issuer: { firstName: { contains: searchTerm, mode: 'insensitive' } } },
+        { issuer: { lastName: { contains: searchTerm, mode: 'insensitive' } } },
+        { issuer: { email: { contains: searchTerm, mode: 'insensitive' } } },
+      ];
+    }
+
+    // Story 8.2: Filter by skills (template.skillIds contains any of the requested skills)
+    if (query.skills && query.skills.length > 0) {
+      where.template = {
+        ...where.template,
+        skillIds: {
+          hasSome: query.skills,
+        },
+      };
+    }
+
+    // Story 8.2: Filter by date range
+    if (query.fromDate) {
+      where.issuedAt = { ...where.issuedAt, gte: new Date(query.fromDate) };
+    }
+    if (query.toDate) {
+      where.issuedAt = { ...where.issuedAt, lte: new Date(query.toDate) };
+    }
+
+    // Story 8.2: Filter by issuer
+    if (query.issuerId) {
+      where.issuerId = query.issuerId;
     }
 
     // Get total count
@@ -455,6 +490,8 @@ export class BadgeIssuanceService {
             description: true,
             imageUrl: true,
             category: true,
+            // Story 8.2: skillIds is a direct field on template
+            skillIds: true,
           },
         },
         issuer: {
@@ -477,6 +514,7 @@ export class BadgeIssuanceService {
         claimedAt: badge.claimedAt,
         expiresAt: badge.expiresAt,
         evidenceUrl: badge.evidenceUrl,
+        // Story 8.2: Template includes skillIds directly
         template: badge.template,
         issuer: {
           id: badge.issuer.id,
@@ -499,6 +537,7 @@ export class BadgeIssuanceService {
   /**
    * Get badges issued by user (ISSUER sees own, ADMIN sees all)
    * Story 9.5 AC5: Supports search and filter
+   * Story 8.2: Enhanced with skills, dates, issuer filters
    */
   async getIssuedBadges(
     userId: string,
@@ -512,7 +551,10 @@ export class BadgeIssuanceService {
     if (userRole === UserRole.ISSUER) {
       where.issuerId = userId;
     }
-    // ADMIN can see all badges (no filter)
+    // ADMIN can see all badges (no filter) - but Story 8.2 allows issuer filter
+    else if (query.issuerId) {
+      where.issuerId = query.issuerId;
+    }
 
     // Add optional filters
     if (query.status) {
@@ -520,6 +562,24 @@ export class BadgeIssuanceService {
     } else if (query.activeOnly) {
       // Story 9.5 AC5: Filter for active badges (PENDING or CLAIMED)
       where.status = { in: [BadgeStatus.PENDING, BadgeStatus.CLAIMED] };
+    }
+
+    // Story 8.2: Filter by skills (template.skillIds contains any of the requested skills)
+    if (query.skills && query.skills.length > 0) {
+      where.template = {
+        ...where.template,
+        skillIds: {
+          hasSome: query.skills,
+        },
+      };
+    }
+
+    // Story 8.2: Filter by date range
+    if (query.fromDate) {
+      where.issuedAt = { ...where.issuedAt, gte: new Date(query.fromDate) };
+    }
+    if (query.toDate) {
+      where.issuedAt = { ...where.issuedAt, lte: new Date(query.toDate) };
     }
 
     if (query.templateId) {
@@ -571,6 +631,8 @@ export class BadgeIssuanceService {
             description: true,
             imageUrl: true,
             category: true,
+            // Story 8.2: skillIds is a direct field
+            skillIds: true,
           },
         },
         recipient: {
@@ -616,6 +678,7 @@ export class BadgeIssuanceService {
         revocationNotes: badge.revocationNotes,
         revokedBy: badge.revokedBy,
         evidenceUrl: badge.evidenceUrl,
+        // Story 8.2: Template includes skillIds directly
         template: badge.template,
         recipient: {
           id: badge.recipient.id,

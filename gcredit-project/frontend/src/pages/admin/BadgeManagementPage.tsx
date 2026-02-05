@@ -152,14 +152,15 @@ export function BadgeManagementPage({
       template: {
         id: badge.template.id,
         name: badge.template.name,
-        skillIds: [], // TODO: Get from API when available
+        // Story 8.2: Use actual skillIds from API
+        skillIds: badge.template.skillIds || [],
         category: badge.template.category,
       },
       issuer: {
         id: badge.issuerId,
-        firstName: null, // TODO: Get from API when available
-        lastName: null,
-        email: '', // TODO: Get from API when available
+        firstName: badge.issuer?.firstName || null,
+        lastName: badge.issuer?.lastName || null,
+        email: badge.issuer?.email || '',
       },
       recipient: {
         id: badge.recipient.id,
@@ -183,6 +184,8 @@ export function BadgeManagementPage({
     setDateRange,
     statusFilter,
     setStatusFilter,
+    issuerFilter,
+    setIssuerFilter,
     filteredBadges,
     hasFilters,
     filterChips,
@@ -194,6 +197,21 @@ export function BadgeManagementPage({
     totalCount: data?.total,
     skillNames,
   });
+  
+  // Story 8.2 AC2: Derive unique issuers from badge data for filter dropdown
+  const issuers = useMemo(() => {
+    if (!data?.badges) return [];
+    const issuerMap = new Map<string, string>();
+    data.badges.forEach((badge) => {
+      if (badge.issuer && !issuerMap.has(badge.issuer.id)) {
+        const name = badge.issuer.firstName && badge.issuer.lastName
+          ? `${badge.issuer.firstName} ${badge.issuer.lastName}`
+          : badge.issuer.email || 'Unknown';
+        issuerMap.set(badge.issuer.id, name);
+      }
+    });
+    return Array.from(issuerMap.entries()).map(([id, name]) => ({ id, name }));
+  }, [data?.badges]);
   
   // Map filtered badges back to original badge objects for display
   const displayBadges = useMemo(() => {
@@ -278,6 +296,9 @@ export function BadgeManagementPage({
             onDateRangeChange={setDateRange}
             statusFilter={statusFilter}
             onStatusChange={setStatusFilter}
+            issuers={userRole === 'ADMIN' ? issuers : []}
+            selectedIssuer={issuerFilter}
+            onIssuerChange={setIssuerFilter}
             filterChips={filterChips}
             onRemoveFilter={removeFilter}
             onClearAllFilters={clearAllFilters}

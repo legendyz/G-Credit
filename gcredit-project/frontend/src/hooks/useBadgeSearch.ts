@@ -12,7 +12,7 @@
  * - ≥50 badges: server-side search (API call)
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useDebounce } from './useDebounce';
 import {
   filterBadges,
@@ -91,7 +91,7 @@ export function useBadgeSearch({
   totalCount,
   serverSearchThreshold = 50,
   debounceDelay = 500,
-  onServerSearch: _onServerSearch, // Reserved for future server-side search
+  onServerSearch,
   skillNames = {},
   issuerNames = {},
 }: UseBadgeSearchOptions): UseBadgeSearchReturn {
@@ -101,7 +101,10 @@ export function useBadgeSearch({
   const [dateRange, setDateRange] = useState<DateRange>({ from: null, to: null });
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [issuerFilter, setIssuerFilter] = useState<string | undefined>(undefined);
-  const [isSearching, _setIsSearching] = useState(false); // Reserved for loading state
+  const [isSearching, setIsSearching] = useState(false);
+  
+  // Track if initial mount to skip first server search trigger
+  const isInitialMount = useRef(true);
 
   // Debounce search term
   const debouncedSearchTerm = useDebounce(searchTerm, debounceDelay);
@@ -122,6 +125,22 @@ export function useBadgeSearch({
     }),
     [debouncedSearchTerm, selectedSkills, dateRange, statusFilter, issuerFilter]
   );
+
+  // Story 8.2 AC5: Trigger server search when filters change (for large datasets)
+  useEffect(() => {
+    // Skip initial mount - we don't want to trigger search on first render
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    
+    // Only trigger server search if we're in server search mode and have a callback
+    if (isServerSearch && onServerSearch && hasActiveFilters(activeFilters)) {
+      setIsSearching(true);
+      onServerSearch(activeFilters)
+        .finally(() => setIsSearching(false));
+    }
+  }, [activeFilters, isServerSearch, onServerSearch]);
 
   // Client-side filtered badges
   const filteredBadges = useMemo(() => {
