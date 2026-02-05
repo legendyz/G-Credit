@@ -97,12 +97,14 @@ describe('M365 Sync API (e2e) - Story 8.9', () => {
 
       // Either success (201) or service unavailable (500)
       expect([201, 500]).toContain(response.status);
-      
+
       if (response.status === 201) {
         // Verify success response structure
         expect(response.body).toHaveProperty('syncId');
         expect(response.body).toHaveProperty('status');
-        expect(['SUCCESS', 'PARTIAL_SUCCESS', 'FAILED']).toContain(response.body.status);
+        expect(['SUCCESS', 'PARTIAL_SUCCESS', 'FAILED']).toContain(
+          response.body.status,
+        );
       } else {
         // Verify error response structure
         expect(response.body).toHaveProperty('message');

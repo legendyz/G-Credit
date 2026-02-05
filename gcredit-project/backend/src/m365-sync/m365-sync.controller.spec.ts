@@ -11,7 +11,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { M365SyncController } from './m365-sync.controller';
 import { M365SyncService } from './m365-sync.service';
-import { TriggerSyncDto, SyncResultDto, SyncLogDto, IntegrationStatusDto } from './dto';
+import {
+  TriggerSyncDto,
+  SyncResultDto,
+  SyncLogDto,
+  IntegrationStatusDto,
+} from './dto';
 
 describe('M365SyncController', () => {
   let controller: M365SyncController;
@@ -98,7 +103,10 @@ describe('M365SyncController', () => {
       const result = await controller.triggerSync(dto, mockRequest);
 
       expect(result).toEqual(mockSyncResult);
-      expect(service.runSync).toHaveBeenCalledWith(undefined, 'admin@example.com');
+      expect(service.runSync).toHaveBeenCalledWith(
+        undefined,
+        'admin@example.com',
+      );
     });
 
     it('should trigger FULL sync when specified', async () => {
@@ -117,14 +125,19 @@ describe('M365SyncController', () => {
 
       await controller.triggerSync(dto, mockRequest);
 
-      expect(service.runSync).toHaveBeenCalledWith('INCREMENTAL', 'admin@example.com');
+      expect(service.runSync).toHaveBeenCalledWith(
+        'INCREMENTAL',
+        'admin@example.com',
+      );
     });
 
     it('should propagate service errors', async () => {
       const dto: TriggerSyncDto = {};
       service.runSync.mockRejectedValue(new Error('Graph API not configured'));
 
-      await expect(controller.triggerSync(dto, mockRequest)).rejects.toThrow('Graph API not configured');
+      await expect(controller.triggerSync(dto, mockRequest)).rejects.toThrow(
+        'Graph API not configured',
+      );
     });
 
     it('should use user ID when email is not available', async () => {
@@ -180,7 +193,9 @@ describe('M365SyncController', () => {
       (error as any).status = 404;
       service.getSyncLogById.mockRejectedValue(error);
 
-      await expect(controller.getSyncLogById('nonexistent')).rejects.toThrow('Not Found');
+      await expect(controller.getSyncLogById('nonexistent')).rejects.toThrow(
+        'Not Found',
+      );
     });
   });
 

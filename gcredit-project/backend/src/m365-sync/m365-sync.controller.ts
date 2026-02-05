@@ -87,7 +87,9 @@ export class M365SyncController {
     @Req() req: { user: { email?: string; id?: string } },
   ): Promise<SyncResultDto> {
     const syncedBy = req.user?.email || req.user?.id || 'UNKNOWN';
-    this.logger.log(`Triggering ${dto.syncType || 'FULL'} M365 sync by ${syncedBy}`);
+    this.logger.log(
+      `Triggering ${dto.syncType || 'FULL'} M365 sync by ${syncedBy}`,
+    );
     return this.m365SyncService.runSync(dto.syncType, syncedBy);
   }
 

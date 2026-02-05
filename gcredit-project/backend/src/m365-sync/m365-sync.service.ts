@@ -91,7 +91,9 @@ export class M365SyncService {
   ): Promise<T> {
     const authProvider = this.graphTokenProvider.getAuthProvider();
     if (!authProvider) {
-      throw new Error('Graph API not configured - Azure AD credentials missing');
+      throw new Error(
+        'Graph API not configured - Azure AD credentials missing',
+      );
     }
 
     const client = Client.initWithMiddleware({ authProvider });
@@ -100,9 +102,7 @@ export class M365SyncService {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         // Graph SDK uses relative paths (without https://graph.microsoft.com/v1.0)
-        const relativePath = url.startsWith('/')
-          ? url
-          : `/${url}`;
+        const relativePath = url.startsWith('/') ? url : `/${url}`;
         return await client.api(relativePath).get();
       } catch (error) {
         lastError = error as Error;
@@ -141,7 +141,14 @@ export class M365SyncService {
   isRetryableError(error: unknown): boolean {
     // Check for network errors (AC2 fix)
     const errorCode = (error as { code?: string })?.code;
-    const networkErrors = ['ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND', 'ECONNREFUSED', 'EAI_AGAIN', 'EPIPE'];
+    const networkErrors = [
+      'ECONNRESET',
+      'ETIMEDOUT',
+      'ENOTFOUND',
+      'ECONNREFUSED',
+      'EAI_AGAIN',
+      'EPIPE',
+    ];
     if (errorCode && networkErrors.includes(errorCode)) {
       return true;
     }
@@ -265,9 +272,11 @@ export class M365SyncService {
    * @param azureUser User data from Azure AD
    * @returns Object with success status, action taken, and any error
    */
-  async syncSingleUser(
-    azureUser: GraphUser,
-  ): Promise<{ success: boolean; action: 'created' | 'updated' | 'skipped'; error?: string }> {
+  async syncSingleUser(azureUser: GraphUser): Promise<{
+    success: boolean;
+    action: 'created' | 'updated' | 'skipped';
+    error?: string;
+  }> {
     try {
       // Skip disabled accounts
       if (!azureUser.accountEnabled) {
@@ -344,7 +353,10 @@ export class M365SyncService {
    * @param syncedBy Who triggered the sync (user email or 'SYSTEM' for scheduled)
    * @returns SyncResultDto with complete sync results
    */
-  async runSync(syncType: SyncType = 'FULL', syncedBy?: string): Promise<SyncResultDto> {
+  async runSync(
+    syncType: SyncType = 'FULL',
+    syncedBy?: string,
+  ): Promise<SyncResultDto> {
     const startTime = Date.now();
     const startedAt = new Date();
     const errors: string[] = [];
@@ -421,8 +433,8 @@ export class M365SyncService {
           durationMs,
           errorMessage:
             errors.length > 0 ? errors.slice(0, 10).join('; ') : null, // Limit error message length
-          metadata: { 
-            retryAttempts: 0, 
+          metadata: {
+            retryAttempts: 0,
             pagesProcessed: Math.ceil(totalUsers / 999),
             deactivatedCount,
           },
@@ -436,7 +448,7 @@ export class M365SyncService {
       // Status enum now aligned - PARTIAL_SUCCESS used in both DB and DTO
       return {
         syncId: syncLog.id,
-        status: status === 'FAILURE' ? 'FAILED' : status as 'SUCCESS' | 'PARTIAL_SUCCESS',
+        status: status === 'FAILURE' ? 'FAILED' : status,
         totalUsers,
         syncedUsers: syncedCount,
         createdUsers: createdCount,

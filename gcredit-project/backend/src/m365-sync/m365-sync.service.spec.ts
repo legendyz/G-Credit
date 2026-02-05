@@ -151,7 +151,9 @@ describe('M365SyncService', () => {
 
       const mockGet = jest.fn().mockResolvedValue(mockResponse);
       const mockApi = jest.fn().mockReturnValue({ get: mockGet });
-      (Client.initWithMiddleware as jest.Mock).mockReturnValue({ api: mockApi });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
       graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
 
       const result = await service.getAllAzureUsers();
@@ -163,18 +165,22 @@ describe('M365SyncService', () => {
     it('should handle pagination with multiple pages', async () => {
       const page1Response = {
         value: [mockAzureUser],
-        '@odata.nextLink': 'https://graph.microsoft.com/v1.0/users?$skiptoken=abc',
+        '@odata.nextLink':
+          'https://graph.microsoft.com/v1.0/users?$skiptoken=abc',
       };
       const page2Response = {
         value: [mockAzureUser2],
         '@odata.nextLink': undefined,
       };
 
-      const mockGet = jest.fn()
+      const mockGet = jest
+        .fn()
         .mockResolvedValueOnce(page1Response)
         .mockResolvedValueOnce(page2Response);
       const mockApi = jest.fn().mockReturnValue({ get: mockGet });
-      (Client.initWithMiddleware as jest.Mock).mockReturnValue({ api: mockApi });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
       graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
 
       const result = await service.getAllAzureUsers();
@@ -191,7 +197,9 @@ describe('M365SyncService', () => {
 
       const mockGet = jest.fn().mockResolvedValue(mockResponse);
       const mockApi = jest.fn().mockReturnValue({ get: mockGet });
-      (Client.initWithMiddleware as jest.Mock).mockReturnValue({ api: mockApi });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
       graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
 
       const result = await service.getAllAzureUsers();
@@ -217,7 +225,9 @@ describe('M365SyncService', () => {
       const mockResponse = { value: [mockAzureUser] };
       const mockGet = jest.fn().mockResolvedValue(mockResponse);
       const mockApi = jest.fn().mockReturnValue({ get: mockGet });
-      (Client.initWithMiddleware as jest.Mock).mockReturnValue({ api: mockApi });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
       graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
 
       const result = await service.fetchWithRetry('/users');
@@ -229,11 +239,14 @@ describe('M365SyncService', () => {
     it('should retry on 429 (rate limit) error and succeed', async () => {
       const mockResponse = { value: [mockAzureUser] };
       const error429 = { statusCode: 429, message: 'Too Many Requests' };
-      const mockGet = jest.fn()
+      const mockGet = jest
+        .fn()
         .mockRejectedValueOnce(error429)
         .mockResolvedValueOnce(mockResponse);
       const mockApi = jest.fn().mockReturnValue({ get: mockGet });
-      (Client.initWithMiddleware as jest.Mock).mockReturnValue({ api: mockApi });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
       graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
 
       // Use shorter delays for testing
@@ -246,11 +259,14 @@ describe('M365SyncService', () => {
     it('should retry on 500 (server error) and succeed', async () => {
       const mockResponse = { value: [mockAzureUser] };
       const error500 = { statusCode: 500, message: 'Internal Server Error' };
-      const mockGet = jest.fn()
+      const mockGet = jest
+        .fn()
         .mockRejectedValueOnce(error500)
         .mockResolvedValueOnce(mockResponse);
       const mockApi = jest.fn().mockReturnValue({ get: mockGet });
-      (Client.initWithMiddleware as jest.Mock).mockReturnValue({ api: mockApi });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
       graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
 
       const result = await service.fetchWithRetry('/users', 3, 10);
@@ -262,11 +278,14 @@ describe('M365SyncService', () => {
     it('should retry on 503 (service unavailable) and succeed', async () => {
       const mockResponse = { value: [mockAzureUser] };
       const error503 = { statusCode: 503, message: 'Service Unavailable' };
-      const mockGet = jest.fn()
+      const mockGet = jest
+        .fn()
         .mockRejectedValueOnce(error503)
         .mockResolvedValueOnce(mockResponse);
       const mockApi = jest.fn().mockReturnValue({ get: mockGet });
-      (Client.initWithMiddleware as jest.Mock).mockReturnValue({ api: mockApi });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
       graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
 
       const result = await service.fetchWithRetry('/users', 3, 10);
@@ -279,7 +298,9 @@ describe('M365SyncService', () => {
       const error429 = { statusCode: 429, message: 'Too Many Requests' };
       const mockGet = jest.fn().mockRejectedValue(error429);
       const mockApi = jest.fn().mockReturnValue({ get: mockGet });
-      (Client.initWithMiddleware as jest.Mock).mockReturnValue({ api: mockApi });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
       graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
 
       await expect(service.fetchWithRetry('/users', 3, 10)).rejects.toEqual(
@@ -292,7 +313,9 @@ describe('M365SyncService', () => {
       const error400 = { statusCode: 400, message: 'Bad Request' };
       const mockGet = jest.fn().mockRejectedValue(error400);
       const mockApi = jest.fn().mockReturnValue({ get: mockGet });
-      (Client.initWithMiddleware as jest.Mock).mockReturnValue({ api: mockApi });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
       graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
 
       await expect(service.fetchWithRetry('/users', 3, 10)).rejects.toEqual(
@@ -305,7 +328,9 @@ describe('M365SyncService', () => {
       const error401 = { statusCode: 401, message: 'Unauthorized' };
       const mockGet = jest.fn().mockRejectedValue(error401);
       const mockApi = jest.fn().mockReturnValue({ get: mockGet });
-      (Client.initWithMiddleware as jest.Mock).mockReturnValue({ api: mockApi });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
       graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
 
       await expect(service.fetchWithRetry('/users', 3, 10)).rejects.toEqual(
@@ -318,7 +343,9 @@ describe('M365SyncService', () => {
       const error404 = { statusCode: 404, message: 'Not Found' };
       const mockGet = jest.fn().mockRejectedValue(error404);
       const mockApi = jest.fn().mockReturnValue({ get: mockGet });
-      (Client.initWithMiddleware as jest.Mock).mockReturnValue({ api: mockApi });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
       graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
 
       await expect(service.fetchWithRetry('/users', 3, 10)).rejects.toEqual(
@@ -406,7 +433,10 @@ describe('M365SyncService', () => {
       prisma.user.update.mockResolvedValue({ ...localUser, isActive: false });
       prisma.userAuditLog.create.mockResolvedValue({} as any);
 
-      const result = await service.syncUserDeactivations(azureUsers, 'sync-123');
+      const result = await service.syncUserDeactivations(
+        azureUsers,
+        'sync-123',
+      );
 
       expect(result.deactivated).toBe(1);
       expect(result.errors).toHaveLength(0);
@@ -442,7 +472,10 @@ describe('M365SyncService', () => {
 
       prisma.user.findMany.mockResolvedValue([localUser]);
 
-      const result = await service.syncUserDeactivations(azureUsers, 'sync-123');
+      const result = await service.syncUserDeactivations(
+        azureUsers,
+        'sync-123',
+      );
 
       expect(result.deactivated).toBe(0);
       expect(prisma.user.update).not.toHaveBeenCalled();
@@ -454,7 +487,10 @@ describe('M365SyncService', () => {
 
       prisma.user.findMany.mockResolvedValue([localUser]);
 
-      const result = await service.syncUserDeactivations(azureUsers, 'sync-123');
+      const result = await service.syncUserDeactivations(
+        azureUsers,
+        'sync-123',
+      );
 
       expect(result.deactivated).toBe(0);
       expect(prisma.user.update).not.toHaveBeenCalled();
@@ -474,7 +510,10 @@ describe('M365SyncService', () => {
       prisma.user.update.mockResolvedValue({ ...localUser, isActive: false });
       prisma.userAuditLog.create.mockResolvedValue({} as any);
 
-      const result = await service.syncUserDeactivations(azureUsers, 'sync-123');
+      const result = await service.syncUserDeactivations(
+        azureUsers,
+        'sync-123',
+      );
 
       expect(result.deactivated).toBe(1);
       expect(result.errors).toHaveLength(0);
@@ -506,7 +545,10 @@ describe('M365SyncService', () => {
         .mockResolvedValueOnce({ ...localUsers[1], isActive: false });
       prisma.userAuditLog.create.mockResolvedValue({} as any);
 
-      const result = await service.syncUserDeactivations(azureUsers, 'sync-123');
+      const result = await service.syncUserDeactivations(
+        azureUsers,
+        'sync-123',
+      );
 
       expect(result.deactivated).toBe(1);
       expect(result.errors).toHaveLength(1);
@@ -605,7 +647,9 @@ describe('M365SyncService', () => {
 
     it('should return error without throwing on database failure', async () => {
       prisma.user.findFirst.mockResolvedValue(null);
-      prisma.user.create.mockRejectedValue(new Error('Unique constraint violation'));
+      prisma.user.create.mockRejectedValue(
+        new Error('Unique constraint violation'),
+      );
 
       const result = await service.syncSingleUser(mockAzureUser);
 
@@ -629,7 +673,9 @@ describe('M365SyncService', () => {
       const mockResponse = { value: [], '@odata.nextLink': undefined };
       const mockGet = jest.fn().mockResolvedValue(mockResponse);
       const mockApi = jest.fn().mockReturnValue({ get: mockGet });
-      (Client.initWithMiddleware as jest.Mock).mockReturnValue({ api: mockApi });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
       graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
 
       await service.runSync('FULL');
@@ -643,10 +689,15 @@ describe('M365SyncService', () => {
     });
 
     it('should update sync log with SUCCESS status when all users sync', async () => {
-      const mockResponse = { value: [mockAzureUser], '@odata.nextLink': undefined };
+      const mockResponse = {
+        value: [mockAzureUser],
+        '@odata.nextLink': undefined,
+      };
       const mockGet = jest.fn().mockResolvedValue(mockResponse);
       const mockApi = jest.fn().mockReturnValue({ get: mockGet });
-      (Client.initWithMiddleware as jest.Mock).mockReturnValue({ api: mockApi });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
       graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
       prisma.user.findFirst.mockResolvedValue(null);
       prisma.user.create.mockResolvedValue({ id: 'new-user' } as any);
@@ -664,12 +715,17 @@ describe('M365SyncService', () => {
 
     it('should update sync log with PARTIAL_SUCCESS when some users fail', async () => {
       const mockResponse = {
-        value: [mockAzureUser, { ...mockAzureUser2, mail: null, userPrincipalName: '' }],
+        value: [
+          mockAzureUser,
+          { ...mockAzureUser2, mail: null, userPrincipalName: '' },
+        ],
         '@odata.nextLink': undefined,
       };
       const mockGet = jest.fn().mockResolvedValue(mockResponse);
       const mockApi = jest.fn().mockReturnValue({ get: mockGet });
-      (Client.initWithMiddleware as jest.Mock).mockReturnValue({ api: mockApi });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
       graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
       prisma.user.findFirst.mockResolvedValue(null);
       prisma.user.create.mockResolvedValue({ id: 'new-user' } as any);
@@ -684,7 +740,9 @@ describe('M365SyncService', () => {
       const error = new Error('API unavailable');
       graphTokenProvider.getAuthProvider.mockReturnValue(null);
 
-      await expect(service.runSync('FULL')).rejects.toThrow('Graph API not configured');
+      await expect(service.runSync('FULL')).rejects.toThrow(
+        'Graph API not configured',
+      );
 
       expect(prisma.m365SyncLog.update).toHaveBeenCalledWith({
         where: { id: mockSyncLog.id },
@@ -698,7 +756,9 @@ describe('M365SyncService', () => {
       const mockResponse = { value: [], '@odata.nextLink': undefined };
       const mockGet = jest.fn().mockResolvedValue(mockResponse);
       const mockApi = jest.fn().mockReturnValue({ get: mockGet });
-      (Client.initWithMiddleware as jest.Mock).mockReturnValue({ api: mockApi });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
       graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
 
       await service.runSync('FULL');
@@ -716,7 +776,9 @@ describe('M365SyncService', () => {
       const mockResponse = { value: [], '@odata.nextLink': undefined };
       const mockGet = jest.fn().mockResolvedValue(mockResponse);
       const mockApi = jest.fn().mockReturnValue({ get: mockGet });
-      (Client.initWithMiddleware as jest.Mock).mockReturnValue({ api: mockApi });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
       graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
 
       await service.runSync('FULL', 'admin@example.com');
@@ -732,7 +794,9 @@ describe('M365SyncService', () => {
       const mockResponse = { value: [], '@odata.nextLink': undefined };
       const mockGet = jest.fn().mockResolvedValue(mockResponse);
       const mockApi = jest.fn().mockReturnValue({ get: mockGet });
-      (Client.initWithMiddleware as jest.Mock).mockReturnValue({ api: mockApi });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
       graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
 
       await service.runSync('FULL');
@@ -745,10 +809,15 @@ describe('M365SyncService', () => {
     });
 
     it('should return SyncResultDto with all fields', async () => {
-      const mockResponse = { value: [mockAzureUser], '@odata.nextLink': undefined };
+      const mockResponse = {
+        value: [mockAzureUser],
+        '@odata.nextLink': undefined,
+      };
       const mockGet = jest.fn().mockResolvedValue(mockResponse);
       const mockApi = jest.fn().mockReturnValue({ get: mockGet });
-      (Client.initWithMiddleware as jest.Mock).mockReturnValue({ api: mockApi });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
       graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
       prisma.user.findFirst.mockResolvedValue(null);
       prisma.user.create.mockResolvedValue({ id: 'new-user' } as any);
