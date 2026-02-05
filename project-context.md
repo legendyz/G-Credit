@@ -14,8 +14,8 @@
 **Sprint 5:** ✅ Complete (100%, actual 30h / estimated 28h, committed 2026-01-29, tagged v0.5.0, branch: sprint-5/epic-6-badge-verification)  
 **Sprint 6:** ✅ Complete (100%, actual 35h / estimated 56-76h, committed 2026-01-31, branch: sprint-6/epic-7-badge-sharing, 243 tests, v0.6.0)  
 **Sprint 7:** ✅ Complete (100%, actual 38.5h / estimated 41-47h, committed 2026-02-02, branch: sprint-7/epic-9-revocation-lifecycle-uat, 302 tests, 100% UAT pass, v0.7.0)  
-**Sprint 8:** 🔄 In Progress (7/14 items, 50%, 39.5h/76h, branch: sprint-8/epic-10-production-ready-mvp, target: v0.8.0)  
-**Last Updated:** 2026-02-03 (Sprint 8 in progress - Story 8.5 Complete: Responsive Design, Mobile-First, 58 tests, 44×44px touch targets)
+**Sprint 8:** 🔄 In Progress (11/14 items, 79%, 71.5h/76h, branch: sprint-8/epic-10-production-ready-mvp, target: v0.8.0)  
+**Last Updated:** 2026-02-05 (Sprint 8 in progress - Story 8.9 Complete: M365 Production Hardening, 85 tests, 5/5 ACs)
 
 ---
 
@@ -1209,10 +1209,11 @@ Sprint 0-2 established this pattern:
    - ✅ Story 8.5: Responsive Design Optimization (4h)
    - ✅ Story 8.10: Admin User Management Panel (11.5h)
    - ✅ Story 8.2: Badge Search Enhancement (5.5h)
+   - ✅ Story 8.9: M365 Production Hardening (6h)
    
    **In Progress:**
-   - 🔄 4 items remaining (10/14 complete = 71%)
-   - Next priorities: Story 8.9 (M365 Hardening) or Story 8.11 (Analytics Dashboard)
+   - 🔄 3 items remaining (11/14 complete = 79%)
+   - Next priorities: Story 8.3 (WCAG Accessibility) or Story 8.11 (Analytics Dashboard)
    
    **Technical Debt Resolution:**
    - ✅ TD-001: E2E Test Isolation (COMPLETE - Sprint 8 Task 8.8)
@@ -1229,16 +1230,16 @@ Sprint 0-2 established this pattern:
    - Includes: TD-001 to TD-015, SEC-P0/P1/P2, ARCH-P0/P1, UX-P0/P1/P2
    
    **Key Metrics:**
-   - Test count: Backend 349 + Frontend 234 = 583 tests passing
+   - Test count: Backend 349 + Frontend 328 = 677 tests passing
    - Test reliability: 100% pass rate in parallel execution
    - CI/CD duration: ~2 minutes total
    - Security: 22 vulnerabilities remaining (AWS SDK upstream, non-blocking)
 
 17. 🔜 **Next Actions**
    - **Continue Sprint 8 Development:**
-     - Story 8.9: M365 Production Hardening (8.5h, MEDIUM) - Pagination, retry logic, unified email
+     - Story 8.3: WCAG 2.1 Accessibility (8.5h, CRITICAL) - Screen readers, keyboard nav, color contrast
      - Story 8.11: Badge Analytics Dashboard (7.5h, MEDIUM) - Visualization of Analytics API data
-   - **Sprint 8 Progress:** 10/14 items (71%), 64h/76h used
+   - **Sprint 8 Progress:** 11/14 items (79%), 71.5h/76h used
    - **Sprint 8 Target Completion:** 2026-02-14
    - **Sprint 8 Retrospective:** TBD (end of sprint)
    - **Sprint 9 Planning:** TBD (post-Sprint 8)

@@ -2,7 +2,7 @@
 
 **G-Credit Badge Platform REST API**  
 **Version:** 0.8.0 (Sprint 8 - Production Ready MVP)  
-**Last Updated:** 2026-02-04
+**Last Updated:** 2026-02-05
 
 ---
 
@@ -17,8 +17,9 @@
 7. [Skill Categories](#skill-categories)
 8. [Analytics API](#analytics-api) ⭐ NEW
 9. [Admin User Management](#admin-user-management) ⭐ NEW
-10. [Error Handling](#error-handling)
-11. [Rate Limiting](#rate-limiting)
+10. [M365 Sync API](#m365-sync-api) ⭐ NEW
+11. [Error Handling](#error-handling)
+12. [Rate Limiting](#rate-limiting)
 
 ---
 
@@ -1210,6 +1211,207 @@ When M365 sync runs, roles are determined by this priority:
 4. **Default:** Employee role
 
 This ensures that Admin-assigned roles are never overwritten by M365 sync.
+
+---
+
+## M365 Sync API
+
+**Story:** 8.9 - M365 Production Hardening  
+**Added:** Sprint 8 (2026-02-05)  
+**Security:** Admin-only endpoints (requires `role: ADMIN`)
+
+Production-grade Microsoft 365 user synchronization with pagination, retry logic, audit logging, and user deactivation sync.
+
+### Trigger M365 Sync
+
+**Endpoint:** `POST /api/admin/m365-sync`  
+**Auth Required:** Yes (Admin only)  
+**Description:** Trigger a full or incremental M365 user sync.
+
+**Request Body:**
+```json
+{
+  "syncType": "FULL"  // Optional: "FULL" (default) or "INCREMENTAL"
+}
+```
+
+**Example Request:**
+```bash
+# PowerShell
+curl -X POST "http://localhost:3000/api/admin/m365-sync" `
+  -H "Authorization: Bearer $token" `
+  -H "Content-Type: application/json" `
+  -d '{"syncType": "FULL"}'
+
+# Bash
+curl -X POST "http://localhost:3000/api/admin/m365-sync" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"syncType": "FULL"}'
+```
+
+**Response (201 Created):**
+```json
+{
+  "syncId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "status": "SUCCESS",
+  "totalUsers": 1500,
+  "syncedUsers": 1498,
+  "createdUsers": 12,
+  "updatedUsers": 1486,
+  "deactivatedUsers": 3,
+  "failedUsers": 2,
+  "errors": [
+    "User user1@example.com: Email already exists",
+    "User user2@example.com: Invalid department format"
+  ],
+  "durationMs": 45230,
+  "startedAt": "2026-02-05T10:00:00.000Z",
+  "completedAt": "2026-02-05T10:00:45.230Z"
+}
+```
+
+**Error Responses:**
+- `401 Unauthorized`: Missing or invalid token
+- `403 Forbidden`: User is not an Admin
+- `500 Internal Server Error`: Graph API unavailable or configuration error
+
+---
+
+### Get Sync History
+
+**Endpoint:** `GET /api/admin/m365-sync/logs`  
+**Auth Required:** Yes (Admin only)  
+**Description:** Get paginated history of M365 sync operations.
+
+**Query Parameters:**
+- `limit` (number, optional): Maximum logs to return, default: 10, max: 100
+
+**Example Request:**
+```bash
+curl -X GET "http://localhost:3000/api/admin/m365-sync/logs?limit=20" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "syncDate": "2026-02-05T10:00:00.000Z",
+    "syncType": "FULL",
+    "userCount": 1500,
+    "syncedCount": 1498,
+    "createdCount": 12,
+    "updatedCount": 1486,
+    "failedCount": 2,
+    "status": "SUCCESS",
+    "durationMs": 45230,
+    "syncedBy": "admin@example.com",
+    "metadata": {
+      "retryAttempts": 0,
+      "pagesProcessed": 2,
+      "deactivatedCount": 3
+    }
+  }
+]
+```
+
+---
+
+### Get Sync Log Details
+
+**Endpoint:** `GET /api/admin/m365-sync/logs/:id`  
+**Auth Required:** Yes (Admin only)  
+**Description:** Get detailed information about a specific sync operation.
+
+**Example Request:**
+```bash
+curl -X GET "http://localhost:3000/api/admin/m365-sync/logs/a1b2c3d4-e5f6-7890-abcd-ef1234567890" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "syncDate": "2026-02-05T10:00:00.000Z",
+  "syncType": "FULL",
+  "userCount": 1500,
+  "syncedCount": 1498,
+  "createdCount": 12,
+  "updatedCount": 1486,
+  "failedCount": 2,
+  "status": "SUCCESS",
+  "errorMessage": null,
+  "durationMs": 45230,
+  "syncedBy": "admin@example.com",
+  "metadata": {
+    "retryAttempts": 0,
+    "pagesProcessed": 2,
+    "deactivatedCount": 3
+  },
+  "createdAt": "2026-02-05T10:00:00.000Z"
+}
+```
+
+**Error Responses:**
+- `404 Not Found`: Sync log with specified ID not found
+
+---
+
+### Get Integration Status
+
+**Endpoint:** `GET /api/admin/m365-sync/status`  
+**Auth Required:** Yes (Admin only)  
+**Description:** Check M365 integration availability and last sync timestamp.
+
+**Example Request:**
+```bash
+curl -X GET "http://localhost:3000/api/admin/m365-sync/status" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "available": true,
+  "lastSync": "2026-02-05T10:00:00.000Z"
+}
+```
+
+**Response (M365 not configured):**
+```json
+{
+  "available": false,
+  "lastSync": null
+}
+```
+
+---
+
+### Sync Status Types
+
+| Status | Description |
+|--------|-------------|
+| `SUCCESS` | All users synced successfully |
+| `PARTIAL_SUCCESS` | Some users synced, some failed |
+| `FAILURE` | Sync failed completely |
+| `IN_PROGRESS` | Sync is currently running |
+
+---
+
+### Retry Logic (ADR-008)
+
+The M365 Sync API implements exponential backoff retry for transient errors:
+
+- **Max Retries:** 3
+- **Base Delay:** 1000ms
+- **Backoff Multiplier:** 2x (1s → 2s → 4s)
+- **Retryable Errors:**
+  - `429 Too Many Requests` (rate limiting)
+  - `5xx Server Errors`
+  - Network errors: `ECONNRESET`, `ETIMEDOUT`, `ENOTFOUND`, `ECONNREFUSED`
 
 ---
 

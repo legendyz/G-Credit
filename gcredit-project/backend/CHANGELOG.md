@@ -58,6 +58,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+### Added - M365 Production Hardening (Story 8.9) - 2026-02-05
+
+#### M365 Sync API (Admin-Only)
+- **POST /api/admin/m365-sync** - Trigger M365 user synchronization
+  - Request: `{ syncType: "FULL" | "INCREMENTAL" }` (optional, default: FULL)
+  - Response: SyncResultDto with counts, errors, duration
+  - Features: Pagination (1000+ users), exponential backoff retry, audit logging
+  - Authorization: Admin role only
+  
+- **GET /api/admin/m365-sync/logs** - Get sync history
+  - Query params: limit (default: 10, max: 100)
+  - Authorization: Admin role only
+  
+- **GET /api/admin/m365-sync/logs/:id** - Get sync log details
+  - Authorization: Admin role only
+  
+- **GET /api/admin/m365-sync/status** - Check M365 integration availability
+  - Response: `{ available: boolean, lastSync: DateTime | null }`
+  - Authorization: Admin role only
+
+#### Key Features (ADR-008 Compliance)
+- **AC1: Pagination** - Handles 1000+ users via @odata.nextLink (999/page max)
+- **AC2: Retry Logic** - Exponential backoff (1s→2s→4s), max 3 retries
+  - Retryable errors: 429, 5xx, network errors (ECONNRESET, ETIMEDOUT, etc.)
+- **AC3: Audit Logging** - M365SyncLog with syncedBy, failedCount, metadata
+- **AC4: User Deactivation** - Deactivates removed AND disabled Azure accounts
+  - Preserves `roleSetManually` user roles during sync
+- **AC5: Error Recovery** - Per-user processing, no transaction rollback
+
+#### Database Changes
+- **M365SyncLog Table Updates**
+  - `syncedBy` (String): Who triggered the sync (CLI, Admin email, or SYSTEM)
+  - `failedCount` (Int): Users that failed to sync
+  - `metadata` (JSON): Retry attempts, pages processed, deactivated count
+
+- **UserAuditLog Table**
+  - Logs user deactivation events from M365 sync
+  - Fields: userId, action, changes, source, actorId, timestamp
+
+#### CLI Command
+- **npm run sync:m365** - CLI script for manual/scheduled sync
+  - Script: `scripts/sync-m365.ts`
+
+#### Testing (85 tests, 100% pass rate)
+- **Service Unit Tests (55):** Pagination, retry, deactivation, error recovery
+- **Controller Unit Tests (12):** HTTP status codes, authorization
+- **E2E Tests (18):** Full API integration tests with audit validation
+
+---
+
 ## [0.7.0] - 2026-02-02 (Sprint 7 Complete)
 
 ### Sprint 7 Summary - Badge Revocation & Lifecycle UAT

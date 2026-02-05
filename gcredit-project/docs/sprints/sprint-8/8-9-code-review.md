@@ -106,3 +106,42 @@ metadata: {"retryAttempts":0,"pagesProcessed":1,"deactivatedCount":0}
 
 ## Outcome
 **Status:** ✅ Approved - All findings resolved, ready for final verification.
+---
+
+## SM Verification (2026-02-05)
+
+**Verified by:** Bob (SM Agent)
+
+### Verification Steps Performed
+1. ✅ Read Story requirements (U-2b-m365-hardening.md)
+2. ✅ Reviewed all 6 code review findings - All resolved
+3. ✅ Verified implementation code structure (m365-sync module)
+4. ✅ Ran unit tests: **67 tests passing**
+5. ✅ Ran E2E tests: **18 tests passing**
+6. ✅ Verified all 5 ACs met
+
+### Acceptance Criteria Verification
+
+| AC | Description | Status | Verification |
+|----|-------------|--------|--------------|
+| AC1 | Pagination (1000+ users) | ✅ | `getAllAzureUsers()` uses `@odata.nextLink`, 999/page |
+| AC2 | Retry (ADR-008) | ✅ | 1s→2s→4s backoff, handles 429/5xx + network errors |
+| AC3 | Audit Logging | ✅ | M365SyncLog has syncedBy, failedCount, metadata |
+| AC4 | User Deactivation | ✅ | Handles removed AND disabled Azure accounts |
+| AC5 | Error Recovery | ✅ | Per-user processing, no rollback, PARTIAL_SUCCESS |
+
+### Final Test Results
+
+| Test Type | Count | Status |
+|-----------|-------|--------|
+| Unit Tests | 67 | ✅ Passing |
+| E2E Tests | 18 | ✅ Passing |
+| **Total** | **85** | **✅ All Passing** |
+
+### Documentation Updated
+- ✅ API-GUIDE.md (M365 Sync API section added)
+- ✅ CHANGELOG.md (Story 8.9 entry added)
+- ✅ project-context.md (Sprint 8: 11/14 = 79%)
+- ✅ sprint-status.yaml (Story 8.9 marked done)
+
+**Verdict:** ✅ **ACCEPTED** - Story 8.9 complete and ready for merge.
