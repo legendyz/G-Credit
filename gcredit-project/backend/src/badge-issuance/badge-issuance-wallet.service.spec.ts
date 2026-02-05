@@ -194,6 +194,8 @@ describe('BadgeIssuanceService - Wallet (Story 4.1)', () => {
               description: true,
               imageUrl: true,
               category: true,
+              // Story 8.2: Include skillIds for filtering
+              skillIds: true,
             },
           },
           issuer: {
