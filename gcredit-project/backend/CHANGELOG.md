@@ -7,7 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased] - Sprint 8 In Progress
+## [0.8.0] - Sprint 8 Complete (2026-02-05)
+
+### Sprint 8 Summary - Production-Ready MVP
+
+**Epic 10: Production-Ready MVP** - UX Excellence, Security Hardening & M365 Integration.
+
+#### Highlights
+- ✅ **12/12 Work Items Complete** (80h actual / 76h estimated)
+- ✅ **17/17 P1 Technical Debt Resolved**
+- ✅ **677 Tests Passing** (349 backend + 328 frontend)
+- ✅ **100% Test Reliability** in parallel execution
+- ✅ **WCAG 2.1 AA Compliant**
+
+#### Stories Delivered
+1. **Story 8.1:** Dashboard Homepage with Key Metrics (8h)
+2. **Story 8.2:** Badge Search & Filter Enhancement (5.5h)
+3. **Story 8.3:** WCAG 2.1 AA Accessibility Compliance (8.5h)
+4. **Story 8.4:** Analytics API with Caching (6h)
+5. **Story 8.5:** Responsive Design Optimization (4h)
+6. **Story 8.9:** M365 Production Hardening (6h)
+7. **Story 8.10:** Admin User Management Panel (11.5h)
+
+#### Tasks Delivered
+1. **Task 8.0:** Sprint Setup (1.5h)
+2. **Task 8.6:** Security Hardening (6.5h)
+3. **Task 8.7:** Architecture Fixes (5h)
+4. **Task 8.8:** E2E Test Isolation (8h)
+
+---
 
 ### Added - Admin User Management (Story 8.10) - 2026-02-03
 

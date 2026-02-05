@@ -16,33 +16,36 @@ metadata:
 
 # Sprint Metrics (updated daily)
 metrics:
-  total_stories: 10  # Added Story 8.10 (User Management)
+  total_stories: 8  # Executable stories (8.1, 8.2, 8.3, 8.4, 8.5, 8.9, 8.10 + merged from 0.2b, 0.3)
   total_tasks: 4  # Task 8.0, 8.6, 8.7, 8.8
-  total_work_items: 14  # 10 stories + 4 tasks
+  total_work_items: 12  # 8 stories + 4 tasks (legacy 0.2b, 0.3 merged into others)
   total_story_points: 44  # Updated Story 8.10 from 3 SP to 6 SP
   total_estimated_hours: 76h  # Story 8.7 corrected from 7h to 6h
   
-  completed_stories: 8  # Story 8.1, 8.2, 8.3, 8.4, 8.5, 8.9, 8.10 completed (+ 8.3 confirmed)
-  completed_tasks: 4  # Task 8.0, 8.6, 8.7, 8.8 completed
-  completed_work_items: 12
-  completed_hours: 80h  # 30.5h (tasks) + 49.5h (stories: 8.1=8h, 8.2=5.5h, 8.3=8.5h, 8.4=6h, 8.5=4h, 8.9=6h, 8.10=11.5h)
-  remaining_hours: -4h  # 76h - 80h (over capacity)
+  completed_stories: 8  # ALL STORIES COMPLETE: 8.1, 8.2, 8.3, 8.4, 8.5, 8.9, 8.10 (0.2b, 0.3 merged)
+  completed_tasks: 4  # ALL TASKS COMPLETE: 8.0, 8.6, 8.7, 8.8
+  completed_work_items: 12  # 100% COMPLETE
+  completed_hours: 80h  # 30.5h (tasks) + 49.5h (stories)
+  remaining_hours: 0h  # Sprint complete (4h over capacity)
   
   stories_in_progress: 0
   tasks_in_progress: 0
   work_items_blocked: 0
+  sprint_status: COMPLETE  # All executable work items done
   
   # Technical Debt Resolution
   technical_debt_targeted: 17  # P1 items
-  technical_debt_resolved: 17  # 14 + SEC-HIGH-003 + UX-P1-004/005/006/007 (Story 8.3)
+  technical_debt_resolved: 17  # ALL RESOLVED: SEC + ARCH + UX + TD-001
   technical_debt_remaining: 0
 
-# Group A: UX & Accessibility (39h, 28 SP)
+# Group A: UX & Accessibility (52.5h, 31 SP) - COMPLETE
 group_a_ux_accessibility:
-  total_items: 7  # Added Story 8.10
-  completed_items: 7  # Story 8.1, 8.2, 8.3, 8.4, 8.5, 8.9, 8.10 completed
-  total_hours: 52.5h  # Updated Story 8.10 from 5h to 11.5h
-  remaining_hours: 0h  # All stories complete
+  total_items: 7  # Stories 8.1, 8.2, 8.3, 8.4, 8.5, 8.9, 8.10
+  completed_items: 7  # ALL COMPLETE
+  total_hours: 52.5h
+  completed_hours: 52.5h
+  remaining_hours: 0h
+  status: COMPLETE
   
   stories:
     - id: "8.1"
