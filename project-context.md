@@ -14,8 +14,8 @@
 **Sprint 5:** ✅ Complete (100%, actual 30h / estimated 28h, committed 2026-01-29, tagged v0.5.0, branch: sprint-5/epic-6-badge-verification)  
 **Sprint 6:** ✅ Complete (100%, actual 35h / estimated 56-76h, committed 2026-01-31, branch: sprint-6/epic-7-badge-sharing, 243 tests, v0.6.0)  
 **Sprint 7:** ✅ Complete (100%, actual 38.5h / estimated 41-47h, committed 2026-02-02, branch: sprint-7/epic-9-revocation-lifecycle-uat, 302 tests, 100% UAT pass, v0.7.0)  
-**Sprint 8:** 🔄 In Progress (11/14 items, 79%, 71.5h/76h, branch: sprint-8/epic-10-production-ready-mvp, target: v0.8.0)  
-**Last Updated:** 2026-02-05 (Sprint 8 in progress - Story 8.9 Complete: M365 Production Hardening, 85 tests, 5/5 ACs)
+**Sprint 8:** 🔄 In Progress (12/14 items, 86%, 80h/76h, branch: sprint-8/epic-10-production-ready-mvp, target: v0.8.0)  
+**Last Updated:** 2026-02-05 (Sprint 8 in progress - Story 8.3 Verified: WCAG 2.1 AA Accessibility, all code review fixes confirmed)
 
 ---
 
@@ -1212,8 +1212,9 @@ Sprint 0-2 established this pattern:
    - ✅ Story 8.9: M365 Production Hardening (6h)
    
    **In Progress:**
-   - 🔄 3 items remaining (11/14 complete = 79%)
-   - Next priorities: Story 8.3 (WCAG Accessibility) or Story 8.11 (Analytics Dashboard)
+   - 🔄 2 items remaining (12/14 complete = 86%)
+   - Next priorities: Story 8.11 (Analytics Dashboard) - if time permits
+   - Sprint 8 nearing completion, over capacity by 4h
    
    **Technical Debt Resolution:**
    - ✅ TD-001: E2E Test Isolation (COMPLETE - Sprint 8 Task 8.8)
@@ -1236,10 +1237,11 @@ Sprint 0-2 established this pattern:
    - Security: 22 vulnerabilities remaining (AWS SDK upstream, non-blocking)
 
 17. 🔜 **Next Actions**
-   - **Continue Sprint 8 Development:**
-     - Story 8.3: WCAG 2.1 Accessibility (8.5h, CRITICAL) - Screen readers, keyboard nav, color contrast
-     - Story 8.11: Badge Analytics Dashboard (7.5h, MEDIUM) - Visualization of Analytics API data
-   - **Sprint 8 Progress:** 11/14 items (79%), 71.5h/76h used
+   - **Sprint 8 Nearly Complete:**
+     - ✅ Story 8.3: WCAG 2.1 Accessibility - VERIFIED COMPLETE (all code review fixes confirmed)
+     - 📋 Story 8.11: Badge Analytics Dashboard (7.5h, MEDIUM) - May defer to Sprint 9
+     - 📋 2 legacy items (0.2b, 0.3) - merged into other stories
+   - **Sprint 8 Progress:** 12/14 items (86%), 80h/76h used (over capacity)
    - **Sprint 8 Target Completion:** 2026-02-14
    - **Sprint 8 Retrospective:** TBD (end of sprint)
    - **Sprint 9 Planning:** TBD (post-Sprint 8)
