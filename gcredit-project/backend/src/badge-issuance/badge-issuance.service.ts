@@ -858,6 +858,35 @@ export class BadgeIssuanceService {
       where.status = status;
     }
 
+    // Story 8.2: Add search filter (template name or issuer name)
+    if (query.search) {
+      const searchTerm = query.search.trim();
+      where.OR = [
+        { template: { name: { contains: searchTerm, mode: 'insensitive' } } },
+        { issuer: { firstName: { contains: searchTerm, mode: 'insensitive' } } },
+        { issuer: { lastName: { contains: searchTerm, mode: 'insensitive' } } },
+        { issuer: { email: { contains: searchTerm, mode: 'insensitive' } } },
+      ];
+    }
+
+    // Story 8.2: Filter by skills (template.skillIds contains any of the requested skills)
+    if (query.skills && query.skills.length > 0) {
+      where.template = {
+        ...where.template,
+        skillIds: {
+          hasSome: query.skills,
+        },
+      };
+    }
+
+    // Story 8.2: Filter by date range
+    if (query.fromDate) {
+      where.issuedAt = { ...where.issuedAt, gte: new Date(query.fromDate) };
+    }
+    if (query.toDate) {
+      where.issuedAt = { ...where.issuedAt, lte: new Date(query.toDate) };
+    }
+
     // Get total badge count (for accurate pagination)
     const totalBadges = await this.prisma.badge.count({ where });
 
@@ -884,6 +913,8 @@ export class BadgeIssuanceService {
             description: true,
             imageUrl: true,
             category: true,
+            // Story 8.2: Include skillIds for filtering
+            skillIds: true,
           },
         },
         issuer: {
