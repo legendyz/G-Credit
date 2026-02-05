@@ -498,6 +498,222 @@ Story 8.10创建后进行UX和架构审查，发现12个关键问题（7个UX + 
 | Task D.E.F | npm: @azure/storage-blob | ✅ 已安装（v12.30.0） | 无需重复安装 |
 ```
 
+### 8.5 技术债务规划与任务化（条件性）⚡ [AGENT ASSESS]
+
+**🤖 Agent 评估：** 当 Planning 进行到此步骤时，Agent 应主动检查项目的技术债务状态，并建议是否纳入本 Sprint。
+
+**为什么重要（Sprint 8-9 经验）：**
+- Sprint 8 解决了 17 个 P1 技术债务，清理效果显著
+- Sprint 9 Option A（Balanced Approach）证明：特性开发 + 技术债务清理 = 最佳策略
+- 技术债务如果不系统规划，会在 Sprint 执行时被"遗忘"
+
+---
+
+**何时需要规划技术债务？**
+
+**🚨 MANDATORY Planning（必须规划）：**
+- [ ] **P0/P1 技术债务存在** - 阻塞或高风险债务
+- [ ] **累积债务超过阈值** - ESLint 警告 >500，跳过测试 >10
+- [ ] **架构重构需求** - 代码结构问题影响新功能开发
+- [ ] **安全漏洞修复** - 依赖更新、权限问题
+
+**🟡 RECOMMENDED Planning（推荐规划）：**
+- [ ] **P2 技术债务积累** - 代码质量、性能优化、测试改进
+- [ ] **Sprint 间隙期** - 两个重 Feature Sprint 之间
+- [ ] **团队反馈** - Retrospective 中提到代码质量下降
+
+**🟢 OPTIONAL Planning（可选规划）：**
+- [ ] **P3 低优先级债务** - 代码美化、注释补充、文档更新
+- [ ] **团队学习机会** - 重构可以作为学习新模式的机会
+
+---
+
+**技术债务来源识别：**
+
+**1. 从技术债务追踪文档读取：**
+- [ ] 读取 `docs/sprints/sprint-7/technical-debt-from-reviews.md`（主清单）
+- [ ] 读取最近 Sprint 的 Retrospective（新发现的债务）
+- [ ] 检查 `project-context.md` 的技术债务部分
+
+**2. 按优先级分类：**
+| 优先级 | 定义 | 本 Sprint 处理策略 |
+|--------|------|-------------------|
+| **P0** | UAT Blocker | 必须在本 Sprint 前解决 |
+| **P1** | 高风险/阻塞新功能 | 建议纳入本 Sprint（20-40%容量） |
+| **P2** | 中等影响 | 选择性纳入（10-20%容量） |
+| **P3** | 低影响/未来改进 | 推迟到后续 Sprint |
+
+**3. 容量分配建议（基于 Sprint 8-9）：**
+```
+Balanced Sprint (推荐):
+  - Features: 50-60% (30-40h)
+  - Tech Debt: 20-30% (12-20h)
+  - Testing/Review: 10-15% (6-10h)
+  - Buffer: 5-10% (3-6h)
+
+Feature-Heavy Sprint:
+  - Features: 70-80% (45-55h)
+  - Tech Debt: 5-10% (3-6h, 仅 P0/P1)
+  - Testing/Review: 10-15%
+  - Buffer: 5%
+
+Debt-Focused Sprint (偶尔):
+  - Tech Debt: 50-60% (30-40h)
+  - Features: 20-30% (12-20h, 低风险)
+  - Testing/Review: 10-15%
+  - Buffer: 5-10%
+```
+
+---
+
+**技术债务任务化步骤：**
+
+**Step 1: 选择要处理的债务项**
+- Agent 展示当前技术债务清单（按优先级排序）
+- 询问用户："以下债务项建议纳入 Sprint N，是否同意？"
+  - TD-015 Phase 1: Fix 300 ESLint warnings (4h) - P2
+  - TD-014: Unify Email System (2h) - P2
+  - TD-013: Frontend Bundle Code Splitting (3h) - P2
+
+**Step 2: 为每个债务项创建任务**
+
+**方式 A: 作为 Story 文件（推荐用于大型债务）**
+- 创建独立 Story 文件：`TD-015-phase1-eslint-warnings.md`
+- 包含：目标、AC、Tasks、估算、成功指标
+- 优点：详细跟踪、开发笔记、回顾总结
+
+**方式 B: 作为 Sprint Backlog 中的 Technical Task**
+- 在 Sprint Backlog 添加章节：`## Technical Debt Tasks`
+- 列出：ID、描述、估算、Owner、AC
+- 优点：轻量、适合小型债务（<4h）
+
+**示例（Sprint 9 Option A）：**
+```markdown
+## Technical Debt Tasks (13h total)
+
+### TD-015 Phase 1: ESLint Warnings Cleanup (4h)
+**Owner:** Dev Team  
+**Priority:** P2  
+**Success Metric:** Warnings reduced from 1100 → 800  
+
+**Tasks:**
+- [ ] Fix `@typescript-eslint/no-unsafe-call` (80 occurrences)
+- [ ] Fix `@typescript-eslint/no-unsafe-return` (60 occurrences)
+- [ ] Fix `@typescript-eslint/no-unsafe-argument` (70 occurrences)
+- [ ] Update `package.json` max-warnings from 1100 → 800
+- [ ] Run CI to verify no new warnings introduced
+
+**AC:**
+1. [ ] ESLint warning count ≤ 800
+2. [ ] All tests still pass (876/876)
+3. [ ] No new type errors introduced
+4. [ ] Commit message: "refactor: reduce ESLint warnings (TD-015 Phase 1)"
+
+---
+
+### TD-014: Email System Unification (2h)
+**Owner:** Dev Team  
+**Priority:** P2  
+**Success Metric:** Remove nodemailer dependency, single email service  
+
+**Tasks:**
+- [ ] Migrate `auth.service.ts` password reset to `GraphEmailService`
+- [ ] Update email templates for Graph API format
+- [ ] Remove `EmailService` class and files
+- [ ] Uninstall `nodemailer` from package.json
+- [ ] Remove SMTP config from `.env.example`
+- [ ] Test password reset flow with Graph email
+
+**AC:**
+1. [ ] Password reset emails sent via Graph API
+2. [ ] `nodemailer` removed from dependencies
+3. [ ] All email-related tests pass
+4. [ ] No dead code remains
+
+---
+
+### TD-013: Frontend Bundle Code Splitting (3h)
+...
+```
+
+**Step 3: 纳入 Sprint Backlog**
+- 在 Sprint Backlog 的 Story 清单后添加 "Technical Debt Tasks" 章节
+- 计入总估算和容量规划
+- 标记优先级（建议技术债务优先级低于 HIGH 优先级 Story）
+
+**Step 4: 更新 sprint-status.yaml**
+- 如果技术债务作为 Story 文件，添加到 development_status
+- 示例：`td-015-phase1-eslint-warnings: backlog`
+
+---
+
+**Agent 执行步骤：**
+1. **读取技术债务文档**
+   - `docs/sprints/sprint-7/technical-debt-from-reviews.md`
+   - 最近 Sprint 的 retrospective.md
+   - `project-context.md` 技术债务部分
+
+2. **自动分类和建议**
+   - 按优先级分组（P0/P1/P2/P3）
+   - 计算总工作量
+   - 建议本 Sprint 处理哪些项（基于容量和优先级）
+
+3. **向用户展示**
+   ```
+   发现技术债务：
+   - P1: 2 项（12h）
+   - P2: 7 项（27h）
+   - P3: 5 项（18h）
+   
+   建议纳入 Sprint N：
+   - TD-015 Phase 1 (4h) - 减少 ESLint 警告
+   - TD-014 (2h) - 统一邮件系统
+   - TD-013 (3h) - 前端代码拆分
+   总计：9h（占容量 11%）
+   
+   是否同意？[Y/N/调整]
+   ```
+
+4. **创建任务文件或章节**
+   - 如果用户同意，创建 Story 文件或 Backlog 章节
+   - 填充任务、AC、成功指标
+
+5. **标记完成**
+   - 更新 Checklist Section 8.5 ✅
+
+---
+
+**检查清单：**
+- [ ] **技术债务文档已读取** - 知道当前有哪些债务
+- [ ] **优先级已评估** - P0/P1/P2/P3 分类清晰
+- [ ] **容量已分配** - 技术债务占用容量已规划（推荐 10-30%）
+- [ ] **任务已细化** - 每个债务项有明确的 Tasks 和 AC
+- [ ] **成功指标已定义** - 可度量的完成标准（如：警告数、测试通过率）
+- [ ] **Owner 已分配** - 知道谁负责哪个债务项
+- [ ] **Sprint Backlog 已更新** - 技术债务任务已纳入
+- [ ] **sprint-status.yaml 已更新**（如使用 Story 文件）
+
+---
+
+**🔗 参考：**
+- [technical-debt-from-reviews.md](../sprints/sprint-7/technical-debt-from-reviews.md) - 主技术债务清单
+- Sprint 8 示例: 17 个 P1 债务全部解决
+- Sprint 9 Option A: Balanced Approach（Features 28h + Debt 13h）
+
+**🎓 最佳实践：**
+1. **不要忽略技术债务** - 积累会导致开发速度下降
+2. **Balanced Approach 最优** - 每个 Sprint 处理一些债务
+3. **优先级驱动** - P0/P1 必须处理，P2 选择性，P3 可推迟
+4. **可度量目标** - "改进代码质量" 太模糊，"减少 ESLint 警告到 800" 可度量
+5. **庆祝债务解决** - 在 Retrospective 中认可技术债务清理的价值
+
+**🚨 反面案例（不规划技术债务的风险）：**
+- TD-001 (E2E 测试隔离) 拖了 3 个 Sprint，最终影响 CI/CD
+- TD-015 (ESLint 警告) 从 500 涨到 1100，隐藏真实 bug
+- 团队士气下降（"我们只是在堆代码，没有改进质量"）
+
+---
+
 ### 9. 版本清单创建（🚨 MANDATORY）⚡ [AGENT AUTO-EXEC]
 
 **🤖 Agent 自动执行：** 当处理此 checklist 时，Agent 应在到达此步骤时自动运行版本检查脚本，无需等待用户额外指令。
@@ -700,18 +916,395 @@ const containerName = process.env.AZURE_STORAGE_CONTAINER_BADGES;
 
 **🔗 参考：** [sprint-backlog-template.md](./sprint-backlog-template.md) - 完整Backlog模板
 
-### 13. Sprint Kick-off文档
-- [ ] 创建 `sprint-{N}-kickoff.md`
-- [ ] 包含每日详细计划
-- [ ] **调整时间：** 反映资源复用节省的时间
-- [ ] 包含Sprint Review和Retrospective的时间安排
-- [ ] 包含参考文档链接
+### 12.5. Sprint Status 更新（🚨 MANDATORY）⚡ [AGENT AUTO-EXEC]
 
-### 14. 技术设置指南
+**🤖 Agent 自动执行：** 当 Sprint Backlog 创建完成后，Agent 应自动更新 `sprint-status.yaml` 文件。
+
+**为什么重要：**
+- `sprint-status.yaml` 是**全局工作项追踪文件**，记录所有 Epics 和 Stories 的状态
+- Sprint Planning 时需要标记哪些工作项将在本 Sprint 执行
+- 开发过程中，Dev 根据此文件更新 Story 状态（backlog → in-progress → done）
+
+**文件位置：** `gcredit-project/docs/sprints/sprint-status.yaml`
+
+---
+
+**Agent 执行步骤：**
+
+**1. 读取当前 sprint-status.yaml**
+   - 检查哪些 Epics/Stories 已完成
+   - 检查哪些处于 in-progress
+   - 识别 backlog 中的可用 Stories
+
+**2. 基于 Sprint Backlog 识别工作项**
+   - 从 Section 12 创建的 Sprint Backlog 中提取 Story 列表
+   - 识别 Epic 编号（如：Epic 8, Epic 11, Epic 12）
+   - 识别技术债务任务（如果有独立 Story 文件）
+
+**3. 更新 Epic 状态**
+   ```yaml
+   # 如果 Epic 的第一个 Story 被纳入本 Sprint
+   epic-8: in-progress  # 从 backlog 变为 in-progress
+   
+   # 如果 Epic 已经 in-progress 且本 Sprint 包含更多 Stories
+   epic-12: in-progress  # 保持不变
+   ```
+
+**4. 标记 Stories 为候选（可选）**
+   - 不改变状态（仍为 backlog）
+   - 但可添加注释标记本 Sprint 计划执行
+   ```yaml
+   # Sprint 9 Stories (planned)
+   8-1-csv-template-validation: backlog
+   8-2-csv-upload-parsing: backlog
+   8-3-bulk-preview-ui: backlog
+   8-4-batch-processing-phase1: backlog
+   ```
+
+**5. 添加 Sprint 元数据（可选）**
+   - 在文件顶部注释中添加 Sprint 规划记录
+   ```yaml
+   # Sprint 9 Planning: 2026-02-06
+   # Goal: Deliver MVP-Complete Bulk Issuance (Epic 8 Phase 1) + Tech Debt Cleanup
+   # Stories: 8.1-8.4 (28h) + TD-015/014/013 (13h)
+   # Capacity: 80h (Features 35% + Debt 16% + Testing 15% + Buffer 10%)
+   ```
+
+**6. 向用户确认**
+   - 展示更新内容
+   - 询问："sprint-status.yaml 更新如上，是否确认？"
+   - 如果确认，保存文件
+
+**7. 标记完成**
+   - 更新 Checklist Section 12.5 ✅
+
+---
+
+**手动方法（备用）：**
+```yaml
+# 1. 打开 sprint-status.yaml
+# 2. 找到本 Sprint 涉及的 Epic
+# 3. 更新 Epic 状态为 in-progress
+# 4. （可选）添加 Sprint 规划注释
+```
+
+---
+
+**状态转换规则：**
+
+| 当前状态 | Sprint 包含此 Epic 的 Stories | 新状态 | 说明 |
+|----------|-------------------------------|--------|------|
+| `backlog` | 是（第一次） | `in-progress` | Epic 开始执行 |
+| `in-progress` | 是（继续执行） | `in-progress` | 保持不变 |
+| `in-progress` | 否（暂停） | `in-progress` | 保持不变（不回退） |
+| `done` | 否 | `done` | 已完成 Epic 不改变 |
+
+**Story 状态转换（开发过程中由 Dev 更新）：**
+- Planning 时：所有 Stories 保持 `backlog`
+- Dev 开始时：Story 变为 `in-progress`
+- 完成时：Story 变为 `done`
+
+---
+
+**检查清单：**
+- [ ] **sprint-status.yaml 已更新** - Epic 状态已标记
+- [ ] **Epic 转换正确** - backlog → in-progress（如适用）
+- [ ] **Stories 可识别** - 本 Sprint 的 Stories 可被 Dev 找到
+- [ ] **注释已添加**（可选） - Sprint 规划元数据已记录
+- [ ] **文件语法正确** - YAML 格式验证通过
+- [ ] **与 Sprint Backlog 一致** - 两个文件的 Story 列表匹配
+
+---
+
+**🔗 参考：**
+- [sprint-status.yaml](../sprints/sprint-status.yaml) - 全局状态追踪文件
+- Sprint Planning (SP) Workflow - 自动生成 sprint-status.yaml 的工具
+
+**🎓 最佳实践：**
+1. **Planning 时只更新 Epic 状态** - Stories 由 Dev 在开发时更新
+2. **Epic in-progress 门槛低** - 只要有一个 Story 开始就标记为 in-progress
+3. **不要过早标记 done** - 等 Epic 所有 Stories 都 done 后再标记 Epic done
+4. **保持同步** - sprint-status.yaml 和 Sprint Backlog 应一致
+
+---
+
+### 13. Sprint Kickoff Readiness 文档创建（🚨 MANDATORY）⚡ [AGENT AUTO-EXEC]
+
+**🤖 Agent 自动执行：** 当 Sprint Backlog 和 sprint-status.yaml 更新完成后，Agent 应自动创建 Kickoff Readiness 文档。
+
+**为什么重要（Sprint 6 经验）：**
+- Sprint 6 的 `kickoff-readiness.md` 帮助团队在开发前完成所有准备工作
+- 提供明确的 "Sprint 可以开始" 检查清单
+- 记录前置任务（环境验证、依赖安装、权限申请）
+
+**文件位置：** `gcredit-project/docs/sprints/sprint-N/kickoff-readiness.md`
+
+---
+
+**Kickoff Readiness 文档结构：**
+
+```markdown
+# Sprint N Kickoff Readiness Checklist
+
+**Sprint:** Sprint N  
+**Epic:** Epic X - [Epic Name]  
+**Duration:** [Start Date] - [End Date] (X weeks)  
+**Goal:** [Sprint Goal from Backlog]  
+**Status:** 🟡 IN PREPARATION → 🟢 READY TO START  
+**Last Updated:** [Date]
+
+---
+
+## ✅ Planning Artifacts Complete
+
+- [ ] **Sprint Backlog Created** - `sprint-N/backlog.md` ✅
+- [ ] **Story Files Created** - All Stories have detailed files ✅
+- [ ] **Version Manifest Created** - `sprint-N/version-manifest.md` ✅
+- [ ] **sprint-status.yaml Updated** - Epic status marked as in-progress ✅
+- [ ] **UX/Architecture Review Complete** - (if applicable) ✅
+- [ ] **Git Branch Planned** - Branch name decided: `sprint-N/epic-X-description` ✅
+
+---
+
+## 🌿 Git Branch Setup (Story 0.1 - CRITICAL)
+
+**⚠️ MUST BE COMPLETED BEFORE ANY CODE CHANGES**
+
+- [ ] **Verify main branch up-to-date**
+  ```bash
+  git checkout main
+  git pull origin main
+  git status  # Should be clean
+  ```
+
+- [ ] **Create Sprint branch**
+  ```bash
+  git checkout -b sprint-N/epic-X-description
+  git push -u origin sprint-N/epic-X-description
+  git branch  # Verify current branch
+  ```
+
+- [ ] **Verify branch in remote**
+  - Check GitHub/Azure DevOps for branch visibility
+
+**Branch Name:** `sprint-N/epic-X-description`  
+**Created By:** [Name]  
+**Creation Date:** [Date]
+
+---
+
+## 📦 Environment & Dependencies
+
+### Backend Setup
+- [ ] **Node.js version:** v20.x LTS installed
+- [ ] **npm packages up-to-date:** `cd backend && npm install`
+- [ ] **Prisma client generated:** `npx prisma generate`
+- [ ] **Database migrations applied:** `npx prisma migrate dev`
+- [ ] **Environment variables configured:** `.env` file complete
+- [ ] **Health check passes:** `npm run start:dev` → `/health` returns 200
+
+### Frontend Setup
+- [ ] **Node.js version:** v20.x LTS installed
+- [ ] **npm packages up-to-date:** `cd frontend && npm install`
+- [ ] **Dev server starts:** `npm run dev` → Vite server running
+- [ ] **Build succeeds:** `npm run build` (optional pre-check)
+
+### New Dependencies (if any)
+[List new packages to install from version-manifest.md]
+- [ ] Package 1: `npm install [package]@[version]`
+- [ ] Package 2: ...
+
+---
+
+## ☁️ Azure Resources
+
+### Existing Resources (Verify Access)
+[From infrastructure-inventory.md]
+- [ ] **Azure Storage Account:** gcreditdevstoragelz - accessible
+- [ ] **PostgreSQL Database:** gcredit-dev-db-lz - connection working
+- [ ] **Blob Containers:** badges, evidence - accessible
+
+### New Resources (if any)
+[From Sprint Backlog Section 8]
+- [ ] Resource 1: [Name] - provisioned and configured
+- [ ] Resource 2: ...
+
+**Resource Setup Guide:** (if needed) `sprint-N/[resource]-setup-guide.md`
+
+---
+
+## 🧪 Testing Infrastructure
+
+- [ ] **Test suite baseline:** Run `npm test` in backend + frontend
+  - Backend: XXX tests passing
+  - Frontend: XXX tests passing
+  - E2E: XXX tests passing
+- [ ] **Test isolation verified:** Parallel tests stable (if applicable)
+- [ ] **Coverage baseline:** `npm run test:cov` (target: >80%)
+
+---
+
+## 🔐 Permissions & Access
+
+- [ ] **Azure Portal Access:** Team members can access resources
+- [ ] **Database Access:** Connection strings working
+- [ ] **Repository Access:** All team members can push to Sprint branch
+- [ ] **External APIs:** (if applicable) API keys configured
+
+### Known Permission Issues
+[From Technical Debt or previous Sprints]
+- ⚠️ **TD-006:** Teams Channel Permissions pending (4 tests skipped) - use mock tests
+
+---
+
+## 📚 Documentation Review
+
+- [ ] **Epic Requirements:** Reviewed `docs/planning/epics.md` Epic X section
+- [ ] **Lessons Learned:** Reviewed `docs/lessons-learned/lessons-learned.md`
+- [ ] **Technical Debt:** Reviewed applicable debt items (if included in Sprint)
+- [ ] **Architecture Decisions:** Reviewed relevant ADRs (if any)
+
+---
+
+## 👥 Team Readiness
+
+- [ ] **Sprint Goal Understood:** All team members understand Sprint N goal
+- [ ] **Story Assignment Clear:** (if applicable) Who works on which Stories
+- [ ] **Daily Standup Scheduled:** Time and channel confirmed
+- [ ] **Ceremonies Scheduled:**
+  - Daily Standup: [Time]
+  - Sprint Review: [Date & Time]
+  - Sprint Retrospective: [Date & Time]
+
+---
+
+## 🚨 Risks & Blockers
+
+[From Sprint Backlog Section "Risks and Mitigation"]
+
+| Risk | Probability | Impact | Mitigation |
+|------|-------------|--------|------------|
+| [Risk 1] | Medium | High | [Mitigation plan] |
+| [Risk 2] | ... | ... | ... |
+
+**Current Blockers:** None / [List if any]
+
+---
+
+## ✅ Kickoff Approval
+
+- [ ] **Scrum Master Approval:** All preparation complete
+- [ ] **Team Consensus:** Team agrees Sprint can start
+- [ ] **Product Owner Informed:** Stakeholders notified of Sprint start
+
+**Status:** 🟢 **READY TO START**  
+**Kickoff Date:** [Date]  
+**First Story:** [Story ID] - [Story Name]
+
+---
+
+## 🎯 Next Steps
+
+1. ✅ **Story 0.1:** Create Git Branch (DONE)
+2. ⏭️ **Story 0.2:** Verify Environment Setup (if needed)
+3. ⏭️ **Story [X.Y]:** Start first feature Story
+
+---
+
+**Quick Checklist Summary:**
+- ✅ Planning Artifacts: [X/6]
+- ✅ Git Branch: [X/3]
+- ✅ Environment: [X/8]
+- ✅ Azure Resources: [X/N]
+- ✅ Testing Infrastructure: [X/3]
+- ✅ Permissions: [X/N]
+- ✅ Documentation: [X/4]
+- ✅ Team Readiness: [X/4]
+- ✅ Risks Assessed: [X/1]
+- ✅ Kickoff Approval: [X/3]
+
+**Total Progress:** [XX/YY] items complete
+```
+
+---
+
+**Agent 执行步骤：**
+
+1. **收集信息（从前面步骤）**
+   - Sprint Backlog 内容（Section 12）
+   - Version Manifest 文件路径（Section 9）
+   - sprint-status.yaml 更新状态（Section 12.5）
+   - Git 分支名称（Section 16）
+   - 风险清单（Sprint Backlog）
+
+2. **生成 kickoff-readiness.md**
+   - 使用上述模板结构
+   - 填充已知信息（Sprint 目标、Story 列表、分支名称等）
+   - 标记已完成的 Planning 步骤为 ✅
+   - 其他项标记为 [ ]（待验证）
+
+3. **向用户展示**
+   - 显示生成的 Kickoff Readiness 文档内容
+   - 询问："Kickoff Readiness 文档如上，是否需要调整？"
+
+4. **创建文件**
+   - 保存到 `docs/sprints/sprint-N/kickoff-readiness.md`
+
+5. **标记完成**
+   - 更新 Checklist Section 13 ✅
+
+---
+
+**手动方法（备用）：**
+- 复制模板内容到新文件
+- 手动填充 Sprint 信息
+- 逐项验证清单
+
+---
+
+**检查清单：**
+- [ ] **kickoff-readiness.md 已创建** - 文件位置正确
+- [ ] **Planning Artifacts 部分完整** - 所有 Planning 输出已记录
+- [ ] **Git Branch 部分详细** - 分支创建命令和验证步骤清晰
+- [ ] **Environment Setup 清单完整** - 前后端设置步骤全覆盖
+- [ ] **Azure Resources 列表准确** - 引用 infrastructure-inventory.md
+- [ ] **Testing Infrastructure 基线记录** - 当前测试通过数量已知
+- [ ] **Permissions 问题已标记** - 已知权限问题（如 TD-006）已注明
+- [ ] **Documentation Review 链接正确** - 所有文档链接可访问
+- [ ] **Team Readiness 仪式已安排** - Daily Standup、Review、Retro 时间已定
+- [ ] **Risks 已从 Backlog 导入** - 风险清单与 Sprint Backlog 一致
+- [ ] **Kickoff Approval 留空** - 待开发前验证
+- [ ] **Next Steps 清晰** - Story 0.1 是 Git Branch 创建
+
+---
+
+**🔗 参考：**
+- Sprint 6 示例: [kickoff-readiness.md](../sprints/sprint-6/kickoff-readiness.md)
+- Sprint 7 示例: 类似结构
+- Sprint Completion Checklist: 收尾流程的对应文档
+
+**🎓 最佳实践：**
+1. **Kickoff 前一天完成** - 给团队时间验证环境
+2. **逐项验证** - 不要假设环境 OK，实际运行命令验证
+3. **Git Branch 第一优先级** - Story 0.1 必须在任何代码前完成
+4. **文档化阻塞问题** - 即使无法立即解决，也要记录
+5. **团队共识** - Kickoff Readiness 不是 SM 单人任务，全团队验证
+
+**🚨 反面案例（不做 Kickoff Readiness 的风险）：**
+- Sprint 6 差点在 main 分支开发（忘记创建 Sprint 分支）
+- 开发到一半发现依赖未安装（浪费 1h 调试）
+- 环境变量缺失导致功能无法运行（浪费 30 分钟）
+- 团队对 Sprint 目标理解不一致（开发方向偏离）
+
+---
+
+### 14. 技术设置指南（条件性）
 - [ ] 如需新资源，创建 `sprint-{N}-{resource}-setup-guide.md`
 - [ ] **明确说明：** 哪些资源已存在，哪些需新建
 - [ ] 包含验证步骤（即使资源已存在）
 - [ ] 包含故障排查部分
+
+**Note:** 大多数情况下，Section 13 的 kickoff-readiness.md 已足够。仅在复杂资源配置（如新 Azure 服务、第三方 API 集成）时创建独立设置指南。
 
 ### 15. 资源清单更新计划
 - [ ] 计划在Sprint结束时更新 `docs/setup/infrastructure-inventory.md`
@@ -949,7 +1542,7 @@ Planning阶段: 创建Story文件框架（Story、AC、Tasks基本结构）
 | Sprint 6 | 2026-01-30 | ~90% | **未创建Story文件** | Stories 7.2/7.3无独立文件，导致Story 7.3未实现 |
 | Sprint 7 | 2026-01-31 | 100% | 无重大问题 | 使用v1.2 + 12,000行文档，28个Story文件 |
 | Sprint 8 | 2026-02-02 | 100% | 无重大问题 | 使用v1.4（新增UX/Arch审查），发现12个问题并修复 |
-| Sprint 9 | TBD | TBD | TBD | 计划使用v1.4（含UX/Arch审查） |
+| Sprint 9 | TBD | TBD | TBD | 计划使用v1.5（完整版：TD规划+Status更新+Kickoff） |
 
 ---
 
@@ -964,9 +1557,30 @@ Planning阶段: 创建Story文件框架（Story、AC、Tasks基本结构）
   - 新增 Section 11.5：UAT 早期规划（条件性）
   - 新增 Section 22：Sprint 闭环准备（Planning-Completion 联动）
   - 修复：Section 20 重复问题（现为 20 + 20a）
-- **v1.4（2026-02-02）- 新增Section 6.6"UX/Architecture Review"（条件性）** ⭐ NEW
+- **v1.4（2026-02-02）- 新增Section 6.6"UX/Architecture Review"（条件性）** ⭐
   - 基于Sprint 8 Story 8.10经验教训
   - 添加审查条件矩阵（MANDATORY/RECOMMENDED/OPTIONAL）
   - 添加Agent自动化评估逻辑
   - 发现12个问题（7个UX + 5个架构），避免6.5h返工时间
   - 包含详细审查清单（WCAG、响应式、数据完整性、并发控制等）
+- **v1.5（2026-02-05）- 完整增强版：补充缺失的关键步骤** ⭐ NEW
+  - **新增 Section 8.5：技术债务规划与任务化**（条件性，Agent 评估自动化）
+    - 技术债务来源识别（从 technical-debt-from-reviews.md）
+    - 按优先级分类（P0/P1/P2/P3）
+    - 容量分配建议（Balanced/Feature-Heavy/Debt-Focused）
+    - 任务化步骤（Story 文件 vs Technical Tasks）
+    - 基于 Sprint 8-9 Balanced Approach 经验
+  - **新增 Section 12.5：Sprint Status 更新**（🚨 MANDATORY，Agent 自动执行）
+    - 自动更新 sprint-status.yaml
+    - Epic 状态转换（backlog → in-progress）
+    - 与 Sprint Backlog 同步
+    - 全局工作项追踪维护
+  - **改进 Section 13：Sprint Kickoff Readiness 文档创建**（🚨 MANDATORY，Agent 自动执行）
+    - 替换原 "Sprint Kick-off 文档" 为更详细的 Kickoff Readiness Checklist
+    - 包含 8 个主要检查部分（Planning Artifacts、Git Branch、Environment、Azure Resources、Testing、Permissions、Documentation、Team Readiness）
+    - Git Branch Setup 作为 Story 0.1（CRITICAL 优先级）
+    - 基于 Sprint 6 kickoff-readiness.md 成功模式
+    - 提供完整模板和 Agent 自动化生成逻辑
+  - **完整性提升：** 从 95% 覆盖度提升到 100%
+  - **自动化增强：** 3 个新的 Agent 自动执行步骤
+  - **系统性规划：** 技术债务不再被"遗忘"，成为 Sprint 规划的正式环节

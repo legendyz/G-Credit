@@ -1,0 +1,173 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Body,
+  Request,
+  Res,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiBody,
+} from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import type { Response } from 'express';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UserRole } from '@prisma/client';
+import { BulkIssuanceService } from './bulk-issuance.service';
+
+/**
+ * Bulk Issuance Controller
+ * 
+ * Provides endpoints for batch badge issuance:
+ * - Template download
+ * - CSV upload and validation
+ * - Preview session management
+ * - Confirmation and processing
+ * - Error report download
+ * 
+ * Security Features:
+ * - IDOR protection through session ownership validation (ARCH-C2)
+ * - CSV injection prevention in error reports (ARCH-C1)
+ * - Role-based access control (ISSUER, ADMIN only)
+ */
+@ApiTags('Bulk Issuance')
+@Controller('api/bulk-issuance')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@ApiBearerAuth()
+export class BulkIssuanceController {
+  constructor(private readonly bulkIssuanceService: BulkIssuanceService) {}
+
+  /**
+   * Download CSV template for bulk issuance
+   */
+  @Get('template')
+  @Roles(UserRole.ISSUER, UserRole.ADMIN)
+  @ApiOperation({ summary: 'Download CSV template for bulk badge issuance' })
+  @ApiResponse({ status: 200, description: 'CSV template file' })
+  async downloadTemplate(@Res() res: Response) {
+    const csv = this.bulkIssuanceService.generateTemplate();
+    
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="bulk-issuance-template.csv"');
+    res.send(csv);
+  }
+
+  /**
+   * Upload CSV file and create preview session
+   */
+  @Post('upload')
+  @Roles(UserRole.ISSUER, UserRole.ADMIN)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({ summary: 'Upload CSV file for bulk issuance' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 201, description: 'Session created with preview data' })
+  @ApiResponse({ status: 400, description: 'Invalid CSV file' })
+  async uploadCsv(
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req: any,
+  ) {
+    if (!file) {
+      throw new BadRequestException('CSV file is required');
+    }
+
+    if (!file.mimetype.includes('csv') && !file.originalname.endsWith('.csv')) {
+      throw new BadRequestException('File must be in CSV format');
+    }
+
+    const csvContent = file.buffer.toString('utf-8');
+    const userId = req.user.userId;
+
+    return this.bulkIssuanceService.createSession(csvContent, userId);
+  }
+
+  /**
+   * Get preview data for a session
+   * 
+   * SECURITY: Validates session ownership to prevent IDOR (ARCH-C2)
+   */
+  @Get('preview/:sessionId')
+  @Roles(UserRole.ISSUER, UserRole.ADMIN)
+  @ApiOperation({ summary: 'Get preview data for a bulk issuance session' })
+  @ApiResponse({ status: 200, description: 'Session preview data' })
+  @ApiResponse({ status: 403, description: 'Not authorized to access this session' })
+  @ApiResponse({ status: 404, description: 'Session not found or expired' })
+  async getPreview(
+    @Param('sessionId') sessionId: string,
+    @Request() req: any,
+  ) {
+    const userId = req.user.userId;
+    return this.bulkIssuanceService.getPreviewData(sessionId, userId);
+  }
+
+  /**
+   * Confirm and execute bulk issuance
+   * 
+   * SECURITY: Validates session ownership to prevent IDOR (ARCH-C2)
+   */
+  @Post('confirm/:sessionId')
+  @Roles(UserRole.ISSUER, UserRole.ADMIN)
+  @ApiOperation({ summary: 'Confirm and execute bulk badge issuance' })
+  @ApiResponse({ status: 200, description: 'Processing complete' })
+  @ApiResponse({ status: 400, description: 'Session not ready for confirmation' })
+  @ApiResponse({ status: 403, description: 'Not authorized to confirm this session' })
+  @ApiResponse({ status: 404, description: 'Session not found or expired' })
+  async confirmBulkIssuance(
+    @Param('sessionId') sessionId: string,
+    @Request() req: any,
+  ) {
+    const userId = req.user.userId;
+    return this.bulkIssuanceService.confirmBulkIssuance(sessionId, userId);
+  }
+
+  /**
+   * Download error report as CSV
+   * 
+   * SECURITY: 
+   * - Validates session ownership to prevent IDOR (ARCH-C2)
+   * - Sanitizes CSV output to prevent injection attacks (ARCH-C1)
+   */
+  @Get('error-report/:sessionId')
+  @Roles(UserRole.ISSUER, UserRole.ADMIN)
+  @ApiOperation({ summary: 'Download error report for a bulk issuance session' })
+  @ApiResponse({ status: 200, description: 'CSV error report' })
+  @ApiResponse({ status: 400, description: 'No errors in this session' })
+  @ApiResponse({ status: 403, description: 'Not authorized to access this session' })
+  @ApiResponse({ status: 404, description: 'Session not found or expired' })
+  async downloadErrorReport(
+    @Param('sessionId') sessionId: string,
+    @Request() req: any,
+    @Res() res: Response,
+  ) {
+    const userId = req.user.userId;
+    const csvContent = await this.bulkIssuanceService.getErrorReportCsv(sessionId, userId);
+    
+    const shortId = sessionId.substring(0, 8);
+    
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="errors-${shortId}.csv"`);
+    res.send(csvContent);
+  }
+}

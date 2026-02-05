@@ -1,0 +1,446 @@
+# Sprint 9 Status Tracker
+# Auto-generated during Sprint Planning (2026-02-05)
+# Update this file daily during standups
+
+metadata:
+  sprint_number: 9
+  sprint_goal: "Deliver Epic 8 (Bulk Badge Issuance) MVP with CSV upload, validation, preview, and synchronous batch processing (max 20 badges)"
+  epic: "Epic 8 - Bulk Badge Issuance"
+  version_target: "v0.9.0"
+  start_date: "2026-02-06"
+  end_date: "2026-02-20"
+  total_days: 14
+  team_capacity: 80h
+  planning_complete: true
+  planning_date: "2026-02-05"
+  approach: "Balanced Sprint (Feature Development + Tech Debt)"
+
+# Sprint Metrics (updated daily)
+metrics:
+  total_stories: 4  # Stories 8.1, 8.2, 8.3, 8.4
+  total_td_tasks: 3  # TD-015 (Phase 1+2), TD-014, TD-013
+  total_work_items: 7  # 4 stories + 3 TD tasks
+  total_estimated_hours: 37h  # 32h features + 13h tech debt (P1 improvements included)
+  
+  completed_stories: 0
+  completed_td_tasks: 0
+  completed_work_items: 0
+  completed_hours: 0h
+  remaining_hours: 37h
+  
+  # Sprint 9 capacity breakdown
+  feature_hours: 32h  # Epic 8 (24h baseline + 8h P1 enhancements)
+  td_hours: 13h  # TD-015 (8h), TD-014 (3h), TD-013 (2h)
+  testing_hours: 12h
+  code_review_hours: 8h
+  bug_fix_hours: 4h
+  ceremonies_hours: 8h
+  buffer_hours: 3h
+
+# P0 Critical Fixes (Pre-Sprint, NOT counted in sprint capacity)
+pre_sprint_p0_fixes:
+  status: completed  # ✅ DONE 2026-02-05
+  total_items: 5
+  completed_items: 5  # ✅ ALL COMPLETE
+  estimated_hours: 6h
+  actual_hours: 6h
+  completion_date: "2026-02-05"
+  
+  security_fixes:
+    - id: ARCH-C1
+      title: "CSV Injection Attack Prevention"
+      priority: P0
+      effort: 1h
+      status: done  # ✅ COMPLETE
+      blocker: false  # Unblocked
+      files: 
+        - "backend/src/bulk-issuance/csv-validation.service.ts"
+        - "backend/src/bulk-issuance/csv-validation.service.spec.ts"
+      tests_added: 24
+    
+    - id: ARCH-C2
+      title: "Session IDOR Vulnerability Fix"
+      priority: P0
+      effort: 1h
+      status: done  # ✅ COMPLETE
+      blocker: false  # Unblocked
+      files:
+        - "backend/src/bulk-issuance/bulk-issuance.service.ts"
+        - "backend/src/bulk-issuance/bulk-issuance.service.spec.ts"
+        - "backend/src/bulk-issuance/bulk-issuance.controller.ts"
+      tests_added: 17
+  
+  ux_fixes:
+    - id: UX-P0-1
+      title: "Pseudo-Progress Indicator for 20s Wait"
+      priority: P0
+      effort: 2h
+      status: done  # ✅ COMPLETE
+      files:
+        - "frontend/src/components/BulkIssuance/ProcessingModal.tsx"
+    
+    - id: UX-P0-2
+      title: "CSV Template Example Row Prefix"
+      priority: P0
+      effort: 0.5h
+      status: done  # ✅ COMPLETE
+      files:
+        - "backend/src/bulk-issuance/bulk-issuance.controller.ts"
+    
+    - id: UX-P0-3
+      title: "Error Correction Workflow"
+      priority: P0
+      effort: 1.5h
+      status: done  # ✅ COMPLETE
+      files:
+        - "backend/src/bulk-issuance/bulk-issuance.controller.ts"
+        - "frontend/src/components/BulkIssuance/BulkPreviewPage.tsx"
+
+# Epic 8: Bulk Badge Issuance Stories
+stories:
+  # Story 8.1: CSV Template & Validation
+  "8.1":
+    id: "8.1"
+    title: "CSV Template & Validation"
+    status: backlog
+    priority: HIGH
+    estimated_hours: 8.5h  # 6h baseline + 2.5h P1 enhancements
+    actual_hours: 0h
+    assigned_to: TBD
+    dependencies: []
+    story_file: "sprint-9/8-1-csv-template-validation.md"
+    
+    p1_enhancements:
+      - "UX-P1-1: Badge template selector UI (2h)"
+      - "UX-P1-2: File size limit adjustment 10MB→100KB (0.5h)"
+    
+    acceptance_criteria:
+      - "AC1: Template download endpoint"
+      - "AC2: Template structure with example rows (P0-2 integrated)"
+      - "AC3: Field specifications"
+      - "AC4: Help documentation"
+      - "AC5: Analytics tracking"
+      - "AC6: Template selector UI (P1)"
+      - "AC7: File size limit adjustment (P1)"
+    
+    testing:
+      unit_tests: 18  # 3 template + 15 validation
+      component_tests: 3
+      e2e_tests: 5
+      coverage_target: 80%
+    
+    blocked: false
+    blocker_reason: null
+    start_date: null
+    completion_date: null
+
+  # Story 8.2: CSV Upload & Parsing
+  "8.2":
+    id: "8.2"
+    title: "CSV Upload & Parsing"
+    status: backlog
+    priority: HIGH
+    estimated_hours: 11.5h  # 6h baseline + 4.5h security + 1h UX
+    actual_hours: 0h
+    assigned_to: TBD
+    dependencies: ["8.1"]
+    story_file: "sprint-9/8-2-csv-upload-parsing.md"
+    security_critical: true
+    
+    critical_security_fixes:
+      - "ARCH-C1: CSV injection sanitization (1h) - BLOCKER"
+      - "ARCH-C2: Session IDOR validation (1h) - BLOCKER"
+      - "ARCH-C3: Rate limiting (0.5h)"
+      - "ARCH-C4: Validation transactions (1.5h)"
+      - "ARCH-C5: UTF-8 BOM handling (0.5h)"
+      - "ARCH-C7: XSS sanitization (1h)"
+    
+    p1_enhancements:
+      - "UX-P1-4: Drag-drop visual feedback (1h)"
+    
+    acceptance_criteria:
+      - "AC1: File upload UI with drag-drop (P1-4 integrated)"
+      - "AC2: File validation (max 100KB updated)"
+      - "AC3: CSV parsing with BOM handling (ARCH-C5)"
+      - "AC4: Row validation with security fixes (ARCH-C1, C7)"
+      - "AC5: Validation summary"
+      - "AC6: Rate limiting (ARCH-C3)"
+    
+    testing:
+      unit_tests: 23  # 8 upload + 10 validation + 5 session + 3 security
+      component_tests: 5
+      e2e_tests: 12  # 8 upload + 4 IDOR security tests
+      coverage_target: 80%
+    
+    blocked: false
+    blocker_reason: null
+    start_date: null
+    completion_date: null
+
+  # Story 8.3: Bulk Issuance Preview UI
+  "8.3":
+    id: "8.3"
+    title: "Bulk Issuance Preview UI"
+    status: backlog
+    priority: MEDIUM
+    estimated_hours: 11.5h  # 8h baseline + 2.5h P0 + 1h P1
+    actual_hours: 0h
+    assigned_to: TBD
+    dependencies: ["8.2"]
+    story_file: "sprint-9/8-3-bulk-preview-ui.md"
+    security_critical: true
+    
+    critical_fixes:
+      - "UX-P0-3: Error correction workflow (1.5h) - P0"
+      - "ARCH-C2: Session IDOR validation (1h) - BLOCKER"
+    
+    p1_enhancements:
+      - "UX-P1-3: Session timer optimization (0.5h)"
+      - "UX-P1-5: Pagination adjustment 50→25 (0.5h)"
+    
+    acceptance_criteria:
+      - "AC1: Preview summary header"
+      - "AC2: Preview data table (P1-5 integrated)"
+      - "AC3: Error handling with correction workflow (P0-3)"
+      - "AC4: Confirmation actions"
+      - "AC5: Session management with IDOR validation (ARCH-C2, P1-3)"
+    
+    testing:
+      unit_tests: 6
+      component_tests: 27
+      e2e_tests: 10  # 6 preview + 4 IDOR security tests
+      coverage_target: 80%
+    
+    blocked: false
+    blocker_reason: null
+    start_date: null
+    completion_date: null
+
+  # Story 8.4: Bulk Issuance Synchronous Processing (MVP)
+  "8.4":
+    id: "8.4"
+    title: "Bulk Issuance Synchronous Processing (MVP)"
+    status: backlog
+    priority: MEDIUM
+    estimated_hours: 6.5h  # 4h baseline + 2h P0 + 0.5h P1
+    actual_hours: 0h
+    assigned_to: TBD
+    dependencies: ["8.3"]
+    story_file: "sprint-9/8-4-batch-processing-phase1.md"
+    mvp_simplification: true
+    
+    mvp_decision:
+      reason: "Deferred Redis/async to TD-016 Phase 2"
+      batch_limit: 20
+      processing_type: "synchronous"
+      wait_time: "20 seconds"
+      upgrade_path: "TD-016 documented"
+    
+    critical_fixes:
+      - "UX-P0-1: Pseudo-progress indicator (2h) - CRITICAL UX"
+      - "ARCH-C2: Session IDOR validation (shared with 8.3)"
+    
+    p1_enhancements:
+      - "ARCH-C6: Transaction strategy documentation (0.5h)"
+    
+    acceptance_criteria:
+      - "AC1: CSV upload limit (≤20 badges)"
+      - "AC2: Synchronous batch processing"
+      - "AC3: Error handling with transaction strategy (ARCH-C6)"
+      - "AC4: Frontend loading state with progress indicator (UX-P0-1)"
+      - "AC5: Completion display"
+      - "AC6: Session security (ARCH-C2)"
+    
+    testing:
+      unit_tests: 10
+      component_tests: 9  # 7 + 2 progress modal tests
+      e2e_tests: 8  # 4 limits + 4 IDOR security tests
+      coverage_target: 80%
+    
+    blocked: false
+    blocker_reason: null
+    start_date: null
+    completion_date: null
+
+# Technical Debt Tasks
+technical_debt:
+  # TD-015: Fix ESLint Type Safety Warnings
+  "TD-015":
+    id: "TD-015"
+    title: "Fix ESLint Type Safety Warnings"
+    priority: P2
+    total_hours: 8h
+    status: backlog
+    
+    phase_1:
+      title: "Fix no-unsafe-call and no-unsafe-return"
+      estimated_hours: 4h
+      actual_hours: 0h
+      target_reduction: "1100 → 800 warnings (27%)"
+      status: backlog
+      files:
+        - "Multiple backend files"
+    
+    phase_2:
+      title: "Fix no-unsafe-member-access and no-unused-vars"
+      estimated_hours: 4h
+      actual_hours: 0h
+      target_reduction: "800 → 500 warnings (55%)"
+      status: backlog
+      files:
+        - "Multiple backend files"
+
+  # TD-014: Unify Email Service (Remove nodemailer)
+  "TD-014":
+    id: "TD-014"
+    title: "Unify Email Service (Remove nodemailer)"
+    priority: P2
+    estimated_hours: 3h
+    actual_hours: 0h
+    status: backlog
+    
+    tasks:
+      - "Remove nodemailer dependency"
+      - "Consolidate to GraphEmailService only"
+      - "Update all email sending code"
+      - "Add fallback retry logic"
+      - "Update tests"
+    
+    files:
+      - "backend/src/services/email.service.ts"
+      - "backend/package.json"
+
+  # TD-013: Frontend Bundle Size Optimization
+  "TD-013":
+    id: "TD-013"
+    title: "Frontend Bundle Size Optimization"
+    priority: P2
+    estimated_hours: 2h
+    actual_hours: 0h
+    status: backlog
+    
+    target: "Reduce bundle from 570KB → <400KB"
+    
+    tasks:
+      - "Enable tree-shaking for unused components"
+      - "Lazy load chart libraries"
+      - "Optimize icon imports"
+      - "Code splitting for admin routes"
+    
+    files:
+      - "frontend/vite.config.ts"
+      - "frontend/src/main.tsx"
+
+# Sprint Events
+events:
+  planning:
+    date: "2026-02-05"
+    duration: "3h"
+    participants: ["Scrum Master", "Dev Agent", "UX Designer Agent", "Architect Agent"]
+    outcome: "Sprint 9 backlog created, P0 security/UX issues identified via agent review"
+  
+  daily_standups:
+    schedule: "Daily 09:00"
+    duration: "15 min"
+    format: "Async update in sprint-status.yaml"
+  
+  review:
+    date: "2026-02-20"
+    duration: "1h"
+    participants: ["Team", "Stakeholders"]
+  
+  retrospective:
+    date: "2026-02-20"
+    duration: "1h"
+    participants: ["Team"]
+    status: optional
+
+# Review Findings Integration
+reviews:
+  ux_review:
+    date: "2026-02-05"
+    reviewer: "UX Designer Agent"
+    status: completed
+    findings:
+      p0_critical: 3
+      p1_high_priority: 5
+      approved_items: 4
+      total_findings: 12
+    report_file: "sprint-9/ux-arch-review-report.md"
+  
+  architecture_review:
+    date: "2026-02-05"
+    reviewer: "Software Architect Agent"
+    status: completed
+    findings:
+      critical_flaws: 7
+      medium_risks: 12
+      validated_decisions: 8
+      total_findings: 27
+    report_file: "sprint-9/ux-arch-review-report.md"
+
+# Risks & Issues
+risks:
+  - id: RISK-9-1
+    title: "P0 security fixes not completed before sprint start"
+    probability: MEDIUM
+    impact: HIGH
+    mitigation: "Allocated 6h today (2026-02-05) for fixes, clear checklist created"
+    status: open
+  
+  - id: RISK-9-2
+    title: "20-second synchronous wait creates poor UX"
+    probability: HIGH
+    impact: MEDIUM
+    mitigation: "UX-P0-1 pseudo-progress indicator addresses perception issue"
+    status: mitigated
+
+# Sprint Goal Progress
+goal_progress:
+  epic_8_mvp:
+    target: "Complete Stories 8.1-8.4"
+    current: "Planning complete, P0 fixes in progress"
+    percentage: 0
+    on_track: true
+  
+  tech_debt_cleanup:
+    target: "Complete TD-015, TD-014, TD-013"
+    current: "Not started"
+    percentage: 0
+    on_track: true
+
+# Definition of Done
+definition_of_done:
+  code:
+    - "All acceptance criteria met"
+    - "Unit test coverage ≥80%"
+    - "E2E tests pass"
+    - "Code reviewed and approved"
+    - "No critical ESLint errors"
+    - "Security fixes validated (for security-critical stories)"
+  
+  documentation:
+    - "API documentation updated"
+    - "User guide updated (if needed)"
+    - "Technical decisions documented"
+  
+  deployment:
+    - "Merged to main branch"
+    - "CI/CD pipeline passes"
+    - "Deployed to dev environment"
+    - "Smoke tests pass"
+
+# Notes
+notes:
+  - "Sprint 9 is first sprint using agent-assisted professional reviews (UX + Architecture)"
+  - "P0 fixes identified during review must complete before sprint kickoff"
+  - "MVP decision: Story 8.4 simplified to synchronous processing (Redis deferred to TD-016)"
+  - "This is an experience project without hard deadlines - prioritize quality over speed"
+  - "Single dev agent working sequentially (not parallel teams)"
+
+# Version History
+version_history:
+  - version: "1.0"
+    date: "2026-02-05"
+    author: "Scrum Master (Bob)"
+    changes: "Initial Sprint 9 status file created after planning + UX/Arch reviews"

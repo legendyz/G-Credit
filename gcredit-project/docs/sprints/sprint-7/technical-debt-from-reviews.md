@@ -3,7 +3,7 @@
 **Created:** 2026-02-01  
 **Source:** Pre-UAT Reviews + Historical Sprint Debt (Sprint 0-6)  
 **Status:** Consolidated master list for Sprint 8+ planning  
-**Last Updated:** 2026-02-05 (Added TD-015: ESLint Warnings)
+**Last Updated:** 2026-02-05 (Added TD-016: Async Batch Processing)
 
 ---
 
@@ -14,8 +14,8 @@
 | **P0 (UAT Blocker)** | 9 | Pre-UAT Reviews | Sprint 7 | ✅ **9/9 Fixed** |
 | **P1 (Must Fix)** | 17 | Reviews + Historical | Sprint 8 | Pending |
 | **P2 (Medium)** | 23 | Reviews + Historical + TD-009~015 | Sprint 8-10 | +1 new item (TD-015) |
-| **P3 (Low/Future)** | 8 | Historical | Sprint 9+ | Pending |
-| **Total** | **57** | - | - | - |
+| **P3 (Low/Future)** | 9 | Historical + TD-016 | Sprint 9+ | +1 new item (TD-016) |
+| **Total** | **58** | - | - | - |
 
 ---
 
@@ -66,6 +66,7 @@
 | TD-008 | Tailwind CSS Modal Issues | S6 | 0.5d | ⏸️ Investigate | Frontend styling |
 | TD-014 | Dual Email System (SMTP + M365) | S8 | 2h | 📋 Sprint 9 | Unify to GraphEmailService, remove nodemailer |
 | TD-015 | Backend ESLint Warnings (1100) | S8 | 8h | 📋 Sprint 9-10 | Reduce warnings to 0, improve type safety |
+| TD-016 | Async Batch Processing (Redis) | S9 | 6-8h | ⏸️ Deferred | Post-MVP enhancement, validate user needs first |
 
 **TD-015 Details (ESLint Technical Debt):**
 - **Issue**: Backend has 1100 ESLint warnings (0 errors), primarily `@typescript-eslint/no-unsafe-*` type safety warnings
@@ -87,6 +88,32 @@
   - `@typescript-eslint/unbound-method`: 100+ occurrences
 - **Files**: `package.json` (lint script), `eslint.config.mjs`
 - **Metric to Track**: Run `npm run lint:strict` to see current warning count
+
+**TD-016 Details (Async Batch Processing - MVP Simplification Decision):**
+- **Created**: 2026-02-05 (Sprint 9 Planning)
+- **Decision**: Deferred Redis + Bull Queue from Story 8.4 to validate MVP first
+- **Issue**: Story 8.4 MVP implements synchronous processing (max 20 badges). Future users may need larger batches (50-100+) with non-blocking UI.
+- **Impact**: 
+  - MVP Phase: 20-badge limit, 20-second wait time (acceptable for validation)
+  - Cost Saving: $144/year (no Azure Redis during MVP)
+  - Reduced Complexity: No Redis setup, no background workers, no job polling
+- **Root Cause**: Product decision to validate core workflow before adding infrastructure complexity
+- **Solution Plan** (Phase 2 - Post-MVP):
+  1. Create Azure Redis Cache (Basic C0, $12/month)
+  2. Install Bull Queue dependencies (`@nestjs/bull`, `bull`)
+  3. Create `BulkIssuanceJob` database table
+  4. Implement background processor (batch 10 badges at a time)
+  5. Update frontend for async flow (job polling, progress bar)
+  6. Testing (10 unit + 5 E2E tests)
+- **Trigger Conditions** (All must be met):
+  - ≥3 users request >20 badges/batch
+  - Bulk issuance used ≥10 times/week
+  - Users complain 20-second wait is too long
+  - MVP success: Core workflow proven valuable
+- **Decision Point**: Sprint 10 Retrospective (review usage metrics and user feedback)
+- **Files**: `sprint-9/8-4-batch-processing-phase1.md`, `sprint-9/technical-debt-tasks.md`
+- **Metric to Track**: Bulk issuance usage frequency, batch sizes, user satisfaction with 20-second wait
+- **Reference**: Sprint 9 Planning Discussion (2026-02-05) - "MVP优先，避免过早优化"
 
 **TD-014 Details:**
 - **Issue**: System maintains two email mechanisms - `EmailService` (SMTP/nodemailer) for password reset and `GraphEmailService` (M365) for badge notifications
@@ -256,7 +283,13 @@
 |----|-------|----------|--------|-------|
 | TODO | Skill deletion reference check | `skills.service.ts:153` | 2h | Check badge template references before delete |
 
-**P2 Total: ~38h** (+3h TD-013)
+### Infrastructure - Future (Post-MVP)
+
+| ID | Issue | Location | Effort | Notes |
+|----|-------|----------|--------|-------|
+| TD-016 | Async Batch Processing Enhancement | Story 8.4, Backend | 6-8h | Redis + Bull Queue for >20 badges, deferred until MVP validates user needs |
+
+**P3 Total: ~68h** (+3h TD-013)
 
 ---
 
@@ -287,8 +320,8 @@
 ---
 
 ## 📊 Consolidated Effort Summary
-
-| Priority | Count | Effort | Target |
+9 | ~6d | Sprint 9+ |
+| **Total** | **51** | **~136 Target |
 |----------|-------|--------|--------|
 | **P0** | 8 | 15.25h | Sprint 7 (NOW) |
 | **P1** | 17 | ~39.5h | Sprint 8 |
@@ -359,8 +392,8 @@
 - [UX Audit Report](../ux-audit-sprint-1-4.md)
 - [Sprint 6 Technical Debt](../sprint-6/technical-debt.md) - Teams Channel Sharing
 - [Health Audit Report](../../health-audit-report-2026-02-01.md) - TD-001 to TD-008
-- [project-context.md](../../../../project-context.md) - TD tracking section
-
+- [project-context.md](../.5 (Added TD-016: Async Batch Processing)  
+**Version:** 2.1 (Sprint 9 MVP Simplification
 ---
 
 **Document Owner:** Scrum Master (Bob)  
