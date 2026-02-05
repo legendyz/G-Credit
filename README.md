@@ -14,7 +14,6 @@
 [![Version](https://img.shields.io/badge/Version-v0.8.0-blue)]()
 [![Tests](https://img.shields.io/badge/Tests-876%20Total%2C%20876%20Passing-success)]()
 
-
 > **G-Credit** is an enterprise-grade internal digital badging platform designed to securely recognize, verify, and analyze employee skills and achievements. Compliant with Open Badges 2.0 standards, it aims to replace fragmented certificate management and reduce dependency on external platforms.
 
 ---
@@ -289,7 +288,6 @@
 - **UAT:** 100% pass (15/15 tests, 0 P0/P1 bugs)
 - **Branch:** sprint-7/epic-9-revocation-lifecycle-uat (merged to main)
 - **Git Tag:** v0.7.0
-- **Next:** Sprint 8 planning
 
 **✅ Sprint 8 Complete (2026-02-05, 100% complete):**
 - ✅ Story 8.1: Dashboard Homepage with Key Metrics (8h, 23 tests)
