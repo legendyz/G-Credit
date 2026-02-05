@@ -1,20 +1,24 @@
 # G-Credit Project Documentation
 
-**Version:** 0.3.0 (Sprint 3 Complete - Badge Issuance)  
-**Last Updated:** 2026-01-27  
-**Status:** Active Development
+**Version:** 0.8.0  
+**Last Updated:** 2026-02-05  
+**Status:** Sprint 8 Complete - Production-Ready MVP
+
+> 📌 **For project status, Sprint progress, and technical overview, see the [Main Project README](../../README.md)**
 
 ---
 
-## 📚 Documentation Hub - Single Source of Truth
+## 📚 Documentation Navigation Hub
 
-This is the **primary documentation location** for the G-Credit Digital Credentialing System. All project documentation lives here or is linked from here.
+This is the **internal documentation navigation center** for the G-Credit project. Use this to find specific documentation quickly.
 
-### 🚀 Quick Start
-- **New Developer?** Start with [Development Getting Started](#development) → [Backend README](../backend/README.md)
-- **Looking for APIs?** See [API Documentation](#api-documentation) → [Sprint 3 Badge Issuance](./sprints/sprint-3/)
-- **Sprint Planning?** Check [Sprint Documentation](#sprint-documentation)
-- **Architecture Questions?** Review [System Architecture](./architecture/system-architecture.md)
+### 🚀 Quick Start by Role
+| Role | Start Here |
+|------|------------|
+| **New Developer** | [Backend README](../backend/README.md) → [API Guide](../backend/docs/API-GUIDE.md) |
+| **DevOps/SRE** | [Deployment Guide](../backend/docs/DEPLOYMENT.md) → [System Architecture](./architecture/system-architecture.md) |
+| **QA/Testing** | [Testing Guide](../backend/docs/TESTING.md) → [E2E Tests](../backend/test/) |
+| **New Team Member** | [Main README](../../README.md) → [Lessons Learned](./lessons-learned/lessons-learned.md) |
 
 ### 📑 Quick Navigation
 - 🏗️ [Architecture](#architecture) - System design and technical architecture
@@ -60,21 +64,22 @@ Sprint-by-sprint development history, backlogs, summaries, and retrospectives.
 **📁 Sprint Structure:**
 ```
 sprints/
-├── sprint-0/ - Infrastructure & Setup
-├── sprint-1/ - Authentication & Authorization  
-├── sprint-2/ - Badge Template Management
-└── sprint-3/ - Badge Issuance System ⭐ NEW
-    ├── summary.md - Complete Sprint 3 report (26 E2E tests, 6 stories)
-    └── uat-testing-guide.md - User acceptance testing guide
+├── sprint-0/ - Infrastructure & Setup (v0.0.1)
+├── sprint-1/ - Authentication & Authorization (v0.1.0)
+├── sprint-2/ - Badge Template Management (v0.2.0)
+├── sprint-3/ - Badge Issuance System (v0.3.0)
+├── sprint-4/ - Employee Badge Wallet (v0.4.0)
+├── sprint-5/ - Badge Verification & Open Badges 2.0 (v0.5.0)
+├── sprint-6/ - Social Sharing & Integrations (v0.6.0)
+├── sprint-7/ - Badge Revocation & Lifecycle (v0.7.0)
+└── sprint-8/ - Production-Ready MVP (v0.8.0) ✅ Current
+    ├── summary.md - Sprint 8 completion report
+    └── retrospective.md - Sprint 8 retrospective
 ```
 
-**Current Sprint:** Sprint 3 (Badge Issuance) - ✅ Complete!
-- 6/6 stories delivered (100%)
-- 26 E2E tests passing
-- UAT successfully completed
-- See [Sprint 3 Summary](./sprints/sprint-3/summary.md)
+**Current Status:** Sprint 8 Complete - See [Main README](../../README.md) for detailed progress
 
-**Legacy Location:** Sprint 0-2 artifacts in `_bmad-output/implementation-artifacts/` (to be migrated)
+**Legacy Location:** Sprint 0-2 artifacts in `_bmad-output/implementation-artifacts/`
 
 ---
 
@@ -106,15 +111,17 @@ Environment setup, service configuration, and deployment prerequisites.
 Testing strategies, test documentation, and quality assurance guides.
 
 **📄 Documents:**
+- [TESTING.md](../backend/docs/TESTING.md) - Complete testing guide
 - [PASSWORD_RESET_TESTING.md](./testing/PASSWORD_RESET_TESTING.md) - Password reset flow testing
-- [UAT Testing Guide](./sprints/sprint-3/uat-testing-guide.md) - Sprint 3 user acceptance testing
-- **Backend Tests:** See `../backend/test/` for test code and documentation
+- **Backend Tests:** See `../backend/test/` for E2E test code
+- **Frontend Tests:** See `../frontend/src/` for component tests
 
-**Test Coverage (Sprint 3):**
-- 26 E2E tests (badge issuance)
-- 20 Unit tests
-- 7 UAT scenarios
-- All passing ✅
+**Test Coverage (Sprint 8):**
+- 876 tests total, 100% passing
+- 416 backend tests (unit + integration)
+- 328 frontend tests
+- 132 E2E tests
+- WCAG 2.1 AA accessibility compliance
 
 **Purpose:** Understand testing strategy and how to validate system functionality.
 
@@ -139,15 +146,15 @@ Architecture Decision Records (ADRs) documenting important technical choices.
 Project knowledge base capturing what we've learned from experience.
 
 **📄 Documents:**
-- [lessons-learned.md](./lessons-learned/lessons-learned.md) - 25+ lessons from Sprint 0-3
-- **Categories:** Code Quality, Testing, Email, Prisma, TypeScript, Git, Documentation
+- [lessons-learned.md](./lessons-learned/lessons-learned.md) - 33 lessons from Sprint 0-8
+- **Categories:** Code Quality, Testing, Email, Prisma, TypeScript, Git, Documentation, Accessibility, Security
 
-**Key Lessons (Sprint 3):**
-- Lesson 26: UAT reveals usability issues automated tests miss
-- Lesson 27: PowerShell multipart form-data requires manual encoding
-- Lesson 28: API endpoint paths must be consistent across controllers
+**Recent Lessons (Sprint 8):**
+- Lesson 31: Code Review as DoD Gate
+- Lesson 32: E2E Test Isolation with unique identifiers
+- Lesson 33: Accessibility First Approach for WCAG compliance
 
-**Purpose:** Learn from past mistakes and build institutional knowledge.
+**Purpose:** Learn from past experiences and build institutional knowledge.
 
 ---
 
@@ -175,15 +182,15 @@ Backend application has its own detailed documentation:
 **Location:** `../backend/docs/`
 
 **Key Documents:**
-- [Sprint 3 Summary](../backend/docs/SPRINT-3-SUMMARY.md) - Complete Sprint 3 report ⭐ NEW
 - [Backend README](../backend/README.md) - Getting started with backend
-- [CHANGELOG](../backend/CHANGELOG.md) - Version history
-- **Coming Soon:** API-GUIDE.md, DEPLOYMENT.md, TESTING.md
+- [API-GUIDE.md](../backend/docs/API-GUIDE.md) - Complete API reference (21KB)
+- [DEPLOYMENT.md](../backend/docs/DEPLOYMENT.md) - Production deployment guide (26KB)
+- [TESTING.md](../backend/docs/TESTING.md) - Comprehensive testing guide (26KB)
+- [CHANGELOG](../backend/CHANGELOG.md) - Version history (v0.8.0)
 
 **Test Documentation:**
-- [UAT Testing Guide](../backend/test/UAT-TESTING-GUIDE.md) - Manual testing scenarios
-- [E2E Test Suite](../backend/test/badge-issuance.e2e-spec.ts) - Automated E2E tests
-- [Manual UAT Script](../backend/test/manual-uat-test.ps1) - PowerShell test automation
+- E2E Tests: `../backend/test/` - 132 E2E tests
+- Unit Tests: `../backend/src/**/*.spec.ts` - 284 unit tests
 
 ---
 
@@ -246,21 +253,23 @@ All documents should include:
 
 ## 📊 Documentation Metrics
 
-### Coverage (Sprint 2)
+### Coverage (Sprint 8)
 - ✅ Architecture - 100% (system architecture documented)
-- ✅ Planning - 100% (epics and UX specs complete)
-- ✅ Lessons Learned - 100% (25 lessons from 3 sprints)
+- ✅ Planning - 100% (14 epics, 85 user stories)
+- ✅ Lessons Learned - 100% (33 lessons from 8 sprints)
 - ✅ Backend API - 100% (complete API guide)
 - ✅ Deployment - 100% (Azure deployment guide)
-- ✅ Testing - 100% (comprehensive testing guide)
+- ✅ Testing - 100% (876 tests, comprehensive guide)
+- ✅ Security - 100% (security hardening complete)
+- ✅ Accessibility - 100% (WCAG 2.1 AA compliant)
 
 ### Quality Indicators
-- 📄 Total Documents: 30+
-- 📏 Total Content: ~200KB
-- ✅ All sprints documented
+- 📄 Total Documents: 50+
+- 📏 Total Content: ~400KB
+- ✅ All 8 sprints documented
 - ✅ All major decisions recorded
 - ✅ Complete API coverage
-- ✅ Production deployment ready
+- ✅ Production-Ready MVP
 
 ---
 
@@ -296,6 +305,6 @@ All documents should include:
 
 ---
 
-**Last Review:** 2026-01-26  
-**Next Review:** End of Sprint 3  
+**Last Review:** 2026-02-05  
+**Next Review:** End of Sprint 9  
 **Maintained By:** Development Team
