@@ -3,7 +3,7 @@
 **Created:** 2026-02-01  
 **Source:** Pre-UAT Reviews + Historical Sprint Debt (Sprint 0-6)  
 **Status:** Consolidated master list for Sprint 8+ planning  
-**Last Updated:** 2026-02-02 (Sprint 7 Complete - All P0 Fixed)
+**Last Updated:** 2026-02-05 (Added TD-015: ESLint Warnings)
 
 ---
 
@@ -13,9 +13,9 @@
 |----------|-------|--------|---------------|--------|
 | **P0 (UAT Blocker)** | 9 | Pre-UAT Reviews | Sprint 7 | ✅ **9/9 Fixed** |
 | **P1 (Must Fix)** | 17 | Reviews + Historical | Sprint 8 | Pending |
-| **P2 (Medium)** | 22 | Reviews + Historical + TD-009~013 | Sprint 8-9 | +5 new items |
+| **P2 (Medium)** | 23 | Reviews + Historical + TD-009~015 | Sprint 8-10 | +1 new item (TD-015) |
 | **P3 (Low/Future)** | 8 | Historical | Sprint 9+ | Pending |
-| **Total** | **56** | - | - | - |
+| **Total** | **57** | - | - | - |
 
 ---
 
@@ -65,6 +65,28 @@
 | TD-007 | Badge PNG Generation | S6 | 2d | ⏸️ Future | `GET /api/badges/:id/download/png` placeholder |
 | TD-008 | Tailwind CSS Modal Issues | S6 | 0.5d | ⏸️ Investigate | Frontend styling |
 | TD-014 | Dual Email System (SMTP + M365) | S8 | 2h | 📋 Sprint 9 | Unify to GraphEmailService, remove nodemailer |
+| TD-015 | Backend ESLint Warnings (1100) | S8 | 8h | 📋 Sprint 9-10 | Reduce warnings to 0, improve type safety |
+
+**TD-015 Details (ESLint Technical Debt):**
+- **Issue**: Backend has 1100 ESLint warnings (0 errors), primarily `@typescript-eslint/no-unsafe-*` type safety warnings
+- **Current Workaround**: CI uses `--max-warnings=1100` cap to prevent new warnings but allows existing ones
+- **Impact**: 
+  - Potential runtime type errors hidden by `any` usage
+  - Unbound method warnings could cause `this` context issues
+  - Unused variables increase code complexity
+- **Root Cause**: Rapid development prioritized features over strict type safety
+- **Solution Plan**:
+  1. Sprint 9: Fix top 300 warnings (focus on `no-unsafe-call`, `no-unsafe-return`)
+  2. Sprint 10: Fix remaining 500 warnings
+  3. Sprint 11: Reduce `--max-warnings` to 0, enable strict mode
+- **Key Warning Categories**:
+  - `@typescript-eslint/no-unsafe-argument`: 280+ occurrences
+  - `@typescript-eslint/no-unsafe-member-access`: 250+ occurrences
+  - `@typescript-eslint/no-unsafe-assignment`: 200+ occurrences
+  - `@typescript-eslint/no-unused-vars`: 150+ occurrences
+  - `@typescript-eslint/unbound-method`: 100+ occurrences
+- **Files**: `package.json` (lint script), `eslint.config.mjs`
+- **Metric to Track**: Run `npm run lint:strict` to see current warning count
 
 **TD-014 Details:**
 - **Issue**: System maintains two email mechanisms - `EmailService` (SMTP/nodemailer) for password reset and `GraphEmailService` (M365) for badge notifications
