@@ -45,6 +45,10 @@ export interface SearchInputProps {
   disabled?: boolean;
   /** Whether search is in progress */
   isLoading?: boolean;
+  /** Story 8.2 AC1: Callback when focus state changes (for mobile UX) */
+  onFocusChange?: (isFocused: boolean) => void;
+  /** Story 8.2 AC1: Expand to full width on mobile focus */
+  expandOnMobileFocus?: boolean;
 }
 
 export function SearchInput({
@@ -60,10 +64,18 @@ export function SearchInput({
   ariaLabel = 'Search',
   disabled = false,
   isLoading = false,
+  onFocusChange,
+  expandOnMobileFocus = false,
 }: SearchInputProps) {
   const [internalValue, setInternalValue] = useState(controlledValue || '');
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Story 8.2 AC1: Notify parent of focus state changes
+  const handleFocusChange = useCallback((focused: boolean) => {
+    setIsFocused(focused);
+    onFocusChange?.(focused);
+  }, [onFocusChange]);
   
   // Use controlled value if provided
   const value = controlledValue !== undefined ? controlledValue : internalValue;
@@ -120,13 +132,18 @@ export function SearchInput({
     ? 'sticky top-0 z-10 bg-white dark:bg-gray-900 py-2'
     : '';
 
+  // Story 8.2 AC1: Expand to full width on mobile when focused
+  const mobileExpandClasses = expandOnMobileFocus && isFocused
+    ? 'sm:w-auto w-full absolute left-0 right-0 mx-4 z-20'
+    : '';
+
   const focusClasses = isFocused
     ? 'ring-2 ring-blue-500 border-transparent'
     : 'border-gray-300 dark:border-gray-600';
 
   return (
     <div 
-      className={`${stickyClasses} ${className}`}
+      className={`${stickyClasses} ${mobileExpandClasses} ${className} transition-all duration-200`}
       data-testid="search-container"
     >
       {label && (
@@ -158,8 +175,8 @@ export function SearchInput({
           type="search"
           value={value}
           onChange={handleChange}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
+          onFocus={() => handleFocusChange(true)}
+          onBlur={() => handleFocusChange(false)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}

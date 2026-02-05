@@ -8,10 +8,12 @@
  * - Status filter
  * - Issuer filter (Admin only - AC2)
  * - Active filter chips
+ * - Mobile focus UX (hide chips when focused)
  *
  * Used in Employee Wallet (AC1) and Badge Management (AC2)
  */
 
+import { useState } from 'react';
 import { SearchInput } from './SearchInput';
 import { FilterChips } from './FilterChips';
 import { DateRangePicker } from './DateRangePicker';
@@ -100,6 +102,9 @@ export function BadgeSearchBar({
   placeholder = 'Search badges...',
   className = '',
 }: BadgeSearchBarProps) {
+  // Story 8.2 AC1: Track search focus state for mobile UX
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+
   const containerClasses = sticky
     ? 'sticky top-0 z-10 bg-white shadow-sm pb-3 pt-2 -mx-4 px-4 md:-mx-6 md:px-6'
     : '';
@@ -111,7 +116,7 @@ export function BadgeSearchBar({
     >
       {/* Search & Filters Row */}
       <div className="flex flex-col sm:flex-row gap-3">
-        {/* Search Input */}
+        {/* Search Input - Story 8.2 AC1: Mobile focus behavior */}
         <div className="flex-1 min-w-0">
           <SearchInput
             value={searchTerm}
@@ -122,11 +127,13 @@ export function BadgeSearchBar({
             minSearchLength={2}
             debounceMs={500}
             ariaLabel="Search badges by name or description"
+            onFocusChange={setIsSearchFocused}
+            expandOnMobileFocus
           />
         </div>
 
-        {/* Filters - responsive layout */}
-        <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+        {/* Filters - responsive layout, hidden on mobile when search focused */}
+        <div className={`flex flex-wrap gap-2 sm:flex-nowrap ${isSearchFocused ? 'hidden sm:flex' : ''}`}>
           {/* Skills Filter */}
           {skills.length > 0 && (
             <div className="w-full sm:w-40 md:w-48">
@@ -192,13 +199,15 @@ export function BadgeSearchBar({
         </div>
       </div>
 
-      {/* Active Filter Chips */}
+      {/* Active Filter Chips - Story 8.2 AC1: Hidden on mobile when search focused */}
       {filterChips.length > 0 && (
-        <FilterChips
-          chips={filterChips}
-          onRemove={onRemoveFilter}
-          onClearAll={onClearAllFilters}
-        />
+        <div className={isSearchFocused ? 'hidden sm:block' : ''}>
+          <FilterChips
+            chips={filterChips}
+            onRemove={onRemoveFilter}
+            onClearAll={onClearAllFilters}
+          />
+        </div>
       )}
     </div>
   );
