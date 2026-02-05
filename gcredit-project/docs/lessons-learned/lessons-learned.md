@@ -2,10 +2,10 @@
 
 **Project:** G-Credit Digital Credentialing System  
 **Purpose:** Capture key learnings and establish best practices for efficient development  
-**Last Updated:** 2026-02-02 (Sprint 7 Complete - Badge Revocation & Lifecycle UAT)  
+**Last Updated:** 2026-02-05 (Sprint 8 Complete - Production-Ready MVP)  
 **Status:** Living document - update after each Sprint Retrospective  
-**Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 → Sprint 6 → Sprint 7 (Complete) + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
-**Total Lessons:** 30 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 8, Sprint 7: 3)
+**Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 → Sprint 6 → Sprint 7 → Sprint 8 (Complete) + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
+**Total Lessons:** 33 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 8, Sprint 7: 3, Sprint 8: 3)
 
 ---
 
@@ -19,13 +19,14 @@
 | Sprint 2 | 4/6 (67%) | 21-22h | ~3h | 7-8x faster | ~45min/story |
 | Sprint 3 | 2/6 (33%) | 4h | 4h | 100% | ~2h/story (Stories 4.1, 4.5) |
 | Sprint 6 | 5/5 (100%) | 56-76h | 35h | 46-62% | ~7h/story |
-| Sprint 7 | 10/10 (100%) | 41-47h | 38.5h | 82-93% | ~3.9h/story | ⭐
+| Sprint 7 | 10/10 (100%) | 41-47h | 38.5h | 82-93% | ~3.9h/story |
+| Sprint 8 | 12/12 (100%) | 76h | 80h | 95% | ~6.7h/item | ⭐
 
 ### Quality Metrics
-- **Test Pass Rate:** 100% (302/302 core tests Sprint 7)
-- **UAT Pass Rate:** 100% (15/15 tests Sprint 7) ⭐
+- **Test Pass Rate:** 100% (876/876 tests Sprint 8) ⭐
+- **UAT Pass Rate:** 100% (15/15 tests Sprint 7)
 - **Documentation Accuracy:** 95%+ (comprehensive guides created)
-- **Technical Debt:** 56 items tracked (9 P0 fixed in Sprint 7)
+- **Technical Debt:** 56 items tracked (17 P1 resolved in Sprint 8) ⭐
 - **Zero Production Bugs:** All issues caught in development
 
 ### Key Achievements
@@ -39,8 +40,9 @@
 - ✅ Badge Revocation system (API + UI + Notifications) ⭐ Sprint 7
 - ✅ Login & Navigation system ⭐ Sprint 7
 - ✅ Complete Lifecycle UAT (100% pass) ⭐ Sprint 7
+- ✅ Production-Ready MVP (Dashboard, Accessibility, Security, M365) ⭐ Sprint 8
 - ✅ Comprehensive documentation system (15+ guides created)
-- ✅ Well-organized test structure (302 tests, 100% pass rate) ⭐
+- ✅ Well-organized test structure (876 tests, 100% pass rate) ⭐
 
 ---
 
@@ -62,10 +64,14 @@
   - Lesson 19: Workflow Automation & AI Delegation
 - [Sprint 6 Lessons](#sprint-6-lessons-january-2026) - Badge Sharing & External Integrations (8 lessons)
   - Lesson 20-27: Testing, Mocking, Graph API, etc.
-- [Sprint 7 Lessons](#sprint-7-lessons-february-2026) - Pre-UAT Reviews & Phase-based Execution (3 lessons) 🆕
+- [Sprint 7 Lessons](#sprint-7-lessons-february-2026) - Pre-UAT Reviews & Phase-based Execution (3 lessons)
   - Lesson 28: Pre-UAT Review Pattern
   - Lesson 29: Phase-based Backlog Structure
   - Lesson 30: Technical Debt Registry as SSOT
+- [Sprint 8 Lessons](#sprint-8-lessons-february-2026) - Production-Ready MVP (3 lessons) 🆕
+  - Lesson 31: Code Review as DoD Gate
+  - Lesson 32: E2E Test Isolation with Schema-based Approach
+  - Lesson 33: Accessibility First Approach
 - [Cross-Sprint Patterns](#cross-sprint-patterns) - 12 patterns
 - [Development Checklists](#development-checklists)
 - [Common Pitfalls](#common-pitfalls-to-avoid)
@@ -1625,6 +1631,129 @@ Added proactive template/reference checking step to all 4 specialized agents' ac
 - [Template Audit Report](../archive/template-audit-2026-01-29.md) - Complete template system analysis
 - [sprint-planning-checklist.md](../templates/sprint-planning-checklist.md) - Planning workflow with agent automation
 - [sprint-completion-checklist-template.md](../templates/sprint-completion-checklist-template.md) - Completion workflow
+
+---
+
+## Sprint 8 Lessons (February 2026)
+### Production-Ready MVP & Quality Gates
+
+### 🎯 Lesson 31: Code Review as DoD Gate - Catch Issues Before Completion
+
+**Category:** 🧪 Quality, 📋 Process  
+**Impact:** HIGH (improves code quality and reduces post-completion fixes)  
+**Sprint Discovered:** Sprint 8 (Production-Ready MVP)  
+**Discovery Date:** 2026-02-05
+
+**What Happened:**
+Sprint 8 implemented formal code review as part of Definition of Done for all stories with significant code changes. Each story file includes a dedicated "Code Review" section with:
+- Findings categorized by severity (HIGH/MEDIUM/LOW)
+- Specific file:line references
+- Fix verification with commit hashes
+
+**Results:**
+- Story 8.9 (M365 Hardening): 6 findings (3 HIGH + 3 MEDIUM), all fixed
+- Story 8.10 (User Management): 4 findings, all fixed
+- Story 8.1-8.5: Multiple findings each, all resolved
+
+**Key HIGH Issues Found:**
+| Story | Issue | Impact if Missed |
+|-------|-------|------------------|
+| 8.9 | Network errors not retried | M365 sync fails on transient errors |
+| 8.9 | Disabled Azure accounts not deactivated | Security gap - disabled users remain active |
+| 8.10 | Admin role change needs two-step confirm | Accidental admin promotions |
+
+**Prevention for Future:**
+- Make code review findings section mandatory in all story files
+- Use SM verification to confirm all findings fixed
+- Include commit hash for each fix
+
+**Key Takeaway:**
+> Code review as part of DoD catches issues when they're cheap to fix. Document findings formally in story files for traceability.
+
+---
+
+### 🎯 Lesson 32: E2E Test Isolation with Schema-based Approach
+
+**Category:** 🧪 Testing, 🏗️ Infrastructure  
+**Impact:** CRITICAL (enables reliable CI/CD)  
+**Sprint Discovered:** Sprint 8, Task 8.8  
+**Discovery Date:** 2026-02-03
+
+**What Happened:**
+Before Sprint 8, E2E tests had severe reliability issues:
+- 45/71 tests failing intermittently
+- 20% CI/CD success rate
+- 4-minute execution time
+- Tests polluting each other's data
+
+**Solution Implemented:**
+Schema-based database isolation:
+```typescript
+// Each test file gets unique schema
+const schemaName = `test_${Date.now()}_${randomUUID().slice(0,8)}`
+
+// Create isolated schema
+beforeAll(async () => {
+  await prisma.$executeRawUnsafe(`CREATE SCHEMA "${schemaName}"`);
+  // Set search_path to isolated schema
+});
+
+// Clean up after tests
+afterAll(async () => {
+  await prisma.$executeRawUnsafe(`DROP SCHEMA "${schemaName}" CASCADE`);
+});
+```
+
+**Results:**
+- 83/83 E2E tests passing (100%)
+- 100% CI/CD reliability
+- 40-second execution (6x faster)
+- Zero flaky tests
+
+**Why This Works Better Than Transaction Rollback:**
+- Transactions can't span multiple requests (E2E sends HTTP requests)
+- Schema isolation is true parallel execution
+- Each test file is completely independent
+
+**Key Takeaway:**
+> For E2E tests with database dependencies, schema-based isolation is the gold standard. Transaction rollback doesn't work for HTTP-based tests.
+
+---
+
+### 🎯 Lesson 33: Accessibility First Approach - Build It In, Don't Bolt It On
+
+**Category:** 🎨 UX, 📋 Process  
+**Impact:** MEDIUM (reduces accessibility retrofitting cost)  
+**Sprint Discovered:** Sprint 8, Story 8.3  
+**Discovery Date:** 2026-02-02
+
+**What Happened:**
+Story 8.3 implemented WCAG 2.1 AA compliance as a dedicated story, but the approach was to create reusable accessibility primitives:
+- `useFocusTrap` hook - Trap focus within modals/dialogs
+- `useKeyboardNavigation` hook - Arrow/Tab/Enter/Escape handling
+- `SkipLink` component - Skip to main content
+- `StatusBadge` component - WCAG AA color contrast (5.9:1 - 7.5:1)
+- `accessibility.css` - Focus indicators, sr-only classes
+
+**Benefits:**
+- All subsequent components automatically inherit accessibility
+- Story 8.1 (Dashboard), 8.2 (Search), 8.5 (Responsive) used these primitives
+- No retrofitting needed for new features
+
+**The Pattern:**
+```
+1. Create accessibility primitives first (hooks, components, CSS)
+2. Use primitives in all new features
+3. Accessibility is "free" for all new code
+```
+
+**Contrast with Retrofitting:**
+- Retrofitting requires touching every component
+- Inconsistent implementation across features
+- Testing burden multiplied
+
+**Key Takeaway:**
+> Invest in accessibility primitives early. When accessibility is built into your component library, every new feature inherits it for free.
 
 ---
 
