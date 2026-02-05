@@ -33,7 +33,9 @@ describe('Badge Integrity (e2e) - Story 6.5', () => {
     await app.init();
 
     prisma = app.get<PrismaService>(PrismaService);
-    assertionGenerator = app.get<AssertionGeneratorService>(AssertionGeneratorService);
+    assertionGenerator = app.get<AssertionGeneratorService>(
+      AssertionGeneratorService,
+    );
 
     await setupTestData();
   });
@@ -157,8 +159,10 @@ describe('Badge Integrity (e2e) - Story 6.5', () => {
         select: { assertionJson: true },
       });
 
-      const correctHash = assertionGenerator.computeAssertionHash(badge!.assertionJson);
-      
+      const correctHash = assertionGenerator.computeAssertionHash(
+        badge!.assertionJson,
+      );
+
       await prisma.badge.update({
         where: { id: badgeId },
         data: { metadataHash: correctHash },
@@ -174,7 +178,7 @@ describe('Badge Integrity (e2e) - Story 6.5', () => {
       expect(response.body).toHaveProperty('computedHash');
       expect(response.body.storedHash).toBe(response.body.computedHash);
       expect(response.body).toHaveProperty('tampered', false);
-      
+
       // SHA-256 hash should be 64 hex characters
       expect(response.body.storedHash).toMatch(/^[a-f0-9]{64}$/);
     });
@@ -240,9 +244,12 @@ describe('Badge Integrity (e2e) - Story 6.5', () => {
 
       // Verification API returns Open Badges 2.0 assertion as top level
       // with _meta containing additional info
-      expect(response.body).toHaveProperty('@context', 'https://w3id.org/openbadges/v2');
+      expect(response.body).toHaveProperty(
+        '@context',
+        'https://w3id.org/openbadges/v2',
+      );
       expect(response.body).toHaveProperty('_meta');
-      
+
       // Story 6.5: Integrity status should be in _meta
       expect(response.body._meta).toHaveProperty('integrity');
       expect(response.body._meta.integrity).toHaveProperty('verified', true);

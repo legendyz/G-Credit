@@ -3,7 +3,7 @@
 **Created:** 2026-02-01  
 **Source:** Pre-UAT Reviews + Historical Sprint Debt (Sprint 0-6)  
 **Status:** Consolidated master list for Sprint 8+ planning  
-**Last Updated:** 2026-02-02 (Sprint 7 Complete - All P0 Fixed)
+**Last Updated:** 2026-02-05 (Added TD-015: ESLint Warnings)
 
 ---
 
@@ -13,9 +13,9 @@
 |----------|-------|--------|---------------|--------|
 | **P0 (UAT Blocker)** | 9 | Pre-UAT Reviews | Sprint 7 | ✅ **9/9 Fixed** |
 | **P1 (Must Fix)** | 17 | Reviews + Historical | Sprint 8 | Pending |
-| **P2 (Medium)** | 22 | Reviews + Historical + TD-009~013 | Sprint 8-9 | +5 new items |
+| **P2 (Medium)** | 23 | Reviews + Historical + TD-009~015 | Sprint 8-10 | +1 new item (TD-015) |
 | **P3 (Low/Future)** | 8 | Historical | Sprint 9+ | Pending |
-| **Total** | **56** | - | - | - |
+| **Total** | **57** | - | - | - |
 
 ---
 
@@ -27,16 +27,33 @@
 
 | ID | Issue | Sprint | Effort | Status | Notes |
 |----|-------|--------|--------|--------|-------|
-| **TD-001** | E2E Test Isolation | S5 | 8-10h | 📋 Planned | Database cleanup race conditions in parallel test runs |
+| **TD-001** | E2E Test Isolation | S5 | 6h actual | ✅ Resolved | Fixed in Sprint 8 (Task 8.8) - Schema-based isolation |
 
-**Impact:** 45/71 parallel tests failing due to isolation issues. Blocks reliable CI/CD.
+**Resolution (Sprint 8):** 
+- Implemented schema-based test isolation
+- 83/83 parallel tests passing (was 45/71 failing)
+- CI/CD pipeline first successful run: 2026-02-03
+- See: `docs/sprints/sprint-8/8-8-e2e-test-isolation.md`
 
 ### Medium Priority (Sprint 8 Candidates)
 
 | ID | Issue | Sprint | Effort | Status | Notes |
 |----|-------|--------|--------|--------|-------|
 | TD-002 | Badge Issuance Tests Update | S5 | 2-4h | 📋 Planned | metadataHash migration impact |
-| TD-006 | Teams Channel Permissions | S6 | 1d | ⏸️ Documented | Needs `ChannelMessage.Send` permission |
+| TD-006 | Teams Channel Permissions | S6 | 1d | ⏸️ Documented | Needs `ChannelMessage.Send` permission + **4 tests skipped** |
+
+**🧪 TD-006 Skipped Tests (Must Re-enable When Fixed):**
+1. `badge-issuance-teams-integration.spec.ts` - Teams badge issuance notifications
+2. `graph-teams.service.spec.ts` - Microsoft Graph Teams service
+3. `teams-sharing.controller.spec.ts` - Teams sharing controller endpoints
+4. `teams-badge-notification.service.spec.ts` - Teams notification service
+
+**Re-enable Checklist:**
+- [ ] Tenant admin approves `ChannelMessage.Send` permission
+- [ ] Azure AD app registration updated
+- [ ] Remove `.skip()` from all 4 test files
+- [ ] Verify tests pass with real Teams channel
+- [ ] Update Sprint 6 technical-debt.md status to ✅ Resolved
 
 ### Low Priority (Sprint 9+ / Backlog)
 
@@ -47,6 +64,36 @@
 | TD-005 | Test Data Factory Pattern | S5 | 4h | ⏸️ Backlog | Improve test maintainability |
 | TD-007 | Badge PNG Generation | S6 | 2d | ⏸️ Future | `GET /api/badges/:id/download/png` placeholder |
 | TD-008 | Tailwind CSS Modal Issues | S6 | 0.5d | ⏸️ Investigate | Frontend styling |
+| TD-014 | Dual Email System (SMTP + M365) | S8 | 2h | 📋 Sprint 9 | Unify to GraphEmailService, remove nodemailer |
+| TD-015 | Backend ESLint Warnings (1100) | S8 | 8h | 📋 Sprint 9-10 | Reduce warnings to 0, improve type safety |
+
+**TD-015 Details (ESLint Technical Debt):**
+- **Issue**: Backend has 1100 ESLint warnings (0 errors), primarily `@typescript-eslint/no-unsafe-*` type safety warnings
+- **Current Workaround**: CI uses `--max-warnings=1100` cap to prevent new warnings but allows existing ones
+- **Impact**: 
+  - Potential runtime type errors hidden by `any` usage
+  - Unbound method warnings could cause `this` context issues
+  - Unused variables increase code complexity
+- **Root Cause**: Rapid development prioritized features over strict type safety
+- **Solution Plan**:
+  1. Sprint 9: Fix top 300 warnings (focus on `no-unsafe-call`, `no-unsafe-return`)
+  2. Sprint 10: Fix remaining 500 warnings
+  3. Sprint 11: Reduce `--max-warnings` to 0, enable strict mode
+- **Key Warning Categories**:
+  - `@typescript-eslint/no-unsafe-argument`: 280+ occurrences
+  - `@typescript-eslint/no-unsafe-member-access`: 250+ occurrences
+  - `@typescript-eslint/no-unsafe-assignment`: 200+ occurrences
+  - `@typescript-eslint/no-unused-vars`: 150+ occurrences
+  - `@typescript-eslint/unbound-method`: 100+ occurrences
+- **Files**: `package.json` (lint script), `eslint.config.mjs`
+- **Metric to Track**: Run `npm run lint:strict` to see current warning count
+
+**TD-014 Details:**
+- **Issue**: System maintains two email mechanisms - `EmailService` (SMTP/nodemailer) for password reset and `GraphEmailService` (M365) for badge notifications
+- **Impact**: Increased maintenance, unused SMTP config in .env, potential Ethereal initialization warnings in dev
+- **Solution**: Migrate password reset emails to `GraphEmailService`, remove `EmailService` and nodemailer dependency
+- **Files**: `auth.service.ts`, `email.service.ts`, `graph-email.service.ts`, `.env`
+- **Risk**: Low - password reset is low-usage feature, M365 email stable since Sprint 6
 
 ### Accepted Risk (No Action Required)
 
@@ -110,12 +157,12 @@
 
 ### Architecture (4 items)
 
-| ID | Issue | Location | Effort | Notes |
-|----|-------|----------|--------|-------|
-| ARCH-P1-001 | Token rotation not implemented on refresh | `auth.service.ts` | 3h | Generate new refresh token on each use |
+| ID | Issue | Location | Effort | Status | Notes |
+|----|-------|----------|--------|--------|-------|
+| ARCH-P1-001 | Token rotation not implemented on refresh | `auth.service.ts` | 3h | ✅ Resolved | **Resolved Sprint 8 (Task 8.7, 2026-02-04)** - New refresh token on each use, old revoked, 9 unit tests |
 | ARCH-P1-002 | No rate limiting on auth endpoints | `auth.controller.ts` | - | Same as SEC-P1-004 (deduplicated) |
-| ARCH-P1-003 | JWT secret validation at startup | `jwt.strategy.ts`, `main.ts` | 1h | Require minimum 32 char secret |
-| ARCH-P1-004 | Missing ownership check on template update/delete | `badge-templates.controller.ts` | 2h | ISSUER can only modify own templates |
+| ARCH-P1-003 | JWT secret validation at startup | `jwt.strategy.ts`, `main.ts` | 1h | ✅ Resolved | **Resolved Sprint 8 (Task 8.7, 2026-02-04)** - Startup validation for ≥32 char secret in all environments, 8 unit tests |
+| ARCH-P1-004 | Missing ownership check on template update/delete | `badge-templates.controller.ts` | 2h | ✅ Resolved | **Resolved Sprint 8 (Task 8.7, 2026-02-04)** - ISSUER can only modify own templates, ADMIN unrestricted, E2E tested |
 
 ### Testing - Historical (1 item) ⚠️ HIGH PRIORITY
 
@@ -189,8 +236,13 @@
 
 | ID | Issue | Location | Effort | Notes |
 |----|-------|----------|--------|-------|
-| TD-006 | Teams Channel Permissions | Graph API | 1d | Needs `ChannelMessage.Send` permission |
+| TD-006 | Teams Channel Permissions | Graph API | 1d | Needs `ChannelMessage.Send` permission + **4 tests skipped** |
 | TODO | Audit logging for auth | `auth.service.ts:54` | 2h | Task 2.2.8 incomplete |
+
+**🧪 TD-006 Impact:**
+- **Skipped Tests:** 4 Teams integration tests (see Medium Priority section for list)
+- **Code References:** `teams-sharing.controller.ts:92`, service implementations ready
+- **Blocked Features:** Teams channel badge sharing (email sharing works as workaround)
 
 ### Build/Performance - NEW 2026-02-01 (Phase B)
 

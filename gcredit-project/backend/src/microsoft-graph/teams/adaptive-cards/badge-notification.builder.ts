@@ -1,9 +1,9 @@
 /**
  * Badge Notification Adaptive Card Builder
- * 
+ *
  * Story 7.4 - Microsoft Teams Notifications
  * Generates Adaptive Cards for badge issuance notifications in Microsoft Teams
- * 
+ *
  * Design Spec: docs/sprints/sprint-6/adaptive-card-specs.md
  * Adaptive Cards: https://adaptivecards.io/
  */
@@ -31,7 +31,7 @@ export interface AdaptiveCardJson {
 export class BadgeNotificationCardBuilder {
   /**
    * Build Adaptive Card JSON for badge notification
-   * 
+   *
    * @param data - Badge notification data
    * @returns Adaptive Card JSON object (Adaptive Cards 1.4 schema)
    */
@@ -162,7 +162,7 @@ export class BadgeNotificationCardBuilder {
 
   /**
    * Validate that required data fields are present
-   * 
+   *
    * @param data - Badge notification data to validate
    * @throws Error if required fields are missing
    */
@@ -189,7 +189,7 @@ export class BadgeNotificationCardBuilder {
 
   /**
    * Format date for Adaptive Card display
-   * 
+   *
    * @param date - Date object to format
    * @returns Formatted date string (e.g., "January 30, 2026")
    */

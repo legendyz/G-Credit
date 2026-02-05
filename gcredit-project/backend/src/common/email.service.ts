@@ -31,16 +31,24 @@ export class EmailService {
 
   constructor(private config: ConfigService) {
     this.isDevelopment = this.config.get<string>('NODE_ENV') !== 'production';
-    this.fromAddress = this.config.get<string>('EMAIL_FROM', 'badges@gcredit.example.com');
-    this.useGraphEmail = this.config.get<string>('ENABLE_GRAPH_EMAIL', 'false') === 'true';
+    this.fromAddress = this.config.get<string>(
+      'EMAIL_FROM',
+      'badges@gcredit.example.com',
+    );
+    this.useGraphEmail =
+      this.config.get<string>('ENABLE_GRAPH_EMAIL', 'false') === 'true';
 
     if (this.useGraphEmail) {
       // Skip Ethereal when Graph Email is configured
-      this.logger.log('✅ EmailService initialized (Graph Email enabled - Ethereal skipped)');
+      this.logger.log(
+        '✅ EmailService initialized (Graph Email enabled - Ethereal skipped)',
+      );
     } else if (this.isDevelopment) {
       // Initialize Ethereal asynchronously (non-blocking)
-      this.initializeEthereal().catch(err => {
-        this.logger.warn('⚠️ Ethereal initialization delayed, will retry on first email send');
+      this.initializeEthereal().catch((err) => {
+        this.logger.warn(
+          '⚠️ Ethereal initialization delayed, will retry on first email send',
+        );
       });
     } else {
       this.initializeACS();
@@ -51,9 +59,13 @@ export class EmailService {
    * Initialize Azure Communication Services (Production)
    */
   private initializeACS(): void {
-    const connectionString = this.config.get<string>('AZURE_COMMUNICATION_CONNECTION_STRING');
+    const connectionString = this.config.get<string>(
+      'AZURE_COMMUNICATION_CONNECTION_STRING',
+    );
     if (!connectionString) {
-      this.logger.warn('⚠️ AZURE_COMMUNICATION_CONNECTION_STRING not configured');
+      this.logger.warn(
+        '⚠️ AZURE_COMMUNICATION_CONNECTION_STRING not configured',
+      );
       return;
     }
     this.acsClient = new EmailClient(connectionString);
@@ -94,7 +106,10 @@ export class EmailService {
       }
       this.logger.log(`✅ Email sent to ${options.to}: ${options.subject}`);
     } catch (error) {
-      this.logger.error(`❌ Failed to send email to ${options.to}:`, error.message);
+      this.logger.error(
+        `❌ Failed to send email to ${options.to}:`,
+        error.message,
+      );
       // Don't throw - email failure shouldn't block operations
     }
   }
@@ -130,7 +145,7 @@ export class EmailService {
     // Wait for initialization if not ready (max 5 seconds)
     let retries = 0;
     while (!this.etherealInitialized && retries < 10) {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       retries++;
     }
 

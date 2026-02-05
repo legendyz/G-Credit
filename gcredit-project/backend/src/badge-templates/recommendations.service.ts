@@ -97,7 +97,9 @@ export class RecommendationsService {
       description: template.description,
       imageUrl: template.imageUrl,
       category: template.category,
-      issuerName: `${template.creator.firstName || ''} ${template.creator.lastName || ''}`.trim() || 'Unknown',
+      issuerName:
+        `${template.creator.firstName || ''} ${template.creator.lastName || ''}`.trim() ||
+        'Unknown',
       badgeCount: template._count.badges,
       similarityScore: score,
     }));
@@ -105,7 +107,7 @@ export class RecommendationsService {
 
   /**
    * AC 5.1: Calculate similarity score between two badge templates
-   * 
+   *
    * Scoring rules:
    * - Same skills: +20 points per match
    * - Same category: +15 points
@@ -113,7 +115,11 @@ export class RecommendationsService {
    * - Popularity: +1 point per 10 badges issued
    */
   private calculateSimilarity(
-    currentTemplate: { skillIds: string[]; category: string; createdBy: string },
+    currentTemplate: {
+      skillIds: string[];
+      category: string;
+      createdBy: string;
+    },
     candidateTemplate: BadgeTemplate & { _count: { badges: number } },
   ): number {
     let score = 0;

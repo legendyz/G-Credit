@@ -1,5 +1,6 @@
 /**
  * Login Page - Story 0.2a: Login & Navigation System
+ * Story 8.3: WCAG 2.1 AA Accessibility
  * 
  * Minimal login page for UAT testing.
  * Features: email/password form, error handling, redirect on success.
@@ -56,7 +57,7 @@ export function LoginPage() {
   };
   
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
       <div className="w-full max-w-md">
         {/* Logo/Branding */}
         <div className="text-center mb-8">
@@ -68,17 +69,19 @@ export function LoginPage() {
         <div className="bg-white rounded-lg shadow-xl p-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Sign In</h2>
           
-          {/* Error Alert */}
+          {/* Error Alert - Story 8.3 AC4 */}
           {error && (
             <div 
+              id="login-error"
               className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm"
               role="alert"
+              aria-live="assertive"
             >
               {error}
             </div>
           )}
           
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" aria-describedby={error ? 'login-error' : undefined}>
             {/* Email Field */}
             <div>
               <label 
@@ -100,7 +103,7 @@ export function LoginPage() {
                          placeholder-gray-400 focus:outline-none focus:ring-2 
                          focus:ring-blue-500 focus:border-blue-500
                          disabled:bg-gray-100 disabled:cursor-not-allowed"
-                aria-describedby={error ? 'login-error' : undefined}
+                aria-required="true"
               />
             </div>
             
@@ -125,6 +128,7 @@ export function LoginPage() {
                          placeholder-gray-400 focus:outline-none focus:ring-2 
                          focus:ring-blue-500 focus:border-blue-500
                          disabled:bg-gray-100 disabled:cursor-not-allowed"
+                aria-required="true"
               />
             </div>
             
@@ -132,6 +136,7 @@ export function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
+              aria-busy={isLoading}
               className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm 
                        text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 
                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
@@ -145,6 +150,7 @@ export function LoginPage() {
                     xmlns="http://www.w3.org/2000/svg" 
                     fill="none" 
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                   >
                     <circle 
                       className="opacity-25" 
@@ -179,7 +185,7 @@ export function LoginPage() {
           © 2026 G-Credit. All rights reserved.
         </p>
       </div>
-    </div>
+    </main>
   );
 }
 

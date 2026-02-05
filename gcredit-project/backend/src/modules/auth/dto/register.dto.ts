@@ -1,17 +1,12 @@
-import {
-  IsEmail,
-  IsString,
-  MinLength,
-  Matches,
-} from 'class-validator';
+import { IsEmail, IsString, MinLength, Matches } from 'class-validator';
 
 /**
  * Registration DTO
- * 
+ *
  * SECURITY: Role field intentionally removed.
  * New users are always assigned EMPLOYEE role.
  * Privilege escalation must go through admin approval.
- * 
+ *
  * @see SEC-P0-002
  */
 export class RegisterDto {

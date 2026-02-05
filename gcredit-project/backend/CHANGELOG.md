@@ -7,6 +7,135 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.0] - Sprint 8 Complete (2026-02-05)
+
+### Sprint 8 Summary - Production-Ready MVP
+
+**Epic 10: Production-Ready MVP** - UX Excellence, Security Hardening & M365 Integration.
+
+#### Highlights
+- ✅ **12/12 Work Items Complete** (80h actual / 76h estimated)
+- ✅ **17/17 P1 Technical Debt Resolved**
+- ✅ **677 Tests Passing** (349 backend + 328 frontend)
+- ✅ **100% Test Reliability** in parallel execution
+- ✅ **WCAG 2.1 AA Compliant**
+
+#### Stories Delivered
+1. **Story 8.1:** Dashboard Homepage with Key Metrics (8h)
+2. **Story 8.2:** Badge Search & Filter Enhancement (5.5h)
+3. **Story 8.3:** WCAG 2.1 AA Accessibility Compliance (8.5h)
+4. **Story 8.4:** Analytics API with Caching (6h)
+5. **Story 8.5:** Responsive Design Optimization (4h)
+6. **Story 8.9:** M365 Production Hardening (6h)
+7. **Story 8.10:** Admin User Management Panel (11.5h)
+
+#### Tasks Delivered
+1. **Task 8.0:** Sprint Setup (1.5h)
+2. **Task 8.6:** Security Hardening (6.5h)
+3. **Task 8.7:** Architecture Fixes (5h)
+4. **Task 8.8:** E2E Test Isolation (8h)
+
+---
+
+### Added - Admin User Management (Story 8.10) - 2026-02-03
+
+#### Admin User Management API
+- **GET /api/admin/users** - List users with search, filter, sort, pagination
+  - Query params: search, role, isActive, sortBy, sortOrder, page, limit
+  - Response: Paginated list with user details (excludes sensitive data)
+  - Authorization: Admin role only
+  
+- **GET /api/admin/users/:id** - Get single user details
+  - Includes role audit history
+  - Authorization: Admin role only
+  
+- **PATCH /api/admin/users/:id/role** - Update user role
+  - Request: `{ role: UserRole, note?: string }`
+  - Optimistic locking: Uses roleVersion to prevent conflicts with M365 sync
+  - Audit logging: Creates UserRoleAuditLog entry
+  - Validation: Cannot change own role
+  - Authorization: Admin role only
+  
+- **PATCH /api/admin/users/:id/status** - Activate/deactivate user
+  - Request: `{ isActive: boolean, reason?: string }`
+  - Soft delete: Sets isActive flag, does not delete user data
+  - Authorization: Admin role only
+
+#### Database Changes
+- **New Table: UserRoleAuditLog**
+  - Columns: `id, userId, previousRole, newRole, changedBy, changeReason, createdAt`
+  - Purpose: Track all role changes for compliance and audit
+  - Relations: Cascade delete with User
+  
+- **User Model Updates**
+  - `roleSetManually` (Boolean): Flag to preserve manual role during M365 sync
+  - `roleUpdatedAt` (DateTime?): When role was last changed
+  - `roleUpdatedBy` (String?): Who changed the role
+  - `roleVersion` (Int): Optimistic locking version for M365 sync conflicts
+  - `lastSyncAt` (DateTime?): Last M365 sync timestamp
+  - Migration: `20260203153938_add_user_management`
+
+#### Security
+- **SEC-HIGH-003 Resolved:** Role self-assignment vulnerability fixed
+- **Admin-Only Access:** All endpoints protected by RolesGuard
+- **Self-Edit Prevention:** Admins cannot modify their own role
+
+#### Testing (29 tests, 100% pass rate)
+- **Controller Tests (16):** HTTP status codes, DTO validation, authorization
+- **Service Tests (13):** Business logic, optimistic locking, audit logging
+
+---
+
+### Added - M365 Production Hardening (Story 8.9) - 2026-02-05
+
+#### M365 Sync API (Admin-Only)
+- **POST /api/admin/m365-sync** - Trigger M365 user synchronization
+  - Request: `{ syncType: "FULL" | "INCREMENTAL" }` (optional, default: FULL)
+  - Response: SyncResultDto with counts, errors, duration
+  - Features: Pagination (1000+ users), exponential backoff retry, audit logging
+  - Authorization: Admin role only
+  
+- **GET /api/admin/m365-sync/logs** - Get sync history
+  - Query params: limit (default: 10, max: 100)
+  - Authorization: Admin role only
+  
+- **GET /api/admin/m365-sync/logs/:id** - Get sync log details
+  - Authorization: Admin role only
+  
+- **GET /api/admin/m365-sync/status** - Check M365 integration availability
+  - Response: `{ available: boolean, lastSync: DateTime | null }`
+  - Authorization: Admin role only
+
+#### Key Features (ADR-008 Compliance)
+- **AC1: Pagination** - Handles 1000+ users via @odata.nextLink (999/page max)
+- **AC2: Retry Logic** - Exponential backoff (1s→2s→4s), max 3 retries
+  - Retryable errors: 429, 5xx, network errors (ECONNRESET, ETIMEDOUT, etc.)
+- **AC3: Audit Logging** - M365SyncLog with syncedBy, failedCount, metadata
+- **AC4: User Deactivation** - Deactivates removed AND disabled Azure accounts
+  - Preserves `roleSetManually` user roles during sync
+- **AC5: Error Recovery** - Per-user processing, no transaction rollback
+
+#### Database Changes
+- **M365SyncLog Table Updates**
+  - `syncedBy` (String): Who triggered the sync (CLI, Admin email, or SYSTEM)
+  - `failedCount` (Int): Users that failed to sync
+  - `metadata` (JSON): Retry attempts, pages processed, deactivated count
+
+- **UserAuditLog Table**
+  - Logs user deactivation events from M365 sync
+  - Fields: userId, action, changes, source, actorId, timestamp
+
+#### CLI Command
+- **npm run sync:m365** - CLI script for manual/scheduled sync
+  - Script: `scripts/sync-m365.ts`
+
+#### Testing (85 tests, 100% pass rate)
+- **Service Unit Tests (55):** Pagination, retry, deactivation, error recovery
+- **Controller Unit Tests (12):** HTTP status codes, authorization
+- **E2E Tests (18):** Full API integration tests with audit validation
+
+---
+
 ## [0.7.0] - 2026-02-02 (Sprint 7 Complete)
 
 ### Sprint 7 Summary - Badge Revocation & Lifecycle UAT

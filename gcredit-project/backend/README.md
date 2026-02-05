@@ -272,8 +272,20 @@ All endpoints require JWT authentication unless marked as public.
 # Unit tests
 npm run test
 
-# E2E tests (requires running server)
+# E2E tests (parallel - recommended)
 npm run test:e2e
+
+# E2E tests with specific workers
+npm run test:e2e -- --maxWorkers=4
+
+# E2E single test file
+npm run test:e2e -- badge-issuance.e2e-spec.ts
+
+# E2E tests sequential (for debugging)
+npm run test:e2e -- --maxWorkers=1
+
+# E2E with force exit (if tests hang)
+npm run test:e2e -- --forceExit
 
 # PowerShell E2E tests
 .\test-sprint-2-quick.ps1
@@ -281,6 +293,20 @@ npm run test:e2e
 # Test coverage report
 npm run test:cov
 ```
+
+### E2E Test Architecture (Sprint 8)
+
+E2E tests use **schema-based isolation** for parallel execution:
+- Each test suite runs in its own PostgreSQL schema
+- Test data factories ensure unique, reproducible data
+- No data conflicts between parallel test runs
+
+**Current Stats:**
+- 83 E2E tests
+- 100% pass rate (parallel execution)
+- ~30s total runtime with 4 workers
+
+See [E2E Test Guidelines](../docs/testing/e2e-test-guidelines.md) for writing new tests.
 
 ### Test Coverage
 

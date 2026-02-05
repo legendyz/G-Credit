@@ -14,6 +14,7 @@ import {
   HttpStatus,
   Request,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -115,9 +116,10 @@ export class BadgeTemplatesController {
   }
 
   @Get(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get a single badge template by ID',
-    description: 'Returns badge template details. Non-ACTIVE templates (DRAFT, ARCHIVED) are only visible to ADMIN/ISSUER.',
+    description:
+      'Returns badge template details. Non-ACTIVE templates (DRAFT, ARCHIVED) are only visible to ADMIN/ISSUER.',
   })
   @ApiResponse({
     status: 200,
@@ -200,7 +202,7 @@ export class BadgeTemplatesController {
   ) {
     // JSON fields (skillIds, issuanceCriteria) are automatically parsed by MultipartJsonInterceptor
     const createDto: CreateBadgeTemplateDto = body;
-    
+
     return this.badgeTemplatesService.create(createDto, req.user.userId, image);
   }
 
@@ -255,30 +257,65 @@ export class BadgeTemplatesController {
   })
   @ApiResponse({ status: 400, description: 'Invalid input' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Cannot modify templates created by others',
+  })
   @ApiResponse({ status: 404, description: 'Badge template not found' })
   async update(
     @Param('id') id: string,
     @Body() body: any,
-    @UploadedFile() image?: Express.Multer.File,
+    @UploadedFile() image: Express.Multer.File | undefined,
+    @Request() req: any,
   ) {
+    // ARCH-P1-004: Ownership check - ISSUER can only update own templates
+    const userId = req.user.userId;
+    const userRole = req.user.role;
+
+    if (userRole === UserRole.ISSUER) {
+      const template = await this.badgeTemplatesService.findOneRaw(id);
+      if (template.createdBy !== userId) {
+        throw new ForbiddenException(
+          'You can only update your own badge templates',
+        );
+      }
+    }
+    // ADMIN can update any template (no ownership check)
+
     // JSON fields are automatically parsed by MultipartJsonInterceptor
     const updateDto: UpdateBadgeTemplateDto = body;
-    
+
     return this.badgeTemplatesService.update(id, updateDto, image);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.ISSUER)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete a badge template' })
   @ApiResponse({ status: 200, description: 'Badge template deleted' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Cannot delete templates created by others',
+  })
   @ApiResponse({ status: 404, description: 'Badge template not found' })
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string, @Request() req: any) {
+    // ARCH-P1-004: Ownership check - ISSUER can only delete own templates
+    const userId = req.user.userId;
+    const userRole = req.user.role;
+
+    if (userRole === UserRole.ISSUER) {
+      const template = await this.badgeTemplatesService.findOneRaw(id);
+      if (template.createdBy !== userId) {
+        throw new ForbiddenException(
+          'You can only delete your own badge templates',
+        );
+      }
+    }
+    // ADMIN can delete any template (no ownership check)
+
     return this.badgeTemplatesService.remove(id);
   }
 }

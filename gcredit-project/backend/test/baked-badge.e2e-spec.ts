@@ -1,181 +1,91 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
-import { PrismaService } from '../src/common/prisma.service';
-import { UserRole, BadgeStatus } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import { BadgeStatus } from '@prisma/client';
 import sharp from 'sharp';
+import {
+  TestContext,
+  setupE2ETest,
+  teardownE2ETest,
+  createAndLoginUser,
+  TestUser,
+} from './helpers/test-setup';
 
 jest.setTimeout(30000);
 
+/**
+ * Story 6.4: Baked Badge PNG Download (Isolated)
+ * Story 8.8: Test Isolation - Refactored for parallel execution
+ *
+ * Tests baked badge generation with schema isolation
+ */
 describe('Baked Badge PNG (e2e) - Story 6.4', () => {
-  let app: INestApplication;
-  let prisma: PrismaService;
-  let recipientToken: string;
-  let recipientId: string;
-  let otherEmployeeToken: string;
-  let otherEmployeeId: string;
+  let ctx: TestContext;
+  let recipientUser: TestUser;
+  let otherEmployeeUser: TestUser;
+  let adminUser: TestUser;
   let badgeId: string;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-      }),
-    );
-    await app.init();
-
-    prisma = app.get<PrismaService>(PrismaService);
-
-    await setupTestData();
+    ctx = await setupE2ETest('baked-badge');
   });
 
   afterAll(async () => {
-    // Cleanup
-    await prisma.badge.deleteMany({});
-    await prisma.badgeTemplate.deleteMany({});
-    await prisma.user.deleteMany({});
-    await app.close();
+    await teardownE2ETest(ctx);
   });
 
-  async function setupTestData() {
-    // Create admin user
-    const adminPassword = await bcrypt.hash('Admin123!', 10);
-    const admin = await prisma.user.create({
-      data: {
-        email: 'admin-baked@test.com',
-        passwordHash: adminPassword,
-        firstName: 'Admin',
-        lastName: 'Baker',
-        role: UserRole.ADMIN,
-        emailVerified: true,
+  beforeAll(async () => {
+    // Create test users using factories
+    adminUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'admin');
+    recipientUser = await createAndLoginUser(
+      ctx.app,
+      ctx.userFactory,
+      'employee',
+    );
+    otherEmployeeUser = await createAndLoginUser(
+      ctx.app,
+      ctx.userFactory,
+      'employee',
+    );
+
+    // Create badge template using factory
+    const template = await ctx.templateFactory.createTemplate({
+      name: 'Baked Badge Test',
+      description: 'Badge for testing baked PNG generation',
+      imageUrl: 'https://example.com/badge-baked.png', // Mock URL - will fail download
+      status: 'ACTIVE',
+      category: 'achievement',
+      createdById: adminUser.user.id,
+      issuanceCriteria: {
+        description: 'Test baked badge generation',
       },
     });
 
-    // Create recipient employee
-    const recipientPassword = await bcrypt.hash('Recipient123!', 10);
-    const recipient = await prisma.user.create({
-      data: {
-        email: 'recipient-baked@test.com',
-        passwordHash: recipientPassword,
-        firstName: 'Badge',
-        lastName: 'Recipient',
-        role: UserRole.EMPLOYEE,
-        emailVerified: true,
-      },
-    });
-    recipientId = recipient.id;
-
-    // Create another employee (for authorization test)
-    const otherPassword = await bcrypt.hash('Other123!', 10);
-    const otherEmployee = await prisma.user.create({
-      data: {
-        email: 'other-employee-baked@test.com',
-        passwordHash: otherPassword,
-        firstName: 'Other',
-        lastName: 'Employee',
-        role: UserRole.EMPLOYEE,
-        emailVerified: true,
-      },
-    });
-    otherEmployeeId = otherEmployee.id;
-
-    // Login to get tokens
-    const recipientLoginResponse = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({
-        email: 'recipient-baked@test.com',
-        password: 'Recipient123!',
-      })
-      .expect(200);
-    recipientToken = recipientLoginResponse.body.accessToken;
-
-    const otherLoginResponse = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({
-        email: 'other-employee-baked@test.com',
-        password: 'Other123!',
-      })
-      .expect(200);
-    otherEmployeeToken = otherLoginResponse.body.accessToken;
-
-    // Create badge template with a real minimal PNG as imageUrl
-    // Note: In real scenario this would be Azure Blob URL
-    const template = await prisma.badgeTemplate.create({
-      data: {
-        name: 'Baked Badge Test',
-        description: 'Badge for testing baked PNG generation',
-        imageUrl: 'https://example.com/badge-baked.png', // Mock URL - will fail download
-        status: 'ACTIVE',
-        category: 'achievement',
-        issuanceCriteria: {
-          description: 'Test baked badge generation',
-        },
-        creator: {
-          connect: { id: admin.id },
-        },
-      },
-    });
-
-    // Create badge for recipient
-    const badge = await prisma.badge.create({
-      data: {
-        templateId: template.id,
-        recipientId: recipient.id,
-        issuerId: admin.id,
-        status: BadgeStatus.CLAIMED,
-        recipientHash: 'sha256$test-hash-baked',
-        issuedAt: new Date('2026-01-20T10:00:00Z'),
-        expiresAt: new Date('2027-01-20T10:00:00Z'),
-        claimedAt: new Date('2026-01-21T12:00:00Z'),
-        assertionJson: {
-          '@context': 'https://w3id.org/openbadges/v2',
-          type: 'Assertion',
-          id: `http://localhost:3000/api/badges/test-badge-id/assertion`,
-          badge: `http://localhost:3000/api/badge-templates/${template.id}`,
-          recipient: {
-            type: 'email',
-            hashed: true,
-            salt: 'test-salt',
-            identity: 'sha256$hash',
-          },
-          issuedOn: '2026-01-20T10:00:00Z',
-          verification: {
-            type: 'hosted',
-            verificationUrl: `http://localhost:3000/verify/test-verification-id`,
-          },
-        },
-      },
+    // Create badge for recipient using factory
+    const badge = await ctx.badgeFactory.createClaimed({
+      templateId: template.id,
+      recipientId: recipientUser.user.id,
+      issuerId: adminUser.user.id,
     });
     badgeId = badge.id;
-  }
+  });
 
   describe('GET /api/badges/:id/download/png - HTTP Authentication & Authorization', () => {
     it('should require authentication (401 without token)', async () => {
-      await request(app.getHttpServer())
+      await request(ctx.app.getHttpServer())
         .get(`/api/badges/${badgeId}/download/png`)
         .expect(401);
     });
 
     it('should require authentication (401 with invalid token)', async () => {
-      await request(app.getHttpServer())
+      await request(ctx.app.getHttpServer())
         .get(`/api/badges/${badgeId}/download/png`)
         .set('Authorization', 'Bearer invalid-token-12345')
         .expect(401);
     });
 
     it('should reject non-recipient (400 with valid token but wrong user)', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer())
         .get(`/api/badges/${badgeId}/download/png`)
-        .set('Authorization', `Bearer ${otherEmployeeToken}`)
+        .set('Authorization', `Bearer ${otherEmployeeUser.token}`)
         .expect(400);
 
       expect(response.body.message).toContain('only download your own badges');
@@ -184,22 +94,24 @@ describe('Baked Badge PNG (e2e) - Story 6.4', () => {
     it('should return 404 for non-existent badge', async () => {
       const fakeId = '00000000-0000-0000-0000-000000000000';
 
-      await request(app.getHttpServer())
+      await request(ctx.app.getHttpServer())
         .get(`/api/badges/${fakeId}/download/png`)
-        .set('Authorization', `Bearer ${recipientToken}`)
+        .set('Authorization', `Bearer ${recipientUser.token}`)
         .expect(404);
     });
 
     it('should fail when Azure Blob download fails (mock URL)', async () => {
       // This will fail because imageUrl is a mock URL, not real Azure Blob
       // Currently returns 500 because downloadBlobBuffer throws unhandled error
-      const response = await request(app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer())
         .get(`/api/badges/${badgeId}/download/png`)
-        .set('Authorization', `Bearer ${recipientToken}`)
+        .set('Authorization', `Bearer ${recipientUser.token}`)
         .expect(500);
 
       // Should get error about downloading blob
-      expect(response.body.message).toMatch(/Internal server error|Failed to download/i);
+      expect(response.body.message).toMatch(
+        /Internal server error|Failed to download/i,
+      );
     });
   });
 
@@ -211,11 +123,11 @@ describe('Baked Badge PNG (e2e) - Story 6.4', () => {
           width: 100,
           height: 100,
           channels: 4,
-          background: { r: 0, g: 0, b: 255, alpha: 1 }
-        }
+          background: { r: 0, g: 0, b: 255, alpha: 1 },
+        },
       })
-      .png()
-      .toBuffer();
+        .png()
+        .toBuffer();
 
       // Mock assertion data
       const assertion = {
@@ -231,8 +143,8 @@ describe('Baked Badge PNG (e2e) - Story 6.4', () => {
           exif: {
             IFD0: {
               ImageDescription: JSON.stringify(assertion),
-            }
-          }
+            },
+          },
         })
         .toBuffer();
 
@@ -253,11 +165,11 @@ describe('Baked Badge PNG (e2e) - Story 6.4', () => {
           width: 200,
           height: 200,
           channels: 4,
-          background: { r: 255, g: 0, b: 0, alpha: 1 }
-        }
+          background: { r: 255, g: 0, b: 0, alpha: 1 },
+        },
       })
-      .png()
-      .toBuffer();
+        .png()
+        .toBuffer();
 
       const originalMetadata = await sharp(originalImage).metadata();
 
@@ -268,8 +180,8 @@ describe('Baked Badge PNG (e2e) - Story 6.4', () => {
           exif: {
             IFD0: {
               ImageDescription: 'test metadata',
-            }
-          }
+            },
+          },
         })
         .toBuffer();
 
@@ -287,13 +199,15 @@ describe('Baked Badge PNG (e2e) - Story 6.4', () => {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
-      
+
       expect(sanitized).toBe('excellence-award-2026');
 
       const dateString = new Date().toISOString().split('T')[0];
       const filename = `badge-${sanitized}-${dateString}.png`;
-      
-      expect(filename).toMatch(/^badge-excellence-award-2026-\d{4}-\d{2}-\d{2}\.png$/);
+
+      expect(filename).toMatch(
+        /^badge-excellence-award-2026-\d{4}-\d{2}-\d{2}\.png$/,
+      );
     });
   });
 });

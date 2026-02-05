@@ -1,6 +1,6 @@
 /**
  * Teams Sharing Controller
- * 
+ *
  * Story 7.4 - Microsoft Teams Notifications
  * REST API endpoint for sharing badges to Microsoft Teams
  */
@@ -47,9 +47,9 @@ export class TeamsSharingController {
 
   /**
    * Share badge to Microsoft Teams
-   * 
+   *
    * Story 7.4 - AC #3: Create REST API endpoint for badge sharing
-   * 
+   *
    * @param badgeId - Badge ID to share
    * @param dto - Teams sharing details (team ID, channel ID, optional message)
    * @param req - Request object with authenticated user
@@ -90,21 +90,23 @@ export class TeamsSharingController {
     @Request() req: any,
   ): Promise<ShareBadgeTeamsResponseDto> {
     // TODO: Technical Debt - Teams Channel Sharing Not Implemented
-    // 
+    //
     // Teams channel sharing requires additional Microsoft Graph API permissions:
     // - ChannelMessage.Send (for posting to channels)
-    // 
+    //
     // Current implementation:
     // - Badge issuance notifications: Email (private, implemented)
     // - Badge sharing: Email (implemented and working)
-    // 
+    //
     // Future enhancement: Implement Teams channel sharing with proper permissions
     // See: docs/sprints/sprint-6/technical-debt.md
-    
+
     throw new BadRequestException({
-      message: 'Teams channel sharing is not yet implemented. Please use email sharing instead.',
+      message:
+        'Teams channel sharing is not yet implemented. Please use email sharing instead.',
       alternative: 'POST /api/badges/share/email',
-      technicalDebt: 'Teams integration requires additional Graph API permissions and configuration',
+      technicalDebt:
+        'Teams integration requires additional Graph API permissions and configuration',
     });
   }
 }

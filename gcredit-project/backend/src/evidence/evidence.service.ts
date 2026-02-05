@@ -1,7 +1,15 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { StorageService } from '../common/storage.service';
-import { EvidenceFileResponse, EvidenceSasResponse } from './dto/upload-evidence.dto';
+import {
+  EvidenceFileResponse,
+  EvidenceSasResponse,
+} from './dto/upload-evidence.dto';
 import { randomUUID } from 'crypto';
 
 @Injectable()
@@ -25,11 +33,13 @@ export class EvidenceService {
 
   /**
    * Upload evidence file (Story 4.3 - AC 3.7)
+   * FIXED: Story 8.6 SEC-P1-001 - Added IDOR protection
    */
   async uploadEvidence(
     badgeId: string,
     file: Express.Multer.File,
     uploadedBy: string,
+    userRole?: string,
   ): Promise<EvidenceFileResponse> {
     // Validate badge exists
     const badge = await this.prisma.badge.findUnique({
@@ -38,6 +48,14 @@ export class EvidenceService {
 
     if (!badge) {
       throw new NotFoundException(`Badge ${badgeId} not found`);
+    }
+
+    // SEC-P1-001: IDOR Protection - Only badge issuer or ADMIN can upload evidence
+    // This prevents an attacker from uploading evidence to badges they didn't issue
+    if (userRole !== 'ADMIN' && badge.issuerId !== uploadedBy) {
+      throw new ForbiddenException(
+        'You can only upload evidence for badges you issued',
+      );
     }
 
     // AC 3.7: Validate file size

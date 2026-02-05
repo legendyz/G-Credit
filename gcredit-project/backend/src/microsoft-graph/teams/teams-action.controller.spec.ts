@@ -1,6 +1,6 @@
 /**
  * Teams Action Controller Tests
- * 
+ *
  * Story 7.4 Task 5
  * Tests Adaptive Card action callbacks (Claim Badge)
  */
@@ -8,7 +8,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TeamsActionController } from './teams-action.controller';
 import { PrismaService } from '../../common/prisma.service';
-import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { BadgeStatus } from '@prisma/client';
 
 describe('TeamsActionController', () => {
@@ -147,9 +151,13 @@ describe('TeamsActionController', () => {
       expect(result.adaptiveCard.actions).toBeDefined();
 
       // Check for claimed status in card
-      const factSet = result.adaptiveCard.body.find((item: any) => item.type === 'FactSet');
+      const factSet = result.adaptiveCard.body.find(
+        (item: any) => item.type === 'FactSet',
+      );
       expect(factSet).toBeDefined();
-      const statusFact = factSet.facts.find((fact: any) => fact.title === 'Status');
+      const statusFact = factSet.facts.find(
+        (fact: any) => fact.title === 'Status',
+      );
       expect(statusFact.value).toContain('CLAIMED');
 
       // Check for success message
@@ -165,14 +173,18 @@ describe('TeamsActionController', () => {
       prismaService.badge.findUnique.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(controller.claimBadge(claimDto, mockUser)).rejects.toThrow(NotFoundException);
-      await expect(controller.claimBadge(claimDto, mockUser)).rejects.toThrow('Badge badge-123 not found');
+      await expect(controller.claimBadge(claimDto, mockUser)).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(controller.claimBadge(claimDto, mockUser)).rejects.toThrow(
+        'Badge badge-123 not found',
+      );
     });
 
     it('should throw ForbiddenException if user is not recipient', async () => {
       // Arrange - SEC-P0-001: Now uses JWT user, not DTO userId
       prismaService.badge.findUnique.mockResolvedValue(mockBadge);
-      
+
       // Mock a different user trying to claim (IDOR attack scenario)
       const attackerUser = {
         userId: 'attacker-999',
@@ -181,10 +193,12 @@ describe('TeamsActionController', () => {
       };
 
       // Act & Assert - Even if DTO has correct userId, JWT user is used
-      await expect(controller.claimBadge(claimDto, attackerUser)).rejects.toThrow(ForbiddenException);
-      await expect(controller.claimBadge(claimDto, attackerUser)).rejects.toThrow(
-        'Only the badge recipient can claim this badge',
-      );
+      await expect(
+        controller.claimBadge(claimDto, attackerUser),
+      ).rejects.toThrow(ForbiddenException);
+      await expect(
+        controller.claimBadge(claimDto, attackerUser),
+      ).rejects.toThrow('Only the badge recipient can claim this badge');
     });
 
     it('should throw BadRequestException if badge already claimed', async () => {
@@ -197,8 +211,12 @@ describe('TeamsActionController', () => {
       prismaService.badge.findUnique.mockResolvedValue(claimedBadge);
 
       // Act & Assert
-      await expect(controller.claimBadge(claimDto, mockUser)).rejects.toThrow(BadRequestException);
-      await expect(controller.claimBadge(claimDto, mockUser)).rejects.toThrow('Badge has already been claimed');
+      await expect(controller.claimBadge(claimDto, mockUser)).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(controller.claimBadge(claimDto, mockUser)).rejects.toThrow(
+        'Badge has already been claimed',
+      );
     });
 
     it('should throw BadRequestException if badge is revoked', async () => {
@@ -211,7 +229,9 @@ describe('TeamsActionController', () => {
       prismaService.badge.findUnique.mockResolvedValue(revokedBadge);
 
       // Act & Assert
-      await expect(controller.claimBadge(claimDto, mockUser)).rejects.toThrow(BadRequestException);
+      await expect(controller.claimBadge(claimDto, mockUser)).rejects.toThrow(
+        BadRequestException,
+      );
       await expect(controller.claimBadge(claimDto, mockUser)).rejects.toThrow(
         'Badge has been revoked and cannot be claimed',
       );
@@ -226,7 +246,9 @@ describe('TeamsActionController', () => {
       prismaService.badge.findUnique.mockResolvedValue(expiredBadge);
 
       // Act & Assert
-      await expect(controller.claimBadge(claimDto, mockUser)).rejects.toThrow(BadRequestException);
+      await expect(controller.claimBadge(claimDto, mockUser)).rejects.toThrow(
+        BadRequestException,
+      );
       await expect(controller.claimBadge(claimDto, mockUser)).rejects.toThrow(
         'Badge status is EXPIRED, expected PENDING',
       );

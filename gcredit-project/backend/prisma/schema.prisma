@@ -23,12 +23,21 @@ model User {
   passwordHash  String
   firstName     String?
   lastName      String?
+  department    String?   // Sprint 8: M365 sync field
   role          UserRole  @default(EMPLOYEE)
+  azureId       String?   @unique // Sprint 8: M365 Azure AD ID
   isActive      Boolean   @default(true)
   emailVerified Boolean   @default(false)
   lastLoginAt   DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  // Story 8.10: Admin User Management
+  roleSetManually Boolean   @default(false) // True if Admin manually set role
+  roleUpdatedAt   DateTime? // When role was last updated
+  roleUpdatedBy   String?   // Admin user ID who updated role
+  roleVersion     Int       @default(0) // Optimistic locking for role changes
+  lastSyncAt      DateTime? // Last M365 sync timestamp
 
   passwordResetTokens   PasswordResetToken[]
   refreshTokens         RefreshToken[]
@@ -40,8 +49,15 @@ model User {
   milestoneAchievements MilestoneAchievement[] @relation("MilestoneAchievements")
   evidenceUploads       EvidenceFile[]         @relation("EvidenceUploader")
 
+  // Story 8.10: User Audit Log relations
+  auditLogsTarget    UserRoleAuditLog[] @relation("AuditTarget")
+  auditLogsPerformer UserRoleAuditLog[] @relation("AuditPerformer")
+
   @@index([email])
   @@index([role])
+  @@index([azureId])
+  @@index([isActive])
+  @@index([roleUpdatedAt])
   @@map("users")
 }
 
@@ -301,4 +317,66 @@ model AuditLog {
   @@index([timestamp]) // Time-based reports
   @@index([action]) // Filter by action type
   @@map("audit_logs")
+}
+
+// Sprint 8: M365 Sync Logging (Story 8.9)
+
+model M365SyncLog {
+  id           String   @id @default(uuid())
+  syncDate     DateTime @default(now())
+  syncType     String   @default("FULL") @db.VarChar(20) // 'FULL' | 'INCREMENTAL'
+  userCount    Int      // Total users in M365
+  syncedCount  Int      // Successfully synced users
+  createdCount Int      @default(0) // New users created
+  updatedCount Int      @default(0) // Existing users updated
+  failedCount  Int      @default(0) // Users that failed to sync (AC3)
+  status       String   @db.VarChar(20) // 'SUCCESS' | 'PARTIAL_SUCCESS' | 'FAILURE'
+  errorMessage String?  @db.Text
+  durationMs   Int?     // Sync duration in milliseconds
+  syncedBy     String?  @db.VarChar(100) // Who triggered the sync (AC3)
+  metadata     Json?    // Retry info, pagination, etc. (AC3)
+  createdAt    DateTime @default(now())
+
+  @@index([syncDate])
+  @@index([status])
+  @@map("m365_sync_logs")
+}
+
+// Sprint 8: User Audit Log (Story 8.9)
+
+model UserAuditLog {
+  id         String   @id @default(uuid())
+  userId     String   // User being audited
+  action     String   @db.VarChar(50) // 'CREATED', 'UPDATED', 'DEACTIVATED', 'REACTIVATED'
+  changes    Json?    // Field changes: { field: { old, new } }
+  source     String   @db.VarChar(20) // 'M365_SYNC', 'MANUAL', 'SYSTEM'
+  actorId    String?  // User who made the change (null for system)
+  timestamp  DateTime @default(now())
+
+  @@index([userId])
+  @@index([timestamp])
+  @@index([action])
+  @@map("user_audit_logs")
+}
+
+// Sprint 8: User Role Audit Log (Story 8.10)
+// Separate table for Admin-driven role/status changes with proper relations
+
+model UserRoleAuditLog {
+  id          String   @id @default(uuid())
+  userId      String   // Target user
+  performedBy String   // Admin who made the change
+  action      String   @db.VarChar(50) // 'ROLE_CHANGED' | 'STATUS_CHANGED'
+  oldValue    String?  @db.VarChar(50) // Old role or status
+  newValue    String   @db.VarChar(50) // New role or status
+  note        String?  @db.Text // Admin's note
+  createdAt   DateTime @default(now())
+
+  user  User @relation("AuditTarget", fields: [userId], references: [id], onDelete: Cascade)
+  admin User @relation("AuditPerformer", fields: [performedBy], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([performedBy])
+  @@index([createdAt])
+  @@map("user_role_audit_logs")
 }

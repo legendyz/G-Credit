@@ -10,7 +10,7 @@ import * as path from 'path';
  * Handles sending email notifications for badge-related events:
  * - Badge issuance (claim notification)
  * - Badge revocation (future)
- * 
+ *
  * Uses Microsoft Graph Email Service for production-quality email delivery
  */
 @Injectable()
@@ -25,36 +25,59 @@ export class BadgeNotificationService {
     private graphEmailService: GraphEmailService,
     private configService: ConfigService,
   ) {
-    this.useGraphEmail = this.configService.get<string>('ENABLE_GRAPH_EMAIL', 'false') === 'true';
-    this.fromEmail = this.configService.get<string>('GRAPH_EMAIL_FROM', 'M365DevAdmin@2wjh85.onmicrosoft.com');
+    this.useGraphEmail =
+      this.configService.get<string>('ENABLE_GRAPH_EMAIL', 'false') === 'true';
+    this.fromEmail = this.configService.get<string>(
+      'GRAPH_EMAIL_FROM',
+      'M365DevAdmin@2wjh85.onmicrosoft.com',
+    );
     // Load badge claim email template
-    let claimTemplatePath = path.join(__dirname, '../templates/badge-claim-notification.html');
-    
+    let claimTemplatePath = path.join(
+      __dirname,
+      '../templates/badge-claim-notification.html',
+    );
+
     // If template not found in dist, try src directory (development)
     if (!fs.existsSync(claimTemplatePath)) {
-      claimTemplatePath = path.join(process.cwd(), 'src/badge-issuance/templates/badge-claim-notification.html');
+      claimTemplatePath = path.join(
+        process.cwd(),
+        'src/badge-issuance/templates/badge-claim-notification.html',
+      );
     }
-    
+
     try {
       this.badgeClaimTemplate = fs.readFileSync(claimTemplatePath, 'utf-8');
       this.logger.log('✅ Badge claim email template loaded');
     } catch (error) {
-      this.logger.error(`❌ Failed to load claim email template: ${error.message}`);
+      this.logger.error(
+        `❌ Failed to load claim email template: ${error.message}`,
+      );
       throw new Error(`Email template not found at ${claimTemplatePath}`);
     }
 
     // Load badge revocation email template
-    let revocationTemplatePath = path.join(__dirname, '../templates/badge-revocation-notification.html');
-    
+    let revocationTemplatePath = path.join(
+      __dirname,
+      '../templates/badge-revocation-notification.html',
+    );
+
     if (!fs.existsSync(revocationTemplatePath)) {
-      revocationTemplatePath = path.join(process.cwd(), 'src/badge-issuance/templates/badge-revocation-notification.html');
+      revocationTemplatePath = path.join(
+        process.cwd(),
+        'src/badge-issuance/templates/badge-revocation-notification.html',
+      );
     }
-    
+
     try {
-      this.badgeRevocationTemplate = fs.readFileSync(revocationTemplatePath, 'utf-8');
+      this.badgeRevocationTemplate = fs.readFileSync(
+        revocationTemplatePath,
+        'utf-8',
+      );
       this.logger.log('✅ Badge revocation email template loaded');
     } catch (error) {
-      this.logger.error(`❌ Failed to load revocation email template: ${error.message}`);
+      this.logger.error(
+        `❌ Failed to load revocation email template: ${error.message}`,
+      );
       throw new Error(`Email template not found at ${revocationTemplatePath}`);
     }
   }
@@ -89,9 +112,13 @@ export class BadgeNotificationService {
           `🎓 You've earned the ${params.badgeName} badge!`,
           html,
         );
-        this.logger.log(`✅ Badge claim notification sent via Graph Email to ${params.recipientEmail}`);
+        this.logger.log(
+          `✅ Badge claim notification sent via Graph Email to ${params.recipientEmail}`,
+        );
       } else {
-        this.logger.warn(`⚠️ Graph Email disabled, notification not sent to ${params.recipientEmail}`);
+        this.logger.warn(
+          `⚠️ Graph Email disabled, notification not sent to ${params.recipientEmail}`,
+        );
       }
     } catch (error) {
       this.logger.error(`❌ Failed to send badge notification:`, error);
@@ -102,7 +129,7 @@ export class BadgeNotificationService {
 
   /**
    * Send badge revocation notification with retry logic (AC3)
-   * 
+   *
    * @param params Revocation notification parameters
    * @param maxRetries Maximum retry attempts (default: 3 per AC3)
    * @returns Object with success status for audit logging
@@ -164,7 +191,10 @@ export class BadgeNotificationService {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       attempts = attempt;
       try {
-        if (this.useGraphEmail && this.graphEmailService.isGraphEmailEnabled()) {
+        if (
+          this.useGraphEmail &&
+          this.graphEmailService.isGraphEmailEnabled()
+        ) {
           await this.graphEmailService.sendEmail(
             this.fromEmail,
             recipients,

@@ -16,85 +16,121 @@ metadata:
 
 # Sprint Metrics (updated daily)
 metrics:
-  total_stories: 10  # Added Story 8.10 (User Management)
+  total_stories: 8  # Executable stories (8.1, 8.2, 8.3, 8.4, 8.5, 8.9, 8.10 + merged from 0.2b, 0.3)
   total_tasks: 4  # Task 8.0, 8.6, 8.7, 8.8
-  total_work_items: 14  # 10 stories + 4 tasks
+  total_work_items: 12  # 8 stories + 4 tasks (legacy 0.2b, 0.3 merged into others)
   total_story_points: 44  # Updated Story 8.10 from 3 SP to 6 SP
-  total_estimated_hours: 75h  # Updated Story 8.10 from 5h to 11.5h
+  total_estimated_hours: 76h  # Story 8.7 corrected from 7h to 6h
   
-  completed_stories: 0
-  completed_tasks: 0
-  completed_work_items: 0
-  completed_hours: 0h
-  remaining_hours: 75h
+  completed_stories: 8  # ALL STORIES COMPLETE: 8.1, 8.2, 8.3, 8.4, 8.5, 8.9, 8.10 (0.2b, 0.3 merged)
+  completed_tasks: 4  # ALL TASKS COMPLETE: 8.0, 8.6, 8.7, 8.8
+  completed_work_items: 12  # 100% COMPLETE
+  completed_hours: 80h  # 30.5h (tasks) + 49.5h (stories)
+  remaining_hours: 0h  # Sprint complete (4h over capacity)
   
   stories_in_progress: 0
   tasks_in_progress: 0
   work_items_blocked: 0
+  sprint_status: COMPLETE  # All executable work items done
   
   # Technical Debt Resolution
   technical_debt_targeted: 17  # P1 items
-  technical_debt_resolved: 0
-  technical_debt_remaining: 17
+  technical_debt_resolved: 17  # ALL RESOLVED: SEC + ARCH + UX + TD-001
+  technical_debt_remaining: 0
 
-# Group A: UX & Accessibility (39h, 28 SP)
+# Group A: UX & Accessibility (52.5h, 31 SP) - COMPLETE
 group_a_ux_accessibility:
-  total_items: 7  # Added Story 8.10
-  completed_items: 0
-  total_hours: 52.5h  # Updated Story 8.10 from 5h to 11.5h
-  remaining_hours: 52.5h
+  total_items: 7  # Stories 8.1, 8.2, 8.3, 8.4, 8.5, 8.9, 8.10
+  completed_items: 7  # ALL COMPLETE
+  total_hours: 52.5h
+  completed_hours: 52.5h
+  remaining_hours: 0h
+  status: COMPLETE
   
   stories:
     - id: "8.1"
       title: "Dashboard Homepage"
       story_points: 5
-      estimated_hours: 9h
+      estimated_hours: 8h
+      actual_hours: 8h
       priority: HIGH
-      status: backlog  # backlog | in_progress | in_review | done
-      assignee: null
+      status: done
+      assignee: Amelia
       blocked: false
       blocker_reason: null
-      started_date: null
-      completed_date: null
-      acceptance_criteria_met: 0/6
+      started_date: "2026-02-03"
+      completed_date: "2026-02-03"
+      acceptance_criteria_met: 6/6
       technical_debt_resolved:
         - UX-P1-001
         - UX-P1-002
         - UX-P1-003
       dependencies:
-        - "8.4 (Analytics API)"
-        - "8.5 (Responsive Design)"
+        - "8.4 (Analytics API) - ✅"
+        - "8.5 (Responsive Design) - ✅"
       file: "8-1-dashboard-homepage.md"
+      completion_notes: |
+        ✅ COMPLETED - Dashboard Homepage with Key Metrics:
+        - AC1: Employee Dashboard (badge summary, quick actions, milestones, recent badges, recent achievements)
+        - AC2: Issuer Dashboard (issuance stats, quick actions, claim rate, activity)
+        - AC3: Manager Dashboard (team insights, quick actions, top performers, alerts)
+        - AC4: Admin Dashboard (system overview, health, quick actions)
+        - AC5: All dashboards wrapped in ErrorBoundary component
+        - AC6: Celebration UX (green highlight ring, CheckCircle icon, auto-scroll)
+        - Backend: 4 endpoints, 23 tests (controller + service + E2E)
+        - Frontend: 4 dashboards, 211 tests passing
+        - Manual refresh buttons (desktop + mobile 44×44px)
+        - UX-P1-001/002/003 resolved
+        - All code review findings addressed (commits 10084ba, 2b7d531)
+        - Commits: 19bfc80 (initial), 8adc2cc, 10084ba, d50505f, 2b7d531
       
     - id: "8.2"
       title: "Badge Search Enhancement"
       story_points: 3
       estimated_hours: 5.5h
+      actual_hours: 5.5h
       priority: MEDIUM
-      status: backlog
-      assignee: null
+      status: done
+      assignee: Dev Agent
       blocked: false
       blocker_reason: null
-      started_date: null
-      completed_date: null
-      acceptance_criteria_met: 0/5
+      started_date: "2026-02-04"
+      completed_date: "2026-02-05"
+      acceptance_criteria_met: 5/5
       technical_debt_resolved: []
+      technical_debt_created:
+        - "TD-015: ESLint Warnings (1100) - documented for Sprint 9-10"
       dependencies:
-        - "8.5 (Responsive Design)"
+        - "8.5 (Responsive Design) - ✅"
       file: "8-2-badge-search-enhancement.md"
+      completion_notes: |
+        ✅ COMPLETED - Badge Search & Filter Enhancement:
+        - AC1: Employee Wallet search (debounced 500ms, fuzzy match, skills/date filters)
+        - AC1: Mobile UX (sticky 48px, focus expansion, hidden chips, empty states with suggestions)
+        - AC2: Badge Management search (skills/date/issuer filters, Admin only issuer dropdown)
+        - AC3: Reusable components ready for Sprint 9 Catalog
+        - AC4: Advanced filter UI (SearchInput, FilterChips, DateRangePicker, SkillsFilter)
+        - AC5: Performance (client-side <50 badges, server-side ≥50 with loading spinner)
+        - Backend: wallet-query.dto.ts + query-badge.dto.ts with search/skills/fromDate/toDate/issuerId
+        - Backend: getWalletBadges + getIssuedBadges filtering with Prisma hasSome
+        - Frontend: BadgeSearchBar with issuer dropdown (Admin only)
+        - Tests: Backend 349 passing, Frontend 328 passing
+        - Code review: 6 findings resolved (commits 7092d04, 359ccbc, bc89215, 751fd75)
+        - Technical debt: TD-015 (ESLint warnings 1100) documented for Sprint 9-10
       
     - id: "8.3"
       title: "WCAG 2.1 Accessibility"
       story_points: 5
       estimated_hours: 8.5h
+      actual_hours: 8.5h
       priority: CRITICAL
-      status: backlog
-      assignee: null
+      status: done
+      assignee: Dev Agent
       blocked: false
       blocker_reason: null
-      started_date: null
-      completed_date: null
-      acceptance_criteria_met: 0/6
+      started_date: "2026-02-02"
+      completed_date: "2026-02-02"
+      acceptance_criteria_met: 6/6
       technical_debt_resolved:
         - UX-P1-004
         - UX-P1-005
@@ -103,86 +139,171 @@ group_a_ux_accessibility:
       dependencies:
         - "Applies to 8.1, 8.2, 8.5"
       file: "8-3-wcag-accessibility.md"
+      completion_notes: |
+        ✅ COMPLETED - WCAG 2.1 AA Accessibility Compliance:
+        - AC1: Keyboard Navigation - Skip links, focus trap (useFocusTrap), keyboard nav (useKeyboardNavigation)
+        - AC2: Screen Reader Support - Semantic HTML, ARIA labels, live regions (role="alert", aria-live)
+        - AC3: Color Contrast - StatusBadge with WCAG AA colors (5.9:1 - 7.5:1 ratios)
+        - AC4: Form Accessibility - Labels with htmlFor, aria-describedby for errors
+        - AC5: Focus Management - Skip links, 3px focus indicators, Layout component
+        - AC6: Responsive Navigation - useResponsiveColumns for dynamic grid columns
+        - Tests: useFocusTrap (4), useKeyboardNavigation (15), SkipLink, StatusBadge (3)
+        - Files: Layout.tsx, SkipLink.tsx, StatusBadge.tsx, useFocusTrap.ts, useKeyboardNavigation.ts
+        - accessibility.css (210 lines) with focus indicators and sr-only classes
+        - Commit: eae6890
       
     - id: "8.4"
       title: "Analytics API"
       story_points: 3
-      estimated_hours: 4.5h
+      estimated_hours: 6h
+      actual_hours: 5h
       priority: HIGH
-      status: backlog
-      assignee: null
+      notes: "+1.5h for @nestjs/cache-manager v3 migration (milliseconds TTL)"
+      status: done
+      assignee: Amelia
       blocked: false
       blocker_reason: null
-      started_date: null
-      completed_date: null
-      acceptance_criteria_met: 0/5
+      started_date: "2026-02-03"
+      completed_date: "2026-02-03"
+      acceptance_criteria_met: 5/5
       technical_debt_resolved: []
       dependencies:
-        - "Used by 8.1"
+        - "Used by 8.1 - ✅ API Ready"
       file: "8-4-analytics-api.md"
+      notes_completion: |
+        ✅ COMPLETED - 5 Analytics API endpoints implemented:
+        - AC1: System Overview (Admin only)
+        - AC2: Issuance Trends (Admin + Issuer)
+        - AC3: Top Performers (Admin + Manager)
+        - AC4: Skills Distribution (Admin only)
+        - AC5: Recent Activity Feed (Admin only)
+        - 36 tests: 23 unit + 13 E2E
+        - Cache TTL: 900000ms (15 minutes)
+        - Code Review: 4 findings fixed (commit 25150b8)
+        - CI: GitHub Actions passed
       
     - id: "8.5"
       title: "Responsive Design"
       story_points: 3
       estimated_hours: 5h
+      actual_hours: 4h
       priority: HIGH
-      status: backlog
-      assignee: null
+      status: done
+      assignee: Amelia
       blocked: false
       blocker_reason: null
-      started_date: null
-      completed_date: null
-      acceptance_criteria_met: 0/6
+      started_date: "2026-02-03"
+      completed_date: "2026-02-03"
+      acceptance_criteria_met: 6/6
       technical_debt_resolved: []
       dependencies:
-        - "Applies to 8.1, 8.2, 8.3"
+        - "Applies to 8.1, 8.2, 8.3 - ✅ Responsive Foundation Ready"
       file: "8-5-responsive-design.md"
+      completion_notes: |
+        ✅ COMPLETED - Mobile-first responsive design implemented:
+        - AC1: Mobile-First Layout (320px-767px) - Hamburger menu, single column
+        - AC2: Tablet Layout (768px-1023px) - 2-column grid
+        - AC3: Desktop Layout (1024px+) - 3-4 column grid
+        - AC4: Touch-Friendly (44×44px targets, WCAG AAA)
+        - AC5: Responsive Images (lazy loading, skeleton)
+        - AC6: Responsive Typography (text-xl md:text-2xl lg:text-3xl)
+        - 58 tests: 12 useMediaQuery + 19 MobileNav + 11 Layout + 16 BadgeImage
+        - Code Review: 5 findings resolved (commits 083ad30 + fa9dee4)
+        - Build: Frontend tests passing (146 total)
+      notes_completion: |
+        ✅ COMPLETED - Mobile-First Responsive Design:
+        - AC1: Mobile layout (hamburger + drawer, full-width modals)
+        - AC2: Tablet layout (2-col grid, 80% modal width)
+        - AC3: Desktop layout (3-4 col grid, centered modals)
+        - AC4: Touch targets ≥44×44px (h-11, py-3 px-4)
+        - AC5: Lazy loading images with skeleton placeholders
+        - AC6: Responsive typography (text-xl md:text-2xl lg:text-3xl)
+        - 58 new tests: useMediaQuery(12) + MobileNav(19) + Layout(11) + BadgeImage(16)
+        - Total frontend tests: 146 passing
       
     - id: "8.9"
       title: "M365 Production Hardening"
       story_points: 6
       estimated_hours: 8.5h
+      actual_hours: 6h
       priority: MEDIUM
-      status: backlog
-      assignee: null
+      status: done
+      assignee: Dev Agent
       blocked: false
       blocker_reason: null
-      started_date: null
-      completed_date: null
-      acceptance_criteria_met: 0/5
+      started_date: "2026-02-05"
+      completed_date: "2026-02-05"
+      acceptance_criteria_met: 5/5
       technical_debt_resolved: []
       dependencies:
-        - "Story U.2a (Sprint 7)"
-        - "Prisma migration: M365SyncLog + User.isActive"
+        - "Story U.2a (Sprint 7) - ✅"
+        - "Prisma migration: M365SyncLog + User.isActive - ✅"
       file: "U-2b-m365-hardening.md"
       notes: "Originally Story U.2b, renamed to 8.9 for Sprint 8"
+      completion_notes: |
+        ✅ COMPLETED - M365 Production Hardening:
+        - AC1: Pagination support - getAllAzureUsers() with @odata.nextLink, 999/page max
+        - AC2: Exponential backoff retry - 1s→2s→4s, max 4 retries, 429/5xx/network errors
+        - AC3: Audit logging - syncedBy, failedCount, metadata fields in M365SyncLog
+        - AC4: User deactivation sync - marks isActive=false for removed AND disabled Azure accounts
+        - AC5: Per-user error recovery - errors collected, no rollback, partial success supported
+        - Module: M365SyncModule with service/controller/DTOs registered in AppModule
+        - API Endpoints: POST /api/admin/m365-sync, GET /logs, GET /logs/:id, GET /status
+        - CLI: npm run sync:m365 command (scripts/sync-m365.ts)
+        - Tests: 55 service + 12 controller = 67 unit tests, 18 E2E tests
+        - Security: All endpoints Admin-only (RolesGuard)
+        - Code Review: 6 findings fixed (3 High + 3 Medium)
+          - AC3: Added syncedBy, failedCount, metadata audit fields
+          - AC2: Handle network errors (ECONNRESET, ETIMEDOUT, ENOTFOUND)
+          - AC4: Deactivate Azure disabled accounts (not just removed)
+          - Aligned status enum (PARTIAL_SUCCESS in both DB and API)
+        - Real M365 Test: 17 users synced from 2wjh85.onmicrosoft.com
+        - Commit: e6b4138
       
     - id: "8.10"
       title: "Admin User Management Panel"
       story_points: 6  # Updated from 3 SP (applied all UX+Arch fixes)
       estimated_hours: 11.5h  # Updated from 5h (added 6.5h for fixes)
+      actual_hours: 11.5h
       priority: HIGH
-      status: backlog
-      assignee: null
+      status: done
+      assignee: Dev Agent
       blocked: false
       blocker_reason: null
-      started_date: null
-      completed_date: null
-      acceptance_criteria_met: 0/6
+      started_date: "2026-02-03"
+      completed_date: "2026-02-04"
+      acceptance_criteria_met: 6/6
       technical_debt_resolved:
         - "SEC-HIGH-003: Role self-assignment on registration"
       dependencies:
-        - "8.0 (Sprint Setup - Prisma migration)"
-        - "8.1 (Dashboard - Admin navigation)"
+        - "8.0 (Sprint Setup - Prisma migration) - ✅"
+        - "8.1 (Dashboard - Admin navigation) - ✅"
       file: "8-10-user-management-panel.md"
-      notes: "Addresses security audit finding: Admin-only role management"
+      completion_notes: |
+        ✅ COMPLETED - Admin User Management Panel:
+        - AC1: User list page - Search (debounced 300ms), filter by role/status, sort with URL persistence
+        - AC1: Responsive - Mobile cards (tap-to-expand), tablet condensed, desktop full table
+        - AC1: Keyboard navigation - Tab/Enter/Arrow/Escape, focus indicators 3px #3B82F6
+        - AC1: Pinned actions column with sticky positioning for horizontal scroll
+        - AC2: Edit role dialog - Two-step confirmation for Admin changes, audit note, cannot change own role
+        - AC3: User deactivation - Confirmation dialog, 401 login effect, badges remain valid
+        - AC4: Audit trail - UserRoleAuditLog table with cascade delete
+        - AC5: Role priority - roleSetManually flag, optimistic locking (roleVersion), M365 sync coordination
+        - AC6: Security - @Roles(ADMIN) guards, route protection, 403 for non-Admin
+        - Backend: 4 endpoints (GET /users, GET /:id, PATCH /:id/role, PATCH /:id/status), 29 tests
+        - Frontend: UserListTable, EditRoleDialog, DeactivateUserDialog, RoleBadge, StatusBadge, 18+ tests
+        - Database: User fields (roleSetManually, roleUpdatedAt, roleUpdatedBy, roleVersion, lastSyncAt)
+        - Tests: Backend 349 passing, Frontend 234 passing
+        - Code review: 4 findings resolved (Admin confirmation, no-op fix, mobile UX, pinned column)
+        - Commits: 438b1a1 (initial), f3066ce (fixes)
+        - Resolves: SEC-HIGH-003 (role self-assignment vulnerability)
 
 # Group B: Security & Infrastructure (20h, 12 SP)
 group_b_security_infrastructure:
   total_items: 4  # Added Task 8.0
-  completed_items: 0
-  total_hours: 22.5h  # Added 1.5h
-  remaining_hours: 22.5h
+  completed_items: 4  # Task 8.0, 8.6, 8.7, 8.8 completed ✅ 100% COMPLETE
+  total_hours: 22h  # 1.5h + 6.5h + 6h + 8h + 5h
+  remaining_hours: 0h  # ✅ Group B fully complete
   
   tasks:
     - id: "8.0"
@@ -190,78 +311,115 @@ group_b_security_infrastructure:
       story_points: 1
       estimated_hours: 1.5h
       priority: CRITICAL
-      status: backlog
+      status: done
       assignee: "Development Team"
       blocked: false
       blocker_reason: null
-      started_date: null
-      completed_date: null
-      acceptance_criteria_met: 0/5
+      started_date: "2026-02-02"
+      completed_date: "2026-02-02"
+      acceptance_criteria_met: 5/5
       technical_debt_resolved: []
       dependencies:
         - "MUST COMPLETE FIRST - Blocks all Sprint 8 work"
       file: "8-0-sprint-setup.md"
-      notes: "Install dependencies and create Prisma migrations. MUST complete Day 1 morning."
+      notes: |
+        ✅ COMPLETED - All dependencies installed and migrations applied:
+        - helmet@8.1.0 (security headers)
+        - @nestjs/throttler@6.5.0 (rate limiting)
+        - @nestjs/cache-manager@3.1.0 + cache-manager@6.0.0 (caching)
+        - @axe-core/react@4.11.0 (accessibility testing)
+        - date-fns@4.1.0 (date utilities)
+        - bcrypt@6.0.0 ✅ (upgraded from 5.1.1, fixed tar vulnerability)
+        - Prisma migration: M365SyncLog + UserAuditLog + User fields
+        - Backend + Frontend builds verified
+        - Security: 22 vulnerabilities (3 moderate, 19 high) - AWS SDK upstream
       
     - id: "8.6"
       title: "Security Hardening"
       story_points: 3
-      estimated_hours: 6h
+      estimated_hours: 6.5h
       priority: CRITICAL
-      status: backlog
-      assignee: null
+      notes: "+0.5h for helmet@8.1.0 + throttler v6.5.0 adjustments"
+      status: done
+      assignee: "Development Team"
       blocked: false
       blocker_reason: null
-      started_date: null
-      completed_date: null
-      acceptance_criteria_met: 0/5
+      started_date: "2026-02-02"
+      completed_date: "2026-02-02"
+      acceptance_criteria_met: 5/5
       technical_debt_resolved:
-        - SEC-P1-001
-        - SEC-P1-002
-        - SEC-P1-003
-        - SEC-P1-004
-        - SEC-P1-005
+        - SEC-P1-001  # ✅ IDOR in evidence upload
+        - SEC-P1-002  # ✅ Missing Helmet middleware
+        - SEC-P1-003  # ✅ Overly permissive CORS
+        - SEC-P1-004  # ✅ Missing rate limiting
+        - SEC-P1-005  # ✅ Dependency vulnerabilities (bcrypt 6.0.0)
       dependencies:
         - "Consolidates Story 0.3"
       file: "8-6-security-hardening.md"
+      implementation_notes: |
+        ✅ COMPLETED - Security hardening implemented:
+        - Helmet@8.1.0 with CSP headers (main.ts)
+        - CORS whitelist with env ALLOWED_ORIGINS (main.ts)
+        - ThrottlerModule v6.5.0 global + auth endpoint limits (app.module.ts, auth.controller.ts)
+        - Evidence upload IDOR fix (evidence.service.ts)
+        - bcrypt@6.0.0 upgraded (Story 8.0)
+        - 11 security unit tests passing
+        - Remaining: 22 vulnerabilities (AWS SDK fast-xml-parser, lodash) - waiting upstream
       
     - id: "8.7"
       title: "Architecture Fixes"
       story_points: 4
-      estimated_hours: 7h
+      estimated_hours: 6h
+      actual_hours: 5h
       priority: HIGH
-      status: backlog
-      assignee: null
+      status: done
+      assignee: Amelia
       blocked: false
       blocker_reason: null
-      started_date: null
-      completed_date: null
-      acceptance_criteria_met: 0/4
+      started_date: "2026-02-04"
+      completed_date: "2026-02-04"
+      acceptance_criteria_met: 4/4
       technical_debt_resolved:
         - ARCH-P1-001
         - ARCH-P1-003
         - ARCH-P1-004
       dependencies:
-        - "Blocks Story 0.2b frontend"
+        - "Blocks Story 0.2b frontend - ✅ Backend ready"
       file: "8-7-architecture-fixes.md"
+      notes: |
+        ✅ COMPLETED - Architecture improvements implemented:
+        - Token rotation: refreshAccessToken() returns new refresh token, old revoked
+        - JWT validation: Startup check for ≥32 char secret (both access + refresh)
+        - Ownership check: ISSUER can only update/delete own templates
+        - 17 new unit tests (auth.service.spec.ts, jwt-validation.spec.ts)
+        - 273 unit tests, 83 E2E tests all passing
       
     - id: "8.8"
       title: "E2E Test Isolation"
       story_points: 5
       estimated_hours: 8h
       priority: CRITICAL
-      status: backlog
-      assignee: null
+      status: done
+      assignee: Amelia
       blocked: false
       blocker_reason: null
-      started_date: null
-      completed_date: null
-      acceptance_criteria_met: 0/5
+      started_date: "2026-02-02"
+      completed_date: "2026-02-03"
+      acceptance_criteria_met: 5/5
       technical_debt_resolved:
         - TD-001
       dependencies:
-        - "Blocks CI/CD reliability"
+        - "Blocks CI/CD reliability - ✅ UNBLOCKED"
       file: "8-8-e2e-test-isolation.md"
+      completion_report: "8-8-completion-report.md"
+      notes: |
+        ✅ COMPLETED - All 83/83 E2E tests passing in parallel:
+        - Schema-based database isolation implemented
+        - Test data factories for all entities (user, badge, template)
+        - CI/CD pipeline 100% reliable (was 20% before)
+        - Test execution 6x faster (40s vs 4min)
+        - 0 flaky tests (was 45/71 failing)
+        - Test logs: docs/testing/CICD-log/e2e-test-output-20260203-145842.log
 
 # Group C: Legacy Stories (Retained for Reference)
 group_c_legacy:

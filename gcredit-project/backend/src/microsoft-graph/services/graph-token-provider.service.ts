@@ -5,26 +5,27 @@ import { TokenCredentialAuthenticationProvider } from '@microsoft/microsoft-grap
 
 /**
  * Microsoft Graph Token Provider Service
- * 
+ *
  * Manages OAuth 2.0 Client Credentials authentication for Microsoft Graph API.
  * Implements token caching and automatic refresh via @azure/identity.
- * 
+ *
  * @see ADR-008: Microsoft Graph Integration Strategy
  * @see Sprint 6 Story 0.4: Microsoft Graph Module Foundation
  */
 @Injectable()
 export class GraphTokenProviderService implements OnModuleInit {
   private readonly logger = new Logger(GraphTokenProviderService.name);
-  private credential: ClientSecretCredential;
-  private authProvider: TokenCredentialAuthenticationProvider;
+  private credential: ClientSecretCredential | null = null;
+  private authProvider: TokenCredentialAuthenticationProvider | null = null;
+  private initialized = false;
 
   constructor(private readonly configService: ConfigService) {}
 
   /**
    * Initialize Azure Identity credential on module startup
-   * 
+   *
    * Creates ClientSecretCredential with tenant/client/secret from environment.
-   * Validates required configuration is present.
+   * Gracefully degrades when configuration is missing (for test environments).
    */
   async onModuleInit() {
     const tenantId = this.configService.get<string>('AZURE_TENANT_ID');
@@ -32,10 +33,14 @@ export class GraphTokenProviderService implements OnModuleInit {
     const clientSecret = this.configService.get<string>('AZURE_CLIENT_SECRET');
 
     if (!tenantId || !clientId || !clientSecret) {
-      this.logger.error('❌ Missing Azure AD configuration in environment');
-      throw new Error(
-        'Azure AD credentials not configured. Set AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET',
+      this.logger.warn(
+        '⚠️ Azure AD configuration not set - Graph API features disabled',
       );
+      this.logger.warn(
+        'Set AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET to enable',
+      );
+      this.initialized = true;
+      return;
     }
 
     try {
@@ -58,41 +63,49 @@ export class GraphTokenProviderService implements OnModuleInit {
         { scopes },
       );
 
+      this.initialized = true;
       this.logger.log('✅ Graph Token Provider initialized');
       this.logger.log(`📋 Tenant: ${tenantId}`);
       this.logger.log(`📋 Client: ${clientId}`);
     } catch (error) {
       this.logger.error('❌ Failed to initialize Graph Token Provider', error);
-      throw error;
+      this.initialized = true; // Mark as initialized even on error to allow app to start
     }
   }
 
   /**
+   * Check if Graph API is available
+   */
+  isAvailable(): boolean {
+    return this.authProvider !== null;
+  }
+
+  /**
    * Get authentication provider for Microsoft Graph Client
-   * 
+   *
    * Returns TokenCredentialAuthenticationProvider configured with
    * Client Credentials flow. Token caching/refresh handled by @azure/identity.
-   * 
-   * @returns Authentication provider for Graph Client
+   *
+   * @returns Authentication provider for Graph Client or null if not configured
    */
-  getAuthProvider(): TokenCredentialAuthenticationProvider {
-    if (!this.authProvider) {
-      throw new Error('GraphTokenProviderService not initialized');
-    }
+  getAuthProvider(): TokenCredentialAuthenticationProvider | null {
     return this.authProvider;
   }
 
   /**
    * Get access token directly (for debugging/testing)
-   * 
+   *
    * Requests fresh token from Azure AD. Use sparingly - prefer getAuthProvider()
    * which handles caching automatically.
-   * 
+   *
    * @returns Promise resolving to access token
+   * @throws Error if Graph API is not configured
    */
   async getAccessToken(): Promise<string> {
     if (!this.credential) {
-      throw new Error('GraphTokenProviderService not initialized');
+      throw new Error(
+        'Graph API not configured - Azure AD credentials missing',
+      );
     }
 
     try {

@@ -76,13 +76,20 @@ describe('BadgeAnalyticsController', () => {
       const result = await controller.getShareStats('badge-123', mockRequest);
 
       expect(result).toEqual(mockShareStats);
-      expect(service.getShareStats).toHaveBeenCalledWith('badge-123', 'user-123');
+      expect(service.getShareStats).toHaveBeenCalledWith(
+        'badge-123',
+        'user-123',
+      );
     });
 
     it('should throw ForbiddenException for unauthorized user', async () => {
-      jest.spyOn(service, 'getShareStats').mockRejectedValue(
-        new ForbiddenException('You are not authorized to view analytics for this badge'),
-      );
+      jest
+        .spyOn(service, 'getShareStats')
+        .mockRejectedValue(
+          new ForbiddenException(
+            'You are not authorized to view analytics for this badge',
+          ),
+        );
 
       await expect(
         controller.getShareStats('badge-123', mockRequest),
@@ -112,28 +119,50 @@ describe('BadgeAnalyticsController', () => {
 
   describe('getShareHistory', () => {
     it('should return share history with default limit', async () => {
-      jest.spyOn(service, 'getShareHistory').mockResolvedValue(mockShareHistory);
+      jest
+        .spyOn(service, 'getShareHistory')
+        .mockResolvedValue(mockShareHistory);
 
-      const result = await controller.getShareHistory('badge-123', 10, mockRequest);
+      const result = await controller.getShareHistory(
+        'badge-123',
+        10,
+        mockRequest,
+      );
 
       expect(result).toEqual(mockShareHistory);
-      expect(service.getShareHistory).toHaveBeenCalledWith('badge-123', 'user-123', 10);
+      expect(service.getShareHistory).toHaveBeenCalledWith(
+        'badge-123',
+        'user-123',
+        10,
+      );
     });
 
     it('should return share history with custom limit', async () => {
       const limitedHistory = [mockShareHistory[0]];
       jest.spyOn(service, 'getShareHistory').mockResolvedValue(limitedHistory);
 
-      const result = await controller.getShareHistory('badge-123', 5, mockRequest);
+      const result = await controller.getShareHistory(
+        'badge-123',
+        5,
+        mockRequest,
+      );
 
       expect(result).toHaveLength(1);
-      expect(service.getShareHistory).toHaveBeenCalledWith('badge-123', 'user-123', 5);
+      expect(service.getShareHistory).toHaveBeenCalledWith(
+        'badge-123',
+        'user-123',
+        5,
+      );
     });
 
     it('should throw ForbiddenException for unauthorized user', async () => {
-      jest.spyOn(service, 'getShareHistory').mockRejectedValue(
-        new ForbiddenException('You are not authorized to view analytics for this badge'),
-      );
+      jest
+        .spyOn(service, 'getShareHistory')
+        .mockRejectedValue(
+          new ForbiddenException(
+            'You are not authorized to view analytics for this badge',
+          ),
+        );
 
       await expect(
         controller.getShareHistory('badge-123', 10, mockRequest),
@@ -143,24 +172,38 @@ describe('BadgeAnalyticsController', () => {
     it('should return empty array for badge with no shares', async () => {
       jest.spyOn(service, 'getShareHistory').mockResolvedValue([]);
 
-      const result = await controller.getShareHistory('badge-123', 10, mockRequest);
+      const result = await controller.getShareHistory(
+        'badge-123',
+        10,
+        mockRequest,
+      );
 
       expect(result).toEqual([]);
     });
 
     it('should handle large limit values', async () => {
-      jest.spyOn(service, 'getShareHistory').mockResolvedValue(mockShareHistory);
+      jest
+        .spyOn(service, 'getShareHistory')
+        .mockResolvedValue(mockShareHistory);
 
       await controller.getShareHistory('badge-123', 100, mockRequest);
 
-      expect(service.getShareHistory).toHaveBeenCalledWith('badge-123', 'user-123', 100);
+      expect(service.getShareHistory).toHaveBeenCalledWith(
+        'badge-123',
+        'user-123',
+        100,
+      );
     });
 
     it('should include metadata for Teams shares', async () => {
       const teamsShare = mockShareHistory.find((s) => s.platform === 'teams');
       jest.spyOn(service, 'getShareHistory').mockResolvedValue([teamsShare]);
 
-      const result = await controller.getShareHistory('badge-123', 10, mockRequest);
+      const result = await controller.getShareHistory(
+        'badge-123',
+        10,
+        mockRequest,
+      );
 
       expect(result[0].metadata).toEqual({
         teamId: 'team-1',
@@ -172,7 +215,11 @@ describe('BadgeAnalyticsController', () => {
       const emailShare = mockShareHistory.find((s) => s.platform === 'email');
       jest.spyOn(service, 'getShareHistory').mockResolvedValue([emailShare]);
 
-      const result = await controller.getShareHistory('badge-123', 10, mockRequest);
+      const result = await controller.getShareHistory(
+        'badge-123',
+        10,
+        mockRequest,
+      );
 
       expect(result[0].recipientEmail).toBe('john@example.com');
       expect(result[0].metadata).toBeNull();

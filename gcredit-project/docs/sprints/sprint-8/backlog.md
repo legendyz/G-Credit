@@ -277,7 +277,7 @@ Production security implementation with Helmet (CSP headers), CORS whitelist, ra
 2. ✅ **CORS Whitelist** - Frontend origin only (no wildcards)
 3. ✅ **Rate Limiting** - @nestjs/throttler (10 req/min login, 100 req/min general)
 4. ✅ **IDOR Fix** - Evidence download authorization check
-5. ✅ **bcrypt Upgrade** - v5.1.1 → v6.0.0+ (security patch)
+5. ✅ **bcrypt Upgrade** - v5.1.1 → v6.0.0 (security patch - COMPLETED in Story 8.0)
 
 **Technical Debt Resolved:**
 - SEC-P1-001: No CSP headers
@@ -361,12 +361,12 @@ Production-grade M365 user sync with pagination (1000+ users), retry logic, audi
 
 ---
 
-### 👥 Story 8.10: Admin User Management Panel
+### 👥 Story 8.10: Admin User Management Panel ✅ DONE
 **File:** [8-10-user-management-panel.md](8-10-user-management-panel.md)  
 **Story Points:** 6 | **Effort:** 11.5h | **Priority:** HIGH  
 **Epic:** Epic 10 - Production-Ready MVP  
 **Resolves:** SEC-HIGH-003 (Role self-assignment security vulnerability)
-**Updated:** 2026-02-02 (Applied all UX + Architecture fixes from reviews)
+**Completed:** 2026-02-03
 
 **Description:**
 Admin UI to manage user roles dynamically without editing configuration files. Addresses security audit finding by removing role self-assignment on registration.
@@ -375,23 +375,24 @@ Admin UI to manage user roles dynamically without editing configuration files. A
 1. ✅ **User List Page** - Paginated table with search, filters (role, status), sorting
 2. ✅ **Edit User Role** - Admin can change any user's role (cannot change own role)
 3. ✅ **User Deactivation** - Admin can activate/deactivate users (affects login, not badges)
-4. ✅ **Audit Trail** - All role changes logged to UserAuditLog table
-5. ✅ **Role Priority** - Manually-set roles preserved during M365 sync
+4. ✅ **Audit Trail** - All role changes logged to UserRoleAuditLog table
+5. ✅ **Role Priority** - Manually-set roles preserved during M365 sync (roleSetManually flag)
 6. ✅ **Security** - Admin-only access (RBAC guards), confirmation dialogs for sensitive actions
 
-**Key Features:**
-- User table: Name, Email, Role badge (WCAG contrast validated), Department, Status badge, Last Login (formatted with date-fns), Actions
-- Edit role dialog with audit note (optional), ARIA labels, focus management, keyboard navigation
-- Deactivate/Activate with confirmation (simplified, no double confirmation)
-- Responsive design: Mobile card view, Desktop table view (consistent with Story 8.5)
-- Database: UserAuditLog table (cascading delete), User fields (roleSetManually, roleVersion for optimistic locking, lastSyncAt)
-- M365 sync: Transaction boundaries (100-user batches), conflict detection, preserves manually-set roles
-- Pagination: Hybrid strategy (offset <1000 users, cursor ≥1000 users)
+**Implementation Summary:**
+- **Backend:** AdminUsersModule with 4 API endpoints (list, get, update-role, update-status)
+- **Frontend:** AdminUserManagementPage, UserListTable, EditRoleDialog, DeactivateUserDialog
+- **Database:** Prisma migration 20260203153938_add_user_management
+  - User fields: roleSetManually, roleUpdatedAt, roleUpdatedBy, roleVersion, lastSyncAt
+  - New model: UserRoleAuditLog with cascade delete
+- **Tests:** 29 backend tests, 18+ frontend component tests
+- **WCAG:** Focus trap in dialogs, 4.5:1 contrast for role badges, 44×44px touch targets
+- **Commits:** 438b1a1 (feat), 06d3fbf (verify)
+- **CI:** Pending GitHub Actions verification (service degraded)
 
 **Dependencies:**
-- Task 8.0 (Sprint Setup) - Prisma migration capability
-- Story 8.1 (Dashboard) - Admin navigation link
-- Story 8.9 (M365 Sync) - Must preserve manual roles
+- Task 8.0 (Sprint Setup) - ✅ Prisma migration capability
+- Story 8.1 (Dashboard) - ✅ Admin navigation link
 
 **Technical Debt Resolved:**
 - SEC-HIGH-003: Role self-assignment on registration (security audit finding)

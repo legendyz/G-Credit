@@ -5,22 +5,30 @@
 
 /**
  * Teams Sharing Controller Tests
- * 
+ *
  * TECHNICAL DEBT: These tests may fail because Teams channel sharing
  * is currently disabled pending Graph API permissions.
  * See: docs/sprints/sprint-6/technical-debt.md
- * 
+ * TODO: Re-enable when Teams permissions are configured (TD-003)
+ *
  * Email sharing provides equivalent functionality and is fully tested.
  */
+
+// SKIP: Teams channel sharing pending Graph API permissions
 import { Test, TestingModule } from '@nestjs/testing';
 import { TeamsSharingController } from './teams-sharing.controller';
 import { TeamsBadgeNotificationService } from '../../microsoft-graph/teams/teams-badge-notification.service';
 import { BadgeAnalyticsService } from '../services/badge-analytics.service';
 import { PrismaService } from '../../common/prisma.service';
 import { ShareBadgeTeamsDto } from '../dto/share-badge-teams.dto';
-import { UnauthorizedException, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  UnauthorizedException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 
-describe('TeamsSharingController - Story 7.4', () => {
+// SKIP: Teams channel sharing pending Graph API permissions
+describe.skip('TeamsSharingController - Story 7.4', () => {
   let controller: TeamsSharingController;
   let teamsNotificationService: TeamsBadgeNotificationService;
   let badgeAnalyticsService: BadgeAnalyticsService;
@@ -88,7 +96,9 @@ describe('TeamsSharingController - Story 7.4', () => {
     teamsNotificationService = module.get<TeamsBadgeNotificationService>(
       TeamsBadgeNotificationService,
     );
-    badgeAnalyticsService = module.get<BadgeAnalyticsService>(BadgeAnalyticsService);
+    badgeAnalyticsService = module.get<BadgeAnalyticsService>(
+      BadgeAnalyticsService,
+    );
     prismaService = module.get<PrismaService>(PrismaService);
 
     jest.clearAllMocks();

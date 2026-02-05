@@ -145,7 +145,7 @@
   - date-fns (latest)
 - [x] 特殊版本锁定原因已注释
   - Prisma 6.19.2: v7.0.0 breaking changes
-  - bcrypt 5.1.1: v6.0.0 Windows安装失败（推迟到Sprint 9）
+  - bcrypt 6.0.0: Successfully upgraded in Story 8.0 (tar vulnerability fixed)
 
 **check-versions.ps1执行:**
 - ⚠️ 脚本有编码错误（已知问题）
@@ -590,17 +590,16 @@ Story 8.5 (Responsive) → Applies to 8.1, 8.2, 8.3, 8.10
 ## 🚨 阻塞项检查
 
 **阻塞项:** 0个  
-**警告项:** 1个  
+**警告项:** 0个 (原警告项已解决)  
 **豁免项:** 6个
 
-### ⚠️ 警告项1: check-versions.ps1脚本编码错误
-**问题:** 脚本执行失败（Exit Code 1）  
-**影响:** 无法自动生成版本清单  
-**缓解:** 使用手动npm list代替，version-manifest.md已手动创建  
-**优先级:** P2 (不阻塞Sprint 8，但需修复)  
-**跟踪:** 作为技术债务记录到backlog
+### ✅ 原警告项1已解决: bcrypt 6.0.0安装成功
+**原问题:** 规划时预期bcrypt 6.0.0在Windows安装失败  
+**实际结果:** Story 8.0执行时成功安装bcrypt 6.0.0  
+**影响:** SEC-P1-005 (tar vulnerability) 已在Sprint 8解决，无需推迟到Sprint 9  
+**更新:** 所有相关文档已更新反映实际状态
 
-**状态:** ⚠️ 已缓解（不阻塞开发）
+**状态:** ✅ 已解决
 
 ---
 

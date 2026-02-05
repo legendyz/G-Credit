@@ -9,15 +9,15 @@ import { Observable } from 'rxjs';
 
 /**
  * Interceptor to parse JSON fields from multipart/form-data requests
- * 
+ *
  * Problem: When sending multipart/form-data with JSON fields, tools like curl
  * may send malformed JSON (e.g., missing quotes around UUIDs or object keys).
  * This causes UUID strings like "88eb8c69-0e5e-4639-96c4-5e80a9401e3d" to be
  * parsed as scientific notation (the 'e' is interpreted as exponent).
- * 
+ *
  * Solution: This interceptor automatically parses and fixes common JSON issues
  * in multipart form data before the request reaches the controller.
- * 
+ *
  * Usage:
  * @UseInterceptors(MultipartJsonInterceptor)
  * @UseInterceptors(FileInterceptor('image'))
@@ -66,7 +66,7 @@ export class MultipartJsonInterceptor implements NestInterceptor {
       return value;
     }
 
-    let jsonStr = value.trim();
+    const jsonStr = value.trim();
 
     // Handle different field types
     if (fieldName === 'skillIds') {
@@ -90,18 +90,21 @@ export class MultipartJsonInterceptor implements NestInterceptor {
     // Handle array format
     if (jsonStr.startsWith('[') && jsonStr.endsWith(']')) {
       const content = jsonStr.slice(1, -1).trim();
-      
+
       // Empty array
       if (!content) {
         return [];
       }
 
       // Split by comma and clean up UUIDs
-      const uuids = content.split(',').map((id: string) => {
-        // Remove quotes if present
-        let cleanId = id.trim().replace(/^["']|["']$/g, '');
-        return cleanId;
-      }).filter(id => id.length > 0); // Remove empty strings
+      const uuids = content
+        .split(',')
+        .map((id: string) => {
+          // Remove quotes if present
+          const cleanId = id.trim().replace(/^["']|["']$/g, '');
+          return cleanId;
+        })
+        .filter((id) => id.length > 0); // Remove empty strings
 
       return uuids;
     }
@@ -128,7 +131,7 @@ export class MultipartJsonInterceptor implements NestInterceptor {
     // Fix common JSON issues:
     // 1. Unquoted keys: {type:manual} -> {"type":manual}
     // 2. Unquoted string values: {"type":manual} -> {"type":"manual"}
-    
+
     let fixed = jsonStr;
 
     // Fix unquoted keys: word followed by colon
@@ -167,7 +170,7 @@ export class MultipartJsonInterceptor implements NestInterceptor {
 
 /**
  * Extended interceptor for custom JSON fields
- * 
+ *
  * Example:
  * @Injectable()
  * export class CustomMultipartInterceptor extends MultipartJsonInterceptor {

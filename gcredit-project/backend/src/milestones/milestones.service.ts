@@ -1,6 +1,15 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
-import { CreateMilestoneDto, UpdateMilestoneDto, MilestoneTriggerType } from './dto/milestone.dto';
+import {
+  CreateMilestoneDto,
+  UpdateMilestoneDto,
+  MilestoneTriggerType,
+} from './dto/milestone.dto';
 import { MilestoneType } from '@prisma/client';
 import type { MilestoneConfig } from '@prisma/client';
 
@@ -121,12 +130,15 @@ export class MilestonesService {
       const configs = await this.getActiveMilestoneConfigs();
 
       // Get user's existing achievements to avoid duplicates
-      const existingAchievements = await this.prisma.milestoneAchievement.findMany({
-        where: { userId },
-        select: { milestoneId: true },
-      });
+      const existingAchievements =
+        await this.prisma.milestoneAchievement.findMany({
+          where: { userId },
+          select: { milestoneId: true },
+        });
 
-      const achievedMilestoneIds = new Set(existingAchievements.map((a) => a.milestoneId));
+      const achievedMilestoneIds = new Set(
+        existingAchievements.map((a) => a.milestoneId),
+      );
 
       // Evaluate each milestone config
       for (const config of configs) {
@@ -136,7 +148,10 @@ export class MilestonesService {
         }
 
         // Evaluate trigger
-        const triggerMet = await this.evaluateTrigger(userId, config.trigger as any);
+        const triggerMet = await this.evaluateTrigger(
+          userId,
+          config.trigger as any,
+        );
 
         if (triggerMet) {
           // Create achievement record
@@ -147,20 +162,26 @@ export class MilestonesService {
             },
           });
 
-          this.logger.log(`✅ Milestone achieved: ${config.title} by user ${userId}`);
+          this.logger.log(
+            `✅ Milestone achieved: ${config.title} by user ${userId}`,
+          );
         }
       }
 
       const duration = Date.now() - startTime;
       // AC 2.9: Ensure detection runs in <500ms
       if (duration > 500) {
-        this.logger.warn(`⚠️ Milestone detection took ${duration}ms (target: <500ms)`);
+        this.logger.warn(
+          `⚠️ Milestone detection took ${duration}ms (target: <500ms)`,
+        );
       } else {
         this.logger.debug(`Milestone detection completed in ${duration}ms`);
       }
     } catch (error) {
       // AC 2.10: Log failures but don't block badge operations
-      this.logger.error(`❌ Milestone detection failed for user ${userId}: ${error.message}`);
+      this.logger.error(
+        `❌ Milestone detection failed for user ${userId}: ${error.message}`,
+      );
       // Don't throw - milestone detection is non-critical
     }
   }
@@ -171,12 +192,17 @@ export class MilestonesService {
   private async getActiveMilestoneConfigs(): Promise<MilestoneConfig[]> {
     const now = Date.now();
 
-    if (now - this.lastCacheRefresh > this.CACHE_TTL || this.milestoneConfigsCache.length === 0) {
+    if (
+      now - this.lastCacheRefresh > this.CACHE_TTL ||
+      this.milestoneConfigsCache.length === 0
+    ) {
       this.milestoneConfigsCache = await this.prisma.milestoneConfig.findMany({
         where: { isActive: true },
       });
       this.lastCacheRefresh = now;
-      this.logger.debug(`Milestone configs cache refreshed (${this.milestoneConfigsCache.length} configs)`);
+      this.logger.debug(
+        `Milestone configs cache refreshed (${this.milestoneConfigsCache.length} configs)`,
+      );
     }
 
     return this.milestoneConfigsCache;
@@ -186,7 +212,10 @@ export class MilestonesService {
    * Evaluate milestone trigger for a user
    * AC 2.8: Support BADGE_COUNT, SKILL_TRACK, ANNIVERSARY triggers
    */
-  private async evaluateTrigger(userId: string, trigger: any): Promise<boolean> {
+  private async evaluateTrigger(
+    userId: string,
+    trigger: any,
+  ): Promise<boolean> {
     switch (trigger.type) {
       case MilestoneTriggerType.BADGE_COUNT:
         return this.evaluateBadgeCountTrigger(userId, trigger.value);
@@ -210,7 +239,10 @@ export class MilestonesService {
   /**
    * Evaluate BADGE_COUNT trigger: Count user's claimed badges
    */
-  private async evaluateBadgeCountTrigger(userId: string, requiredCount: number): Promise<boolean> {
+  private async evaluateBadgeCountTrigger(
+    userId: string,
+    requiredCount: number,
+  ): Promise<boolean> {
     const count = await this.prisma.badge.count({
       where: {
         recipientId: userId,
@@ -245,7 +277,10 @@ export class MilestonesService {
   /**
    * Evaluate ANNIVERSARY trigger: Check user registration date
    */
-  private async evaluateAnniversaryTrigger(userId: string, requiredMonths: number): Promise<boolean> {
+  private async evaluateAnniversaryTrigger(
+    userId: string,
+    requiredMonths: number,
+  ): Promise<boolean> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { createdAt: true },

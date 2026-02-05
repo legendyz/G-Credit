@@ -20,7 +20,8 @@ export class RevokeBadgeDto {
   reason: RevocationReason;
 
   @ApiProperty({
-    description: 'Additional notes explaining the revocation (optional, max 1000 chars)',
+    description:
+      'Additional notes explaining the revocation (optional, max 1000 chars)',
     required: false,
     maxLength: 1000,
     example: 'Detailed explanation of the revocation',

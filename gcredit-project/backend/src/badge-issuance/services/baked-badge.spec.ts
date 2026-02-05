@@ -9,11 +9,11 @@ describe('Baked Badge Generation - Story 6.4 (unit tests)', () => {
           width: 100,
           height: 100,
           channels: 4,
-          background: { r: 0, g: 0, b: 255, alpha: 1 }
-        }
+          background: { r: 0, g: 0, b: 255, alpha: 1 },
+        },
       })
-      .png()
-      .toBuffer();
+        .png()
+        .toBuffer();
 
       // Mock assertion data
       const assertion = {
@@ -25,8 +25,8 @@ describe('Baked Badge Generation - Story 6.4 (unit tests)', () => {
           type: 'email',
           hashed: true,
           salt: 'test-salt',
-          identity: 'sha256$hash'
-        }
+          identity: 'sha256$hash',
+        },
       };
 
       // Embed assertion in PNG EXIF metadata
@@ -36,8 +36,8 @@ describe('Baked Badge Generation - Story 6.4 (unit tests)', () => {
           exif: {
             IFD0: {
               ImageDescription: JSON.stringify(assertion),
-            }
-          }
+            },
+          },
         })
         .toBuffer();
 
@@ -49,9 +49,11 @@ describe('Baked Badge Generation - Story 6.4 (unit tests)', () => {
 
       // Verify file size is reasonable (<5MB as per AC)
       expect(bakedBadge.length).toBeLessThan(5 * 1024 * 1024);
-      
+
       // Log size for manual verification
-      console.log(`Baked badge size: ${(bakedBadge.length / 1024).toFixed(2)} KB`);
+      console.log(
+        `Baked badge size: ${(bakedBadge.length / 1024).toFixed(2)} KB`,
+      );
     });
 
     it('should maintain image quality after baking', async () => {
@@ -61,11 +63,11 @@ describe('Baked Badge Generation - Story 6.4 (unit tests)', () => {
           width: 200,
           height: 200,
           channels: 4,
-          background: { r: 255, g: 0, b: 0, alpha: 1 }
-        }
+          background: { r: 255, g: 0, b: 0, alpha: 1 },
+        },
       })
-      .png()
-      .toBuffer();
+        .png()
+        .toBuffer();
 
       const originalMetadata = await sharp(originalImage).metadata();
 
@@ -76,8 +78,8 @@ describe('Baked Badge Generation - Story 6.4 (unit tests)', () => {
           exif: {
             IFD0: {
               ImageDescription: 'test metadata string',
-            }
-          }
+            },
+          },
         })
         .toBuffer();
 
@@ -97,11 +99,11 @@ describe('Baked Badge Generation - Story 6.4 (unit tests)', () => {
           width: 256,
           height: 256,
           channels: 4,
-          background: { r: 100, g: 150, b: 200, alpha: 1 }
-        }
+          background: { r: 100, g: 150, b: 200, alpha: 1 },
+        },
       })
-      .png()
-      .toBuffer();
+        .png()
+        .toBuffer();
 
       // Realistic Open Badges 2.0 assertion
       const assertion = {
@@ -113,18 +115,20 @@ describe('Baked Badge Generation - Story 6.4 (unit tests)', () => {
           type: 'email',
           hashed: true,
           salt: 'gcredit-salt-12345',
-          identity: 'sha256$abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789'
+          identity:
+            'sha256$abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789',
         },
         issuedOn: '2026-01-28T10:30:00Z',
         expires: '2027-01-28T10:30:00Z',
         verification: {
           type: 'hosted',
-          verificationUrl: 'https://g-credit.com/verify/550e8400-e29b-41d4-a716-446655440000'
+          verificationUrl:
+            'https://g-credit.com/verify/550e8400-e29b-41d4-a716-446655440000',
         },
         evidence: [
           'https://blob.azure.com/evidence/file1.pdf',
-          'https://blob.azure.com/evidence/file2.jpg'
-        ]
+          'https://blob.azure.com/evidence/file2.jpg',
+        ],
       };
 
       const assertionString = JSON.stringify(assertion);
@@ -137,8 +141,8 @@ describe('Baked Badge Generation - Story 6.4 (unit tests)', () => {
           exif: {
             IFD0: {
               ImageDescription: assertionString,
-            }
-          }
+            },
+          },
         })
         .toBuffer();
 
@@ -158,13 +162,15 @@ describe('Baked Badge Generation - Story 6.4 (unit tests)', () => {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
-      
+
       expect(sanitized).toBe('excellence-award-2026');
 
       const dateString = new Date().toISOString().split('T')[0];
       const filename = `badge-${sanitized}-${dateString}.png`;
-      
-      expect(filename).toMatch(/^badge-excellence-award-2026-\d{4}-\d{2}-\d{2}\.png$/);
+
+      expect(filename).toMatch(
+        /^badge-excellence-award-2026-\d{4}-\d{2}-\d{2}\.png$/,
+      );
     });
 
     it('should handle special characters in badge name', () => {
@@ -187,7 +193,7 @@ describe('Baked Badge Generation - Story 6.4 (unit tests)', () => {
     it('should use current date in filename', () => {
       const dateString = new Date().toISOString().split('T')[0];
       expect(dateString).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      
+
       const filename = `badge-test-${dateString}.png`;
       expect(filename).toContain(new Date().getFullYear().toString());
     });
@@ -201,16 +207,16 @@ describe('Baked Badge Generation - Story 6.4 (unit tests)', () => {
           width: 1000,
           height: 1000,
           channels: 4,
-          background: { r: 128, g: 128, b: 128, alpha: 1 }
-        }
+          background: { r: 128, g: 128, b: 128, alpha: 1 },
+        },
       })
-      .png()
-      .toBuffer();
+        .png()
+        .toBuffer();
 
       const assertion = {
         '@context': 'https://w3id.org/openbadges/v2',
         type: 'Assertion',
-        badge: 'https://example.com/badge'
+        badge: 'https://example.com/badge',
       };
 
       const bakedBadge = await sharp(largeImage)
@@ -219,14 +225,14 @@ describe('Baked Badge Generation - Story 6.4 (unit tests)', () => {
           exif: {
             IFD0: {
               ImageDescription: JSON.stringify(assertion),
-            }
-          }
+            },
+          },
         })
         .toBuffer();
 
       const sizeInMB = bakedBadge.length / (1024 * 1024);
       expect(sizeInMB).toBeLessThan(5);
-      
+
       console.log(`Large baked badge size: ${sizeInMB.toFixed(2)} MB`);
     });
   });

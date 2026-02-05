@@ -5,10 +5,10 @@ import { GraphTokenProviderService } from './graph-token-provider.service';
 
 /**
  * Microsoft Graph Teams Service
- * 
+ *
  * Sends Microsoft Teams notifications via Graph API (TeamsActivity.Send permission).
  * Supports Adaptive Cards for rich notification experiences.
- * 
+ *
  * @see ADR-008: Microsoft Graph Integration Strategy
  * @see Sprint 6 Story 7.4: Microsoft Teams Notifications
  */
@@ -23,13 +23,14 @@ export class GraphTeamsService implements OnModuleInit {
     private readonly configService: ConfigService,
   ) {
     // Task 7: Use new ENABLE_TEAMS_NOTIFICATIONS config
-    this.isEnabled = this.configService.get<string>(
-      'ENABLE_TEAMS_NOTIFICATIONS',
-      'false',
-    ) === 'true';
+    this.isEnabled =
+      this.configService.get<string>('ENABLE_TEAMS_NOTIFICATIONS', 'false') ===
+      'true';
 
     if (!this.isEnabled) {
-      this.logger.warn('⚠️ Teams notifications disabled (ENABLE_TEAMS_NOTIFICATIONS=false)');
+      this.logger.warn(
+        '⚠️ Teams notifications disabled (ENABLE_TEAMS_NOTIFICATIONS=false)',
+      );
     }
   }
 
@@ -41,7 +42,10 @@ export class GraphTeamsService implements OnModuleInit {
       try {
         this.initializeClient();
       } catch (error) {
-        this.logger.error('❌ Failed to initialize Graph Teams on module init', error);
+        this.logger.error(
+          '❌ Failed to initialize Graph Teams on module init',
+          error,
+        );
         this.isEnabled = false;
       }
     }
@@ -53,6 +57,14 @@ export class GraphTeamsService implements OnModuleInit {
   private initializeClient() {
     try {
       const authProvider = this.tokenProvider.getAuthProvider();
+
+      if (!authProvider) {
+        this.logger.warn(
+          '⚠️ Graph Teams Service disabled - Azure AD not configured',
+        );
+        this.isEnabled = false;
+        return;
+      }
 
       this.graphClient = Client.initWithMiddleware({
         authProvider,
@@ -67,11 +79,11 @@ export class GraphTeamsService implements OnModuleInit {
 
   /**
    * Send Teams channel message notification
-   * 
+   *
    * Sends message directly to a Teams channel with optional Adaptive Card.
    * Uses /teams/{teamId}/channels/{channelId}/messages endpoint.
    * This approach does NOT require a Teams App to be deployed.
-   * 
+   *
    * @param teamId - Target team ID
    * @param channelId - Target channel ID
    * @param message - Plain text message content

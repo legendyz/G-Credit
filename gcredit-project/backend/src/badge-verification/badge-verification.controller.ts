@@ -1,4 +1,11 @@
-import { Controller, Get, Param, NotFoundException, Res, Header } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  NotFoundException,
+  Res,
+  Header,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { Public } from '../common/decorators/public.decorator';
@@ -20,61 +27,64 @@ export class BadgeVerificationController {
   @Header('Access-Control-Allow-Origin', '*')
   @Header('Access-Control-Allow-Methods', 'GET, OPTIONS')
   @Header('Access-Control-Allow-Headers', 'Content-Type')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Verify badge authenticity (PUBLIC API - third-party integration)',
-    description: 'Returns Open Badges 2.0 compliant JSON-LD assertion with verification status. Supports CORS for cross-origin requests. Used by third-party platforms (HR systems, verification services) to programmatically verify badges.'
+    description:
+      'Returns Open Badges 2.0 compliant JSON-LD assertion with verification status. Supports CORS for cross-origin requests. Used by third-party platforms (HR systems, verification services) to programmatically verify badges.',
   })
-  @ApiParam({ 
-    name: 'verificationId', 
+  @ApiParam({
+    name: 'verificationId',
     description: 'Unique verification ID (UUID) from badge',
-    example: '550e8400-e29b-41d4-a716-446655440000'
+    example: '550e8400-e29b-41d4-a716-446655440000',
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Badge verified successfully (includes valid, expired, and revoked badges)',
+  @ApiResponse({
+    status: 200,
+    description:
+      'Badge verified successfully (includes valid, expired, and revoked badges)',
     headers: {
       'Cache-Control': {
-        description: 'Caching policy: public, max-age=3600 for valid badges; no-cache for revoked',
-        schema: { type: 'string' }
+        description:
+          'Caching policy: public, max-age=3600 for valid badges; no-cache for revoked',
+        schema: { type: 'string' },
       },
       'X-Verification-Status': {
         description: 'Verification result: valid, expired, or revoked',
-        schema: { type: 'string', enum: ['valid', 'expired', 'revoked'] }
-      }
+        schema: { type: 'string', enum: ['valid', 'expired', 'revoked'] },
+      },
     },
     schema: {
       example: {
         // Open Badges 2.0 assertion
         '@context': 'https://w3id.org/openbadges/v2',
-        'type': 'Assertion',
-        'id': 'https://g-credit.com/api/badges/uuid/assertion',
-        'badge': 'https://g-credit.com/api/badge-templates/uuid',
-        'recipient': {
-          'type': 'email',
-          'hashed': true,
-          'salt': 'random-salt',
-          'identity': 'sha256$hash'
+        type: 'Assertion',
+        id: 'https://g-credit.com/api/badges/uuid/assertion',
+        badge: 'https://g-credit.com/api/badge-templates/uuid',
+        recipient: {
+          type: 'email',
+          hashed: true,
+          salt: 'random-salt',
+          identity: 'sha256$hash',
         },
-        'issuedOn': '2026-01-28T10:30:00Z',
-        'expires': '2027-01-28T10:30:00Z',
-        'verification': {
-          'type': 'hosted',
-          'verificationUrl': 'https://g-credit.com/verify/uuid'
+        issuedOn: '2026-01-28T10:30:00Z',
+        expires: '2027-01-28T10:30:00Z',
+        verification: {
+          type: 'hosted',
+          verificationUrl: 'https://g-credit.com/verify/uuid',
         },
-        'evidence': ['https://blob.azure.com/evidence.pdf'],
-        
+        evidence: ['https://blob.azure.com/evidence.pdf'],
+
         // Story 6.3: Additional verification metadata
-        'verificationStatus': 'valid', // or 'expired', 'revoked'
-        'verifiedAt': '2026-01-28T12:00:00Z',
-        'revoked': false,
-        'revokedAt': null,
-        'revocationReason': null,
-      }
-    }
+        verificationStatus: 'valid', // or 'expired', 'revoked'
+        verifiedAt: '2026-01-28T12:00:00Z',
+        revoked: false,
+        revokedAt: null,
+        revocationReason: null,
+      },
+    },
   })
-  @ApiResponse({ 
-    status: 404, 
-    description: 'Badge not found (invalid verificationId)'
+  @ApiResponse({
+    status: 404,
+    description: 'Badge not found (invalid verificationId)',
   })
   async verifyBadge(
     @Param('verificationId') verificationId: string,
@@ -90,7 +100,7 @@ export class BadgeVerificationController {
     const now = new Date();
     const isExpired = badge.expiresAt && new Date(badge.expiresAt) < now;
     const isRevoked = badge.status === BadgeStatus.REVOKED;
-    
+
     let verificationStatus: 'valid' | 'expired' | 'revoked';
     if (isRevoked) {
       verificationStatus = 'revoked';
@@ -103,7 +113,10 @@ export class BadgeVerificationController {
     // Story 6.3: Set Cache-Control headers based on status
     if (isRevoked) {
       // Revoked badges should not be cached (always revalidate)
-      response.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      response.setHeader(
+        'Cache-Control',
+        'no-cache, no-store, must-revalidate',
+      );
       response.setHeader('Pragma', 'no-cache');
       response.setHeader('Expires', '0');
     } else {
@@ -118,12 +131,12 @@ export class BadgeVerificationController {
     return {
       // Open Badges 2.0 assertion (from Story 6.1)
       ...(badge.assertionJson as any),
-      
+
       // Story 6.3: Additional verification metadata
       verificationStatus,
       verifiedAt: now.toISOString(),
       revoked: isRevoked,
-      
+
       // Story 9.2: Revocation details with categorization
       isValid: badge.isValid,
       ...(isRevoked && {
@@ -133,7 +146,7 @@ export class BadgeVerificationController {
         isPublicReason: badge.isPublicReason,
         revokedBy: badge.revokedBy,
       }),
-      
+
       // Story 6.2: Detailed badge info for web UI
       _meta: {
         badge: badge.badge,
@@ -144,7 +157,7 @@ export class BadgeVerificationController {
         ...(badge.integrity && {
           integrity: badge.integrity,
         }),
-      }
+      },
     };
   }
 }

@@ -1,7 +1,7 @@
 /**
  * Badge Analytics Controller
  * Story 7.5 - Sharing Analytics
- * 
+ *
  * Provides REST API endpoints for badge sharing analytics
  */
 
@@ -24,22 +24,24 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { BadgeAnalyticsService, ShareStatsDto, ShareHistoryDto } from '../services/badge-analytics.service';
+import {
+  BadgeAnalyticsService,
+  ShareStatsDto,
+  ShareHistoryDto,
+} from '../services/badge-analytics.service';
 
 @ApiTags('Badge Analytics')
 @Controller('api/badges')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class BadgeAnalyticsController {
-  constructor(
-    private readonly badgeAnalyticsService: BadgeAnalyticsService,
-  ) {}
+  constructor(private readonly badgeAnalyticsService: BadgeAnalyticsService) {}
 
   /**
    * Get share statistics for a badge
    * AC #5: Badge detail page shows share counts by platform
    * AC #7: Only badge owner/issuer can view analytics
-   * 
+   *
    * @param badgeId Badge ID
    * @param req Request with authenticated user
    * @returns Share counts by platform
@@ -94,7 +96,7 @@ export class BadgeAnalyticsController {
    * Get recent share history for a badge
    * AC #6: Badge detail page shows share history (last 10 shares)
    * AC #7: Only badge owner/issuer can view analytics
-   * 
+   *
    * @param badgeId Badge ID
    * @param limit Maximum number of records to return (default: 10)
    * @param req Request with authenticated user
@@ -127,10 +129,22 @@ export class BadgeAnalyticsController {
         type: 'object',
         properties: {
           id: { type: 'string', example: 'share-1' },
-          platform: { type: 'string', example: 'teams', enum: ['email', 'teams', 'widget'] },
-          sharedAt: { type: 'string', format: 'date-time', example: '2026-01-30T14:30:00Z' },
+          platform: {
+            type: 'string',
+            example: 'teams',
+            enum: ['email', 'teams', 'widget'],
+          },
+          sharedAt: {
+            type: 'string',
+            format: 'date-time',
+            example: '2026-01-30T14:30:00Z',
+          },
           sharedBy: { type: 'string', nullable: true, example: 'user-123' },
-          recipientEmail: { type: 'string', nullable: true, example: 'john@example.com' },
+          recipientEmail: {
+            type: 'string',
+            nullable: true,
+            example: 'john@example.com',
+          },
           metadata: {
             type: 'object',
             nullable: true,

@@ -11,19 +11,19 @@ import { BadgeNotificationService } from '../badge-issuance/services/badge-notif
 
 /**
  * Microsoft Graph Module
- * 
+ *
  * Provides Microsoft Graph API integration for email and Teams notifications.
- * 
+ *
  * Services:
  * - GraphTokenProviderService: OAuth 2.0 Client Credentials authentication
  * - GraphEmailService: Send emails via Graph API
  * - GraphTeamsService: Send Teams notifications via Graph API
  * - TeamsBadgeNotificationService: Send badge notifications to Teams with Adaptive Cards
  * - BadgeNotificationService: Email fallback for Teams notifications (Task 6)
- * 
+ *
  * Controllers:
  * - TeamsActionController: Handle Adaptive Card action callbacks (Story 7.4 Task 5)
- * 
+ *
  * @see ADR-008: Microsoft Graph Integration Strategy
  * @see Sprint 6 Story 0.4: Microsoft Graph Module Foundation
  * @see Sprint 6 Story 7.4: Microsoft Teams Notifications

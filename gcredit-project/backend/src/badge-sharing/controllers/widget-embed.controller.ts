@@ -1,7 +1,7 @@
 /**
  * Widget Embedding Controller
  * Story 7.3 - Embeddable Badge Widget
- * 
+ *
  * PUBLIC API - No authentication required for widget embedding
  */
 
@@ -47,7 +47,7 @@ export class WidgetEmbedController {
   /**
    * Get badge data for widget embedding (JSON)
    * PUBLIC API - No authentication required
-   * 
+   *
    * AC #2: Widget displays badge image and details correctly
    * AC #7: Widget works cross-origin (CORS configured)
    */
@@ -116,8 +116,7 @@ export class WidgetEmbedController {
 
     // Build verification URL
     const baseUrl =
-      this.configService.get<string>('FRONTEND_URL') ||
-      'http://localhost:5173';
+      this.configService.get<string>('FRONTEND_URL') || 'http://localhost:5173';
     const verificationUrl = `${baseUrl}/verify/${badge.verificationId}`;
 
     return {
@@ -134,7 +133,7 @@ export class WidgetEmbedController {
   /**
    * Get widget HTML snippet for embedding
    * PUBLIC API - No authentication required
-   * 
+   *
    * AC #1: User can generate embed code
    * AC #3: Widget works in iframe and standalone HTML
    * AC #4: Widget supports sizes and themes
@@ -154,7 +153,8 @@ export class WidgetEmbedController {
     name: 'size',
     enum: WidgetSize,
     required: false,
-    description: 'Widget size (small: 100x100, medium: 200x200, large: 300x300)',
+    description:
+      'Widget size (small: 100x100, medium: 200x200, large: 300x300)',
     example: 'medium',
   })
   @ApiQuery({

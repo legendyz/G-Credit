@@ -2,7 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { EvidenceService } from './evidence.service';
 import { PrismaService } from '../common/prisma.service';
 import { StorageService } from '../common/storage.service';
-import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 
 describe('EvidenceService - Story 4.3', () => {
   let service: EvidenceService;
@@ -51,6 +55,7 @@ describe('EvidenceService - Story 4.3', () => {
     const mockBadge = {
       id: 'badge-123',
       recipientId: 'user-123',
+      issuerId: 'user-admin', // Required for authorization check
     };
 
     const mockFile: Express.Multer.File = {
@@ -83,7 +88,11 @@ describe('EvidenceService - Story 4.3', () => {
         uploadedAt: new Date(),
       });
 
-      const result = await service.uploadEvidence('badge-123', mockFile, 'user-admin');
+      const result = await service.uploadEvidence(
+        'badge-123',
+        mockFile,
+        'user-admin',
+      );
 
       expect(result).toBeDefined();
       expect(result.originalName).toBe('certificate.pdf');
@@ -151,7 +160,11 @@ describe('EvidenceService - Story 4.3', () => {
         originalname: 'my certificate!@#.pdf',
       };
 
-      const result = await service.uploadEvidence('badge-123', fileWithSpecialChars, 'user-admin');
+      const result = await service.uploadEvidence(
+        'badge-123',
+        fileWithSpecialChars,
+        'user-admin',
+      );
 
       // Filename should be sanitized (special chars replaced with _)
       expect(mockStorageService.uploadEvidence).toHaveBeenCalledWith(
@@ -183,9 +196,15 @@ describe('EvidenceService - Story 4.3', () => {
 
     it('should list evidence files for badge owner (AC 3.8)', async () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
-      mockPrismaService.evidenceFile.findMany.mockResolvedValue(mockEvidenceFiles);
+      mockPrismaService.evidenceFile.findMany.mockResolvedValue(
+        mockEvidenceFiles,
+      );
 
-      const result = await service.listEvidence('badge-123', 'user-123', 'EMPLOYEE');
+      const result = await service.listEvidence(
+        'badge-123',
+        'user-123',
+        'EMPLOYEE',
+      );
 
       expect(result).toHaveLength(1);
       expect(result[0].originalName).toBe('certificate.pdf');
@@ -197,9 +216,15 @@ describe('EvidenceService - Story 4.3', () => {
 
     it('should allow ADMIN to list any badge evidence (AC 3.8)', async () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
-      mockPrismaService.evidenceFile.findMany.mockResolvedValue(mockEvidenceFiles);
+      mockPrismaService.evidenceFile.findMany.mockResolvedValue(
+        mockEvidenceFiles,
+      );
 
-      const result = await service.listEvidence('badge-123', 'admin-user', 'ADMIN');
+      const result = await service.listEvidence(
+        'badge-123',
+        'admin-user',
+        'ADMIN',
+      );
 
       expect(result).toHaveLength(1);
     });
@@ -231,8 +256,10 @@ describe('EvidenceService - Story 4.3', () => {
 
     it('should generate SAS token for download (AC 3.9)', async () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
-      mockPrismaService.evidenceFile.findUnique.mockResolvedValue(mockEvidenceFile);
-      
+      mockPrismaService.evidenceFile.findUnique.mockResolvedValue(
+        mockEvidenceFile,
+      );
+
       const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 min
       mockStorageService.generateEvidenceSasUrl.mockResolvedValue({
         url: 'https://storage.blob.core.windows.net/evidence/...?sasToken=...',
@@ -260,7 +287,7 @@ describe('EvidenceService - Story 4.3', () => {
         ...mockEvidenceFile,
         mimeType: 'image/png',
       });
-      
+
       const expiresAt = new Date();
       mockStorageService.generateEvidenceSasUrl.mockResolvedValue({
         url: 'https://...',
@@ -281,7 +308,12 @@ describe('EvidenceService - Story 4.3', () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
 
       await expect(
-        service.generateDownloadSas('badge-123', 'file-1', 'other-user', 'EMPLOYEE'),
+        service.generateDownloadSas(
+          'badge-123',
+          'file-1',
+          'other-user',
+          'EMPLOYEE',
+        ),
       ).rejects.toThrow(ForbiddenException);
     });
   });

@@ -38,15 +38,22 @@ export class EmailTemplateService {
       // Compiled code is in: dist/src/badge-sharing/services
       // Assets are copied to: dist/badge-sharing/templates
       // So we need to go up to dist/ and then down to badge-sharing/templates
-      let templatePath = path.join(__dirname, '../templates/badge-notification.html');
-      
+      let templatePath = path.join(
+        __dirname,
+        '../templates/badge-notification.html',
+      );
+
       // Fallback: if running from dist/src/badge-sharing/services, go up to dist root
       if (!fs.existsSync(templatePath)) {
-        templatePath = path.join(__dirname, '../../..', 'badge-sharing/templates/badge-notification.html');
+        templatePath = path.join(
+          __dirname,
+          '../../..',
+          'badge-sharing/templates/badge-notification.html',
+        );
       }
-      
+
       this.logger.debug(`Loading template from: ${templatePath}`);
-      
+
       const templateSource = fs.readFileSync(templatePath, 'utf-8');
       this.template = Handlebars.compile(templateSource);
 
@@ -57,7 +64,9 @@ export class EmailTemplateService {
     } catch (error) {
       this.logger.error(`❌ Failed to load email templates`, error);
       this.logger.error(`__dirname: ${__dirname}`);
-      this.logger.error(`Attempted paths: ${path.join(__dirname, '../templates/badge-notification.html')}, ${path.join(__dirname, '../../..', 'badge-sharing/templates/badge-notification.html')}`);
+      this.logger.error(
+        `Attempted paths: ${path.join(__dirname, '../templates/badge-notification.html')}, ${path.join(__dirname, '../../..', 'badge-sharing/templates/badge-notification.html')}`,
+      );
       throw error;
     }
   }

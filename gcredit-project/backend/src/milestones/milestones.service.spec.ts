@@ -71,9 +71,14 @@ describe('MilestonesService', () => {
         createdAt: new Date(),
       };
 
-      mockPrismaService.milestoneConfig.create.mockResolvedValue(expectedMilestone);
+      mockPrismaService.milestoneConfig.create.mockResolvedValue(
+        expectedMilestone,
+      );
 
-      const result = await service.createMilestone(createDto as any, 'admin-uuid');
+      const result = await service.createMilestone(
+        createDto as any,
+        'admin-uuid',
+      );
 
       expect(result).toEqual(expectedMilestone);
       expect(mockPrismaService.milestoneConfig.create).toHaveBeenCalledWith({
@@ -94,7 +99,11 @@ describe('MilestonesService', () => {
         type: 'skill_track',
         title: 'Cloud Master',
         description: 'Earned 5 cloud badges',
-        trigger: { type: 'skill_track', value: 5, categoryId: 'cloud-category-uuid' },
+        trigger: {
+          type: 'skill_track',
+          value: 5,
+          categoryId: 'cloud-category-uuid',
+        },
         icon: '☁️',
       };
 
@@ -110,9 +119,14 @@ describe('MilestonesService', () => {
         createdAt: new Date(),
       };
 
-      mockPrismaService.milestoneConfig.create.mockResolvedValue(expectedMilestone);
+      mockPrismaService.milestoneConfig.create.mockResolvedValue(
+        expectedMilestone,
+      );
 
-      const result = await service.createMilestone(createDto as any, 'admin-uuid');
+      const result = await service.createMilestone(
+        createDto as any,
+        'admin-uuid',
+      );
 
       expect(result.type).toEqual(MilestoneType.SKILL_TRACK);
       expect(mockPrismaService.milestoneConfig.create).toHaveBeenCalled();
@@ -139,9 +153,14 @@ describe('MilestonesService', () => {
         createdAt: new Date(),
       };
 
-      mockPrismaService.milestoneConfig.create.mockResolvedValue(expectedMilestone);
+      mockPrismaService.milestoneConfig.create.mockResolvedValue(
+        expectedMilestone,
+      );
 
-      const result = await service.createMilestone(createDto as any, 'admin-uuid');
+      const result = await service.createMilestone(
+        createDto as any,
+        'admin-uuid',
+      );
 
       expect(result.type).toEqual(MilestoneType.ANNIVERSARY);
     });
@@ -174,7 +193,9 @@ describe('MilestonesService', () => {
         },
       ];
 
-      mockPrismaService.milestoneConfig.findMany.mockResolvedValue(mockMilestones);
+      mockPrismaService.milestoneConfig.findMany.mockResolvedValue(
+        mockMilestones,
+      );
 
       const result = await service.getAllMilestones();
 
@@ -206,8 +227,12 @@ describe('MilestonesService', () => {
 
       const updatedMilestone = { ...existingMilestone, ...updateDto };
 
-      mockPrismaService.milestoneConfig.findUnique.mockResolvedValue(existingMilestone);
-      mockPrismaService.milestoneConfig.update.mockResolvedValue(updatedMilestone);
+      mockPrismaService.milestoneConfig.findUnique.mockResolvedValue(
+        existingMilestone,
+      );
+      mockPrismaService.milestoneConfig.update.mockResolvedValue(
+        updatedMilestone,
+      );
 
       const result = await service.updateMilestone('milestone-uuid', updateDto);
 
@@ -234,7 +259,10 @@ describe('MilestonesService', () => {
       };
 
       mockPrismaService.milestoneConfig.findUnique.mockResolvedValue(milestone);
-      mockPrismaService.milestoneConfig.update.mockResolvedValue({ ...milestone, isActive: false });
+      mockPrismaService.milestoneConfig.update.mockResolvedValue({
+        ...milestone,
+        isActive: false,
+      });
 
       const result = await service.deleteMilestone('milestone-uuid');
 
@@ -248,7 +276,9 @@ describe('MilestonesService', () => {
     it('should throw NotFoundException if milestone does not exist', async () => {
       mockPrismaService.milestoneConfig.findUnique.mockResolvedValue(null);
 
-      await expect(service.deleteMilestone('non-existent-id')).rejects.toThrow(NotFoundException);
+      await expect(service.deleteMilestone('non-existent-id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -269,12 +299,16 @@ describe('MilestonesService', () => {
         },
       ];
 
-      mockPrismaService.milestoneAchievement.findMany.mockResolvedValue(mockAchievements);
+      mockPrismaService.milestoneAchievement.findMany.mockResolvedValue(
+        mockAchievements,
+      );
 
       const result = await service.getUserAchievements('user-uuid');
 
       expect(result).toEqual(mockAchievements);
-      expect(mockPrismaService.milestoneAchievement.findMany).toHaveBeenCalledWith({
+      expect(
+        mockPrismaService.milestoneAchievement.findMany,
+      ).toHaveBeenCalledWith({
         where: { userId: 'user-uuid' },
         include: {
           milestone: {
@@ -336,7 +370,9 @@ describe('MilestonesService', () => {
         },
       });
 
-      expect(mockPrismaService.milestoneAchievement.create).toHaveBeenCalledWith({
+      expect(
+        mockPrismaService.milestoneAchievement.create,
+      ).toHaveBeenCalledWith({
         data: {
           userId: 'user-uuid',
           milestoneId: 'milestone-1',
@@ -355,11 +391,15 @@ describe('MilestonesService', () => {
       await service.checkMilestones('user-uuid');
 
       // Should NOT call create
-      expect(mockPrismaService.milestoneAchievement.create).not.toHaveBeenCalled();
+      expect(
+        mockPrismaService.milestoneAchievement.create,
+      ).not.toHaveBeenCalled();
     });
 
     it('should handle errors gracefully without throwing', async () => {
-      mockPrismaService.badge.count.mockRejectedValue(new Error('Database error'));
+      mockPrismaService.badge.count.mockRejectedValue(
+        new Error('Database error'),
+      );
 
       // Should not throw - errors are caught internally
       await expect(service.checkMilestones('user-uuid')).resolves.not.toThrow();
@@ -368,7 +408,9 @@ describe('MilestonesService', () => {
     it('should use cached milestone configs within TTL', async () => {
       // First call - should fetch configs
       await service.checkMilestones('user-uuid');
-      expect(mockPrismaService.milestoneConfig.findMany).toHaveBeenCalledTimes(1);
+      expect(mockPrismaService.milestoneConfig.findMany).toHaveBeenCalledTimes(
+        1,
+      );
 
       jest.clearAllMocks();
 
@@ -382,7 +424,10 @@ describe('MilestonesService', () => {
     it('should return true when badge count matches trigger value', async () => {
       mockPrismaService.badge.count.mockResolvedValue(25);
 
-      const result = await service['evaluateBadgeCountTrigger']('user-uuid', 25);
+      const result = await service['evaluateBadgeCountTrigger'](
+        'user-uuid',
+        25,
+      );
 
       expect(result).toBe(true);
     });
@@ -390,7 +435,10 @@ describe('MilestonesService', () => {
     it('should return false when badge count is below trigger value', async () => {
       mockPrismaService.badge.count.mockResolvedValue(5);
 
-      const result = await service['evaluateBadgeCountTrigger']('user-uuid', 10);
+      const result = await service['evaluateBadgeCountTrigger'](
+        'user-uuid',
+        10,
+      );
 
       expect(result).toBe(false);
     });
@@ -400,7 +448,11 @@ describe('MilestonesService', () => {
     it('should return true when category badge count matches', async () => {
       mockPrismaService.badge.count.mockResolvedValue(5);
 
-      const result = await service['evaluateSkillTrackTrigger']('user-uuid', 'cloud-category-uuid', 5);
+      const result = await service['evaluateSkillTrackTrigger'](
+        'user-uuid',
+        'cloud-category-uuid',
+        5,
+      );
 
       expect(result).toBe(true);
       expect(mockPrismaService.badge.count).toHaveBeenCalledWith({
@@ -425,7 +477,10 @@ describe('MilestonesService', () => {
         createdAt,
       });
 
-      const result = await service['evaluateAnniversaryTrigger']('user-uuid', 12);
+      const result = await service['evaluateAnniversaryTrigger'](
+        'user-uuid',
+        12,
+      );
 
       expect(result).toBe(true);
     });
@@ -439,7 +494,10 @@ describe('MilestonesService', () => {
         createdAt,
       });
 
-      const result = await service['evaluateAnniversaryTrigger']('user-uuid', 12);
+      const result = await service['evaluateAnniversaryTrigger'](
+        'user-uuid',
+        12,
+      );
 
       expect(result).toBe(false);
     });

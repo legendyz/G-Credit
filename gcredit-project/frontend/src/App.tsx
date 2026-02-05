@@ -6,9 +6,11 @@ import { VerifyBadgePage } from '@/pages/VerifyBadgePage';
 import BadgeEmbedPage from '@/pages/BadgeEmbedPage';
 import AdminAnalyticsPage from '@/pages/AdminAnalyticsPage';
 import BadgeManagementPage from '@/pages/admin/BadgeManagementPage';
+import AdminUserManagementPage from '@/pages/AdminUserManagementPage';
+import { DashboardPage } from '@/pages/dashboard';
 import { LoginPage } from '@/pages/LoginPage';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { Navbar } from '@/components/Navbar';
+import { Layout } from '@/components/layout/Layout';
 
 const queryClient = new QueryClient();
 
@@ -28,14 +30,19 @@ function App() {
             path="/" 
             element={
               <ProtectedRoute>
-                <div className="min-h-screen bg-slate-50">
-                  <Navbar />
-                  <div className="p-6">
-                    <div className="max-w-7xl mx-auto">
-                      <TimelineView />
-                    </div>
-                  </div>
-                </div>
+                <Layout pageTitle="Dashboard">
+                  <DashboardPage />
+                </Layout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/wallet" 
+            element={
+              <ProtectedRoute>
+                <Layout pageTitle="My Badge Wallet">
+                  <TimelineView />
+                </Layout>
               </ProtectedRoute>
             } 
           />
@@ -43,10 +50,9 @@ function App() {
             path="/admin/analytics" 
             element={
               <ProtectedRoute requiredRoles={['ADMIN', 'ISSUER']}>
-                <div className="min-h-screen bg-slate-50">
-                  <Navbar />
+                <Layout pageTitle="Analytics Dashboard">
                   <AdminAnalyticsPage />
-                </div>
+                </Layout>
               </ProtectedRoute>
             } 
           />
@@ -54,10 +60,19 @@ function App() {
             path="/admin/badges" 
             element={
               <ProtectedRoute requiredRoles={['ADMIN', 'ISSUER']}>
-                <div className="min-h-screen bg-slate-50">
-                  <Navbar />
+                <Layout pageTitle="Badge Management">
                   <BadgeManagementPage />
-                </div>
+                </Layout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/users" 
+            element={
+              <ProtectedRoute requiredRoles={['ADMIN']}>
+                <Layout pageTitle="User Management">
+                  <AdminUserManagementPage />
+                </Layout>
               </ProtectedRoute>
             } 
           />

@@ -6,8 +6,9 @@
 **Priority:** MEDIUM  
 **Story Points:** 3  
 **Estimated Hours:** 4h  
-**Status:** backlog  
+**Status:** done  
 **Created:** 2026-02-02
+**Completed:** 2026-02-05
 
 ---
 
@@ -129,50 +130,50 @@ This story enhances search and filtering UX across the platform.
 ## Tasks / Subtasks
 
 ### Task 1: Shared Search Components - 1.5h
-- [ ] Create `SearchInput.tsx` component
-  - [ ] Implement debounced input (500ms)
-  - [ ] Add clear button
-  - [ ] Add magnifying glass icon
-  - [ ] Write unit tests (5 tests)
-- [ ] Create `FilterChips.tsx` component
-  - [ ] Display active filters as chips
-  - [ ] Add remove buttons
-  - [ ] Add "Clear all" button
-  - [ ] Write unit tests (4 tests)
-- [ ] Create `DateRangePicker.tsx` component
-  - [ ] From/To date inputs
-  - [ ] Validation (from <= to)
-  - [ ] Write unit tests (3 tests)
+- [x] Create `SearchInput.tsx` component
+  - [x] Implement debounced input (500ms)
+  - [x] Add clear button
+  - [x] Add magnifying glass icon
+  - [x] Write unit tests (5 tests)
+- [x] Create `FilterChips.tsx` component
+  - [x] Display active filters as chips
+  - [x] Add remove buttons
+  - [x] Add "Clear all" button
+  - [x] Write unit tests (4 tests)
+- [x] Create `DateRangePicker.tsx` component
+  - [x] From/To date inputs
+  - [x] Validation (from <= to)
+  - [x] Write unit tests (3 tests)
 
 ### Task 2: Employee Wallet Search (AC1) - 1h
-- [ ] Update `WalletPage.tsx` with search UI
-  - [ ] Add SearchInput component
-  - [ ] Add Skills multi-select filter
-  - [ ] Add DateRangePicker
-  - [ ] Implement client-side filtering logic (for <50 badges)
-- [ ] Update backend API (optional server-side):
-  - [ ] Add query params: `?search=keyword&skills=id1,id2&fromDate=&toDate=`
-  - [ ] Implement filtering in `GET /api/badges/my-badges`
-- [ ] Write tests (6 tests: search, filters, edge cases)
+- [x] Update `WalletPage.tsx` with search UI
+  - [x] Add SearchInput component
+  - [x] Add Skills multi-select filter
+  - [x] Add DateRangePicker
+  - [x] Implement client-side filtering logic (for <50 badges)
+- [x] Update backend API (optional server-side):
+  - [x] Add query params: `?search=keyword&skills=id1,id2&fromDate=&toDate=`
+  - [x] Implement filtering in `GET /api/badges/my-badges`
+- [x] Write tests (6 tests: search, filters, edge cases)
 
 ### Task 3: Badge Management Search Enhancement (AC2) - 1h
-- [ ] Update `BadgeManagementPage.tsx`
-  - [ ] Add Skills filter dropdown
-  - [ ] Add Date range filter
-  - [ ] Add Issuer filter (Admin view only)
-  - [ ] Update existing search to use new SearchInput component
-- [ ] Update backend API:
-  - [ ] Extend `GET /api/badge-issuance/issued-badges` query params
-  - [ ] Add skills, dateRange, issuerId filters
-- [ ] Write tests (6 tests)
+- [x] Update `BadgeManagementPage.tsx`
+  - [x] Add Skills filter dropdown
+  - [x] Add Date range filter
+  - [x] Add Issuer filter (Admin view only)
+  - [x] Update existing search to use new SearchInput component
+- [x] Update backend API:
+  - [x] Extend `GET /api/badge-issuance/issued-badges` query params
+  - [x] Add skills, dateRange, issuerId filters
+- [x] Write tests (6 tests)
 
 ### Task 4: Search Performance Optimization (AC5) - 0.5h
-- [ ] Implement client vs server-side decision logic
-  - [ ] If badgeCount < 50 → client-side filter
-  - [ ] If badgeCount >= 50 → server-side API call
-- [ ] Add pagination to search results (>20 items)
-- [ ] Add loading states during server-side search
-- [ ] Write performance tests (2 tests)
+- [x] Implement client vs server-side decision logic
+  - [x] If badgeCount < 50 → client-side filter
+  - [x] If badgeCount >= 50 → server-side API call
+- [x] Add pagination to search results (>20 items)
+- [x] Add loading states during server-side search
+- [x] Write performance tests (2 tests)
 
 ---
 

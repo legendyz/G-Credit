@@ -21,6 +21,8 @@ export interface Badge {
     description: string;
     imageUrl: string;
     category: string;
+    // Story 8.2: Skill IDs for filtering
+    skillIds?: string[];
   };
   issuer: {
     id: string;

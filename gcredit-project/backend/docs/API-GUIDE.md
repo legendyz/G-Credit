@@ -1,8 +1,8 @@
 # API Usage Guide
 
 **G-Credit Badge Platform REST API**  
-**Version:** 0.7.0 (Sprint 7 - Badge Revocation)  
-**Last Updated:** 2026-02-01
+**Version:** 0.8.0 (Sprint 8 - Production Ready MVP)  
+**Last Updated:** 2026-02-05
 
 ---
 
@@ -15,8 +15,11 @@
 5. [Badge Verification](#badge-verification)
 6. [Skills Management](#skills-management)
 7. [Skill Categories](#skill-categories)
-8. [Error Handling](#error-handling)
-9. [Rate Limiting](#rate-limiting)
+8. [Analytics API](#analytics-api) ⭐ NEW
+9. [Admin User Management](#admin-user-management) ⭐ NEW
+10. [M365 Sync API](#m365-sync-api) ⭐ NEW
+11. [Error Handling](#error-handling)
+12. [Rate Limiting](#rate-limiting)
 
 ---
 
@@ -934,6 +937,484 @@ Returns a public verification page showing:
 
 ---
 
+## Admin User Management
+
+**Story:** 8.10 - Admin User Management Panel  
+**Added:** Sprint 8 (2026-02-04)  
+**Security:** Admin-only endpoints (requires `role: ADMIN`)
+
+Admin users can manage all users in the system: view, search, filter, change roles, and activate/deactivate accounts. All actions are logged in the audit trail.
+
+### List All Users
+
+**Endpoint:** `GET /api/admin/users`  
+**Auth Required:** Yes (Admin only)  
+**Description:** Get paginated list of all users with search, filter, and sort capabilities.
+
+**Query Parameters:**
+- `page` (number, optional): Page number, default: 1
+- `limit` (number, optional): Items per page, default: 25, max: 100
+- `search` (string, optional): Search by name or email
+- `roleFilter` (string, optional): Filter by role (`ADMIN`, `ISSUER`, `MANAGER`, `EMPLOYEE`)
+- `statusFilter` (boolean, optional): Filter by active status
+- `sortBy` (string, optional): Sort field (`name`, `email`, `role`, `lastLogin`), default: `name`
+- `sortOrder` (string, optional): Sort direction (`asc`, `desc`), default: `asc`
+- `cursor` (string, optional): Cursor for pagination (large datasets ≥1000 users)
+
+**Example Request:**
+```bash
+# PowerShell
+curl -X GET "http://localhost:3000/api/admin/users?page=1&limit=25&search=john&roleFilter=EMPLOYEE&sortBy=name&sortOrder=asc" `
+  -H "Authorization: Bearer $token"
+
+# Bash
+curl -X GET "http://localhost:3000/api/admin/users?page=1&limit=25&search=john&roleFilter=EMPLOYEE&sortBy=name&sortOrder=asc" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "users": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "email": "john.doe@example.com",
+      "firstName": "John",
+      "lastName": "Doe",
+      "role": "EMPLOYEE",
+      "department": "Engineering",
+      "isActive": true,
+      "lastLogin": "2026-02-03T15:30:00Z",
+      "roleSetManually": false,
+      "roleUpdatedAt": null,
+      "roleUpdatedBy": null,
+      "roleVersion": 0
+    }
+  ],
+  "pagination": {
+    "total": 150,
+    "page": 1,
+    "limit": 25,
+    "totalPages": 6,
+    "nextCursor": null,
+    "hasMore": true
+  }
+}
+```
+
+**Hybrid Pagination Strategy:**
+- **Small datasets (<1000 users):** Offset-based (page/limit)
+- **Large datasets (≥1000 users):** Cursor-based (cursor/limit)
+- Response includes `nextCursor` and `hasMore` fields for cursor pagination
+
+---
+
+### Get Single User
+
+**Endpoint:** `GET /api/admin/users/:id`  
+**Auth Required:** Yes (Admin only)  
+**Description:** Get detailed information about a specific user.
+
+**Example Request:**
+```bash
+# PowerShell
+curl -X GET "http://localhost:3000/api/admin/users/550e8400-e29b-41d4-a716-446655440000" `
+  -H "Authorization: Bearer $token"
+
+# Bash
+curl -X GET "http://localhost:3000/api/admin/users/550e8400-e29b-41d4-a716-446655440000" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "email": "john.doe@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "role": "EMPLOYEE",
+  "department": "Engineering",
+  "isActive": true,
+  "lastLogin": "2026-02-03T15:30:00Z",
+  "roleSetManually": false,
+  "roleUpdatedAt": null,
+  "roleUpdatedBy": null,
+  "roleVersion": 0,
+  "createdAt": "2026-01-15T10:00:00Z"
+}
+```
+
+---
+
+### Update User Role
+
+**Endpoint:** `PATCH /api/admin/users/:id/role`  
+**Auth Required:** Yes (Admin only)  
+**Description:** Change a user's role. Uses optimistic locking to prevent conflicts with M365 sync. Creates audit log entry.
+
+**Restrictions:**
+- Cannot change your own role (400 Bad Request)
+- Requires `roleVersion` for optimistic locking (409 Conflict if mismatch)
+
+**Request Body:**
+```json
+{
+  "role": "ISSUER",
+  "roleVersion": 0,
+  "auditNote": "Promoted to badge issuer for HR department"
+}
+```
+
+**Example Request:**
+```bash
+# PowerShell
+curl -X PATCH "http://localhost:3000/api/admin/users/550e8400-e29b-41d4-a716-446655440000/role" `
+  -H "Authorization: Bearer $token" `
+  -H "Content-Type: application/json" `
+  -d '{
+    "role": "ISSUER",
+    "roleVersion": 0,
+    "auditNote": "Promoted to badge issuer for HR department"
+  }'
+
+# Bash
+curl -X PATCH "http://localhost:3000/api/admin/users/550e8400-e29b-41d4-a716-446655440000/role" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "role": "ISSUER",
+    "roleVersion": 0,
+    "auditNote": "Promoted to badge issuer for HR department"
+  }'
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "email": "john.doe@example.com",
+  "role": "ISSUER",
+  "roleSetManually": true,
+  "roleUpdatedAt": "2026-02-04T10:30:00Z",
+  "roleUpdatedBy": "admin-user-id",
+  "roleVersion": 1
+}
+```
+
+**Error Responses:**
+- `400 Bad Request`: Cannot change your own role
+- `404 Not Found`: User not found
+- `409 Conflict`: Role version mismatch (another process modified the role)
+
+**Optimistic Locking:**
+```json
+{
+  "statusCode": 409,
+  "message": "User role was modified by another process. Please refresh and try again.",
+  "error": "Conflict"
+}
+```
+
+---
+
+### Update User Status
+
+**Endpoint:** `PATCH /api/admin/users/:id/status`  
+**Auth Required:** Yes (Admin only)  
+**Description:** Activate or deactivate a user account. Deactivated users cannot log in, but their badges remain valid. Creates audit log entry.
+
+**Request Body:**
+```json
+{
+  "isActive": false,
+  "auditNote": "User left organization"
+}
+```
+
+**Example Request (Deactivate):**
+```bash
+# PowerShell
+curl -X PATCH "http://localhost:3000/api/admin/users/550e8400-e29b-41d4-a716-446655440000/status" `
+  -H "Authorization: Bearer $token" `
+  -H "Content-Type: application/json" `
+  -d '{
+    "isActive": false,
+    "auditNote": "User left organization"
+  }'
+
+# Bash
+curl -X PATCH "http://localhost:3000/api/admin/users/550e8400-e29b-41d4-a716-446655440000/status" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "isActive": false,
+    "auditNote": "User left organization"
+  }'
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "email": "john.doe@example.com",
+  "isActive": false
+}
+```
+
+**Example Request (Reactivate):**
+```bash
+# PowerShell
+curl -X PATCH "http://localhost:3000/api/admin/users/550e8400-e29b-41d4-a716-446655440000/status" `
+  -H "Authorization: Bearer $token" `
+  -H "Content-Type: application/json" `
+  -d '{
+    "isActive": true,
+    "auditNote": "User returned to organization"
+  }'
+```
+
+**Effects of Deactivation:**
+- User receives `401 Unauthorized` on login attempts
+- Existing JWT tokens remain valid until expiry
+- User's issued badges remain valid (not revoked)
+- User's claimed badges remain valid
+- User appears with "Inactive" status in admin list
+
+---
+
+### Audit Trail
+
+All role changes and status changes are logged in the `user_role_audit_logs` table:
+
+**Audit Log Fields:**
+- `id`: Unique log entry ID
+- `userId`: Target user ID
+- `performedBy`: Admin user ID who made the change
+- `action`: `ROLE_CHANGED` or `STATUS_CHANGED`
+- `oldValue`: Previous role/status
+- `newValue`: New role/status
+- `note`: Admin's audit note (optional)
+- `createdAt`: Timestamp of the change
+
+**Cascade Delete:** When a user is deleted, all their audit logs are automatically deleted.
+
+---
+
+### Role Priority Logic
+
+When M365 sync runs, roles are determined by this priority:
+
+1. **Manual Admin Assignment (HIGHEST PRIORITY):** If `roleSetManually = true`, preserve the Admin-set role
+2. **`.env` Manual Mapping:** Initial configuration mappings
+3. **M365 Org Structure:** Auto-detect Managers (directReports > 0)
+4. **Default:** Employee role
+
+This ensures that Admin-assigned roles are never overwritten by M365 sync.
+
+---
+
+## M365 Sync API
+
+**Story:** 8.9 - M365 Production Hardening  
+**Added:** Sprint 8 (2026-02-05)  
+**Security:** Admin-only endpoints (requires `role: ADMIN`)
+
+Production-grade Microsoft 365 user synchronization with pagination, retry logic, audit logging, and user deactivation sync.
+
+### Trigger M365 Sync
+
+**Endpoint:** `POST /api/admin/m365-sync`  
+**Auth Required:** Yes (Admin only)  
+**Description:** Trigger a full or incremental M365 user sync.
+
+**Request Body:**
+```json
+{
+  "syncType": "FULL"  // Optional: "FULL" (default) or "INCREMENTAL"
+}
+```
+
+**Example Request:**
+```bash
+# PowerShell
+curl -X POST "http://localhost:3000/api/admin/m365-sync" `
+  -H "Authorization: Bearer $token" `
+  -H "Content-Type: application/json" `
+  -d '{"syncType": "FULL"}'
+
+# Bash
+curl -X POST "http://localhost:3000/api/admin/m365-sync" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"syncType": "FULL"}'
+```
+
+**Response (201 Created):**
+```json
+{
+  "syncId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "status": "SUCCESS",
+  "totalUsers": 1500,
+  "syncedUsers": 1498,
+  "createdUsers": 12,
+  "updatedUsers": 1486,
+  "deactivatedUsers": 3,
+  "failedUsers": 2,
+  "errors": [
+    "User user1@example.com: Email already exists",
+    "User user2@example.com: Invalid department format"
+  ],
+  "durationMs": 45230,
+  "startedAt": "2026-02-05T10:00:00.000Z",
+  "completedAt": "2026-02-05T10:00:45.230Z"
+}
+```
+
+**Error Responses:**
+- `401 Unauthorized`: Missing or invalid token
+- `403 Forbidden`: User is not an Admin
+- `500 Internal Server Error`: Graph API unavailable or configuration error
+
+---
+
+### Get Sync History
+
+**Endpoint:** `GET /api/admin/m365-sync/logs`  
+**Auth Required:** Yes (Admin only)  
+**Description:** Get paginated history of M365 sync operations.
+
+**Query Parameters:**
+- `limit` (number, optional): Maximum logs to return, default: 10, max: 100
+
+**Example Request:**
+```bash
+curl -X GET "http://localhost:3000/api/admin/m365-sync/logs?limit=20" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "syncDate": "2026-02-05T10:00:00.000Z",
+    "syncType": "FULL",
+    "userCount": 1500,
+    "syncedCount": 1498,
+    "createdCount": 12,
+    "updatedCount": 1486,
+    "failedCount": 2,
+    "status": "SUCCESS",
+    "durationMs": 45230,
+    "syncedBy": "admin@example.com",
+    "metadata": {
+      "retryAttempts": 0,
+      "pagesProcessed": 2,
+      "deactivatedCount": 3
+    }
+  }
+]
+```
+
+---
+
+### Get Sync Log Details
+
+**Endpoint:** `GET /api/admin/m365-sync/logs/:id`  
+**Auth Required:** Yes (Admin only)  
+**Description:** Get detailed information about a specific sync operation.
+
+**Example Request:**
+```bash
+curl -X GET "http://localhost:3000/api/admin/m365-sync/logs/a1b2c3d4-e5f6-7890-abcd-ef1234567890" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "syncDate": "2026-02-05T10:00:00.000Z",
+  "syncType": "FULL",
+  "userCount": 1500,
+  "syncedCount": 1498,
+  "createdCount": 12,
+  "updatedCount": 1486,
+  "failedCount": 2,
+  "status": "SUCCESS",
+  "errorMessage": null,
+  "durationMs": 45230,
+  "syncedBy": "admin@example.com",
+  "metadata": {
+    "retryAttempts": 0,
+    "pagesProcessed": 2,
+    "deactivatedCount": 3
+  },
+  "createdAt": "2026-02-05T10:00:00.000Z"
+}
+```
+
+**Error Responses:**
+- `404 Not Found`: Sync log with specified ID not found
+
+---
+
+### Get Integration Status
+
+**Endpoint:** `GET /api/admin/m365-sync/status`  
+**Auth Required:** Yes (Admin only)  
+**Description:** Check M365 integration availability and last sync timestamp.
+
+**Example Request:**
+```bash
+curl -X GET "http://localhost:3000/api/admin/m365-sync/status" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "available": true,
+  "lastSync": "2026-02-05T10:00:00.000Z"
+}
+```
+
+**Response (M365 not configured):**
+```json
+{
+  "available": false,
+  "lastSync": null
+}
+```
+
+---
+
+### Sync Status Types
+
+| Status | Description |
+|--------|-------------|
+| `SUCCESS` | All users synced successfully |
+| `PARTIAL_SUCCESS` | Some users synced, some failed |
+| `FAILURE` | Sync failed completely |
+| `IN_PROGRESS` | Sync is currently running |
+
+---
+
+### Retry Logic (ADR-008)
+
+The M365 Sync API implements exponential backoff retry for transient errors:
+
+- **Max Retries:** 3
+- **Base Delay:** 1000ms
+- **Backoff Multiplier:** 2x (1s → 2s → 4s)
+- **Retryable Errors:**
+  - `429 Too Many Requests` (rate limiting)
+  - `5xx Server Errors`
+  - Network errors: `ECONNRESET`, `ETIMEDOUT`, `ENOTFOUND`, `ECONNREFUSED`
+
+---
+
 ## Error Handling
 
 ### Standard Error Response Format
@@ -1060,9 +1541,318 @@ All errors follow this structure:
 
 ---
 
+## Analytics API
+
+**Added in Sprint 8 (Story 8.4)**
+
+Analytics endpoints provide system-wide metrics and statistics for monitoring platform health and usage.
+
+**Features:**
+- System overview statistics
+- Badge issuance trends
+- Top performers ranking
+- Skills distribution analysis
+- Recent activity feed
+
+**Caching:** Most endpoints cached for 15 minutes (900,000ms) to optimize performance.
+
+### System Overview
+
+**GET** `/api/analytics/system-overview`
+
+Returns system-wide statistics including user counts, badge metrics, and template counts.
+
+**Authorization:** Admin only
+
+```bash
+# PowerShell
+curl -X GET http://localhost:3000/api/analytics/system-overview `
+  -H "Authorization: Bearer $token"
+
+# Bash
+curl -X GET http://localhost:3000/api/analytics/system-overview \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "users": {
+    "total": 450,
+    "activeThisMonth": 320,
+    "newThisMonth": 25,
+    "byRole": {
+      "ADMIN": 5,
+      "ISSUER": 20,
+      "MANAGER": 45,
+      "EMPLOYEE": 380
+    }
+  },
+  "badges": {
+    "totalIssued": 1234,
+    "claimedCount": 1015,
+    "pendingCount": 189,
+    "revokedCount": 30,
+    "claimRate": 0.82
+  },
+  "badgeTemplates": {
+    "total": 23,
+    "active": 18,
+    "draft": 3,
+    "archived": 2
+  },
+  "systemHealth": {
+    "status": "healthy",
+    "lastSync": "2026-02-03T09:00:00Z",
+    "apiResponseTime": "120ms"
+  }
+}
+```
+
+**Error Responses:**
+- `403 Forbidden` - Non-admin user
+- `401 Unauthorized` - Missing or invalid token
+
+---
+
+### Issuance Trends
+
+**GET** `/api/analytics/issuance-trends`
+
+Returns badge issuance statistics over specified time period.
+
+**Authorization:** Admin and Issuer (Issuer sees only their own data)
+
+**Query Parameters:**
+- `period` (optional) - Time period in days: `7`, `30`, `90`, or `365` (default: 30)
+- `issuerId` (optional) - Filter by issuer UUID (Admin only)
+
+```bash
+# PowerShell - Last 30 days
+curl -X GET "http://localhost:3000/api/analytics/issuance-trends?period=30" `
+  -H "Authorization: Bearer $token"
+
+# PowerShell - Filter by issuer (Admin only)
+curl -X GET "http://localhost:3000/api/analytics/issuance-trends?period=90&issuerId=550e8400-e29b-41d4-a716-446655440000" `
+  -H "Authorization: Bearer $token"
+```
+
+**Response (200 OK):**
+```json
+{
+  "period": "last30days",
+  "startDate": "2026-01-04",
+  "endDate": "2026-02-03",
+  "dataPoints": [
+    {
+      "date": "2026-01-04",
+      "issued": 15,
+      "claimed": 12,
+      "revoked": 0
+    },
+    {
+      "date": "2026-01-05",
+      "issued": 20,
+      "claimed": 18,
+      "revoked": 1
+    }
+    // ... 30 data points total
+  ],
+  "totals": {
+    "issued": 456,
+    "claimed": 380,
+    "revoked": 8,
+    "claimRate": 0.83
+  }
+}
+```
+
+**Error Responses:**
+- `403 Forbidden` - Issuer trying to view other issuer's data
+- `400 Bad Request` - Invalid period value
+
+---
+
+### Top Performers
+
+**GET** `/api/analytics/top-performers`
+
+Returns employees ranked by badge count.
+
+**Authorization:** Admin and Manager (Manager sees only their team)
+
+**Query Parameters:**
+- `teamId` (optional) - Filter by team/department (Manager must use own team)
+- `limit` (optional) - Max results (1-100, default: 10)
+
+```bash
+# PowerShell - Top 10 performers
+curl -X GET "http://localhost:3000/api/analytics/top-performers?limit=10" `
+  -H "Authorization: Bearer $token"
+
+# PowerShell - Top performers in Engineering team
+curl -X GET "http://localhost:3000/api/analytics/top-performers?teamId=Engineering&limit=20" `
+  -H "Authorization: Bearer $token"
+```
+
+**Response (200 OK):**
+```json
+{
+  "teamId": "Engineering",
+  "teamName": "Engineering Team",
+  "period": "allTime",
+  "topPerformers": [
+    {
+      "userId": "550e8400-e29b-41d4-a716-446655440001",
+      "name": "Jane Smith",
+      "badgeCount": 15,
+      "latestBadge": {
+        "templateName": "Python Expert",
+        "claimedAt": "2026-02-01T10:00:00Z"
+      }
+    },
+    {
+      "userId": "550e8400-e29b-41d4-a716-446655440002",
+      "name": "John Doe",
+      "badgeCount": 12,
+      "latestBadge": {
+        "templateName": "AWS Certified",
+        "claimedAt": "2026-01-28T14:30:00Z"
+      }
+    }
+    // ... up to 'limit' performers
+  ]
+}
+```
+
+**Error Responses:**
+- `403 Forbidden` - Manager trying to view different team
+- `403 Forbidden` - Manager has no department assigned
+
+---
+
+### Skills Distribution
+
+**GET** `/api/analytics/skills-distribution`
+
+Returns aggregated skills statistics ranked by badge count.
+
+**Authorization:** Admin only
+
+```bash
+# PowerShell
+curl -X GET http://localhost:3000/api/analytics/skills-distribution `
+  -H "Authorization: Bearer $token"
+```
+
+**Response (200 OK):**
+```json
+{
+  "totalSkills": 45,
+  "topSkills": [
+    {
+      "skillId": "550e8400-e29b-41d4-a716-446655440010",
+      "skillName": "Python",
+      "badgeCount": 120,
+      "employeeCount": 85
+    },
+    {
+      "skillId": "550e8400-e29b-41d4-a716-446655440011",
+      "skillName": "Leadership",
+      "badgeCount": 95,
+      "employeeCount": 72
+    }
+    // ... top 20 skills
+  ],
+  "skillsByCategory": {
+    "Technical": 180,
+    "Soft Skills": 95,
+    "Leadership": 60
+  }
+}
+```
+
+**Error Responses:**
+- `403 Forbidden` - Non-admin user
+
+---
+
+### Recent Activity Feed
+
+**GET** `/api/analytics/recent-activity`
+
+Returns system-wide activity log with pagination.
+
+**Authorization:** Admin only
+
+**Query Parameters:**
+- `limit` (optional) - Max results (1-100, default: 20)
+- `offset` (optional) - Pagination offset (default: 0)
+
+```bash
+# PowerShell - Get last 20 activities
+curl -X GET "http://localhost:3000/api/analytics/recent-activity?limit=20" `
+  -H "Authorization: Bearer $token"
+
+# PowerShell - Pagination (skip first 20)
+curl -X GET "http://localhost:3000/api/analytics/recent-activity?limit=20&offset=20" `
+  -H "Authorization: Bearer $token"
+```
+
+**Response (200 OK):**
+```json
+{
+  "activities": [
+    {
+      "id": "act-001",
+      "type": "BADGE_ISSUED",
+      "actor": {
+        "userId": "550e8400-e29b-41d4-a716-446655440020",
+        "name": "John Issuer"
+      },
+      "target": {
+        "userId": "550e8400-e29b-41d4-a716-446655440021",
+        "name": "Jane Recipient",
+        "badgeTemplateName": "Python Expert"
+      },
+      "timestamp": "2026-02-03T09:30:00Z"
+    },
+    {
+      "id": "act-002",
+      "type": "TEMPLATE_CREATED",
+      "actor": {
+        "userId": "550e8400-e29b-41d4-a716-446655440022",
+        "name": "Admin User"
+      },
+      "templateName": "New Leadership Badge",
+      "timestamp": "2026-02-03T09:00:00Z"
+    }
+    // ... up to 'limit' activities
+  ],
+  "pagination": {
+    "limit": 20,
+    "offset": 0,
+    "total": 1250
+  }
+}
+```
+
+**Activity Types:**
+- `BADGE_ISSUED` - Badge issued to recipient
+- `BADGE_CLAIMED` - Recipient claimed badge
+- `BADGE_REVOKED` - Badge revoked
+- `TEMPLATE_CREATED` - New badge template created
+- `USER_REGISTERED` - New user registered
+
+**Error Responses:**
+- `403 Forbidden` - Non-admin user
+- `400 Bad Request` - Invalid limit or offset
+
+---
+
 ## Rate Limiting
 
-**Current Configuration:** No rate limiting implemented (to be added in future sprint)
+**Current Configuration:** Global rate limiting implemented (Sprint 8)
 
 **Recommended Limits for Production:**
 - Authentication endpoints: 5 requests per minute per IP
@@ -1108,10 +1898,10 @@ Import this collection into Postman for quick API testing:
 
 ---
 
-**Last Updated:** 2026-02-01  
-**API Version:** 0.7.0 (Sprint 7 - Badge Revocation Complete)  
+**Last Updated:** 2026-02-04  
+**API Version:** 0.8.0 (Sprint 8 - Production Ready MVP)  
 **Author:** G-Credit Development Team  
-**Coverage:** Sprint 0-7 (Authentication, Templates, Issuance, Verification, Sharing, Revocation)  
+**Coverage:** Sprint 0-8 (Authentication, Templates, Issuance, Verification, Sharing, Revocation, Analytics, Admin User Management)  
 
 **Detailed API Documentation:**
 - [Badge Issuance API](./api/badge-issuance.md) - Complete badge lifecycle documentation

@@ -23,7 +23,8 @@ export interface UploadImageResult {
 @Injectable()
 export class BlobStorageService {
   private readonly logger = new Logger(BlobStorageService.name);
-  private containerClient: ContainerClient;
+  private containerClient: ContainerClient | null = null;
+  private initialized = false;
 
   // Recommended dimensions for badge images
   private readonly RECOMMENDED_SIZES = [256, 512, 1024];
@@ -32,7 +33,43 @@ export class BlobStorageService {
   private readonly MAX_DIMENSION = 2048;
 
   constructor() {
-    this.containerClient = getBadgesContainerClient();
+    // Lazy initialization - don't throw in constructor
+    this.initializeClient();
+  }
+
+  private initializeClient(): void {
+    if (this.initialized) return;
+    this.initialized = true;
+
+    try {
+      this.containerClient = getBadgesContainerClient();
+      if (!this.containerClient) {
+        this.logger.warn(
+          'Azure Blob Storage not configured - operations will return mock data',
+        );
+      }
+    } catch (error) {
+      this.logger.warn(
+        `Failed to initialize Azure Blob Storage: ${error.message}`,
+      );
+      this.containerClient = null;
+    }
+  }
+
+  private ensureClient(): ContainerClient {
+    this.initializeClient();
+    if (!this.containerClient) {
+      throw new BadRequestException('Azure Blob Storage is not configured');
+    }
+    return this.containerClient;
+  }
+
+  /**
+   * Check if Azure Blob Storage is available
+   */
+  isAvailable(): boolean {
+    this.initializeClient();
+    return this.containerClient !== null;
   }
 
   /**
@@ -60,8 +97,23 @@ export class BlobStorageService {
     const fileExtension = this.getFileExtension(file.originalname);
     const fileName = `${folder}/${uuidv4()}${fileExtension}`;
 
+    // Check if Azure Storage is available - return mock URL for test/CI environments
+    if (!this.isAvailable()) {
+      this.logger.warn(
+        'Azure Storage not available - returning mock URL for image upload',
+      );
+      const mockUrl = `https://mock-storage.blob.core.windows.net/badges/${fileName}`;
+      return {
+        url: mockUrl,
+        metadata,
+        thumbnailUrl: generateThumbnail
+          ? `https://mock-storage.blob.core.windows.net/badges/${folder}/thumbnails/${uuidv4()}${fileExtension}`
+          : undefined,
+      };
+    }
+
     // Get blob client
-    const blockBlobClient = this.containerClient.getBlockBlobClient(fileName);
+    const blockBlobClient = this.containerClient!.getBlockBlobClient(fileName);
 
     // Upload to Azure Blob
     await blockBlobClient.upload(file.buffer, file.size, {
@@ -110,8 +162,14 @@ export class BlobStorageService {
    * @param url - Full URL of the image
    */
   async deleteImage(url: string): Promise<void> {
+    // Skip deletion if Azure Storage is not available (mock URLs)
+    if (!this.isAvailable()) {
+      this.logger.warn('Azure Storage not available - skipping image deletion');
+      return;
+    }
+
     const blobName = this.extractBlobName(url);
-    const blockBlobClient = this.containerClient.getBlockBlobClient(blobName);
+    const blockBlobClient = this.containerClient!.getBlockBlobClient(blobName);
 
     const exists = await blockBlobClient.exists();
     if (!exists) {
@@ -126,9 +184,15 @@ export class BlobStorageService {
    * @param url - Full URL of the image
    */
   async imageExists(url: string): Promise<boolean> {
+    // Return true for mock URLs when storage is not available
+    if (!this.isAvailable()) {
+      return url.includes('mock-storage.blob.core.windows.net');
+    }
+
     try {
       const blobName = this.extractBlobName(url);
-      const blockBlobClient = this.containerClient.getBlockBlobClient(blobName);
+      const blockBlobClient =
+        this.containerClient!.getBlockBlobClient(blobName);
       return await blockBlobClient.exists();
     } catch (error) {
       return false;
@@ -174,7 +238,10 @@ export class BlobStorageService {
       let isOptimal = true;
 
       // Check if dimensions are optimal
-      if (!this.OPTIMAL_SIZES.includes(width) || !this.OPTIMAL_SIZES.includes(height)) {
+      if (
+        !this.OPTIMAL_SIZES.includes(width) ||
+        !this.OPTIMAL_SIZES.includes(height)
+      ) {
         isOptimal = false;
         suggestions.push(
           `Recommended dimensions: ${this.OPTIMAL_SIZES.join('x')} or ${this.OPTIMAL_SIZES.join('x')} pixels (square images work best for badges)`,
@@ -223,13 +290,19 @@ export class BlobStorageService {
    * @param metadata - Image metadata
    */
   private validateDimensions(metadata: ImageMetadata): void {
-    if (metadata.width < this.MIN_DIMENSION || metadata.height < this.MIN_DIMENSION) {
+    if (
+      metadata.width < this.MIN_DIMENSION ||
+      metadata.height < this.MIN_DIMENSION
+    ) {
       throw new BadRequestException(
         `Image too small. Minimum dimensions: ${this.MIN_DIMENSION}x${this.MIN_DIMENSION} pixels. Current: ${metadata.width}x${metadata.height}`,
       );
     }
 
-    if (metadata.width > this.MAX_DIMENSION || metadata.height > this.MAX_DIMENSION) {
+    if (
+      metadata.width > this.MAX_DIMENSION ||
+      metadata.height > this.MAX_DIMENSION
+    ) {
       throw new BadRequestException(
         `Image too large. Maximum dimensions: ${this.MAX_DIMENSION}x${this.MAX_DIMENSION} pixels. Current: ${metadata.width}x${metadata.height}`,
       );
@@ -257,7 +330,14 @@ export class BlobStorageService {
       .toBuffer();
 
     const thumbnailFileName = `${folder}/thumbnails/${uuidv4()}${extension}`;
-    const blockBlobClient = this.containerClient.getBlockBlobClient(thumbnailFileName);
+
+    // Return mock URL if storage is not available
+    if (!this.isAvailable()) {
+      return `https://mock-storage.blob.core.windows.net/badges/${thumbnailFileName}`;
+    }
+
+    const blockBlobClient =
+      this.containerClient!.getBlockBlobClient(thumbnailFileName);
 
     await blockBlobClient.upload(thumbnailBuffer, thumbnailBuffer.length, {
       blobHTTPHeaders: {

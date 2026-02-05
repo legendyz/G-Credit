@@ -6,6 +6,12 @@ import { Public } from './common/decorators/public.decorator';
 import { Roles } from './common/decorators/roles.decorator';
 import { CurrentUser } from './common/decorators/current-user.decorator';
 
+interface JwtUser {
+  userId: string;
+  email: string;
+  role: string;
+}
+
 @Controller()
 export class AppController {
   constructor(
@@ -38,7 +44,7 @@ export class AppController {
     try {
       await this.prisma.$queryRaw`SELECT 1`;
       databaseStatus = 'connected';
-    } catch (error) {
+    } catch {
       databaseStatus = 'error';
     }
 
@@ -48,7 +54,7 @@ export class AppController {
       if (accountName) {
         storageStatus = 'connected';
       }
-    } catch (error) {
+    } catch {
       storageStatus = 'error';
     }
 
@@ -65,7 +71,7 @@ export class AppController {
    */
   @Get('profile')
   @Roles('EMPLOYEE', 'MANAGER', 'ISSUER', 'ADMIN')
-  getProfile(@CurrentUser() user: any) {
+  getProfile(@CurrentUser() user: JwtUser) {
     return {
       message: 'Profile access granted',
       user: {
@@ -81,7 +87,7 @@ export class AppController {
    */
   @Get('admin-only')
   @Roles('ADMIN')
-  adminRoute(@CurrentUser() user: any) {
+  adminRoute(@CurrentUser() user: JwtUser) {
     return {
       message: 'Admin access granted',
       user: {
@@ -97,7 +103,7 @@ export class AppController {
    */
   @Get('issuer-only')
   @Roles('ISSUER', 'ADMIN')
-  issuerRoute(@CurrentUser() user: any) {
+  issuerRoute(@CurrentUser() user: JwtUser) {
     return {
       message: 'Issuer access granted',
       user: {
@@ -113,7 +119,7 @@ export class AppController {
    */
   @Get('manager-only')
   @Roles('MANAGER', 'ADMIN')
-  managerRoute(@CurrentUser() user: any) {
+  managerRoute(@CurrentUser() user: JwtUser) {
     return {
       message: 'Manager access granted',
       user: {
