@@ -1,6 +1,6 @@
-# Task 8.9: ESLint Type-Safety Cleanup - TD-002
+# TD-002: ESLint Type-Safety Cleanup
 
-**Task ID:** Task 8.9  
+**Task ID:** TD-002 (Backlog)  
 **Epic:** Epic 10 - Production-Ready MVP  
 **Sprint:** Backlog (Recommended: Sprint 9 or 10)  
 **Priority:** LOW 🟢  

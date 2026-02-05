@@ -370,12 +370,15 @@ _bmad-output/
 
 ## Known Technical Issues & Technical Debt
 
+> **Master Technical Debt Registry:** `docs/sprints/sprint-7/technical-debt-from-reviews.md` (57 items consolidated)
+
 | Issue | Severity | Status | Plan |
 |-------|----------|--------|------|
 | **lodash Prototype Pollution vulnerability** | Moderate | ✅ Risk Accepted (ADR-002) | **Decision:** Accept risk for MVP development (Sprint 1-7). Development environment only, CVSS 6.5 (Medium), no external exposure. **Re-evaluate:** Before production deployment (Sprint 8+). See [ADR-002](docs/decisions/002-lodash-security-risk-acceptance.md) for full analysis. |
 | **Prisma version locked at 6.x** | Low | 🔒 Intentional | Prisma 7 has breaking changes (prisma.config.ts requirement). Upgrade deferred to post-MVP. Current version stable and meets all requirements. |
-| **Dependency version drift risk** | Medium | 📋 Process Improvement | Sprint 0 revealed planning docs had outdated versions. Action: All future sprint docs must specify exact versions. Version manifest template to be created. |
 | **TD-006: Teams Channel Permissions** | Medium | ⏸️ Documented | **Impact:** 4 Teams integration tests skipped (see [SKIPPED-TESTS-TRACKER.md](gcredit-project/docs/testing/SKIPPED-TESTS-TRACKER.md)). **Blocker:** Requires tenant admin to approve ChannelMessage.Send permission. **Effort:** 1 day (admin approval). **Workaround:** Email sharing functional. |
+| **TD-014: Dual Email System** | Low | 📋 Sprint 9 | **Issue:** SMTP (nodemailer) + M365 (Graph) parallel systems. **Plan:** Unify to GraphEmailService, remove nodemailer. **Effort:** 2h. |
+| **TD-015: ESLint Warnings** | Medium | 📋 Sprint 9-10 | **Issue:** 1100 ESLint warnings (0 errors). **Impact:** Potential type safety issues. **Plan:** Reduce to 0 over 2-3 sprints. **Effort:** 8h. |
 
 ---
 
@@ -1195,34 +1198,51 @@ Sprint 0-2 established this pattern:
      - Files created: 1,800+ lines (test infrastructure + factories + CI/CD)
      - Documentation: E2E test guidelines (393 lines)
    
+   **Completed (as of 2026-02-05):**
+   - ✅ Task 8.0: Sprint 8 Development Environment Setup (1.5h)
+   - ✅ Task 8.6: Security Hardening (6.5h)
+   - ✅ Task 8.7: Architecture Fixes (5h)
+   - ✅ Task 8.8: E2E Test Isolation (8h)
+   - ✅ Story 8.1: Dashboard Homepage with Key Metrics (8h)
+   - ✅ Story 8.3: WCAG 2.1 Accessibility (8.5h)
+   - ✅ Story 8.4: Analytics API (5h)
+   - ✅ Story 8.5: Responsive Design Optimization (4h)
+   - ✅ Story 8.10: Admin User Management Panel (11.5h)
+   - ✅ Story 8.2: Badge Search Enhancement (5.5h)
+   
    **In Progress:**
-   - 🔄 10 items remaining (71%)
-   - Next priorities: Story 8.7 (Architecture Fixes, 7h) or Story 8.1 (Dashboard, 9h)
+   - 🔄 4 items remaining (10/14 complete = 71%)
+   - Next priorities: Story 8.9 (M365 Hardening) or Story 8.11 (Analytics Dashboard)
    
    **Technical Debt Resolution:**
-   - ✅ TD-001: E2E Test Isolation (COMPLETE)
-   - ✅ SEC-P1-001 to SEC-P1-005: Security vulnerabilities (COMPLETE)
-   - ✅ UX-P1-004 to UX-P1-007: Accessibility issues (COMPLETE)
-   - ⏳ 12 P1 items remaining (target: 17 total)
+   - ✅ TD-001: E2E Test Isolation (COMPLETE - Sprint 8 Task 8.8)
+   - ✅ SEC-P1-001 to SEC-P1-005: Security vulnerabilities (COMPLETE - Sprint 8 Task 8.6)
+   - ✅ UX-P1-001 to UX-P1-007: Accessibility issues (COMPLETE - Stories 8.1, 8.3)
+   - ✅ ARCH-P1-001 to ARCH-P1-004: Architecture fixes (COMPLETE - Sprint 8 Task 8.7)
+   - ✅ SEC-HIGH-003: Role self-assignment on registration (COMPLETE - Story 8.10)
+   - ⏳ TD-014: Dual Email System (Sprint 9 - Low risk)
+   - ⏳ TD-015: ESLint Warnings 1100 (Sprint 9-10 - 8h)
+   - ⏳ TD-006: Teams Channel Permissions (4 tests skipped)
+   
+   **Technical Debt Tracker Location:**
+   - **Master List:** `docs/sprints/sprint-7/technical-debt-from-reviews.md` (57 items consolidated)
+   - Includes: TD-001 to TD-015, SEC-P0/P1/P2, ARCH-P0/P1, UX-P0/P1/P2
    
    **Key Metrics:**
-   - Test count: 83 E2E tests (from 71 in Sprint 7)
+   - Test count: Backend 349 + Frontend 234 = 583 tests passing
    - Test reliability: 100% pass rate in parallel execution
    - CI/CD duration: ~2 minutes total
    - Security: 22 vulnerabilities remaining (AWS SDK upstream, non-blocking)
 
 17. 🔜 **Next Actions**
    - **Continue Sprint 8 Development:**
-     - Story 8.7: Architecture Fixes (7h, HIGH) - Token rotation, JWT validation
-     - Story 8.1: Dashboard Homepage (9h, HIGH) - Role-specific views, analytics integration
-     - Story 8.4: Analytics API (6h, HIGH) - Cache-manager v3 with milliseconds TTL
-     - Story 8.5: Responsive Design (5h, HIGH) - Mobile-first approach
-     - Story 8.2: Badge Search Enhancement (5.5h, MEDIUM) - Mobile UX improvements
-     - Story 8.9: M365 Production Hardening (8.5h, MEDIUM) - Pagination, retry logic
-     - Story 8.10: User Management Panel (11.5h, HIGH) - Admin role management UI
+     - Story 8.9: M365 Production Hardening (8.5h, MEDIUM) - Pagination, retry logic, unified email
+     - Story 8.11: Badge Analytics Dashboard (7.5h, MEDIUM) - Visualization of Analytics API data
+   - **Sprint 8 Progress:** 10/14 items (71%), 64h/76h used
    - **Sprint 8 Target Completion:** 2026-02-14
    - **Sprint 8 Retrospective:** TBD (end of sprint)
    - **Sprint 9 Planning:** TBD (post-Sprint 8)
+   - **Technical Debt (Sprint 9):** TD-014 (Email unification), TD-015 (ESLint warnings)
 
 ---
 

@@ -329,9 +329,12 @@ model M365SyncLog {
   syncedCount  Int      // Successfully synced users
   createdCount Int      @default(0) // New users created
   updatedCount Int      @default(0) // Existing users updated
+  failedCount  Int      @default(0) // Users that failed to sync (AC3)
   status       String   @db.VarChar(20) // 'SUCCESS' | 'PARTIAL_SUCCESS' | 'FAILURE'
   errorMessage String?  @db.Text
   durationMs   Int?     // Sync duration in milliseconds
+  syncedBy     String?  @db.VarChar(100) // Who triggered the sync (AC3)
+  metadata     Json?    // Retry info, pagination, etc. (AC3)
   createdAt    DateTime @default(now())
 
   @@index([syncDate])

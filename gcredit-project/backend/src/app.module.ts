@@ -21,6 +21,7 @@ import { BadgeSharingModule } from './badge-sharing/badge-sharing.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { AdminUsersModule } from './admin-users/admin-users.module';
+import { M365SyncModule } from './m365-sync/m365-sync.module';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { AdminUsersModule } from './admin-users/admin-users.module';
     AnalyticsModule,
     DashboardModule,
     AdminUsersModule,
+    M365SyncModule,
   ],
   controllers: [AppController],
   providers: [

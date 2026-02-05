@@ -22,11 +22,11 @@ metrics:
   total_story_points: 44  # Updated Story 8.10 from 3 SP to 6 SP
   total_estimated_hours: 76h  # Story 8.7 corrected from 7h to 6h
   
-  completed_stories: 6  # Story 8.1, 8.2, 8.4, 8.5, 8.3, 8.10 completed
+  completed_stories: 7  # Story 8.1, 8.2, 8.4, 8.5, 8.3, 8.9, 8.10 completed
   completed_tasks: 4  # Task 8.0, 8.6, 8.7, 8.8 completed
-  completed_work_items: 10
-  completed_hours: 65.5h  # 30.5h (tasks) + 35h (stories: 8.1=8h, 8.2=5.5h, 8.4=6h, 8.5=4h, 8.10=11.5h)
-  remaining_hours: 10.5h  # 76h - 65.5h
+  completed_work_items: 11
+  completed_hours: 69.5h  # 30.5h (tasks) + 39h (stories: 8.1=8h, 8.2=5.5h, 8.4=6h, 8.5=4h, 8.9=4h, 8.10=11.5h)
+  remaining_hours: 6.5h  # 76h - 69.5h
   
   stories_in_progress: 0
   tasks_in_progress: 0
@@ -40,9 +40,9 @@ metrics:
 # Group A: UX & Accessibility (39h, 28 SP)
 group_a_ux_accessibility:
   total_items: 7  # Added Story 8.10
-  completed_items: 5  # Story 8.1, 8.2, 8.3, 8.5, 8.10 completed
+  completed_items: 6  # Story 8.1, 8.2, 8.3, 8.5, 8.9, 8.10 completed
   total_hours: 52.5h  # Updated Story 8.10 from 5h to 11.5h
-  remaining_hours: 14.5h  # 52.5h - 8h (8.1) - 5.5h (8.2) - 8.5h (8.3) - 4h (8.5) - 11.5h (8.10)
+  remaining_hours: 10.5h  # 52.5h - 8h (8.1) - 5.5h (8.2) - 8.5h (8.3) - 4h (8.5) - 4h (8.9) - 11.5h (8.10)
   
   stories:
     - id: "8.1"
@@ -92,26 +92,28 @@ group_a_ux_accessibility:
       blocked: false
       blocker_reason: null
       started_date: "2026-02-04"
-      completed_date: "2026-02-04"
+      completed_date: "2026-02-05"
       acceptance_criteria_met: 5/5
       technical_debt_resolved: []
+      technical_debt_created:
+        - "TD-015: ESLint Warnings (1100) - documented for Sprint 9-10"
       dependencies:
         - "8.5 (Responsive Design) - ✅"
       file: "8-2-badge-search-enhancement.md"
       completion_notes: |
         ✅ COMPLETED - Badge Search & Filter Enhancement:
-        - AC1: Employee Wallet search/filter (SearchInput, SkillsFilter, DateRangePicker)
-        - AC2: Badge Management enhanced search (BadgeSearchBar component)
-        - AC3: Active filter chips display with clear functionality
-        - AC4: Mobile responsive (44×44px touch targets, WCAG compliant)
-        - AC5: Performance optimization (500ms debounce, client-side <50, server-side ≥50)
-        - New components: SearchInput, FilterChips, DateRangePicker, SkillsFilter, BadgeSearchBar
-        - New hooks: useBadgeSearch, useSkills, useDebounce
-        - New utils: searchFilters.ts (filterBadges, filtersToChips)
-        - Tests: 328 passing (27 test files)
-        - TypeScript: Build passing
-        - CI: GitHub Actions verified
-        - Commits: 00c1235 (initial), 78248b6 (build fixes), b95a56d (backend fix)
+        - AC1: Employee Wallet search (debounced 500ms, fuzzy match, skills/date filters)
+        - AC1: Mobile UX (sticky 48px, focus expansion, hidden chips, empty states with suggestions)
+        - AC2: Badge Management search (skills/date/issuer filters, Admin only issuer dropdown)
+        - AC3: Reusable components ready for Sprint 9 Catalog
+        - AC4: Advanced filter UI (SearchInput, FilterChips, DateRangePicker, SkillsFilter)
+        - AC5: Performance (client-side <50 badges, server-side ≥50 with loading spinner)
+        - Backend: wallet-query.dto.ts + query-badge.dto.ts with search/skills/fromDate/toDate/issuerId
+        - Backend: getWalletBadges + getIssuedBadges filtering with Prisma hasSome
+        - Frontend: BadgeSearchBar with issuer dropdown (Admin only)
+        - Tests: Backend 349 passing, Frontend 328 passing
+        - Code review: 6 findings resolved (commits 7092d04, 359ccbc, bc89215, 751fd75)
+        - Technical debt: TD-015 (ESLint warnings 1100) documented for Sprint 9-10
       
     - id: "8.3"
       title: "WCAG 2.1 Accessibility"
@@ -207,20 +209,34 @@ group_a_ux_accessibility:
       title: "M365 Production Hardening"
       story_points: 6
       estimated_hours: 8.5h
+      actual_hours: 4h
       priority: MEDIUM
-      status: backlog
-      assignee: null
+      status: done
+      assignee: Dev Agent
       blocked: false
       blocker_reason: null
-      started_date: null
-      completed_date: null
-      acceptance_criteria_met: 0/5
+      started_date: "2026-02-05"
+      completed_date: "2026-02-05"
+      acceptance_criteria_met: 5/5
       technical_debt_resolved: []
       dependencies:
-        - "Story U.2a (Sprint 7)"
-        - "Prisma migration: M365SyncLog + User.isActive"
+        - "Story U.2a (Sprint 7) - ✅"
+        - "Prisma migration: M365SyncLog + User.isActive - ✅"
       file: "U-2b-m365-hardening.md"
       notes: "Originally Story U.2b, renamed to 8.9 for Sprint 8"
+      completion_notes: |
+        ✅ COMPLETED - M365 Production Hardening:
+        - AC1: Pagination support - getAllAzureUsers() with @odata.nextLink, 999/page max
+        - AC2: Exponential backoff retry - 1s→2s→4s, max 3 retries, 429/5xx only
+        - AC3: Audit logging - M365SyncLog table with syncDate/syncType/userCount/status/durationMs
+        - AC4: User deactivation sync - marks isActive=false, preserves roleSetManually
+        - AC5: Per-user error recovery - errors collected, no rollback, partial success supported
+        - Module: M365SyncModule with service/controller/DTOs registered in AppModule
+        - API Endpoints: POST /api/admin/m365-sync, GET /logs, GET /logs/:id, GET /status
+        - Tests: 46 service tests + 11 controller tests = 57 unit tests
+        - E2E: 15 tests for auth and API structure
+        - Security: All endpoints Admin-only (RolesGuard)
+        - Backend: 406 tests passing (no regressions)
       
     - id: "8.10"
       title: "Admin User Management Panel"
