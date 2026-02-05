@@ -80,7 +80,10 @@ export class QueryBadgeDto {
   @IsOptional()
   @Transform(({ value }) => {
     if (typeof value === 'string') {
-      return value.split(',').map((s) => s.trim()).filter(Boolean);
+      return value
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
     }
     return value;
   })

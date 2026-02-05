@@ -435,7 +435,9 @@ export class BadgeIssuanceService {
       const searchTerm = query.search.trim();
       where.OR = [
         { template: { name: { contains: searchTerm, mode: 'insensitive' } } },
-        { issuer: { firstName: { contains: searchTerm, mode: 'insensitive' } } },
+        {
+          issuer: { firstName: { contains: searchTerm, mode: 'insensitive' } },
+        },
         { issuer: { lastName: { contains: searchTerm, mode: 'insensitive' } } },
         { issuer: { email: { contains: searchTerm, mode: 'insensitive' } } },
       ];
@@ -863,7 +865,9 @@ export class BadgeIssuanceService {
       const searchTerm = query.search.trim();
       where.OR = [
         { template: { name: { contains: searchTerm, mode: 'insensitive' } } },
-        { issuer: { firstName: { contains: searchTerm, mode: 'insensitive' } } },
+        {
+          issuer: { firstName: { contains: searchTerm, mode: 'insensitive' } },
+        },
         { issuer: { lastName: { contains: searchTerm, mode: 'insensitive' } } },
         { issuer: { email: { contains: searchTerm, mode: 'insensitive' } } },
       ];

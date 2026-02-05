@@ -35,7 +35,10 @@ export class WalletQueryDto {
   @IsEnum(BadgeStatus)
   status?: BadgeStatus;
 
-  @ApiPropertyOptional({ enum: ['issuedAt_desc', 'issuedAt_asc'], default: 'issuedAt_desc' })
+  @ApiPropertyOptional({
+    enum: ['issuedAt_desc', 'issuedAt_asc'],
+    default: 'issuedAt_desc',
+  })
   @IsOptional()
   @IsEnum(['issuedAt_desc', 'issuedAt_asc'])
   sort?: 'issuedAt_desc' | 'issuedAt_asc' = 'issuedAt_desc';
@@ -54,7 +57,10 @@ export class WalletQueryDto {
   @IsOptional()
   @Transform(({ value }) => {
     if (typeof value === 'string') {
-      return value.split(',').map((s) => s.trim()).filter(Boolean);
+      return value
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
     }
     return value;
   })
@@ -62,12 +68,16 @@ export class WalletQueryDto {
   @IsUUID('4', { each: true })
   skills?: string[];
 
-  @ApiPropertyOptional({ description: 'Filter badges issued on or after this date' })
+  @ApiPropertyOptional({
+    description: 'Filter badges issued on or after this date',
+  })
   @IsOptional()
   @IsDateString()
   fromDate?: string;
 
-  @ApiPropertyOptional({ description: 'Filter badges issued on or before this date' })
+  @ApiPropertyOptional({
+    description: 'Filter badges issued on or before this date',
+  })
   @IsOptional()
   @IsDateString()
   toDate?: string;

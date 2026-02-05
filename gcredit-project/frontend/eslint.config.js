@@ -17,7 +17,6 @@ export default defineConfig([
       tseslint.configs.recommended,
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
-      jsxA11y.configs.recommended,
       prettierConfig,
     ],
     plugins: {
@@ -27,6 +26,11 @@ export default defineConfig([
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
     },
     rules: {
       'prettier/prettier': 'warn',

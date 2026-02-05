@@ -85,7 +85,16 @@ export class AdminUsersService {
    * - 鈮?000 users: cursor-based pagination
    */
   async findAll(query: AdminUsersQueryDto): Promise<UserListResponse> {
-    const { page, limit, search, roleFilter, statusFilter, sortBy, sortOrder, cursor } = query;
+    const {
+      page,
+      limit,
+      search,
+      roleFilter,
+      statusFilter,
+      sortBy,
+      sortOrder,
+      cursor,
+    } = query;
 
     // Build where clause
     const where: Prisma.UserWhereInput = {};
@@ -116,7 +125,8 @@ export class AdminUsersService {
     const total = await this.prisma.user.count({ where });
 
     // Determine pagination strategy
-    const useCursorPagination = total >= this.CURSOR_PAGINATION_THRESHOLD && cursor;
+    const useCursorPagination =
+      total >= this.CURSOR_PAGINATION_THRESHOLD && cursor;
 
     let users: UserListItem[];
     let nextCursor: string | undefined;
@@ -124,7 +134,7 @@ export class AdminUsersService {
     if (useCursorPagination && cursor) {
       // Cursor-based pagination for large datasets
       const { id: cursorId } = this.decodeCursor(cursor);
-      
+
       const rawUsers = await this.prisma.user.findMany({
         where,
         orderBy,
@@ -141,10 +151,14 @@ export class AdminUsersService {
       }
 
       users = rawUsers;
-      
+
       if (hasMore && rawUsers.length > 0) {
         const lastUser = rawUsers[rawUsers.length - 1];
-        nextCursor = this.encodeCursor(lastUser.id, sortBy || 'name', this.getSortValue(lastUser, sortBy || 'name'));
+        nextCursor = this.encodeCursor(
+          lastUser.id,
+          sortBy || 'name',
+          this.getSortValue(lastUser, sortBy || 'name'),
+        );
       }
     } else {
       // Offset-based pagination for small datasets
@@ -163,9 +177,17 @@ export class AdminUsersService {
     const hasMore = page! < totalPages;
 
     // For cursor-based pagination, also provide nextCursor for large datasets
-    if (total >= this.CURSOR_PAGINATION_THRESHOLD && users.length > 0 && !useCursorPagination) {
+    if (
+      total >= this.CURSOR_PAGINATION_THRESHOLD &&
+      users.length > 0 &&
+      !useCursorPagination
+    ) {
       const lastUser = users[users.length - 1];
-      nextCursor = this.encodeCursor(lastUser.id, sortBy || 'name', this.getSortValue(lastUser, sortBy || 'name'));
+      nextCursor = this.encodeCursor(
+        lastUser.id,
+        sortBy || 'name',
+        this.getSortValue(lastUser, sortBy || 'name'),
+      );
     }
 
     return {
@@ -431,12 +453,20 @@ export class AdminUsersService {
     }
   }
 
-  private encodeCursor(id: string, sortField: string, sortValue: string): string {
+  private encodeCursor(
+    id: string,
+    sortField: string,
+    sortValue: string,
+  ): string {
     const data = `${id}_${sortField}_${sortValue}`;
     return Buffer.from(data).toString('base64');
   }
 
-  private decodeCursor(cursor: string): { id: string; sortField: string; sortValue: string } {
+  private decodeCursor(cursor: string): {
+    id: string;
+    sortField: string;
+    sortValue: string;
+  } {
     const data = Buffer.from(cursor, 'base64').toString('utf-8');
     const [id, sortField, sortValue] = data.split('_');
     return { id, sortField, sortValue };
