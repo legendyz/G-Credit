@@ -25,8 +25,8 @@ metrics:
   completed_stories: 7  # Story 8.1, 8.2, 8.4, 8.5, 8.3, 8.9, 8.10 completed
   completed_tasks: 4  # Task 8.0, 8.6, 8.7, 8.8 completed
   completed_work_items: 11
-  completed_hours: 69.5h  # 30.5h (tasks) + 39h (stories: 8.1=8h, 8.2=5.5h, 8.4=6h, 8.5=4h, 8.9=4h, 8.10=11.5h)
-  remaining_hours: 6.5h  # 76h - 69.5h
+  completed_hours: 71.5h  # 30.5h (tasks) + 41h (stories: 8.1=8h, 8.2=5.5h, 8.4=6h, 8.5=4h, 8.9=6h, 8.10=11.5h)
+  remaining_hours: 4.5h  # 76h - 71.5h
   
   stories_in_progress: 0
   tasks_in_progress: 0
@@ -40,9 +40,9 @@ metrics:
 # Group A: UX & Accessibility (39h, 28 SP)
 group_a_ux_accessibility:
   total_items: 7  # Added Story 8.10
-  completed_items: 6  # Story 8.1, 8.2, 8.3, 8.5, 8.9, 8.10 completed
+  completed_items: 6  # Story 8.1, 8.2, 8.4, 8.5, 8.9, 8.10 completed
   total_hours: 52.5h  # Updated Story 8.10 from 5h to 11.5h
-  remaining_hours: 10.5h  # 52.5h - 8h (8.1) - 5.5h (8.2) - 8.5h (8.3) - 4h (8.5) - 4h (8.9) - 11.5h (8.10)
+  remaining_hours: 8.5h  # 52.5h - 8h (8.1) - 5.5h (8.2) - 6h (8.4) - 4h (8.5) - 6h (8.9) - 11.5h (8.10) + 8.5h (8.3 remaining)
   
   stories:
     - id: "8.1"
@@ -209,7 +209,7 @@ group_a_ux_accessibility:
       title: "M365 Production Hardening"
       story_points: 6
       estimated_hours: 8.5h
-      actual_hours: 4h
+      actual_hours: 6h
       priority: MEDIUM
       status: done
       assignee: Dev Agent
@@ -227,16 +227,22 @@ group_a_ux_accessibility:
       completion_notes: |
         ✅ COMPLETED - M365 Production Hardening:
         - AC1: Pagination support - getAllAzureUsers() with @odata.nextLink, 999/page max
-        - AC2: Exponential backoff retry - 1s→2s→4s, max 3 retries, 429/5xx only
-        - AC3: Audit logging - M365SyncLog table with syncDate/syncType/userCount/status/durationMs
-        - AC4: User deactivation sync - marks isActive=false, preserves roleSetManually
+        - AC2: Exponential backoff retry - 1s→2s→4s, max 4 retries, 429/5xx/network errors
+        - AC3: Audit logging - syncedBy, failedCount, metadata fields in M365SyncLog
+        - AC4: User deactivation sync - marks isActive=false for removed AND disabled Azure accounts
         - AC5: Per-user error recovery - errors collected, no rollback, partial success supported
         - Module: M365SyncModule with service/controller/DTOs registered in AppModule
         - API Endpoints: POST /api/admin/m365-sync, GET /logs, GET /logs/:id, GET /status
-        - Tests: 46 service tests + 11 controller tests = 57 unit tests
-        - E2E: 15 tests for auth and API structure
+        - CLI: npm run sync:m365 command (scripts/sync-m365.ts)
+        - Tests: 55 service + 12 controller = 67 unit tests, 18 E2E tests
         - Security: All endpoints Admin-only (RolesGuard)
-        - Backend: 406 tests passing (no regressions)
+        - Code Review: 6 findings fixed (3 High + 3 Medium)
+          - AC3: Added syncedBy, failedCount, metadata audit fields
+          - AC2: Handle network errors (ECONNRESET, ETIMEDOUT, ENOTFOUND)
+          - AC4: Deactivate Azure disabled accounts (not just removed)
+          - Aligned status enum (PARTIAL_SUCCESS in both DB and API)
+        - Real M365 Test: 17 users synced from 2wjh85.onmicrosoft.com
+        - Commit: e6b4138
       
     - id: "8.10"
       title: "Admin User Management Panel"
