@@ -22,11 +22,11 @@ metrics:
   total_work_items: 7  # 4 stories + 3 TD tasks
   total_estimated_hours: 37h  # 32h features + 13h tech debt (P1 improvements included)
   
-  completed_stories: 0
+  completed_stories: 1  # Story 8.1 ✅
   completed_td_tasks: 0
-  completed_work_items: 0
-  completed_hours: 0h
-  remaining_hours: 37h
+  completed_work_items: 1
+  completed_hours: 8h  # Story 8.1 actual
+  remaining_hours: 29h
   
   # Sprint 9 capacity breakdown
   feature_hours: 32h  # Epic 8 (24h baseline + 8h P1 enhancements)
@@ -102,7 +102,7 @@ stories:
   "8.1":
     id: "8.1"
     title: "CSV Template & Validation"
-    status: review
+    status: done  # ✅ SM accepted 2026-02-07
     priority: HIGH
     estimated_hours: 8.5h  # 6h baseline + 2.5h P1 enhancements
     actual_hours: 8h

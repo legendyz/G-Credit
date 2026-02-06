@@ -1,6 +1,6 @@
 # Story 8.1: CSV Template & Validation
 
-**Status:** review  
+**Status:** done ✅ SM accepted 2026-02-07  
 **Epic:** Epic 8 - Bulk Badge Issuance  
 **Sprint:** Sprint 9  
 **Priority:** HIGH  
