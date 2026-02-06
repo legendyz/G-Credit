@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { PrismaService } from '../common/prisma.service';
 
 /**
  * CSV Validation Service
@@ -15,6 +16,8 @@ import { Injectable, Logger } from '@nestjs/common';
 @Injectable()
 export class CsvValidationService {
   private readonly logger = new Logger(CsvValidationService.name);
+
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Prefixes that can trigger formula execution in spreadsheet applications
@@ -119,6 +122,143 @@ export class CsvValidationService {
     }
 
     return { valid: true };
+  }
+
+  /**
+   * Validate evidence URL format (optional field)
+   * 
+   * @param url - The URL to validate (null/empty is valid since optional)
+   * @returns Validation result with error message if invalid
+   */
+  validateEvidenceUrl(url: string | null): { valid: boolean; error?: string } {
+    if (!url || url.trim() === '') return { valid: true }; // Optional field
+    
+    const urlRegex = /^https?:\/\/.+/i;
+    if (!urlRegex.test(url)) {
+      return { valid: false, error: 'Evidence URL must be a valid HTTP/HTTPS URL' };
+    }
+    return { valid: true };
+  }
+
+  /**
+   * Validate narrative justification length (optional, max 500 chars)
+   * 
+   * @param text - The notes text to validate
+   * @returns Validation result with error message if invalid
+   */
+  validateNotes(text: string | null): { valid: boolean; error?: string } {
+    if (!text || text.trim() === '') return { valid: true }; // Optional field
+    
+    if (text.length > 500) {
+      return { valid: false, error: `Notes exceed 500 character limit (${text.length} chars)` };
+    }
+    return { valid: true };
+  }
+
+  /**
+   * Validate that a badge template exists with ACTIVE status in the database
+   * Accepts either UUID or template name
+   * 
+   * @param badgeTemplateId - The template ID or name to validate
+   * @returns Validation result with error message if invalid
+   */
+  async validateBadgeTemplateIdInDb(badgeTemplateId: string): Promise<{ valid: boolean; error?: string }> {
+    if (!badgeTemplateId) {
+      return { valid: false, error: 'Badge template ID is required' };
+    }
+
+    if (this.isExampleData(badgeTemplateId)) {
+      return {
+        valid: false,
+        error: 'Example row detected. Please delete example rows and add your real data.'
+      };
+    }
+
+    // Check if template exists by UUID or name with ACTIVE status
+    const template = await this.prisma.badgeTemplate.findFirst({
+      where: {
+        OR: [
+          { id: badgeTemplateId },
+          { name: badgeTemplateId },
+        ],
+        status: 'ACTIVE',
+      },
+    });
+
+    if (!template) {
+      return {
+        valid: false,
+        error: `Badge template "${badgeTemplateId}" not found or is not in ACTIVE status`,
+      };
+    }
+
+    return { valid: true };
+  }
+
+  /**
+   * Validate that the recipient email belongs to a registered, active user
+   * 
+   * @param email - The email to validate against the user database
+   * @returns Validation result with error message if invalid
+   */
+  async validateRegisteredEmail(email: string): Promise<{ valid: boolean; error?: string }> {
+    if (!email) {
+      return { valid: false, error: 'Email is required' };
+    }
+
+    if (email.startsWith('example-') || email.includes('@example.com')) {
+      return {
+        valid: false,
+        error: 'Example email detected. Please use a real email address.'
+      };
+    }
+
+    // Basic email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return { valid: false, error: 'Invalid email format' };
+    }
+
+    // Check if user exists and is active in database
+    const user = await this.prisma.user.findFirst({
+      where: {
+        email,
+        isActive: true,
+      },
+    });
+
+    if (!user) {
+      return {
+        valid: false,
+        error: `No active registered user found with email: ${email}`,
+      };
+    }
+
+    return { valid: true };
+  }
+
+  /**
+   * Validate a complete CSV row (with DB checks)
+   * 
+   * @param row - Record with CSV field values
+   * @returns Validation result with array of error messages
+   */
+  async validateRow(row: Record<string, string>): Promise<{ valid: boolean; errors: string[] }> {
+    const errors: string[] = [];
+    
+    const templateResult = await this.validateBadgeTemplateIdInDb(row.badgeTemplateId);
+    if (!templateResult.valid) errors.push(templateResult.error!);
+    
+    const emailResult = await this.validateRegisteredEmail(row.recipientEmail);
+    if (!emailResult.valid) errors.push(emailResult.error!);
+    
+    const urlResult = this.validateEvidenceUrl(row.evidenceUrl);
+    if (!urlResult.valid) errors.push(urlResult.error!);
+    
+    const notesResult = this.validateNotes(row.narrativeJustification);
+    if (!notesResult.valid) errors.push(notesResult.error!);
+    
+    return { valid: errors.length === 0, errors };
   }
 
   /**

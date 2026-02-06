@@ -102,7 +102,7 @@ stories:
   "8.1":
     id: "8.1"
     title: "CSV Template & Validation"
-    status: backlog
+    status: review
     priority: HIGH
     estimated_hours: 8.5h  # 6h baseline + 2.5h P1 enhancements
     actual_hours: 0h

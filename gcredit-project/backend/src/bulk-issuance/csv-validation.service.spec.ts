@@ -1,15 +1,36 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CsvValidationService } from './csv-validation.service';
+import { PrismaService } from '../common/prisma.service';
 
 describe('CsvValidationService', () => {
   let service: CsvValidationService;
 
+  const mockPrismaService = {
+    badgeTemplate: {
+      findFirst: jest.fn(),
+    },
+    user: {
+      findFirst: jest.fn(),
+    },
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [CsvValidationService],
+      providers: [
+        CsvValidationService,
+        { provide: PrismaService, useValue: mockPrismaService },
+      ],
     }).compile();
 
     service = module.get<CsvValidationService>(CsvValidationService);
+
+    // Default mocks
+    mockPrismaService.badgeTemplate.findFirst.mockResolvedValue({ id: 'tpl-1', name: 'leadership-excellence', status: 'ACTIVE' });
+    mockPrismaService.user.findFirst.mockResolvedValue({ id: 'u-1', email: 'john@company.com', isActive: true });
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe('CSV Injection Prevention', () => {
@@ -172,6 +193,180 @@ describe('CsvValidationService', () => {
       const csv = service.generateSafeCsv(headers, rows);
       
       expect(csv).toContain('"Doe, John"');
+    });
+  });
+
+  describe('validateEvidenceUrl', () => {
+    it('should return valid for null value', () => {
+      const result = service.validateEvidenceUrl(null);
+      expect(result.valid).toBe(true);
+    });
+
+    it('should return valid for empty string', () => {
+      const result = service.validateEvidenceUrl('');
+      expect(result.valid).toBe(true);
+    });
+
+    it('should accept valid HTTP URL', () => {
+      const result = service.validateEvidenceUrl('http://example.com/evidence');
+      expect(result.valid).toBe(true);
+    });
+
+    it('should accept valid HTTPS URL', () => {
+      const result = service.validateEvidenceUrl('https://company.com/docs/evidence.pdf');
+      expect(result.valid).toBe(true);
+    });
+
+    it('should reject invalid URL format', () => {
+      const result = service.validateEvidenceUrl('not-a-url');
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain('HTTP/HTTPS URL');
+    });
+
+    it('should reject ftp URL', () => {
+      const result = service.validateEvidenceUrl('ftp://files.example.com/doc.pdf');
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain('HTTP/HTTPS URL');
+    });
+  });
+
+  describe('validateNotes', () => {
+    it('should return valid for null value', () => {
+      const result = service.validateNotes(null);
+      expect(result.valid).toBe(true);
+    });
+
+    it('should accept valid text under 500 chars', () => {
+      const result = service.validateNotes('This is a valid note for badge issuance.');
+      expect(result.valid).toBe(true);
+    });
+
+    it('should accept text exactly 500 chars', () => {
+      const text = 'a'.repeat(500);
+      const result = service.validateNotes(text);
+      expect(result.valid).toBe(true);
+    });
+
+    it('should reject text exceeding 500 chars', () => {
+      const text = 'a'.repeat(501);
+      const result = service.validateNotes(text);
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain('500 character limit');
+      expect(result.error).toContain('501');
+    });
+  });
+
+  describe('validateRow', () => {
+    it('should validate a row with all valid fields', async () => {
+      const result = await service.validateRow({
+        badgeTemplateId: 'leadership-excellence',
+        recipientEmail: 'john@company.com',
+        evidenceUrl: 'https://docs.company.com/evidence',
+        narrativeJustification: 'Great leadership demonstrated',
+      });
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should reject row with missing badgeTemplateId', async () => {
+      const result = await service.validateRow({
+        badgeTemplateId: '',
+        recipientEmail: 'john@company.com',
+        evidenceUrl: '',
+        narrativeJustification: '',
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors.length).toBeGreaterThan(0);
+      expect(result.errors[0]).toContain('required');
+    });
+
+    it('should reject row with invalid email', async () => {
+      mockPrismaService.user.findFirst.mockResolvedValue(null);
+
+      const result = await service.validateRow({
+        badgeTemplateId: 'template-123',
+        recipientEmail: 'not-an-email',
+        evidenceUrl: '',
+        narrativeJustification: '',
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('email') || e.includes('Email'))).toBe(true);
+    });
+
+    it('should reject row with invalid URL', async () => {
+      const result = await service.validateRow({
+        badgeTemplateId: 'template-123',
+        recipientEmail: 'john@company.com',
+        evidenceUrl: 'ftp://invalid',
+        narrativeJustification: '',
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('URL'))).toBe(true);
+    });
+
+    it('should reject row with narrativeJustification too long', async () => {
+      const result = await service.validateRow({
+        badgeTemplateId: 'template-123',
+        recipientEmail: 'john@company.com',
+        evidenceUrl: '',
+        narrativeJustification: 'a'.repeat(501),
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('500'))).toBe(true);
+    });
+
+    it('should collect multiple errors from a single row', async () => {
+      mockPrismaService.badgeTemplate.findFirst.mockResolvedValue(null);
+      mockPrismaService.user.findFirst.mockResolvedValue(null);
+
+      const result = await service.validateRow({
+        badgeTemplateId: '',
+        recipientEmail: 'not-an-email',
+        evidenceUrl: 'ftp://bad',
+        narrativeJustification: 'a'.repeat(501),
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors.length).toBeGreaterThanOrEqual(3);
+    });
+  });
+
+  describe('validateBadgeTemplateIdInDb', () => {
+    it('should return valid when template exists with ACTIVE status', async () => {
+      const result = await service.validateBadgeTemplateIdInDb('template-123');
+      expect(result.valid).toBe(true);
+    });
+
+    it('should return invalid when template not found', async () => {
+      mockPrismaService.badgeTemplate.findFirst.mockResolvedValue(null);
+      const result = await service.validateBadgeTemplateIdInDb('nonexistent');
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain('not found');
+    });
+
+    it('should reject example template IDs before DB check', async () => {
+      const result = await service.validateBadgeTemplateIdInDb('EXAMPLE-DELETE-THIS-ROW');
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain('Example');
+    });
+  });
+
+  describe('validateRegisteredEmail', () => {
+    it('should return valid when user exists and is active', async () => {
+      const result = await service.validateRegisteredEmail('john@company.com');
+      expect(result.valid).toBe(true);
+    });
+
+    it('should return invalid when user not found', async () => {
+      mockPrismaService.user.findFirst.mockResolvedValue(null);
+      const result = await service.validateRegisteredEmail('unknown@company.com');
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain('No active registered user');
+    });
+
+    it('should reject example emails before DB check', async () => {
+      const result = await service.validateRegisteredEmail('example-john@company.com');
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain('Example');
     });
   });
 });

@@ -6,6 +6,7 @@ import {
   Body,
   Request,
   Res,
+  Logger,
   UseGuards,
   UseInterceptors,
   UploadedFile,
@@ -47,6 +48,8 @@ import { BulkIssuanceService } from './bulk-issuance.service';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class BulkIssuanceController {
+  private readonly logger = new Logger(BulkIssuanceController.name);
+
   constructor(private readonly bulkIssuanceService: BulkIssuanceService) {}
 
   /**
@@ -56,12 +59,22 @@ export class BulkIssuanceController {
   @Roles(UserRole.ISSUER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Download CSV template for bulk badge issuance' })
   @ApiResponse({ status: 200, description: 'CSV template file' })
-  async downloadTemplate(@Res() res: Response) {
+  async downloadTemplate(@Request() req: any, @Res() res: Response) {
     const csv = this.bulkIssuanceService.generateTemplate();
+    const dateStr = new Date().toISOString().split('T')[0];
+    const BOM = '\uFEFF';
+
+    // AC5: Analytics tracking for template downloads
+    this.logger.log(JSON.stringify({
+      event: 'template_download',
+      userId: req.user?.userId,
+      timestamp: new Date().toISOString(),
+      templateType: 'bulk-badge-issuance',
+    }));
     
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename="bulk-issuance-template.csv"');
-    res.send(csv);
+    res.setHeader('Content-Disposition', `attachment; filename="bulk-badge-issuance-template-${dateStr}.csv"`);
+    res.send(BOM + csv);
   }
 
   /**
@@ -69,7 +82,9 @@ export class BulkIssuanceController {
    */
   @Post('upload')
   @Roles(UserRole.ISSUER, UserRole.ADMIN)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', {
+    limits: { fileSize: BulkIssuanceService.MAX_FILE_SIZE },
+  }))
   @ApiOperation({ summary: 'Upload CSV file for bulk issuance' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({

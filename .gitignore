@@ -52,6 +52,7 @@ desktop.ini
 
 # Output directories
 *.bak
+_bmad-output/playwright-sessions/
 
 # Claude Code files
 .claude/

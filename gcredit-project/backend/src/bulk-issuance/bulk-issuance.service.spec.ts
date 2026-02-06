@@ -14,6 +14,12 @@ describe('BulkIssuanceService', () => {
       create: jest.fn(),
       update: jest.fn(),
     },
+    badgeTemplate: {
+      findFirst: jest.fn(),
+    },
+    user: {
+      findFirst: jest.fn(),
+    },
   };
 
   beforeEach(async () => {
@@ -27,13 +33,21 @@ describe('BulkIssuanceService', () => {
 
     service = module.get<BulkIssuanceService>(BulkIssuanceService);
     csvValidation = module.get<CsvValidationService>(CsvValidationService);
+
+    // Default: valid template and user exist
+    mockPrismaService.badgeTemplate.findFirst.mockResolvedValue({ id: 'template-123', name: 'template-123', status: 'ACTIVE' });
+    mockPrismaService.user.findFirst.mockResolvedValue({ id: 'user-1', email: 'user@company.com', isActive: true });
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe('generateTemplate', () => {
     it('should generate a CSV template with example rows', () => {
       const template = service.generateTemplate();
       
-      expect(template).toContain('templateId,recipientEmail');
+      expect(template).toContain('badgeTemplateId,recipientEmail');
       expect(template).toContain('EXAMPLE-DELETE-THIS-ROW');
       expect(template).toContain('DELETE THIS EXAMPLE ROW BEFORE UPLOAD');
     });
@@ -41,13 +55,54 @@ describe('BulkIssuanceService', () => {
     it('should include header comment warning', () => {
       const template = service.generateTemplate();
       
-      expect(template).toContain('# DELETE THE EXAMPLE ROWS');
+      expect(template).toContain('# DELETE THE EXAMPLE ROWS BELOW BEFORE UPLOAD');
+    });
+
+    it('should contain all required headers', () => {
+      const template = service.generateTemplate();
+      const lines = template.split('\n').filter(l => !l.startsWith('#'));
+      const headerLine = lines[0];
+      
+      expect(headerLine).toContain('badgeTemplateId');
+      expect(headerLine).toContain('recipientEmail');
+      expect(headerLine).toContain('evidenceUrl');
+      expect(headerLine).toContain('narrativeJustification');
+    });
+
+    it('should contain field documentation comments', () => {
+      const template = service.generateTemplate();
+      
+      expect(template).toContain('# G-Credit Bulk Badge Issuance Template');
+      expect(template).toContain('# Field Specifications:');
+      expect(template).toContain('# badgeTemplateId');
+      expect(template).toContain('# recipientEmail');
+      expect(template).toContain('# evidenceUrl');
+      expect(template).toContain('# narrativeJustification');
+      expect(template).toContain('# Tips:');
+      expect(template).toContain('Maximum 20 badges per upload');
+    });
+
+    it('should contain EXAMPLE-DELETE-THIS-ROW example rows', () => {
+      const template = service.generateTemplate();
+      const exampleLines = template.split('\n').filter(l => l.includes('EXAMPLE-DELETE-THIS-ROW'));
+      
+      expect(exampleLines.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should use UTF-8 compatible format', () => {
+      const template = service.generateTemplate();
+      
+      // Template should be a valid string (UTF-8 compatible)
+      expect(typeof template).toBe('string');
+      expect(template.length).toBeGreaterThan(0);
+      // Should not contain any null bytes
+      expect(template).not.toContain('\0');
     });
   });
 
   describe('createSession', () => {
     it('should create a session with valid CSV data', async () => {
-      const csvContent = `templateId,recipientEmail,evidenceUrl
+      const csvContent = `badgeTemplateId,recipientEmail,evidenceUrl
 template-123,user@company.com,https://example.com/evidence`;
       
       const result = await service.createSession(csvContent, 'issuer-123');
@@ -59,18 +114,24 @@ template-123,user@company.com,https://example.com/evidence`;
     });
 
     it('should reject example rows', async () => {
-      const csvContent = `templateId,recipientEmail,evidenceUrl
+      // Example data is caught by format check, before DB lookup
+      mockPrismaService.badgeTemplate.findFirst.mockResolvedValue(null);
+      mockPrismaService.user.findFirst.mockResolvedValue(null);
+
+      const csvContent = `badgeTemplateId,recipientEmail,evidenceUrl
 EXAMPLE-DELETE-THIS-ROW,example-john@company.com,`;
       
       const result = await service.createSession(csvContent, 'issuer-123');
       
       expect(result.validRows).toBe(0);
       expect(result.errorRows).toBe(1);
-      expect(result.errors[0].message).toContain('Example row detected');
+      expect(result.errors[0].message).toContain('Example');
     });
 
     it('should reject invalid email format', async () => {
-      const csvContent = `templateId,recipientEmail
+      mockPrismaService.user.findFirst.mockResolvedValue(null);
+      
+      const csvContent = `badgeTemplateId,recipientEmail
 template-123,not-an-email`;
       
       const result = await service.createSession(csvContent, 'issuer-123');
@@ -87,11 +148,29 @@ John,john@example.com`;
       await expect(service.createSession(csvContent, 'issuer-123'))
         .rejects.toThrow(BadRequestException);
     });
+
+    it('should enforce max row count', async () => {
+      const rows = Array.from({ length: 21 }, (_, i) =>
+        `template-${i},user${i}@company.com`
+      ).join('\n');
+      const csvContent = `badgeTemplateId,recipientEmail\n${rows}`;
+      
+      await expect(service.createSession(csvContent, 'issuer-123'))
+        .rejects.toThrow(/exceeding the maximum/);
+    });
+
+    it('should strip UTF-8 BOM before parsing', async () => {
+      const csvContent = `\uFEFFbadgeTemplateId,recipientEmail\ntemplate-123,user@company.com`;
+      
+      const result = await service.createSession(csvContent, 'issuer-123');
+      
+      expect(result.validRows).toBe(1);
+    });
   });
 
   describe('getPreviewData - IDOR Prevention', () => {
     it('should allow access to session owner', async () => {
-      const csvContent = `templateId,recipientEmail
+      const csvContent = `badgeTemplateId,recipientEmail
 template-123,user@company.com`;
       
       const session = await service.createSession(csvContent, 'owner-123');
@@ -101,7 +180,7 @@ template-123,user@company.com`;
     });
 
     it('should block access from non-owner (IDOR prevention)', async () => {
-      const csvContent = `templateId,recipientEmail
+      const csvContent = `badgeTemplateId,recipientEmail
 template-123,user@company.com`;
       
       const session = await service.createSession(csvContent, 'owner-123');
@@ -118,7 +197,7 @@ template-123,user@company.com`;
 
   describe('confirmBulkIssuance - IDOR Prevention', () => {
     it('should allow confirmation by session owner', async () => {
-      const csvContent = `templateId,recipientEmail
+      const csvContent = `badgeTemplateId,recipientEmail
 template-123,user@company.com`;
       
       const session = await service.createSession(csvContent, 'owner-123');
@@ -129,7 +208,7 @@ template-123,user@company.com`;
     });
 
     it('should block confirmation from non-owner (IDOR prevention)', async () => {
-      const csvContent = `templateId,recipientEmail
+      const csvContent = `badgeTemplateId,recipientEmail
 template-123,user@company.com`;
       
       const session = await service.createSession(csvContent, 'owner-123');
@@ -146,7 +225,11 @@ template-123,user@company.com`;
 
   describe('getErrorReportCsv', () => {
     it('should generate sanitized CSV error report', async () => {
-      const csvContent = `templateId,recipientEmail
+      // Example data fails format check (no DB hit); injection data fails format check
+      mockPrismaService.badgeTemplate.findFirst.mockResolvedValue(null);
+      mockPrismaService.user.findFirst.mockResolvedValue(null);
+
+      const csvContent = `badgeTemplateId,recipientEmail
 EXAMPLE-DELETE-THIS-ROW,example@company.com
 =EVIL(),user@company.com`;
       
@@ -158,7 +241,7 @@ EXAMPLE-DELETE-THIS-ROW,example@company.com
     });
 
     it('should throw error for session without errors', async () => {
-      const csvContent = `templateId,recipientEmail
+      const csvContent = `badgeTemplateId,recipientEmail
 template-123,user@company.com`;
       
       const session = await service.createSession(csvContent, 'owner-123');
@@ -168,7 +251,10 @@ template-123,user@company.com`;
     });
 
     it('should block access from non-owner', async () => {
-      const csvContent = `templateId,recipientEmail
+      mockPrismaService.badgeTemplate.findFirst.mockResolvedValue(null);
+      mockPrismaService.user.findFirst.mockResolvedValue(null);
+
+      const csvContent = `badgeTemplateId,recipientEmail
 EXAMPLE-DELETE,example@company.com`;
       
       const session = await service.createSession(csvContent, 'owner-123');

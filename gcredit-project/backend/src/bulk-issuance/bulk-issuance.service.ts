@@ -84,20 +84,79 @@ export class BulkIssuanceService {
     private csvValidation: CsvValidationService,
   ) {}
 
+  /** Maximum rows allowed per CSV upload */
+  static readonly MAX_ROWS = 20;
+  /** Maximum file size in bytes (100KB) */
+  static readonly MAX_FILE_SIZE = 102_400;
+
   /**
    * Generate CSV template for bulk issuance
-   * Includes clearly marked example rows that must be deleted
+   * Includes field documentation and clearly marked example rows that must be deleted
    */
   generateTemplate(): string {
-    const headerComment = '# DELETE THE EXAMPLE ROWS BELOW BEFORE UPLOADING YOUR REAL DATA\n';
-    const headers = 'templateId,recipientEmail,evidenceUrl,notes';
+    const headerComments = [
+      '# G-Credit Bulk Badge Issuance Template',
+      '# Instructions: Fill in the rows below with badge issuance data',
+      '# DELETE THE EXAMPLE ROWS BELOW BEFORE UPLOAD',
+      '#',
+      '# Field Specifications:',
+      '# badgeTemplateId       - Can be template name (e.g., "Leadership Excellence") or UUID (REQUIRED)',
+      '# recipientEmail        - Must match registered user email addresses (REQUIRED)',
+      '# evidenceUrl            - (Optional) Link to supporting documentation, HTTP/HTTPS format',
+      '# narrativeJustification - (Optional) Reason for awarding this badge, max 500 characters',
+      '#',
+      '# Tips:',
+      '# - You can find badge template names in the Badge Catalog page',
+      '# - Maximum 20 badges per upload (file size limit: 100KB)',
+      '# - recipientEmail must match existing user accounts',
+    ].join('\n');
+
+    const headers = 'badgeTemplateId,recipientEmail,evidenceUrl,narrativeJustification';
     
     const exampleRows = [
       'EXAMPLE-DELETE-THIS-ROW,example-john@company.com,https://example.com/evidence1,"DELETE THIS EXAMPLE ROW BEFORE UPLOAD"',
       'EXAMPLE-DELETE-THIS-ROW,example-jane@company.com,,"DELETE THIS EXAMPLE ROW BEFORE UPLOAD"'
     ].join('\n');
 
-    return headerComment + headers + '\n' + exampleRows;
+    return headerComments + '\n' + headers + '\n' + exampleRows;
+  }
+
+  /**
+   * Parse a CSV line respecting RFC 4180 quoting rules.
+   * Handles quoted fields that may contain commas, newlines, or escaped quotes.
+   */
+  private parseCsvLine(line: string): string[] {
+    const fields: string[] = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (inQuotes) {
+        if (char === '"') {
+          // Check for escaped quote ("")
+          if (i + 1 < line.length && line[i + 1] === '"') {
+            current += '"';
+            i++; // skip next quote
+          } else {
+            inQuotes = false;
+          }
+        } else {
+          current += char;
+        }
+      } else {
+        if (char === '"') {
+          inQuotes = true;
+        } else if (char === ',') {
+          fields.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+    }
+    fields.push(current.trim());
+    return fields;
   }
 
   /**
@@ -112,21 +171,32 @@ export class BulkIssuanceService {
     const createdAt = new Date();
     const expiresAt = new Date(createdAt.getTime() + this.SESSION_TTL_MS);
 
+    // Strip UTF-8 BOM if present
+    const cleanContent = csvContent.replace(/^\uFEFF/, '');
+
     // Parse and validate CSV
-    const lines = csvContent.split('\n')
+    const lines = cleanContent.split('\n')
       .filter(line => line.trim() && !line.trim().startsWith('#'));
     
     if (lines.length < 2) {
       throw new BadRequestException('CSV file must contain header and at least one data row');
     }
 
-    const headers = lines[0].split(',').map(h => h.trim());
-    const requiredHeaders = ['templateId', 'recipientEmail'];
+    const headers = this.parseCsvLine(lines[0]);
+    const requiredHeaders = ['badgeTemplateId', 'recipientEmail'];
     
     for (const required of requiredHeaders) {
       if (!headers.includes(required)) {
         throw new BadRequestException(`Missing required header: ${required}`);
       }
+    }
+
+    // Enforce max row count (AC7)
+    const dataLineCount = lines.length - 1;
+    if (dataLineCount > BulkIssuanceService.MAX_ROWS) {
+      throw new BadRequestException(
+        `CSV contains ${dataLineCount} data rows, exceeding the maximum of ${BulkIssuanceService.MAX_ROWS}. Please reduce the number of rows.`
+      );
     }
 
     const validRows: any[] = [];
@@ -135,51 +205,37 @@ export class BulkIssuanceService {
 
     for (let i = 1; i < lines.length; i++) {
       const rowNumber = i + 1;
-      const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+      const values = this.parseCsvLine(lines[i]);
       
       const row: Record<string, string> = {};
       headers.forEach((header, idx) => {
         row[header] = values[idx] || '';
       });
 
-      const templateValidation = this.csvValidation.validateBadgeTemplateId(row.templateId);
-      const emailValidation = this.csvValidation.validateEmail(row.recipientEmail);
+      // Validate all fields using validateRow
+      const rowValidation = await this.csvValidation.validateRow(row);
 
-      if (!templateValidation.valid) {
+      if (!rowValidation.valid) {
+        const errorMsg = rowValidation.errors.join('; ');
         errors.push({
           rowNumber,
-          badgeTemplateId: row.templateId,
+          badgeTemplateId: row.badgeTemplateId,
           recipientEmail: row.recipientEmail,
-          message: templateValidation.error!,
+          message: errorMsg,
         });
         rows.push({
           rowNumber,
-          badgeTemplateId: row.templateId,
+          badgeTemplateId: row.badgeTemplateId,
           recipientEmail: row.recipientEmail,
           evidenceUrl: row.evidenceUrl,
           isValid: false,
-          error: templateValidation.error,
-        });
-      } else if (!emailValidation.valid) {
-        errors.push({
-          rowNumber,
-          badgeTemplateId: row.templateId,
-          recipientEmail: row.recipientEmail,
-          message: emailValidation.error!,
-        });
-        rows.push({
-          rowNumber,
-          badgeTemplateId: row.templateId,
-          recipientEmail: row.recipientEmail,
-          evidenceUrl: row.evidenceUrl,
-          isValid: false,
-          error: emailValidation.error,
+          error: errorMsg,
         });
       } else {
         validRows.push(row);
         rows.push({
           rowNumber,
-          badgeTemplateId: row.templateId,
+          badgeTemplateId: row.badgeTemplateId,
           recipientEmail: row.recipientEmail,
           evidenceUrl: row.evidenceUrl,
           isValid: true,
@@ -258,7 +314,7 @@ export class BulkIssuanceService {
       expiresAt: session.expiresAt,
       rows: session.validRows.map((row, idx) => ({
         rowNumber: idx + 2,
-        badgeTemplateId: row.templateId,
+        badgeTemplateId: row.badgeTemplateId,
         recipientEmail: row.recipientEmail,
         evidenceUrl: row.evidenceUrl,
         isValid: true,

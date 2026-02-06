@@ -7,6 +7,8 @@ import BadgeEmbedPage from '@/pages/BadgeEmbedPage';
 import AdminAnalyticsPage from '@/pages/AdminAnalyticsPage';
 import BadgeManagementPage from '@/pages/admin/BadgeManagementPage';
 import AdminUserManagementPage from '@/pages/AdminUserManagementPage';
+import BulkIssuancePage from '@/pages/BulkIssuancePage';
+import { BulkPreviewPage } from '@/components/BulkIssuance';
 import { DashboardPage } from '@/pages/dashboard';
 import { LoginPage } from '@/pages/LoginPage';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -62,6 +64,26 @@ function App() {
               <ProtectedRoute requiredRoles={['ADMIN', 'ISSUER']}>
                 <Layout pageTitle="Badge Management">
                   <BadgeManagementPage />
+                </Layout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/bulk-issuance" 
+            element={
+              <ProtectedRoute requiredRoles={['ADMIN', 'ISSUER']}>
+                <Layout pageTitle="Bulk Badge Issuance">
+                  <BulkIssuancePage />
+                </Layout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/bulk-issuance/preview/:sessionId" 
+            element={
+              <ProtectedRoute requiredRoles={['ADMIN', 'ISSUER']}>
+                <Layout pageTitle="Bulk Issuance Preview">
+                  <BulkPreviewPage />
                 </Layout>
               </ProtectedRoute>
             } 
