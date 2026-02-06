@@ -105,8 +105,8 @@ stories:
     status: review
     priority: HIGH
     estimated_hours: 8.5h  # 6h baseline + 2.5h P1 enhancements
-    actual_hours: 0h
-    assigned_to: TBD
+    actual_hours: 8h
+    assigned_to: Dev Agent (Claude Opus 4.6)
     dependencies: []
     story_file: "sprint-9/8-1-csv-template-validation.md"
     
@@ -131,8 +131,8 @@ stories:
     
     blocked: false
     blocker_reason: null
-    start_date: null
-    completion_date: null
+    start_date: "2026-02-07"
+    completion_date: "2026-02-07"
 
   # Story 8.2: CSV Upload & Parsing
   "8.2":
