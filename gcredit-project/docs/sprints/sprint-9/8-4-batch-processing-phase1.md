@@ -4,11 +4,12 @@
 **Epic:** Epic 8 - Bulk Badge Issuance  
 **Sprint:** Sprint 9  
 **Priority:** MEDIUM  
-**Estimated Hours:** 6.5h (原4h + P0修复2h + P1改进0.5h)  
+**Estimated Hours:** 8.5h (原4h + P0修复2h + P1改进0.5h + TD-014 2h)  
 **Actual Hours:** TBD  
 **Dependencies:** Story 8.3 (Bulk Preview UI)  
 **Post-Review Updates:** UX-P0-1, C2, C6 (2026-02-05审查)  
-**Security Critical:** 🔴 MUST implement C2 (Session IDOR) validation
+**Security Critical:** 🔴 MUST implement C2 (Session IDOR) validation  
+**Includes Tech Debt:** 🔧 TD-014 (Email System Unification, 2h) — 作为前置任务嵌入本Story
 
 **MVP Decision**: Deferred Redis/Bull Queue to Phase 2 (TD-016). Sprint 9 implements synchronous processing with 20-badge limit to validate core workflow before adding complexity.
 
@@ -87,9 +88,53 @@ So that **I can efficiently award badges to small groups without manual one-by-o
    - Email send failures logged but don't fail badge creation
    - Email errors shown in completion summary
 
+7. [ ] **AC7: Email System Unification (TD-014)**
+   - All nodemailer references removed from codebase
+   - All email sending consolidated to GraphEmailService
+   - nodemailer dependency removed from `package.json`
+   - nodemailer config removed from `.env`
+   - Email-related tests passing with unified service
+   - Documentation updated (setup guide, env example)
+
 ---
 
 ## Tasks / Subtasks
+
+### Task 0: TD-014 — Email System Unification (前置任务) - 2h
+
+> **Tech Debt TD-014** 嵌入本 Story，作为前置任务在批量处理开发前完成。
+> **理由：** 批量处理会发送大量邮件，统一邮件系统避免双系统复杂度。
+
+- [ ] **0.1** Audit codebase for nodemailer usage (0.5h)
+  - Search: `grep -r "nodemailer" backend/src/`
+  - Document all email sending locations
+- [ ] **0.2** Migrate remaining nodemailer calls to GraphEmailService (1h)
+  - Update email sending code
+  - Ensure templates compatible with Graph API
+  - Update configuration
+- [ ] **0.3** Remove nodemailer dependency (0.25h)
+  - `npm uninstall nodemailer @types/nodemailer`
+  - Remove nodemailer config from `.env`
+  - Update `.env.example`
+  - Update `gcredit-project/docs/setup/environment-setup.md`
+- [ ] **0.4** Test email sending (0.25h)
+  - Test badge issuance email
+  - Test password reset email (if applicable)
+  - Test admin notification emails
+
+**TD-014 Success Criteria:**
+- [ ] Zero references to `nodemailer` in codebase
+- [ ] All emails sent via GraphEmailService
+- [ ] Email tests passing
+- [ ] Documentation updated
+
+**TD-014 Files to Modify:**
+- `backend/src/email/` (remove nodemailer service)
+- `backend/package.json` (remove dependency)
+- `backend/.env.example` (remove nodemailer config)
+- `gcredit-project/docs/setup/environment-setup.md` (update docs)
+
+---
 
 ### Task 1: CSV Upload Validation (AC: #1) - 0.5h
 - [ ] **1.1** Add validation in Story 8.2 upload endpoint
@@ -306,6 +351,7 @@ frontend/src/
 - **Backend:** 10 unit tests (synchronous processing API)
 - **Frontend:** 7 component tests (loading UI, results display)
 - **E2E:** 4 tests (full bulk flow with limits)
+- **TD-014:** Email-related E2E tests (estimated 10 tests) + manual verification
 - **Target Coverage:** >80%
 
 ### Performance Notes

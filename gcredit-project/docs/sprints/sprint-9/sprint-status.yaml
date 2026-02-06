@@ -17,20 +17,21 @@ metadata:
 
 # Sprint Metrics (updated daily)
 metrics:
-  total_stories: 4  # Stories 8.1, 8.2, 8.3, 8.4
-  total_td_tasks: 3  # TD-015 (Phase 1+2), TD-014, TD-013
-  total_work_items: 7  # 4 stories + 3 TD tasks
-  total_estimated_hours: 37h  # 32h features + 13h tech debt (P1 improvements included)
+  total_stories: 5  # Stories 8.1, 8.2, 8.3(+TD-013), 8.4(+TD-014), TD-015
+  total_td_tasks: 0  # All TD tasks merged into stories (TD-013→8.3, TD-014→8.4, TD-015→standalone story)
+  total_work_items: 5  # 5 stories (TD fully integrated)
+  total_estimated_hours: 51h  # 8.5+11.5+14.5+8.5+8 (features+TD unified)
   
   completed_stories: 1  # Story 8.1 ✅
   completed_td_tasks: 0
   completed_work_items: 1
   completed_hours: 8h  # Story 8.1 actual
-  remaining_hours: 29h
+  remaining_hours: 43h
   
   # Sprint 9 capacity breakdown
-  feature_hours: 32h  # Epic 8 (24h baseline + 8h P1 enhancements)
-  td_hours: 13h  # TD-015 (8h), TD-014 (3h), TD-013 (2h)
+  feature_hours: 38h  # Epic 8 stories (baseline + P1 enhancements)
+  td_hours: 13h  # TD-013 (3h in 8.3), TD-014 (2h in 8.4), TD-015 (8h story)
+  td_arrangement: "All TD integrated into stories to prevent omission"
   testing_hours: 12h
   code_review_hours: 8h
   bug_fix_hours: 4h
@@ -177,18 +178,25 @@ stories:
     start_date: null
     completion_date: null
 
-  # Story 8.3: Bulk Issuance Preview UI
+  # Story 8.3: Bulk Issuance Preview UI (includes TD-013)
   "8.3":
     id: "8.3"
     title: "Bulk Issuance Preview UI"
     status: backlog
     priority: MEDIUM
-    estimated_hours: 11.5h  # 8h baseline + 2.5h P0 + 1h P1
+    estimated_hours: 14.5h  # 8h baseline + 2.5h P0 + 1h P1 + 3h TD-013
     actual_hours: 0h
     assigned_to: TBD
     dependencies: ["8.2"]
     story_file: "sprint-9/8-3-bulk-preview-ui.md"
     security_critical: true
+    
+    embedded_tech_debt:
+      id: "TD-013"
+      title: "Frontend Bundle Code Splitting"
+      hours: 3h
+      role: "前置任务 - 在 Preview UI 开发前完成"
+      target: "579KB → <400KB"
     
     critical_fixes:
       - "UX-P0-3: Error correction workflow (1.5h) - P0"
@@ -216,18 +224,25 @@ stories:
     start_date: null
     completion_date: null
 
-  # Story 8.4: Bulk Issuance Synchronous Processing (MVP)
+  # Story 8.4: Bulk Issuance Synchronous Processing (MVP) (includes TD-014)
   "8.4":
     id: "8.4"
     title: "Bulk Issuance Synchronous Processing (MVP)"
     status: backlog
     priority: MEDIUM
-    estimated_hours: 6.5h  # 4h baseline + 2h P0 + 0.5h P1
+    estimated_hours: 8.5h  # 4h baseline + 2h P0 + 0.5h P1 + 2h TD-014
     actual_hours: 0h
     assigned_to: TBD
     dependencies: ["8.3"]
     story_file: "sprint-9/8-4-batch-processing-phase1.md"
     mvp_simplification: true
+    
+    embedded_tech_debt:
+      id: "TD-014"
+      title: "Unify Email Service (Remove nodemailer)"
+      hours: 2h
+      role: "前置任务 - 在批量处理开发前完成"
+      target: "移除 nodemailer，统一使用 GraphEmailService"
     
     mvp_decision:
       reason: "Deferred Redis/async to TD-016 Phase 2"
@@ -262,15 +277,56 @@ stories:
     start_date: null
     completion_date: null
 
-# Technical Debt Tasks
+  # Story TD-015: ESLint Type Safety Warnings (promoted from TD task)
+  "TD-015":
+    id: "TD-015"
+    title: "Fix ESLint Type Safety Warnings"
+    status: backlog
+    priority: P2
+    estimated_hours: 8h  # Phase 1: 4h + Phase 2: 4h
+    actual_hours: 0h
+    assigned_to: TBD
+    dependencies: []  # Can be done in parallel with other stories
+    story_file: "sprint-9/td-015-eslint-type-safety.md"
+    category: "Technical Debt (promoted to Story)"
+    
+    acceptance_criteria:
+      - "AC1: Phase 1 - Fix no-unsafe-call and no-unsafe-return (1100→800)"
+      - "AC2: Phase 2 - Fix no-unsafe-member-access and no-unused-vars (800→500)"
+      - "AC3: Zero test regressions"
+      - "AC4: Progress documented for Sprint 10"
+    
+    testing:
+      unit_tests: 0  # No new tests, run existing suite
+      lint_target: "≤500 warnings (from 1100)"
+      type_check: "npx tsc --noEmit passes"
+      coverage_target: "No regression"
+    
+    blocked: false
+    blocker_reason: null
+    start_date: null
+    completion_date: null
+
+# Technical Debt Tasks (reorganized 2026-02-07)
+# TD-013 and TD-014 merged into Stories 8.3 and 8.4 respectively
+# TD-015 promoted to standalone Story
 technical_debt:
-  # TD-015: Fix ESLint Type Safety Warnings
+  reorganization_note: >
+    2026-02-07: All TD tasks reorganized into Story format to unify dev workflow.
+    TD-013 → embedded in Story 8.3 as prerequisite task.
+    TD-014 → embedded in Story 8.4 as prerequisite task.
+    TD-015 → promoted to standalone Story (td-015-eslint-type-safety.md).
+    This ensures TD follows same flow: dev prompt → dev → code review → fix → test.
+  
+  # TD-015: Now tracked as Story (see stories section below)
   "TD-015":
     id: "TD-015"
     title: "Fix ESLint Type Safety Warnings"
     priority: P2
     total_hours: 8h
     status: backlog
+    tracked_as: story  # Promoted to standalone story
+    story_file: "sprint-9/td-015-eslint-type-safety.md"
     
     phase_1:
       title: "Fix no-unsafe-call and no-unsafe-return"
@@ -290,46 +346,27 @@ technical_debt:
       files:
         - "Multiple backend files"
 
-  # TD-014: Unify Email Service (Remove nodemailer)
+  # TD-014: Merged into Story 8.4
   "TD-014":
     id: "TD-014"
     title: "Unify Email Service (Remove nodemailer)"
     priority: P2
-    estimated_hours: 3h
+    estimated_hours: 2h
     actual_hours: 0h
-    status: backlog
-    
-    tasks:
-      - "Remove nodemailer dependency"
-      - "Consolidate to GraphEmailService only"
-      - "Update all email sending code"
-      - "Add fallback retry logic"
-      - "Update tests"
-    
-    files:
-      - "backend/src/services/email.service.ts"
-      - "backend/package.json"
+    status: merged_into_story
+    merged_into: "Story 8.4"
+    story_file: "sprint-9/8-4-batch-processing-phase1.md"
 
-  # TD-013: Frontend Bundle Size Optimization
+  # TD-013: Merged into Story 8.3
   "TD-013":
     id: "TD-013"
     title: "Frontend Bundle Size Optimization"
     priority: P2
-    estimated_hours: 2h
+    estimated_hours: 3h
     actual_hours: 0h
-    status: backlog
-    
-    target: "Reduce bundle from 570KB → <400KB"
-    
-    tasks:
-      - "Enable tree-shaking for unused components"
-      - "Lazy load chart libraries"
-      - "Optimize icon imports"
-      - "Code splitting for admin routes"
-    
-    files:
-      - "frontend/vite.config.ts"
-      - "frontend/src/main.tsx"
+    status: merged_into_story
+    merged_into: "Story 8.3"
+    story_file: "sprint-9/8-3-bulk-preview-ui.md"
 
 # Sprint Events
 events:
@@ -398,16 +435,17 @@ risks:
 # Sprint Goal Progress
 goal_progress:
   epic_8_mvp:
-    target: "Complete Stories 8.1-8.4"
-    current: "Planning complete, P0 fixes in progress"
-    percentage: 0
+    target: "Complete Stories 8.1-8.4 (TD-013/TD-014 embedded)"
+    current: "Story 8.1 done, Story 8.2 dev prompt ready"
+    percentage: 20
     on_track: true
   
   tech_debt_cleanup:
-    target: "Complete TD-015, TD-014, TD-013"
-    current: "Not started"
+    target: "TD-013 (in 8.3), TD-014 (in 8.4), TD-015 (standalone story)"
+    current: "All TD reorganized into story format (2026-02-07)"
     percentage: 0
     on_track: true
+    arrangement: "Integrated into stories to prevent omission"
 
 # Definition of Done
 definition_of_done:

@@ -4,11 +4,12 @@
 **Epic:** Epic 8 - Bulk Badge Issuance  
 **Sprint:** Sprint 9  
 **Priority:** MEDIUM  
-**Estimated Hours:** 11.5h (原8h + P0修复2.5h + P1改进1h)  
+**Estimated Hours:** 14.5h (原8h + P0修复2.5h + P1改进1h + TD-013 3h)  
 **Actual Hours:** TBD  
 **Dependencies:** Story 8.2 (CSV Upload & Parsing)  
 **Post-Review Updates:** UX-P0-3, C2, UX-P1-3, UX-P1-5 (2026-02-05审查)  
-**Security Critical:** 🔴 MUST implement C2 (Session IDOR) validation
+**Security Critical:** 🔴 MUST implement C2 (Session IDOR) validation  
+**Includes Tech Debt:** 🔧 TD-013 (Frontend Bundle Code Splitting, 3h) — 作为前置任务嵌入本Story
 
 ---
 
@@ -81,9 +82,66 @@ So that **I can verify all data is correct before issuing badges**.
    - If CSV has zero valid rows, display: "No valid badges found in CSV. Please check the template format and try again."
    - Show "Re-upload CSV" button
 
+7. [ ] **AC7: Frontend Bundle Optimization (TD-013)**
+   - Route-based code splitting implemented via `lazy()` + `<Suspense>`
+   - Vendor libraries split into separate chunks (react, ui, chart, utils)
+   - Main bundle size reduced from 579 KB to <400 KB
+   - All routes load correctly after splitting
+   - Lighthouse performance score improved by ≥10 points
+
 ---
 
 ## Tasks / Subtasks
+
+### Task 0: TD-013 — Frontend Bundle Code Splitting (前置任务) - 3h
+
+> **Tech Debt TD-013** 嵌入本 Story，作为前置任务在 Preview UI 开发前完成。
+> **理由：** Preview UI 是复杂前端组件，先优化包体积防止膨胀。
+
+- [ ] **0.1** Analyze current bundle (0.5h)
+  - Run `npm run build`
+  - Run `npx vite-bundle-visualizer` to identify large chunks
+  - Document top 5 largest dependencies
+- [ ] **0.2** Implement route-based code splitting (1.5h)
+  - Convert route imports to `lazy(() => import(...))`
+  - Add `<Suspense>` fallback for loading states
+  - Split routes: Dashboard, Badge Management, Bulk Issuance, Analytics
+- [ ] **0.3** Split large vendor libraries (0.5h)
+  - Configure manual chunks in `vite.config.ts`
+  - Separate: React, UI library, Chart.js, date utilities
+  - ```typescript
+    // vite.config.ts
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+            'chart-vendor': ['chart.js', 'react-chartjs-2'],
+            'utils-vendor': ['date-fns', 'lodash-es']
+          }
+        }
+      }
+    }
+    ```
+- [ ] **0.4** Verify bundle size reduction (0.5h)
+  - Rebuild and measure bundle size
+  - Target: <400 KB main bundle (from 579 KB)
+  - Run Lighthouse to verify performance improvement
+  - Verify all routes load correctly with code splitting
+
+**TD-013 Success Criteria:**
+- [ ] Main bundle size reduced to <400 KB
+- [ ] Lighthouse performance score improved by ≥10 points
+- [ ] All routes load correctly with code splitting
+- [ ] No increase in Time to Interactive (TTI)
+
+**TD-013 Files to Modify:**
+- `frontend/vite.config.ts` (manual chunks configuration)
+- `frontend/src/App.tsx` (lazy imports + Suspense)
+- `frontend/src/main.tsx` (if needed)
+
+---
 
 ### Task 1: Backend - Preview Data API (AC: #1, #2, #5) - 1.5h
 - [ ] **1.1** Create GET `/api/bulk-issuance/preview/:sessionId` endpoint
@@ -285,6 +343,7 @@ frontend/src/
 - **Backend:** 6 unit tests (preview API)
 - **Frontend:** 27 component tests (all components)
 - **E2E:** 6 tests (preview flow, errors, expiry, confirmation)
+- **TD-013:** Manual testing (all routes after build) + Lighthouse audit
 - **Target Coverage:** >80%
 
 ### UX Design Principles
