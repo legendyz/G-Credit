@@ -71,8 +71,9 @@ So that **I can issue multiple badges at once**.
    - Response includes: totalRows, validRows, errorRows count
 
 6. [x] **AC6: Rate Limiting** 🔴 **Security Fix** (ARCH-C3, 0.5h)
-   - Add `@Throttle({ default: { ttl: 300000, limit: 3 } })` to upload endpoint
-   - Limit: 3 uploads per 5 minutes per user
+   - Add `@Throttle({ default: { ttl: 300000, limit: 10 } })` to upload endpoint
+   - Limit: 10 uploads per 5 minutes per user (updated 2026-02-07, was 3)
+   - Environment-configurable via `UPLOAD_THROTTLE_LIMIT` for test/dev (default: 50)
    - Prevents DoS attacks via spam uploads
    - Return 429 Too Many Requests with retry-after header
    - Response includes array of validation errors with row numbers
@@ -290,11 +291,11 @@ frontend/src/
 
 ### Implementation Notes
 - **XSS Sanitization (ARCH-C7):** Installed `sanitize-html` dependency. Added `sanitizeTextInput()` method to `CsvValidationService` that strips ALL HTML tags via `sanitize(value, { allowedTags: [], allowedAttributes: {} })`. Applied to `narrativeJustification`, `badgeTemplateId`, and `evidenceUrl` fields before validation in `createSession()`.
-- **Rate Limiting (ARCH-C3):** Added `@Throttle({ default: { ttl: 300000, limit: 3 } })` to `uploadCsv()` controller method. Endpoint-specific override limits uploads to 3 per 5 minutes per IP. Added 429 ApiResponse Swagger doc.
+- **Rate Limiting (ARCH-C3):** Added `@Throttle({ default: { ttl: 300000, limit: 10 } })` to `uploadCsv()` controller method. Endpoint-specific override limits uploads to 10 per 5 minutes per IP (updated 2026-02-07 from 3→10 per PM/Architect review). Environment-configurable via `UPLOAD_THROTTLE_LIMIT` env var for test/dev environments. Added 429 ApiResponse Swagger doc.
 - **CRLF Support (ARCH-C5):** Changed `split('\n')` to `split(/\r?\n/)` in `createSession()` to handle Windows Excel CSV files with `\r\n` line endings.
 - **Transaction Validation (ARCH-C4):** Wrapped row validation loop in `this.prisma.$transaction()` with `ReadCommitted` isolation level and 10s timeout. Added `validateRowInTransaction()` method that accepts a transaction client.
 - **Frontend UX (UX-P1-4):** Added 3 visual drag-drop states (default gray/drag-over blue/file-selected green), file preview with size, explicit "Upload CSV" button disabled until file selected, validation summary panel with error/success counts and auto-navigate on 0 errors.
-- **E2E Tests:** Consolidated to 5 tests respecting the 3-upload rate limit. RBAC test runs first (doesn't count against throttle), then combined valid+CRLF+XSS+IDOR test, then no-file and non-CSV tests. Rate limiting tested in separate describe block with fresh throttle state.
+- **E2E Tests:** Consolidated to 5 tests respecting the 10-upload rate limit (was 3). RBAC test runs first (doesn't count against throttle), then combined valid+CRLF+XSS+IDOR test, then no-file and non-CSV tests. Rate limiting tested in separate describe block with fresh throttle state. Rate limit E2E test updated to exhaust 10 uploads before asserting 429.
 
 ### Test Results
 - **Backend Unit Tests:** 502 passed, 28 skipped (86 bulk-issuance specific)

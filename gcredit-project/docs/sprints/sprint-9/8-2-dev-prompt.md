@@ -102,7 +102,7 @@ sanitizeTextInput(value: string): string {
 
 **Problem:** An attacker could spam the upload endpoint to consume server resources.
 
-**Solution:** `@nestjs/throttler` is already installed and configured globally. Add endpoint-specific stricter limit to the upload endpoint.
+**Solution:** `@nestjs/throttler` is already installed and configured globally. Add endpoint-specific stricter limit to the upload endpoint. Make limit environment-configurable for test/dev.
 
 **File:** `backend/src/bulk-issuance/bulk-issuance.controller.ts`
 
@@ -110,7 +110,11 @@ sanitizeTextInput(value: string): string {
 import { Throttle } from '@nestjs/throttler';
 
 // Add to the uploadCsv method:
-@Throttle({ default: { ttl: 300000, limit: 3 } })  // 3 uploads per 5 minutes per user
+// Production: 10/5min | Test/Dev: configurable via UPLOAD_THROTTLE_LIMIT env var
+@Throttle({ default: { 
+  ttl: parseInt(process.env.UPLOAD_THROTTLE_TTL || '300000'),
+  limit: parseInt(process.env.UPLOAD_THROTTLE_LIMIT || '10'),
+} })  // 10 uploads per 5 minutes per user (updated 2026-02-07, was 3)
 @Post('upload')
 // ... existing decorators
 async uploadCsv(...) { ... }
@@ -121,8 +125,12 @@ async uploadCsv(...) { ... }
 @ApiResponse({ status: 429, description: 'Too many upload requests. Try again later.' })
 ```
 
+**Environment overrides (test/dev):**
+- `.env.test`: `UPLOAD_THROTTLE_LIMIT=50`
+- `test/setup.ts`: `process.env.UPLOAD_THROTTLE_LIMIT = '50';`
+
 **Tests:**
-- E2E test: 4th upload within 5 minutes returns 429
+- E2E test: 11th upload within 5 minutes returns 429 (production limit = 10)
 
 ---
 
@@ -347,7 +355,7 @@ Also strip trailing `\r` from parsed fields in `parseCsvLine()` if any remain.
 | 6 | POST upload with missing headers → returns 400 | `Missing required header` |
 | 7 | POST upload with EXAMPLE rows → errors array includes example detection | `Example row detected` |
 | 8 | POST upload with XSS in narrativeJustification → sanitized in response | No `<script>` in response |
-| 9 | POST upload 4th time within 5 min → returns 429 | Rate limited |
+| 9 | POST upload 11th time within 5 min → returns 429 | Rate limited (ARCH-C3: 10/5min) |
 | 10 | POST upload as EMPLOYEE → returns 403 | RBAC enforced |
 | 11 | GET preview with wrong userId → returns 403 | IDOR protection |
 | 12 | POST upload with CRLF line endings → parses correctly | Same result as LF |
@@ -360,7 +368,7 @@ Also strip trailing `\r` from parsed fields in `parseCsvLine()` if any remain.
 |-----------|-------|
 | Max file size | 100KB (102,400 bytes) — Multer limit already set |
 | Max rows | 20 — already enforced in `createSession()` |
-| Rate limit (upload) | 3 per 5 minutes per user |
+| Rate limit (upload) | 10 per 5 minutes per user (env-configurable via `UPLOAD_THROTTLE_LIMIT`) |
 | Session TTL | 30 minutes — already implemented |
 | Processing | Synchronous (no Redis/Bull) |
 | XSS prevention | `sanitize-html` (strip all HTML tags) |
@@ -418,7 +426,7 @@ Also strip trailing `\r` from parsed fields in `parseCsvLine()` if any remain.
 
 4. **`sanitize-html` is a backend-only dependency.** Do NOT install it in the frontend package.
 
-5. **Rate limiting is already global.** You're adding a **stricter, endpoint-specific** limit using `@Throttle()` decorator — this overrides the global default for this one endpoint only.
+5. **Rate limiting is already global.** You're adding a **stricter, endpoint-specific** limit using `@Throttle()` decorator — this overrides the global default for this one endpoint only. The limit (10/5min) is configurable via `UPLOAD_THROTTLE_LIMIT` and `UPLOAD_THROTTLE_TTL` environment variables for test/dev flexibility.
 
 6. **In-memory session store is intentional for MVP.** Do NOT create a Prisma migration or database table for sessions — that's deferred per architecture decision. The `Map<string, ...>` in `bulk-issuance.service.ts` is the designed approach.
 
