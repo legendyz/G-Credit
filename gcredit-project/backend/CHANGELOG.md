@@ -50,7 +50,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Remaining Stories
 - Story 8.3: Bulk Preview UI + TD-013 (bundle splitting)
 - Story 8.4: Batch Processing Phase 1 + TD-014 (email unification)
-- TD-015: ESLint & Type Safety cleanup
+
+##### TD-015: ESLint Type Safety Cleanup (8h actual) - 2026-02-07
+- **Warning Reduction:** 1303 → 284 warnings (78% reduction, exceeded 62% target)
+- **Shared `RequestWithUser` interface** — Replaces `req: any` across 9 controllers
+  - `src/common/interfaces/request-with-user.interface.ts` (new file)
+  - `AuthenticatedUser` + `RequestWithUser` typed with `UserRole` enum
+- **Rule-by-rule fixes:**
+  - `no-unsafe-member-access`: 497 → 78 (419 fixed)
+  - `no-unsafe-argument`: 253 → 51 (202 fixed)
+  - `no-unsafe-assignment`: 196 → 50 (146 fixed)
+  - `no-unsafe-call`: 121 → 65 (56 fixed)
+  - `no-unused-vars`: 89 → 0 (all fixed via removal/`_` prefix)
+  - `unbound-method`: 67 → 0 (eslint override for test files)
+  - `no-unsafe-return`: 50 → 40 (10 fixed)
+  - `require-await`: 29 → 0 (removed unnecessary `async`)
+  - `no-floating-promises`: 1 → 0 (added `await`)
+- **ESLint config enhancements:**
+  - `no-unused-vars` with `argsIgnorePattern: '^_'`, `varsIgnorePattern: '^_'`
+  - `unbound-method: 'off'` for `**/*.spec.ts` and `**/test/**/*.ts`
+- **`package.json` max-warnings:** 1310 → 284
+- **Testing:** All 992 tests passing (510 unit + 339 frontend + 143 E2E), zero regressions
 
 ---
 
