@@ -55,7 +55,7 @@ export interface PreviewData {
 
 /**
  * Bulk Issuance Service
- * 
+ *
  * Handles batch badge issuance with:
  * - CSV template generation and validation
  * - Database-backed session storage (BulkIssuanceSession table)
@@ -102,11 +102,12 @@ export class BulkIssuanceService {
       '# - recipientEmail must match existing user accounts',
     ].join('\n');
 
-    const headers = 'badgeTemplateId,recipientEmail,evidenceUrl,narrativeJustification';
-    
+    const headers =
+      'badgeTemplateId,recipientEmail,evidenceUrl,narrativeJustification';
+
     const exampleRows = [
       'EXAMPLE-DELETE-THIS-ROW,example-john@company.com,https://example.com/evidence1,"DELETE THIS EXAMPLE ROW BEFORE UPLOAD"',
-      'EXAMPLE-DELETE-THIS-ROW,example-jane@company.com,,"DELETE THIS EXAMPLE ROW BEFORE UPLOAD"'
+      'EXAMPLE-DELETE-THIS-ROW,example-jane@company.com,,"DELETE THIS EXAMPLE ROW BEFORE UPLOAD"',
     ].join('\n');
 
     return headerComments + '\n' + headers + '\n' + exampleRows;
@@ -116,7 +117,7 @@ export class BulkIssuanceService {
    * Parse CSV content into rows respecting RFC 4180 quoting rules.
    * Handles quoted fields that may contain commas, newlines, or escaped quotes.
    * Comment lines (starting with #) are skipped.
-   * 
+   *
    * @param content - Full CSV content string
    * @returns Array of rows, each row is an array of field strings
    */
@@ -181,12 +182,15 @@ export class BulkIssuanceService {
 
   /**
    * Create a new bulk issuance session from uploaded CSV
-   * 
+   *
    * @param csvContent - Raw CSV file content
    * @param issuerId - User ID of the issuer creating the session
    * @returns PreviewData with validation results
    */
-  async createSession(csvContent: string, issuerId: string): Promise<PreviewData> {
+  async createSession(
+    csvContent: string,
+    issuerId: string,
+  ): Promise<PreviewData> {
     const sessionId = randomUUID();
     const createdAt = new Date();
     const expiresAt = new Date(createdAt.getTime() + this.SESSION_TTL_MS);
@@ -198,12 +202,14 @@ export class BulkIssuanceService {
     const parsedRows = this.parseCsvContent(cleanContent);
 
     if (parsedRows.length < 2) {
-      throw new BadRequestException('CSV file must contain header and at least one data row');
+      throw new BadRequestException(
+        'CSV file must contain header and at least one data row',
+      );
     }
 
     const headers = parsedRows[0];
     const requiredHeaders = ['badgeTemplateId', 'recipientEmail'];
-    
+
     for (const required of requiredHeaders) {
       if (!headers.includes(required)) {
         throw new BadRequestException(`Missing required header: ${required}`);
@@ -214,7 +220,7 @@ export class BulkIssuanceService {
     const dataLineCount = parsedRows.length - 1;
     if (dataLineCount > BulkIssuanceService.MAX_ROWS) {
       throw new BadRequestException(
-        `CSV contains ${dataLineCount} data rows, exceeding the maximum of ${BulkIssuanceService.MAX_ROWS}. Please reduce the number of rows.`
+        `CSV contains ${dataLineCount} data rows, exceeding the maximum of ${BulkIssuanceService.MAX_ROWS}. Please reduce the number of rows.`,
       );
     }
 
@@ -223,68 +229,83 @@ export class BulkIssuanceService {
     const rows: PreviewData['rows'] = [];
 
     // Wrap validation in a database transaction for consistency (ARCH-C4)
-    const { txValidRows, txErrors, txRows } = await this.prisma.$transaction(async (tx) => {
-      const localValidRows: any[] = [];
-      const localErrors: SessionError[] = [];
-      const localRows: PreviewData['rows'] = [];
+    const { txValidRows, txErrors, txRows } = await this.prisma.$transaction(
+      async (tx) => {
+        const localValidRows: any[] = [];
+        const localErrors: SessionError[] = [];
+        const localRows: PreviewData['rows'] = [];
 
-      for (let i = 1; i < parsedRows.length; i++) {
-        const rowNumber = i + 1;
-        const values = parsedRows[i];
-        
-        const row: Record<string, string> = {};
-        headers.forEach((header, idx) => {
-          row[header] = values[idx] || '';
-        });
+        for (let i = 1; i < parsedRows.length; i++) {
+          const rowNumber = i + 1;
+          const values = parsedRows[i];
 
-        // XSS Sanitize text fields BEFORE validation (ARCH-C7)
-        row.narrativeJustification = this.csvValidation.sanitizeTextInput(row.narrativeJustification || '');
-        row.badgeTemplateId = this.csvValidation.sanitizeTextInput(row.badgeTemplateId || '');
-        row.evidenceUrl = this.csvValidation.sanitizeTextInput(row.evidenceUrl || '');
-
-        // Validate within transaction context (ARCH-C4)
-        const rowValidation = await this.csvValidation.validateRowInTransaction(row, tx);
-
-        if (!rowValidation.valid) {
-          const errorMsg = rowValidation.errors.join('; ');
-          localErrors.push({
-            rowNumber,
-            badgeTemplateId: row.badgeTemplateId,
-            recipientEmail: row.recipientEmail,
-            message: errorMsg,
+          const row: Record<string, string> = {};
+          headers.forEach((header, idx) => {
+            row[header] = values[idx] || '';
           });
-          localRows.push({
-            rowNumber,
-            badgeTemplateId: row.badgeTemplateId,
-            recipientEmail: row.recipientEmail,
-            evidenceUrl: row.evidenceUrl,
-            isValid: false,
-            error: errorMsg,
-          });
-        } else {
-          localValidRows.push(row);
-          localRows.push({
-            rowNumber,
-            badgeTemplateId: row.badgeTemplateId,
-            recipientEmail: row.recipientEmail,
-            evidenceUrl: row.evidenceUrl,
-            isValid: true,
-          });
+
+          // XSS Sanitize text fields BEFORE validation (ARCH-C7)
+          row.narrativeJustification = this.csvValidation.sanitizeTextInput(
+            row.narrativeJustification || '',
+          );
+          row.badgeTemplateId = this.csvValidation.sanitizeTextInput(
+            row.badgeTemplateId || '',
+          );
+          row.evidenceUrl = this.csvValidation.sanitizeTextInput(
+            row.evidenceUrl || '',
+          );
+
+          // Validate within transaction context (ARCH-C4)
+          const rowValidation =
+            await this.csvValidation.validateRowInTransaction(row, tx);
+
+          if (!rowValidation.valid) {
+            const errorMsg = rowValidation.errors.join('; ');
+            localErrors.push({
+              rowNumber,
+              badgeTemplateId: row.badgeTemplateId,
+              recipientEmail: row.recipientEmail,
+              message: errorMsg,
+            });
+            localRows.push({
+              rowNumber,
+              badgeTemplateId: row.badgeTemplateId,
+              recipientEmail: row.recipientEmail,
+              evidenceUrl: row.evidenceUrl,
+              isValid: false,
+              error: errorMsg,
+            });
+          } else {
+            localValidRows.push(row);
+            localRows.push({
+              rowNumber,
+              badgeTemplateId: row.badgeTemplateId,
+              recipientEmail: row.recipientEmail,
+              evidenceUrl: row.evidenceUrl,
+              isValid: true,
+            });
+          }
         }
-      }
 
-      return { txValidRows: localValidRows, txErrors: localErrors, txRows: localRows };
-    }, {
-      isolationLevel: 'ReadCommitted',
-      timeout: 10000,
-    });
+        return {
+          txValidRows: localValidRows,
+          txErrors: localErrors,
+          txRows: localRows,
+        };
+      },
+      {
+        isolationLevel: 'ReadCommitted',
+        timeout: 10000,
+      },
+    );
 
     // Copy transaction results
     validRows.push(...txValidRows);
     errors.push(...txErrors);
     rows.push(...txRows);
 
-    const status = validRows.length > 0 ? SessionStatus.VALIDATED : SessionStatus.FAILED;
+    const status =
+      validRows.length > 0 ? SessionStatus.VALIDATED : SessionStatus.FAILED;
 
     // Store session in database (Finding #1: persistent storage)
     await this.prisma.bulkIssuanceSession.create({
@@ -304,7 +325,7 @@ export class BulkIssuanceService {
 
     this.logger.log(
       `Created bulk issuance session ${sessionId} for user ${issuerId}: ` +
-      `${validRows.length} valid, ${errors.length} errors`
+        `${validRows.length} valid, ${errors.length} errors`,
     );
 
     return {
@@ -335,26 +356,33 @@ export class BulkIssuanceService {
 
     // Check expiration
     if (new Date() > session.expiresAt) {
-      await this.prisma.bulkIssuanceSession.delete({ where: { id: sessionId } });
+      await this.prisma.bulkIssuanceSession.delete({
+        where: { id: sessionId },
+      });
       throw new NotFoundException(`Session expired: ${sessionId}`);
     }
 
     // CRITICAL: Validate ownership (IDOR prevention - ARCH-C2)
     if (session.issuerId !== currentUserId) {
       this.logger.warn(
-        `IDOR attempt: User ${currentUserId} tried to access session ${sessionId} owned by ${session.issuerId}`
+        `IDOR attempt: User ${currentUserId} tried to access session ${sessionId} owned by ${session.issuerId}`,
       );
-      throw new ForbiddenException('You do not have permission to access this session');
+      throw new ForbiddenException(
+        'You do not have permission to access this session',
+      );
     }
 
     return session;
   }
 
-  async getPreviewData(sessionId: string, currentUserId: string): Promise<PreviewData> {
+  async getPreviewData(
+    sessionId: string,
+    currentUserId: string,
+  ): Promise<PreviewData> {
     const session = await this.loadSession(sessionId, currentUserId);
 
-    const sessionErrors = (session.errors as any) as SessionError[];
-    const sessionRows = (session.rows as any) as PreviewData['rows'];
+    const sessionErrors = session.errors as any as SessionError[];
+    const sessionRows = session.rows as any as PreviewData['rows'];
 
     return {
       sessionId: session.id,
@@ -371,20 +399,27 @@ export class BulkIssuanceService {
 
   /**
    * Confirm and execute bulk issuance
-   * 
+   *
    * CRITICAL: Validates ownership to prevent IDOR attacks (ARCH-C2)
    */
-  async confirmBulkIssuance(sessionId: string, currentUserId: string): Promise<{
+  async confirmBulkIssuance(
+    sessionId: string,
+    currentUserId: string,
+  ): Promise<{
     success: boolean;
     processed: number;
     failed: number;
-    results: Array<{ row: number; status: 'success' | 'failed'; error?: string }>;
+    results: Array<{
+      row: number;
+      status: 'success' | 'failed';
+      error?: string;
+    }>;
   }> {
     const session = await this.loadSession(sessionId, currentUserId);
 
-    if (session.status !== SessionStatus.VALIDATED) {
+    if ((session.status as SessionStatus) !== SessionStatus.VALIDATED) {
       throw new BadRequestException(
-        `Session is not ready for confirmation. Status: ${session.status}`
+        `Session is not ready for confirmation. Status: ${session.status}`,
       );
     }
 
@@ -394,8 +429,12 @@ export class BulkIssuanceService {
       data: { status: SessionStatus.PROCESSING },
     });
 
-    const sessionValidRows = (session.validRows as any) as any[];
-    const results: Array<{ row: number; status: 'success' | 'failed'; error?: string }> = [];
+    const sessionValidRows = session.validRows as any as any[];
+    const results: Array<{
+      row: number;
+      status: 'success' | 'failed';
+      error?: string;
+    }> = [];
     let processed = 0;
     let failed = 0;
 
@@ -409,12 +448,12 @@ export class BulkIssuanceService {
         //   recipientEmail: row.recipientEmail,
         //   evidenceUrl: row.evidenceUrl,
         // }, currentUserId);
-        
+
         processed++;
         results.push({ row: i + 2, status: 'success' });
-        
+
         this.logger.debug(
-          `Issued badge ${i + 1}/${sessionValidRows.length} to ${row.recipientEmail}`
+          `Issued badge ${i + 1}/${sessionValidRows.length} to ${row.recipientEmail}`,
         );
       } catch (error) {
         failed++;
@@ -424,7 +463,7 @@ export class BulkIssuanceService {
           error: error.message,
         });
         this.logger.error(
-          `Failed to issue badge to ${row.recipientEmail}: ${error.message}`
+          `Failed to issue badge to ${row.recipientEmail}: ${error.message}`,
         );
       }
     }
@@ -436,7 +475,7 @@ export class BulkIssuanceService {
     });
 
     this.logger.log(
-      `Completed bulk issuance session ${sessionId}: ${processed} success, ${failed} failed`
+      `Completed bulk issuance session ${sessionId}: ${processed} success, ${failed} failed`,
     );
 
     return {
@@ -451,10 +490,13 @@ export class BulkIssuanceService {
    * Get error report for a session as CSV content
    * Uses sanitized output to prevent CSV injection
    */
-  async getErrorReportCsv(sessionId: string, currentUserId: string): Promise<string> {
+  async getErrorReportCsv(
+    sessionId: string,
+    currentUserId: string,
+  ): Promise<string> {
     const session = await this.loadSession(sessionId, currentUserId);
 
-    const sessionErrors = (session.errors as any) as SessionError[];
+    const sessionErrors = session.errors as any as SessionError[];
 
     if (!sessionErrors || sessionErrors.length === 0) {
       throw new BadRequestException('No errors found in this session');
@@ -462,7 +504,7 @@ export class BulkIssuanceService {
 
     // Generate sanitized CSV (ARCH-C1: CSV injection prevention)
     const headers = ['Row', 'BadgeTemplateId', 'RecipientEmail', 'Error'];
-    const rows = sessionErrors.map(error => ({
+    const rows = sessionErrors.map((error) => ({
       Row: String(error.rowNumber),
       BadgeTemplateId: error.badgeTemplateId,
       RecipientEmail: error.recipientEmail,
