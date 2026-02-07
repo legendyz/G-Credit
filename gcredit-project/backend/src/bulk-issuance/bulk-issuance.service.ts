@@ -175,7 +175,7 @@ export class BulkIssuanceService {
     const cleanContent = csvContent.replace(/^\uFEFF/, '');
 
     // Parse and validate CSV
-    const lines = cleanContent.split('\n')
+    const lines = cleanContent.split(/\r?\n/)
       .filter(line => line.trim() && !line.trim().startsWith('#'));
     
     if (lines.length < 2) {
@@ -203,45 +203,67 @@ export class BulkIssuanceService {
     const errors: SessionError[] = [];
     const rows: PreviewData['rows'] = [];
 
-    for (let i = 1; i < lines.length; i++) {
-      const rowNumber = i + 1;
-      const values = this.parseCsvLine(lines[i]);
-      
-      const row: Record<string, string> = {};
-      headers.forEach((header, idx) => {
-        row[header] = values[idx] || '';
-      });
+    // Wrap validation in a database transaction for consistency (ARCH-C4)
+    const { txValidRows, txErrors, txRows } = await this.prisma.$transaction(async (tx) => {
+      const localValidRows: any[] = [];
+      const localErrors: SessionError[] = [];
+      const localRows: PreviewData['rows'] = [];
 
-      // Validate all fields using validateRow
-      const rowValidation = await this.csvValidation.validateRow(row);
+      for (let i = 1; i < lines.length; i++) {
+        const rowNumber = i + 1;
+        const values = this.parseCsvLine(lines[i]);
+        
+        const row: Record<string, string> = {};
+        headers.forEach((header, idx) => {
+          row[header] = values[idx] || '';
+        });
 
-      if (!rowValidation.valid) {
-        const errorMsg = rowValidation.errors.join('; ');
-        errors.push({
-          rowNumber,
-          badgeTemplateId: row.badgeTemplateId,
-          recipientEmail: row.recipientEmail,
-          message: errorMsg,
-        });
-        rows.push({
-          rowNumber,
-          badgeTemplateId: row.badgeTemplateId,
-          recipientEmail: row.recipientEmail,
-          evidenceUrl: row.evidenceUrl,
-          isValid: false,
-          error: errorMsg,
-        });
-      } else {
-        validRows.push(row);
-        rows.push({
-          rowNumber,
-          badgeTemplateId: row.badgeTemplateId,
-          recipientEmail: row.recipientEmail,
-          evidenceUrl: row.evidenceUrl,
-          isValid: true,
-        });
+        // XSS Sanitize text fields BEFORE validation (ARCH-C7)
+        row.narrativeJustification = this.csvValidation.sanitizeTextInput(row.narrativeJustification || '');
+        row.badgeTemplateId = this.csvValidation.sanitizeTextInput(row.badgeTemplateId || '');
+        row.evidenceUrl = this.csvValidation.sanitizeTextInput(row.evidenceUrl || '');
+
+        // Validate within transaction context (ARCH-C4)
+        const rowValidation = await this.csvValidation.validateRowInTransaction(row, tx);
+
+        if (!rowValidation.valid) {
+          const errorMsg = rowValidation.errors.join('; ');
+          localErrors.push({
+            rowNumber,
+            badgeTemplateId: row.badgeTemplateId,
+            recipientEmail: row.recipientEmail,
+            message: errorMsg,
+          });
+          localRows.push({
+            rowNumber,
+            badgeTemplateId: row.badgeTemplateId,
+            recipientEmail: row.recipientEmail,
+            evidenceUrl: row.evidenceUrl,
+            isValid: false,
+            error: errorMsg,
+          });
+        } else {
+          localValidRows.push(row);
+          localRows.push({
+            rowNumber,
+            badgeTemplateId: row.badgeTemplateId,
+            recipientEmail: row.recipientEmail,
+            evidenceUrl: row.evidenceUrl,
+            isValid: true,
+          });
+        }
       }
-    }
+
+      return { txValidRows: localValidRows, txErrors: localErrors, txRows: localRows };
+    }, {
+      isolationLevel: 'ReadCommitted',
+      timeout: 10000,
+    });
+
+    // Copy transaction results
+    validRows.push(...txValidRows);
+    errors.push(...txErrors);
+    rows.push(...txRows);
 
     // Store session
     this.sessions.set(sessionId, {

@@ -139,11 +139,13 @@ stories:
   "8.2":
     id: "8.2"
     title: "CSV Upload & Parsing"
-    status: backlog
+    status: review
     priority: HIGH
     estimated_hours: 11.5h  # 6h baseline + 4.5h security + 1h UX
-    actual_hours: 0h
-    assigned_to: TBD
+    actual_hours: 4h
+    assigned_to: dev-agent
+    start_date: "2026-02-07"
+    end_date: "2026-02-07"
     dependencies: ["8.1"]
     story_file: "sprint-9/8-2-csv-upload-parsing.md"
     security_critical: true
@@ -436,8 +438,8 @@ risks:
 goal_progress:
   epic_8_mvp:
     target: "Complete Stories 8.1-8.4 (TD-013/TD-014 embedded)"
-    current: "Story 8.1 done, Story 8.2 dev prompt ready"
-    percentage: 20
+    current: "Story 8.1 done, Story 8.2 in review, Story 8.3 next"
+    percentage: 40
     on_track: true
   
   tech_debt_cleanup:

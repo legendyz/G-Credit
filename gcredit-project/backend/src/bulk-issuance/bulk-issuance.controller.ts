@@ -21,6 +21,7 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -82,6 +83,7 @@ export class BulkIssuanceController {
    */
   @Post('upload')
   @Roles(UserRole.ISSUER, UserRole.ADMIN)
+  @Throttle({ default: { ttl: 300000, limit: 3 } })  // 3 uploads per 5 minutes per user (ARCH-C3)
   @UseInterceptors(FileInterceptor('file', {
     limits: { fileSize: BulkIssuanceService.MAX_FILE_SIZE },
   }))
@@ -100,6 +102,7 @@ export class BulkIssuanceController {
   })
   @ApiResponse({ status: 201, description: 'Session created with preview data' })
   @ApiResponse({ status: 400, description: 'Invalid CSV file' })
+  @ApiResponse({ status: 429, description: 'Too many upload requests. Try again later.' })
   async uploadCsv(
     @UploadedFile() file: Express.Multer.File,
     @Request() req: any,

@@ -369,4 +369,135 @@ describe('CsvValidationService', () => {
       expect(result.error).toContain('Example');
     });
   });
+
+  describe('sanitizeTextInput (ARCH-C7 XSS Prevention)', () => {
+    it('should strip script tags from text', () => {
+      const result = service.sanitizeTextInput("<script>alert('xss')</script>");
+      expect(result).toBe('');
+    });
+
+    it('should strip HTML tags and preserve text content', () => {
+      const result = service.sanitizeTextInput('<b>bold</b> text');
+      expect(result).toBe('bold text');
+    });
+
+    it('should handle nested HTML with script', () => {
+      const result = service.sanitizeTextInput('<div><script>x</script></div>');
+      expect(result).toBe('');
+    });
+
+    it('should preserve clean text without modification', () => {
+      const result = service.sanitizeTextInput('This is clean text with no HTML');
+      expect(result).toBe('This is clean text with no HTML');
+    });
+
+    it('should handle null/empty safely', () => {
+      expect(service.sanitizeTextInput('')).toBe('');
+      expect(service.sanitizeTextInput(null as any)).toBeNull();
+    });
+  });
+
+  describe('validateRowInTransaction (ARCH-C4)', () => {
+    it('should validate valid row within transaction', async () => {
+      const txClient = {
+        badgeTemplate: { findFirst: jest.fn().mockResolvedValue({ id: 'tpl-1', status: 'ACTIVE' }) },
+        user: { findFirst: jest.fn().mockResolvedValue({ id: 'u-1', isActive: true }) },
+      };
+
+      const result = await service.validateRowInTransaction({
+        badgeTemplateId: 'leadership-excellence',
+        recipientEmail: 'john@company.com',
+        evidenceUrl: 'https://docs.example.com',
+        narrativeJustification: 'Great work',
+      }, txClient);
+
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should use transaction client for DB queries', async () => {
+      const txClient = {
+        badgeTemplate: { findFirst: jest.fn().mockResolvedValue({ id: 'tpl-1', status: 'ACTIVE' }) },
+        user: { findFirst: jest.fn().mockResolvedValue({ id: 'u-1', isActive: true }) },
+      };
+
+      await service.validateRowInTransaction({
+        badgeTemplateId: 'tpl-1',
+        recipientEmail: 'john@company.com',
+        evidenceUrl: '',
+        narrativeJustification: '',
+      }, txClient);
+
+      expect(txClient.badgeTemplate.findFirst).toHaveBeenCalled();
+      expect(txClient.user.findFirst).toHaveBeenCalled();
+    });
+
+    it('should reject invalid template in transaction', async () => {
+      const txClient = {
+        badgeTemplate: { findFirst: jest.fn().mockResolvedValue(null) },
+        user: { findFirst: jest.fn().mockResolvedValue({ id: 'u-1', isActive: true }) },
+      };
+
+      const result = await service.validateRowInTransaction({
+        badgeTemplateId: 'nonexistent',
+        recipientEmail: 'john@company.com',
+        evidenceUrl: '',
+        narrativeJustification: '',
+      }, txClient);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('not found'))).toBe(true);
+    });
+
+    it('should reject invalid email in transaction', async () => {
+      const txClient = {
+        badgeTemplate: { findFirst: jest.fn().mockResolvedValue({ id: 'tpl-1', status: 'ACTIVE' }) },
+        user: { findFirst: jest.fn().mockResolvedValue(null) },
+      };
+
+      const result = await service.validateRowInTransaction({
+        badgeTemplateId: 'tpl-1',
+        recipientEmail: 'unknown@company.com',
+        evidenceUrl: '',
+        narrativeJustification: '',
+      }, txClient);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('No active registered user'))).toBe(true);
+    });
+
+    it('should reject example data in transaction', async () => {
+      const txClient = {
+        badgeTemplate: { findFirst: jest.fn() },
+        user: { findFirst: jest.fn() },
+      };
+
+      const result = await service.validateRowInTransaction({
+        badgeTemplateId: 'EXAMPLE-DELETE-THIS-ROW',
+        recipientEmail: 'example-john@company.com',
+        evidenceUrl: '',
+        narrativeJustification: '',
+      }, txClient);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('Example'))).toBe(true);
+    });
+
+    it('should collect multiple errors in transaction', async () => {
+      const txClient = {
+        badgeTemplate: { findFirst: jest.fn().mockResolvedValue(null) },
+        user: { findFirst: jest.fn().mockResolvedValue(null) },
+      };
+
+      const result = await service.validateRowInTransaction({
+        badgeTemplateId: '',
+        recipientEmail: 'not-an-email',
+        evidenceUrl: 'ftp://bad',
+        narrativeJustification: 'a'.repeat(501),
+      }, txClient);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.length).toBeGreaterThanOrEqual(3);
+    });
+  });
 });

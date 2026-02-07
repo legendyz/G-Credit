@@ -33,7 +33,14 @@ export function BulkIssuancePage() {
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileSelected, setFileSelected] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const [uploadResult, setUploadResult] = useState<{
+    totalRows: number;
+    validRows: number;
+    errorRows: number;
+    sessionId: string;
+  } | null>(null);
 
   /**
    * Download CSV template from backend
@@ -98,6 +105,7 @@ export function BulkIssuancePage() {
     if (!validateFile(file)) return;
 
     setIsUploading(true);
+    setUploadResult(null);
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -115,28 +123,40 @@ export function BulkIssuancePage() {
 
       const data = await response.json();
       toast.success(`CSV uploaded: ${data.validRows} valid, ${data.errorRows} errors`);
-      navigate(`/admin/bulk-issuance/preview/${data.sessionId}`);
+
+      if (data.errorRows === 0) {
+        // No errors — auto-navigate to preview
+        navigate(`/admin/bulk-issuance/preview/${data.sessionId}`);
+      } else {
+        // Errors found — show validation summary
+        setUploadResult({
+          totalRows: data.totalRows,
+          validRows: data.validRows,
+          errorRows: data.errorRows,
+          sessionId: data.sessionId,
+        });
+      }
     } catch (error: any) {
       toast.error(error.message || 'Failed to upload CSV. Please try again.');
       console.error('Upload error:', error);
     } finally {
       setIsUploading(false);
-      setSelectedFile(null);
     }
   }, [navigate, validateFile]);
 
   /**
-   * Handle file input change
+   * Handle file input change — select file but don't auto-upload
    */
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedFile(file);
-      handleUpload(file);
+      setFileSelected(true);
+      setUploadResult(null);
     }
     // Reset input so same file can be selected again
     e.target.value = '';
-  }, [handleUpload]);
+  }, []);
 
   /**
    * Handle drag events for drop zone
@@ -159,9 +179,10 @@ export function BulkIssuancePage() {
     const file = e.dataTransfer.files?.[0];
     if (file) {
       setSelectedFile(file);
-      handleUpload(file);
+      setFileSelected(true);
+      setUploadResult(null);
     }
-  }, [handleUpload]);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -241,12 +262,14 @@ export function BulkIssuancePage() {
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
           className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
-                      transition-colors min-h-[120px] flex flex-col items-center justify-center
+                      transition-all duration-200 min-h-[120px] flex flex-col items-center justify-center
+                      ${isUploading ? 'opacity-50 pointer-events-none' : ''}
                       ${dragActive 
-                        ? 'border-blue-500 bg-blue-50' 
-                        : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
-                      }
-                      ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                        ? 'border-blue-500 bg-blue-50 scale-[1.02] shadow-lg' 
+                        : fileSelected
+                          ? 'border-green-500 bg-green-50'
+                          : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+                      }`}
           role="button"
           aria-label="Upload CSV file"
           tabIndex={0}
@@ -276,6 +299,70 @@ export function BulkIssuancePage() {
             </>
           )}
         </div>
+
+        {/* File Preview (UX-P1-4) */}
+        {selectedFile && !isUploading && (
+          <div className="mt-3 flex items-center gap-2 text-sm text-green-700 bg-green-50 rounded-lg px-3 py-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span data-testid="file-preview">
+              {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+            </span>
+          </div>
+        )}
+
+        {/* Upload Button — explicit action after file selection */}
+        <button
+          onClick={() => selectedFile && handleUpload(selectedFile)}
+          disabled={!selectedFile || isUploading}
+          className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white 
+                     rounded-lg hover:bg-green-700 active:bg-green-800 
+                     disabled:opacity-50 disabled:cursor-not-allowed
+                     transition-colors font-medium text-sm min-h-[44px]"
+          aria-label="Upload CSV"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          {isUploading ? 'Uploading...' : 'Upload CSV'}
+        </button>
+
+        {/* Validation Summary — shown when upload has errors */}
+        {uploadResult && (
+          <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-4" data-testid="validation-summary">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-lg">⚠️</span>
+              <h4 className="text-sm font-semibold text-amber-800">Validation Results</h4>
+            </div>
+            <p className="text-sm text-amber-700 mb-3">
+              ✅ {uploadResult.validRows} of {uploadResult.totalRows} badges valid
+              {' · '}
+              ❌ {uploadResult.errorRows} errors found
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => navigate(`/admin/bulk-issuance/preview/${uploadResult.sessionId}`)}
+                className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-md 
+                           hover:bg-blue-700 text-sm font-medium transition-colors"
+              >
+                View Preview & Fix Errors →
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedFile(null);
+                  setFileSelected(false);
+                  setUploadResult(null);
+                }}
+                className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-gray-300 
+                           text-gray-700 rounded-md hover:bg-gray-50 text-sm font-medium transition-colors"
+              >
+                Upload New File
+              </button>
+            </div>
+          </div>
+        )}
 
         <input
           ref={fileInputRef}

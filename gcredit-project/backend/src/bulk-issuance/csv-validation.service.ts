@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
+import sanitize from 'sanitize-html';
 
 /**
  * CSV Validation Service
@@ -74,6 +75,21 @@ export class CsvValidationService {
     return value.startsWith('EXAMPLE-') || 
            value.includes('DELETE-THIS-ROW') ||
            value.startsWith('example-');
+  }
+
+  /**
+   * Sanitize text input to prevent XSS attacks (ARCH-C7)
+   * Strips ALL HTML tags and attributes from text fields
+   * 
+   * @param value - The text value to sanitize
+   * @returns Sanitized text with all HTML removed
+   */
+  sanitizeTextInput(value: string): string {
+    if (!value) return value;
+    return sanitize(value, {
+      allowedTags: [],
+      allowedAttributes: {},
+    });
   }
 
   /**
@@ -258,6 +274,66 @@ export class CsvValidationService {
     const notesResult = this.validateNotes(row.narrativeJustification);
     if (!notesResult.valid) errors.push(notesResult.error!);
     
+    return { valid: errors.length === 0, errors };
+  }
+
+  /**
+   * Validate a row using a transaction-scoped Prisma client (ARCH-C4)
+   * Ensures consistent reads during batch validation
+   * 
+   * @param row - Record with CSV field values
+   * @param tx - Transaction-scoped Prisma client
+   * @returns Validation result with array of error messages
+   */
+  async validateRowInTransaction(
+    row: Record<string, string>,
+    tx: { badgeTemplate: { findFirst: Function }; user: { findFirst: Function } },
+  ): Promise<{ valid: boolean; errors: string[] }> {
+    const errors: string[] = [];
+
+    // Badge template validation within transaction
+    if (!row.badgeTemplateId) {
+      errors.push('Badge template ID is required');
+    } else if (this.isExampleData(row.badgeTemplateId)) {
+      errors.push('Example row detected. Please delete example rows and add your real data.');
+    } else {
+      const template = await tx.badgeTemplate.findFirst({
+        where: {
+          OR: [{ id: row.badgeTemplateId }, { name: row.badgeTemplateId }],
+          status: 'ACTIVE',
+        },
+      });
+      if (!template) {
+        errors.push(`Badge template "${row.badgeTemplateId}" not found or is not in ACTIVE status`);
+      }
+    }
+
+    // Recipient email validation within transaction
+    if (!row.recipientEmail) {
+      errors.push('Email is required');
+    } else if (row.recipientEmail.startsWith('example-') || row.recipientEmail.includes('@example.com')) {
+      errors.push('Example email detected. Please use a real email address.');
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(row.recipientEmail)) {
+        errors.push('Invalid email format');
+      } else {
+        const user = await tx.user.findFirst({
+          where: { email: row.recipientEmail, isActive: true },
+        });
+        if (!user) {
+          errors.push(`No active registered user found with email: ${row.recipientEmail}`);
+        }
+      }
+    }
+
+    // Non-DB validations (same as regular validateRow)
+    const urlResult = this.validateEvidenceUrl(row.evidenceUrl);
+    if (!urlResult.valid) errors.push(urlResult.error!);
+
+    const notesResult = this.validateNotes(row.narrativeJustification);
+    if (!notesResult.valid) errors.push(notesResult.error!);
+
     return { valid: errors.length === 0, errors };
   }
 

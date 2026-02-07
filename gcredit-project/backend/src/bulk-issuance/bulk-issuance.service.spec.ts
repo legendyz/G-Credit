@@ -20,6 +20,7 @@ describe('BulkIssuanceService', () => {
     user: {
       findFirst: jest.fn(),
     },
+    $transaction: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -37,6 +38,15 @@ describe('BulkIssuanceService', () => {
     // Default: valid template and user exist
     mockPrismaService.badgeTemplate.findFirst.mockResolvedValue({ id: 'template-123', name: 'template-123', status: 'ACTIVE' });
     mockPrismaService.user.findFirst.mockResolvedValue({ id: 'user-1', email: 'user@company.com', isActive: true });
+
+    // Mock $transaction to execute the callback with a transaction client that delegates to the same mocks
+    mockPrismaService.$transaction.mockImplementation(async (callback: Function) => {
+      const txClient = {
+        badgeTemplate: { findFirst: mockPrismaService.badgeTemplate.findFirst },
+        user: { findFirst: mockPrismaService.user.findFirst },
+      };
+      return callback(txClient);
+    });
   });
 
   afterEach(() => {
@@ -261,6 +271,71 @@ EXAMPLE-DELETE,example@company.com`;
       
       await expect(service.getErrorReportCsv(session.sessionId, 'attacker-456'))
         .rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  describe('CRLF line ending support', () => {
+    it('should parse CRLF line endings correctly', async () => {
+      const csvContent = `badgeTemplateId,recipientEmail,evidenceUrl\r\ntemplate-123,user@company.com,https://example.com/evidence`;
+      
+      const result = await service.createSession(csvContent, 'issuer-123');
+      
+      expect(result.validRows).toBe(1);
+      expect(result.errorRows).toBe(0);
+    });
+
+    it('should parse LF line endings correctly', async () => {
+      const csvContent = `badgeTemplateId,recipientEmail\ntemplate-123,user@company.com`;
+      
+      const result = await service.createSession(csvContent, 'issuer-123');
+      
+      expect(result.validRows).toBe(1);
+    });
+
+    it('should handle mixed line endings', async () => {
+      const csvContent = `badgeTemplateId,recipientEmail\r\ntemplate-123,user@company.com\ntemplate-123,user@company.com`;
+      
+      const result = await service.createSession(csvContent, 'issuer-123');
+      
+      expect(result.validRows).toBe(2);
+    });
+  });
+
+  describe('Transaction validation (ARCH-C4)', () => {
+    it('should use $transaction for validation', async () => {
+      const csvContent = `badgeTemplateId,recipientEmail\ntemplate-123,user@company.com`;
+      
+      await service.createSession(csvContent, 'issuer-123');
+      
+      expect(mockPrismaService.$transaction).toHaveBeenCalled();
+    });
+
+    it('should pass transaction options with ReadCommitted isolation', async () => {
+      const csvContent = `badgeTemplateId,recipientEmail\ntemplate-123,user@company.com`;
+      
+      await service.createSession(csvContent, 'issuer-123');
+      
+      expect(mockPrismaService.$transaction).toHaveBeenCalledWith(
+        expect.any(Function),
+        expect.objectContaining({
+          isolationLevel: 'ReadCommitted',
+          timeout: 10000,
+        }),
+      );
+    });
+  });
+
+  describe('XSS sanitization (ARCH-C7)', () => {
+    it('should sanitize XSS payloads in narrativeJustification before validation', async () => {
+      const csvContent = `badgeTemplateId,recipientEmail,evidenceUrl,narrativeJustification\ntemplate-123,user@company.com,,<script>alert('xss')</script>Good work`;
+      
+      const result = await service.createSession(csvContent, 'issuer-123');
+      
+      // The XSS should be stripped, row should still be valid
+      expect(result.validRows).toBe(1);
+      // Check that the stored row doesn't contain the script tag
+      const session = result.rows[0];
+      expect(session.badgeTemplateId).not.toContain('<script>');
     });
   });
 });

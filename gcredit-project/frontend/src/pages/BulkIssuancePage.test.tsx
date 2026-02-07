@@ -149,4 +149,114 @@ describe('BulkIssuancePage', () => {
     expect(screen.getByText(/open in excel or google sheets/i)).toBeInTheDocument();
     expect(screen.getByText(/delete the example rows/i)).toBeInTheDocument();
   });
+
+  it('upload button is disabled when no file selected', () => {
+    renderPage();
+    
+    const uploadButton = screen.getByRole('button', { name: 'Upload CSV' });
+    expect(uploadButton).toBeDisabled();
+  });
+
+  it('shows file preview with name and size when file selected', async () => {
+    renderPage();
+
+    const dropZone = screen.getByRole('button', { name: /upload csv file/i });
+    const file = new File(['badgeTemplateId,recipientEmail\ntest,test@test.com'], 'test.csv', { type: 'text/csv' });
+
+    // Simulate file input change via the hidden input
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    
+    // Use Object.defineProperty to set files
+    Object.defineProperty(fileInput, 'files', { value: [file], writable: false });
+    fireEvent.change(fileInput);
+
+    await waitFor(() => {
+      const preview = screen.getByTestId('file-preview');
+      expect(preview).toBeInTheDocument();
+      expect(preview.textContent).toContain('test.csv');
+    });
+  });
+
+  it('shows validation summary when upload has errors', async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        totalRows: 20,
+        validRows: 15,
+        errorRows: 5,
+        sessionId: 'session-123',
+        errors: [],
+      }),
+    });
+
+    renderPage();
+
+    // Simulate file selection
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(['data'], 'test.csv', { type: 'text/csv' });
+    Object.defineProperty(fileInput, 'files', { value: [file], writable: false });
+    fireEvent.change(fileInput);
+
+    // Click upload button
+    await waitFor(() => {
+      const uploadBtn = screen.getByRole('button', { name: 'Upload CSV' });
+      expect(uploadBtn).not.toBeDisabled();
+    });
+
+    const uploadBtn = screen.getByRole('button', { name: 'Upload CSV' });
+    fireEvent.click(uploadBtn);
+
+    await waitFor(() => {
+      const summary = screen.getByTestId('validation-summary');
+      expect(summary).toBeInTheDocument();
+      expect(summary.textContent).toContain('15 of 20');
+      expect(summary.textContent).toContain('5 errors');
+    });
+  });
+
+  it('auto-navigates when upload has no errors', async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        totalRows: 10,
+        validRows: 10,
+        errorRows: 0,
+        sessionId: 'session-456',
+        errors: [],
+      }),
+    });
+
+    renderPage();
+
+    // Simulate file selection
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(['data'], 'test.csv', { type: 'text/csv' });
+    Object.defineProperty(fileInput, 'files', { value: [file], writable: false });
+    fireEvent.change(fileInput);
+
+    await waitFor(() => {
+      const uploadBtn = screen.getByRole('button', { name: 'Upload CSV' });
+      expect(uploadBtn).not.toBeDisabled();
+    });
+
+    const uploadBtn = screen.getByRole('button', { name: 'Upload CSV' });
+    fireEvent.click(uploadBtn);
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/admin/bulk-issuance/preview/session-456');
+    });
+  });
+
+  it('drag-over state applies blue border classes', () => {
+    renderPage();
+    
+    const dropZone = screen.getByRole('button', { name: /upload csv file/i });
+
+    fireEvent.dragEnter(dropZone, {
+      dataTransfer: { files: [] },
+    });
+
+    expect(dropZone.className).toContain('border-blue-500');
+    expect(dropZone.className).toContain('bg-blue-50');
+  });
 });
