@@ -5,7 +5,7 @@
 **Sprint:** Sprint 9  
 **Priority:** P2  
 **Estimated Hours:** 8h (Phase 1: 4h + Phase 2: 4h)  
-**Actual Hours:** TBD  
+**Actual Hours:** 8h  
 **Dependencies:** [] (可与其他 Story 并行)  
 **Source:** Sprint 8 Technical Debt Review  
 **Category:** Code Quality
@@ -53,11 +53,11 @@ Sprint 8 cleared 17 P1 items. TD-015 is P2 but risks escalating to P1 in Sprint 
    - ESLint warning count reduced from 800 → ≤500 (55% total reduction)
 
 3. [x] **AC3: Zero Regressions**
-   - Full backend test suite passes (all existing tests)
-   - Full frontend test suite passes (all existing tests)
-   - All E2E tests pass
-   - 0 new test failures introduced
-   - Code passes `npx tsc --noEmit` type checking
+   - Full backend test suite passes (all existing tests) ✅
+   - Full frontend test suite passes (all existing tests) ✅
+   - All E2E tests pass ✅
+   - 0 new test failures introduced ✅
+   - ⚠️ `tsc --noEmit`: 124 test-only errors remain (pre-existing, not introduced by TD-015). All 14 src errors fixed via CI fixes. Tracked as TD-017 (Sprint 10, 5h).
 
 4. [x] **AC4: Documentation**
    - Warning reduction progress documented for Sprint 10
