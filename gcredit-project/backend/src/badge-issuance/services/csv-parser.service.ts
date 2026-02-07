@@ -27,7 +27,9 @@ export class CSVParserService {
       // Validate and transform rows
       return records.map((row, index) => this.validateRow(row, index + 2)); // +2 for header row
     } catch (error) {
-      throw new BadRequestException(`CSV parsing failed: ${error.message}`);
+      throw new BadRequestException(
+        `CSV parsing failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 

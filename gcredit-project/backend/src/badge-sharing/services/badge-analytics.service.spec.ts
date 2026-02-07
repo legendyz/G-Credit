@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ForbiddenException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { BadgeAnalyticsService } from './badge-analytics.service';
 import { PrismaService } from '../../common/prisma.service';
 
@@ -223,7 +224,7 @@ describe('BadgeAnalyticsService', () => {
           platform: 'email',
           sharedBy: 'user-123',
           recipientEmail: null,
-          metadata: null,
+          metadata: Prisma.JsonNull,
         },
       });
     });

@@ -450,11 +450,11 @@ export class BadgeIssuanceService {
     // Story 8.2: Filter by skills (template.skillIds contains any of the requested skills)
     if (query.skills && query.skills.length > 0) {
       where.template = {
-        ...where.template,
+        ...(where.template as Prisma.BadgeTemplateWhereInput),
         skillIds: {
           hasSome: query.skills,
         },
-      };
+      } as typeof where.template;
     }
 
     // Story 8.2: Filter by date range
@@ -579,11 +579,11 @@ export class BadgeIssuanceService {
     // Story 8.2: Filter by skills (template.skillIds contains any of the requested skills)
     if (query.skills && query.skills.length > 0) {
       where.template = {
-        ...where.template,
+        ...(where.template as Prisma.BadgeTemplateWhereInput),
         skillIds: {
           hasSome: query.skills,
         },
-      };
+      } as typeof where.template;
     }
 
     // Story 8.2: Filter by date range
@@ -896,11 +896,11 @@ export class BadgeIssuanceService {
     // Story 8.2: Filter by skills (template.skillIds contains any of the requested skills)
     if (query.skills && query.skills.length > 0) {
       where.template = {
-        ...where.template,
+        ...(where.template as Prisma.BadgeTemplateWhereInput),
         skillIds: {
           hasSome: query.skills,
         },
-      };
+      } as typeof where.template;
     }
 
     // Story 8.2: Filter by date range

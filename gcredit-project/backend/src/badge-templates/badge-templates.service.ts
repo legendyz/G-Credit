@@ -325,7 +325,8 @@ export class BadgeTemplatesService {
     if (updateDto.description) updateData.description = updateDto.description;
     if (updateDto.category) updateData.category = updateDto.category;
     if (updateDto.skillIds) updateData.skillIds = updateDto.skillIds;
-    if (updateDto.validityPeriod !== undefined) updateData.validityPeriod = updateDto.validityPeriod;
+    if (updateDto.validityPeriod !== undefined)
+      updateData.validityPeriod = updateDto.validityPeriod;
     if (updateDto.status) updateData.status = updateDto.status;
     if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
 
