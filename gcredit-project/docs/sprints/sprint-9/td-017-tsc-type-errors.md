@@ -4,7 +4,7 @@
 **Epic:** Technical Debt Cleanup  
 **Sprint:** Deferred to Sprint 10  
 **Priority:** P2  
-**Estimated Hours:** 5.5h (Phase A: 3.5h src+test, Phase B: 2h verification+CI)  
+**Estimated Hours:** 5h (Phase A: 3h test files only, Phase B: 2h verification+CI)  
 **Dependencies:** [] (可与其他 Story 并行)  
 **Source:** TD-015 SM Acceptance Review (2026-02-07)  
 **Category:** Type Safety
@@ -37,9 +37,9 @@ Dev fixed **12 source file errors** as part of CI pipeline repair (commit `5deac
 - `badge-analytics.service.spec.ts`: updated test expectation for `Prisma.JsonNull`
 - `badge-templates.service.ts`: Prettier formatting fix
 
-**Post-fix baseline: 126 errors** (138 → 126, src 14→2, test 124 unchanged)
+**Post-fix baseline: 124 errors** (138 → 126 → 124, all src errors resolved)
 
-Remaining 2 src errors in `csv-parser.service.ts` (TS2345: `unknown` → `Record<string, string>`).
+All remaining errors are in test files only.
 
 ### Why This Was Not Caught Earlier
 
@@ -93,12 +93,9 @@ Remaining 2 src errors in `csv-parser.service.ts` (TS2345: `unknown` → `Record
 | `badge-issuance-teams.integration.spec.ts` | 5 | TS2339, TS2322 |
 | Other files (18) | 20 | Mixed |
 
-### Remaining Source File Errors (2 errors)
+### Remaining Source File Errors
 
-| File | Line | Error | Description |
-|------|------|-------|-------------|
-| `csv-parser.service.ts` | 25 | TS2345 | `unknown` not assignable to `Record<string, string>` |
-| `csv-parser.service.ts` | 28 | TS2345 | `unknown` not assignable to `Record<string, string>` |
+**None** — all 14 original src errors resolved via CI fixes (commits `5deace0`, `769a151`).
 
 ### TD-015 Introduced Errors (9 errors — RequestWithUser mocks)
 
@@ -113,9 +110,10 @@ These errors are a side-effect of TD-015's improvement: replacing `req: any` wit
 
 ## Acceptance Criteria
 
-1. [ ] **AC1: Fix all source file errors (2 errors → 0)**
-   - `csv-parser.service.ts` argument types fixed (cast `unknown` → `Record<string, string>`)
-   - No new `as any` casts (use proper types)
+1. [ ] **AC1: Fix all source file errors (0 remaining — ✅ done via CI fixes)**
+   - All Prisma JSON/filter type mismatches resolved (commit `5deace0`)
+   - `csv-parser.service.ts` type annotation fixed (commit `769a151`)
+   - No `as any` casts used
 
 2. [ ] **AC2: Fix all test file errors (124 errors → 0)**
    - Mock objects match interface contracts (RequestWithUser, Prisma types)
@@ -137,12 +135,12 @@ These errors are a side-effect of TD-015's improvement: replacing `req: any` wit
 
 ## Tasks / Subtasks
 
-### Phase A: Fix Type Errors (3.5h)
+### Phase A: Fix Type Errors (3h — test files only)
 
-- [x] **A.1** Fix source file errors — Prisma types (1.5h) — **12/14 fixed by CI fix (commit 5deace0)**
+- [x] **A.1** Fix source file errors — Prisma types (1.5h) — **✅ All 14 fixed via CI fixes (commits 5deace0, 769a151)**
   - ✅ Fixed `JsonValue` → `Prisma.InputJsonValue` in badge-issuance, milestones, badge-templates
   - ✅ Fixed `hasSome` filter type in badge-issuance.service.ts (3 occurrences)
-  - ⏳ Remaining: csv-parser.service.ts (2 errors — `unknown` → `Record<string, string>`)
+  - ✅ Fixed csv-parser.service.ts type annotation (variable annotation instead of `as` cast)
   
 - [ ] **A.2** Fix test file errors — RequestWithUser mocks (1h)
   - Update mock objects in badge-sharing.controller.spec.ts
