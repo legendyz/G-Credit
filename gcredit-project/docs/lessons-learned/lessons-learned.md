@@ -68,7 +68,11 @@
   - Lesson 28: Pre-UAT Review Pattern
   - Lesson 29: Phase-based Backlog Structure
   - Lesson 30: Technical Debt Registry as SSOT
-- [Sprint 8 Lessons](#sprint-8-lessons-february-2026) - Production-Ready MVP (3 lessons) 🆕
+- [Sprint 9 Lessons](#sprint-9-lessons-february-2026) - ESLint Cleanup & TypeScript Gaps (3 lessons) 🆕
+  - Lesson 34: `eslint --fix` Strips `as` Type Assertions
+  - Lesson 35: Three TypeScript Compilation Layers in CI
+  - Lesson 36: Replacing `any` Cascades into Test Mocks
+- [Sprint 8 Lessons](#sprint-8-lessons-february-2026) - Production-Ready MVP (3 lessons)
   - Lesson 31: Code Review as DoD Gate
   - Lesson 32: E2E Test Isolation with Schema-based Approach
   - Lesson 33: Accessibility First Approach
@@ -1631,6 +1635,222 @@ Added proactive template/reference checking step to all 4 specialized agents' ac
 - [Template Audit Report](../archive/template-audit-2026-01-29.md) - Complete template system analysis
 - [sprint-planning-checklist.md](../templates/sprint-planning-checklist.md) - Planning workflow with agent automation
 - [sprint-completion-checklist-template.md](../templates/sprint-completion-checklist-template.md) - Completion workflow
+
+---
+
+## Sprint 9 Lessons (February 2026)
+### ESLint Cleanup & TypeScript Compiler Gaps
+
+### 🎯 Lesson 34: `eslint --fix` Can Silently Strip TypeScript `as` Type Assertions
+
+**Category:** 🔧 Tooling, 🐛 Debugging  
+**Impact:** HIGH (causes CI to break after lint auto-fix, very subtle)  
+**Sprint Discovered:** Sprint 9, TD-015 (ESLint Type Safety Cleanup)  
+**Discovery Date:** 2026-02-07  
+**Related Story:** [TD-015](../../sprints/sprint-9/td-015-eslint-type-safety.md)
+
+#### Problem
+
+During CI pipeline repair, Dev fixed a `tsc --noEmit` error in `csv-parser.service.ts` by adding an `as` type cast:
+
+```typescript
+// Dev's initial fix — passes tsc --noEmit ✅
+const rows = parse(csvContent) as CsvRow[];
+```
+
+This passed the TypeScript compiler. But when `eslint --fix` ran subsequently in CI, it **silently removed** the `as CsvRow[]` assertion because the ESLint `no-unsafe-assignment` rule treats `as` casts on `any`-typed values as unsafe. The result reverted to:
+
+```typescript
+// After eslint --fix — cast stripped, type is `any` again ❌
+const rows = parse(csvContent);
+```
+
+This caused `tsc --noEmit` to fail again, requiring a second CI fix commit.
+
+#### Root Cause
+
+`eslint --fix` and `tsc --noEmit` have **conflicting views** on `as` casts:
+- **tsc:** `as` casts are valid type annotations that resolve type errors
+- **ESLint (no-unsafe-assignment):** `as` casts on `any` values are "unsafe" and get stripped by `--fix`
+
+This creates a loop: Developer adds cast → tsc passes → eslint removes cast → tsc fails again.
+
+#### Solution
+
+**Use variable type annotations instead of `as` casts.** Variable annotations survive `eslint --fix` because they're not considered "unsafe":
+
+```typescript
+// ❌ FRAGILE: eslint --fix will strip the `as` cast
+const rows = parse(csvContent) as CsvRow[];
+
+// ✅ ROBUST: eslint --fix will NOT touch variable annotations
+const rows: CsvRow[] = parse(csvContent);
+```
+
+#### Prevention for Future
+- **Dev Prompt Rule:** Add "Never use `as` casts to fix type errors when `eslint --fix` is configured — use variable type annotations" to coding standards
+- **Code Review Check:** Flag `as` casts on `any`-typed expressions as fragile
+- **CI Order:** Run `eslint --fix` BEFORE `tsc --noEmit` to catch cast-stripping early
+
+#### Key Takeaway
+> When `eslint --fix` and `tsc --noEmit` both run in CI, they can fight over `as` casts. Use variable type annotations (`const x: Type = expr`) instead of assertion casts (`expr as Type`) to avoid this conflict.
+
+---
+
+### 🎯 Lesson 35: Three TypeScript Compilation Layers in CI — Each Has Different Strictness
+
+**Category:** 🏗️ Architecture, 🧪 Testing, 📋 Process  
+**Impact:** CRITICAL (129 type errors accumulated undetected across 8 sprints)  
+**Sprint Discovered:** Sprint 9, TD-015 SM Acceptance Review  
+**Discovery Date:** 2026-02-07  
+**Related Story:** [TD-017](../../sprints/sprint-9/td-017-tsc-type-errors.md)
+
+#### Problem
+
+During TD-015 SM acceptance, running `npx tsc --noEmit` revealed **129 pre-existing type errors** that had accumulated since Sprint 0 — completely undetected. All CI checks were green:
+- `npm run lint` ✅ (ESLint uses own TypeScript parser)
+- `npm test` ✅ (Jest uses ts-jest for compilation)
+- `npm run build` ✅ (NestJS build configured differently)
+
+**How 129 errors hid for 8 sprints:**
+
+| Layer | Tool | Strictness | In CI? | Catches tsc errors? |
+|-------|------|-----------|--------|---------------------|
+| Build | `nest build` (SWC/webpack) | Low | ✅ | ❌ (transpile-only) |
+| Lint | `@typescript-eslint/parser` | Medium | ✅ | Partial (rule-based) |
+| Test | `ts-jest` | Low | ✅ | ❌ (lenient, mocks bypass) |
+| **Type Check** | **`tsc --noEmit`** | **Strict** | **❌** | **✅** |
+
+The strictest tool was the only one NOT in the CI pipeline.
+
+#### Error Breakdown (at discovery)
+
+```
+Total: 138 errors (129 pre-existing + 9 from TD-015)
+├── Test files: 124 (90%) — mock objects don't match real types
+├── Source files: 14 (10%) — Prisma JSON/filter typing issues
+│
+├── TS2339 (property not exist): 56
+├── TS18048 (possibly undefined): 28
+├── TS2322 (type mismatch): 16
+├── TS2345 (argument mismatch): 16
+├── TS7053 (implicit any index): 10
+├── TS7006 (implicit any param): 10
+└── Other: 2
+```
+
+#### Root Cause
+
+**False confidence from green CI:** Three TypeScript tools each use their own compilation strategy, creating gaps:
+
+1. **ts-jest (tests):** Doesn't enforce type accuracy on mock data. `mockResolvedValue({...})` accepts any object shape regardless of the real interface.
+2. **@typescript-eslint/parser (lint):** Only checks what eslint rules are configured for. Missing `no-unsafe-*` rules → misses many issues.
+3. **tsc --noEmit (type check):** Full TypeScript type resolution. The only tool that catches ALL type errors. Was never added to CI.
+
+#### Solution
+
+1. Created TD-017 to fix all 124 remaining test-file tsc errors (Sprint 10, 5h)
+2. Source file errors fixed immediately via CI pipeline repair (commits `5deace0`, `769a151`)
+3. Plan: Add `"type-check": "tsc --noEmit"` script to package.json and gate in CI (Sprint 11)
+
+#### Prevention for Future
+
+- **Sprint 0 Rule:** Add `tsc --noEmit` to CI pipeline from day one
+- **Dev Prompt:** Include `npx tsc --noEmit` as verification step in all dev prompts
+- **SM Acceptance:** Always run `npx tsc --noEmit` during story acceptance
+- **New Projects:** Add to project setup checklist: "CI must include tsc --noEmit"
+
+#### Key Takeaway
+> A NestJS/TypeScript project has at least 3 TypeScript compilation layers (build, lint, test), each with different strictness. Only `tsc --noEmit` provides full type checking. If it's not in CI, type errors WILL accumulate silently. Add it from Sprint 0.
+
+---
+
+### 🎯 Lesson 36: Replacing `any` with Strict Types Cascades into Test Mock Failures
+
+**Category:** 🧪 Testing, 🔧 Refactoring  
+**Impact:** MEDIUM (predictable but needs planning in effort estimates)  
+**Sprint Discovered:** Sprint 9, TD-015 (ESLint Type Safety Cleanup)  
+**Discovery Date:** 2026-02-07  
+**Related Story:** [TD-015](../../sprints/sprint-9/td-015-eslint-type-safety.md)
+
+#### Problem
+
+TD-015 replaced `req: any` with a shared `RequestWithUser` interface across 9 controllers:
+
+```typescript
+// Before (in 9 controllers)
+@Req() req: any
+
+// After — shared interface
+interface AuthenticatedUser {
+  userId: string;
+  email: string;
+  role: UserRole;
+}
+interface RequestWithUser extends Request {
+  user: AuthenticatedUser;
+}
+```
+
+This **immediately introduced 9 new `tsc --noEmit` errors** in test files, because mock request objects only had `{ userId }` or `{ userId, email }` — missing the newly-required `role` field:
+
+```typescript
+// ❌ Test mock — was fine when controller used `req: any`
+const mockReq = { user: { userId: 'test-id' } };
+
+// ❌ After TD-015 — tsc error TS2345: Property 'email' and 'role' missing
+controller.method(mockReq);
+
+// ✅ Fix — mock must match full interface
+const mockReq = { 
+  user: { userId: 'test-id', email: 'test@test.com', role: UserRole.ADMIN }
+} as RequestWithUser;
+```
+
+#### Additional Gotcha: `import type` for NestJS Decorators
+
+NestJS's `isolatedModules` + `emitDecoratorMetadata` configuration requires `import type` for interfaces used only in type positions:
+
+```typescript
+// ❌ TS1272: A type referenced in a decorated signature must be imported with 'import type'
+import { RequestWithUser } from '../common/interfaces/request-with-user.interface';
+
+// ✅ Correct — use import type
+import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
+```
+
+#### The Cascade Pattern
+
+```
+Replace `any` with strict interface (N controllers)
+  → N×M test files have mock objects that don't match new interface
+  → Each mock needs additional required properties
+  → If NestJS decorators involved, also need `import type`
+  → Tests still PASS (ts-jest is lenient), but tsc --noEmit FAILS
+```
+
+**This is why tests passing gives false confidence** (see also Lesson 35).
+
+#### Planning Guidance
+
+When estimating type-strictness refactoring, apply this multiplier:
+
+| Source Change | Expected Test Impact |
+|--------------|---------------------|
+| Replace `any` param in N controllers | ~1-2 test errors per controller |
+| Add required field to shared interface | Every consumer's mock needs updating |
+| Change return type from `any` to typed | All test assertions may need `as` casts |
+
+**TD-015 actual data:** 9 controllers changed → 9 test errors (1:1 ratio)
+
+#### Prevention for Future
+
+1. **Dev Prompt Rule:** "When replacing `any` with strict types, include test mock updates in scope and time estimate"
+2. **Pattern:** Create a `createMockRequestWithUser()` factory function in test utils, so all tests share one mock construction
+3. **Verification:** After any `any`-elimination, always run `npx tsc --noEmit` — don't rely on `npm test` alone
+
+#### Key Takeaway
+> Replacing `any` with strict types is not just a source code change — it's a source + test change. Budget 30-50% extra time for updating test mocks, and always verify with `tsc --noEmit` since `npm test` won't catch the mock mismatches.
 
 ---
 
@@ -4291,6 +4511,12 @@ Created `docs/setup/external-services-setup-guide.md`:
 24. **Consistent API contracts** (TypeScript types shared fe/be)
 25. **Error handling everywhere** (Try-catch, log, don't throw for non-critical)
 
+### TypeScript Type Safety (Sprint 9 Additions)
+26. **Variable annotations over `as` casts** (`const x: Type = expr` survives `eslint --fix`; `expr as Type` does not)
+27. **Gate `tsc --noEmit` in CI from Sprint 0** (ESLint and Jest have their own lenient TS parsers — only `tsc` does full type checking)
+28. **Budget test mock updates when eliminating `any`** (Replacing `any` → strict interface in N files causes ~N test mock failures)
+29. **Use `import type` for NestJS decorator parameters** (`isolatedModules` + `emitDecoratorMetadata` requires it)
+
 ---
 
 ## Common Pitfalls (Sprint 6 Additions)
@@ -4319,6 +4545,23 @@ Created `docs/setup/external-services-setup-guide.md`:
 **Symptom:** App crashes when Graph API unavailable  
 **Cost:** Poor user experience, difficult debugging  
 **Fix:** Feature flags, isEnabled checks, graceful degradation
+
+## Common Pitfalls (Sprint 9 Additions)
+
+### ❌ Pitfall 16: Using `as` Casts to Fix tsc Errors
+**Symptom:** `tsc --noEmit` passes, then `eslint --fix` strips the `as` cast, `tsc` fails again  
+**Cost:** 2 CI fix rounds, extra commit churn  
+**Fix:** Use `const x: Type = expr` instead of `expr as Type` — variable annotations survive `eslint --fix`
+
+### ❌ Pitfall 17: Trusting "All Green CI" Without `tsc --noEmit`
+**Symptom:** 129 type errors accumulate across 8 sprints, nobody notices  
+**Cost:** 5h cleanup task (TD-017), CI pipeline breaks when eventually discovered  
+**Fix:** Add `tsc --noEmit` to CI from project day one. ESLint and Jest use lenient TypeScript parsers.
+
+### ❌ Pitfall 18: Replacing `any` Without Updating Test Mocks
+**Symptom:** Source code compiles, tests pass (ts-jest is lenient), but `tsc --noEmit` shows errors in test files  
+**Cost:** 9 new tsc errors per 9 controllers changed (1:1 ratio)  
+**Fix:** Always include test mock updates in scope when replacing `any` with strict types. Run `tsc --noEmit` to verify.
 
 ---
 
@@ -4350,8 +4593,8 @@ Created `docs/setup/external-services-setup-guide.md`:
 
 ---
 
-**Last Major Update:** Sprint 6 Complete (2026-01-31) - Badge Sharing & Social Proof  
-**Next Review:** Sprint 7 Retrospective  
+**Last Major Update:** Sprint 9 TD-015 (2026-02-07) - ESLint Cleanup & TypeScript Compiler Gaps  
+**Next Review:** Sprint 9 Retrospective  
 **Owner:** PM (John) + Dev Team
 
 *This is a living document - keep it updated, keep it useful!*
