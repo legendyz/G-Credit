@@ -58,23 +58,14 @@ export interface PreviewData {
  * 
  * Handles batch badge issuance with:
  * - CSV template generation and validation
- * - Session-based preview workflow
+ * - Database-backed session storage (BulkIssuanceSession table)
  * - IDOR protection through ownership validation
  * - CSV injection prevention
+ * - RFC 4180 compliant CSV parsing (multiline quoted fields)
  */
 @Injectable()
 export class BulkIssuanceService {
   private readonly logger = new Logger(BulkIssuanceService.name);
-  
-  // In-memory session store (TODO: Move to database in production)
-  private sessions = new Map<string, {
-    issuerId: string;
-    status: SessionStatus;
-    validRows: any[];
-    errors: SessionError[];
-    createdAt: Date;
-    expiresAt: Date;
-  }>();
 
   // Session TTL: 30 minutes
   private readonly SESSION_TTL_MS = 30 * 60 * 1000;
@@ -122,25 +113,34 @@ export class BulkIssuanceService {
   }
 
   /**
-   * Parse a CSV line respecting RFC 4180 quoting rules.
+   * Parse CSV content into rows respecting RFC 4180 quoting rules.
    * Handles quoted fields that may contain commas, newlines, or escaped quotes.
+   * Comment lines (starting with #) are skipped.
+   * 
+   * @param content - Full CSV content string
+   * @returns Array of rows, each row is an array of field strings
    */
-  private parseCsvLine(line: string): string[] {
-    const fields: string[] = [];
+  parseCsvContent(content: string): string[][] {
+    const rows: string[][] = [];
     let current = '';
     let inQuotes = false;
+    let fields: string[] = [];
 
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
+    for (let i = 0; i < content.length; i++) {
+      const char = content[i];
+
       if (inQuotes) {
         if (char === '"') {
           // Check for escaped quote ("")
-          if (i + 1 < line.length && line[i + 1] === '"') {
+          if (i + 1 < content.length && content[i + 1] === '"') {
             current += '"';
             i++; // skip next quote
           } else {
             inQuotes = false;
           }
+        } else if (char === '\r') {
+          // Skip \r inside quotes too (normalize line endings)
+          continue;
         } else {
           current += char;
         }
@@ -150,13 +150,33 @@ export class BulkIssuanceService {
         } else if (char === ',') {
           fields.push(current.trim());
           current = '';
+        } else if (char === '\r') {
+          // Skip \r, handle \n next
+          continue;
+        } else if (char === '\n') {
+          // End of row
+          fields.push(current.trim());
+          const rowStr = fields.join(',');
+          // Skip empty lines and comment lines
+          if (rowStr.trim() && !rowStr.trim().startsWith('#')) {
+            rows.push(fields);
+          }
+          fields = [];
+          current = '';
         } else {
           current += char;
         }
       }
     }
+
+    // Handle last row (no trailing newline)
     fields.push(current.trim());
-    return fields;
+    const lastRowStr = fields.join(',');
+    if (lastRowStr.trim() && !lastRowStr.trim().startsWith('#')) {
+      rows.push(fields);
+    }
+
+    return rows;
   }
 
   /**
@@ -174,15 +194,14 @@ export class BulkIssuanceService {
     // Strip UTF-8 BOM if present
     const cleanContent = csvContent.replace(/^\uFEFF/, '');
 
-    // Parse and validate CSV
-    const lines = cleanContent.split(/\r?\n/)
-      .filter(line => line.trim() && !line.trim().startsWith('#'));
-    
-    if (lines.length < 2) {
+    // Parse CSV with RFC 4180 compliant parser (handles multiline quoted fields)
+    const parsedRows = this.parseCsvContent(cleanContent);
+
+    if (parsedRows.length < 2) {
       throw new BadRequestException('CSV file must contain header and at least one data row');
     }
 
-    const headers = this.parseCsvLine(lines[0]);
+    const headers = parsedRows[0];
     const requiredHeaders = ['badgeTemplateId', 'recipientEmail'];
     
     for (const required of requiredHeaders) {
@@ -192,7 +211,7 @@ export class BulkIssuanceService {
     }
 
     // Enforce max row count (AC7)
-    const dataLineCount = lines.length - 1;
+    const dataLineCount = parsedRows.length - 1;
     if (dataLineCount > BulkIssuanceService.MAX_ROWS) {
       throw new BadRequestException(
         `CSV contains ${dataLineCount} data rows, exceeding the maximum of ${BulkIssuanceService.MAX_ROWS}. Please reduce the number of rows.`
@@ -209,9 +228,9 @@ export class BulkIssuanceService {
       const localErrors: SessionError[] = [];
       const localRows: PreviewData['rows'] = [];
 
-      for (let i = 1; i < lines.length; i++) {
+      for (let i = 1; i < parsedRows.length; i++) {
         const rowNumber = i + 1;
-        const values = this.parseCsvLine(lines[i]);
+        const values = parsedRows[i];
         
         const row: Record<string, string> = {};
         headers.forEach((header, idx) => {
@@ -265,14 +284,22 @@ export class BulkIssuanceService {
     errors.push(...txErrors);
     rows.push(...txRows);
 
-    // Store session
-    this.sessions.set(sessionId, {
-      issuerId,
-      status: validRows.length > 0 ? SessionStatus.VALIDATED : SessionStatus.FAILED,
-      validRows,
-      errors,
-      createdAt,
-      expiresAt,
+    const status = validRows.length > 0 ? SessionStatus.VALIDATED : SessionStatus.FAILED;
+
+    // Store session in database (Finding #1: persistent storage)
+    await this.prisma.bulkIssuanceSession.create({
+      data: {
+        id: sessionId,
+        issuerId,
+        status,
+        validRows: validRows as any,
+        totalRows: validRows.length + errors.length,
+        validCount: validRows.length,
+        errorCount: errors.length,
+        errors: errors as any,
+        rows: rows as any,
+        expiresAt,
+      },
     });
 
     this.logger.log(
@@ -286,7 +313,7 @@ export class BulkIssuanceService {
       errorRows: errors.length,
       totalRows: validRows.length + errors.length,
       errors,
-      status: validRows.length > 0 ? SessionStatus.VALIDATED : SessionStatus.FAILED,
+      status,
       createdAt,
       expiresAt,
       rows,
@@ -294,18 +321,13 @@ export class BulkIssuanceService {
   }
 
   /**
-   * Get preview data for an existing session
-   * 
-   * CRITICAL: Validates ownership to prevent IDOR attacks (ARCH-C2)
-   * 
-   * @param sessionId - Session identifier
-   * @param currentUserId - User ID from JWT token
-   * @returns PreviewData if authorized
-   * @throws NotFoundException if session doesn't exist
-   * @throws ForbiddenException if user doesn't own the session
+   * Helper: Load and validate a session from the database.
+   * Handles not-found, expiration, and IDOR checks.
    */
-  async getPreviewData(sessionId: string, currentUserId: string): Promise<PreviewData> {
-    const session = this.sessions.get(sessionId);
+  private async loadSession(sessionId: string, currentUserId: string) {
+    const session = await this.prisma.bulkIssuanceSession.findUnique({
+      where: { id: sessionId },
+    });
 
     if (!session) {
       throw new NotFoundException(`Session not found: ${sessionId}`);
@@ -313,7 +335,7 @@ export class BulkIssuanceService {
 
     // Check expiration
     if (new Date() > session.expiresAt) {
-      this.sessions.delete(sessionId);
+      await this.prisma.bulkIssuanceSession.delete({ where: { id: sessionId } });
       throw new NotFoundException(`Session expired: ${sessionId}`);
     }
 
@@ -325,22 +347,25 @@ export class BulkIssuanceService {
       throw new ForbiddenException('You do not have permission to access this session');
     }
 
+    return session;
+  }
+
+  async getPreviewData(sessionId: string, currentUserId: string): Promise<PreviewData> {
+    const session = await this.loadSession(sessionId, currentUserId);
+
+    const sessionErrors = (session.errors as any) as SessionError[];
+    const sessionRows = (session.rows as any) as PreviewData['rows'];
+
     return {
-      sessionId,
-      validRows: session.validRows.length,
-      errorRows: session.errors.length,
-      totalRows: session.validRows.length + session.errors.length,
-      errors: session.errors,
-      status: session.status,
+      sessionId: session.id,
+      validRows: session.validCount,
+      errorRows: session.errorCount,
+      totalRows: session.totalRows,
+      errors: sessionErrors,
+      status: session.status as SessionStatus,
       createdAt: session.createdAt,
       expiresAt: session.expiresAt,
-      rows: session.validRows.map((row, idx) => ({
-        rowNumber: idx + 2,
-        badgeTemplateId: row.badgeTemplateId,
-        recipientEmail: row.recipientEmail,
-        evidenceUrl: row.evidenceUrl,
-        isValid: true,
-      })),
+      rows: sessionRows,
     };
   }
 
@@ -348,12 +373,6 @@ export class BulkIssuanceService {
    * Confirm and execute bulk issuance
    * 
    * CRITICAL: Validates ownership to prevent IDOR attacks (ARCH-C2)
-   * 
-   * @param sessionId - Session identifier
-   * @param currentUserId - User ID from JWT token
-   * @returns Processing result
-   * @throws NotFoundException if session doesn't exist
-   * @throws ForbiddenException if user doesn't own the session
    */
   async confirmBulkIssuance(sessionId: string, currentUserId: string): Promise<{
     success: boolean;
@@ -361,25 +380,7 @@ export class BulkIssuanceService {
     failed: number;
     results: Array<{ row: number; status: 'success' | 'failed'; error?: string }>;
   }> {
-    const session = this.sessions.get(sessionId);
-
-    if (!session) {
-      throw new NotFoundException(`Session not found: ${sessionId}`);
-    }
-
-    // Check expiration
-    if (new Date() > session.expiresAt) {
-      this.sessions.delete(sessionId);
-      throw new NotFoundException(`Session expired: ${sessionId}`);
-    }
-
-    // CRITICAL: Validate ownership (IDOR prevention - ARCH-C2)
-    if (session.issuerId !== currentUserId) {
-      this.logger.warn(
-        `IDOR attempt: User ${currentUserId} tried to confirm session ${sessionId} owned by ${session.issuerId}`
-      );
-      throw new ForbiddenException('You do not have permission to confirm this session');
-    }
+    const session = await this.loadSession(sessionId, currentUserId);
 
     if (session.status !== SessionStatus.VALIDATED) {
       throw new BadRequestException(
@@ -388,15 +389,19 @@ export class BulkIssuanceService {
     }
 
     // Update status to processing
-    session.status = SessionStatus.PROCESSING;
+    await this.prisma.bulkIssuanceSession.update({
+      where: { id: sessionId },
+      data: { status: SessionStatus.PROCESSING },
+    });
 
+    const sessionValidRows = (session.validRows as any) as any[];
     const results: Array<{ row: number; status: 'success' | 'failed'; error?: string }> = [];
     let processed = 0;
     let failed = 0;
 
     // Process each valid row
-    for (let i = 0; i < session.validRows.length; i++) {
-      const row = session.validRows[i];
+    for (let i = 0; i < sessionValidRows.length; i++) {
+      const row = sessionValidRows[i];
       try {
         // TODO: Call actual badge issuance service
         // await this.badgeIssuanceService.issueBadge({
@@ -409,7 +414,7 @@ export class BulkIssuanceService {
         results.push({ row: i + 2, status: 'success' });
         
         this.logger.debug(
-          `Issued badge ${i + 1}/${session.validRows.length} to ${row.recipientEmail}`
+          `Issued badge ${i + 1}/${sessionValidRows.length} to ${row.recipientEmail}`
         );
       } catch (error) {
         failed++;
@@ -425,7 +430,10 @@ export class BulkIssuanceService {
     }
 
     // Update session status
-    session.status = failed === 0 ? SessionStatus.COMPLETED : SessionStatus.COMPLETED;
+    await this.prisma.bulkIssuanceSession.update({
+      where: { id: sessionId },
+      data: { status: SessionStatus.COMPLETED },
+    });
 
     this.logger.log(
       `Completed bulk issuance session ${sessionId}: ${processed} success, ${failed} failed`
@@ -442,33 +450,19 @@ export class BulkIssuanceService {
   /**
    * Get error report for a session as CSV content
    * Uses sanitized output to prevent CSV injection
-   * 
-   * @param sessionId - Session identifier
-   * @param currentUserId - User ID from JWT token
-   * @returns CSV content with error details
    */
   async getErrorReportCsv(sessionId: string, currentUserId: string): Promise<string> {
-    const session = this.sessions.get(sessionId);
+    const session = await this.loadSession(sessionId, currentUserId);
 
-    if (!session) {
-      throw new NotFoundException(`Session not found: ${sessionId}`);
-    }
+    const sessionErrors = (session.errors as any) as SessionError[];
 
-    // CRITICAL: Validate ownership (IDOR prevention)
-    if (session.issuerId !== currentUserId) {
-      this.logger.warn(
-        `IDOR attempt: User ${currentUserId} tried to get error report for session ${sessionId} owned by ${session.issuerId}`
-      );
-      throw new ForbiddenException('You do not have permission to access this session');
-    }
-
-    if (!session.errors || session.errors.length === 0) {
+    if (!sessionErrors || sessionErrors.length === 0) {
       throw new BadRequestException('No errors found in this session');
     }
 
     // Generate sanitized CSV (ARCH-C1: CSV injection prevention)
     const headers = ['Row', 'BadgeTemplateId', 'RecipientEmail', 'Error'];
-    const rows = session.errors.map(error => ({
+    const rows = sessionErrors.map(error => ({
       Row: String(error.rowNumber),
       BadgeTemplateId: error.badgeTemplateId,
       RecipientEmail: error.recipientEmail,

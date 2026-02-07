@@ -87,8 +87,8 @@ export function BulkIssuancePage() {
    * Validate file before upload
    */
   const validateFile = useCallback((file: File): boolean => {
-    if (!file.name.endsWith('.csv')) {
-      toast.error('Please select a CSV file (.csv)');
+    if (!file.name.endsWith('.csv') && !file.name.endsWith('.txt')) {
+      toast.error('Please select a CSV or TXT file (.csv, .txt)');
       return false;
     }
     if (file.size > MAX_FILE_SIZE) {
@@ -294,7 +294,7 @@ export function BulkIssuancePage() {
                 Drag & drop CSV file here, or click to browse
               </p>
               <p className="text-xs text-gray-500 mt-1">
-                Supported: .csv files up to 100KB (max 20 rows)
+                Supported: .csv and .txt files up to 100KB (max 20 rows)
               </p>
             </>
           )}
@@ -367,7 +367,7 @@ export function BulkIssuancePage() {
         <input
           ref={fileInputRef}
           type="file"
-          accept=".csv"
+          accept=".csv,.txt"
           onChange={handleFileChange}
           className="hidden"
           aria-hidden="true"

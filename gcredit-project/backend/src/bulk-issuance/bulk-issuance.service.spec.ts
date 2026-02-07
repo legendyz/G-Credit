@@ -8,11 +8,15 @@ describe('BulkIssuanceService', () => {
   let service: BulkIssuanceService;
   let csvValidation: CsvValidationService;
 
+  // In-memory store to simulate DB persistence between create/findUnique
+  const sessionStore: Record<string, any> = {};
+
   const mockPrismaService = {
     bulkIssuanceSession: {
       findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+      delete: jest.fn(),
     },
     badgeTemplate: {
       findFirst: jest.fn(),
@@ -47,10 +51,32 @@ describe('BulkIssuanceService', () => {
       };
       return callback(txClient);
     });
+
+    // Wire up session store for DB persistence simulation (Finding #1: DB-backed sessions)
+    mockPrismaService.bulkIssuanceSession.create.mockImplementation(async ({ data }: any) => {
+      sessionStore[data.id] = { ...data, createdAt: new Date(), updatedAt: new Date() };
+      return sessionStore[data.id];
+    });
+    mockPrismaService.bulkIssuanceSession.findUnique.mockImplementation(async ({ where }: any) => {
+      return sessionStore[where.id] || null;
+    });
+    mockPrismaService.bulkIssuanceSession.update.mockImplementation(async ({ where, data }: any) => {
+      if (sessionStore[where.id]) {
+        Object.assign(sessionStore[where.id], data);
+      }
+      return sessionStore[where.id];
+    });
+    mockPrismaService.bulkIssuanceSession.delete.mockImplementation(async ({ where }: any) => {
+      const deleted = sessionStore[where.id];
+      delete sessionStore[where.id];
+      return deleted;
+    });
   });
 
   afterEach(() => {
     jest.clearAllMocks();
+    // Clear session store between tests
+    Object.keys(sessionStore).forEach(key => delete sessionStore[key]);
   });
 
   describe('generateTemplate', () => {
@@ -336,6 +362,59 @@ EXAMPLE-DELETE,example@company.com`;
       // Check that the stored row doesn't contain the script tag
       const session = result.rows[0];
       expect(session.badgeTemplateId).not.toContain('<script>');
+    });
+  });
+
+  describe('parseCsvContent - RFC 4180 compliance (Finding #4)', () => {
+    it('should handle simple CSV rows', () => {
+      const content = 'a,b,c\n1,2,3\n4,5,6';
+      const rows = service.parseCsvContent(content);
+      expect(rows).toEqual([['a', 'b', 'c'], ['1', '2', '3'], ['4', '5', '6']]);
+    });
+
+    it('should handle quoted fields with commas', () => {
+      const content = 'name,value\n"hello, world",123';
+      const rows = service.parseCsvContent(content);
+      expect(rows).toEqual([['name', 'value'], ['hello, world', '123']]);
+    });
+
+    it('should handle quoted fields with newlines (multiline)', () => {
+      const content = 'name,desc\n"line1\nline2",value';
+      const rows = service.parseCsvContent(content);
+      expect(rows).toEqual([['name', 'desc'], ['line1\nline2', 'value']]);
+    });
+
+    it('should handle quoted fields with CRLF', () => {
+      const content = 'name,desc\r\n"line1\r\nline2",value';
+      const rows = service.parseCsvContent(content);
+      expect(rows).toEqual([['name', 'desc'], ['line1\nline2', 'value']]);
+    });
+
+    it('should handle escaped quotes inside quoted fields', () => {
+      const content = 'name,desc\n"He said ""hello""",value';
+      const rows = service.parseCsvContent(content);
+      expect(rows).toEqual([['name', 'desc'], ['He said "hello"', 'value']]);
+    });
+
+    it('should skip comment lines starting with #', () => {
+      const content = '# comment\nname,value\n1,2';
+      const rows = service.parseCsvContent(content);
+      expect(rows).toEqual([['name', 'value'], ['1', '2']]);
+    });
+
+    it('should skip empty lines', () => {
+      const content = 'name,value\n\n1,2\n\n';
+      const rows = service.parseCsvContent(content);
+      expect(rows).toEqual([['name', 'value'], ['1', '2']]);
+    });
+
+    it('should handle multiline quoted fields in CSV upload end-to-end', async () => {
+      const csvContent = `badgeTemplateId,recipientEmail,evidenceUrl,narrativeJustification\ntemplate-123,user@company.com,,"Completed training\nwith distinction"`;
+      
+      const result = await service.createSession(csvContent, 'issuer-123');
+      
+      expect(result.validRows).toBe(1);
+      expect(result.errorRows).toBe(0);
     });
   });
 });

@@ -53,6 +53,9 @@ model User {
   auditLogsTarget    UserRoleAuditLog[] @relation("AuditTarget")
   auditLogsPerformer UserRoleAuditLog[] @relation("AuditPerformer")
 
+  // Sprint 9: Bulk Issuance sessions
+  bulkIssuanceSessions BulkIssuanceSession[] @relation("BulkIssuanceSessions")
+
   @@index([email])
   @@index([role])
   @@index([azureId])
@@ -379,4 +382,28 @@ model UserRoleAuditLog {
   @@index([performedBy])
   @@index([createdAt])
   @@map("user_role_audit_logs")
+}
+
+// Sprint 9: Bulk Issuance Session (Story 8.2)
+// Stores validated CSV upload sessions for preview/confirm workflow
+model BulkIssuanceSession {
+  id         String   @id @default(uuid())
+  issuerId   String
+  status     String   @db.VarChar(20) // PENDING, VALIDATED, PROCESSING, COMPLETED, FAILED, EXPIRED
+  validRows  Json     @default("[]") // JSONB array of validated row objects
+  totalRows  Int      @default(0)
+  validCount Int      @default(0)
+  errorCount Int      @default(0)
+  errors     Json     @default("[]") // JSONB array of SessionError objects
+  rows       Json     @default("[]") // JSONB array of preview row data
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  issuer User @relation("BulkIssuanceSessions", fields: [issuerId], references: [id], onDelete: Cascade)
+
+  @@index([issuerId])
+  @@index([expiresAt])
+  @@index([status])
+  @@map("bulk_issuance_sessions")
 }

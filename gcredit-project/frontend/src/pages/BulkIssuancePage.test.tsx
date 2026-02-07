@@ -132,7 +132,7 @@ describe('BulkIssuancePage', () => {
     renderPage();
     
     expect(screen.getByText(/drag & drop csv file here/i)).toBeInTheDocument();
-    expect(screen.getByText(/\.csv files up to 100KB/i)).toBeInTheDocument();
+    expect(screen.getByText(/\.csv and \.txt files up to 100KB/i)).toBeInTheDocument();
   });
 
   it('renders step 1 and step 2 sections', () => {

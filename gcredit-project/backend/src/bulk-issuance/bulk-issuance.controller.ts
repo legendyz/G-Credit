@@ -114,8 +114,10 @@ export class BulkIssuanceController {
       throw new BadRequestException('CSV file is required');
     }
 
-    if (!file.mimetype.includes('csv') && !file.originalname.endsWith('.csv')) {
-      throw new BadRequestException('File must be in CSV format');
+    const isCsv = file.mimetype.includes('csv') || file.originalname.endsWith('.csv');
+    const isTxt = file.mimetype === 'text/plain' || file.originalname.endsWith('.txt');
+    if (!isCsv && !isTxt) {
+      throw new BadRequestException('File must be in CSV or TXT format');
     }
 
     const csvContent = file.buffer.toString('utf-8');
