@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.0-dev] - Sprint 9 In Progress (2026-02-06 ~ 2026-02-20)
+
+### Sprint 9 Summary - Epic 8: Bulk Badge Issuance + TD Cleanup
+
+**Branch:** `sprint-9/epic-8-bulk-issuance-td-cleanup`
+
+#### Completed Stories
+
+##### Story 8.1: CSV Template & Validation (8h actual) - 2026-02-07
+- **GET /api/bulk-issuance/template** - Download CSV template
+  - UTF-8 BOM header for Windows Excel compatibility
+  - Dynamic date in filename (`bulk-issuance-template-YYYY-MM-DD.csv`)
+  - Headers: badgeTemplateId, recipientEmail, evidenceUrl, narrativeJustification
+  - 2 example rows with "EXAMPLE-DELETE-THIS-ROW" prefix (UX-P0-2)
+- **Badge Template Selector** - Frontend TemplateSelector component
+  - Fetches approved templates via API, pre-fills badgeTemplateId column
+- **File Upload Infrastructure** - Multer with 100KB limit for 20-badge MVP
+- **Testing:** 7 ACs verified, all tests passing
+
+##### Story 8.2: CSV Upload & Parsing + Security Hardening (4h actual) - 2026-02-07
+- **POST /api/bulk-issuance/upload** - Upload and parse CSV
+  - RFC 4180 compliant CSV parser with CRLF support
+  - UTF-8 BOM stripping for Windows Excel files (ARCH-C5)
+  - CSV injection sanitization via `sanitizeCsvField()` (ARCH-C1)
+  - XSS input sanitization via `sanitize-html` (ARCH-C7)
+  - DB-backed sessions with `$transaction` ReadCommitted isolation (ARCH-C4)
+  - Row-by-row validation: badgeTemplateId exists + APPROVED, recipientEmail in DB
+  - IDOR protection on session retrieval (ARCH-C2)
+  - Rate limiting: `@Throttle` env-configurable (default 10 req/5min) (ARCH-C3)
+  - 429 status documented in Swagger
+- **GET /api/bulk-issuance/preview/:sessionId** - Preview parsed results
+- **POST /api/bulk-issuance/confirm/:sessionId** - Confirm bulk issuance
+- **GET /api/bulk-issuance/error-report/:sessionId** - Download error report CSV
+- **Frontend: BulkIssuancePage** (381 lines)
+  - 3-state drag-drop: default (gray) → drag-over (blue) → file-selected (green)
+  - File preview with size display, explicit Upload CSV button
+  - Validation summary panel with auto-navigate on 0 errors
+- **Database:** BulkIssuanceSession table with status tracking
+- **Testing:** 6 ACs verified, Backend 510 + Frontend 339 + E2E 143 = 992 total tests (0 failures)
+
+#### Remaining Stories
+- Story 8.3: Bulk Preview UI + TD-013 (bundle splitting)
+- Story 8.4: Batch Processing Phase 1 + TD-014 (email unification)
+- TD-015: ESLint & Type Safety cleanup
+
+---
+
 ## [0.8.0] - Sprint 8 Complete (2026-02-05)
 
 ### Sprint 8 Summary - Production-Ready MVP

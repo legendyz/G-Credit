@@ -5,7 +5,7 @@
 **Project Type:** Enterprise Internal Platform (Greenfield)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
 **License:** MIT License (Open Source)  
-**Status:** ✅ Sprint 8 COMPLETE - Production-Ready MVP (Epic 10, 100% complete, 12/12 items done, 876 tests)  
+**Status:** 🔄 Sprint 9 IN PROGRESS - Epic 8 Bulk Badge Issuance + TD Cleanup (2/5 stories done, 992 tests)  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, committed 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, committed 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, committed 2026-01-26)  
@@ -15,7 +15,8 @@
 **Sprint 6:** ✅ Complete (100%, actual 35h / estimated 56-76h, committed 2026-01-31, branch: sprint-6/epic-7-badge-sharing, 243 tests, v0.6.0)  
 **Sprint 7:** ✅ Complete (100%, actual 38.5h / estimated 41-47h, committed 2026-02-02, branch: sprint-7/epic-9-revocation-lifecycle-uat, 302 tests, 100% UAT pass, v0.7.0)  
 **Sprint 8:** ✅ Complete (12/12 items, 100%, 80h/76h, branch: sprint-8/epic-10-production-ready-mvp, tagged v0.8.0, 876 tests)  
-**Last Updated:** 2026-02-05 (Sprint 8 COMPLETE - Production-Ready MVP released, v0.8.0 tagged, 876 tests passing)
+**Sprint 9:** 🔄 In Progress (2/5 stories, 12h/51h, branch: sprint-9/epic-8-bulk-issuance-td-cleanup, 992 tests)  
+**Last Updated:** 2026-02-07 (Sprint 9 IN PROGRESS - Story 8.1+8.2 done, 992 tests passing)
 
 ---
 
@@ -1224,8 +1225,8 @@ Sprint 0-2 established this pattern:
    - ✅ UX-P1-001 to UX-P1-007: Accessibility issues (COMPLETE - Stories 8.1, 8.3)
    - ✅ ARCH-P1-001 to ARCH-P1-004: Architecture fixes (COMPLETE - Sprint 8 Task 8.7)
    - ✅ SEC-HIGH-003: Role self-assignment on registration (COMPLETE - Story 8.10)
-   - ⏳ TD-014: Dual Email System (Sprint 9 - Low risk)
-   - ⏳ TD-015: ESLint Warnings 1100 (Sprint 9-10 - 8h)
+   - ✅ TD-014: Dual Email System → Embedded as Task 0 in Sprint 9 Story 8.4
+   - ✅ TD-015: ESLint Warnings 1100 → Standalone Sprint 9 Story (td-015-eslint-type-safety.md)
    - ⏳ TD-006: Teams Channel Permissions (4 tests skipped)
    
    **Technical Debt Tracker Location:**
@@ -1233,21 +1234,41 @@ Sprint 0-2 established this pattern:
    - Includes: TD-001 to TD-015, SEC-P0/P1/P2, ARCH-P0/P1, UX-P0/P1/P2
    
    **Key Metrics:**
-   - Test count: Backend 349 + Frontend 328 = 677 tests passing
+   - Test count: Backend 510 + Frontend 339 + E2E 143 = 992 tests passing
    - Test reliability: 100% pass rate in parallel execution
    - CI/CD duration: ~2 minutes total
    - Security: 22 vulnerabilities remaining (AWS SDK upstream, non-blocking)
 
-17. 🔜 **Next Actions**
-   - **Sprint 8 Complete - Ready for Closure:**
-     - ✅ All 12 executable work items complete
-     - ✅ All 17 P1 technical debt items resolved
-     - ✅ 677 tests passing (349 backend + 328 frontend)
-     - 📋 Run full test suite for production readiness verification
-     - 📋 Sprint 8 Retrospective (scheduled: 2026-02-14)
-     - 📋 Merge to main branch and tag v0.8.0
-   - **Sprint 9 Planning:** TBD (post-Sprint 8 retrospective)
-   - **Technical Debt (Sprint 9):** TD-014 (Email unification), TD-015 (ESLint warnings)
+17. � **Sprint 9 - Epic 8: Bulk Badge Issuance + TD Cleanup (IN PROGRESS)**
+   - **Branch:** `sprint-9/epic-8-bulk-issuance-td-cleanup`
+   - **Duration:** 2026-02-06 to 2026-02-20 (2 weeks)
+   - **Capacity:** 80h, 5 stories (TD fully integrated into stories)
+   
+   **Completed (as of 2026-02-07):**
+   - ✅ Story 8.1: CSV Template & Validation (8h actual / 8.5h est) - SM accepted 2026-02-07
+     - CSV template download with BOM+date, badge template selector, Multer 100KB
+     - 7 ACs verified, all tests passing
+   - ✅ Story 8.2: CSV Upload & Parsing + Security Hardening (4h actual / 11.5h est) - SM accepted 2026-02-07
+     - RFC 4180 CSV parser, CSV injection sanitization (ARCH-C1), XSS sanitization (sanitize-html)
+     - DB-backed sessions ($transaction ReadCommitted), IDOR protection, env-configurable rate limiting
+     - 3-state drag-drop UI, validation summary panel, 6 ACs verified
+   
+   **Remaining:**
+   - ⏳ Story 8.3: Bulk Preview UI + TD-013 bundle splitting (14.5h est)
+   - ⏳ Story 8.4: Batch Processing Phase 1 + TD-014 email unification (8.5h est)
+   - ⏳ Story TD-015: ESLint & Type Safety cleanup (8h est)
+   
+   **Sprint 9 Metrics:**
+   - Progress: 2/5 stories done, 12h/51h completed
+   - Tests: Backend 510 + Frontend 339 + E2E 143 = 992 total (0 failures)
+   - TD Reorganization: All TD tasks embedded into stories (unified dev workflow)
+
+18. 🔜 **Next Actions**
+   - Complete Story 8.3 (Bulk Preview UI + TD-013 bundle optimization)
+   - Complete Story 8.4 (Batch Processing + TD-014 email unification)
+   - Complete TD-015 (ESLint & Type Safety)
+   - Sprint 9 target: v0.9.0, all 5 stories done
+   - Remaining capacity: ~39h (51h total - 12h completed)
 
 ---
 

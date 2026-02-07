@@ -71,8 +71,8 @@ Enable issuers to issue multiple badges at once via CSV upload. **MVP Phase focu
 
 #### Story 8.1: CSV Template & Validation - 8.5h (原6h + P1改进2.5h)
 **Priority:** HIGH  
-**Status:** backlog  
-**Assigned to:** TBD  
+**Status:** done ✅ (SM accepted 2026-02-07, 8h actual)  
+**Assigned to:** Dev Agent  
 **Dependencies:** None
 
 **Summary:**
@@ -105,9 +105,9 @@ Download standardized CSV template with field specifications. Validate CSV struc
 
 #### Story 8.2: CSV Upload & Parsing - 11.5h (原6h + 安全修复4.5h + UX改进1h)
 **Priority:** HIGH  
-**Status:** backlog  
-**Assigned to:** TBD  
-**Dependencies:** Story 8.1  
+**Status:** done ✅ (SM accepted 2026-02-07, 4h actual)  
+**Assigned to:** Dev Agent  
+**Dependencies:** Story 8.1 ✅  
 **Security Critical:** 🔴 MUST implement C1 (CSV Injection) and C2 (IDOR) before development
 
 **Summary:**
