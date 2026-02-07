@@ -308,8 +308,8 @@ stories:
     
     findings:
       - type: minor
-        description: "tsc --noEmit net +9 errors (stricter RequestWithUser type causes mock mismatches in spec files)"
-        action: "Deferred to Sprint 10 tsc cleanup"
+        description: "tsc --noEmit: 138 total errors (129 pre-existing + 9 new from RequestWithUser). 90% in test files."
+        action: "Tracked as TD-017 (Sprint 10, 6h) — see td-017-tsc-type-errors.md"
     
     blocked: false
     blocker_reason: null

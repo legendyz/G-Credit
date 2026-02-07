@@ -106,8 +106,46 @@ Fix **300 more warnings** from:
 - [ ] Warning reduction progress documented for Sprint 10
 
 ### Future Work (Deferred)
-- **Phase 3 (Sprint 10):** Fix remaining 500 warnings
+- **Phase 3 (Sprint 10):** Fix remaining 284 ESLint warnings → see TD-015 Phase 3
 - **Phase 4 (Sprint 11):** Enable warnings as errors in CI
+- **TD-017 (Sprint 10):** Fix 138 `tsc --noEmit` errors → see [td-017-tsc-type-errors.md](td-017-tsc-type-errors.md)
+
+---
+
+## TD-017: Fix TypeScript Compiler (tsc) Type Errors - 6h
+
+**Priority:** P2  
+**Category:** Type Safety  
+**Source:** TD-015 SM Acceptance Review (2026-02-07)  
+**Status:** backlog (Sprint 10)  
+**Story File:** [td-017-tsc-type-errors.md](td-017-tsc-type-errors.md)
+
+### Problem Statement
+`npx tsc --noEmit` produces **138 errors** across 26 files:
+- **129 pre-existing** (never tracked, tsc not enforced in CI)
+- **9 introduced by TD-015** (stricter `RequestWithUser` type → mock mismatches)
+
+### Error Distribution
+| Error Code | Count | Description |
+|-----------|-------|-------------|
+| TS2339 | 56 | Property does not exist on type |
+| TS18048 | 28 | Value is possibly 'undefined' |
+| TS2322 | 16 | Type not assignable |
+| TS2345 | 16 | Argument type not assignable |
+| TS7053 | 10 | Implicit 'any' (index access) |
+| TS7006 | 10 | Parameter implicitly 'any' |
+| Other | 2 | TS18046, TS2367 |
+
+**90% in test files** (124/138), only 14 in source files.
+
+### Tasks
+- [ ] Phase A: Fix type errors in src (14) + test files (124) — 4h
+- [ ] Phase B: Verification + add `type-check` script to package.json — 2h
+
+### Success Criteria
+- [ ] `npx tsc --noEmit` → 0 errors
+- [ ] All 992+ tests pass
+- [ ] ESLint warnings stay ≤284
 
 ---
 

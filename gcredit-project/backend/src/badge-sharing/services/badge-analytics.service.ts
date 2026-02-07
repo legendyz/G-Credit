@@ -75,7 +75,7 @@ export class BadgeAnalyticsService {
         recipientEmail: metadata?.recipientEmail || null,
         metadata: (metadataToStore && Object.keys(metadataToStore).length > 0
           ? metadataToStore
-          : null) as Prisma.JsonValue,
+          : Prisma.JsonNull) as Prisma.InputJsonValue | typeof Prisma.JsonNull,
       },
     });
   }

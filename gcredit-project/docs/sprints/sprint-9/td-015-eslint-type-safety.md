@@ -131,8 +131,9 @@ Sprint 8 cleared 17 P1 items. TD-015 is P2 but risks escalating to P1 in Sprint 
 - Unused vars are safe to remove or prefix with underscore
 
 ### Future Work (Deferred)
-- **Phase 3 (Sprint 10):** Fix remaining ~500 warnings
-- **Phase 4 (Sprint 11):** Enable warnings as errors in CI
+- **Phase 3 (Sprint 10):** Fix remaining 284 ESLint warnings
+- **TD-017 (Sprint 10):** Fix 138 `tsc --noEmit` errors (129 pre-existing + 9 from TD-015) → see [td-017-tsc-type-errors.md](td-017-tsc-type-errors.md)
+- **Phase 4 (Sprint 11):** Enable warnings as errors + tsc gate in CI
 
 ---
 

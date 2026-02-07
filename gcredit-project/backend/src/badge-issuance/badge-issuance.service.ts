@@ -136,7 +136,7 @@ export class BadgeIssuanceService {
         // IMPORTANT: Convert to plain object (Lesson 13 - Prisma JSON type conversion)
         assertionJson: JSON.parse(
           JSON.stringify(assertion),
-        ) as Prisma.JsonValue,
+        ) as Prisma.InputJsonValue,
         metadataHash, // Sprint 5 Story 6.5: Store hash for integrity verification
       },
     });

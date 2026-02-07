@@ -115,7 +115,7 @@ export class MultipartJsonInterceptor implements NestInterceptor {
     try {
       const parsed: unknown = JSON.parse(jsonStr);
       // Ensure it's an array
-      return Array.isArray(parsed) ? parsed : [parsed];
+      return Array.isArray(parsed) ? (parsed as string[]) : [parsed as string];
     } catch (_error) {
       // If parse fails and it's a single UUID string, wrap it in array
       return [jsonStr.trim()];

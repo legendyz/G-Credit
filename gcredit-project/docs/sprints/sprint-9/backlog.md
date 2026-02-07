@@ -263,7 +263,7 @@ Process bulk badge issuance synchronously with up to 20 badges per batch. Simple
 **Success Criteria:**
 - ✅ ESLint warning count ≤800
 - ✅ All 876 tests pass
-- ✅ Type checking passes: `npx tsc --noEmit`
+- ⚠️ Type checking (`npx tsc --noEmit`): 138 pre-existing errors — tracked as **TD-017** (Sprint 10)
 
 ---
 
@@ -563,8 +563,11 @@ Story 8.4 (Batch Processing) [depends on 8.3 confirmation flow]
   - ✅ All 100 emails sent successfully
 
 ### Technical Debt Metrics
-- **TD-015:** ESLint warnings: 1100 → 500 (55% reduction)
+- **TD-015:** ESLint warnings: 1303 → 284 ✅ (78% reduction, exceeded 62% target)
   - Measurement: `npm run lint | grep "warning" | wc -l`
+- **TD-017:** tsc errors: 138 → 0 (deferred to Sprint 10, 6h estimated)
+  - Measurement: `npx tsc --noEmit 2>&1 | grep "error TS" | wc -l`
+  - Story file: `sprint-9/td-017-tsc-type-errors.md`
 - **TD-014:** nodemailer references: N → 0
   - Measurement: `grep -r "nodemailer" backend/src/ | wc -l`
 - **TD-013:** Frontend bundle: 579 KB → <400 KB (31% reduction)

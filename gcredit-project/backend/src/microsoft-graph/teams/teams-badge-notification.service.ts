@@ -195,7 +195,7 @@ export class TeamsBadgeNotificationService {
         );
       } catch (emailError: unknown) {
         this.logger.error(
-          `❌ Email fallback also failed for ${recipient.email}: ${emailError.message}`,
+          `❌ Email fallback also failed for ${recipient.email}: ${emailError instanceof Error ? emailError.message : String(emailError)}`,
         );
         // Don't throw - notification failure shouldn't block badge issuance
       }

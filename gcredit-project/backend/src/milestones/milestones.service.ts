@@ -33,7 +33,7 @@ export class MilestonesService {
         type: typeMapping[dto.type] || MilestoneType.BADGE_COUNT,
         title: dto.title,
         description: dto.description,
-        trigger: dto.trigger as unknown as Prisma.JsonValue,
+        trigger: dto.trigger as unknown as Prisma.InputJsonValue,
         icon: dto.icon,
         isActive: dto.isActive ?? true,
         createdBy: adminId,
@@ -68,11 +68,11 @@ export class MilestonesService {
         ...(dto.title && { title: dto.title }),
         ...(dto.description && { description: dto.description }),
         ...(dto.trigger && {
-          trigger: dto.trigger as unknown as Prisma.JsonValue,
+          trigger: dto.trigger as unknown as Prisma.InputJsonValue,
         }),
         ...(dto.icon && { icon: dto.icon }),
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
-      },
+      } as Prisma.MilestoneConfigUpdateInput,
     });
   }
 
