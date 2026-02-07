@@ -108,11 +108,11 @@ Fix **300 more warnings** from:
 ### Future Work (Deferred)
 - **Phase 3 (Sprint 10):** Fix remaining 284 ESLint warnings → see TD-015 Phase 3
 - **Phase 4 (Sprint 11):** Enable warnings as errors in CI
-- **TD-017 (Sprint 10):** Fix 138 `tsc --noEmit` errors → see [td-017-tsc-type-errors.md](td-017-tsc-type-errors.md)
+- **TD-017 (Sprint 10):** Fix 126 `tsc --noEmit` errors → see [td-017-tsc-type-errors.md](td-017-tsc-type-errors.md)
 
 ---
 
-## TD-017: Fix TypeScript Compiler (tsc) Type Errors - 6h
+## TD-017: Fix TypeScript Compiler (tsc) Type Errors - 5.5h
 
 **Priority:** P2  
 **Category:** Type Safety  
@@ -121,31 +121,32 @@ Fix **300 more warnings** from:
 **Story File:** [td-017-tsc-type-errors.md](td-017-tsc-type-errors.md)
 
 ### Problem Statement
-`npx tsc --noEmit` produces **138 errors** across 26 files:
-- **129 pre-existing** (never tracked, tsc not enforced in CI)
-- **9 introduced by TD-015** (stricter `RequestWithUser` type → mock mismatches)
+`npx tsc --noEmit` produces **126 errors** across 24 files (12 src errors fixed via CI fix `5deace0`):
+- **124 in test files** (98%): mock type mismatches, nullable access, implicit any
+- **2 in source files** (2%): csv-parser.service.ts `unknown` type
 
 ### Error Distribution
 | Error Code | Count | Description |
 |-----------|-------|-------------|
 | TS2339 | 56 | Property does not exist on type |
 | TS18048 | 28 | Value is possibly 'undefined' |
-| TS2322 | 16 | Type not assignable |
 | TS2345 | 16 | Argument type not assignable |
 | TS7053 | 10 | Implicit 'any' (index access) |
 | TS7006 | 10 | Parameter implicitly 'any' |
-| Other | 2 | TS18046, TS2367 |
+| TS2322 | 5 | Type not assignable |
+| Other | 1 | TS2367 |
 
-**90% in test files** (124/138), only 14 in source files.
+**98% in test files** (124/126), only 2 in source files.
 
 ### Tasks
-- [ ] Phase A: Fix type errors in src (14) + test files (124) — 4h
+- [x] Phase A.1: Fix src errors (12/14 done via CI fix) — remaining: csv-parser.service.ts (2)
+- [ ] Phase A.2-A.3: Fix test file errors (124) — 2.5h
 - [ ] Phase B: Verification + add `type-check` script to package.json — 2h
 
 ### Success Criteria
 - [ ] `npx tsc --noEmit` → 0 errors
 - [ ] All 992+ tests pass
-- [ ] ESLint warnings stay ≤284
+- [ ] ESLint warnings stay ≤282
 
 ---
 

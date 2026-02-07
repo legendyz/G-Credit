@@ -69,8 +69,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **ESLint config enhancements:**
   - `no-unused-vars` with `argsIgnorePattern: '^_'`, `varsIgnorePattern: '^_'`
   - `unbound-method: 'off'` for `**/*.spec.ts` and `**/test/**/*.ts`
-- **`package.json` max-warnings:** 1310 → 284
+- **`package.json` max-warnings:** 1310 → 284 → 282 (after CI fix)
 - **Testing:** All 992 tests passing (510 unit + 339 frontend + 143 E2E), zero regressions
+- **CI Fix** (commit 5deace0): Resolved 12 tsc build errors in src files
+  - `badge-issuance.service.ts`: Prisma `hasSome` filter type + JsonValue cast
+  - `csv-parser.service.ts`: cast `parse()` result, `instanceof Error` check
+  - `badge-analytics.service.spec.ts`: `Prisma.JsonNull` test expectation
+  - Remaining 126 tsc errors (98% test files) tracked as TD-017 (Sprint 10)
 
 ---
 

@@ -4,7 +4,7 @@
 **Epic:** Technical Debt Cleanup  
 **Sprint:** Deferred to Sprint 10  
 **Priority:** P2  
-**Estimated Hours:** 6h (Phase A: 4h src+test, Phase B: 2h verification+CI)  
+**Estimated Hours:** 5.5h (Phase A: 3.5h src+test, Phase B: 2h verification+CI)  
 **Dependencies:** [] (可与其他 Story 并行)  
 **Source:** TD-015 SM Acceptance Review (2026-02-07)  
 **Category:** Type Safety
@@ -28,6 +28,18 @@ During TD-015 (ESLint Type Safety Cleanup) SM acceptance review on 2026-02-07, `
 - **129 errors** were **pre-existing** (before TD-015)
 - **9 errors** were **newly introduced** by TD-015 (stricter `RequestWithUser` type causing mock mismatches)
 - These errors were never tracked because `tsc --noEmit` was not enforced in CI
+
+### CI Pipeline Fix (2026-02-07)
+
+Dev fixed **12 source file errors** as part of CI pipeline repair (commit `5deace0`):
+- `badge-issuance.service.ts`: 4 errors fixed (Prisma `hasSome` filter type + JsonValue cast)
+- `csv-parser.service.ts`: partial fix (cast `parse()` result, `instanceof Error` check)
+- `badge-analytics.service.spec.ts`: updated test expectation for `Prisma.JsonNull`
+- `badge-templates.service.ts`: Prettier formatting fix
+
+**Post-fix baseline: 126 errors** (138 → 126, src 14→2, test 124 unchanged)
+
+Remaining 2 src errors in `csv-parser.service.ts` (TS2345: `unknown` → `Record<string, string>`).
 
 ### Why This Was Not Caught Earlier
 
@@ -79,28 +91,14 @@ During TD-015 (ESLint Type Safety Cleanup) SM acceptance review on 2026-02-07, `
 | `teams-action.controller.spec.ts` | 14 | TS2339, TS2345 |
 | `badge-analytics.controller.spec.ts` | 12 | TS2345 (RequestWithUser mocks) |
 | `badge-issuance-teams.integration.spec.ts` | 5 | TS2339, TS2322 |
-| `badge-issuance.service.ts` | 4 | TS2322 (Prisma JSON types) |
-| `badge-templates.service.ts` | 3 | TS2322 (Prisma update types) |
-| Other files (18) | 25 | Mixed |
+| Other files (18) | 20 | Mixed |
 
-### Source File Errors (14 errors — Priority)
+### Remaining Source File Errors (2 errors)
 
 | File | Line | Error | Description |
 |------|------|-------|-------------|
-| `badge-issuance.service.ts` | 137 | TS2322 | JsonValue → InputJsonValue |
-| `badge-issuance.service.ts` | 454 | TS2322 | `{ hasSome: string[] }` → Prisma filter type |
-| `badge-issuance.service.ts` | 583 | TS2322 | Same hasSome pattern |
-| `badge-issuance.service.ts` | 900 | TS2322 | Same hasSome pattern |
-| `csv-parser.service.ts` | 25 | TS2345 | Argument type mismatch |
-| `csv-parser.service.ts` | 28 | TS2345 | Argument type mismatch |
-| `milestones.service.ts` | 36 | TS2322 | JsonValue → InputJsonValue |
-| `milestones.service.ts` | 67 | TS2322 | Prisma update input type |
-| `badge-templates.service.ts` | 67 | TS2322 | Prisma update input type |
-| `badge-templates.service.ts` | 323 | TS2322 | Prisma update input type |
-| `badge-templates.service.ts` | 330 | TS2322 | Prisma update input type |
-| `badge-analytics.service.ts` | 76 | TS2322 | Type mismatch |
-| `multipart-json.interceptor.ts` | 118 | TS2322 | Regex callback type |
-| `teams-badge-notification.service.ts` | 198 | TS2322 | Type mismatch |
+| `csv-parser.service.ts` | 25 | TS2345 | `unknown` not assignable to `Record<string, string>` |
+| `csv-parser.service.ts` | 28 | TS2345 | `unknown` not assignable to `Record<string, string>` |
 
 ### TD-015 Introduced Errors (9 errors — RequestWithUser mocks)
 
@@ -115,11 +113,9 @@ These errors are a side-effect of TD-015's improvement: replacing `req: any` wit
 
 ## Acceptance Criteria
 
-1. [ ] **AC1: Fix all source file errors (14 errors → 0)**
-   - All Prisma JSON/filter type mismatches resolved
-   - `csv-parser.service.ts` argument types fixed
-   - `multipart-json.interceptor.ts` callback typed
-   - No new `as any` casts (use proper Prisma types)
+1. [ ] **AC1: Fix all source file errors (2 errors → 0)**
+   - `csv-parser.service.ts` argument types fixed (cast `unknown` → `Record<string, string>`)
+   - No new `as any` casts (use proper types)
 
 2. [ ] **AC2: Fix all test file errors (124 errors → 0)**
    - Mock objects match interface contracts (RequestWithUser, Prisma types)
@@ -129,7 +125,7 @@ These errors are a side-effect of TD-015's improvement: replacing `req: any` wit
 
 3. [ ] **AC3: Zero regressions**
    - All 992+ tests pass (510 unit + 339 frontend + 143 E2E)
-   - All existing ESLint warnings stay ≤284
+   - All existing ESLint warnings stay ≤282
    - No new ESLint warnings introduced
 
 4. [ ] **AC4: CI gate established**
@@ -141,13 +137,12 @@ These errors are a side-effect of TD-015's improvement: replacing `req: any` wit
 
 ## Tasks / Subtasks
 
-### Phase A: Fix Type Errors (4h)
+### Phase A: Fix Type Errors (3.5h)
 
-- [ ] **A.1** Fix source file errors — Prisma types (1.5h)
-  - Fix `JsonValue` → `Prisma.InputJsonValue` in badge-issuance, milestones, badge-templates
-  - Fix `hasSome` filter type in badge-issuance.service.ts (3 occurrences)
-  - Fix csv-parser.service.ts argument types
-  - Fix multipart-json.interceptor.ts callback type
+- [x] **A.1** Fix source file errors — Prisma types (1.5h) — **12/14 fixed by CI fix (commit 5deace0)**
+  - ✅ Fixed `JsonValue` → `Prisma.InputJsonValue` in badge-issuance, milestones, badge-templates
+  - ✅ Fixed `hasSome` filter type in badge-issuance.service.ts (3 occurrences)
+  - ⏳ Remaining: csv-parser.service.ts (2 errors — `unknown` → `Record<string, string>`)
   
 - [ ] **A.2** Fix test file errors — RequestWithUser mocks (1h)
   - Update mock objects in badge-sharing.controller.spec.ts
@@ -165,7 +160,7 @@ These errors are a side-effect of TD-015's improvement: replacing `req: any` wit
 - [ ] **B.1** Full verification (1h)
   - Run `npx tsc --noEmit` → 0 errors
   - Run `npm test` → 0 failures
-  - Run `npm run lint` → ≤284 warnings
+  - Run `npm run lint` → ≤282 warnings
   
 - [ ] **B.2** Add type-check script and document (1h)
   - Add `"type-check": "tsc --noEmit"` to package.json scripts

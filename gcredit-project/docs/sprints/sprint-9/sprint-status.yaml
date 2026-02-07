@@ -301,15 +301,15 @@ stories:
     testing:
       unit_tests: 0  # No new tests, existing suite verified
       lint_baseline: 1303
-      lint_final: 284
+      lint_final: 282  # 284→282 after CI fix
       lint_reduction: "78% (target was 62%)"
-      type_check: "tsc --noEmit: 129→138 pre-existing errors (net +9, see finding)"
+      type_check: "tsc --noEmit: 138→126 after CI fix (12 src errors fixed, 124 test errors remain → TD-017)"
       coverage_target: "No regression ✅"
     
     findings:
       - type: minor
-        description: "tsc --noEmit: 138 total errors (129 pre-existing + 9 new from RequestWithUser). 90% in test files."
-        action: "Tracked as TD-017 (Sprint 10, 6h) — see td-017-tsc-type-errors.md"
+        description: "tsc --noEmit: 126 errors remain (2 src + 124 test). 12 src errors fixed via CI fix (5deace0)."
+        action: "Tracked as TD-017 (Sprint 10, 5.5h) — see td-017-tsc-type-errors.md"
     
     blocked: false
     blocker_reason: null

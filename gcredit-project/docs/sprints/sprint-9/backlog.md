@@ -563,9 +563,9 @@ Story 8.4 (Batch Processing) [depends on 8.3 confirmation flow]
   - ✅ All 100 emails sent successfully
 
 ### Technical Debt Metrics
-- **TD-015:** ESLint warnings: 1303 → 284 ✅ (78% reduction, exceeded 62% target)
+- **TD-015:** ESLint warnings: 1303 → 282 ✅ (78% reduction, exceeded 62% target; 284→282 after CI fix)
   - Measurement: `npm run lint | grep "warning" | wc -l`
-- **TD-017:** tsc errors: 138 → 0 (deferred to Sprint 10, 6h estimated)
+- **TD-017:** tsc errors: 138 → 126 (12 src errors fixed via CI fix, 124 test errors → Sprint 10, 5.5h)
   - Measurement: `npx tsc --noEmit 2>&1 | grep "error TS" | wc -l`
   - Story file: `sprint-9/td-017-tsc-type-errors.md`
 - **TD-014:** nodemailer references: N → 0
