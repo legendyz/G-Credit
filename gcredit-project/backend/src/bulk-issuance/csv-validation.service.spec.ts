@@ -25,8 +25,16 @@ describe('CsvValidationService', () => {
     service = module.get<CsvValidationService>(CsvValidationService);
 
     // Default mocks
-    mockPrismaService.badgeTemplate.findFirst.mockResolvedValue({ id: 'tpl-1', name: 'leadership-excellence', status: 'ACTIVE' });
-    mockPrismaService.user.findFirst.mockResolvedValue({ id: 'u-1', email: 'john@company.com', isActive: true });
+    mockPrismaService.badgeTemplate.findFirst.mockResolvedValue({
+      id: 'tpl-1',
+      name: 'leadership-excellence',
+      status: 'ACTIVE',
+    });
+    mockPrismaService.user.findFirst.mockResolvedValue({
+      id: 'u-1',
+      email: 'john@company.com',
+      isActive: true,
+    });
   });
 
   afterEach(() => {
@@ -41,31 +49,31 @@ describe('CsvValidationService', () => {
     });
 
     it('should sanitize plus prefix', () => {
-      expect(service.sanitizeCsvField("+1+1")).toBe("'+1+1");
+      expect(service.sanitizeCsvField('+1+1')).toBe("'+1+1");
     });
 
     it('should sanitize minus prefix', () => {
-      expect(service.sanitizeCsvField("-5+10")).toBe("'-5+10");
+      expect(service.sanitizeCsvField('-5+10')).toBe("'-5+10");
     });
 
     it('should sanitize at symbol prefix', () => {
-      expect(service.sanitizeCsvField("@SUM(A1:A10)")).toBe("'@SUM(A1:A10)");
+      expect(service.sanitizeCsvField('@SUM(A1:A10)')).toBe("'@SUM(A1:A10)");
     });
 
     it('should sanitize tab prefix', () => {
-      expect(service.sanitizeCsvField("\tdata")).toBe("'\tdata");
+      expect(service.sanitizeCsvField('\tdata')).toBe("'\tdata");
     });
 
     it('should sanitize carriage return prefix', () => {
-      expect(service.sanitizeCsvField("\rdata")).toBe("'\rdata");
+      expect(service.sanitizeCsvField('\rdata')).toBe("'\rdata");
     });
 
     it('should not modify safe values', () => {
-      expect(service.sanitizeCsvField("Normal text")).toBe("Normal text");
+      expect(service.sanitizeCsvField('Normal text')).toBe('Normal text');
     });
 
     it('should not modify empty values', () => {
-      expect(service.sanitizeCsvField("")).toBe("");
+      expect(service.sanitizeCsvField('')).toBe('');
     });
 
     it('should not modify null values', () => {
@@ -73,22 +81,24 @@ describe('CsvValidationService', () => {
     });
 
     it('should not modify numeric-looking strings', () => {
-      expect(service.sanitizeCsvField("123456")).toBe("123456");
+      expect(service.sanitizeCsvField('123456')).toBe('123456');
     });
 
     it('should not modify URLs', () => {
-      expect(service.sanitizeCsvField("https://example.com")).toBe("https://example.com");
+      expect(service.sanitizeCsvField('https://example.com')).toBe(
+        'https://example.com',
+      );
     });
 
     it('should handle complex injection attempts', () => {
       const attacks = [
-        "=HYPERLINK(\"http://evil.com\",\"Click Me\")",
+        '=HYPERLINK("http://evil.com","Click Me")',
         "+cmd|'/c calc'!A0",
         "-cmd|'/c calc'!A0",
-        "@sum(1+1)*1000",
+        '@sum(1+1)*1000',
       ];
-      
-      attacks.forEach(attack => {
+
+      attacks.forEach((attack) => {
         const result = service.sanitizeCsvField(attack);
         expect(result.startsWith("'")).toBe(true);
       });
@@ -98,51 +108,51 @@ describe('CsvValidationService', () => {
   describe('sanitizeRow', () => {
     it('should sanitize all string fields in a row', () => {
       const row = {
-        name: "=EVIL()",
-        email: "normal@email.com",
+        name: '=EVIL()',
+        email: 'normal@email.com',
         count: 5,
       };
-      
+
       const result = service.sanitizeRow(row);
-      
+
       expect(result.name).toBe("'=EVIL()");
-      expect(result.email).toBe("normal@email.com");
+      expect(result.email).toBe('normal@email.com');
       expect(result.count).toBe(5);
     });
   });
 
   describe('Example Data Detection', () => {
     it('should detect EXAMPLE- prefix', () => {
-      expect(service.isExampleData("EXAMPLE-DELETE-THIS-ROW")).toBe(true);
+      expect(service.isExampleData('EXAMPLE-DELETE-THIS-ROW')).toBe(true);
     });
 
     it('should detect DELETE-THIS-ROW', () => {
-      expect(service.isExampleData("some-DELETE-THIS-ROW-data")).toBe(true);
+      expect(service.isExampleData('some-DELETE-THIS-ROW-data')).toBe(true);
     });
 
     it('should detect example- prefix', () => {
-      expect(service.isExampleData("example-john@company.com")).toBe(true);
+      expect(service.isExampleData('example-john@company.com')).toBe(true);
     });
 
     it('should not flag normal data', () => {
-      expect(service.isExampleData("template-abc123")).toBe(false);
+      expect(service.isExampleData('template-abc123')).toBe(false);
     });
   });
 
   describe('validateBadgeTemplateId', () => {
     it('should reject example template IDs', () => {
-      const result = service.validateBadgeTemplateId("EXAMPLE-DELETE-THIS-ROW");
+      const result = service.validateBadgeTemplateId('EXAMPLE-DELETE-THIS-ROW');
       expect(result.valid).toBe(false);
       expect(result.error).toContain('Example row detected');
     });
 
     it('should accept valid template IDs', () => {
-      const result = service.validateBadgeTemplateId("abc123-def456-789");
+      const result = service.validateBadgeTemplateId('abc123-def456-789');
       expect(result.valid).toBe(true);
     });
 
     it('should reject empty template IDs', () => {
-      const result = service.validateBadgeTemplateId("");
+      const result = service.validateBadgeTemplateId('');
       expect(result.valid).toBe(false);
       expect(result.error).toContain('required');
     });
@@ -150,23 +160,23 @@ describe('CsvValidationService', () => {
 
   describe('validateEmail', () => {
     it('should reject example emails', () => {
-      const result = service.validateEmail("example-john@company.com");
+      const result = service.validateEmail('example-john@company.com');
       expect(result.valid).toBe(false);
       expect(result.error).toContain('Example email');
     });
 
     it('should reject @example.com emails', () => {
-      const result = service.validateEmail("john@example.com");
+      const result = service.validateEmail('john@example.com');
       expect(result.valid).toBe(false);
     });
 
     it('should accept valid emails', () => {
-      const result = service.validateEmail("john.doe@company.com");
+      const result = service.validateEmail('john.doe@company.com');
       expect(result.valid).toBe(true);
     });
 
     it('should reject invalid email format', () => {
-      const result = service.validateEmail("not-an-email");
+      const result = service.validateEmail('not-an-email');
       expect(result.valid).toBe(false);
       expect(result.error).toContain('Invalid email format');
     });
@@ -179,19 +189,19 @@ describe('CsvValidationService', () => {
         { name: 'John', formula: '=SUM(A1:A10)' },
         { name: 'Jane', formula: 'safe value' },
       ];
-      
+
       const csv = service.generateSafeCsv(headers, rows);
-      
+
       expect(csv).toContain("'=SUM(A1:A10)");
-      expect(csv).toContain("safe value");
+      expect(csv).toContain('safe value');
     });
 
     it('should handle commas in values', () => {
       const headers = ['name'];
       const rows = [{ name: 'Doe, John' }];
-      
+
       const csv = service.generateSafeCsv(headers, rows);
-      
+
       expect(csv).toContain('"Doe, John"');
     });
   });
@@ -213,7 +223,9 @@ describe('CsvValidationService', () => {
     });
 
     it('should accept valid HTTPS URL', () => {
-      const result = service.validateEvidenceUrl('https://company.com/docs/evidence.pdf');
+      const result = service.validateEvidenceUrl(
+        'https://company.com/docs/evidence.pdf',
+      );
       expect(result.valid).toBe(true);
     });
 
@@ -224,7 +236,9 @@ describe('CsvValidationService', () => {
     });
 
     it('should reject ftp URL', () => {
-      const result = service.validateEvidenceUrl('ftp://files.example.com/doc.pdf');
+      const result = service.validateEvidenceUrl(
+        'ftp://files.example.com/doc.pdf',
+      );
       expect(result.valid).toBe(false);
       expect(result.error).toContain('HTTP/HTTPS URL');
     });
@@ -237,7 +251,9 @@ describe('CsvValidationService', () => {
     });
 
     it('should accept valid text under 500 chars', () => {
-      const result = service.validateNotes('This is a valid note for badge issuance.');
+      const result = service.validateNotes(
+        'This is a valid note for badge issuance.',
+      );
       expect(result.valid).toBe(true);
     });
 
@@ -290,7 +306,9 @@ describe('CsvValidationService', () => {
         narrativeJustification: '',
       });
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('email') || e.includes('Email'))).toBe(true);
+      expect(
+        result.errors.some((e) => e.includes('email') || e.includes('Email')),
+      ).toBe(true);
     });
 
     it('should reject row with invalid URL', async () => {
@@ -301,7 +319,7 @@ describe('CsvValidationService', () => {
         narrativeJustification: '',
       });
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('URL'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('URL'))).toBe(true);
     });
 
     it('should reject row with narrativeJustification too long', async () => {
@@ -312,7 +330,7 @@ describe('CsvValidationService', () => {
         narrativeJustification: 'a'.repeat(501),
       });
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('500'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('500'))).toBe(true);
     });
 
     it('should collect multiple errors from a single row', async () => {
@@ -344,7 +362,9 @@ describe('CsvValidationService', () => {
     });
 
     it('should reject example template IDs before DB check', async () => {
-      const result = await service.validateBadgeTemplateIdInDb('EXAMPLE-DELETE-THIS-ROW');
+      const result = await service.validateBadgeTemplateIdInDb(
+        'EXAMPLE-DELETE-THIS-ROW',
+      );
       expect(result.valid).toBe(false);
       expect(result.error).toContain('Example');
     });
@@ -358,13 +378,17 @@ describe('CsvValidationService', () => {
 
     it('should return invalid when user not found', async () => {
       mockPrismaService.user.findFirst.mockResolvedValue(null);
-      const result = await service.validateRegisteredEmail('unknown@company.com');
+      const result = await service.validateRegisteredEmail(
+        'unknown@company.com',
+      );
       expect(result.valid).toBe(false);
       expect(result.error).toContain('No active registered user');
     });
 
     it('should reject example emails before DB check', async () => {
-      const result = await service.validateRegisteredEmail('example-john@company.com');
+      const result = await service.validateRegisteredEmail(
+        'example-john@company.com',
+      );
       expect(result.valid).toBe(false);
       expect(result.error).toContain('Example');
     });
@@ -387,7 +411,9 @@ describe('CsvValidationService', () => {
     });
 
     it('should preserve clean text without modification', () => {
-      const result = service.sanitizeTextInput('This is clean text with no HTML');
+      const result = service.sanitizeTextInput(
+        'This is clean text with no HTML',
+      );
       expect(result).toBe('This is clean text with no HTML');
     });
 
@@ -400,16 +426,25 @@ describe('CsvValidationService', () => {
   describe('validateRowInTransaction (ARCH-C4)', () => {
     it('should validate valid row within transaction', async () => {
       const txClient = {
-        badgeTemplate: { findFirst: jest.fn().mockResolvedValue({ id: 'tpl-1', status: 'ACTIVE' }) },
-        user: { findFirst: jest.fn().mockResolvedValue({ id: 'u-1', isActive: true }) },
+        badgeTemplate: {
+          findFirst: jest
+            .fn()
+            .mockResolvedValue({ id: 'tpl-1', status: 'ACTIVE' }),
+        },
+        user: {
+          findFirst: jest.fn().mockResolvedValue({ id: 'u-1', isActive: true }),
+        },
       };
 
-      const result = await service.validateRowInTransaction({
-        badgeTemplateId: 'leadership-excellence',
-        recipientEmail: 'john@company.com',
-        evidenceUrl: 'https://docs.example.com',
-        narrativeJustification: 'Great work',
-      }, txClient);
+      const result = await service.validateRowInTransaction(
+        {
+          badgeTemplateId: 'leadership-excellence',
+          recipientEmail: 'john@company.com',
+          evidenceUrl: 'https://docs.example.com',
+          narrativeJustification: 'Great work',
+        },
+        txClient,
+      );
 
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);
@@ -417,16 +452,25 @@ describe('CsvValidationService', () => {
 
     it('should use transaction client for DB queries', async () => {
       const txClient = {
-        badgeTemplate: { findFirst: jest.fn().mockResolvedValue({ id: 'tpl-1', status: 'ACTIVE' }) },
-        user: { findFirst: jest.fn().mockResolvedValue({ id: 'u-1', isActive: true }) },
+        badgeTemplate: {
+          findFirst: jest
+            .fn()
+            .mockResolvedValue({ id: 'tpl-1', status: 'ACTIVE' }),
+        },
+        user: {
+          findFirst: jest.fn().mockResolvedValue({ id: 'u-1', isActive: true }),
+        },
       };
 
-      await service.validateRowInTransaction({
-        badgeTemplateId: 'tpl-1',
-        recipientEmail: 'john@company.com',
-        evidenceUrl: '',
-        narrativeJustification: '',
-      }, txClient);
+      await service.validateRowInTransaction(
+        {
+          badgeTemplateId: 'tpl-1',
+          recipientEmail: 'john@company.com',
+          evidenceUrl: '',
+          narrativeJustification: '',
+        },
+        txClient,
+      );
 
       expect(txClient.badgeTemplate.findFirst).toHaveBeenCalled();
       expect(txClient.user.findFirst).toHaveBeenCalled();
@@ -435,35 +479,49 @@ describe('CsvValidationService', () => {
     it('should reject invalid template in transaction', async () => {
       const txClient = {
         badgeTemplate: { findFirst: jest.fn().mockResolvedValue(null) },
-        user: { findFirst: jest.fn().mockResolvedValue({ id: 'u-1', isActive: true }) },
+        user: {
+          findFirst: jest.fn().mockResolvedValue({ id: 'u-1', isActive: true }),
+        },
       };
 
-      const result = await service.validateRowInTransaction({
-        badgeTemplateId: 'nonexistent',
-        recipientEmail: 'john@company.com',
-        evidenceUrl: '',
-        narrativeJustification: '',
-      }, txClient);
+      const result = await service.validateRowInTransaction(
+        {
+          badgeTemplateId: 'nonexistent',
+          recipientEmail: 'john@company.com',
+          evidenceUrl: '',
+          narrativeJustification: '',
+        },
+        txClient,
+      );
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('not found'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('not found'))).toBe(true);
     });
 
     it('should reject invalid email in transaction', async () => {
       const txClient = {
-        badgeTemplate: { findFirst: jest.fn().mockResolvedValue({ id: 'tpl-1', status: 'ACTIVE' }) },
+        badgeTemplate: {
+          findFirst: jest
+            .fn()
+            .mockResolvedValue({ id: 'tpl-1', status: 'ACTIVE' }),
+        },
         user: { findFirst: jest.fn().mockResolvedValue(null) },
       };
 
-      const result = await service.validateRowInTransaction({
-        badgeTemplateId: 'tpl-1',
-        recipientEmail: 'unknown@company.com',
-        evidenceUrl: '',
-        narrativeJustification: '',
-      }, txClient);
+      const result = await service.validateRowInTransaction(
+        {
+          badgeTemplateId: 'tpl-1',
+          recipientEmail: 'unknown@company.com',
+          evidenceUrl: '',
+          narrativeJustification: '',
+        },
+        txClient,
+      );
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('No active registered user'))).toBe(true);
+      expect(
+        result.errors.some((e) => e.includes('No active registered user')),
+      ).toBe(true);
     });
 
     it('should reject example data in transaction', async () => {
@@ -472,15 +530,18 @@ describe('CsvValidationService', () => {
         user: { findFirst: jest.fn() },
       };
 
-      const result = await service.validateRowInTransaction({
-        badgeTemplateId: 'EXAMPLE-DELETE-THIS-ROW',
-        recipientEmail: 'example-john@company.com',
-        evidenceUrl: '',
-        narrativeJustification: '',
-      }, txClient);
+      const result = await service.validateRowInTransaction(
+        {
+          badgeTemplateId: 'EXAMPLE-DELETE-THIS-ROW',
+          recipientEmail: 'example-john@company.com',
+          evidenceUrl: '',
+          narrativeJustification: '',
+        },
+        txClient,
+      );
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('Example'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('Example'))).toBe(true);
     });
 
     it('should collect multiple errors in transaction', async () => {
@@ -489,12 +550,15 @@ describe('CsvValidationService', () => {
         user: { findFirst: jest.fn().mockResolvedValue(null) },
       };
 
-      const result = await service.validateRowInTransaction({
-        badgeTemplateId: '',
-        recipientEmail: 'not-an-email',
-        evidenceUrl: 'ftp://bad',
-        narrativeJustification: 'a'.repeat(501),
-      }, txClient);
+      const result = await service.validateRowInTransaction(
+        {
+          badgeTemplateId: '',
+          recipientEmail: 'not-an-email',
+          evidenceUrl: 'ftp://bad',
+          narrativeJustification: 'a'.repeat(501),
+        },
+        txClient,
+      );
 
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThanOrEqual(3);

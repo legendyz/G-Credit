@@ -1,7 +1,7 @@
 /**
  * E2E Tests for Bulk Issuance Upload Endpoint
  * Story 8.2: CSV Upload & Parsing
- * 
+ *
  * Tests the POST /api/bulk-issuance/upload endpoint for:
  * - Valid CSV upload and session creation
  * - File validation (type, headers)
@@ -9,7 +9,7 @@
  * - XSS sanitization + CRLF support (combined test)
  * - IDOR prevention
  * - Rate limiting (ARCH-C3)
- * 
+ *
  * NOTE: The upload endpoint has a rate limit of 3 per 5 min per IP (ARCH-C3).
  *       Functional tests are consolidated to stay within this limit.
  *       Validation edge cases (>20 rows, missing headers, EXAMPLE rows) are
@@ -27,7 +27,7 @@ import {
 
 /**
  * Functional tests — consolidated to stay within rate limit (3 POSTs max)
- * 
+ *
  * Guard execution order: JwtAuthGuard → RolesGuard → ThrottlerGuard
  * Tests blocked by RolesGuard (EMPLOYEE) don't count against throttle.
  */
@@ -42,7 +42,11 @@ describe('Bulk Issuance Upload — Functional (e2e)', () => {
     ctx = await setupE2ETest('bulk-upload-fn');
     adminUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'admin');
     issuerUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'issuer');
-    employeeUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'employee');
+    employeeUser = await createAndLoginUser(
+      ctx.app,
+      ctx.userFactory,
+      'employee',
+    );
 
     // Create an ACTIVE badge template
     const template = await ctx.templateFactory.createActive({
@@ -149,10 +153,11 @@ describe('Bulk Issuance Upload — Rate Limiting (e2e)', () => {
   });
 
   it('POST /api/bulk-issuance/upload — 11th upload within 5 min returns 429 (ARCH-C3)', async () => {
-    const makeCsv = (suffix: number) => [
-      'badgeTemplateId,recipientEmail,evidenceUrl,narrativeJustification',
-      `${activeTemplateId},user${suffix}@test.com,,Rate limit test ${suffix}`,
-    ].join('\n');
+    const makeCsv = (suffix: number) =>
+      [
+        'badgeTemplateId,recipientEmail,evidenceUrl,narrativeJustification',
+        `${activeTemplateId},user${suffix}@test.com,,Rate limit test ${suffix}`,
+      ].join('\n');
 
     // Exhaust the rate limit (10 uploads allowed, matching production default)
     for (let i = 0; i < 10; i++) {

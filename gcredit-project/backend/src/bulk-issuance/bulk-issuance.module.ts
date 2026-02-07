@@ -6,7 +6,7 @@ import { PrismaModule } from '../common/prisma.module';
 
 /**
  * Bulk Issuance Module
- * 
+ *
  * Provides batch badge issuance functionality with:
  * - CSV template generation and validation
  * - Session-based preview workflow
@@ -16,10 +16,7 @@ import { PrismaModule } from '../common/prisma.module';
 @Module({
   imports: [PrismaModule],
   controllers: [BulkIssuanceController],
-  providers: [
-    BulkIssuanceService,
-    CsvValidationService,
-  ],
+  providers: [BulkIssuanceService, CsvValidationService],
   exports: [BulkIssuanceService, CsvValidationService],
 })
 export class BulkIssuanceModule {}

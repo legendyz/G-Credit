@@ -1,7 +1,7 @@
 /**
  * E2E Tests for Bulk Issuance Template Endpoint
  * Story 8.1: CSV Template & Validation
- * 
+ *
  * Tests the GET /api/bulk-issuance/template endpoint for:
  * - Correct CSV content and structure
  * - Dynamic date-based filename
@@ -27,7 +27,11 @@ describe('Bulk Issuance Template (e2e)', () => {
     ctx = await setupE2ETest('bulk-template');
     adminUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'admin');
     issuerUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'issuer');
-    employeeUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'employee');
+    employeeUser = await createAndLoginUser(
+      ctx.app,
+      ctx.userFactory,
+      'employee',
+    );
   });
 
   afterAll(async () => {
@@ -50,7 +54,7 @@ describe('Bulk Issuance Template (e2e)', () => {
     const csvContent = response.text;
     // Strip BOM if present
     const cleanCsv = csvContent.replace(/^\uFEFF/, '');
-    const lines = cleanCsv.split('\n').filter(l => !l.startsWith('#'));
+    const lines = cleanCsv.split('\n').filter((l) => !l.startsWith('#'));
     const headerLine = lines[0];
 
     expect(headerLine).toContain('badgeTemplateId');
