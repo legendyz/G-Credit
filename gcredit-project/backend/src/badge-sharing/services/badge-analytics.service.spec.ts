@@ -211,7 +211,7 @@ describe('BadgeAnalyticsService', () => {
         metadata: null,
       } as any);
 
-      const result = await service.recordShare(
+      const _result = await service.recordShare(
         'badge-123',
         'email',
         'user-123',

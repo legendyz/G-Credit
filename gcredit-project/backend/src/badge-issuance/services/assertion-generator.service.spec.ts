@@ -5,7 +5,7 @@ import * as crypto from 'crypto';
 
 describe('AssertionGeneratorService - Sprint 5 Story 6.1', () => {
   let service: AssertionGeneratorService;
-  let configService: ConfigService;
+  let _configService: ConfigService;
 
   const mockConfigService = {
     get: jest.fn((key: string, defaultValue?: string) => {
@@ -29,7 +29,7 @@ describe('AssertionGeneratorService - Sprint 5 Story 6.1', () => {
     }).compile();
 
     service = module.get<AssertionGeneratorService>(AssertionGeneratorService);
-    configService = module.get<ConfigService>(ConfigService);
+    _configService = module.get<ConfigService>(ConfigService);
   });
 
   describe('generateAssertion()', () => {

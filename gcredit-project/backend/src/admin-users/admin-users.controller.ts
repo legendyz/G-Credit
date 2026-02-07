@@ -46,14 +46,7 @@ import {
 import { AdminUsersQueryDto } from './dto/admin-users-query.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
-
-interface RequestWithUser {
-  user: {
-    userId: string;
-    email: string;
-    role: UserRole;
-  };
-}
+import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
 
 @ApiTags('admin-users')
 @ApiBearerAuth()

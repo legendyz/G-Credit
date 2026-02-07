@@ -1,4 +1,5 @@
 import request from 'supertest';
+import { App } from 'supertest/types';
 import {
   TestContext,
   setupE2ETest,
@@ -23,7 +24,6 @@ describe('Badge Verification E2E (Isolated)', () => {
   let recipientUser: TestUser;
 
   // Badge IDs for tests
-  let templateId: string;
   let activeBadgeVerificationId: string;
   let revokedBadgeVerificationId: string;
   let expiredBadgeVerificationId: string;
@@ -51,7 +51,6 @@ describe('Badge Verification E2E (Isolated)', () => {
       name: 'Verification Test Badge',
       description: 'Badge for testing public verification',
     });
-    templateId = template.id;
 
     // Create active badge
     const activeBadge = await ctx.badgeFactory.createClaimed({
@@ -81,110 +80,143 @@ describe('Badge Verification E2E (Isolated)', () => {
 
   describe('GET /api/verify/:verificationId', () => {
     it('should verify active badge (PUBLIC - no auth)', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get(`/api/verify/${activeBadgeVerificationId}`)
         .expect(200);
 
+      const body = response.body as {
+        '@context': string;
+        type: string;
+        badge: string;
+        verificationStatus: string;
+        verifiedAt: string;
+        _meta: {
+          badge: { name: string; description: string };
+          recipient: { email: string };
+          integrity: { verified: boolean; hash: string };
+        };
+      };
       // Story 6.3: Response is Open Badges 2.0 assertion + metadata
-      expect(response.body).toHaveProperty(
-        '@context',
-        'https://w3id.org/openbadges/v2',
-      );
-      expect(response.body).toHaveProperty('type', 'Assertion');
-      expect(response.body).toHaveProperty('badge');
-      expect(response.body.badge).toMatch(/\/api\/badge-templates\//);
+      expect(body).toHaveProperty('@context', 'https://w3id.org/openbadges/v2');
+      expect(body).toHaveProperty('type', 'Assertion');
+      expect(body).toHaveProperty('badge');
+      expect(body.badge).toMatch(/\/api\/badge-templates\//);
 
       // Story 6.3: Verification metadata
-      expect(response.body).toHaveProperty('verificationStatus');
-      expect(response.body).toHaveProperty('verifiedAt');
+      expect(body).toHaveProperty('verificationStatus');
+      expect(body).toHaveProperty('verifiedAt');
 
       // Story 6.2: Badge details in _meta
-      expect(response.body._meta.badge).toHaveProperty('name');
-      expect(response.body._meta.badge).toHaveProperty('description');
+      expect(body._meta.badge).toHaveProperty('name');
+      expect(body._meta.badge).toHaveProperty('description');
     });
 
     it('should return 410 for revoked badge with revocation details', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get(`/api/verify/${revokedBadgeVerificationId}`)
         .expect(200); // Story 6.3: Returns 200 with revoked status
 
-      expect(response.body).toHaveProperty('verificationStatus', 'revoked');
-      expect(response.body).toHaveProperty('revoked', true);
-      expect(response.body).toHaveProperty('revokedAt');
-      expect(response.body).toHaveProperty(
+      const body = response.body as {
+        verificationStatus: string;
+        revoked: boolean;
+        revokedAt: string;
+        revocationReason: string;
+        verifiedAt: string;
+      };
+      expect(body).toHaveProperty('verificationStatus', 'revoked');
+      expect(body).toHaveProperty('revoked', true);
+      expect(body).toHaveProperty('revokedAt');
+      expect(body).toHaveProperty(
         'revocationReason',
         'Test revocation for E2E testing',
       );
-      expect(response.body).toHaveProperty('verifiedAt');
+      expect(body).toHaveProperty('verifiedAt');
     });
 
     it('should return badge data for expired badge', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get(`/api/verify/${expiredBadgeVerificationId}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('verificationStatus', 'expired');
-      expect(response.body).toHaveProperty('verifiedAt');
-      expect(response.body).toHaveProperty(
-        '@context',
-        'https://w3id.org/openbadges/v2',
-      );
+      const body = response.body as {
+        verificationStatus: string;
+        verifiedAt: string;
+        '@context': string;
+      };
+      expect(body).toHaveProperty('verificationStatus', 'expired');
+      expect(body).toHaveProperty('verifiedAt');
+      expect(body).toHaveProperty('@context', 'https://w3id.org/openbadges/v2');
     });
 
     it('should return 404 for invalid verificationId', async () => {
       const fakeId = '00000000-0000-0000-0000-000000000000';
 
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get(`/api/verify/${fakeId}`)
         .expect(404);
 
-      expect(response.body.message).toContain('not found');
+      const body = response.body as { message: string };
+      expect(body.message).toContain('not found');
     });
 
     it('should not require authentication (PUBLIC endpoint)', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get(`/api/verify/${activeBadgeVerificationId}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('@context');
+      const body = response.body as {
+        '@context': string;
+        _meta: { recipient: { email: string } };
+      };
+      expect(body).toHaveProperty('@context');
     });
 
     it('should mask recipient email for privacy', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get(`/api/verify/${activeBadgeVerificationId}`)
         .expect(200);
 
+      const body = response.body as { _meta: { recipient: { email: string } } };
       // Email should be masked
-      expect(response.body._meta.recipient.email).toMatch(/\*\*\*/);
+      expect(body._meta.recipient.email).toMatch(/\*\*\*/);
     });
 
     it('should include Open Badges 2.0 JSON-LD assertion', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get(`/api/verify/${activeBadgeVerificationId}`)
         .expect(200);
 
-      expect(response.body['@context']).toBe('https://w3id.org/openbadges/v2');
-      expect(response.body.type).toBe('Assertion');
-      expect(response.body.badge).toMatch(/\/api\/badge-templates\//);
+      const body = response.body as {
+        '@context': string;
+        type: string;
+        badge: string;
+      };
+      expect(body['@context']).toBe('https://w3id.org/openbadges/v2');
+      expect(body.type).toBe('Assertion');
+      expect(body.badge).toMatch(/\/api\/badge-templates\//);
     });
 
     it('should return verificationStatus and verifiedAt timestamp', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get(`/api/verify/${activeBadgeVerificationId}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('verificationStatus');
+      const body = response.body as {
+        verificationStatus: string;
+        verifiedAt: string;
+      };
+      expect(body).toHaveProperty('verificationStatus');
       expect(['valid', 'expired', 'revoked']).toContain(
-        response.body.verificationStatus,
+        body.verificationStatus,
       );
-      expect(response.body).toHaveProperty('verifiedAt');
+      expect(body).toHaveProperty('verifiedAt');
 
-      const verifiedAt = new Date(response.body.verifiedAt);
+      const verifiedAt = new Date(body.verifiedAt);
       expect(verifiedAt.getTime()).toBeGreaterThan(0);
     });
 
     it('should set Cache-Control header for valid badges', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get(`/api/verify/${activeBadgeVerificationId}`)
         .expect(200);
 
@@ -193,22 +225,30 @@ describe('Badge Verification E2E (Isolated)', () => {
     });
 
     it('should set no-cache headers for revoked badges', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get(`/api/verify/${revokedBadgeVerificationId}`)
         .expect(200);
 
       expect(response.headers['cache-control']).toBeDefined();
       expect(response.headers['cache-control']).toMatch(/no-cache/);
 
+      const body = response.body as {
+        verificationStatus: string;
+        revoked: boolean;
+        revokedAt: string;
+        revocationReason: string;
+        isValid: boolean;
+        isPublicReason: boolean;
+      };
       // Story 9.2: Also verify revocation details are returned
-      expect(response.body.verificationStatus).toBe('revoked');
-      expect(response.body.revoked).toBe(true);
-      expect(response.body.revokedAt).toBeDefined();
-      expect(response.body.revocationReason).toBeDefined();
-      expect(response.body).toHaveProperty('isValid');
-      expect(response.body.isValid).toBe(false);
-      expect(response.body).toHaveProperty('isPublicReason');
-      expect(typeof response.body.isPublicReason).toBe('boolean');
+      expect(body.verificationStatus).toBe('revoked');
+      expect(body.revoked).toBe(true);
+      expect(body.revokedAt).toBeDefined();
+      expect(body.revocationReason).toBeDefined();
+      expect(body).toHaveProperty('isValid');
+      expect(body.isValid).toBe(false);
+      expect(body).toHaveProperty('isPublicReason');
+      expect(typeof body.isPublicReason).toBe('boolean');
     });
   });
 });

@@ -215,7 +215,7 @@ describe('AdminUsersService', () => {
       };
 
       prisma.user.findUnique.mockResolvedValue(mockUser);
-      prisma.$transaction.mockImplementation(async (callback: any) => {
+      prisma.$transaction.mockImplementation((callback: any) => {
         return callback({
           user: {
             updateMany: jest.fn().mockResolvedValue({ count: 1 }),
@@ -275,7 +275,7 @@ describe('AdminUsersService', () => {
 
     it('should throw ConflictException when concurrent update detected', async () => {
       prisma.user.findUnique.mockResolvedValue(mockUser);
-      prisma.$transaction.mockImplementation(async (callback: any) => {
+      prisma.$transaction.mockImplementation((callback: any) => {
         return callback({
           user: {
             updateMany: jest.fn().mockResolvedValue({ count: 0 }), // No rows updated
@@ -299,7 +299,7 @@ describe('AdminUsersService', () => {
     it('should create audit log entry on role change', async () => {
       const mockAuditCreate = jest.fn().mockResolvedValue({});
       prisma.user.findUnique.mockResolvedValue(mockUser);
-      prisma.$transaction.mockImplementation(async (callback: any) => {
+      prisma.$transaction.mockImplementation((callback: any) => {
         return callback({
           user: {
             updateMany: jest.fn().mockResolvedValue({ count: 1 }),
@@ -340,7 +340,7 @@ describe('AdminUsersService', () => {
     it('should deactivate user successfully', async () => {
       const deactivatedUser = { ...mockUser, isActive: false };
       prisma.user.findUnique.mockResolvedValue(mockUser);
-      prisma.$transaction.mockImplementation(async (callback: any) => {
+      prisma.$transaction.mockImplementation((callback: any) => {
         return callback({
           user: {
             update: jest.fn().mockResolvedValue(deactivatedUser),
@@ -364,7 +364,7 @@ describe('AdminUsersService', () => {
       const inactiveUser = { ...mockUser, isActive: false };
       const activatedUser = { ...mockUser, isActive: true };
       prisma.user.findUnique.mockResolvedValue(inactiveUser);
-      prisma.$transaction.mockImplementation(async (callback: any) => {
+      prisma.$transaction.mockImplementation((callback: any) => {
         return callback({
           user: {
             update: jest.fn().mockResolvedValue(activatedUser),
@@ -401,7 +401,7 @@ describe('AdminUsersService', () => {
     it('should create audit log entry on status change', async () => {
       const mockAuditCreate = jest.fn().mockResolvedValue({});
       prisma.user.findUnique.mockResolvedValue(mockUser);
-      prisma.$transaction.mockImplementation(async (callback: any) => {
+      prisma.$transaction.mockImplementation((callback: any) => {
         return callback({
           user: {
             update: jest

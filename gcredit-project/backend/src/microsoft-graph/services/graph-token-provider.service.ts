@@ -27,7 +27,7 @@ export class GraphTokenProviderService implements OnModuleInit {
    * Creates ClientSecretCredential with tenant/client/secret from environment.
    * Gracefully degrades when configuration is missing (for test environments).
    */
-  async onModuleInit() {
+  onModuleInit() {
     const tenantId = this.configService.get<string>('AZURE_TENANT_ID');
     const clientId = this.configService.get<string>('AZURE_CLIENT_ID');
     const clientSecret = this.configService.get<string>('AZURE_CLIENT_SECRET');

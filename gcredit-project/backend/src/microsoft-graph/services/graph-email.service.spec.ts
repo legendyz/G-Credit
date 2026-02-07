@@ -5,7 +5,7 @@ import { GraphTokenProviderService } from './graph-token-provider.service';
 
 describe('GraphEmailService', () => {
   let service: GraphEmailService;
-  let tokenProvider: GraphTokenProviderService;
+  let _tokenProvider: GraphTokenProviderService;
 
   const mockAuthProvider = {
     getAccessToken: jest.fn().mockResolvedValue('mock-token'),
@@ -52,7 +52,7 @@ describe('GraphEmailService', () => {
     }).compile();
 
     service = module.get<GraphEmailService>(GraphEmailService);
-    tokenProvider = module.get<GraphTokenProviderService>(
+    _tokenProvider = module.get<GraphTokenProviderService>(
       GraphTokenProviderService,
     );
   });

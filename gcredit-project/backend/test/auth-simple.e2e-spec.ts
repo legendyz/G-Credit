@@ -6,6 +6,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
+import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/common/prisma.service';
 
@@ -40,7 +41,7 @@ describe('Auth E2E (Simple)', () => {
     const password = 'TestPassword123!';
 
     // Register
-    const registerResponse = await request(app.getHttpServer())
+    const registerResponse = await request(app.getHttpServer() as App)
       .post('/auth/register')
       .send({
         email: uniqueEmail,
@@ -50,11 +51,12 @@ describe('Auth E2E (Simple)', () => {
       })
       .expect(201);
 
+    const registerBody = registerResponse.body as { email: string };
     console.log('Register response:', registerResponse.body);
-    expect(registerResponse.body.email).toBe(uniqueEmail);
+    expect(registerBody.email).toBe(uniqueEmail);
 
     // Login
-    const loginResponse = await request(app.getHttpServer())
+    const loginResponse = await request(app.getHttpServer() as App)
       .post('/auth/login')
       .send({
         email: uniqueEmail,
@@ -62,9 +64,13 @@ describe('Auth E2E (Simple)', () => {
       })
       .expect(200); // Story 8.6: Login returns 200 OK (was 201 before)
 
+    const loginBody = loginResponse.body as {
+      accessToken: string;
+      user: { email: string };
+    };
     console.log('Login response:', loginResponse.body);
-    expect(loginResponse.body.accessToken).toBeDefined();
-    expect(loginResponse.body.user.email).toBe(uniqueEmail);
+    expect(loginBody.accessToken).toBeDefined();
+    expect(loginBody.user.email).toBe(uniqueEmail);
 
     // Cleanup
     await prisma.user.delete({ where: { email: uniqueEmail } });

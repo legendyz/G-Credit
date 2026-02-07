@@ -12,6 +12,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { PrismaClient, User } from '@prisma/client';
 import request from 'supertest';
+import { App } from 'supertest/types';
 import { AppModule } from '../../src/app.module';
 import { PrismaService } from '../../src/common/prisma.service';
 import { createTestSchema, dropTestSchema } from './test-database';
@@ -111,14 +112,15 @@ export async function createAndLoginUser(
   const credentials = { email: user.email, password };
 
   // Login to get token
-  const response = await request(app.getHttpServer())
+  const response = await request(app.getHttpServer() as App)
     .post('/auth/login')
     .send(credentials)
     .expect(200); // Story 8.6: Login returns 200 OK
 
+  const body = response.body as { accessToken: string };
   return {
     user,
-    token: response.body.accessToken,
+    token: body.accessToken,
     credentials,
   };
 }
@@ -136,7 +138,7 @@ export function authRequest(
   patch: (url: string) => request.Test;
   delete: (url: string) => request.Test;
 } {
-  const server = app.getHttpServer();
+  const server = app.getHttpServer() as App;
 
   return {
     get: (url: string) =>

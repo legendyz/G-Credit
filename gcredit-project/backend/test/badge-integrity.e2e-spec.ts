@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
+import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/common/prisma.service';
 import { UserRole, BadgeStatus } from '@prisma/client';
@@ -13,8 +14,6 @@ describe('Badge Integrity (e2e) - Story 6.5', () => {
   let app: INestApplication;
   let prisma: PrismaService;
   let assertionGenerator: AssertionGeneratorService;
-  let adminToken: string;
-  let recipientToken: string;
   let badgeId: string;
 
   beforeAll(async () => {
@@ -76,23 +75,21 @@ describe('Badge Integrity (e2e) - Story 6.5', () => {
     });
 
     // Login to get tokens
-    const adminLoginResponse = await request(app.getHttpServer())
+    await request(app.getHttpServer() as App)
       .post('/auth/login')
       .send({
         email: 'admin-integrity@test.com',
         password: 'Admin123!',
       })
       .expect(200);
-    adminToken = adminLoginResponse.body.accessToken;
 
-    const recipientLoginResponse = await request(app.getHttpServer())
+    await request(app.getHttpServer() as App)
       .post('/auth/login')
       .send({
         email: 'recipient-integrity@test.com',
         password: 'Recipient123!',
       })
       .expect(200);
-    recipientToken = recipientLoginResponse.body.accessToken;
 
     // Create badge template
     const template = await prisma.badgeTemplate.create({
@@ -169,18 +166,24 @@ describe('Badge Integrity (e2e) - Story 6.5', () => {
       });
 
       // Now verify integrity
-      const response = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer() as App)
         .get(`/api/badges/${badgeId}/integrity`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('integrityVerified', true);
-      expect(response.body).toHaveProperty('storedHash');
-      expect(response.body).toHaveProperty('computedHash');
-      expect(response.body.storedHash).toBe(response.body.computedHash);
-      expect(response.body).toHaveProperty('tampered', false);
+      const body = response.body as {
+        integrityVerified: boolean;
+        storedHash: string;
+        computedHash: string;
+        tampered: boolean;
+      };
+      expect(body).toHaveProperty('integrityVerified', true);
+      expect(body).toHaveProperty('storedHash');
+      expect(body).toHaveProperty('computedHash');
+      expect(body.storedHash).toBe(body.computedHash);
+      expect(body).toHaveProperty('tampered', false);
 
       // SHA-256 hash should be 64 hex characters
-      expect(response.body.storedHash).toMatch(/^[a-f0-9]{64}$/);
+      expect(body.storedHash).toMatch(/^[a-f0-9]{64}$/);
     });
 
     it('should detect tampering when assertion modified', async () => {
@@ -191,7 +194,7 @@ describe('Badge Integrity (e2e) - Story 6.5', () => {
       });
 
       const tamperedAssertion = {
-        ...(badge!.assertionJson as any),
+        ...(badge!.assertionJson as Record<string, unknown>),
         issuedOn: '1999-01-01T00:00:00.000Z', // Tamper with date
       };
 
@@ -204,13 +207,19 @@ describe('Badge Integrity (e2e) - Story 6.5', () => {
       });
 
       // Verify integrity should now fail
-      const response = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer() as App)
         .get(`/api/badges/${badgeId}/integrity`)
         .expect(200);
 
-      expect(response.body.integrityVerified).toBe(false);
-      expect(response.body.tampered).toBe(true);
-      expect(response.body.storedHash).not.toBe(response.body.computedHash);
+      const body = response.body as {
+        integrityVerified: boolean;
+        tampered: boolean;
+        storedHash: string;
+        computedHash: string;
+      };
+      expect(body.integrityVerified).toBe(false);
+      expect(body.tampered).toBe(true);
+      expect(body.storedHash).not.toBe(body.computedHash);
 
       // Restore original assertion for other tests
       await prisma.badge.update({
@@ -224,7 +233,7 @@ describe('Badge Integrity (e2e) - Story 6.5', () => {
     it('should return 404 for non-existent badge', async () => {
       const fakeId = '00000000-0000-0000-0000-000000000000';
 
-      await request(app.getHttpServer())
+      await request(app.getHttpServer() as App)
         .get(`/api/badges/${fakeId}/integrity`)
         .expect(404);
     });
@@ -238,23 +247,26 @@ describe('Badge Integrity (e2e) - Story 6.5', () => {
         select: { verificationId: true },
       });
 
-      const response = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer() as App)
         .get(`/api/verify/${badge!.verificationId}`)
         .expect(200);
 
+      const body = response.body as {
+        '@context': string;
+        _meta: {
+          integrity: { verified: boolean; hash: string };
+        };
+      };
       // Verification API returns Open Badges 2.0 assertion as top level
       // with _meta containing additional info
-      expect(response.body).toHaveProperty(
-        '@context',
-        'https://w3id.org/openbadges/v2',
-      );
-      expect(response.body).toHaveProperty('_meta');
+      expect(body).toHaveProperty('@context', 'https://w3id.org/openbadges/v2');
+      expect(body).toHaveProperty('_meta');
 
       // Story 6.5: Integrity status should be in _meta
-      expect(response.body._meta).toHaveProperty('integrity');
-      expect(response.body._meta.integrity).toHaveProperty('verified', true);
-      expect(response.body._meta.integrity).toHaveProperty('hash');
-      expect(response.body._meta.integrity.hash).toMatch(/^[a-f0-9]{64}$/);
+      expect(body._meta).toHaveProperty('integrity');
+      expect(body._meta.integrity).toHaveProperty('verified', true);
+      expect(body._meta.integrity).toHaveProperty('hash');
+      expect(body._meta.integrity.hash).toMatch(/^[a-f0-9]{64}$/);
     });
   });
 

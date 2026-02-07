@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
+import type { Request, Response, NextFunction } from 'express';
 import { AppModule } from './app.module';
 
 /**
@@ -14,7 +15,6 @@ function validateJwtSecret(): void {
   const logger = new Logger('JwtValidation');
   const jwtSecret = process.env.JWT_SECRET;
   const jwtRefreshSecret = process.env.JWT_REFRESH_SECRET;
-  const isProduction = process.env.NODE_ENV === 'production';
   const isTest = process.env.NODE_ENV === 'test';
 
   // Skip validation in test environment (tests use mock secrets)
@@ -174,7 +174,7 @@ async function bootstrap() {
   );
 
   // AC1: Add Permissions-Policy header manually (helmet v8 doesn't include it)
-  app.use((req: any, res: any, next: any) => {
+  app.use((req: Request, res: Response, next: NextFunction) => {
     res.setHeader(
       'Permissions-Policy',
       'geolocation=(), microphone=(), camera=(), payment=(), usb=()',
@@ -292,4 +292,4 @@ async function bootstrap() {
     `📚 API Documentation available at: http://localhost:${port}/api-docs`,
   );
 }
-bootstrap();
+void bootstrap();

@@ -14,8 +14,8 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 
 describe('BadgeIssuanceService - Baked Badge (Story 6.4)', () => {
   let service: BadgeIssuanceService;
-  let prisma: PrismaService;
-  let storageService: StorageService;
+  let _prisma: PrismaService;
+  let _storageService: StorageService;
 
   const mockPrismaService = {
     badge: {
@@ -79,8 +79,8 @@ describe('BadgeIssuanceService - Baked Badge (Story 6.4)', () => {
     }).compile();
 
     service = module.get<BadgeIssuanceService>(BadgeIssuanceService);
-    prisma = module.get<PrismaService>(PrismaService);
-    storageService = module.get<StorageService>(StorageService);
+    _prisma = module.get<PrismaService>(PrismaService);
+    _storageService = module.get<StorageService>(StorageService);
   });
 
   describe('generateBakedBadge()', () => {

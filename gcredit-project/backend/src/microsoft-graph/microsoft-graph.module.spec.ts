@@ -4,7 +4,6 @@ import { MicrosoftGraphModule } from './microsoft-graph.module';
 import { GraphTokenProviderService } from './services/graph-token-provider.service';
 import { GraphEmailService } from './services/graph-email.service';
 import { GraphTeamsService } from './services/graph-teams.service';
-import { PrismaService } from '../common/prisma.service';
 import { EmailService } from '../common/email.service';
 
 describe('MicrosoftGraphModule', () => {

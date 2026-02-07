@@ -12,8 +12,6 @@ import {
   Body,
   UseGuards,
   Request,
-  NotFoundException,
-  UnauthorizedException,
   BadRequestException,
   HttpCode,
   HttpStatus,
@@ -33,6 +31,7 @@ import {
   ShareBadgeTeamsDto,
   ShareBadgeTeamsResponseDto,
 } from '../dto/share-badge-teams.dto';
+import type { RequestWithUser } from '../../common/interfaces/request-with-user.interface';
 
 @ApiTags('Badge Sharing')
 @Controller('api/badges')
@@ -84,11 +83,11 @@ export class TeamsSharingController {
     status: 400,
     description: 'Bad request - Badge is revoked or expired',
   })
-  async shareBadgeToTeams(
-    @Param('badgeId') badgeId: string,
-    @Body() dto: ShareBadgeTeamsDto,
-    @Request() req: any,
-  ): Promise<ShareBadgeTeamsResponseDto> {
+  shareBadgeToTeams(
+    @Param('badgeId') _badgeId: string,
+    @Body() _dto: ShareBadgeTeamsDto,
+    @Request() _req: RequestWithUser,
+  ): ShareBadgeTeamsResponseDto {
     // TODO: Technical Debt - Teams Channel Sharing Not Implemented
     //
     // Teams channel sharing requires additional Microsoft Graph API permissions:

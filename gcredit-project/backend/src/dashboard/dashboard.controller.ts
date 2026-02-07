@@ -30,15 +30,7 @@ import {
   ManagerDashboardDto,
   AdminDashboardDto,
 } from './dto';
-
-interface RequestWithUser {
-  user: {
-    userId: string;
-    email: string;
-    role: UserRole;
-    department?: string;
-  };
-}
+import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
 
 @ApiTags('dashboard')
 @ApiBearerAuth()

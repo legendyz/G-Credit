@@ -90,16 +90,20 @@ describe('Bulk Issuance Upload — Functional (e2e)', () => {
       })
       .expect(201);
 
+    const body = response.body as {
+      sessionId: string;
+      totalRows: number;
+    };
     // Session created
-    expect(response.body.sessionId).toBeDefined();
-    expect(response.body.totalRows).toBe(1);
+    expect(body.sessionId).toBeDefined();
+    expect(body.totalRows).toBe(1);
 
     // XSS sanitized (ARCH-C7) — no script tags in response
-    const responseText = JSON.stringify(response.body);
+    const responseText = JSON.stringify(body);
     expect(responseText).not.toContain('<script>');
 
     // IDOR test: try to access the session as a different user
-    const sessionId = response.body.sessionId;
+    const sessionId = body.sessionId;
     await authRequest(ctx.app, issuerUser.token)
       .get(`/api/bulk-issuance/preview/${sessionId}`)
       .expect(403);
@@ -124,7 +128,8 @@ describe('Bulk Issuance Upload — Functional (e2e)', () => {
       })
       .expect(400);
 
-    expect(response.body.message).toContain('CSV');
+    const body = response.body as { message: string };
+    expect(body.message).toContain('CSV');
   });
 });
 

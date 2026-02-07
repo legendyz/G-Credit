@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import {
   CreateMilestoneDto,
@@ -11,7 +6,7 @@ import {
   MilestoneTriggerType,
 } from './dto/milestone.dto';
 import { MilestoneType } from '@prisma/client';
-import type { MilestoneConfig } from '@prisma/client';
+import type { MilestoneConfig, Prisma } from '@prisma/client';
 
 @Injectable()
 export class MilestonesService {
@@ -38,7 +33,7 @@ export class MilestonesService {
         type: typeMapping[dto.type] || MilestoneType.BADGE_COUNT,
         title: dto.title,
         description: dto.description,
-        trigger: dto.trigger as any,
+        trigger: dto.trigger as unknown as Prisma.JsonValue,
         icon: dto.icon,
         isActive: dto.isActive ?? true,
         createdBy: adminId,
@@ -72,7 +67,9 @@ export class MilestonesService {
       data: {
         ...(dto.title && { title: dto.title }),
         ...(dto.description && { description: dto.description }),
-        ...(dto.trigger && { trigger: dto.trigger as any }),
+        ...(dto.trigger && {
+          trigger: dto.trigger as unknown as Prisma.JsonValue,
+        }),
         ...(dto.icon && { icon: dto.icon }),
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
       },
@@ -150,7 +147,13 @@ export class MilestonesService {
         // Evaluate trigger
         const triggerMet = await this.evaluateTrigger(
           userId,
-          config.trigger as any,
+          config.trigger as {
+            type: MilestoneTriggerType;
+            value?: number;
+            categoryId?: string;
+            requiredBadgeCount?: number;
+            months?: number;
+          },
         );
 
         if (triggerMet) {
@@ -177,10 +180,10 @@ export class MilestonesService {
       } else {
         this.logger.debug(`Milestone detection completed in ${duration}ms`);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       // AC 2.10: Log failures but don't block badge operations
       this.logger.error(
-        `❌ Milestone detection failed for user ${userId}: ${error.message}`,
+        `❌ Milestone detection failed for user ${userId}: ${(error as Error).message}`,
       );
       // Don't throw - milestone detection is non-critical
     }
@@ -214,24 +217,30 @@ export class MilestonesService {
    */
   private async evaluateTrigger(
     userId: string,
-    trigger: any,
+    trigger: {
+      type: MilestoneTriggerType;
+      value?: number;
+      categoryId?: string;
+      requiredBadgeCount?: number;
+      months?: number;
+    },
   ): Promise<boolean> {
     switch (trigger.type) {
       case MilestoneTriggerType.BADGE_COUNT:
-        return this.evaluateBadgeCountTrigger(userId, trigger.value);
+        return this.evaluateBadgeCountTrigger(userId, trigger.value ?? 0);
 
       case MilestoneTriggerType.SKILL_TRACK:
         return this.evaluateSkillTrackTrigger(
           userId,
-          trigger.categoryId,
-          trigger.requiredBadgeCount,
+          trigger.categoryId ?? '',
+          trigger.requiredBadgeCount ?? 0,
         );
 
       case MilestoneTriggerType.ANNIVERSARY:
-        return this.evaluateAnniversaryTrigger(userId, trigger.months);
+        return this.evaluateAnniversaryTrigger(userId, trigger.months ?? 0);
 
       default:
-        this.logger.warn(`Unknown trigger type: ${trigger.type}`);
+        this.logger.warn(`Unknown trigger type: ${String(trigger.type)}`);
         return false;
     }
   }

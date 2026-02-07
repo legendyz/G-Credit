@@ -85,7 +85,7 @@ export class BlobStorageService {
     generateThumbnail: boolean = false,
   ): Promise<UploadImageResult> {
     // Validate image format and size
-    await this.validateImage(file);
+    this.validateImage(file);
 
     // Get image metadata
     const metadata = await this.getImageMetadata(file.buffer);
@@ -194,7 +194,7 @@ export class BlobStorageService {
       const blockBlobClient =
         this.containerClient!.getBlockBlobClient(blobName);
       return await blockBlobClient.exists();
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -203,7 +203,7 @@ export class BlobStorageService {
    * Validate image file
    * @param file - Multer file object
    */
-  private async validateImage(file: Express.Multer.File): Promise<void> {
+  private validateImage(file: Express.Multer.File): void {
     const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
     const maxSize = 2 * 1024 * 1024; // 2MB
 
@@ -367,7 +367,7 @@ export class BlobStorageService {
       }
 
       throw new Error('Invalid blob URL format');
-    } catch (error) {
+    } catch (_error) {
       throw new BadRequestException(`Invalid image URL: ${url}`);
     }
   }

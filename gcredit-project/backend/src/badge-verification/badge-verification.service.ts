@@ -126,8 +126,8 @@ export class BadgeVerificationService {
         description: badge.template.description,
         imageUrl: badge.template.imageUrl,
         criteria:
-          (badge.template.issuanceCriteria as any)?.description ||
-          'No criteria specified',
+          ((badge.template.issuanceCriteria as Record<string, unknown>)
+            ?.description as string) || 'No criteria specified',
         category: badge.template.category,
         skills: badge.template.skillIds || [],
       },
@@ -164,7 +164,7 @@ export class BadgeVerificationService {
       }),
 
       // Evidence files from Sprint 4
-      evidenceFiles: badge.evidenceFiles.map((file: any) => ({
+      evidenceFiles: badge.evidenceFiles.map((file) => ({
         filename: file.fileName,
         blobUrl: file.blobUrl,
         uploadedAt: file.uploadedAt,

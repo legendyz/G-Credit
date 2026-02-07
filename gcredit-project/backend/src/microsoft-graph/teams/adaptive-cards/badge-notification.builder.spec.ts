@@ -8,6 +8,24 @@ import {
   BadgeNotificationCardData,
 } from './badge-notification.builder';
 
+/** Typed Adaptive Card element for test assertions */
+interface ACElement {
+  type?: string;
+  text?: string;
+  url?: string;
+  size?: string;
+  style?: string;
+  weight?: string;
+  wrap?: boolean;
+  maxLines?: number;
+  altText?: string;
+  title?: string;
+  items?: ACElement[];
+  columns?: ACElement[];
+  facts?: Array<{ title: string; value: string }>;
+  [key: string]: unknown;
+}
+
 describe('BadgeNotificationCardBuilder - Story 7.4', () => {
   const mockCardData: BadgeNotificationCardData = {
     badgeImageUrl: 'https://storage.azure.com/badges/test-badge.png',
@@ -38,7 +56,7 @@ describe('BadgeNotificationCardBuilder - Story 7.4', () => {
     it('should include badge image with correct URL and style', () => {
       const card = BadgeNotificationCardBuilder.build(mockCardData);
 
-      const headerContainer = card.body[0] as any;
+      const headerContainer = card.body[0] as ACElement;
       const columnSet = headerContainer.items[0];
       const imageColumn = columnSet.columns[0];
       const image = imageColumn.items[0];
@@ -53,7 +71,7 @@ describe('BadgeNotificationCardBuilder - Story 7.4', () => {
     it('should include celebration message and badge name', () => {
       const card = BadgeNotificationCardBuilder.build(mockCardData);
 
-      const headerContainer = card.body[0] as any;
+      const headerContainer = card.body[0] as ACElement;
       const columnSet = headerContainer.items[0];
       const textColumn = columnSet.columns[1];
       const items = textColumn.items;
@@ -75,7 +93,7 @@ describe('BadgeNotificationCardBuilder - Story 7.4', () => {
     it('should include FactSet with recipient, date, and badge ID', () => {
       const card = BadgeNotificationCardBuilder.build(mockCardData);
 
-      const detailsContainer = card.body[1] as any;
+      const detailsContainer = card.body[1] as ACElement;
       const factSet = detailsContainer.items[0];
 
       expect(factSet.type).toBe('FactSet');
@@ -97,7 +115,7 @@ describe('BadgeNotificationCardBuilder - Story 7.4', () => {
     it('should include badge description with max 3 lines', () => {
       const card = BadgeNotificationCardBuilder.build(mockCardData);
 
-      const descriptionContainer = card.body[2] as any;
+      const descriptionContainer = card.body[2] as ACElement;
       const textBlock = descriptionContainer.items[0];
 
       expect(textBlock.type).toBe('TextBlock');
@@ -109,9 +127,9 @@ describe('BadgeNotificationCardBuilder - Story 7.4', () => {
     it('should include "View Badge" action button', () => {
       const card = BadgeNotificationCardBuilder.build(mockCardData);
 
-      const viewBadgeAction = card.actions.find((action: any) =>
+      const viewBadgeAction = card.actions.find((action: ACElement) =>
         action.title.includes('View Badge'),
-      ) as any;
+      ) as ACElement;
 
       expect(viewBadgeAction).toBeDefined();
       expect(viewBadgeAction.type).toBe('Action.OpenUrl');
@@ -122,9 +140,9 @@ describe('BadgeNotificationCardBuilder - Story 7.4', () => {
     it('should include "Claim Now" action button when claimUrl provided', () => {
       const card = BadgeNotificationCardBuilder.build(mockCardData);
 
-      const claimAction = card.actions.find((action: any) =>
+      const claimAction = card.actions.find((action: ACElement) =>
         action.title.includes('Claim Now'),
-      ) as any;
+      ) as ACElement;
 
       expect(claimAction).toBeDefined();
       expect(claimAction.type).toBe('Action.OpenUrl');
@@ -155,7 +173,7 @@ describe('BadgeNotificationCardBuilder - Story 7.4', () => {
 
       const card = BadgeNotificationCardBuilder.build(dataWithLongName);
 
-      const headerContainer = card.body[0] as any;
+      const headerContainer = card.body[0] as ACElement;
       const columnSet = headerContainer.items[0];
       const textColumn = columnSet.columns[1];
       const badgeNameText = textColumn.items[1];
@@ -173,7 +191,7 @@ describe('BadgeNotificationCardBuilder - Story 7.4', () => {
 
       const card = BadgeNotificationCardBuilder.build(dataWithLongDescription);
 
-      const descriptionContainer = card.body[2] as any;
+      const descriptionContainer = card.body[2] as ACElement;
       const textBlock = descriptionContainer.items[0];
 
       expect(textBlock.maxLines).toBe(3); // Will truncate after 3 lines
@@ -188,7 +206,7 @@ describe('BadgeNotificationCardBuilder - Story 7.4', () => {
     });
 
     it('should throw error if badgeImageUrl is missing', () => {
-      const { badgeImageUrl, ...incomplete } = mockCardData;
+      const { badgeImageUrl: _badgeImageUrl, ...incomplete } = mockCardData;
 
       expect(() => {
         BadgeNotificationCardBuilder.validate(incomplete);
@@ -258,13 +276,13 @@ describe('BadgeNotificationCardBuilder - Story 7.4', () => {
       expect(card).toHaveProperty('actions');
 
       // Body should contain Containers
-      card.body.forEach((item: any) => {
+      card.body.forEach((item: ACElement) => {
         expect(item.type).toBe('Container');
         expect(item).toHaveProperty('items');
       });
 
       // Actions should be valid action types
-      card.actions.forEach((action: any) => {
+      card.actions.forEach((action: ACElement) => {
         expect(action.type).toBe('Action.OpenUrl');
         expect(action).toHaveProperty('title');
         expect(action).toHaveProperty('url');
@@ -274,14 +292,14 @@ describe('BadgeNotificationCardBuilder - Story 7.4', () => {
     it('should use valid style values', () => {
       const card = BadgeNotificationCardBuilder.build(mockCardData);
 
-      const headerContainer = card.body[0] as any;
+      const headerContainer = card.body[0] as ACElement;
       expect(headerContainer.style).toBe('emphasis'); // Valid style
 
-      const viewBadgeAction = card.actions[0] as any;
+      const viewBadgeAction = card.actions[0] as ACElement;
       expect(viewBadgeAction.style).toBe('default'); // Valid action style
 
       if (card.actions.length > 1) {
-        const claimAction = card.actions[1] as any;
+        const claimAction = card.actions[1] as ACElement;
         expect(claimAction.style).toBe('positive'); // Valid action style
       }
     });

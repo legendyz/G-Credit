@@ -5,7 +5,7 @@ import { PrismaService } from '../common/prisma.service';
 
 describe('RecommendationsService - Story 4.5', () => {
   let service: RecommendationsService;
-  let prismaService: PrismaService;
+  let _prismaService: PrismaService;
 
   const mockPrismaService = {
     badge: {
@@ -41,7 +41,7 @@ describe('RecommendationsService - Story 4.5', () => {
     }).compile();
 
     service = module.get<RecommendationsService>(RecommendationsService);
-    prismaService = module.get<PrismaService>(PrismaService);
+    _prismaService = module.get<PrismaService>(PrismaService);
 
     jest.clearAllMocks();
   });

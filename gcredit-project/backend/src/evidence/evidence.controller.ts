@@ -23,6 +23,7 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { EvidenceService } from './evidence.service';
+import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
 
 @ApiTags('Evidence Files')
 @Controller('api/badges/:badgeId/evidence')
@@ -70,7 +71,7 @@ export class EvidenceController {
   async uploadEvidence(
     @Param('badgeId') badgeId: string,
     @UploadedFile() file: Express.Multer.File,
-    @Request() req: any,
+    @Request() req: RequestWithUser,
   ) {
     if (!file) {
       throw new BadRequestException('File is required');
@@ -108,7 +109,10 @@ export class EvidenceController {
   })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
   @ApiResponse({ status: 404, description: 'Badge not found' })
-  async listEvidence(@Param('badgeId') badgeId: string, @Request() req: any) {
+  async listEvidence(
+    @Param('badgeId') badgeId: string,
+    @Request() req: RequestWithUser,
+  ) {
     return this.evidenceService.listEvidence(
       badgeId,
       req.user.userId,
@@ -134,7 +138,7 @@ export class EvidenceController {
   async generateDownloadSas(
     @Param('badgeId') badgeId: string,
     @Param('fileId') fileId: string,
-    @Request() req: any,
+    @Request() req: RequestWithUser,
   ) {
     return this.evidenceService.generateDownloadSas(
       badgeId,
@@ -162,7 +166,7 @@ export class EvidenceController {
   async generatePreviewSas(
     @Param('badgeId') badgeId: string,
     @Param('fileId') fileId: string,
-    @Request() req: any,
+    @Request() req: RequestWithUser,
   ) {
     return this.evidenceService.generatePreviewSas(
       badgeId,

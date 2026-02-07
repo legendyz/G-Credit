@@ -16,7 +16,7 @@ export class StorageService implements OnModuleInit {
 
   constructor(private configService: ConfigService) {}
 
-  async onModuleInit() {
+  onModuleInit() {
     const connectionString = this.configService.get<string>(
       'AZURE_STORAGE_CONNECTION_STRING',
     );
@@ -93,9 +93,7 @@ export class StorageService implements OnModuleInit {
    * Generate SAS token for evidence file download (Story 4.3 - AC 3.6)
    * 5-minute expiry, read-only permission
    */
-  async generateEvidenceSasUrl(
-    fileName: string,
-  ): Promise<{ url: string; expiresAt: Date }> {
+  generateEvidenceSasUrl(fileName: string): { url: string; expiresAt: Date } {
     const accountName = this.configService.get<string>(
       'AZURE_STORAGE_ACCOUNT_NAME',
     );

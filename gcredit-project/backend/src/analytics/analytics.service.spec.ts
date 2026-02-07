@@ -5,7 +5,7 @@ import { PrismaService } from '../common/prisma.service';
 
 describe('AnalyticsService', () => {
   let service: AnalyticsService;
-  let prisma: jest.Mocked<PrismaService>;
+  let _prisma: jest.Mocked<PrismaService>;
 
   const mockPrismaService = {
     user: {
@@ -42,7 +42,7 @@ describe('AnalyticsService', () => {
     }).compile();
 
     service = module.get<AnalyticsService>(AnalyticsService);
-    prisma = module.get(PrismaService);
+    _prisma = module.get(PrismaService);
 
     // Reset all mocks
     jest.clearAllMocks();

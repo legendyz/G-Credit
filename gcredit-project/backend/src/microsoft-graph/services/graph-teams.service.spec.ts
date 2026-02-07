@@ -14,7 +14,7 @@ import { GraphTokenProviderService } from './graph-token-provider.service';
 // SKIP: Teams channel functionality pending Graph API permissions
 describe.skip('GraphTeamsService', () => {
   let service: GraphTeamsService;
-  let tokenProvider: GraphTokenProviderService;
+  let _tokenProvider: GraphTokenProviderService;
 
   const mockAuthProvider = {
     getAccessToken: jest.fn().mockResolvedValue('mock-token'),
@@ -50,7 +50,7 @@ describe.skip('GraphTeamsService', () => {
     }).compile();
 
     service = module.get<GraphTeamsService>(GraphTeamsService);
-    tokenProvider = module.get<GraphTokenProviderService>(
+    _tokenProvider = module.get<GraphTokenProviderService>(
       GraphTokenProviderService,
     );
   });

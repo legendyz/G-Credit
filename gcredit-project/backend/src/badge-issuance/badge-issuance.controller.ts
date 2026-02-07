@@ -15,7 +15,6 @@ import {
   UploadedFile,
   BadRequestException,
   Res,
-  Header,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -41,6 +40,7 @@ import { WalletQueryDto } from './dto/wallet-query.dto';
 import { ReportBadgeIssueDto } from './dto/report-badge-issue.dto';
 import { SimilarBadgesQueryDto } from '../badge-templates/dto/similar-badges-query.dto';
 import { RecommendationsService } from '../badge-templates/recommendations.service';
+import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
 
 @ApiTags('Badge Issuance')
 @Controller('api/badges')
@@ -59,7 +59,10 @@ export class BadgeIssuanceController {
   @ApiResponse({ status: 400, description: 'Invalid request' })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
   @ApiResponse({ status: 404, description: 'Template or recipient not found' })
-  async issueBadge(@Body() dto: IssueBadgeDto, @Request() req: any) {
+  async issueBadge(
+    @Body() dto: IssueBadgeDto,
+    @Request() req: RequestWithUser,
+  ) {
     return this.badgeService.issueBadge(dto, req.user.userId);
   }
 
@@ -95,7 +98,10 @@ export class BadgeIssuanceController {
   @Get('my-badges')
   @ApiOperation({ summary: 'Get badges received by current user' })
   @ApiResponse({ status: 200, description: 'Badges retrieved successfully' })
-  async getMyBadges(@Request() req: any, @Query() query: QueryBadgeDto) {
+  async getMyBadges(
+    @Request() req: RequestWithUser,
+    @Query() query: QueryBadgeDto,
+  ) {
     return this.badgeService.getMyBadges(req.user.userId, query);
   }
 
@@ -115,7 +121,10 @@ export class BadgeIssuanceController {
       },
     },
   })
-  async getWallet(@Request() req: any, @Query() query: WalletQueryDto) {
+  async getWallet(
+    @Request() req: RequestWithUser,
+    @Query() query: WalletQueryDto,
+  ) {
     return this.badgeService.getWalletBadges(req.user.userId, query);
   }
 
@@ -126,7 +135,10 @@ export class BadgeIssuanceController {
   })
   @ApiResponse({ status: 200, description: 'Badges retrieved successfully' })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
-  async getIssuedBadges(@Request() req: any, @Query() query: QueryBadgeDto) {
+  async getIssuedBadges(
+    @Request() req: RequestWithUser,
+    @Query() query: QueryBadgeDto,
+  ) {
     return this.badgeService.getIssuedBadges(
       req.user.userId,
       req.user.role,
@@ -145,7 +157,7 @@ export class BadgeIssuanceController {
     status: 403,
     description: 'Forbidden - can only view own badges or issued badges',
   })
-  async getBadgeById(@Param('id') id: string, @Request() req: any) {
+  async getBadgeById(@Param('id') id: string, @Request() req: RequestWithUser) {
     const badge = await this.badgeService.findOne(id);
 
     if (!badge) {
@@ -193,7 +205,7 @@ export class BadgeIssuanceController {
   async revokeBadge(
     @Param('id') id: string,
     @Body() dto: RevokeBadgeDto,
-    @Request() req: any,
+    @Request() req: RequestWithUser,
   ) {
     const badge = await this.badgeService.revokeBadge(id, {
       reason: dto.reason,
@@ -257,7 +269,7 @@ export class BadgeIssuanceController {
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
   async bulkIssueBadges(
     @UploadedFile() file: Express.Multer.File,
-    @Request() req: any,
+    @Request() req: RequestWithUser,
   ) {
     if (!file) {
       throw new BadRequestException('CSV file is required');
@@ -292,7 +304,7 @@ export class BadgeIssuanceController {
   async getSimilarBadges(
     @Param('id') badgeId: string,
     @Query() query: SimilarBadgesQueryDto,
-    @Request() req: any,
+    @Request() req: RequestWithUser,
   ) {
     return this.recommendationsService.getSimilarBadges(
       badgeId,
@@ -325,7 +337,7 @@ export class BadgeIssuanceController {
   async reportBadgeIssue(
     @Param('id') badgeId: string,
     @Body() dto: ReportBadgeIssueDto,
-    @Request() req: any,
+    @Request() req: RequestWithUser,
   ) {
     return this.badgeService.reportBadgeIssue(badgeId, dto, req.user.userId);
   }
@@ -361,7 +373,7 @@ export class BadgeIssuanceController {
   @ApiResponse({ status: 404, description: 'Badge not found' })
   async downloadBakedBadge(
     @Param('id') badgeId: string,
-    @Request() req: any,
+    @Request() req: RequestWithUser,
     @Res() res: Response,
   ) {
     const { buffer, filename } = await this.badgeService.generateBakedBadge(

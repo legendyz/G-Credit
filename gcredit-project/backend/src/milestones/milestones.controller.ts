@@ -21,6 +21,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { MilestonesService } from './milestones.service';
 import { CreateMilestoneDto, UpdateMilestoneDto } from './dto/milestone.dto';
+import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
 
 @ApiTags('Milestones')
 @Controller('api')
@@ -39,7 +40,10 @@ export class MilestonesController {
     description: 'Milestone config created successfully',
   })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
-  async createMilestone(@Body() dto: CreateMilestoneDto, @Request() req: any) {
+  async createMilestone(
+    @Body() dto: CreateMilestoneDto,
+    @Request() req: RequestWithUser,
+  ) {
     return this.milestonesService.createMilestone(dto, req.user.userId);
   }
 
@@ -112,7 +116,7 @@ export class MilestonesController {
       },
     },
   })
-  async getMyAchievements(@Request() req: any) {
+  async getMyAchievements(@Request() req: RequestWithUser) {
     return this.milestonesService.getUserAchievements(req.user.userId);
   }
 }

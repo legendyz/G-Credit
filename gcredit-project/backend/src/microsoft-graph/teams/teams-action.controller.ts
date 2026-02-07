@@ -29,6 +29,14 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { PrismaService } from '../../common/prisma.service';
 import { ClaimBadgeActionDto } from './dto/claim-badge-action.dto';
 import { BadgeStatus } from '@prisma/client';
+import type { Badge, BadgeTemplate, User } from '@prisma/client';
+
+/** Badge with included template, recipient, and issuer relations */
+type BadgeWithRelations = Badge & {
+  template: BadgeTemplate;
+  recipient: User;
+  issuer: User;
+};
 
 @ApiTags('Teams Actions')
 @Controller('api/teams/actions')
@@ -158,7 +166,7 @@ export class TeamsActionController {
    * Build Adaptive Card showing badge has been claimed
    * Replaces action buttons with "Claimed" status badge
    */
-  private buildClaimedBadgeCard(badge: any) {
+  private buildClaimedBadgeCard(badge: BadgeWithRelations) {
     const recipientName =
       badge.recipient.firstName && badge.recipient.lastName
         ? `${badge.recipient.firstName} ${badge.recipient.lastName}`
@@ -226,7 +234,9 @@ export class TeamsActionController {
             },
             {
               title: 'Issued Date',
-              value: new Date(badge.issuedAt).toLocaleDateString(),
+              value: new Date(
+                badge.issuedAt as string | number | Date,
+              ).toLocaleDateString(),
             },
             {
               title: 'Status',
@@ -234,7 +244,9 @@ export class TeamsActionController {
             },
             {
               title: 'Claimed Date',
-              value: new Date(badge.claimedAt).toLocaleDateString(),
+              value: new Date(
+                badge.claimedAt as string | number | Date,
+              ).toLocaleDateString(),
             },
           ],
         },

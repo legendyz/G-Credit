@@ -8,6 +8,7 @@ import {
 import { PrismaService } from '../common/prisma.service';
 import { CsvValidationService } from './csv-validation.service';
 import { randomUUID } from 'crypto';
+import { Prisma } from '@prisma/client';
 
 /**
  * Bulk Issuance Session Status
@@ -224,14 +225,14 @@ export class BulkIssuanceService {
       );
     }
 
-    const validRows: any[] = [];
+    const validRows: Record<string, string>[] = [];
     const errors: SessionError[] = [];
     const rows: PreviewData['rows'] = [];
 
     // Wrap validation in a database transaction for consistency (ARCH-C4)
     const { txValidRows, txErrors, txRows } = await this.prisma.$transaction(
       async (tx) => {
-        const localValidRows: any[] = [];
+        const localValidRows: Record<string, string>[] = [];
         const localErrors: SessionError[] = [];
         const localRows: PreviewData['rows'] = [];
 
@@ -313,12 +314,12 @@ export class BulkIssuanceService {
         id: sessionId,
         issuerId,
         status,
-        validRows: validRows as any,
+        validRows: validRows as unknown as Prisma.JsonArray,
         totalRows: validRows.length + errors.length,
         validCount: validRows.length,
         errorCount: errors.length,
-        errors: errors as any,
-        rows: rows as any,
+        errors: errors as unknown as Prisma.JsonArray,
+        rows: rows as unknown as Prisma.JsonArray,
         expiresAt,
       },
     });
@@ -429,7 +430,11 @@ export class BulkIssuanceService {
       data: { status: SessionStatus.PROCESSING },
     });
 
-    const sessionValidRows = session.validRows as any as any[];
+    const sessionValidRows = session.validRows as unknown as Array<{
+      recipientEmail: string;
+      templateId: string;
+      evidenceUrl?: string;
+    }>;
     const results: Array<{
       row: number;
       status: 'success' | 'failed';
@@ -455,15 +460,15 @@ export class BulkIssuanceService {
         this.logger.debug(
           `Issued badge ${i + 1}/${sessionValidRows.length} to ${row.recipientEmail}`,
         );
-      } catch (error) {
+      } catch (error: unknown) {
         failed++;
         results.push({
           row: i + 2,
           status: 'failed',
-          error: error.message,
+          error: (error as Error).message,
         });
         this.logger.error(
-          `Failed to issue badge to ${row.recipientEmail}: ${error.message}`,
+          `Failed to issue badge to ${row.recipientEmail}: ${(error as Error).message}`,
         );
       }
     }

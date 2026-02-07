@@ -5,7 +5,7 @@
  * Request body for Teams Adaptive Card "Claim Badge" action
  */
 
-import { IsString, IsUUID } from 'class-validator';
+import { IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ClaimBadgeActionDto {

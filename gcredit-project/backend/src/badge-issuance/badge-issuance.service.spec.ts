@@ -18,8 +18,8 @@ import { BadgeStatus } from '@prisma/client';
 
 describe('BadgeIssuanceService', () => {
   let service: BadgeIssuanceService;
-  let prismaService: PrismaService;
-  let assertionGenerator: AssertionGeneratorService;
+  let _prismaService: PrismaService;
+  let _assertionGenerator: AssertionGeneratorService;
 
   const mockPrismaService = {
     badgeTemplate: {
@@ -130,8 +130,8 @@ describe('BadgeIssuanceService', () => {
     }).compile();
 
     service = module.get<BadgeIssuanceService>(BadgeIssuanceService);
-    prismaService = module.get<PrismaService>(PrismaService);
-    assertionGenerator = module.get<AssertionGeneratorService>(
+    _prismaService = module.get<PrismaService>(PrismaService);
+    _assertionGenerator = module.get<AssertionGeneratorService>(
       AssertionGeneratorService,
     );
 
@@ -641,7 +641,7 @@ describe('BadgeIssuanceService', () => {
         // Arrange
         mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
         mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
-        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+        mockPrismaService.$transaction.mockImplementation((callback) => {
           return callback({
             badge: {
               update: jest.fn().mockResolvedValue({
@@ -676,7 +676,7 @@ describe('BadgeIssuanceService', () => {
         };
         mockPrismaService.badge.findUnique.mockResolvedValue(ownBadge);
         mockPrismaService.user.findUnique.mockResolvedValue(mockIssuerUser);
-        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+        mockPrismaService.$transaction.mockImplementation((callback) => {
           return callback({
             badge: {
               update: jest.fn().mockResolvedValue({
@@ -780,7 +780,7 @@ describe('BadgeIssuanceService', () => {
         mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
         mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
         const mockTimestamp = new Date();
-        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+        mockPrismaService.$transaction.mockImplementation((callback) => {
           return callback({
             badge: {
               update: jest.fn().mockResolvedValue({
@@ -817,7 +817,7 @@ describe('BadgeIssuanceService', () => {
         mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
         mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
         const mockAuditLogCreate = jest.fn().mockResolvedValue({});
-        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+        mockPrismaService.$transaction.mockImplementation((callback) => {
           return callback({
             badge: {
               update: jest.fn().mockResolvedValue({
@@ -889,7 +889,7 @@ describe('BadgeIssuanceService', () => {
           mockBadgeWithRecipient,
         );
         mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
-        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+        mockPrismaService.$transaction.mockImplementation((callback) => {
           return callback({
             badge: {
               update: jest.fn().mockResolvedValue({
@@ -953,7 +953,7 @@ describe('BadgeIssuanceService', () => {
           mockBadgeWithRecipient,
         );
         mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
-        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+        mockPrismaService.$transaction.mockImplementation((callback) => {
           return callback({
             badge: {
               update: jest.fn().mockResolvedValue({
@@ -1026,7 +1026,7 @@ describe('BadgeIssuanceService', () => {
           mockBadgeWithRecipient,
         );
         mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
-        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+        mockPrismaService.$transaction.mockImplementation((callback) => {
           return callback({
             badge: {
               update: jest.fn().mockResolvedValue({
@@ -1075,7 +1075,7 @@ describe('BadgeIssuanceService', () => {
           mockBadgeWithRecipient,
         );
         mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
-        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+        mockPrismaService.$transaction.mockImplementation((callback) => {
           return callback({
             badge: {
               update: jest.fn().mockResolvedValue({
@@ -1143,7 +1143,7 @@ describe('BadgeIssuanceService', () => {
           mockBadgeWithRecipient,
         );
         mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
-        mockPrismaService.$transaction.mockImplementation(async (callback) => {
+        mockPrismaService.$transaction.mockImplementation((callback) => {
           return callback({
             badge: {
               update: jest.fn().mockResolvedValue({

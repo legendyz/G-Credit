@@ -28,6 +28,7 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { BulkIssuanceService } from './bulk-issuance.service';
+import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
 
 /**
  * Bulk Issuance Controller
@@ -60,7 +61,7 @@ export class BulkIssuanceController {
   @Roles(UserRole.ISSUER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Download CSV template for bulk badge issuance' })
   @ApiResponse({ status: 200, description: 'CSV template file' })
-  async downloadTemplate(@Request() req: any, @Res() res: Response) {
+  downloadTemplate(@Request() req: RequestWithUser, @Res() res: Response) {
     const csv = this.bulkIssuanceService.generateTemplate();
     const dateStr = new Date().toISOString().split('T')[0];
     const BOM = '\uFEFF';
@@ -123,7 +124,7 @@ export class BulkIssuanceController {
   })
   async uploadCsv(
     @UploadedFile() file: Express.Multer.File,
-    @Request() req: any,
+    @Request() req: RequestWithUser,
   ) {
     if (!file) {
       throw new BadRequestException('CSV file is required');
@@ -157,7 +158,10 @@ export class BulkIssuanceController {
     description: 'Not authorized to access this session',
   })
   @ApiResponse({ status: 404, description: 'Session not found or expired' })
-  async getPreview(@Param('sessionId') sessionId: string, @Request() req: any) {
+  async getPreview(
+    @Param('sessionId') sessionId: string,
+    @Request() req: RequestWithUser,
+  ) {
     const userId = req.user.userId;
     return this.bulkIssuanceService.getPreviewData(sessionId, userId);
   }
@@ -182,7 +186,7 @@ export class BulkIssuanceController {
   @ApiResponse({ status: 404, description: 'Session not found or expired' })
   async confirmBulkIssuance(
     @Param('sessionId') sessionId: string,
-    @Request() req: any,
+    @Request() req: RequestWithUser,
   ) {
     const userId = req.user.userId;
     return this.bulkIssuanceService.confirmBulkIssuance(sessionId, userId);
@@ -209,7 +213,7 @@ export class BulkIssuanceController {
   @ApiResponse({ status: 404, description: 'Session not found or expired' })
   async downloadErrorReport(
     @Param('sessionId') sessionId: string,
-    @Request() req: any,
+    @Request() req: RequestWithUser,
     @Res() res: Response,
   ) {
     const userId = req.user.userId;

@@ -23,7 +23,7 @@ import {
   DateGroup,
 } from './dto/wallet-query.dto';
 import { ReportBadgeIssueDto } from './dto/report-badge-issue.dto';
-import { BadgeStatus, UserRole } from '@prisma/client';
+import { BadgeStatus, Prisma, UserRole } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { MilestonesService } from '../milestones/milestones.service';
 import sharp from 'sharp';
@@ -134,7 +134,9 @@ export class BadgeIssuanceService {
       where: { id: badge.id },
       data: {
         // IMPORTANT: Convert to plain object (Lesson 13 - Prisma JSON type conversion)
-        assertionJson: JSON.parse(JSON.stringify(assertion)),
+        assertionJson: JSON.parse(
+          JSON.stringify(assertion),
+        ) as Prisma.JsonValue,
         metadataHash, // Sprint 5 Story 6.5: Store hash for integrity verification
       },
     });
@@ -143,18 +145,20 @@ export class BadgeIssuanceService {
     // Story 7.4: Unified notification through TeamsNotificationService
     this.teamsNotificationService
       .sendBadgeIssuanceNotification(badge.id, recipient.id)
-      .catch((err) => {
+      .catch((err: Error) => {
         this.logger.warn(
           `Email notification failed for badge ${badge.id}: ${err.message}`,
         );
       });
 
     // 11. Check milestones (non-blocking)
-    this.milestonesService.checkMilestones(dto.recipientId).catch((err) => {
-      this.logger.warn(
-        `Milestone check failed after badge issuance: ${err.message}`,
-      );
-    });
+    this.milestonesService
+      .checkMilestones(dto.recipientId)
+      .catch((err: Error) => {
+        this.logger.warn(
+          `Milestone check failed after badge issuance: ${err.message}`,
+        );
+      });
 
     // 12. Return badge response
     return {
@@ -244,7 +248,7 @@ export class BadgeIssuanceService {
     // 6b. Check milestones (non-blocking)
     this.milestonesService
       .checkMilestones(claimedBadge.recipientId)
-      .catch((err) => {
+      .catch((err: Error) => {
         this.logger.warn(
           `Milestone check failed after badge claim: ${err.message}`,
         );
@@ -396,11 +400,11 @@ export class BadgeIssuanceService {
         } catch (auditErr) {
           this.logger.error(
             `Failed to create notification audit log:`,
-            auditErr.message,
+            (auditErr as Error).message,
           );
         }
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         this.logger.error(
           `Failed to send revocation notification to ${badge.recipient.email}:`,
           err.message,
@@ -417,7 +421,7 @@ export class BadgeIssuanceService {
    */
   async getMyBadges(userId: string, query: QueryBadgeDto) {
     // Build where clause
-    const where: any = {
+    const where: Prisma.BadgeWhereInput = {
       recipientId: userId,
     };
 
@@ -455,10 +459,16 @@ export class BadgeIssuanceService {
 
     // Story 8.2: Filter by date range
     if (query.fromDate) {
-      where.issuedAt = { ...where.issuedAt, gte: new Date(query.fromDate) };
+      where.issuedAt = {
+        ...(where.issuedAt as Prisma.DateTimeFilter | undefined),
+        gte: new Date(query.fromDate),
+      };
     }
     if (query.toDate) {
-      where.issuedAt = { ...where.issuedAt, lte: new Date(query.toDate) };
+      where.issuedAt = {
+        ...(where.issuedAt as Prisma.DateTimeFilter | undefined),
+        lte: new Date(query.toDate),
+      };
     }
 
     // Story 8.2: Filter by issuer
@@ -547,7 +557,7 @@ export class BadgeIssuanceService {
     query: QueryBadgeDto,
   ) {
     // Build where clause based on role
-    const where: any = {};
+    const where: Prisma.BadgeWhereInput = {};
 
     // ISSUER can only see badges they issued
     if (userRole === UserRole.ISSUER) {
@@ -578,10 +588,16 @@ export class BadgeIssuanceService {
 
     // Story 8.2: Filter by date range
     if (query.fromDate) {
-      where.issuedAt = { ...where.issuedAt, gte: new Date(query.fromDate) };
+      where.issuedAt = {
+        ...(where.issuedAt as Prisma.DateTimeFilter | undefined),
+        gte: new Date(query.fromDate),
+      };
     }
     if (query.toDate) {
-      where.issuedAt = { ...where.issuedAt, lte: new Date(query.toDate) };
+      where.issuedAt = {
+        ...(where.issuedAt as Prisma.DateTimeFilter | undefined),
+        lte: new Date(query.toDate),
+      };
     }
 
     if (query.templateId) {
@@ -730,7 +746,7 @@ export class BadgeIssuanceService {
     }
 
     // Story 9.3: Transform response to include/exclude revocation fields
-    const response: any = {
+    const response: Record<string, unknown> = {
       ...badge,
     };
 
@@ -767,7 +783,9 @@ export class BadgeIssuanceService {
     try {
       rows = this.csvParser.parseBulkIssuanceCSV(fileBuffer);
     } catch (error) {
-      throw new BadRequestException(`CSV parsing failed: ${error.message}`);
+      throw new BadRequestException(
+        `CSV parsing failed: ${(error as Error).message}`,
+      );
     }
 
     // 2. Limit to 1000 badges per upload
@@ -821,10 +839,12 @@ export class BadgeIssuanceService {
           row: rowNumber,
           email: row.recipientEmail,
           success: false,
-          error: error.message,
+          error: (error as Error).message,
         });
         failCount++;
-        this.logger.warn(`Row ${rowNumber} failed: ${error.message}`);
+        this.logger.warn(
+          `Row ${rowNumber} failed: ${(error as Error).message}`,
+        );
       }
     }
 
@@ -852,7 +872,7 @@ export class BadgeIssuanceService {
     const { page = 1, limit = 50, status, sort = 'issuedAt_desc' } = query;
 
     // Build where clause
-    const where: any = {
+    const where: Prisma.BadgeWhereInput = {
       recipientId: userId,
     };
 
@@ -885,10 +905,16 @@ export class BadgeIssuanceService {
 
     // Story 8.2: Filter by date range
     if (query.fromDate) {
-      where.issuedAt = { ...where.issuedAt, gte: new Date(query.fromDate) };
+      where.issuedAt = {
+        ...(where.issuedAt as Prisma.DateTimeFilter | undefined),
+        gte: new Date(query.fromDate),
+      };
     }
     if (query.toDate) {
-      where.issuedAt = { ...where.issuedAt, lte: new Date(query.toDate) };
+      where.issuedAt = {
+        ...(where.issuedAt as Prisma.DateTimeFilter | undefined),
+        lte: new Date(query.toDate),
+      };
     }
 
     // Get total badge count (for accurate pagination)
@@ -945,7 +971,7 @@ export class BadgeIssuanceService {
     // Merge badges and milestones, sorted by date
     const badgeItems = badges.map((b) => {
       // Story 9.3: Transform badge to include/exclude revocation fields
-      const badgeData: any = {
+      const badgeData: Record<string, unknown> = {
         id: b.id,
         recipientId: b.recipientId,
         status: b.status,
@@ -1024,7 +1050,9 @@ export class BadgeIssuanceService {
   /**
    * Helper: Generate date groups for Timeline View
    */
-  private generateDateGroups(badges: any[]): DateGroup[] {
+  private generateDateGroups(
+    badges: { issuedAt: string | number | Date }[],
+  ): DateGroup[] {
     const groups = new Map<string, { count: number; startIndex: number }>();
 
     badges.forEach((badge, index) => {
@@ -1164,7 +1192,9 @@ export class BadgeIssuanceService {
         reportId,
       };
     } catch (error) {
-      this.logger.error(`Failed to send badge issue report: ${error.message}`);
+      this.logger.error(
+        `Failed to send badge issue report: ${(error as Error).message}`,
+      );
       throw new BadRequestException(
         'Failed to submit report. Please try again later.',
       );

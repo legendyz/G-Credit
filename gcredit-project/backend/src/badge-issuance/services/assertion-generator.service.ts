@@ -19,7 +19,13 @@ interface User {
 @Injectable()
 export class AssertionGeneratorService {
   private readonly baseUrl: string;
-  private readonly issuerProfile: any;
+  private readonly issuerProfile: {
+    type: string;
+    id: string;
+    name: string;
+    url: string;
+    email: string;
+  };
 
   constructor(private configService: ConfigService) {
     this.baseUrl = this.configService.get('APP_URL', 'http://localhost:3000');
@@ -53,7 +59,7 @@ export class AssertionGeneratorService {
       verificationId,
       template,
       recipient,
-      issuer,
+      issuer: _issuer,
       issuedAt,
       expiresAt,
       evidenceUrl,

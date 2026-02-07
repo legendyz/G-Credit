@@ -51,8 +51,8 @@ export class CsvValidationService {
    * @param row - Object with string values to sanitize
    * @returns New object with all values sanitized
    */
-  sanitizeRow<T extends Record<string, any>>(row: T): T {
-    const sanitized: Record<string, any> = {};
+  sanitizeRow<T extends Record<string, unknown>>(row: T): T {
+    const sanitized: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(row)) {
       if (typeof value === 'string') {
@@ -376,7 +376,10 @@ export class CsvValidationService {
    * @param rows - Array of row data
    * @returns CSV string with sanitized content
    */
-  generateSafeCsv(headers: string[], rows: Array<Record<string, any>>): string {
+  generateSafeCsv(
+    headers: string[],
+    rows: Array<Record<string, string | number | boolean | null>>,
+  ): string {
     const headerLine = headers.join(',');
 
     const dataLines = rows.map((row) => {

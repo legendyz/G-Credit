@@ -34,7 +34,7 @@ export class CSVParserService {
   /**
    * Validate required CSV headers
    */
-  private validateHeaders(firstRow: any) {
+  private validateHeaders(firstRow: Record<string, string>) {
     const requiredHeaders = ['recipientEmail', 'templateId'];
     const optionalHeaders = ['evidenceUrl', 'expiresIn'];
     const allHeaders = [...requiredHeaders, ...optionalHeaders];
@@ -61,7 +61,10 @@ export class CSVParserService {
   /**
    * Validate and transform a single row
    */
-  private validateRow(row: any, rowNumber: number): BulkIssuanceRow {
+  private validateRow(
+    row: Record<string, string>,
+    rowNumber: number,
+  ): BulkIssuanceRow {
     const errors: string[] = [];
 
     // Validate recipientEmail

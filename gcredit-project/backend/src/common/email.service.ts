@@ -45,7 +45,7 @@ export class EmailService {
       );
     } else if (this.isDevelopment) {
       // Initialize Ethereal asynchronously (non-blocking)
-      this.initializeEthereal().catch((err) => {
+      this.initializeEthereal().catch((_err: unknown) => {
         this.logger.warn(
           '⚠️ Ethereal initialization delayed, will retry on first email send',
         );
@@ -89,8 +89,11 @@ export class EmailService {
       });
       this.etherealInitialized = true;
       this.logger.log('✅ Ethereal Email initialized (development)');
-    } catch (error) {
-      this.logger.error('❌ Failed to initialize Ethereal:', error.message);
+    } catch (error: unknown) {
+      this.logger.error(
+        '❌ Failed to initialize Ethereal:',
+        (error as Error).message,
+      );
     }
   }
 
@@ -105,10 +108,10 @@ export class EmailService {
         await this.sendViaACS(options);
       }
       this.logger.log(`✅ Email sent to ${options.to}: ${options.subject}`);
-    } catch (error) {
+    } catch (error: unknown) {
       this.logger.error(
         `❌ Failed to send email to ${options.to}:`,
-        error.message,
+        (error as Error).message,
       );
       // Don't throw - email failure shouldn't block operations
     }
@@ -160,13 +163,14 @@ export class EmailService {
       return;
     }
 
-    const info = await this.etherealTransporter.sendMail({
-      from: this.fromAddress,
-      to: options.to,
-      subject: options.subject,
-      html: options.html,
-      text: options.text,
-    });
+    const info: nodemailer.SentMessageInfo =
+      await this.etherealTransporter.sendMail({
+        from: this.fromAddress,
+        to: options.to,
+        subject: options.subject,
+        html: options.html,
+        text: options.text,
+      });
 
     this.logger.log(`📧 Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
   }

@@ -5,7 +5,7 @@ import { ShareBadgeEmailDto } from './dto/share-badge-email.dto';
 
 describe('BadgeSharingController', () => {
   let controller: BadgeSharingController;
-  let service: BadgeSharingService;
+  let _service: BadgeSharingService;
 
   const mockBadgeSharingService = {
     shareBadgeViaEmail: jest.fn(),
@@ -22,7 +22,7 @@ describe('BadgeSharingController', () => {
     }).compile();
 
     controller = module.get<BadgeSharingController>(BadgeSharingController);
-    service = module.get<BadgeSharingService>(BadgeSharingService);
+    _service = module.get<BadgeSharingService>(BadgeSharingService);
   });
 
   it('should be defined', () => {

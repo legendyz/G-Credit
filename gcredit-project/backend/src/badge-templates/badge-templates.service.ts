@@ -65,7 +65,9 @@ export class BadgeTemplatesService {
         category: createDto.category,
         skillIds: createDto.skillIds,
         issuanceCriteria: createDto.issuanceCriteria
-          ? JSON.parse(JSON.stringify(createDto.issuanceCriteria))
+          ? (JSON.parse(
+              JSON.stringify(createDto.issuanceCriteria),
+            ) as Prisma.JsonValue)
           : null,
         validityPeriod: createDto.validityPeriod,
         status: TemplateStatus.DRAFT,
@@ -318,7 +320,7 @@ export class BadgeTemplatesService {
     }
 
     // Update template
-    const updateData: any = {
+    const updateData: Prisma.BadgeTemplateUpdateInput = {
       ...updateDto,
       imageUrl,
     };
@@ -327,7 +329,7 @@ export class BadgeTemplatesService {
     if (updateDto.issuanceCriteria) {
       updateData.issuanceCriteria = JSON.parse(
         JSON.stringify(updateDto.issuanceCriteria),
-      );
+      ) as Prisma.JsonValue;
     }
 
     const updated = await this.prisma.badgeTemplate.update({

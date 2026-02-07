@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
-import type { BadgeTemplate, Badge } from '@prisma/client';
+import type { BadgeTemplate } from '@prisma/client';
 
 export interface SimilarBadgeResponse {
   id: string;

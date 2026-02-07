@@ -10,7 +10,7 @@ import { PrismaService } from '../common/prisma.service';
 
 describe('BulkIssuanceService', () => {
   let service: BulkIssuanceService;
-  let csvValidation: CsvValidationService;
+  let _csvValidation: CsvValidationService;
 
   // In-memory store to simulate DB persistence between create/findUnique
   const sessionStore: Record<string, any> = {};
@@ -41,7 +41,7 @@ describe('BulkIssuanceService', () => {
     }).compile();
 
     service = module.get<BulkIssuanceService>(BulkIssuanceService);
-    csvValidation = module.get<CsvValidationService>(CsvValidationService);
+    _csvValidation = module.get<CsvValidationService>(CsvValidationService);
 
     // Default: valid template and user exist
     mockPrismaService.badgeTemplate.findFirst.mockResolvedValue({
@@ -57,7 +57,7 @@ describe('BulkIssuanceService', () => {
 
     // Mock $transaction to execute the callback with a transaction client that delegates to the same mocks
     mockPrismaService.$transaction.mockImplementation(
-      async (callback: (...args: unknown[]) => unknown) => {
+      (callback: (...args: unknown[]) => unknown) => {
         const txClient = {
           badgeTemplate: {
             findFirst: mockPrismaService.badgeTemplate.findFirst,
@@ -70,7 +70,7 @@ describe('BulkIssuanceService', () => {
 
     // Wire up session store for DB persistence simulation (Finding #1: DB-backed sessions)
     mockPrismaService.bulkIssuanceSession.create.mockImplementation(
-      async ({ data }: any) => {
+      ({ data }: any) => {
         sessionStore[data.id] = {
           ...data,
           createdAt: new Date(),
@@ -80,12 +80,12 @@ describe('BulkIssuanceService', () => {
       },
     );
     mockPrismaService.bulkIssuanceSession.findUnique.mockImplementation(
-      async ({ where }: any) => {
+      ({ where }: any) => {
         return sessionStore[where.id] || null;
       },
     );
     mockPrismaService.bulkIssuanceSession.update.mockImplementation(
-      async ({ where, data }: any) => {
+      ({ where, data }: any) => {
         if (sessionStore[where.id]) {
           Object.assign(sessionStore[where.id], data);
         }
@@ -93,7 +93,7 @@ describe('BulkIssuanceService', () => {
       },
     );
     mockPrismaService.bulkIssuanceSession.delete.mockImplementation(
-      async ({ where }: any) => {
+      ({ where }: any) => {
         const deleted = sessionStore[where.id];
         delete sessionStore[where.id];
         return deleted;

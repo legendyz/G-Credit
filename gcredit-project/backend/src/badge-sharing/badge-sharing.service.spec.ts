@@ -10,10 +10,10 @@ import { ShareBadgeEmailDto } from './dto/share-badge-email.dto';
 
 describe('BadgeSharingService', () => {
   let service: BadgeSharingService;
-  let prismaService: PrismaService;
-  let graphEmailService: GraphEmailService;
-  let emailTemplateService: EmailTemplateService;
-  let badgeAnalyticsService: BadgeAnalyticsService;
+  let _prismaService: PrismaService;
+  let _graphEmailService: GraphEmailService;
+  let _emailTemplateService: EmailTemplateService;
+  let _badgeAnalyticsService: BadgeAnalyticsService;
 
   const mockPrismaService = {
     badge: {
@@ -90,11 +90,11 @@ describe('BadgeSharingService', () => {
     }).compile();
 
     service = module.get<BadgeSharingService>(BadgeSharingService);
-    prismaService = module.get<PrismaService>(PrismaService);
-    graphEmailService = module.get<GraphEmailService>(GraphEmailService);
-    emailTemplateService =
+    _prismaService = module.get<PrismaService>(PrismaService);
+    _graphEmailService = module.get<GraphEmailService>(GraphEmailService);
+    _emailTemplateService =
       module.get<EmailTemplateService>(EmailTemplateService);
-    badgeAnalyticsService = module.get<BadgeAnalyticsService>(
+    _badgeAnalyticsService = module.get<BadgeAnalyticsService>(
       BadgeAnalyticsService,
     );
   });

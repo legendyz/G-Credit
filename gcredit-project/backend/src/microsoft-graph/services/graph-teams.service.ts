@@ -37,7 +37,7 @@ export class GraphTeamsService implements OnModuleInit {
   /**
    * Initialize Graph client after all dependencies are ready
    */
-  async onModuleInit() {
+  onModuleInit() {
     if (this.isEnabled) {
       try {
         this.initializeClient();

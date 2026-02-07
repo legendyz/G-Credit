@@ -1,5 +1,6 @@
 import { Injectable, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
+import { Prisma } from '@prisma/client';
 
 export interface ShareStatsDto {
   badgeId: string;
@@ -54,10 +55,10 @@ export class BadgeAnalyticsService {
     }
 
     // Create share record
-    const metadataToStore: Record<string, any> | null = metadata
+    const metadataToStore: Record<string, unknown> | null = metadata
       ? Object.keys(metadata)
           .filter((key) => key !== 'recipientEmail')
-          .reduce<Record<string, any>>((acc, key) => {
+          .reduce<Record<string, unknown>>((acc, key) => {
             const value = metadata[key as keyof typeof metadata];
             if (value !== undefined) {
               acc[key] = value;
@@ -74,7 +75,7 @@ export class BadgeAnalyticsService {
         recipientEmail: metadata?.recipientEmail || null,
         metadata: (metadataToStore && Object.keys(metadataToStore).length > 0
           ? metadataToStore
-          : null) as any,
+          : null) as Prisma.JsonValue,
       },
     });
   }

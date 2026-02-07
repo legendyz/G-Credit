@@ -4,12 +4,12 @@
  * Uses schema-based isolation to prevent data conflicts in parallel execution.
  */
 import request from 'supertest';
+import { App } from 'supertest/types';
 import { RevocationReason } from '../src/badge-issuance/dto/revoke-badge.dto';
 import {
   setupE2ETest,
   teardownE2ETest,
   createAndLoginUser,
-  authRequest,
   TestContext,
   TestUser,
 } from './helpers';
@@ -60,7 +60,7 @@ describe('Badge Issuance (e2e)', () => {
 
   describe('POST /api/badges', () => {
     it('should issue badge successfully when authorized as ADMIN', () => {
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .post('/api/badges')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .send({
@@ -71,19 +71,29 @@ describe('Badge Issuance (e2e)', () => {
         })
         .expect(201)
         .expect((res) => {
-          expect(res.body).toHaveProperty('id');
-          expect(res.body.status).toBe('PENDING');
-          expect(res.body.claimToken).toHaveLength(32);
-          expect(res.body).toHaveProperty('claimUrl');
-          expect(res.body).toHaveProperty('assertionUrl');
-          expect(res.body.template.id).toBe(templateId);
-          expect(res.body.recipient.id).toBe(recipientUser.user.id);
-          expect(res.body).toHaveProperty('expiresAt');
+          const body = res.body as {
+            id: string;
+            status: string;
+            claimToken: string;
+            claimUrl: string;
+            assertionUrl: string;
+            template: { id: string };
+            recipient: { id: string };
+            expiresAt: string;
+          };
+          expect(body).toHaveProperty('id');
+          expect(body.status).toBe('PENDING');
+          expect(body.claimToken).toHaveLength(32);
+          expect(body).toHaveProperty('claimUrl');
+          expect(body).toHaveProperty('assertionUrl');
+          expect(body.template.id).toBe(templateId);
+          expect(body.recipient.id).toBe(recipientUser.user.id);
+          expect(body).toHaveProperty('expiresAt');
         });
     });
 
     it('should return 403 when unauthorized user (EMPLOYEE) tries to issue badge', () => {
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .post('/api/badges')
         .set('Authorization', `Bearer ${employeeUser.token}`)
         .send({
@@ -96,7 +106,7 @@ describe('Badge Issuance (e2e)', () => {
 
     it('should return 404 when invalid template ID is provided', () => {
       const invalidTemplateId = '00000000-0000-0000-0000-000000000000';
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .post('/api/badges')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .send({
@@ -106,12 +116,13 @@ describe('Badge Issuance (e2e)', () => {
         })
         .expect(404)
         .expect((res) => {
-          expect(res.body.message).toContain('not found');
+          const body = res.body as { message: string };
+          expect(body.message).toContain('not found');
         });
     });
 
     it('should return 400 when validation fails (invalid UUID)', () => {
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .post('/api/badges')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .send({
@@ -123,7 +134,7 @@ describe('Badge Issuance (e2e)', () => {
     });
 
     it('should return 400 when expiresIn is out of range', () => {
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .post('/api/badges')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .send({
@@ -141,7 +152,7 @@ describe('Badge Issuance (e2e)', () => {
 
     beforeEach(async () => {
       // Issue a fresh badge for each claim test
-      const issueResponse = await request(ctx.app.getHttpServer())
+      const issueResponse = await request(ctx.app.getHttpServer() as App)
         .post('/api/badges')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .send({
@@ -151,40 +162,52 @@ describe('Badge Issuance (e2e)', () => {
           expiresIn: 365,
         });
 
-      validBadgeId = issueResponse.body.id;
-      validClaimToken = issueResponse.body.claimToken;
+      const issueBody = issueResponse.body as {
+        id: string;
+        claimToken: string;
+      };
+      validBadgeId = issueBody.id;
+      validClaimToken = issueBody.claimToken;
     });
 
     it('should claim badge with valid token (PUBLIC endpoint - no auth required)', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .post(`/api/badges/${validBadgeId}/claim`)
         .send({
           claimToken: validClaimToken,
         })
         .expect(201);
 
-      expect(response.body.status).toBe('CLAIMED');
-      expect(response.body.claimedAt).toBeDefined();
-      expect(response.body.badge.name).toBe('Test Achievement');
-      expect(response.body.message).toContain('successfully');
-      expect(response.body.assertionUrl).toContain(validBadgeId);
+      const body = response.body as {
+        status: string;
+        claimedAt: string;
+        badge: { name: string };
+        message: string;
+        assertionUrl: string;
+      };
+      expect(body.status).toBe('CLAIMED');
+      expect(body.claimedAt).toBeDefined();
+      expect(body.badge.name).toBe('Test Achievement');
+      expect(body.message).toContain('successfully');
+      expect(body.assertionUrl).toContain(validBadgeId);
     });
 
     it('should return 400 for invalid claim token', () => {
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .post(`/api/badges/${validBadgeId}/claim`)
         .send({
           claimToken: 'invalid-token-' + 'x'.repeat(19), // 32 chars total
         })
         .expect(400)
         .expect((res) => {
-          expect(res.body.message).toBeDefined();
+          const body = res.body as { message: string };
+          expect(body.message).toBeDefined();
         });
     });
 
     it('should return 404 when trying to use already-claimed token (one-time use)', async () => {
       // Claim once
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .post(`/api/badges/${validBadgeId}/claim`)
         .send({
           claimToken: validClaimToken,
@@ -192,14 +215,15 @@ describe('Badge Issuance (e2e)', () => {
         .expect(201);
 
       // Try to claim again with same token (should fail - token is cleared after claim)
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .post(`/api/badges/${validBadgeId}/claim`)
         .send({
           claimToken: validClaimToken,
         })
         .expect(404)
         .expect((res) => {
-          expect(res.body.message).toContain('Invalid claim token');
+          const body = res.body as { message: string };
+          expect(body.message).toContain('Invalid claim token');
         });
     });
 
@@ -213,25 +237,25 @@ describe('Badge Issuance (e2e)', () => {
         data: { issuedAt: eightDaysAgo },
       });
 
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .post(`/api/badges/${validBadgeId}/claim`)
         .send({
           claimToken: validClaimToken,
         })
         .expect(410)
         .expect((res) => {
-          expect(res.body.message).toContain('Claim token has expired');
+          const body = res.body as { message: string };
+          expect(body.message).toContain('Claim token has expired');
         });
     });
   });
 
   describe('GET /api/badges/my-badges', () => {
     let badge1Id: string;
-    let badge2Id: string;
 
     beforeAll(async () => {
       // Issue 2 badges to recipient
-      const issueResponse1 = await request(ctx.app.getHttpServer())
+      const issueResponse1 = await request(ctx.app.getHttpServer() as App)
         .post('/api/badges')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .send({
@@ -240,9 +264,13 @@ describe('Badge Issuance (e2e)', () => {
           evidenceUrl: 'https://example.com/evidence1.pdf',
           expiresIn: 365,
         });
-      badge1Id = issueResponse1.body.id;
+      const issue1Body = issueResponse1.body as {
+        id: string;
+        claimToken: string;
+      };
+      badge1Id = issue1Body.id;
 
-      const issueResponse2 = await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .post('/api/badges')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .send({
@@ -251,32 +279,41 @@ describe('Badge Issuance (e2e)', () => {
           evidenceUrl: 'https://example.com/evidence2.pdf',
           expiresIn: 365,
         });
-      badge2Id = issueResponse2.body.id;
 
       // Claim one badge
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .post(`/api/badges/${badge1Id}/claim`)
         .send({
-          claimToken: issueResponse1.body.claimToken,
+          claimToken: issue1Body.claimToken,
         })
         .expect(201);
     });
 
     it('should return paginated badges for current user', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/badges/my-badges')
         .set('Authorization', `Bearer ${recipientUser.token}`)
         .expect(200);
 
-      expect(response.body.data).toBeInstanceOf(Array);
-      expect(response.body.data.length).toBeGreaterThanOrEqual(2);
-      expect(response.body.pagination).toBeDefined();
-      expect(response.body.pagination.page).toBe(1);
-      expect(response.body.pagination.limit).toBe(10);
-      expect(response.body.pagination.totalCount).toBeGreaterThanOrEqual(2);
+      const body = response.body as {
+        data: Array<{
+          id: string;
+          status: string;
+          issuedAt: string;
+          template: { name: string };
+          issuer: { name: string };
+        }>;
+        pagination: { page: number; limit: number; totalCount: number };
+      };
+      expect(body.data).toBeInstanceOf(Array);
+      expect(body.data.length).toBeGreaterThanOrEqual(2);
+      expect(body.pagination).toBeDefined();
+      expect(body.pagination.page).toBe(1);
+      expect(body.pagination.limit).toBe(10);
+      expect(body.pagination.totalCount).toBeGreaterThanOrEqual(2);
 
       // Check badge structure
-      const badge = response.body.data[0];
+      const badge = body.data[0];
       expect(badge).toHaveProperty('id');
       expect(badge).toHaveProperty('status');
       expect(badge).toHaveProperty('issuedAt');
@@ -287,17 +324,20 @@ describe('Badge Issuance (e2e)', () => {
     });
 
     it('should filter badges by status', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/badges/my-badges')
         .query({ status: 'CLAIMED' })
         .set('Authorization', `Bearer ${recipientUser.token}`)
         .expect(200);
 
-      expect(response.body.data).toBeInstanceOf(Array);
-      expect(response.body.data.length).toBeGreaterThanOrEqual(1);
+      const body = response.body as {
+        data: Array<{ status: string }>;
+      };
+      expect(body.data).toBeInstanceOf(Array);
+      expect(body.data.length).toBeGreaterThanOrEqual(1);
 
       // All badges should be CLAIMED
-      response.body.data.forEach((badge: any) => {
+      body.data.forEach((badge: { status: string }) => {
         expect(badge.status).toBe('CLAIMED');
       });
     });
@@ -307,17 +347,25 @@ describe('Badge Issuance (e2e)', () => {
     // Uses badges created in previous tests - no additional setup needed
 
     it('should return badges issued by ADMIN user', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/badges/issued')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200);
 
-      expect(response.body.badges).toBeInstanceOf(Array);
-      expect(response.body.badges.length).toBeGreaterThanOrEqual(1);
-      expect(response.body).toHaveProperty('total');
+      const body = response.body as {
+        badges: Array<{
+          id: string;
+          status: string;
+          recipient: { email: string };
+        }>;
+        total: number;
+      };
+      expect(body.badges).toBeInstanceOf(Array);
+      expect(body.badges.length).toBeGreaterThanOrEqual(1);
+      expect(body).toHaveProperty('total');
 
       // Check badge structure includes recipient
-      const badge = response.body.badges[0];
+      const badge = body.badges[0];
       expect(badge).toHaveProperty('id');
       expect(badge).toHaveProperty('status');
       expect(badge).toHaveProperty('recipient');
@@ -325,7 +373,7 @@ describe('Badge Issuance (e2e)', () => {
     });
 
     it('should return 403 for EMPLOYEE trying to access issued badges', async () => {
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .get('/api/badges/issued')
         .set('Authorization', `Bearer ${employeeUser.token}`)
         .expect(403);
@@ -334,7 +382,6 @@ describe('Badge Issuance (e2e)', () => {
 
   describe('POST /api/badges/:id/revoke', () => {
     let badgeToRevoke: string;
-    let claimTokenToUse: string;
 
     beforeEach(async () => {
       // Use factory to create badge directly (avoids rate limiting)
@@ -344,11 +391,10 @@ describe('Badge Issuance (e2e)', () => {
         issuerId: adminUser.user.id,
       });
       badgeToRevoke = badge.id;
-      claimTokenToUse = badge.claimToken!;
     });
 
     it('should revoke badge successfully (ADMIN)', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .post(`/api/badges/${badgeToRevoke}/revoke`)
         .set('Authorization', `Bearer ${adminUser.token}`)
         .send({
@@ -357,17 +403,21 @@ describe('Badge Issuance (e2e)', () => {
         })
         .expect(200);
 
-      expect(response.body.badge.status).toBe('REVOKED');
-      expect(response.body.badge.revokedAt).toBeDefined();
-      expect(response.body.badge.revocationReason).toBe(
+      const body = response.body as {
+        badge: { status: string; revokedAt: string; revocationReason: string };
+        message: string;
+      };
+      expect(body.badge.status).toBe('REVOKED');
+      expect(body.badge.revokedAt).toBeDefined();
+      expect(body.badge.revocationReason).toBe(
         RevocationReason.ISSUED_IN_ERROR,
       );
-      expect(response.body.message).toContain('revoked successfully');
+      expect(body.message).toContain('revoked successfully');
     });
 
     it('should return 403 for non-ADMIN user (ISSUER trying to revoke others badge)', async () => {
       // ISSUER should get 403 when trying to revoke another issuer's badge
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .post(`/api/badges/${badgeToRevoke}/revoke`)
         .set('Authorization', `Bearer ${issuerUser.token}`)
         .send({
@@ -379,7 +429,7 @@ describe('Badge Issuance (e2e)', () => {
 
     it('should return 200 with alreadyRevoked flag if badge already revoked (idempotency)', async () => {
       // Revoke once
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .post(`/api/badges/${badgeToRevoke}/revoke`)
         .set('Authorization', `Bearer ${adminUser.token}`)
         .send({
@@ -388,7 +438,7 @@ describe('Badge Issuance (e2e)', () => {
         .expect(200);
 
       // Try to revoke again - should return 200 OK with alreadyRevoked flag
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .post(`/api/badges/${badgeToRevoke}/revoke`)
         .set('Authorization', `Bearer ${adminUser.token}`)
         .send({
@@ -396,13 +446,17 @@ describe('Badge Issuance (e2e)', () => {
         })
         .expect(200)
         .expect((res) => {
-          expect(res.body.message).toContain('already revoked');
-          expect(res.body.badge.alreadyRevoked).toBe(true);
+          const body = res.body as {
+            message: string;
+            badge: { alreadyRevoked: boolean };
+          };
+          expect(body.message).toContain('already revoked');
+          expect(body.badge.alreadyRevoked).toBe(true);
         });
     });
 
     it('should return 400 if notes exceed max length', async () => {
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .post(`/api/badges/${badgeToRevoke}/revoke`)
         .set('Authorization', `Bearer ${adminUser.token}`)
         .send({
@@ -423,41 +477,50 @@ describe('Badge Issuance (e2e)', () => {
       });
       const activeBadgeId = activeBadge.id;
 
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get(`/api/badges/${activeBadgeId}/assertion`)
         .expect(200);
 
+      const body = response.body as {
+        '@context': string;
+        type: string;
+        id: string;
+        badge: string;
+        recipient: {
+          type: string;
+          hashed: boolean;
+          salt: string;
+          identity: string;
+        };
+        verification: { type: string; verificationUrl: string };
+        issuedOn: string;
+      };
       // Sprint 5 Story 6.1: Validate Open Badges 2.0 JSON-LD structure
-      expect(response.body).toHaveProperty(
-        '@context',
-        'https://w3id.org/openbadges/v2',
-      );
-      expect(response.body).toHaveProperty('type', 'Assertion');
-      expect(response.body).toHaveProperty('id');
-      expect(response.body.id).toMatch(/\/api\/badges\/.+\/assertion$/);
+      expect(body).toHaveProperty('@context', 'https://w3id.org/openbadges/v2');
+      expect(body).toHaveProperty('type', 'Assertion');
+      expect(body).toHaveProperty('id');
+      expect(body.id).toMatch(/\/api\/badges\/.+\/assertion$/);
 
       // Badge should be URL string (not embedded object)
-      expect(response.body).toHaveProperty('badge');
-      expect(typeof response.body.badge).toBe('string');
-      expect(response.body.badge).toMatch(/\/api\/badge-templates\/.+$/);
+      expect(body).toHaveProperty('badge');
+      expect(typeof body.badge).toBe('string');
+      expect(body.badge).toMatch(/\/api\/badge-templates\/.+$/);
 
       // Recipient should be hashed
-      expect(response.body.recipient).toHaveProperty('type', 'email');
-      expect(response.body.recipient).toHaveProperty('hashed', true);
-      expect(response.body.recipient).toHaveProperty('salt');
-      expect(response.body.recipient).toHaveProperty('identity');
-      expect(response.body.recipient.identity).toMatch(/^sha256\$/);
+      expect(body.recipient).toHaveProperty('type', 'email');
+      expect(body.recipient).toHaveProperty('hashed', true);
+      expect(body.recipient).toHaveProperty('salt');
+      expect(body.recipient).toHaveProperty('identity');
+      expect(body.recipient.identity).toMatch(/^sha256\$/);
 
       // Verification (hosted type)
-      expect(response.body.verification).toHaveProperty('type', 'hosted');
-      expect(response.body.verification).toHaveProperty('verificationUrl');
-      expect(response.body.verification.verificationUrl).toMatch(
-        /\/verify\/.+$/,
-      );
+      expect(body.verification).toHaveProperty('type', 'hosted');
+      expect(body.verification).toHaveProperty('verificationUrl');
+      expect(body.verification.verificationUrl).toMatch(/\/verify\/.+$/);
 
       // Issuance date
-      expect(response.body).toHaveProperty('issuedOn');
-      expect(new Date(response.body.issuedOn).getTime()).toBeGreaterThan(0);
+      expect(body).toHaveProperty('issuedOn');
+      expect(new Date(body.issuedOn).getTime()).toBeGreaterThan(0);
     });
 
     it('should return 410 for revoked badge', async () => {
@@ -470,17 +533,18 @@ describe('Badge Issuance (e2e)', () => {
       });
       const revokedBadgeId = revokedBadge.id;
 
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .get(`/api/badges/${revokedBadgeId}/assertion`)
         .expect(410)
         .expect((res) => {
-          expect(res.body.message).toContain('revoked');
+          const body = res.body as { message: string };
+          expect(body.message).toContain('revoked');
         });
     });
 
     it('should return 404 for non-existent badge', async () => {
       const fakeId = '00000000-0000-0000-0000-000000000000';
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .get(`/api/badges/${fakeId}/assertion`)
         .expect(404);
     });
@@ -493,33 +557,40 @@ describe('Badge Issuance (e2e)', () => {
 ${recipientUser.user.email},${templateId},https://example.com/evidence1.pdf,365
 ${employeeUser.user.email},${templateId},https://example.com/evidence2.pdf,730`;
 
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .post('/api/badges/bulk')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .attach('file', Buffer.from(csvContent), 'badges.csv')
         .expect(201);
 
-      expect(response.body.total).toBe(2);
-      expect(response.body.successful).toBe(2);
-      expect(response.body.failed).toBe(0);
-      expect(response.body.results).toHaveLength(2);
-      expect(response.body.results[0].success).toBe(true);
-      expect(response.body.results[0].badgeId).toBeDefined();
-      expect(response.body.results[1].success).toBe(true);
+      const body = response.body as {
+        total: number;
+        successful: number;
+        failed: number;
+        results: { success: boolean; badgeId?: string }[];
+      };
+      expect(body.total).toBe(2);
+      expect(body.successful).toBe(2);
+      expect(body.failed).toBe(0);
+      expect(body.results).toHaveLength(2);
+      expect(body.results[0].success).toBe(true);
+      expect(body.results[0].badgeId).toBeDefined();
+      expect(body.results[1].success).toBe(true);
     });
 
     it('should reject invalid CSV format (missing headers)', async () => {
       const csvContent = `email,template
 test@example.com,${templateId}`;
 
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .post('/api/badges/bulk')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .attach('file', Buffer.from(csvContent), 'invalid.csv')
         .expect(400)
         .expect((res) => {
-          expect(res.body.message).toContain('CSV parsing failed');
-          expect(res.body.message).toContain('Missing required headers');
+          const body = res.body as { message: string };
+          expect(body.message).toContain('CSV parsing failed');
+          expect(body.message).toContain('Missing required headers');
         });
     });
 
@@ -529,24 +600,39 @@ ${recipientUser.user.email},${templateId},https://example.com/valid.pdf
 nonexistent-${Date.now()}@test.com,${templateId},https://example.com/fail.pdf
 ${employeeUser.user.email},00000000-0000-0000-0000-000000000000,https://example.com/badtemplate.pdf`;
 
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .post('/api/badges/bulk')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .attach('file', Buffer.from(csvContent), 'mixed.csv')
         .expect(201);
 
-      expect(response.body.total).toBe(3);
-      expect(response.body.successful).toBe(1);
-      expect(response.body.failed).toBe(2);
+      const body = response.body as {
+        total: number;
+        successful: number;
+        failed: number;
+        results: {
+          success: boolean;
+          email?: string;
+          badgeId?: string;
+          error?: string;
+        }[];
+      };
+      expect(body.total).toBe(3);
+      expect(body.successful).toBe(1);
+      expect(body.failed).toBe(2);
 
       // Check successful row
-      const successRow = response.body.results.find((r: any) => r.success);
+      const successRow = body.results.find(
+        (r: { success: boolean }) => r.success,
+      );
       expect(successRow).toBeDefined();
-      expect(successRow.email).toBe(recipientUser.user.email);
-      expect(successRow.badgeId).toBeDefined();
+      expect(successRow!.email).toBe(recipientUser.user.email);
+      expect(successRow!.badgeId).toBeDefined();
 
       // Check failed rows have error messages
-      const failedRows = response.body.results.filter((r: any) => !r.success);
+      const failedRows = body.results.filter(
+        (r: { success: boolean }) => !r.success,
+      );
       expect(failedRows).toHaveLength(2);
       expect(failedRows[0].error).toBeDefined();
       expect(failedRows[1].error).toBeDefined();
@@ -556,7 +642,7 @@ ${employeeUser.user.email},00000000-0000-0000-0000-000000000000,https://example.
       const csvContent = `recipientEmail,templateId
 test@example.com,${templateId}`;
 
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .post('/api/badges/bulk')
         .set('Authorization', `Bearer ${employeeUser.token}`)
         .attach('file', Buffer.from(csvContent), 'test.csv')
@@ -564,12 +650,13 @@ test@example.com,${templateId}`;
     });
 
     it('should return 400 when no file is uploaded', async () => {
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .post('/api/badges/bulk')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(400)
         .expect((res) => {
-          expect(res.body.message).toContain('CSV file is required');
+          const body = res.body as { message: string };
+          expect(body.message).toContain('CSV file is required');
         });
     });
 
@@ -578,14 +665,15 @@ test@example.com,${templateId}`;
 invalid-email,${templateId}
 ${recipientUser.user.email},${templateId}`;
 
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .post('/api/badges/bulk')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .attach('file', Buffer.from(csvContent), 'invalid-email.csv')
         .expect(400);
 
-      expect(response.body.message).toContain('CSV parsing failed');
-      expect(response.body.message).toContain('Invalid email');
+      const body = response.body as { message: string };
+      expect(body.message).toContain('CSV parsing failed');
+      expect(body.message).toContain('Invalid email');
     });
   });
 });

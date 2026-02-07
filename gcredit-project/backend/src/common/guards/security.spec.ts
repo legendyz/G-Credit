@@ -139,8 +139,8 @@ describe('Evidence Upload Authorization (SEC-P1-001)', () => {
     });
 
     it('should allow admin to upload to any badge', () => {
-      const mockBadge = { id: 'badge-123', issuerId: 'user-456' };
-      const uploaderId = 'user-789';
+      const _mockBadge = { id: 'badge-123', issuerId: 'user-456' };
+      const _uploaderId = 'user-789';
       const userRole = 'ADMIN';
 
       // Logic: admin = ALLOW
@@ -151,7 +151,7 @@ describe('Evidence Upload Authorization (SEC-P1-001)', () => {
     it('should allow issuer to upload to their own badge', () => {
       const mockBadge = { id: 'badge-123', issuerId: 'user-456' };
       const uploaderId = 'user-456';
-      const userRole = 'ISSUER';
+      const _userRole = 'ISSUER';
 
       // Logic: is the issuer = ALLOW
       const shouldAllow = mockBadge.issuerId === uploaderId;
@@ -159,8 +159,8 @@ describe('Evidence Upload Authorization (SEC-P1-001)', () => {
     });
 
     it('should deny employee uploading evidence', () => {
-      const mockBadge = { id: 'badge-123', issuerId: 'user-456' };
-      const uploaderId = 'user-456'; // Even if same user
+      const _mockBadge = { id: 'badge-123', issuerId: 'user-456' };
+      const _uploaderId = 'user-456'; // Even if same user
       const userRole = 'EMPLOYEE';
 
       // Employees shouldn't have upload permission at controller level
