@@ -10,7 +10,7 @@ export class CSVParserService {
   parseBulkIssuanceCSV(fileBuffer: Buffer): BulkIssuanceRow[] {
     try {
       // Parse CSV with headers
-      const records = parse(fileBuffer, {
+      const records: Record<string, string>[] = parse(fileBuffer, {
         columns: true,
         skip_empty_lines: true,
         trim: true,
