@@ -83,7 +83,10 @@ export class BulkIssuanceController {
    */
   @Post('upload')
   @Roles(UserRole.ISSUER, UserRole.ADMIN)
-  @Throttle({ default: { ttl: 300000, limit: 3 } })  // 3 uploads per 5 minutes per user (ARCH-C3)
+  @Throttle({ default: {
+    ttl: parseInt(process.env.UPLOAD_THROTTLE_TTL || '300000'),
+    limit: parseInt(process.env.UPLOAD_THROTTLE_LIMIT || '10'),
+  } })  // 10 uploads per 5 minutes per user (ARCH-C3, updated 2026-02-07)
   @UseInterceptors(FileInterceptor('file', {
     limits: { fileSize: BulkIssuanceService.MAX_FILE_SIZE },
   }))

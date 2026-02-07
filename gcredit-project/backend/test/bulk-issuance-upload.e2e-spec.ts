@@ -148,14 +148,14 @@ describe('Bulk Issuance Upload — Rate Limiting (e2e)', () => {
     await teardownE2ETest(ctx);
   });
 
-  it('POST /api/bulk-issuance/upload — 4th upload within 5 min returns 429 (ARCH-C3)', async () => {
+  it('POST /api/bulk-issuance/upload — 11th upload within 5 min returns 429 (ARCH-C3)', async () => {
     const makeCsv = (suffix: number) => [
       'badgeTemplateId,recipientEmail,evidenceUrl,narrativeJustification',
       `${activeTemplateId},user${suffix}@test.com,,Rate limit test ${suffix}`,
     ].join('\n');
 
-    // Exhaust the rate limit (3 uploads allowed)
-    for (let i = 0; i < 3; i++) {
+    // Exhaust the rate limit (10 uploads allowed, matching production default)
+    for (let i = 0; i < 10; i++) {
       await authRequest(ctx.app, adminUser.token)
         .post('/api/bulk-issuance/upload')
         .attach('file', Buffer.from(makeCsv(i)), {
@@ -165,7 +165,7 @@ describe('Bulk Issuance Upload — Rate Limiting (e2e)', () => {
       // Don't assert status — might be 201 or 400 depending on email validation
     }
 
-    // 4th upload should be rate limited
+    // 11th upload should be rate limited
     await authRequest(ctx.app, adminUser.token)
       .post('/api/bulk-issuance/upload')
       .attach('file', Buffer.from(makeCsv(99)), {
