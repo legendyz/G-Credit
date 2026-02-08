@@ -7,6 +7,7 @@
 **Dependencies:** None  
 **Discovered:** SM API Path Audit (2026-02-09)  
 **Audit Report:** [api-path-audit-report.md](api-path-audit-report.md)
+**Dev Prompt:** [10-3c-dev-prompt.md](10-3c-dev-prompt.md)
 
 ---
 
@@ -181,8 +182,17 @@ npx tsc --noEmit
 
 ## Dev Notes
 
-### 开放问题
-如果 CRITICAL-1~3 的功能在本地开发中实际能正常工作，说明可能有未发现的路由转发机制。Dev 应先实际启动前后端验证是否真的 404，再决定修复范围。
+### ⚠️ 开放问题（Phase 0 验证）
+
+本 Story 来源于 SM 静态代码审计。如果 CRITICAL-1~3 的功能在本地开发中**实际能正常工作**，说明可能存在未发现的路由转发机制（如 NestJS middleware、Helmet、或其他配置），审计结论可能不完全准确。
+
+**必须执行两阶段方式：**
+1. **Phase 0（验证）：** 启动前后端，用 curl 实际测试审计标记的路径，确认哪些真的 404
+2. **Phase 1（修复）：** 仅修复 Phase 0 确认为 404 的路径
+
+如果发现隐藏的路由机制，需在 commit message 和本 Story 的 Dev Notes 中记录发现。
+
+详见 Dev Prompt 的 Phase 0 部分。
 
 ### 验证方法
 ```powershell
