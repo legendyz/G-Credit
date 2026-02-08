@@ -116,9 +116,9 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 
 ### Story 10.3b: TD-019 — Frontend ESLint Cleanup + CI Gate ✅ Complete
 **Priority:** 🔴 HIGH  
-**Estimate:** 3.5h (from buffer)  
+**Estimate:** 3.5h (from buffer) | **Actual:** 3.5h  
 **Story Doc:** 📄 [10-3b-frontend-eslint-cleanup.md](10-3b-frontend-eslint-cleanup.md)  
-**Status:** ✅ Complete  
+**Status:** ✅ Complete (SM Accepted 2026-02-09)  
 **Dependencies:** None  
 **Discovered:** During Story 10.3 development  
 
