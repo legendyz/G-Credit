@@ -1,0 +1,284 @@
+# Sprint 10 Status Tracker
+# Generated during Sprint Planning (2026-02-08)
+# Update this file daily during standups
+
+metadata:
+  sprint_number: 10
+  sprint_goal: "v1.0.0 Release: Technical Debt Cleanup + Full UAT + Release Tag"
+  sprint_type: "Release Sprint"
+  version_target: "v1.0.0"
+  start_date: "2026-02-09"
+  end_date: "2026-02-22"
+  total_days: 14
+  team_capacity: 80h
+  planning_complete: true
+  planning_date: "2026-02-08"
+  branch: "sprint-10/v1-release"
+
+# Sprint Metrics (updated daily)
+metrics:
+  total_stories: 10
+  total_estimated_hours: 57h
+  buffer_hours: 23h
+  
+  completed_stories: 0
+  completed_hours: 0h
+  remaining_hours: 57h
+  
+  # Capacity breakdown
+  td_hours: 17h      # Stories 10.1-10.4
+  feature_hours: 6h   # Story 10.5
+  uat_hours: 28h      # Stories 10.6-10.8
+  release_hours: 6h    # Stories 10.9-10.10
+
+# ============================================================
+# EPIC STATUS OVERVIEW (ALL EPICS)
+# ============================================================
+
+epics:
+  epic-1:
+    title: "Project Infrastructure Setup"
+    status: done
+    sprint_completed: 0
+    
+  epic-2:
+    title: "JWT Authentication & User Management"
+    status: done
+    sprint_completed: 1
+    
+  epic-3:
+    title: "Badge Template Management"
+    status: done
+    sprint_completed: 2
+    
+  epic-4:
+    title: "Manual Badge Issuance"
+    status: done
+    sprint_completed: 3
+    
+  epic-5:
+    title: "Employee Badge Wallet & Claiming"
+    status: done
+    sprint_completed: 4
+    
+  epic-6:
+    title: "Badge Verification & Standards Compliance"
+    status: done
+    sprint_completed: 5
+    
+  epic-7:
+    title: "Badge Sharing & Social Integration"
+    status: done
+    sprint_completed: 6
+    
+  epic-8:
+    title: "Bulk Badge Issuance"
+    status: done
+    sprint_completed: 9
+    
+  epic-9:
+    title: "Badge Revocation & Complete Lifecycle"
+    status: done
+    sprint_completed: 7
+    
+  epic-10:
+    title: "Production-Ready MVP"
+    status: done
+    sprint_completed: 8
+    
+  # Phase 2/3 Epics — NOT in Sprint 10
+  epic-11:
+    title: "Manager Nomination & Approval Workflow"
+    status: backlog
+    phase: 2
+    
+  epic-12:
+    title: "Analytics & Reporting Dashboard"
+    status: backlog
+    phase: 2
+    
+  epic-13:
+    title: "Enterprise SSO Integration (Azure AD)"
+    status: backlog
+    phase: 3
+    
+  epic-14:
+    title: "External API & Extensibility"
+    status: backlog
+    phase: 3
+
+# ============================================================
+# SPRINT 10 STORIES
+# ============================================================
+
+stories:
+  # Phase 1: Technical Debt Cleanup (17h)
+  10-1-tsc-test-type-errors:
+    title: "TD-017: Fix tsc Test Type Errors"
+    priority: HIGH
+    estimate: 7h
+    actual: null
+    status: backlog
+    phase: 1-td
+    file: "10-1-tsc-test-type-errors.md"
+    dependencies: []
+    
+  10-2-eslint-regression-ci-gate:
+    title: "ESLint Regression Fix + CI Gate"
+    priority: HIGH
+    estimate: 5h
+    actual: null
+    status: backlog
+    phase: 1-td
+    file: "10-2-eslint-regression-ci-gate.md"
+    dependencies: ["10-1"]  # Ideally after tsc fixes
+    
+  10-3-todo-fixme-cleanup:
+    title: "TD-018: Code TODO/FIXME Cleanup"
+    priority: MEDIUM
+    estimate: 3h
+    actual: null
+    status: backlog
+    phase: 1-td
+    file: "10-3-todo-fixme-cleanup.md"
+    dependencies: []
+    
+  10-4-i18n-chinese-string-scan:
+    title: "i18n: Hardcoded Chinese String Scan & Fix"
+    priority: LOW
+    estimate: 2h
+    actual: null
+    status: backlog
+    phase: 1-td
+    file: "10-4-i18n-chinese-string-scan.md"
+    dependencies: []
+
+  # Phase 2: Feature Enhancement (6h)
+  10-5-admin-analytics-real-data:
+    title: "Admin Analytics: Mock Data → Real Data"
+    priority: MEDIUM
+    estimate: 6h
+    actual: null
+    status: backlog
+    phase: 2-feature
+    file: "10-5-admin-analytics-real-data.md"
+    dependencies: ["10-3"]  # TODO marker removal
+
+  # Phase 3: UAT (28h)
+  10-6-uat-test-plan-seed-data:
+    title: "UAT Test Plan & Seed Data Preparation"
+    priority: HIGH
+    estimate: 8h
+    actual: null
+    status: backlog
+    phase: 3-uat
+    file: "10-6-uat-test-plan-seed-data.md"
+    dependencies: ["10-1", "10-2", "10-3", "10-5"]  # Phase 1+2 complete
+    
+  10-7-full-uat-execution:
+    title: "Full UAT Execution (All 10 Epics)"
+    priority: HIGH
+    estimate: 12h
+    actual: null
+    status: backlog
+    phase: 3-uat
+    file: "10-7-full-uat-execution.md"
+    dependencies: ["10-6"]
+    
+  10-8-uat-bug-fixes:
+    title: "UAT Bug Fixes"
+    priority: MEDIUM
+    estimate: 8h
+    actual: null
+    status: backlog
+    phase: 3-uat
+    file: "10-8-uat-bug-fixes.md"
+    dependencies: ["10-7"]
+
+  # Phase 4: Release (6h)
+  10-9-release-documentation:
+    title: "Release Documentation & CHANGELOG"
+    priority: MEDIUM
+    estimate: 4h
+    actual: null
+    status: backlog
+    phase: 4-release
+    file: "10-9-release-documentation.md"
+    dependencies: ["10-7"]
+    
+  10-10-merge-main-tag-v1:
+    title: "Merge to Main + Tag v1.0.0"
+    priority: HIGH
+    estimate: 2h
+    actual: null
+    status: backlog
+    phase: 4-release
+    file: "10-10-merge-main-tag-v1.md"
+    dependencies: ["10-1", "10-2", "10-3", "10-4", "10-5", "10-6", "10-7", "10-8", "10-9"]
+
+# ============================================================
+# TECHNICAL DEBT STATUS
+# ============================================================
+
+technical_debt:
+  resolved_this_sprint:
+    - id: TD-017
+      description: "tsc test type errors (114)"
+      story: "10.1"
+      status: backlog
+      
+    - id: ESLint-Regression
+      description: "Warning regression 423→<280 + CI gate"
+      story: "10.2"
+      status: backlog
+      
+    - id: TD-018
+      description: "Code TODO/FIXME cleanup (14 markers)"
+      story: "10.3"
+      status: backlog
+
+  deferred:
+    - id: TD-006
+      description: "Teams Channel Permissions (4 tests skipped)"
+      reason: "External — requires tenant admin approval"
+      
+    - id: TD-016
+      description: "Async Bulk Processing (Redis + Bull Queue)"
+      reason: "Deferred to Phase 2 — MVP uses synchronous (≤20 badges)"
+      
+    - id: lodash
+      description: "Prototype Pollution vulnerability"
+      reason: "Risk accepted (ADR-002)"
+      
+    - id: prisma-version
+      description: "Prisma locked at 6.x"
+      reason: "Intentional — Prisma 7 breaking changes"
+
+# ============================================================
+# QUALITY GATES
+# ============================================================
+
+quality_gates:
+  tsc_noEmit:
+    target: 0 errors
+    current: 114 errors (test-only)
+    sprint_story: "10.1"
+    
+  eslint_warnings:
+    target: "≤280"
+    current: 423
+    sprint_story: "10.2"
+    
+  todo_fixme:
+    target: 0
+    current: 14
+    sprint_story: "10.3"
+    
+  test_count:
+    target: "≥1087"
+    current: 1087
+    
+  uat_p0_pass_rate:
+    target: "100%"
+    current: "pending"
+    sprint_story: "10.7"

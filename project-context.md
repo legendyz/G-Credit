@@ -5,7 +5,7 @@
 **Project Type:** Enterprise Internal Platform (Greenfield)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
 **License:** MIT License (Open Source)  
-**Status:** ✅ Sprint 9 COMPLETE - Epic 8 Bulk Badge Issuance + TD Cleanup (5/5 stories done, 1087 tests)  
+**Status:** 🟡 Sprint 10 PLANNED - v1.0.0 Release Sprint (TD Cleanup + UAT + Release, 10 stories, 57h/80h capacity)  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, committed 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, committed 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, committed 2026-01-26)  
@@ -16,7 +16,8 @@
 **Sprint 7:** ✅ Complete (100%, actual 38.5h / estimated 41-47h, committed 2026-02-02, branch: sprint-7/epic-9-revocation-lifecycle-uat, 302 tests, 100% UAT pass, v0.7.0)  
 **Sprint 8:** ✅ Complete (12/12 items, 100%, 80h/76h, branch: sprint-8/epic-10-production-ready-mvp, tagged v0.8.0, 876 tests)  
 **Sprint 9:** ✅ Complete (5/5 stories, 37h/51h, branch: sprint-9/epic-8-bulk-issuance-td-cleanup, 1087 tests, v0.9.0-dev)  
-**Last Updated:** 2026-02-08 (Sprint 9 COMPLETE - All 5 stories SM accepted, 1087 tests passing)
+**Sprint 10:** 🟡 Planned (10 stories, 57h/80h, branch: sprint-10/v1-release, goal: v1.0.0 Release)  
+**Last Updated:** 2026-02-08 (Sprint 10 PLANNING COMPLETE - v1.0.0 Release Sprint, 10 stories, kickoff ready)
 
 ---
 
@@ -348,11 +349,12 @@ _bmad-output/
 | → Sprint 7 | 2 days | Badge Revocation & Lifecycle UAT (Epic 9) | ✅ COMPLETE (2026-02-02, 38.5h/41-47h, 302 tests, v0.7.0) |
 | → Sprint 8 | 10 days | Production-Ready MVP (Epic 10) | ✅ COMPLETE (2026-02-05, 80h/76h, 876 tests, v0.8.0) |
 | → Sprint 9 | 3 days | Bulk Badge Issuance + TD Cleanup (Epic 8) | ✅ COMPLETE (2026-02-08, 37h/51h, 1087 tests, v0.9.0-dev) |
+| → Sprint 10 | 2 weeks | v1.0.0 Release (TD + UAT + Release) | 🟡 PLANNED (2026-02-09→02-22, 57h/80h, 10 stories) |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ Pending |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
 
-**Current Status:** ✅ Sprint 9 Complete (Bulk Badge Issuance MVP, Epic 8 — 5/5 stories done, 1087 tests, 37h actual / 51h estimated) → 🔜 Sprint 10 Planning (Next epic TBD)
+**Current Status:** 🟡 Sprint 10 Planned (v1.0.0 Release Sprint — TD Cleanup + Full UAT + Release Tag, 10 stories, 57h/80h capacity) → 🟢 Ready for Kickoff 2026-02-09
 
 ---
 
@@ -1329,11 +1331,41 @@ Sprint 0-2 established this pattern:
    - TD Resolved: TD-013 (bundle), TD-014 (email), TD-015 (ESLint)
    - New TD: ESLint regression (423 warnings), TD-017 (114 tsc test errors)
 
-18. 🔜 **Next Actions**
-   - Sprint 9 Demo & Retrospective (scheduled 2026-02-20)
-   - Sprint branch merge to main + tag v0.9.0
-   - Sprint 10 Planning (TD-017 tsc cleanup, ESLint regression fix, next epic TBD)
-   - Production deployment preparation
+18. � **Sprint 10 - v1.0.0 Release Sprint (PLANNED - Kickoff 2026-02-09)**
+   - **Branch:** `sprint-10/v1-release`
+   - **Duration:** 2026-02-09 to 2026-02-22 (2 weeks)
+   - **Sprint Goal:** v1.0.0 Release: TD Cleanup + Full UAT + Release Tag
+   - **Capacity:** 80h, 10 stories, 57h estimated
+   - **4 Phases:**
+     - Phase 1 (Day 1-3): TD Cleanup — Stories 10.1-10.4 (17h)
+     - Phase 2 (Day 4-5): Feature Enhancement — Story 10.5 (6h)
+     - Phase 3 (Day 6-11): UAT — Stories 10.6-10.8 (28h)
+     - Phase 4 (Day 12-13): Release — Stories 10.9-10.10 (6h)
+   
+   **Stories:**
+   - ⬜ 10.1: TD-017 Fix 114 tsc Test Type Errors (7h, HIGH)
+   - ⬜ 10.2: ESLint Regression 423→<280 + CI Gate (5h, HIGH)
+   - ⬜ 10.3: TD-018 TODO/FIXME Cleanup (3h, MEDIUM)
+   - ⬜ 10.4: i18n Chinese String Scan (2h, LOW)
+   - ⬜ 10.5: Admin Analytics Real Data (6h, MEDIUM)
+   - ⬜ 10.6: UAT Test Plan & Seed Data (8h, HIGH)
+   - ⬜ 10.7: Full UAT Execution (12h, HIGH)
+   - ⬜ 10.8: UAT Bug Fix Buffer (8h, MEDIUM)
+   - ⬜ 10.9: Release Documentation (4h, MEDIUM)
+   - ⬜ 10.10: Merge Main + Tag v1.0.0 (2h, HIGH)
+   
+   **Planning Artifacts:**
+   - `docs/sprints/sprint-10/backlog.md`
+   - `docs/sprints/sprint-10/sprint-status.yaml`
+   - `docs/sprints/sprint-10/version-manifest.md`
+   - `docs/sprints/sprint-10/kickoff-readiness.md`
+   - `docs/sprints/sprint-10/10-*.md` (10 story files)
+
+19. 🔜 **Next Actions**
+   - Sprint 10 Kickoff (2026-02-09)
+   - Create branch `sprint-10/v1-release` from main
+   - Execute Phase 1: TD Cleanup (Stories 10.1-10.4)
+   - Post-v1.0.0: Phase 4 Pilot planning (Epics 11-14 driven by pilot feedback)
 
 ---
 
