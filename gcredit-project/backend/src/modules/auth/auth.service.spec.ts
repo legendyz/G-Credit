@@ -6,6 +6,11 @@ import { AuthService } from './auth.service';
 import { PrismaService } from '../../common/prisma.service';
 import { EmailService } from '../../common/email.service';
 import { UserRole } from '@prisma/client';
+import {
+  anyString,
+  anyDate,
+  containing,
+} from '../../../test/helpers/jest-typed-matchers';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -147,10 +152,10 @@ describe('AuthService', () => {
 
       // Verify new token was created
       expect(mockPrismaService.refreshToken.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          token: expect.any(String),
+        data: containing({
+          token: anyString(),
           userId: 'user-123',
-          expiresAt: expect.any(Date),
+          expiresAt: anyDate(),
         }),
       });
     });
@@ -228,7 +233,12 @@ describe('AuthService', () => {
       );
       // Mock $transaction to execute the callback with tx delegate
       mockPrismaService.$transaction.mockImplementation(
-        async (callback: (tx: { user: { update: jest.Mock }; passwordResetToken: { update: jest.Mock } }) => Promise<void>) => {
+        async (
+          callback: (tx: {
+            user: { update: jest.Mock };
+            passwordResetToken: { update: jest.Mock };
+          }) => Promise<void>,
+        ) => {
           return callback({
             user: { update: jest.fn().mockResolvedValue({}) },
             passwordResetToken: { update: jest.fn().mockResolvedValue({}) },
@@ -252,7 +262,12 @@ describe('AuthService', () => {
       const txTokenUpdate = jest.fn().mockResolvedValue({});
 
       mockPrismaService.$transaction.mockImplementation(
-        async (callback: (tx: { user: { update: jest.Mock }; passwordResetToken: { update: jest.Mock } }) => Promise<void>) => {
+        async (
+          callback: (tx: {
+            user: { update: jest.Mock };
+            passwordResetToken: { update: jest.Mock };
+          }) => Promise<void>,
+        ) => {
           return callback({
             user: { update: txUserUpdate },
             passwordResetToken: { update: txTokenUpdate },
@@ -265,7 +280,7 @@ describe('AuthService', () => {
       // Verify both operations happened inside transaction
       expect(txUserUpdate).toHaveBeenCalledWith({
         where: { id: 'user-123' },
-        data: { passwordHash: expect.any(String) },
+        data: { passwordHash: anyString() },
       });
       expect(txTokenUpdate).toHaveBeenCalledWith({
         where: { id: 'token-id-123' },

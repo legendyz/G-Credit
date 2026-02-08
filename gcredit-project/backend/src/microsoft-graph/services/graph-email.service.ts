@@ -128,10 +128,24 @@ export class GraphEmailService implements OnModuleInit {
       await this.graphClient.api(`/users/${fromEmail}/sendMail`).post(sendMail);
 
       this.logger.log('✅ Email sent successfully');
-    } catch (error) {
+    } catch (error: unknown) {
       // Handle 429 rate limiting with exponential backoff
-      if (error.statusCode === 429 && retries > 0) {
-        const retryAfter = error.headers?.['retry-after'] || 5;
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'statusCode' in error &&
+        error.statusCode === 429 &&
+        retries > 0
+      ) {
+        let retryAfter = 5;
+        if (
+          'headers' in error &&
+          typeof error.headers === 'object' &&
+          error.headers !== null &&
+          'retry-after' in error.headers
+        ) {
+          retryAfter = Number(error.headers['retry-after']) || 5;
+        }
         this.logger.warn(
           `⚠️ Rate limited (429), retrying after ${retryAfter}s (${retries} retries left)`,
         );

@@ -25,7 +25,7 @@ describe.skip('GraphTeamsService', () => {
   };
 
   const mockConfigService = {
-    get: (key: string, defaultValue?: any) => {
+    get: (key: string, defaultValue?: unknown) => {
       // Task 7: Updated to use ENABLE_TEAMS_NOTIFICATIONS
       if (key === 'ENABLE_TEAMS_NOTIFICATIONS') return 'true';
       return defaultValue;
@@ -66,7 +66,7 @@ describe.skip('GraphTeamsService', () => {
 
     it('should not initialize when ENABLE_TEAMS_NOTIFICATIONS=false', async () => {
       const disabledConfigService = {
-        get: (key: string, defaultValue?: any) => {
+        get: (key: string, defaultValue?: unknown) => {
           if (key === 'ENABLE_TEAMS_NOTIFICATIONS') return 'false';
           return defaultValue;
         },
@@ -149,7 +149,7 @@ describe.skip('GraphTeamsService', () => {
 
     it('should return false when disabled', async () => {
       const disabledConfigService = {
-        get: (key: string, defaultValue?: any) => {
+        get: (key: string, defaultValue?: unknown) => {
           if (key === 'ENABLE_TEAMS_NOTIFICATIONS') return 'false';
           return defaultValue;
         },

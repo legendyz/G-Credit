@@ -189,8 +189,10 @@ describe('M365SyncController', () => {
     });
 
     it('should propagate NotFoundException', async () => {
-      const error = new Error('Not Found');
-      (error as any).status = 404;
+      const error: Error & { status: number } = Object.assign(
+        new Error('Not Found'),
+        { status: 404 },
+      );
       service.getSyncLogById.mockRejectedValue(error);
 
       await expect(controller.getSyncLogById('nonexistent')).rejects.toThrow(

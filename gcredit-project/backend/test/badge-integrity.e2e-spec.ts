@@ -223,13 +223,13 @@ describe('Badge Integrity (e2e) - Story 6.5', () => {
 
       // Restore original assertion for other tests
       // Prisma JsonValue (output) ≠ InputJsonValue (input) — bridge via JSON roundtrip
-      const restoreJson: Prisma.InputJsonValue = JSON.parse(
+      const restoreJson: unknown = JSON.parse(
         JSON.stringify(badge!.assertionJson),
       );
       await prisma.badge.update({
         where: { id: badgeId },
         data: {
-          assertionJson: restoreJson,
+          assertionJson: restoreJson as Prisma.InputJsonValue,
         },
       });
     });

@@ -36,17 +36,26 @@ describe('MicrosoftGraphModule', () => {
   });
 
   it('should export GraphTokenProviderService', () => {
-    const exports = Reflect.getMetadata('exports', MicrosoftGraphModule);
+    const exports: unknown = Reflect.getMetadata(
+      'exports',
+      MicrosoftGraphModule,
+    );
     expect(exports).toContain(GraphTokenProviderService);
   });
 
   it('should export GraphEmailService', () => {
-    const exports = Reflect.getMetadata('exports', MicrosoftGraphModule);
+    const exports: unknown = Reflect.getMetadata(
+      'exports',
+      MicrosoftGraphModule,
+    );
     expect(exports).toContain(GraphEmailService);
   });
 
   it('should export GraphTeamsService', () => {
-    const exports = Reflect.getMetadata('exports', MicrosoftGraphModule);
+    const exports: unknown = Reflect.getMetadata(
+      'exports',
+      MicrosoftGraphModule,
+    );
     expect(exports).toContain(GraphTeamsService);
   });
 });

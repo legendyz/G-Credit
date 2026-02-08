@@ -77,7 +77,7 @@ describe('CsvValidationService', () => {
     });
 
     it('should not modify null values', () => {
-      expect(service.sanitizeCsvField(null as any)).toBeNull();
+      expect(service.sanitizeCsvField(null!)).toBeNull();
     });
 
     it('should not modify numeric-looking strings', () => {
@@ -419,7 +419,7 @@ describe('CsvValidationService', () => {
 
     it('should handle null/empty safely', () => {
       expect(service.sanitizeTextInput('')).toBe('');
-      expect(service.sanitizeTextInput(null as any)).toBeNull();
+      expect(service.sanitizeTextInput(null!)).toBeNull();
     });
   });
 

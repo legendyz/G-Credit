@@ -46,8 +46,9 @@ export class StorageService implements OnModuleInit {
       );
 
       console.log('✅ Azure Storage connected successfully');
-    } catch (error) {
-      console.error('❌ Failed to connect to Azure Storage:', error.message);
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      console.error('❌ Failed to connect to Azure Storage:', errMsg);
     }
   }
 
@@ -163,8 +164,9 @@ export class StorageService implements OnModuleInit {
       }
 
       return Buffer.concat(chunks);
-    } catch (error) {
-      throw new Error(`Failed to download blob: ${error.message}`);
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to download blob: ${errMsg}`);
     }
   }
 }

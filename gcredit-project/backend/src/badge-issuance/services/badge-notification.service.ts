@@ -48,10 +48,9 @@ export class BadgeNotificationService {
     try {
       this.badgeClaimTemplate = fs.readFileSync(claimTemplatePath, 'utf-8');
       this.logger.log('✅ Badge claim email template loaded');
-    } catch (error) {
-      this.logger.error(
-        `❌ Failed to load claim email template: ${error.message}`,
-      );
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Failed to load claim email template: ${errMsg}`);
       throw new Error(`Email template not found at ${claimTemplatePath}`);
     }
 
@@ -74,9 +73,10 @@ export class BadgeNotificationService {
         'utf-8',
       );
       this.logger.log('✅ Badge revocation email template loaded');
-    } catch (error) {
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
       this.logger.error(
-        `❌ Failed to load revocation email template: ${error.message}`,
+        `❌ Failed to load revocation email template: ${errMsg}`,
       );
       throw new Error(`Email template not found at ${revocationTemplatePath}`);
     }
@@ -211,10 +211,10 @@ export class BadgeNotificationService {
           );
           return { success: false, attempts, error: 'Graph Email disabled' };
         }
-      } catch (error) {
-        lastError = error;
+      } catch (error: unknown) {
+        lastError = error instanceof Error ? error : new Error(String(error));
         this.logger.warn(
-          `⚠️ Revocation notification attempt ${attempt}/${maxRetries} failed: ${error.message}`,
+          `⚠️ Revocation notification attempt ${attempt}/${maxRetries} failed: ${lastError.message}`,
         );
 
         if (attempt < maxRetries) {

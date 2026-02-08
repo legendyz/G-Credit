@@ -3,6 +3,7 @@ import { BadgeVerificationService } from './badge-verification.service';
 import { PrismaService } from '../common/prisma.service';
 import { BadgeStatus } from '@prisma/client';
 import { AssertionGeneratorService } from '../badge-issuance/services/assertion-generator.service';
+import { anyObject } from '../../test/helpers/jest-typed-matchers';
 
 describe('BadgeVerificationService - Story 6.3', () => {
   let service: BadgeVerificationService;
@@ -91,7 +92,7 @@ describe('BadgeVerificationService - Story 6.3', () => {
       expect(result?.recipient.email).toMatch(/^j\*\*\*@/); // Masked email
       expect(mockPrismaService.badge.findUnique).toHaveBeenCalledWith({
         where: { verificationId: mockVerificationId },
-        include: expect.any(Object),
+        include: anyObject(),
       });
     });
 

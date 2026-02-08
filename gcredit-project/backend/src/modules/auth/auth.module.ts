@@ -6,6 +6,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { PrismaModule } from '../../common/prisma.module';
+import type { StringValue } from 'ms';
 import { EmailModule } from '../../common/email.module';
 
 @Module({
@@ -19,8 +20,9 @@ import { EmailModule } from '../../common/email.module';
       useFactory: (config: ConfigService) => ({
         secret: config.get<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: config.get<string>('JWT_ACCESS_EXPIRES_IN') || '15m',
-        } as any,
+          expiresIn: (config.get<string>('JWT_ACCESS_EXPIRES_IN') ||
+            '15m') as StringValue,
+        },
       }),
     }),
   ],

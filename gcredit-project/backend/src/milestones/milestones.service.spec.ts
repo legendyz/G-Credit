@@ -3,6 +3,7 @@ import { MilestonesService } from './milestones.service';
 import { PrismaService } from '../common/prisma.service';
 import { MilestoneType, BadgeStatus } from '@prisma/client';
 import { NotFoundException } from '@nestjs/common';
+import { CreateMilestoneDto, MilestoneTriggerType } from './dto/milestone.dto';
 
 describe('MilestonesService', () => {
   let service: MilestonesService;
@@ -50,13 +51,12 @@ describe('MilestonesService', () => {
 
   describe('createMilestone', () => {
     it('should create BADGE_COUNT milestone successfully', async () => {
-      const createDto = {
+      const createDto: CreateMilestoneDto = {
         type: 'badge_count',
         title: 'Badge Collector',
         description: 'Earned 10 badges',
-        trigger: { type: 'badge_count', value: 10 },
+        trigger: { type: MilestoneTriggerType.BADGE_COUNT, value: 10 },
         icon: '🏆',
-        isActive: true,
       };
 
       const expectedMilestone = {
@@ -75,10 +75,7 @@ describe('MilestonesService', () => {
         expectedMilestone,
       );
 
-      const result = await service.createMilestone(
-        createDto as any,
-        'admin-uuid',
-      );
+      const result = await service.createMilestone(createDto, 'admin-uuid');
 
       expect(result).toEqual(expectedMilestone);
       expect(mockPrismaService.milestoneConfig.create).toHaveBeenCalledWith({
@@ -95,12 +92,12 @@ describe('MilestonesService', () => {
     });
 
     it('should create SKILL_TRACK milestone successfully', async () => {
-      const createDto = {
+      const createDto: CreateMilestoneDto = {
         type: 'skill_track',
         title: 'Cloud Master',
         description: 'Earned 5 cloud badges',
         trigger: {
-          type: 'skill_track',
+          type: MilestoneTriggerType.SKILL_TRACK,
           value: 5,
           categoryId: 'cloud-category-uuid',
         },
@@ -123,21 +120,18 @@ describe('MilestonesService', () => {
         expectedMilestone,
       );
 
-      const result = await service.createMilestone(
-        createDto as any,
-        'admin-uuid',
-      );
+      const result = await service.createMilestone(createDto, 'admin-uuid');
 
       expect(result.type).toEqual(MilestoneType.SKILL_TRACK);
       expect(mockPrismaService.milestoneConfig.create).toHaveBeenCalled();
     });
 
     it('should create ANNIVERSARY milestone successfully', async () => {
-      const createDto = {
+      const createDto: CreateMilestoneDto = {
         type: 'anniversary',
         title: '1 Year Anniversary',
         description: 'Completed 1 year at the company',
-        trigger: { type: 'anniversary', months: 12 },
+        trigger: { type: MilestoneTriggerType.ANNIVERSARY, months: 12 },
         icon: '🎂',
       };
 
@@ -157,10 +151,7 @@ describe('MilestonesService', () => {
         expectedMilestone,
       );
 
-      const result = await service.createMilestone(
-        createDto as any,
-        'admin-uuid',
-      );
+      const result = await service.createMilestone(createDto, 'admin-uuid');
 
       expect(result.type).toEqual(MilestoneType.ANNIVERSARY);
     });

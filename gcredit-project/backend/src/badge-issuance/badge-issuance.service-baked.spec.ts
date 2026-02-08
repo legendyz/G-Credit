@@ -11,6 +11,7 @@ import { GraphEmailService } from '../microsoft-graph/services/graph-email.servi
 import { ConfigService } from '@nestjs/config';
 import { BadgeStatus } from '@prisma/client';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { anyObject } from '../../test/helpers/jest-typed-matchers';
 
 describe('BadgeIssuanceService - Baked Badge (Story 6.4)', () => {
   let service: BadgeIssuanceService;
@@ -130,7 +131,7 @@ describe('BadgeIssuanceService - Baked Badge (Story 6.4)', () => {
 
       expect(mockPrismaService.badge.findUnique).toHaveBeenCalledWith({
         where: { id: mockBadgeId },
-        include: expect.any(Object),
+        include: anyObject(),
       });
     });
 
@@ -207,7 +208,7 @@ describe('BadgeIssuanceService - Baked Badge (Story 6.4)', () => {
       // Verify all steps were called correctly
       expect(mockPrismaService.badge.findUnique).toHaveBeenCalledWith({
         where: { id: mockBadgeId },
-        include: expect.any(Object),
+        include: anyObject(),
       });
 
       expect(mockStorageService.downloadBlobBuffer).toHaveBeenCalledWith(

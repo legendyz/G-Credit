@@ -48,10 +48,9 @@ export class BlobStorageService {
           'Azure Blob Storage not configured - operations will return mock data',
         );
       }
-    } catch (error) {
-      this.logger.warn(
-        `Failed to initialize Azure Blob Storage: ${error.message}`,
-      );
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Failed to initialize Azure Blob Storage: ${errMsg}`);
       this.containerClient = null;
     }
   }
@@ -142,8 +141,9 @@ export class BlobStorageService {
           folder,
           fileExtension,
         );
-      } catch (error) {
-        this.logger.warn(`Failed to generate thumbnail: ${error.message}`);
+      } catch (error: unknown) {
+        const errMsg = error instanceof Error ? error.message : String(error);
+        this.logger.warn(`Failed to generate thumbnail: ${errMsg}`);
       }
     }
 
@@ -278,10 +278,9 @@ export class BlobStorageService {
         isOptimal,
         suggestions: suggestions.length > 0 ? suggestions : undefined,
       };
-    } catch (error) {
-      throw new BadRequestException(
-        `Failed to read image metadata: ${error.message}`,
-      );
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(`Failed to read image metadata: ${errMsg}`);
     }
   }
 

@@ -190,11 +190,13 @@ export class BadgeSharingService {
           { recipientEmail: dto.recipientEmail },
         );
         this.logger.log(`Recorded email share event for badge ${badge.id}`);
-      } catch (analyticsError) {
+      } catch (analyticsError: unknown) {
+        const errMsg =
+          analyticsError instanceof Error
+            ? analyticsError.message
+            : String(analyticsError);
         // Log but don't fail the request if analytics recording fails
-        this.logger.warn(
-          `Failed to record share analytics: ${analyticsError.message}`,
-        );
+        this.logger.warn(`Failed to record share analytics: ${errMsg}`);
       }
 
       return {
@@ -203,12 +205,13 @@ export class BadgeSharingService {
         recipientEmail: dto.recipientEmail,
         badgeId: dto.badgeId,
       };
-    } catch (error) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       this.logger.error(
-        `Failed to send badge via email: ${error.message}`,
-        error.stack,
+        `Failed to send badge via email: ${err.message}`,
+        err.stack,
       );
-      throw new BadRequestException(`Failed to send email: ${error.message}`);
+      throw new BadRequestException(`Failed to send email: ${err.message}`);
     }
   }
 

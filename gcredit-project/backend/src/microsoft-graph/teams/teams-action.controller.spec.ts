@@ -14,6 +14,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { BadgeStatus } from '@prisma/client';
+import { anyDate } from '../../../test/helpers/jest-typed-matchers';
 
 describe('TeamsActionController', () => {
   let controller: TeamsActionController;
@@ -121,7 +122,7 @@ describe('TeamsActionController', () => {
         where: { id: 'badge-123' },
         data: {
           status: BadgeStatus.CLAIMED,
-          claimedAt: expect.any(Date),
+          claimedAt: anyDate(),
         },
         include: {
           template: true,
@@ -163,10 +164,13 @@ describe('TeamsActionController', () => {
 
       // Check for success message
       const successContainer = result.adaptiveCard.body.find(
-        (item: { type?: string; style?: string }) => item.type === 'Container' && item.style === 'accent',
+        (item: { type?: string; style?: string }) =>
+          item.type === 'Container' && item.style === 'accent',
       );
       expect(successContainer).toBeDefined();
-      expect(successContainer!.items![0].text).toContain('claimed successfully');
+      expect(successContainer!.items![0].text).toContain(
+        'claimed successfully',
+      );
     });
 
     it('should throw NotFoundException if badge not found', async () => {
