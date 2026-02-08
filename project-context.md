@@ -388,6 +388,8 @@ _bmad-output/
 | **TD-015: ESLint Warnings** | Medium | ✅ Sprint 9 Done | **Resolved:** 1303 → 282 warnings (78% reduction). Completed as standalone story (2026-02-07). Note: 8.4 regressed to 423 warnings — Sprint 10 cleanup. |
 | **TD-017: tsc Test-Only Errors** | Low | 📋 Sprint 10 | **Issue:** 114 tsc errors in test files only (0 in src). **Plan:** Fix test type annotations. **Effort:** 5h. |
 | **ESLint Warning Regression** | Medium | 📋 Sprint 10 | **Issue:** Story 8.4 added ~115 warnings (308→423). Dev bumped max-warnings 280→423 without authorization. **Plan:** Reduce back to <300. **Effort:** 4h. |
+| **TD-016: Async Bulk Processing** | Low | 📋 Deferred (P3) | **Issue:** Bulk issuance limited to 20 badges synchronously. **Plan:** Add Redis + Bull Queue for >20 badge async processing. **Effort:** 8h. **Trigger:** When user feedback validates need for >20 badges per batch. |
+| **TD-018: Code TODO Cleanup** | Low | 📋 Sprint 10 | **Issue:** 14 TODO/FIXME markers in source code (6 backend, 5 frontend, 3 test). Includes: hardcoded systemHealth check, auth audit logging, badge owner check, timeline counts, admin analytics mock data, skills delete validation. **Effort:** 3h. |
 
 ---
 

@@ -204,17 +204,35 @@ Growth:    1087 from 68  (16x in 5 sprints)
 
 ### Top Priorities
 1. **TD-017:** Fix 114 tsc test type errors (5h)
-2. **ESLint Regression:** 423→<300 warnings (3h)
-3. **项目 UAT 准备:** 全面验收测试用例编写
-4. **Merge to Main + Tag v1.0.0:** 正式版本发布
+2. **ESLint Regression:** 423→<300 warnings (4h)
+3. **TD-018:** Clean up 14 TODO/FIXME markers in source (3h)
+4. **项目 UAT 准备:** 全面验收测试用例编写
+5. **Merge to Main + Tag v1.0.0:** 正式版本发布
 
 ### Technical Debt Remaining
-| ID | Description | Effort | Priority |
-|----|-------------|--------|----------|
-| TD-017 | tsc test type errors (114) | 5h | P2 |
-| ESLint | Warning regression (423) | 3h | P2 |
-| TD-016 | Async bulk processing (Redis) | 8h | P3 (deferred) |
-| TD-006 | Teams permissions | External | P2 |
+| ID | Description | Effort | Priority | Sprint 10? |
+|----|-------------|--------|----------|------------|
+| TD-017 | tsc test type errors (114) | 5h | P2 | ✅ Yes |
+| ESLint | Warning regression (423→<300) | 4h | P2 | ✅ Yes |
+| TD-018 | Code TODO cleanup (14 markers) | 3h | P3 | ✅ Yes |
+| TD-006 | Teams channel permissions | External | P2 | ⚠️ If admin approves |
+| TD-016 | Async bulk processing (Redis) | 8h | P3 | ❌ Deferred |
+| lodash | Prototype pollution (ADR-002) | - | Accepted | ❌ Monitor |
+| Prisma | Version locked at 6.x | - | Intentional | ❌ Post-MVP |
+
+**Sprint 10 TD Total: ~12h** (TD-017 5h + ESLint 4h + TD-018 3h)
+
+### Code TODO/FIXME Inventory (TD-018)
+| File | Line | Description |
+|------|------|-------------|
+| `dashboard.service.ts` | 411 | systemHealth hardcoded as 'healthy' |
+| `auth.service.ts` | 56 | Audit logging not implemented |
+| `auth.service.ts` | 86 | Failed attempt rate limiting logging |
+| `skills.service.ts` | 152 | Check skill references before delete |
+| `teams-sharing.controller.ts` | 91 | Teams Channel Sharing not implemented (TD-006) |
+| `BadgeDetailModal.tsx` | 286 | Badge owner check hardcoded `isOwner={true}` |
+| `TimelineView.tsx` | 153-155 | claimed/pending/revoked badge counts hardcoded to 0 |
+| `AdminAnalyticsPage.tsx` | 46 | Replace mock data with actual admin analytics endpoint |
 
 ### Estimated Capacity
 - **Available:** 80h (based on Sprint 8-9)
@@ -231,10 +249,11 @@ Growth:    1087 from 68  (16x in 5 sprints)
 | 1 | Fix ESLint regression to ≤300 | Dev Team | Sprint 10 | ⬜ |
 | 2 | Add ESLint max-warnings CI gate | Dev Team | Sprint 10 | ⬜ |
 | 3 | TD-017: Fix 114 tsc test errors | Dev Team | Sprint 10 | ⬜ |
-| 4 | Update estimation process for pre-sprint scope | SM | Sprint 10 Planning | ⬜ |
-| 5 | Global scan for hardcoded Chinese strings | Dev Team | Sprint 10 | ⬜ |
-| 6 | Prepare UAT test cases (all Epics) | SM + PO | Sprint 10 | ⬜ |
-| 7 | Branch merge to main + v1.0.0 tag | Dev Team | Sprint 10 | ⬜ |
+| 4 | TD-018: Clean up 14 TODO/FIXME markers | Dev Team | Sprint 10 | ⬜ |
+| 5 | Update estimation process for pre-sprint scope | SM | Sprint 10 Planning | ⬜ |
+| 6 | Global scan for hardcoded Chinese strings | Dev Team | Sprint 10 | ⬜ |
+| 7 | Prepare UAT test cases (all Epics) | SM + PO | Sprint 10 | ⬜ |
+| 8 | Branch merge to main + v1.0.0 tag | Dev Team | Sprint 10 | ⬜ |
 
 ---
 
