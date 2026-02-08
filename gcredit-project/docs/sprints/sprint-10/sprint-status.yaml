@@ -21,9 +21,9 @@ metrics:
   total_estimated_hours: 62.5h
   buffer_hours: 17.5h
   
-  completed_stories: 0
-  completed_hours: 0h
-  remaining_hours: 59.5h
+  completed_stories: 1
+  completed_hours: 7.5h
+  remaining_hours: 55h
   
   # Capacity breakdown
   td_hours: 23.5h    # Stories 10.1-10.4 (10.2 upgraded to full cleanup)
@@ -118,7 +118,7 @@ stories:
     priority: HIGH
     estimate: 7.5h
     actual: null
-    status: review
+    status: complete
     phase: 1-td
     file: "10-1-tsc-test-type-errors.md"
     dependencies: []

@@ -65,7 +65,7 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 **Priority:** 🔴 HIGH  
 **Estimate:** 7.5h  
 **Story Doc:** 📄 [10-1-tsc-test-type-errors.md](10-1-tsc-test-type-errors.md)  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Complete  
 **Dependencies:** None
 
 **Quick Summary:** As a developer, I want all 114 tsc test-only type errors resolved, so that `tsc --noEmit` passes cleanly.
