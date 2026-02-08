@@ -1,10 +1,8 @@
 /**
  * Graph Teams Service Tests
  *
- * TECHNICAL DEBT: Tests depend on Teams channel functionality.
- * Requires ChannelMessage.Send Graph API permission (not yet approved).
- * See: docs/sprints/sprint-6/technical-debt.md
- * TODO: Re-enable when Teams permissions are configured (TD-003)
+ * ADR: Tests skipped pending ChannelMessage.Send permission approval (TD-006).
+ * See Post-MVP Backlog and SKIPPED-TESTS-TRACKER.md for resolution steps.
  */
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';

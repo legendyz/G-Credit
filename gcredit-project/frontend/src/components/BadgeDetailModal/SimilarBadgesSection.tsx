@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../../lib/apiConfig';
 
 interface SimilarBadge {
   id: string;
@@ -32,7 +33,7 @@ const SimilarBadgesSection: React.FC<SimilarBadgesSectionProps> = ({
     try {
       const token = localStorage.getItem('accessToken');
       const response = await fetch(
-        `http://localhost:3000/api/badges/${badgeId}/similar?limit=6`,
+        `${API_BASE_URL}/badges/${badgeId}/similar?limit=6`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -160,7 +161,7 @@ const SimilarBadgesSection: React.FC<SimilarBadgesSectionProps> = ({
       {/* AC 5.8: Scroll hint for mobile */}
       {similarBadges.length > 1 && (
         <p className="text-xs text-gray-500 text-center mt-2">
-          â†?Scroll to see more â†?
+          ï¿½?Scroll to see more ï¿½?
         </p>
       )}
     </section>

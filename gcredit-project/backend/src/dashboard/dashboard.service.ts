@@ -408,11 +408,20 @@ export class DashboardService {
         totalUsers,
         totalBadgesIssued,
         activeBadgeTemplates,
-        systemHealth: 'healthy', // TODO: Implement actual health check
+        systemHealth: await this.checkSystemHealth(),
         activeUsersThisMonth,
         newUsersThisMonth,
       },
       recentActivity,
     };
+  }
+
+  private async checkSystemHealth(): Promise<string> {
+    try {
+      await this.prisma.$queryRaw`SELECT 1`;
+      return 'healthy';
+    } catch {
+      return 'degraded';
+    }
   }
 }

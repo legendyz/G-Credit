@@ -3,7 +3,7 @@
  * Sprint 7 - Epic 9: Badge Revocation Admin UI
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+import { API_BASE_URL } from './apiConfig';
 
 // Badge status constants matching backend Prisma enum
 export const BadgeStatus = {

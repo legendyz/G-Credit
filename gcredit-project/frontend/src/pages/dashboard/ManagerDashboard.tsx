@@ -83,16 +83,18 @@ export const ManagerDashboard: React.FC = () => {
           <div className="flex flex-wrap gap-3">
             <Button
               variant="outline"
-              onClick={() => navigate('/team/nominate')}
-              className="flex items-center gap-2 min-h-[44px]"
+              disabled
+              title="Coming in Phase 2"
+              className="flex items-center gap-2 min-h-[44px] opacity-50 cursor-not-allowed"
             >
               <Award className="h-4 w-4" />
               Nominate Team Member
             </Button>
             <Button
               variant="outline"
-              onClick={() => navigate('/team/skills')}
-              className="flex items-center gap-2 min-h-[44px]"
+              disabled
+              title="Coming in Phase 2"
+              className="flex items-center gap-2 min-h-[44px] opacity-50 cursor-not-allowed"
             >
               <Users className="h-4 w-4" />
               View Team Skills

@@ -8,6 +8,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import { CheckCircle2, XCircle, AlertTriangle, Download, ExternalLink, Calendar, User, Building2, Award } from 'lucide-react';
 import { format } from 'date-fns';
 import axios from 'axios';
+import { API_BASE_URL } from '../lib/apiConfig';
 import { RevokedBadgeAlert } from '../components/badges/RevokedBadgeAlert';
 
 export function VerifyBadgePage() {
@@ -31,7 +32,7 @@ export function VerifyBadgePage() {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await axios.get(`http://localhost:3000/api/verify/${verificationId}`);
+      const response = await axios.get(`${API_BASE_URL}/verify/${verificationId}`);
       
       // Transform API response to match frontend type
       const apiData = response.data;

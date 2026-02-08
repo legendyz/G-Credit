@@ -27,9 +27,8 @@ import { GraphEmailService } from '../microsoft-graph/services/graph-email.servi
 import { IssueBadgeDto } from './dto/issue-badge.dto';
 import { BadgeStatus } from '@prisma/client';
 
-// SKIP: Teams integration tests - Teams channel notifications deferred pending permissions
-// See: docs/sprints/sprint-6/technical-debt.md
-// TODO: Re-enable when Teams permissions are configured (TD-003)
+// ADR: Tests skipped pending ChannelMessage.Send permission approval (TD-006).
+// See Post-MVP Backlog and SKIPPED-TESTS-TRACKER.md for resolution steps.
 describe.skip('BadgeIssuanceService - Teams Integration', () => {
   let service: BadgeIssuanceService;
   let teamsNotificationService: jest.Mocked<TeamsBadgeNotificationService>;

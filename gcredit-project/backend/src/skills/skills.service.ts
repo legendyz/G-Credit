@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { CreateSkillDto, UpdateSkillDto } from './dto/skill.dto';
@@ -149,8 +150,16 @@ export class SkillsService {
       throw new NotFoundException(`Skill with ID ${id} not found`);
     }
 
-    // TODO: In future sprints, check if skill is referenced in badge templates
-    // For now, we allow deletion
+    const referencingTemplates = await this.prisma.badgeTemplate.count({
+      where: {
+        skillIds: { has: id },
+      },
+    });
+    if (referencingTemplates > 0) {
+      throw new BadRequestException(
+        `Cannot delete skill: referenced by ${referencingTemplates} badge template(s)`,
+      );
+    }
 
     await this.prisma.skill.delete({
       where: { id },

@@ -82,7 +82,7 @@ export const AdminDashboard: React.FC = () => {
           value={systemOverview.activeBadgeTemplates}
           icon="📋"
           description="Badge templates"
-          onClick={() => navigate('/admin/templates')}
+          onClick={() => navigate('/admin/badges')}
         />
       </div>
 
@@ -126,7 +126,7 @@ export const AdminDashboard: React.FC = () => {
             <QuickActionButton
               icon="📋"
               label="Badge Templates"
-              onClick={() => navigate('/admin/templates')}
+              onClick={() => navigate('/admin/badges')}
             />
             <QuickActionButton
               icon="📊"
@@ -136,7 +136,9 @@ export const AdminDashboard: React.FC = () => {
             <QuickActionButton
               icon="⚙️"
               label="Settings"
-              onClick={() => navigate('/admin/settings')}
+              disabled
+              title="Coming in Phase 2"
+              className="opacity-50 cursor-not-allowed"
             />
           </div>
         </CardContent>
@@ -277,16 +279,23 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
 interface QuickActionButtonProps {
   icon: string;
   label: string;
-  onClick: () => void;
+  onClick?: () => void;
+  disabled?: boolean;
+  title?: string;
+  className?: string;
 }
 
-const QuickActionButton: React.FC<QuickActionButtonProps> = ({ icon, label, onClick }) => (
+const QuickActionButton: React.FC<QuickActionButtonProps> = ({ icon, label, onClick, disabled, title, className }) => (
   <button
-    onClick={onClick}
+    onClick={disabled ? undefined : onClick}
+    disabled={disabled}
+    title={title}
     className={cn(
       'flex flex-col items-center justify-center gap-2 p-4 rounded-lg border',
-      'bg-card hover:bg-accent/50 transition-colors',
-      'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
+      'bg-card transition-colors',
+      !disabled && 'hover:bg-accent/50',
+      'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+      className
     )}
   >
     <span className="text-2xl" aria-hidden="true">

@@ -1,3 +1,5 @@
+import { toast } from 'sonner';
+
 interface BadgeResult {
   row: number;
   recipientEmail: string;
@@ -57,7 +59,7 @@ export default function ProcessingComplete({
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch {
-      alert('Failed to download error report');
+      toast.error('Failed to download error report');
     }
   };
 

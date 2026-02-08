@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { API_BASE_URL } from '../../lib/apiConfig';
 
 interface EvidenceFile {
   id: string;
@@ -26,7 +27,7 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
   const fetchEvidence = async () => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:3000/api/badges/${badgeId}/evidence`, {
+      const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/evidence`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -61,7 +62,7 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
   const handleDownload = async (fileId: string) => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:3000/api/evidence/${badgeId}/${fileId}/download`, {
+      const response = await fetch(`${API_BASE_URL}/evidence/${badgeId}/${fileId}/download`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -94,7 +95,7 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
 
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:3000/api/evidence/${badgeId}/${fileId}/preview`, {
+      const response = await fetch(`${API_BASE_URL}/evidence/${badgeId}/${fileId}/preview`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

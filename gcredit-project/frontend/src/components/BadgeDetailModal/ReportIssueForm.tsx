@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
+import { API_BASE_URL } from '../../lib/apiConfig';
 
 interface ReportIssueFormProps {
   badgeId: string;
@@ -38,7 +39,7 @@ const ReportIssueForm: React.FC<ReportIssueFormProps> = ({
 
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:3000/api/badges/${badgeId}/report`, {
+      const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/report`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

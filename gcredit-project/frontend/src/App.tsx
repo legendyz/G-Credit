@@ -32,6 +32,7 @@ const BulkIssuancePage = lazy(() => import('@/pages/BulkIssuancePage'));
 const BulkPreviewPage = lazy(
   () => import('@/components/BulkIssuance/BulkPreviewPage'),
 );
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 /**
  * Loading fallback for lazy-loaded routes (TD-013)
@@ -129,6 +130,9 @@ function App() {
               </ProtectedRoute>
             } 
           />
+
+          {/* Catch-all: 404 Not Found */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
         </Suspense>
       </BrowserRouter>

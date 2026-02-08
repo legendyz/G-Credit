@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import BulkPreviewHeader from './BulkPreviewHeader';
 import BulkPreviewTable from './BulkPreviewTable';
 import ErrorCorrectionPanel from './ErrorCorrectionPanel';
@@ -154,7 +155,7 @@ export default function BulkPreviewPage() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Download failed');
+      toast.error(err instanceof Error ? err.message : 'Download failed');
     }
   };
 

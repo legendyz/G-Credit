@@ -150,9 +150,10 @@ export function TimelineView() {
     // AC 6.14: Detect which empty state scenario to display
     // Calculate badge counts for scenario detection
     const totalBadges = data?.pagination?.total || 0;
-    const claimedBadges = 0; // TODO: Get from API response if available
-    const pendingBadges = 0; // TODO: Get from API response if available
-    const revokedBadges = 0; // TODO: Get from API response if available
+    const badges = data?.badges ?? [];
+    const claimedBadges = badges.filter(b => b.status === 'CLAIMED').length;
+    const pendingBadges = badges.filter(b => b.status === 'PENDING').length;
+    const revokedBadges = badges.filter(b => b.status === 'REVOKED').length;
     const hasActiveFilter = hasFilters;
 
     const emptyScenario = detectEmptyStateScenario(
@@ -170,10 +171,10 @@ export function TimelineView() {
           pendingCount={pendingBadges}
           currentFilter={hasFilters ? 'Active filters' : null}
           onExploreCatalog={() => {
-            window.location.href = '/badges/templates';
+            window.location.href = '/wallet';
           }}
           onLearnMore={() => {
-            window.location.href = '/docs/help/earning-badges';
+            // Help docs not yet available
           }}
           onViewPending={() => {
             setStatusFilter('PENDING');
@@ -268,7 +269,7 @@ export function TimelineView() {
                 </button>
               )}
               <a
-                href="/badges/templates"
+                href="/wallet"
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50
                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >

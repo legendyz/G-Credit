@@ -6,10 +6,8 @@
 /**
  * Teams Sharing Controller Tests
  *
- * TECHNICAL DEBT: These tests may fail because Teams channel sharing
- * is currently disabled pending Graph API permissions.
- * See: docs/sprints/sprint-6/technical-debt.md
- * TODO: Re-enable when Teams permissions are configured (TD-003)
+ * ADR: Tests skipped pending ChannelMessage.Send permission approval (TD-006).
+ * See Post-MVP Backlog and SKIPPED-TESTS-TRACKER.md for resolution steps.
  *
  * Email sharing provides equivalent functionality and is fully tested.
  */

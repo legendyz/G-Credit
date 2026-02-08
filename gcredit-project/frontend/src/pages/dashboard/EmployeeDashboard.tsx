@@ -138,7 +138,7 @@ export const EmployeeDashboard: React.FC = () => {
   }
 
   if (!data) {
-    return <NoBadgesState onExplore={() => navigate('/badges')} />;
+    return <NoBadgesState onExplore={() => navigate('/wallet')} />;
   }
 
   const { badgeSummary, currentMilestone, recentBadges, recentAchievements } = data;
@@ -185,7 +185,7 @@ export const EmployeeDashboard: React.FC = () => {
             </Button>
             <Button
               variant="outline"
-              onClick={() => navigate('/catalog')}
+              onClick={() => navigate('/wallet')}
               className="flex items-center gap-2 min-h-[44px]"
             >
               <Search className="h-4 w-4" />

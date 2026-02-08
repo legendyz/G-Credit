@@ -53,8 +53,8 @@ export class AuthService {
       },
     });
 
-    // 4. TODO: Add audit logging (Task 2.2.8)
-    console.log(`[AUDIT] User registered: ${user.email} (${user.id})`);
+    // Audit logging via NestJS Logger — full audit trail system deferred to Phase 2
+    this.logger.log(`[AUDIT] User registered: ${user.email} (${user.id})`);
 
     // 5. Return user without password hash
     const { passwordHash: _hash, ...result } = user;
@@ -83,7 +83,7 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
-      // TODO: Log failed attempt for rate limiting (Task 2.3.9)
+      // Rate limiting deferred to Phase 2 — failed attempts logged for monitoring
       this.logger.warn(
         `Failed login attempt for user: ${dto.email}`,
         'LoginAttempt',

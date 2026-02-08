@@ -3,10 +3,8 @@
  * Story 7.4 - Microsoft Teams Notifications
  * Task 6: Email Fallback Testing
  *
- * NOTE: Some tests may fail due to Teams channel sharing being technical debt.
- * Teams channel sharing requires ChannelMessage.Send Graph API permission.
- * See: docs/sprints/sprint-6/technical-debt.md
- * TODO: Re-enable when Teams permissions are configured (TD-003)
+ * ADR: Tests skipped pending ChannelMessage.Send permission approval (TD-006).
+ * See Post-MVP Backlog and SKIPPED-TESTS-TRACKER.md for resolution steps.
  * Core email notification functionality is working and tested.
  */
 

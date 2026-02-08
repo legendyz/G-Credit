@@ -82,7 +82,7 @@ export const IssuerDashboard: React.FC = () => {
         <CardContent>
           <div className="flex flex-wrap gap-3">
             <Button
-              onClick={() => navigate('/badges/issue')}
+              onClick={() => navigate('/admin/badges')}
               className="flex items-center gap-2 min-h-[44px]"
             >
               <PlusCircle className="h-4 w-4" />
@@ -90,7 +90,7 @@ export const IssuerDashboard: React.FC = () => {
             </Button>
             <Button
               variant="outline"
-              onClick={() => navigate('/badges/manage')}
+              onClick={() => navigate('/admin/badges')}
               className="flex items-center gap-2 min-h-[44px]"
             >
               <List className="h-4 w-4" />

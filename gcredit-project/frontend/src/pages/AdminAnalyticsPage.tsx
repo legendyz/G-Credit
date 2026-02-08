@@ -43,13 +43,9 @@ const AdminAnalyticsPage: React.FC = () => {
     setError(null);
 
     try {
-      // TODO: Replace with actual admin analytics endpoint when backend implements it
-      // const token = localStorage.getItem('access_token');
-      // const response = await fetch(`http://localhost:3000/api/admin/analytics?range=${timeRange}`, {
-      //   headers: { Authorization: `Bearer ${token}` },
-      // });
-      
-      // For now, using mock data to demonstrate UI
+      // Analytics data provided via mock — real sharing-analytics endpoint integration deferred to Story 10.5
+      // The existing backend /api/analytics/system-overview returns user/badge/template stats,
+      // not sharing analytics (totalShares, platformDistribution, topBadges) needed here.
       
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));

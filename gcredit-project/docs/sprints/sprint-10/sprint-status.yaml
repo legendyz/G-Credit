@@ -137,8 +137,8 @@ stories:
     title: "TD-018: TODO/FIXME Cleanup + UX Audit Critical Fixes"
     priority: HIGH
     estimate: 5h
-    actual: null
-    status: backlog
+    actual: 4h
+    status: complete
     phase: 1-td
     file: "10-3-todo-fixme-cleanup.md"
     dependencies: []

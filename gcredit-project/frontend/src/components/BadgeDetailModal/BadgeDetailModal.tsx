@@ -15,9 +15,12 @@ import BadgeAnalytics from './BadgeAnalytics';
 import BadgeShareModal from '../BadgeShareModal';
 import RevocationSection from './RevocationSection';
 import ClaimSuccessModal from '../ClaimSuccessModal';
+import { API_BASE_URL } from '../../lib/apiConfig';
+import { useCurrentUser } from '../../stores/authStore';
 
 const BadgeDetailModal: React.FC = () => {
   const { isOpen, badgeId, closeModal } = useBadgeDetailModal();
+  const currentUser = useCurrentUser();
   const [badge, setBadge] = useState<BadgeDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,8 +28,6 @@ const BadgeDetailModal: React.FC = () => {
   const [downloading, setDownloading] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [claimSuccessOpen, setClaimSuccessOpen] = useState(false);
-
-  console.log('BadgeDetailModal render - isOpen:', isOpen, 'badgeId:', badgeId);
 
   useEffect(() => {
     if (isOpen && badgeId) {
@@ -59,7 +60,7 @@ const BadgeDetailModal: React.FC = () => {
 
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:3000/api/badges/${badgeId}`, {
+      const response = await fetch(`${API_BASE_URL}/badges/${badgeId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -85,7 +86,7 @@ const BadgeDetailModal: React.FC = () => {
     setDownloading(true);
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:3000/api/badges/${badge.id}/download/png`, {
+      const response = await fetch(`${API_BASE_URL}/badges/${badge.id}/download/png`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -121,7 +122,7 @@ const BadgeDetailModal: React.FC = () => {
     setClaiming(true);
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:3000/api/badges/${badge.id}/claim`, {
+      const response = await fetch(`${API_BASE_URL}/badges/${badge.id}/claim`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -283,7 +284,7 @@ const BadgeDetailModal: React.FC = () => {
                 {/* Sprint 6: Badge Share Analytics (Story 7.5) */}
                 <BadgeAnalytics
                   badgeId={badge.id}
-                  isOwner={true} // TODO: Check if current user is badge owner or issuer
+                  isOwner={badge.recipient.email === currentUser?.email}
                 />
 
                 {/* AC 4.7: Similar Badges Section (from Story 4.5) */}

@@ -13,8 +13,7 @@ import { useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { TemplateSelector } from '../components/BulkIssuance/TemplateSelector';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+import { API_BASE_URL } from '../lib/apiConfig';
 
 /** Max file size: 100KB */
 const MAX_FILE_SIZE = 102_400;

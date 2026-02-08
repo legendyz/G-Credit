@@ -11,8 +11,7 @@ import type {
   ManagerDashboard,
   AdminDashboard,
 } from '../types/dashboard';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { API_BASE_URL } from '../lib/apiConfig';
 
 /**
  * Fetch helper with auth
@@ -43,7 +42,7 @@ async function fetchWithAuth<T>(endpoint: string): Promise<T> {
 export function useEmployeeDashboard() {
   return useQuery({
     queryKey: ['dashboard', 'employee'],
-    queryFn: () => fetchWithAuth<EmployeeDashboard>('/api/dashboard/employee'),
+    queryFn: () => fetchWithAuth<EmployeeDashboard>('/dashboard/employee'),
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchInterval: 60 * 1000, // 60 seconds auto-refresh (AC1 requirement)
     refetchIntervalInBackground: false, // Only when tab is active
@@ -59,7 +58,7 @@ export function useEmployeeDashboard() {
 export function useIssuerDashboard() {
   return useQuery({
     queryKey: ['dashboard', 'issuer'],
-    queryFn: () => fetchWithAuth<IssuerDashboard>('/api/dashboard/issuer'),
+    queryFn: () => fetchWithAuth<IssuerDashboard>('/dashboard/issuer'),
     staleTime: 5 * 60 * 1000,
     refetchInterval: 60 * 1000, // 60 seconds auto-refresh
     refetchIntervalInBackground: false,
@@ -75,7 +74,7 @@ export function useIssuerDashboard() {
 export function useManagerDashboard() {
   return useQuery({
     queryKey: ['dashboard', 'manager'],
-    queryFn: () => fetchWithAuth<ManagerDashboard>('/api/dashboard/manager'),
+    queryFn: () => fetchWithAuth<ManagerDashboard>('/dashboard/manager'),
     staleTime: 5 * 60 * 1000,
     refetchInterval: 60 * 1000, // 60 seconds auto-refresh
     refetchIntervalInBackground: false,
@@ -91,7 +90,7 @@ export function useManagerDashboard() {
 export function useAdminDashboard() {
   return useQuery({
     queryKey: ['dashboard', 'admin'],
-    queryFn: () => fetchWithAuth<AdminDashboard>('/api/dashboard/admin'),
+    queryFn: () => fetchWithAuth<AdminDashboard>('/dashboard/admin'),
     staleTime: 5 * 60 * 1000,
     refetchInterval: 60 * 1000, // 60 seconds auto-refresh
     refetchIntervalInBackground: false,
