@@ -174,7 +174,7 @@ export function TimelineView() {
             window.location.href = '/wallet';
           }}
           onLearnMore={() => {
-            // Help docs not yet available
+            window.location.href = '/wallet';
           }}
           onViewPending={() => {
             setStatusFilter('PENDING');
