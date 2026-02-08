@@ -273,6 +273,11 @@ export default function BulkPreviewPage() {
         results={processingResults.results}
         sessionId={sessionId}
         onViewBadges={() => navigate('/admin/badges')}
+        onRetryFailed={
+          processingResults.failed > 0
+            ? () => navigate('/admin/bulk-issuance')
+            : undefined
+        }
       />
     );
   }
@@ -405,6 +410,13 @@ export default function BulkPreviewPage() {
       <ProcessingModal
         totalBadges={previewData.validRows}
         isProcessing={isProcessing}
+        badgeRows={previewData.rows
+          .filter((r) => r.isValid)
+          .map((r) => ({
+            badgeName: r.badgeName,
+            recipientName: r.recipientName,
+            recipientEmail: r.recipientEmail,
+          }))}
       />
     </div>
   );

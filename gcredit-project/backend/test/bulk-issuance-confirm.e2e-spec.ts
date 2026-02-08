@@ -185,15 +185,11 @@ describe('Bulk Issuance Confirm — Batch Processing (e2e)', () => {
     expect(body.processed + body.failed).toBe(2);
 
     // The first (active template) should succeed
-    const successResults = body.results.filter(
-      (r) => r.status === 'success',
-    );
+    const successResults = body.results.filter((r) => r.status === 'success');
     expect(successResults.length).toBeGreaterThanOrEqual(1);
 
     // The second (deactivated template) should fail
-    const failedResults = body.results.filter(
-      (r) => r.status === 'failed',
-    );
+    const failedResults = body.results.filter((r) => r.status === 'failed');
     expect(failedResults.length).toBeGreaterThanOrEqual(1);
     expect(failedResults[0].error).toContain('not found or inactive');
   });

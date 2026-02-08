@@ -258,7 +258,9 @@ export class BulkIssuanceService {
     const dataLineCount = parsedRows.length - 1;
     if (dataLineCount > BulkIssuanceService.MAX_ROWS) {
       throw new BadRequestException(
-        `CSV contains ${dataLineCount} data rows, exceeding the maximum of ${BulkIssuanceService.MAX_ROWS}. Please reduce the number of rows.`,
+        `CSV contains ${dataLineCount} rows, exceeding the MVP limit of ${BulkIssuanceService.MAX_ROWS} badges per batch. ` +
+          `Please split your CSV or remove rows to have at most ${BulkIssuanceService.MAX_ROWS} rows. ` +
+          `Phase 2 will support larger batches.`,
       );
     }
 
@@ -551,6 +553,7 @@ export class BulkIssuanceService {
       badgeName: string;
       status: 'success' | 'failed';
       error?: string;
+      emailError?: string;
     }>;
   }> {
     const session = await this.loadSession(sessionId, currentUserId);
@@ -590,6 +593,7 @@ export class BulkIssuanceService {
       badgeName: string;
       status: 'success' | 'failed';
       error?: string;
+      emailError?: string;
     }> = [];
     let processed = 0;
     let failed = 0;
@@ -624,7 +628,7 @@ export class BulkIssuanceService {
         }
 
         // Issue badge via BadgeIssuanceService
-        await this.badgeIssuanceService.issueBadge(
+        const issueResult = await this.badgeIssuanceService.issueBadge(
           {
             templateId: template.id,
             recipientId: recipient.id,
@@ -639,6 +643,9 @@ export class BulkIssuanceService {
           recipientEmail: row.recipientEmail,
           badgeName: template.name,
           status: 'success',
+          ...(issueResult.emailError
+            ? { emailError: issueResult.emailError }
+            : {}),
         });
 
         this.logger.debug(

@@ -185,3 +185,75 @@ describe('Bulk Issuance Upload — Rate Limiting (e2e)', () => {
       .expect(429);
   });
 });
+
+/**
+ * Row Limit tests — validates MAX_ROWS (20) boundary (AC1)
+ * Separate describe to get a fresh throttle counter.
+ */
+describe('Bulk Issuance Upload — Row Limit (e2e)', () => {
+  let ctx: TestContext;
+  let adminUser: TestUser;
+  let activeTemplateId: string;
+
+  beforeAll(async () => {
+    ctx = await setupE2ETest('bulk-upload-rowlimit');
+    adminUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'admin');
+
+    const template = await ctx.templateFactory.createActive({
+      name: 'Row Limit Test Template',
+      createdById: adminUser.user.id,
+    });
+    activeTemplateId = template.id;
+  }, 30000);
+
+  afterAll(async () => {
+    await teardownE2ETest(ctx);
+  });
+
+  it('POST /api/bulk-issuance/upload — 21 rows returns 400 with limit message', async () => {
+    const header =
+      'badgeTemplateId,recipientEmail,evidenceUrl,narrativeJustification';
+    const rows = Array.from(
+      { length: 21 },
+      (_, i) =>
+        `${activeTemplateId},user${i}@rowlimit.test,https://example.com/ev${i},row ${i + 1}`,
+    );
+    const csvContent = [header, ...rows].join('\n');
+
+    const response = await authRequest(ctx.app, adminUser.token)
+      .post('/api/bulk-issuance/upload')
+      .attach('file', Buffer.from(csvContent), {
+        filename: 'too-many-rows.csv',
+        contentType: 'text/csv',
+      })
+      .expect(400);
+
+    const body = response.body as { message: string };
+    expect(body.message).toContain('21 rows');
+    expect(body.message).toContain('MVP limit');
+    expect(body.message).toContain('split');
+  });
+
+  it('POST /api/bulk-issuance/upload — exactly 20 rows is accepted', async () => {
+    const header =
+      'badgeTemplateId,recipientEmail,evidenceUrl,narrativeJustification';
+    const rows = Array.from(
+      { length: 20 },
+      (_, i) =>
+        `${activeTemplateId},user${i}@rowlimit-ok.test,https://example.com/ev${i},row ${i + 1}`,
+    );
+    const csvContent = [header, ...rows].join('\n');
+
+    const response = await authRequest(ctx.app, adminUser.token)
+      .post('/api/bulk-issuance/upload')
+      .attach('file', Buffer.from(csvContent), {
+        filename: 'exactly-20-rows.csv',
+        contentType: 'text/csv',
+      })
+      .expect(201);
+
+    const body = response.body as { sessionId: string; totalRows: number };
+    expect(body.sessionId).toBeDefined();
+    expect(body.totalRows).toBe(20);
+  });
+});

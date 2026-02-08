@@ -4,6 +4,7 @@ interface BadgeResult {
   badgeName: string;
   status: 'success' | 'failed';
   error?: string;
+  emailError?: string;
 }
 
 interface ProcessingCompleteProps {
@@ -12,6 +13,7 @@ interface ProcessingCompleteProps {
   results: BadgeResult[];
   sessionId?: string;
   onViewBadges: () => void;
+  onRetryFailed?: () => void;
 }
 
 /**
@@ -24,8 +26,10 @@ export default function ProcessingComplete({
   results,
   sessionId,
   onViewBadges,
+  onRetryFailed,
 }: ProcessingCompleteProps) {
   const failedResults = results.filter((r) => r.status === 'failed');
+  const emailWarnings = results.filter((r) => r.emailError);
 
   const handleDownloadErrorReport = async () => {
     if (!sessionId) return;
@@ -104,13 +108,44 @@ export default function ProcessingComplete({
               </table>
             </div>
             {sessionId && (
-              <button
-                onClick={handleDownloadErrorReport}
-                className="mt-3 px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors"
-              >
-                Download Error Report
-              </button>
+              <div className="flex gap-3 mt-3">
+                <button
+                  onClick={handleDownloadErrorReport}
+                  className="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors"
+                >
+                  Download Error Report
+                </button>
+                {onRetryFailed && (
+                  <button
+                    onClick={onRetryFailed}
+                    className="px-4 py-2 text-sm bg-amber-500 text-white rounded hover:bg-amber-600 transition-colors"
+                  >
+                    Retry Failed Badges
+                  </button>
+                )}
+              </div>
             )}
+          </div>
+        )}
+
+        {/* Email Notification Warnings */}
+        {emailWarnings.length > 0 && (
+          <div className="mb-6 text-left">
+            <h3 className="text-lg font-semibold text-amber-700 mb-3">
+              Email Notification Issues ({emailWarnings.length})
+            </h3>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <p className="text-sm text-amber-800 mb-2">
+                Badges were issued successfully but notification emails could not be sent:
+              </p>
+              <ul className="text-sm text-amber-700 space-y-1">
+                {emailWarnings.map((r) => (
+                  <li key={r.row}>
+                    Row {r.row}: {r.recipientEmail} — {r.emailError}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         )}
 

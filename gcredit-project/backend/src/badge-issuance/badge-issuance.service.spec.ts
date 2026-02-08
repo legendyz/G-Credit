@@ -36,6 +36,18 @@ describe('BadgeIssuanceService', () => {
     auditLog: {
       create: jest.fn(),
     },
+    // Interactive transaction: execute callback with tx proxy that delegates to badge mocks
+    $transaction: jest.fn(
+      async (callback: (tx: unknown) => Promise<unknown>) => {
+        const tx = {
+          badge: {
+            create: mockPrismaService.badge.create,
+            update: mockPrismaService.badge.update,
+          },
+        };
+        return callback(tx);
+      },
+    ),
   };
 
   const mockAssertionGenerator = {
@@ -1215,8 +1227,8 @@ describe('BadgeIssuanceService', () => {
           },
         };
 
-        (mockPrismaService.badge as any).count = jest.fn().mockResolvedValue(1);
-        (mockPrismaService.badge as any).findMany = jest
+        mockPrismaService.badge.count = jest.fn().mockResolvedValue(1);
+        mockPrismaService.badge.findMany = jest
           .fn()
           .mockResolvedValue([revokedBadge]);
         mockMilestonesService.getUserAchievements = jest
@@ -1263,8 +1275,8 @@ describe('BadgeIssuanceService', () => {
           },
         };
 
-        (mockPrismaService.badge as any).count = jest.fn().mockResolvedValue(1);
-        (mockPrismaService.badge as any).findMany = jest
+        mockPrismaService.badge.count = jest.fn().mockResolvedValue(1);
+        mockPrismaService.badge.findMany = jest
           .fn()
           .mockResolvedValue([claimedBadge]);
         mockMilestonesService.getUserAchievements = jest
@@ -1307,8 +1319,8 @@ describe('BadgeIssuanceService', () => {
           },
         };
 
-        (mockPrismaService.badge as any).count = jest.fn().mockResolvedValue(1);
-        (mockPrismaService.badge as any).findMany = jest
+        mockPrismaService.badge.count = jest.fn().mockResolvedValue(1);
+        mockPrismaService.badge.findMany = jest
           .fn()
           .mockResolvedValue([revokedBadge]);
         mockMilestonesService.getUserAchievements = jest

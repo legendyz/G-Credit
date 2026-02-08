@@ -114,4 +114,61 @@ describe('ProcessingComplete', () => {
     expect(screen.getByText('Badge')).toBeInTheDocument();
     expect(screen.getByText('Error')).toBeInTheDocument();
   });
+
+  // --- Retry Failed Badges (AC6) ---
+
+  it('should show Retry Failed Badges button when onRetryFailed provided', () => {
+    const onRetry = vi.fn();
+    render(
+      <ProcessingComplete {...defaultProps} onRetryFailed={onRetry} />,
+    );
+    expect(screen.getByText('Retry Failed Badges')).toBeInTheDocument();
+  });
+
+  it('should call onRetryFailed when retry button clicked', () => {
+    const onRetry = vi.fn();
+    render(
+      <ProcessingComplete {...defaultProps} onRetryFailed={onRetry} />,
+    );
+    fireEvent.click(screen.getByText('Retry Failed Badges'));
+    expect(onRetry).toHaveBeenCalledOnce();
+  });
+
+  it('should not show Retry button when onRetryFailed not provided', () => {
+    render(<ProcessingComplete {...defaultProps} />);
+    expect(screen.queryByText('Retry Failed Badges')).not.toBeInTheDocument();
+  });
+
+  // --- Email Error Surfacing (AC6) ---
+
+  it('should show email notification warnings when emailError present', () => {
+    const resultsWithEmailError = [
+      { row: 2, recipientEmail: 'alice@test.com', badgeName: 'Leadership', status: 'success' as const, emailError: 'SMTP timeout' },
+      { row: 3, recipientEmail: 'bob@test.com', badgeName: 'Innovation', status: 'success' as const },
+    ];
+    render(
+      <ProcessingComplete
+        success={2}
+        failed={0}
+        results={resultsWithEmailError}
+        sessionId="test-session"
+        onViewBadges={vi.fn()}
+      />,
+    );
+    expect(screen.getByText(/Email Notification Issues/)).toBeInTheDocument();
+    expect(screen.getByText(/SMTP timeout/)).toBeInTheDocument();
+    expect(screen.getByText(/notification emails could not be sent/)).toBeInTheDocument();
+  });
+
+  it('should not show email warnings when no emailError in results', () => {
+    render(
+      <ProcessingComplete
+        success={2}
+        failed={0}
+        results={mockResults.filter((r) => r.status === 'success')}
+        onViewBadges={vi.fn()}
+      />,
+    );
+    expect(screen.queryByText(/Email Notification Issues/)).not.toBeInTheDocument();
+  });
 });

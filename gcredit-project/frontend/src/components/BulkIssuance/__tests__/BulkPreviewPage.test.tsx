@@ -43,13 +43,15 @@ vi.mock('../ProcessingComplete', () => ({
   default: (props: {
     success: number;
     failed: number;
-    results: Array<{ row: number; recipientEmail: string; badgeName: string; status: string; error?: string }>;
+    results: Array<{ row: number; recipientEmail: string; badgeName: string; status: string; error?: string; emailError?: string }>;
     sessionId?: string;
+    onRetryFailed?: () => void;
   }) => (
     <div data-testid="processing-complete">
       Done: {props.success} success, {props.failed} failed
       {props.results?.length > 0 && <span data-testid="has-results">results:{props.results.length}</span>}
       {props.sessionId && <span data-testid="session-id">{props.sessionId}</span>}
+      {props.onRetryFailed && <button data-testid="retry-btn" onClick={props.onRetryFailed}>Retry</button>}
     </div>
   ),
 }));

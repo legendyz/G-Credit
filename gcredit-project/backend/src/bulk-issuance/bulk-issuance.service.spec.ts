@@ -35,7 +35,9 @@ describe('BulkIssuanceService', () => {
   };
 
   const mockBadgeIssuanceService = {
-    issueBadge: jest.fn(),
+    issueBadge: jest
+      .fn()
+      .mockResolvedValue({ id: 'badge-1', emailError: undefined }),
   };
 
   beforeEach(async () => {
@@ -246,7 +248,7 @@ John,john@example.com`;
 
       await expect(
         service.createSession(csvContent, 'issuer-123'),
-      ).rejects.toThrow(/exceeding the maximum/);
+      ).rejects.toThrow(/exceeding the MVP limit/);
     });
 
     it('should strip UTF-8 BOM before parsing', async () => {

@@ -25,19 +25,19 @@ describe('ProcessingModal', () => {
 
   it('should show progress percentage', () => {
     render(<ProcessingModal totalBadges={10} isProcessing={true} />);
-    expect(screen.getByText('0%')).toBeInTheDocument();
+    expect(screen.getByText(/0% \(0\/10\)/)).toBeInTheDocument();
 
     // Advance to trigger progress update
     act(() => {
       vi.advanceTimersByTime(1000);
     });
-    // Progress should have advanced past 0%
-    expect(screen.queryByText('0%')).not.toBeInTheDocument();
+    // Progress should have advanced — now shows 10% (1/10)
+    expect(screen.getByText(/10% \(1\/10\)/)).toBeInTheDocument();
   });
 
   it('should display badge count estimate', () => {
     render(<ProcessingModal totalBadges={15} isProcessing={true} />);
-    expect(screen.getByText(/Processing ~0\/15 badges/)).toBeInTheDocument();
+    expect(screen.getByText(/0\/15/)).toBeInTheDocument();
   });
 
   it('should show estimated remaining time', () => {
@@ -67,6 +67,36 @@ describe('ProcessingModal', () => {
     expect(screen.getByText(/taking longer than expected/)).toBeInTheDocument();
   });
 
+  it('should show running success/remaining counts', () => {
+    render(<ProcessingModal totalBadges={10} isProcessing={true} />);
+    // Initially 0 done, 10 remaining
+    expect(screen.getByText(/0 done/)).toBeInTheDocument();
+    expect(screen.getByText(/10 remaining/)).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    // After 3 seconds: 3 done, 7 remaining
+    expect(screen.getByText(/3 done/)).toBeInTheDocument();
+    expect(screen.getByText(/7 remaining/)).toBeInTheDocument();
+  });
+
+  it('should show current badge label when badgeRows provided', () => {
+    const badgeRows = [
+      { badgeName: 'Leadership', recipientName: 'John Doe' },
+      { badgeName: 'Teamwork', recipientName: 'Jane Smith' },
+    ];
+    render(
+      <ProcessingModal totalBadges={2} isProcessing={true} badgeRows={badgeRows} />,
+    );
+    expect(screen.getByText(/Leadership → John Doe/)).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(screen.getByText(/Teamwork → Jane Smith/)).toBeInTheDocument();
+  });
+
   it('should reset progress when processing stops', () => {
     const { rerender } = render(
       <ProcessingModal totalBadges={10} isProcessing={true} />,
@@ -81,6 +111,6 @@ describe('ProcessingModal', () => {
 
     // Re-start processing — should show 0% again
     rerender(<ProcessingModal totalBadges={10} isProcessing={true} />);
-    expect(screen.getByText('0%')).toBeInTheDocument();
+    expect(screen.getByText(/0% \(0\/10\)/)).toBeInTheDocument();
   });
 });
