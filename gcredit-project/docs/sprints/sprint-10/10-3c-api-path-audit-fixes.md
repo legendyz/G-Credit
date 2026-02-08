@@ -35,34 +35,35 @@ SM API 调用路径审计发现 **5 个 CRITICAL 路径不匹配**，会导致�
 ## Acceptance Criteria
 
 ### AC1: 后端控制器前缀统一
-- [ ] `auth.controller.ts`: `@Controller('auth')` → `@Controller('api/auth')`
-- [ ] `badge-templates.controller.ts`: `@Controller('badge-templates')` → `@Controller('api/badge-templates')`
-- [ ] `skills.controller.ts`: `@Controller('skills')` → `@Controller('api/skills')`
-- [ ] `skill-categories.controller.ts`: `@Controller('skill-categories')` → `@Controller('api/skill-categories')`
+- [x] `auth.controller.ts`: `@Controller('auth')` → `@Controller('api/auth')`
+- [x] `badge-templates.controller.ts`: `@Controller('badge-templates')` → `@Controller('api/badge-templates')`
+- [x] `skills.controller.ts`: `@Controller('skills')` → `@Controller('api/skills')`
+- [x] `skill-categories.controller.ts`: `@Controller('skill-categories')` → `@Controller('api/skill-categories')`
 
 ### AC2: 前端路径 Bug 修复
-- [ ] `EvidenceSection.tsx:65`: `/evidence/${badgeId}/${fileId}/download` → `/badges/${badgeId}/evidence/${fileId}/download`
-- [ ] `EvidenceSection.tsx:98`: `/evidence/${badgeId}/${fileId}/preview` → `/badges/${badgeId}/evidence/${fileId}/preview`
-- [ ] `badgeShareApi.ts:94`: `/badges/${badgeId}/teams/share` → `/badges/${badgeId}/share/teams`
+- [x] `EvidenceSection.tsx:65`: `/evidence/${badgeId}/${fileId}/download` → `/badges/${badgeId}/evidence/${fileId}/download`
+- [x] `EvidenceSection.tsx:98`: `/evidence/${badgeId}/${fileId}/preview` → `/badges/${badgeId}/evidence/${fileId}/preview`
+- [x] `badgeShareApi.ts:94`: `/badges/${badgeId}/teams/share` → `/badges/${badgeId}/share/teams`
 
 ### AC3: 前端硬编码 URL 统一化
-- [ ] 8 处硬编码 `/api/...` 全部替换为 `${API_BASE_URL}/...`
-- [ ] 涉及文件: `authStore.ts`, `useSkills.ts`, `adminUsersApi.ts`, `BulkPreviewPage.tsx`, `ProcessingComplete.tsx`
+- [x] 8 处硬编码 `/api/...` 全部替换为 `${API_BASE_URL}/...`
+- [x] 涉及文件: `authStore.ts`, `useSkills.ts`, `adminUsersApi.ts`, `BulkPreviewPage.tsx`, `ProcessingComplete.tsx`
 
 ### AC4: E2E 测试路径同步
-- [ ] 所有 E2E 测试中 `/auth/...` → `/api/auth/...`
-- [ ] 所有 E2E 测试中 `/badge-templates/...` → `/api/badge-templates/...`
-- [ ] 所有 E2E 测试中 `/skills/...` → `/api/skills/...`
-- [ ] 所有 E2E 测试中 `/skill-categories/...` → `/api/skill-categories/...`
+- [x] 所有 E2E 测试中 `/auth/...` → `/api/auth/...`
+- [x] 所有 E2E 测试中 `/badge-templates/...` → `/api/badge-templates/...`
+- [x] 所有 E2E 测试中 `/skills/...` → `/api/skills/...`
+- [x] 所有 E2E 测试中 `/skill-categories/...` → `/api/skill-categories/...`
 
 ### AC5: 零回归
-- [ ] 所有前端测试通过 (397+)
-- [ ] 所有后端测试通过 (534+)
-- [ ] 所有 E2E 测试通过
-- [ ] ESLint 零容忍通过 (前端 + 后端)
+- [x] 所有前端测试通过 (397+)
+- [x] 所有后端测试通过 (534+)
+- [x] 所有 E2E 测试通过
+- [x] ESLint 零容忍通过 (前端 + 后端)
 
 ### AC6: Commit 标准
-- [ ] Commit message: `fix: API path audit fixes — 4 controller prefixes + 3 frontend path bugs`
+- [x] Commit message: `fix: API path audit fixes — 4 controller prefixes + 3 frontend path bugs`
+- [x] Commit: `69aa5b3`
 
 ---
 

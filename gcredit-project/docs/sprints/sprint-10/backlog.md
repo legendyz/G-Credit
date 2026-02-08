@@ -134,23 +134,23 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 
 ---
 
-### Story 10.3c: API Path Audit Fixes — Route Mismatch + Hardcoded URL Cleanup
+### Story 10.3c: API Path Audit Fixes — Route Mismatch + Hardcoded URL Cleanup ✅ Complete
 **Priority:** 🔴 CRITICAL  
-**Estimate:** 2h (from buffer)  
+**Estimate:** 2h (from buffer) | **Actual:** 1.5h  
 **Story Doc:** 📄 [10-3c-api-path-audit-fixes.md](10-3c-api-path-audit-fixes.md)  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Complete  
 **Dependencies:** None  
 **Discovered:** SM API Path Audit (2026-02-09)
 
 **Quick Summary:** 5 CRITICAL API path mismatches causing 404s. 4 backend controllers missing `api/` prefix + 2 frontend path bugs + 8 hardcoded URLs.
 
 **Key Deliverables:**
-- [ ] 4 backend controllers add `api/` prefix (auth, badge-templates, skills, skill-categories)
-- [ ] Fix Evidence download/preview path (missing `/badges` segment)
-- [ ] Fix Teams share path order (`/teams/share` → `/share/teams`)
-- [ ] 8 hardcoded `/api/...` → `${API_BASE_URL}/...`
-- [ ] E2E test paths updated
-- [ ] Zero regressions
+- [x] 4 backend controllers add `api/` prefix (auth, badge-templates, skills, skill-categories)
+- [x] Fix Evidence download/preview path (missing `/badges` segment)
+- [x] Fix Teams share path order (`/teams/share` → `/share/teams`)
+- [x] 8 hardcoded `/api/...` → `${API_BASE_URL}/...`
+- [x] E2E test paths updated
+- [x] Zero regressions
 
 ---
 
