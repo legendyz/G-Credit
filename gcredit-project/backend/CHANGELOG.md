@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.9.0-dev] - Sprint 9 In Progress (2026-02-06 ~ 2026-02-20)
+## [0.9.0] - Sprint 9 Complete (2026-02-08)
 
 ### Sprint 9 Summary - Epic 8: Bulk Badge Issuance + TD Cleanup
 

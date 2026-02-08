@@ -1,8 +1,8 @@
 # API Usage Guide
 
 **G-Credit Badge Platform REST API**  
-**Version:** 0.8.0 (Sprint 8 - Production Ready MVP)  
-**Last Updated:** 2026-02-05
+**Version:** 0.9.0 (Sprint 9 - Bulk Badge Issuance + TD Cleanup)  
+**Last Updated:** 2026-02-08
 
 ---
 
@@ -15,11 +15,12 @@
 5. [Badge Verification](#badge-verification)
 6. [Skills Management](#skills-management)
 7. [Skill Categories](#skill-categories)
-8. [Analytics API](#analytics-api) ⭐ NEW
-9. [Admin User Management](#admin-user-management) ⭐ NEW
-10. [M365 Sync API](#m365-sync-api) ⭐ NEW
-11. [Error Handling](#error-handling)
-12. [Rate Limiting](#rate-limiting)
+8. [Analytics API](#analytics-api)
+9. [Admin User Management](#admin-user-management)
+10. [M365 Sync API](#m365-sync-api)
+11. [Bulk Issuance](#bulk-issuance) ⭐ NEW
+12. [Error Handling](#error-handling)
+13. [Rate Limiting](#rate-limiting)
 
 ---
 
@@ -1412,6 +1413,195 @@ The M365 Sync API implements exponential backoff retry for transient errors:
   - `429 Too Many Requests` (rate limiting)
   - `5xx Server Errors`
   - Network errors: `ECONNRESET`, `ETIMEDOUT`, `ENOTFOUND`, `ECONNREFUSED`
+
+---
+
+## Bulk Issuance
+
+Batch badge issuance via CSV upload. Allows ISSUER and ADMIN users to issue up to 20 badges in a single session.
+
+**Authorization:** ISSUER or ADMIN role required for all endpoints.  
+**Rate Limiting:** Upload endpoint limited to 10 requests per 5 minutes per user.  
+**Session Expiry:** Preview sessions expire after 30 minutes.
+
+### Download CSV Template
+
+```bash
+curl -X GET http://localhost:3000/api/bulk-issuance/template \
+  -H "Authorization: Bearer $TOKEN" \
+  -o bulk-issuance-template.csv
+```
+
+**Response (200 OK):** CSV file download with UTF-8 BOM header.
+
+| Column | Required | Description |
+|--------|----------|-------------|
+| `badgeTemplateId` | Yes | UUID of an APPROVED badge template |
+| `recipientEmail` | Yes | Email address of registered user |
+| `evidenceUrl` | No | URL to supporting evidence |
+| `narrativeJustification` | No | Text justification for issuance |
+
+**Response Headers:**
+```
+Content-Type: text/csv; charset=utf-8
+Content-Disposition: attachment; filename="bulk-badge-issuance-template-2026-02-08.csv"
+```
+
+### Upload CSV
+
+```bash
+curl -X POST http://localhost:3000/api/bulk-issuance/upload \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "file=@badges.csv"
+```
+
+**Constraints:**
+- File size: max 100 KB
+- File format: `.csv` or `.txt` (RFC 4180 compliant)
+- Max rows: 20 (excluding header)
+- UTF-8 BOM is automatically stripped
+
+**Response (201 Created):**
+```json
+{
+  "sessionId": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "VALIDATED",
+  "totalRows": 5,
+  "validRows": 4,
+  "errorRows": 1,
+  "errors": [
+    {
+      "row": 3,
+      "field": "recipientEmail",
+      "message": "User not found with this email"
+    }
+  ]
+}
+```
+
+**Error Responses:**
+- `400 Bad Request` — Invalid CSV file format or missing file
+- `429 Too Many Requests` — Rate limit exceeded (10 uploads per 5 minutes)
+
+**Security:**
+- CSV injection sanitization on all input fields (ARCH-C1)
+- XSS input sanitization via `sanitize-html` (ARCH-C7)
+- Database-backed sessions with `ReadCommitted` isolation (ARCH-C4)
+
+### Get Preview
+
+```bash
+curl -X GET "http://localhost:3000/api/bulk-issuance/preview/{sessionId}?page=1&pageSize=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `page` | number | 1 | Page number (1-indexed) |
+| `pageSize` | number | 10 | Items per page |
+
+**Response (200 OK):**
+```json
+{
+  "sessionId": "550e8400-...",
+  "status": "VALIDATED",
+  "totalRows": 5,
+  "validRows": 4,
+  "errorRows": 1,
+  "rows": [
+    {
+      "row": 1,
+      "badgeTemplateId": "abc123...",
+      "badgeTemplateName": "Cloud Architecture",
+      "recipientEmail": "jane@example.com",
+      "recipientName": "Jane Doe",
+      "evidenceUrl": "https://...",
+      "narrativeJustification": "Completed certification",
+      "isValid": true,
+      "errors": []
+    }
+  ],
+  "templateSummary": [
+    { "templateName": "Cloud Architecture", "count": 3 },
+    { "templateName": "Security Basics", "count": 2 }
+  ],
+  "pagination": {
+    "page": 1,
+    "pageSize": 10,
+    "totalPages": 1
+  }
+}
+```
+
+**Error Responses:**
+- `403 Forbidden` — Not authorized to access this session (IDOR protection)
+- `404 Not Found` — Session not found or expired
+
+### Confirm Bulk Issuance
+
+```bash
+curl -X POST http://localhost:3000/api/bulk-issuance/confirm/{sessionId} \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "processed": 4,
+  "failed": 0,
+  "results": [
+    {
+      "row": 1,
+      "recipientEmail": "jane@example.com",
+      "badgeName": "Cloud Architecture",
+      "status": "success"
+    },
+    {
+      "row": 2,
+      "recipientEmail": "bob@example.com",
+      "badgeName": "Security Basics",
+      "status": "failed",
+      "error": "Badge already issued to this recipient"
+    }
+  ]
+}
+```
+
+**Processing Behavior:**
+- Each badge is issued in an atomic `prisma.$transaction` (ARCH-C6)
+- Partial failure: individual errors don't stop the batch
+- Status transitions: `VALIDATED` → `PROCESSING` → `COMPLETED` / `FAILED`
+
+**Error Responses:**
+- `400 Bad Request` — Session not in VALIDATED status
+- `403 Forbidden` — Not authorized to confirm this session
+- `404 Not Found` — Session not found or expired
+
+### Download Error Report
+
+```bash
+curl -X GET http://localhost:3000/api/bulk-issuance/error-report/{sessionId} \
+  -H "Authorization: Bearer $TOKEN" \
+  -o errors.csv
+```
+
+**Response (200 OK):** CSV file containing rows with validation errors.
+
+**Response Headers:**
+```
+Content-Type: text/csv; charset=utf-8
+Content-Disposition: attachment; filename="errors-550e8400.csv"
+```
+
+**Error Responses:**
+- `400 Bad Request` — No errors in this session
+- `403 Forbidden` — Not authorized to access this session
+- `404 Not Found` — Session not found or expired
+
+**Security:** CSV output is sanitized to prevent injection attacks (ARCH-C1).
 
 ---
 
