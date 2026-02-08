@@ -30,7 +30,7 @@ Across Sprints 1-9, 114 type errors accumulated in test files because `tsc --noE
 3. [x] No new `any` types introduced (checked via ESLint)
 4. [x] Test mock objects include all required interface fields
 5. [x] CI pipeline includes `tsc --noEmit` check step
-6. [ ] PR commit message: `refactor: fix 114 tsc test type errors (TD-017)`
+6. [x] PR commit message: `refactor: fix 114 tsc test type errors (TD-017)`
 
 ## Tasks / Subtasks
 
@@ -125,3 +125,6 @@ Results: 114 → 0 tsc errors. 1089 tests passing (534 backend + 397 frontend + 
 - `gcredit-project/backend/test/badge-integrity.e2e-spec.ts`
 - `gcredit-project/backend/test/badge-issuance-isolated.e2e-spec.ts`
 - `gcredit-project/backend/test/factories/badge-template.factory.ts`
+- `gcredit-project/docs/sprints/sprint-10/10-1-dev-prompt.md`
+- `gcredit-project/docs/sprints/sprint-10/10-1-tsc-test-type-errors.md`
+- `gcredit-project/docs/sprints/sprint-10/sprint-status.yaml`

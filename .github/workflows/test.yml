@@ -66,7 +66,35 @@ jobs:
           retention-days: 7
 
   # ===========================================
-  # Job 2: E2E Tests (Requires Database)
+  # Job 2: Frontend Tests
+  # ===========================================
+  frontend-tests:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./gcredit-project/frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: './gcredit-project/frontend/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Frontend Tests
+        run: npx vitest run
+
+  # ===========================================
+  # Job 3: E2E Tests (Requires Database)
   # ===========================================
   e2e-tests:
     name: E2E Tests
@@ -193,7 +221,7 @@ jobs:
           retention-days: 7
 
   # ===========================================
-  # Job 3: Build Check
+  # Job 4: Build Check
   # ===========================================
   build:
     name: Build Check

@@ -189,20 +189,20 @@ describe('BadgeIssuanceService - Baked Badge (Story 6.4)', () => {
       ).rejects.toThrow('no assertion');
     });
 
-    it('should successfully generate baked badge for valid request', async () => {
+    it('should pass validation and reach sharp processing with valid inputs (rejects on fake image data)', async () => {
       // Arrange
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
 
-      // Mock image buffer (simple PNG-like data)
+      // Mock image buffer (fake data — not a real PNG)
       const mockImageBuffer = Buffer.from('fake-png-data');
       mockStorageService.downloadBlobBuffer.mockResolvedValue(mockImageBuffer);
 
       // Act & Assert
-      // Note: This will fail because sharp needs real PNG data
-      // But we verify the flow is correct up to sharp processing
+      // Validates the flow passes all business-rule checks (ownership, image, assertion)
+      // and reaches sharp image processing, which rejects the fake PNG data.
       await expect(
         service.generateBakedBadge(mockBadgeId, mockUserId),
-      ).rejects.toThrow(); // Will throw from sharp, not our validation
+      ).rejects.toThrow(); // Throws from sharp (not our validation)
 
       // Verify all steps were called correctly
       expect(mockPrismaService.badge.findUnique).toHaveBeenCalledWith({
