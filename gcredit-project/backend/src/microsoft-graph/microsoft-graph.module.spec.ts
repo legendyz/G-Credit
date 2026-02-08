@@ -4,23 +4,14 @@ import { MicrosoftGraphModule } from './microsoft-graph.module';
 import { GraphTokenProviderService } from './services/graph-token-provider.service';
 import { GraphEmailService } from './services/graph-email.service';
 import { GraphTeamsService } from './services/graph-teams.service';
-import { EmailService } from '../common/email.service';
 
 describe('MicrosoftGraphModule', () => {
   let module: TestingModule;
 
-  // Mock EmailService to avoid real SMTP dependencies
-  const mockEmailService = {
-    sendMail: jest.fn(),
-  };
-
   beforeEach(async () => {
     module = await Test.createTestingModule({
       imports: [MicrosoftGraphModule, ConfigModule.forRoot()],
-    })
-      .overrideProvider(EmailService)
-      .useValue(mockEmailService)
-      .compile();
+    }).compile();
   });
 
   it('should be defined', () => {
