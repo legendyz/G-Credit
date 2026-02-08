@@ -22,11 +22,11 @@ metrics:
   total_work_items: 5  # 5 stories (TD fully integrated)
   total_estimated_hours: 51h  # 8.5+11.5+14.5+8.5+8 (features+TD unified)
   
-  completed_stories: 4  # Story 8.1 ✅, Story 8.2 ✅, Story 8.3 ✅, TD-015 ✅
+  completed_stories: 5  # Story 8.1 ✅, Story 8.2 ✅, Story 8.3 ✅, TD-015 ✅, Story 8.4 ✅
   completed_td_tasks: 0
-  completed_work_items: 4
-  completed_hours: 30h  # Story 8.1 (8h) + Story 8.2 (4h) + Story 8.3 (10h) + TD-015 (8h)
-  remaining_hours: 21h
+  completed_work_items: 5
+  completed_hours: 37h  # Story 8.1 (8h) + Story 8.2 (4h) + Story 8.3 (10h) + TD-015 (8h) + Story 8.4 (7h)
+  remaining_hours: 14h
   
   # Sprint 9 capacity breakdown
   feature_hours: 38h  # Epic 8 stories (baseline + P1 enhancements)
@@ -242,11 +242,11 @@ stories:
   "8.4":
     id: "8.4"
     title: "Bulk Issuance Synchronous Processing (MVP)"
-    status: backlog
+    status: done  # ✅ Completed 2026-02-08
     priority: MEDIUM
     estimated_hours: 8.5h  # 4h baseline + 2h P0 + 0.5h P1 + 2h TD-014
-    actual_hours: 0h
-    assigned_to: TBD
+    actual_hours: 7h
+    assigned_to: Dev Agent (Claude Opus 4.6)
     dependencies: ["8.3"]
     story_file: "sprint-9/8-4-batch-processing-phase1.md"
     mvp_simplification: true
@@ -288,10 +288,8 @@ stories:
     
     blocked: false
     blocker_reason: null
-    start_date: null
-    completion_date: null
-
-  # Story TD-015: ESLint Type Safety Warnings (promoted from TD task)
+    start_date: "2026-02-08"
+    completion_date: "2026-02-08": ESLint Type Safety Warnings (promoted from TD task)
   "TD-015":
     id: "TD-015"
     title: "Fix ESLint Type Safety Warnings"
