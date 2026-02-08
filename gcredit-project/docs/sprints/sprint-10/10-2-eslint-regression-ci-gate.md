@@ -29,7 +29,7 @@ Sprint 9 TD-015 reduced ESLint warnings from 1303 → 282 (78% reduction). Howev
 4. [x] CI gate: `npm run lint` with `--max-warnings=0` blocks any regression
 5. [x] All 1087 existing tests still pass (0 regressions)
 6. [x] New bulk issuance code (Story 8.4) follows ESLint strict typing
-7. [x] PR commit message: `refactor: ESLint full cleanup 537→0 + zero-tolerance CI gate`
+7. [x] PR commit message: `refactor: ESLint full cleanup 537→0 + zero-tolerance CI gate` _(Note: git encoded `→` as literal bytes, rendering as `5370` in some views — see commit bdaea90)_
 
 ## Tasks / Subtasks
 
@@ -105,6 +105,7 @@ Claude Opus 4.6
 - `auth.module.ts`: Replaced `as any` on signOptions with `import type { StringValue } from 'ms'` + precise type assertion
 - `package.json` lint script: `--max-warnings=423` → `--max-warnings=0`
 - All 534 tests pass, `tsc --noEmit` 0 errors, `npm run lint` 0 warnings
+- Verification logs saved to `test-results.txt` (lint + tsc + jest output)
 
 ### File List
 - `package.json` — lint script `--max-warnings=0` (removed `--fix` per code review)

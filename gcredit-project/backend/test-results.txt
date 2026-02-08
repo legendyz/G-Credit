@@ -1,0 +1,254 @@
+﻿
+> backend@0.0.1 lint
+> eslint "{src,apps,libs,test}/**/*.ts" --max-warnings=0
+
+---
+npx : PASS src/badge-sharing/controllers/badge-analytics.controller.spec.ts
+At line:1 char:245
++ ... ng utf8 -Append test-results.txt; npx jest --no-coverage 2>&1 | Out-F ...
++                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (PASS src/badge-...troller.spec.ts 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[31m[Nest] 15512  - [39m02/08/2026, 10:29:26 PM [31m  ERROR[39m 
+[38;5;3m[WidgetEmbedController] [39m[31mFailed to record widget embed: 
+Analytics service error[39m
+Error: Analytics service error
+    at Object.<anonymous> (C:\G_Credit\CODE\gcredit-project\backend\src\badge-s
+haring\controllers\widget-embed.controller.spec.ts:168:9)
+    at Promise.finally.completed (C:\G_Credit\CODE\gcredit-project\backend\node
+_modules\jest-circus\build\jestAdapterInit.js:1557:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (C:\G_Credit\CODE\gcredit-project\backend\node_modules
+\jest-circus\build\jestAdapterInit.js:1497:10)
+    at _callCircusTest (C:\G_Credit\CODE\gcredit-project\backend\node_modules\j
+est-circus\build\jestAdapterInit.js:1007:40)
+    at _runTest (C:\G_Credit\CODE\gcredit-project\backend\node_modules\jest-cir
+cus\build\jestAdapterInit.js:947:3)
+    at C:\G_Credit\CODE\gcredit-project\backend\node_modules\jest-circus\build\
+jestAdapterInit.js:849:7
+    at _runTestsForDescribeBlock (C:\G_Credit\CODE\gcredit-project\backend\node
+_modules\jest-circus\build\jestAdapterInit.js:862:11)
+    at _runTestsForDescribeBlock (C:\G_Credit\CODE\gcredit-project\backend\node
+_modules\jest-circus\build\jestAdapterInit.js:857:11)
+    at _runTestsForDescribeBlock (C:\G_Credit\CODE\gcredit-project\backend\node
+_modules\jest-circus\build\jestAdapterInit.js:857:11)
+    at run (C:\G_Credit\CODE\gcredit-project\backend\node_modules\jest-circus\b
+uild\jestAdapterInit.js:761:3)
+    at runAndTransformResultsToJestFormat (C:\G_Credit\CODE\gcredit-project\bac
+kend\node_modules\jest-circus\build\jestAdapterInit.js:1918:21)
+    at jestAdapter (C:\G_Credit\CODE\gcredit-project\backend\node_modules\jest-
+circus\build\runner.js:101:19)
+    at runTestInternal (C:\G_Credit\CODE\gcredit-project\backend\node_modules\j
+est-runner\build\testWorker.js:275:16)
+    at runTest (C:\G_Credit\CODE\gcredit-project\backend\node_modules\jest-runn
+er\build\testWorker.js:343:7)
+    at Object.worker (C:\G_Credit\CODE\gcredit-project\backend\node_modules\jes
+t-runner\build\testWorker.js:497:12)
+PASS src/badge-sharing/controllers/widget-embed.controller.spec.ts
+PASS src/app.controller.spec.ts
+PASS src/microsoft-graph/services/graph-token-provider.service.spec.ts
+[31m[Nest] 30288  - [39m02/08/2026, 10:29:26 PM [31m  ERROR[39m 
+[38;5;3m[M365SyncService] [39m[31mGraph API error (attempt 4/4): Too Many 
+Requests[39m
+[31m[Nest] 30288  - [39m02/08/2026, 10:29:26 PM [31m  ERROR[39m 
+[38;5;3m[M365SyncService] [39m[31mGraph API error (attempt 1/4): Bad 
+Request[39m
+[31m[Nest] 30288  - [39m02/08/2026, 10:29:26 PM [31m  ERROR[39m 
+[38;5;3m[M365SyncService] [39m[31mGraph API error (attempt 1/4): 
+Unauthorized[39m
+[31m[Nest] 30288  - [39m02/08/2026, 10:29:26 PM [31m  ERROR[39m 
+[38;5;3m[M365SyncService] [39m[31mGraph API error (attempt 1/4): Not 
+Found[39m
+[31m[Nest] 30288  - [39m02/08/2026, 10:29:26 PM [31m  ERROR[39m 
+[38;5;3m[M365SyncService] [39m[31mFailed to deactivate john@example.com[39m
+Error: Database error
+    at Object.<anonymous> (C:\G_Credit\CODE\gcredit-project\backend\src\m365-sy
+nc\m365-sync.service.spec.ts:568:32)
+    at Promise.finally.completed (C:\G_Credit\CODE\gcredit-project\backend\node
+_modules\jest-circus\build\jestAdapterInit.js:1557:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (C:\G_Credit\CODE\gcredit-project\backend\node_modules
+\jest-circus\build\jestAdapterInit.js:1497:10)
+    at _callCircusTest (C:\G_Credit\CODE\gcredit-project\backend\node_modules\j
+est-circus\build\jestAdapterInit.js:1007:40)
+    at _runTest (C:\G_Credit\CODE\gcredit-project\backend\node_modules\jest-cir
+cus\build\jestAdapterInit.js:947:3)
+    at C:\G_Credit\CODE\gcredit-project\backend\node_modules\jest-circus\build\
+jestAdapterInit.js:849:7
+    at _runTestsForDescribeBlock (C:\G_Credit\CODE\gcredit-project\backend\node
+_modules\jest-circus\build\jestAdapterInit.js:862:11)
+    at _runTestsForDescribeBlock (C:\G_Credit\CODE\gcredit-project\backend\node
+_modules\jest-circus\build\jestAdapterInit.js:857:11)
+    at _runTestsForDescribeBlock (C:\G_Credit\CODE\gcredit-project\backend\node
+_modules\jest-circus\build\jestAdapterInit.js:857:11)
+    at run (C:\G_Credit\CODE\gcredit-project\backend\node_modules\jest-circus\b
+uild\jestAdapterInit.js:761:3)
+    at runAndTransformResultsToJestFormat (C:\G_Credit\CODE\gcredit-project\bac
+kend\node_modules\jest-circus\build\jestAdapterInit.js:1918:21)
+    at jestAdapter (C:\G_Credit\CODE\gcredit-project\backend\node_modules\jest-
+circus\build\runner.js:101:19)
+    at runTestInternal (C:\G_Credit\CODE\gcredit-project\backend\node_modules\j
+est-runner\build\testWorker.js:275:16)
+    at runTest (C:\G_Credit\CODE\gcredit-project\backend\node_modules\jest-runn
+er\build\testWorker.js:343:7)
+    at Object.worker (C:\G_Credit\CODE\gcredit-project\backend\node_modules\jes
+t-runner\build\testWorker.js:497:12)
+[31m[Nest] 30288  - [39m02/08/2026, 10:29:26 PM [31m  ERROR[39m 
+[38;5;3m[M365SyncService] [39m[31mSync failed: Graph API not configured - 
+Azure AD credentials missing[39m
+PASS src/milestones/milestones.service.spec.ts
+PASS src/m365-sync/m365-sync.service.spec.ts (5.043 s)
+[31m[Nest] 5476  - [39m02/08/2026, 10:29:26 PM [31m  ERROR[39m 
+[38;5;3m[BadgeSharingService] [39m[31mFailed to send badge via email: Graph 
+API error[39m
+Error: Graph API error
+    at Object.<anonymous> (C:\G_Credit\CODE\gcredit-project\backend\src\badge-s
+haring\badge-sharing.service.spec.ts:309:9)
+    at Promise.finally.completed (C:\G_Credit\CODE\gcredit-project\backend\node
+_modules\jest-circus\build\jestAdapterInit.js:1557:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (C:\G_Credit\CODE\gcredit-project\backend\node_modules
+\jest-circus\build\jestAdapterInit.js:1497:10)
+    at _callCircusTest (C:\G_Credit\CODE\gcredit-project\backend\node_modules\j
+est-circus\build\jestAdapterInit.js:1007:40)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at _runTest (C:\G_Credit\CODE\gcredit-project\backend\node_modules\jest-cir
+cus\build\jestAdapterInit.js:947:3)
+    at C:\G_Credit\CODE\gcredit-project\backend\node_modules\jest-circus\build\
+jestAdapterInit.js:849:7
+    at _runTestsForDescribeBlock (C:\G_Credit\CODE\gcredit-project\backend\node
+_modules\jest-circus\build\jestAdapterInit.js:862:11)
+    at _runTestsForDescribeBlock (C:\G_Credit\CODE\gcredit-project\backend\node
+_modules\jest-circus\build\jestAdapterInit.js:857:11)
+    at _runTestsForDescribeBlock (C:\G_Credit\CODE\gcredit-project\backend\node
+_modules\jest-circus\build\jestAdapterInit.js:857:11)
+    at run (C:\G_Credit\CODE\gcredit-project\backend\node_modules\jest-circus\b
+uild\jestAdapterInit.js:761:3)
+    at runAndTransformResultsToJestFormat (C:\G_Credit\CODE\gcredit-project\bac
+kend\node_modules\jest-circus\build\jestAdapterInit.js:1918:21)
+    at jestAdapter (C:\G_Credit\CODE\gcredit-project\backend\node_modules\jest-
+circus\build\runner.js:101:19)
+    at runTestInternal (C:\G_Credit\CODE\gcredit-project\backend\node_modules\j
+est-runner\build\testWorker.js:275:16)
+    at runTest (C:\G_Credit\CODE\gcredit-project\backend\node_modules\jest-runn
+er\build\testWorker.js:343:7)
+    at Object.worker (C:\G_Credit\CODE\gcredit-project\backend\node_modules\jes
+t-runner\build\testWorker.js:497:12)
+[31m[Nest] 5476  - [39m02/08/2026, 10:29:26 PM [31m  ERROR[39m 
+[38;5;3m[BadgeSharingService] [39m[31mFailed to send badge via email: Graph 
+API error[39m
+Error: Graph API error
+    at Object.<anonymous> (C:\G_Credit\CODE\gcredit-project\backend\src\badge-s
+haring\badge-sharing.service.spec.ts:309:9)
+    at Promise.finally.completed (C:\G_Credit\CODE\gcredit-project\backend\node
+_modules\jest-circus\build\jestAdapterInit.js:1557:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (C:\G_Credit\CODE\gcredit-project\backend\node_modules
+\jest-circus\build\jestAdapterInit.js:1497:10)
+    at _callCircusTest (C:\G_Credit\CODE\gcredit-project\backend\node_modules\j
+est-circus\build\jestAdapterInit.js:1007:40)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at _runTest (C:\G_Credit\CODE\gcredit-project\backend\node_modules\jest-cir
+cus\build\jestAdapterInit.js:947:3)
+    at C:\G_Credit\CODE\gcredit-project\backend\node_modules\jest-circus\build\
+jestAdapterInit.js:849:7
+    at _runTestsForDescribeBlock (C:\G_Credit\CODE\gcredit-project\backend\node
+_modules\jest-circus\build\jestAdapterInit.js:862:11)
+    at _runTestsForDescribeBlock (C:\G_Credit\CODE\gcredit-project\backend\node
+_modules\jest-circus\build\jestAdapterInit.js:857:11)
+    at _runTestsForDescribeBlock (C:\G_Credit\CODE\gcredit-project\backend\node
+_modules\jest-circus\build\jestAdapterInit.js:857:11)
+    at run (C:\G_Credit\CODE\gcredit-project\backend\node_modules\jest-circus\b
+uild\jestAdapterInit.js:761:3)
+    at runAndTransformResultsToJestFormat (C:\G_Credit\CODE\gcredit-project\bac
+kend\node_modules\jest-circus\build\jestAdapterInit.js:1918:21)
+    at jestAdapter (C:\G_Credit\CODE\gcredit-project\backend\node_modules\jest-
+circus\build\runner.js:101:19)
+    at runTestInternal (C:\G_Credit\CODE\gcredit-project\backend\node_modules\j
+est-runner\build\testWorker.js:275:16)
+    at runTest (C:\G_Credit\CODE\gcredit-project\backend\node_modules\jest-runn
+er\build\testWorker.js:343:7)
+    at Object.worker (C:\G_Credit\CODE\gcredit-project\backend\node_modules\jes
+t-runner\build\testWorker.js:497:12)
+PASS src/badge-sharing/badge-sharing.service.spec.ts (5.067 s)
+PASS src/m365-sync/m365-sync.controller.spec.ts (6.277 s)
+PASS src/microsoft-graph/microsoft-graph.module.spec.ts (6.544 s)
+PASS src/badge-sharing/badge-sharing.controller.spec.ts (6.526 s)
+PASS src/badge-issuance/badge-issuance-wallet.service.spec.ts (6.977 s)
+PASS src/badge-issuance/badge-issuance.service-baked.spec.ts (7.052 s)
+[31m[Nest] 28676  - [39m02/08/2026, 10:29:28 PM [31m  ERROR[39m 
+[38;5;3m[BadgeIssuanceService] [39m[31mFailed to send revocation 
+notification to recipient@test.com:[39m
+SMTP connection failed
+PASS src/badge-sharing/services/email-template.service.spec.ts
+PASS src/dashboard/dashboard.controller.spec.ts
+PASS src/badge-issuance/badge-issuance.service.spec.ts (7.233 s)
+PASS src/badge-issuance/services/assertion-generator.service.spec.ts
+PASS src/badge-verification/badge-verification.service.spec.ts
+[31m[Nest] 21356  - [39m02/08/2026, 10:29:29 PM [31m  ERROR[39m 
+[38;5;3m[BulkIssuanceService] [39m[31mFailed badge 2/2 to 
+user2@company.com: Template inactive[39m
+[31m[Nest] 21356  - [39m02/08/2026, 10:29:29 PM [31m  ERROR[39m 
+[38;5;3m[BulkIssuanceService] [39m[31mFailed badge 1/1 to user@company.com: 
+Service unavailable[39m
+[31m[Nest] 21356  - [39m02/08/2026, 10:29:29 PM [31m  ERROR[39m 
+[38;5;3m[BulkIssuanceService] [39m[31mFailed badge 2/2 to 
+user2@company.com: fail[39m
+[31m[Nest] 21356  - [39m02/08/2026, 10:29:29 PM [31m  ERROR[39m 
+[38;5;3m[BulkIssuanceService] [39m[31mFailed badge 1/1 to user@company.com: 
+Badge template "Nonexistent Template" not found or inactive[39m
+[31m[Nest] 21356  - [39m02/08/2026, 10:29:29 PM [31m  ERROR[39m 
+[38;5;3m[BulkIssuanceService] [39m[31mFailed badge 1/1 to gone@company.com: 
+No active user found with email: gone@company.com[39m
+PASS src/bulk-issuance/bulk-issuance.service.spec.ts (7.462 s)
+PASS src/bulk-issuance/csv-validation.service.spec.ts
+PASS src/common/guards/security.spec.ts
+PASS src/config/jwt-validation.spec.ts
+PASS 
+src/microsoft-graph/teams/adaptive-cards/badge-notification.builder.spec.ts
+PASS src/modules/auth/auth.service.spec.ts
+  鈼?Console
+
+    console.log
+      [AUDIT] Password reset completed: test@example.com (user-123)
+
+      at AuthService.resetPassword (modules/auth/auth.service.ts:241:13)
+
+    console.log
+      [AUDIT] Password reset completed: test@example.com (user-123)
+
+      at AuthService.resetPassword (modules/auth/auth.service.ts:241:13)
+
+PASS src/badge-issuance/badge-issuance.controller.spec.ts (7.83 s)
+PASS src/microsoft-graph/services/graph-email.service.spec.ts
+PASS src/badge-issuance/services/baked-badge.spec.ts
+  鈼?Console
+
+    console.log
+      Baked badge size: 40.05 KB
+
+      at Object.<anonymous> (badge-issuance/services/baked-badge.spec.ts:54:15)
+
+    console.log
+      Large baked badge size: 3.82 MB
+
+      at Object.<anonymous> 
+(badge-issuance/services/baked-badge.spec.ts:236:15)
+
+PASS src/microsoft-graph/teams/teams-action.controller.spec.ts
+PASS src/analytics/analytics.service.spec.ts
+PASS src/admin-users/admin-users.controller.spec.ts
+PASS src/badge-sharing/services/badge-analytics.service.spec.ts
+PASS src/badge-issuance/services/assertion-generator-integrity.spec.ts
+PASS src/admin-users/admin-users.service.spec.ts
+PASS src/dashboard/dashboard.service.spec.ts
+PASS src/badge-templates/recommendations.service.spec.ts
+PASS src/evidence/evidence.service.spec.ts
+
+Test Suites: 4 skipped, 35 passed, 35 of 39 total
+Tests:       28 skipped, 534 passed, 562 total
+Snapshots:   0 total
+Time:        9.932 s
+Ran all test suites.
