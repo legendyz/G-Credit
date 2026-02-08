@@ -456,8 +456,8 @@ Process bulk badge issuance synchronously with up to 20 badges per batch. Simple
 - [x] nodemailer fully removed
 - [x] Sprint demo conducted — completed 2026-02-08
 - [x] Sprint retrospective completed — completed 2026-02-08
-- [ ] Sprint branch merged to main — pending
-- [ ] Version v0.9.0 tagged in git — pending
+- [x] Sprint branch merged to main — completed 2026-02-08
+- [x] Version v0.9.0 tagged in git — completed 2026-02-08
 
 ---
 
