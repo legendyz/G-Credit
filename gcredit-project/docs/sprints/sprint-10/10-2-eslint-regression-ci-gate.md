@@ -107,7 +107,9 @@ Claude Opus 4.6
 - All 534 tests pass, `tsc --noEmit` 0 errors, `npm run lint` 0 warnings
 
 ### File List
-- `package.json` — lint script `--max-warnings=0`
+- `package.json` — lint script `--max-warnings=0` (removed `--fix` per code review)
+- `docs/sprints/sprint-10/10-2-eslint-regression-ci-gate.md` (this file)
+- `docs/sprints/sprint-10/sprint-status.yaml`
 - `test/helpers/jest-typed-matchers.ts` (NEW) — typed Jest matcher wrappers
 - `src/admin-users/admin-users.controller.spec.ts`
 - `src/admin-users/admin-users.service.spec.ts`
