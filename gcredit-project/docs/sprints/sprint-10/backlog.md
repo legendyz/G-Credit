@@ -114,23 +114,23 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 
 ---
 
-### Story 10.3b: TD-019 — Frontend ESLint Cleanup + CI Gate ⚠️ NEW
+### Story 10.3b: TD-019 — Frontend ESLint Cleanup + CI Gate ✅ Complete
 **Priority:** 🔴 HIGH  
 **Estimate:** 3.5h (from buffer)  
 **Story Doc:** 📄 [10-3b-frontend-eslint-cleanup.md](10-3b-frontend-eslint-cleanup.md)  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Complete  
 **Dependencies:** None  
 **Discovered:** During Story 10.3 development  
 
 **Quick Summary:** As a developer, I want frontend ESLint at 0 errors + 0 warnings with CI enforcement, matching backend zero-tolerance standard.
 
 **Key Deliverables:**
-- [ ] Create `.gitattributes` to fix 21,354 CRLF warnings
-- [ ] Fix 49 ESLint errors (React Compiler, any, unused vars, a11y)
-- [ ] Fix 9 react-hooks/exhaustive-deps warnings
-- [ ] Add `--max-warnings=0` to frontend lint script
-- [ ] Add `npm run lint` to CI frontend-tests job
-- [ ] Zero regressions (Vitest + backend tests)
+- [x] Create `.gitattributes` to fix 21,354 CRLF warnings
+- [x] Fix 49 ESLint errors (React Compiler, any, unused vars, a11y)
+- [x] Fix 9 react-hooks/exhaustive-deps warnings
+- [x] Add `--max-warnings=0` to frontend lint script
+- [x] Add `npm run lint` to CI frontend-tests job
+- [x] Zero regressions (Vitest + backend tests)
 
 ---
 

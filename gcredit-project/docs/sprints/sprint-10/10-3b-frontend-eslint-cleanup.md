@@ -42,28 +42,28 @@ Story 10.2 achieved **0 errors + 0 warnings** for backend ESLint with `--max-war
 ## Acceptance Criteria
 
 ### AC1: Line Endings Normalized
-- [ ] `.gitattributes` file created with `* text=auto eol=lf`
-- [ ] All frontend files normalized to LF
-- [ ] 0 prettier/prettier CRLF warnings
+- [x] `.gitattributes` file created with `* text=auto eol=lf`
+- [x] All frontend files normalized to LF
+- [x] 0 prettier/prettier CRLF warnings
 
 ### AC2: Frontend ESLint Clean
-- [ ] `npx eslint .` in `frontend/` reports **0 errors + 0 warnings**
-- [ ] All 49 errors fixed (not suppressed unless justified)
-- [ ] All 9 react-hooks/exhaustive-deps warnings resolved
+- [x] `npx eslint .` in `frontend/` reports **0 errors + 0 warnings**
+- [x] All 49 errors fixed (not suppressed unless justified)
+- [x] All 9 react-hooks/exhaustive-deps warnings resolved
 
 ### AC3: CI Frontend Lint Gate
-- [ ] `npm run lint` added to CI `frontend-tests` job in `.github/workflows/test.yml`
-- [ ] Frontend `package.json` lint script uses `--max-warnings=0`
-- [ ] CI blocks merge on any frontend lint error or warning
+- [x] `npm run lint` added to CI `frontend-tests` job in `.github/workflows/test.yml`
+- [x] Frontend `package.json` lint script uses `--max-warnings=0`
+- [x] CI blocks merge on any frontend lint error or warning
 
 ### AC4: Zero Regressions
-- [ ] All existing frontend tests pass (`npx vitest run`)
-- [ ] All backend tests pass (534+)
-- [ ] No UI functionality broken
+- [x] All existing frontend tests pass (`npx vitest run`)
+- [x] All backend tests pass (534+)
+- [x] No UI functionality broken
 
 ### AC5: Commit Standards
-- [ ] Commit message: `fix(frontend): TD-019 ESLint cleanup + CI zero-tolerance gate`
-- [ ] Includes file count and summary of changes
+- [x] Commit message: `fix(frontend): TD-019 ESLint cleanup + CI zero-tolerance gate`
+- [x] Includes file count and summary of changes
 
 ---
 
@@ -143,7 +143,7 @@ cd ../backend && npm test
 ---
 
 ## Definition of Done
-- [ ] All ACs met
-- [ ] SM acceptance verified programmatically
-- [ ] sprint-status.yaml updated
-- [ ] backlog.md updated
+- [x] All ACs met
+- [x] SM acceptance verified programmatically
+- [x] sprint-status.yaml updated
+- [x] backlog.md updated

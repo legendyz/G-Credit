@@ -251,7 +251,7 @@ technical_debt:
     - id: TD-019
       description: "Frontend ESLint cleanup (49 errors + 21,363 warnings) + CI gate"
       story: "10.3b"
-      status: backlog
+      status: complete
 
   deferred:
     - id: TD-006
@@ -282,8 +282,9 @@ quality_gates:
     
   eslint_warnings:
     target: "0 errors + 0 warnings"
-    current: "backend: 0/0 ✅ | frontend: 49 errors + 21,363 warnings"
+    current: "backend: 0/0 ✅ | frontend: 0/0 ✅"
     sprint_story: "10.2 (backend) + 10.3b (frontend)"
+    status: complete
     
   todo_fixme:
     target: 0
