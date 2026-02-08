@@ -18,15 +18,15 @@ metadata:
 # Sprint Metrics (updated daily)
 metrics:
   total_stories: 10
-  total_estimated_hours: 57h
-  buffer_hours: 23h
+  total_estimated_hours: 59.5h
+  buffer_hours: 20.5h
   
   completed_stories: 0
   completed_hours: 0h
-  remaining_hours: 57h
+  remaining_hours: 59.5h
   
   # Capacity breakdown
-  td_hours: 17h      # Stories 10.1-10.4
+  td_hours: 20.5h    # Stories 10.1-10.4 (includes audit fixes)
   feature_hours: 6h   # Story 10.5
   uat_hours: 28h      # Stories 10.6-10.8
   release_hours: 6h    # Stories 10.9-10.10
@@ -112,11 +112,11 @@ epics:
 # ============================================================
 
 stories:
-  # Phase 1: Technical Debt Cleanup (17h)
+  # Phase 1: Technical Debt Cleanup (20.5h)
   10-1-tsc-test-type-errors:
-    title: "TD-017: Fix tsc Test Type Errors"
+    title: "TD-017: Fix tsc Test Type Errors + Password Reset Tx"
     priority: HIGH
-    estimate: 7h
+    estimate: 7.5h
     actual: null
     status: backlog
     phase: 1-td
@@ -134,9 +134,9 @@ stories:
     dependencies: ["10-1"]  # Ideally after tsc fixes
     
   10-3-todo-fixme-cleanup:
-    title: "TD-018: Code TODO/FIXME Cleanup"
-    priority: MEDIUM
-    estimate: 3h
+    title: "TD-018: TODO/FIXME Cleanup + UX Audit Critical Fixes"
+    priority: HIGH
+    estimate: 5h
     actual: null
     status: backlog
     phase: 1-td
@@ -144,9 +144,9 @@ stories:
     dependencies: []
     
   10-4-i18n-chinese-string-scan:
-    title: "i18n: Hardcoded Chinese String Scan & Fix"
-    priority: LOW
-    estimate: 2h
+    title: "i18n Scan + UX/Code Quality Quick Wins"
+    priority: MEDIUM
+    estimate: 3h
     actual: null
     status: backlog
     phase: 1-td

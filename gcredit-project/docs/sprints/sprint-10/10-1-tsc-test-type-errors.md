@@ -2,7 +2,7 @@
 
 **Status:** backlog  
 **Priority:** 🔴 HIGH  
-**Estimate:** 7h  
+**Estimate:** 7.5h  
 **Sprint:** Sprint 10  
 **Type:** Technical Debt  
 **TD Reference:** TD-017
@@ -55,11 +55,17 @@ Across Sprints 1-9, 114 type errors accumulated in test files because `tsc --noE
   - [ ] Fix `no-unsafe-*` patterns in test files
   - [ ] Handle generic type parameters for service mocks
 
-- [ ] **Task 5: Add tsc --noEmit to CI** (AC: #5)
+- [ ] **Task 5: Fix password reset transaction gap** (AC: #2) 🏗️ _Architecture Audit_
+  - [ ] Wrap password update + token invalidation in `$transaction` in `auth.service.ts` (lines 218-232)
+  - [ ] Prevents theoretical token reuse on crash between the two queries
+  - [ ] Add test case verifying atomic behavior
+  - _Source: Architecture Release Audit — Winston, Transaction Safety finding #1_
+
+- [ ] **Task 6: Add tsc --noEmit to CI** (AC: #5)
   - [ ] Add `tsc --noEmit` step to GitHub Actions workflow
   - [ ] Verify CI runs and passes
 
-- [ ] **Task 6: Verify zero regressions** (AC: #2)
+- [ ] **Task 7: Verify zero regressions** (AC: #2)
   - [ ] Run full backend test suite: `npm test`
   - [ ] Run full frontend test suite: `npm test`
   - [ ] Run E2E tests: `npm run test:e2e`

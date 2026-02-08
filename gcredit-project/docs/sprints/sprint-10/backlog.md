@@ -18,10 +18,15 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 - ✅ `tsc --noEmit` passes with 0 errors (src + test)
 - ✅ ESLint ≤ 280 warnings with CI gate preventing regression
 - ✅ 0 TODO/FIXME markers in source code
+- ✅ 0 hardcoded `localhost:3000` URLs in frontend
+- ✅ 0 dead navigation links (all Quick Actions route to valid pages)
+- ✅ 404 catch-all route implemented
+- ✅ 0 `window.alert()` in frontend code
 - ✅ Admin analytics connected to real data (no mock data)
 - ✅ Full UAT: 100% P0 pass rate across all 10 Epics
 - ✅ All 1087+ tests passing (0 regressions)
 - ✅ Branch merged to main + tagged v1.0.0
+- ✅ `package.json` version set to `1.0.0`
 
 ---
 
@@ -34,14 +39,14 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 ### Capacity Allocation
 | Category | Hours | % | Notes |
 |----------|-------|---|-------|
-| **Technical Debt** | 17h | 21% | Stories 10.1-10.4 |
+| **Technical Debt** | 19h | 24% | Stories 10.1-10.4 (includes audit fixes) |
 | **Feature Enhancement** | 6h | 8% | Story 10.5 (Analytics real data) |
 | **UAT Preparation** | 8h | 10% | Story 10.6 (Test plan + seed data) |
 | **UAT Execution** | 12h | 15% | Story 10.7 (Full UAT) |
 | **Bug Fix Buffer** | 8h | 10% | Story 10.8 (UAT bug fixes) |
 | **Release Documentation** | 4h | 5% | Story 10.9 (CHANGELOG + docs) |
 | **Release** | 2h | 3% | Story 10.10 (Merge + tag) |
-| **Buffer** | 23h | 28% | Sprint buffer (no external dependencies) |
+| **Buffer** | 21h | 26% | Sprint buffer (reduced by 2h for audit fixes) |
 | **TOTAL** | **80h** | **100%** | |
 
 ### Velocity Reference (Lessons Learned)
@@ -50,15 +55,15 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 | Sprint 7 | 41-47h | 38.5h | 82-93% |
 | Sprint 8 | 76h | 80h | 95% |
 | Sprint 9 | 51h | 37h | 73% |
-| **Sprint 10** | **57h** | TBD | Target: >85% |
+| **Sprint 10** | **59.5h** | TBD | Target: >85% |
 
 ---
 
-## 📦 Phase 1: Technical Debt Cleanup (17h)
+## 📦 Phase 1: Technical Debt Cleanup (19h)
 
 ### Story 10.1: TD-017 — Fix tsc Test Type Errors
 **Priority:** 🔴 HIGH  
-**Estimate:** 7h  
+**Estimate:** 7.5h  
 **Story Doc:** 📄 [10-1-tsc-test-type-errors.md](10-1-tsc-test-type-errors.md)  
 **Status:** 🔴 Not Started  
 **Dependencies:** None
@@ -68,6 +73,7 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 **Key Deliverables:**
 - [ ] Fix 114 tsc errors in test files
 - [ ] Add `tsc --noEmit` to CI pipeline
+- [ ] Wrap password reset in `$transaction` (🏗️ Arch Audit)
 - [ ] Zero regressions in 1087 tests
 
 ---
@@ -88,34 +94,40 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 
 ---
 
-### Story 10.3: TD-018 — Code TODO/FIXME Cleanup
-**Priority:** 🟡 MEDIUM  
-**Estimate:** 3h  
+### Story 10.3: TD-018 — TODO/FIXME Cleanup + UX Audit Critical Fixes
+**Priority:** 🔴 HIGH  
+**Estimate:** 5h  
 **Story Doc:** 📄 [10-3-todo-fixme-cleanup.md](10-3-todo-fixme-cleanup.md)  
 **Status:** 🔴 Not Started  
 **Dependencies:** None
 
-**Quick Summary:** As a developer, I want all 14 TODO/FIXME markers resolved, so that the codebase is clean for v1.0.0.
+**Quick Summary:** As a developer, I want all 14 TODO/FIXME markers resolved, hardcoded localhost URLs replaced, and dead navigation links fixed.
 
 **Key Deliverables:**
 - [ ] 0 TODO/FIXME in src/ (backend + frontend)
+- [ ] Fix 8 hardcoded `localhost:3000` URLs (🎨 UX Audit Critical #3)
+- [ ] Fix 9 dead Quick Action links (🎨 UX Audit Critical #1)
+- [ ] Add 404 catch-all route (🎨 UX Audit Critical #2)
 - [ ] Deferred items tracked as ADR or TD
 - [ ] Zero regressions
 
 ---
 
-### Story 10.4: i18n — Hardcoded Chinese String Scan & Fix
-**Priority:** 🟢 LOW  
-**Estimate:** 2h  
+### Story 10.4: i18n Scan + UX/Code Quality Quick Wins
+**Priority:** 🟡 MEDIUM  
+**Estimate:** 3h  
 **Story Doc:** 📄 [10-4-i18n-chinese-string-scan.md](10-4-i18n-chinese-string-scan.md)  
 **Status:** 🔴 Not Started  
 **Dependencies:** None
 
-**Quick Summary:** As a developer, I want all hardcoded Chinese strings replaced with English for MVP consistency.
+**Quick Summary:** As a developer, I want all Chinese strings replaced with English and UX audit quick wins resolved.
 
 **Key Deliverables:**
 - [ ] Global scan for Chinese characters (\u4E00-\u9FFF)
-- [ ] All instances replaced with English
+- [ ] Replace `window.alert()` with `toast.error()` (🎨 UX Audit)
+- [ ] Remove `console.log` from BadgeDetailModal (🎨 UX Audit)
+- [ ] Fix Navbar `role="menubar"` ARIA misuse (🎨 UX Audit)
+- [ ] Migrate ~30 backend `console.log` to NestJS Logger (🏗️ Arch Audit)
 - [ ] Zero regressions
 
 ---
@@ -232,17 +244,17 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 
 | Story | Title | Priority | Hours | Phase | Status |
 |-------|-------|----------|-------|-------|--------|
-| 10.1 | TD-017: tsc Test Type Errors | 🔴 HIGH | 7h | 1-TD | 🔴 |
+| 10.1 | TD-017: tsc Test Type Errors + Password Reset Tx | 🔴 HIGH | 7.5h | 1-TD | 🔴 |
 | 10.2 | ESLint Regression + CI Gate | 🔴 HIGH | 5h | 1-TD | 🔴 |
-| 10.3 | TD-018: TODO/FIXME Cleanup | 🟡 MED | 3h | 1-TD | 🔴 |
-| 10.4 | i18n: Chinese String Scan | 🟢 LOW | 2h | 1-TD | 🔴 |
+| 10.3 | TD-018: TODO/FIXME + UX Critical Fixes | 🔴 HIGH | 5h | 1-TD | 🔴 |
+| 10.4 | i18n Scan + UX/Code Quality Quick Wins | 🟡 MED | 3h | 1-TD | 🔴 |
 | 10.5 | Analytics: Mock → Real Data | 🟡 MED | 6h | 2-Feature | 🔴 |
 | 10.6 | UAT Test Plan & Seed Data | 🔴 HIGH | 8h | 3-UAT | 🔴 |
 | 10.7 | Full UAT Execution | 🔴 HIGH | 12h | 3-UAT | 🔴 |
 | 10.8 | UAT Bug Fixes | 🟡 MED | 8h | 3-UAT | 🔴 |
 | 10.9 | Release Documentation | 🟡 MED | 4h | 4-Release | 🔴 |
 | 10.10 | Merge + Tag v1.0.0 | 🔴 HIGH | 2h | 4-Release | 🔴 |
-| **Total** | | | **57h** | | |
+| **Total** | | | **59.5h** | | |
 
 ---
 
@@ -335,6 +347,33 @@ Phase 4: 10.9 → 10.10 (strict sequence, after all others)
 ## Version Manifest
 
 📄 See [version-manifest.md](version-manifest.md) for complete dependency versions.
+
+---
+
+## 🔍 Pre-Release Audit Results (2026-02-08)
+
+Two release audits were conducted before Sprint 10 kickoff. All findings have been integrated into existing stories.
+
+| Audit | Reviewer | Rating | Verdict | Report |
+|-------|----------|--------|---------|--------|
+| UX Release Audit | Sally 🎨 | 4.1/5 | APPROVE WITH CONDITIONS | [ux-release-audit-v1.0.0.md](ux-release-audit-v1.0.0.md) |
+| Architecture Release Audit | Winston 🏗️ | 4.3/5 | APPROVE WITH CONDITIONS | [architecture-release-audit-v1.0.0.md](architecture-release-audit-v1.0.0.md) |
+
+**Audit Findings → Story Mapping:**
+
+| Finding | Severity | Mapped To | Est. |
+|---------|----------|-----------|------|
+| 9 dead Quick Action links | 🔴 P0 | Story 10.3 Task 11 | 1h |
+| No 404 catch-all route | 🔴 P0 | Story 10.3 Task 12 | 0.5h |
+| 8 hardcoded `localhost:3000` | 🔴 P0 | Story 10.3 Task 10 | 0.5h |
+| `window.alert()` → `toast.error()` | 🟡 P1 | Story 10.4 Task 4 | 15min |
+| `console.log` in BadgeDetailModal | 🟡 P2 | Story 10.4 Task 5 | 5min |
+| Navbar `role="menubar"` misuse | 🟡 P1 | Story 10.4 Task 6 | 30min |
+| ~30 backend `console.log` → Logger | 🟡 P2 | Story 10.4 Task 7 | 30min |
+| Password reset non-transactional | 🟡 P1 | Story 10.1 Task 5 | 15min |
+| `package.json` version → 1.0.0 | 🟢 P3 | Story 10.9 Task 6 | 5min |
+
+**Total audit-sourced work:** ~3.5h (absorbed into existing stories, buffer reduced from 23h → 21h)
 
 **Key Notes:**
 - No new dependencies planned
