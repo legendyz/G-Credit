@@ -221,6 +221,18 @@ stories:
       e2e_tests: 10  # 6 preview + 4 IDOR security tests
       coverage_target: 80%
     
+    sm_acceptance:
+      date: "2026-02-08"
+      verdict: accepted
+      backend_tests: "520 passed, 28 skipped, 0 failures"
+      frontend_tests: "370 passed (31 new), 0 failures"
+      e2e_tests: "152 passed (9 new), 0 failures"
+      eslint: "282 warnings, 0 errors (unchanged)"
+      tsc_errors: "124 (pre-existing test-only, unchanged, TD-017)"
+      bundle_size: "235 KB (was 707 KB, 66.8% reduction, target <400 KB)"
+      code_review: "5 findings — all verified as FALSE POSITIVE"
+      minor_finding: "ProcessingModal.tsx has 4 Chinese strings (pre-existing from 8.2, not a blocker)"
+    
     blocked: false
     blocker_reason: null
     start_date: "2026-02-08"

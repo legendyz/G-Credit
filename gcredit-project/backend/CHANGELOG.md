@@ -47,8 +47,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Database:** BulkIssuanceSession table with status tracking
 - **Testing:** 6 ACs verified, Backend 510 + Frontend 339 + E2E 143 = 992 total tests (0 failures)
 
+##### Story 8.3: Bulk Preview UI + TD-013 Bundle Splitting (10h actual) - 2026-02-08
+- **TD-013: Route-Based Code Splitting** - Bundle optimization
+  - Main chunk: 707 KB → 235 KB (66.8% reduction, target <400 KB)
+  - 10 lazy-loaded routes via `React.lazy()` + `<Suspense>`
+  - 5 vendor chunks: react-vendor, ui-vendor, query-vendor, animation-vendor, utils-vendor
+  - `vite.config.ts` `manualChunks` configuration
+- **Backend Preview Enrichment**
+  - Badge template name resolution for preview display
+  - Recipient name resolution from user records
+  - Template summary aggregation (badge counts per template)
+  - Server-side pagination support (`page`/`pageSize` query params)
+- **Frontend: 7 New Components** (959 lines, 29 tests)
+  - `BulkPreviewHeader` — Session summary with badge/recipient counts
+  - `BulkPreviewTable` — Paginated table with error highlighting and inline correction
+  - `ErrorCorrectionPanel` — Inline error editing with field validation
+  - `ConfirmationModal` — Final confirmation with error/valid row summary
+  - `EmptyPreviewState` — Empty state with navigation back to upload
+  - `SessionExpiryTimer` — Countdown timer with auto-redirect after 5s expiry
+  - `ProcessingComplete` — Success state with navigation options
+  - `BulkPreviewPage` — Complete rewrite (341 lines), composes all sub-components
+- **Testing:** 1042 total tests (Backend 520 + Frontend 370 + E2E 152), 0 failures
+- **SM Acceptance:** All 5 code review findings verified as FALSE POSITIVE
+
 #### Remaining Stories
-- Story 8.3: Bulk Preview UI + TD-013 (bundle splitting)
 - Story 8.4: Batch Processing Phase 1 + TD-014 (email unification)
 
 ##### TD-015: ESLint Type Safety Cleanup (8h actual) - 2026-02-07

@@ -150,8 +150,9 @@ Upload CSV file with drag-and-drop support. Parse and validate each row for badg
 
 #### Story 8.3: Bulk Issuance Preview UI - 11.5h (原8h + P0修复2.5h + P1改进1h)
 **Priority:** MEDIUM  
-**Status:** backlog  
-**Assigned to:** TBD  
+**Status:** done  
+**Actual Hours:** 10h  
+**Assigned to:** Dev Agent (Claude Opus 4.6)  
 **Dependencies:** Story 8.2  
 **Security Critical:** 🔴 MUST implement C2 (Session IDOR) validation
 
@@ -400,13 +401,15 @@ Process bulk badge issuance synchronously with up to 20 badges per batch. Simple
   - Run regression tests
 
 #### Day 8-9 (Wednesday-Thursday)
-- [ ] **Story 8.3: Bulk Preview UI** (8h)
+- [x] **Story 8.3: Bulk Preview UI** (10h actual)
+  - TD-013 bundle splitting (707→235 KB)
   - Preview header component
   - Data table with pagination
-  - Error display section
+  - Error correction panel
   - Confirmation modal
   - Session expiry handling
-  - Testing
+  - 7 new components, 29 tests
+  - SM accepted 2026-02-08
 
 #### Day 10 (Friday)
 - [ ] **Story 8.4: Batch Processing** (8h)
