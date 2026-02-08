@@ -40,9 +40,16 @@ vi.mock('../EmptyPreviewState', () => ({
 }));
 
 vi.mock('../ProcessingComplete', () => ({
-  default: (props: { success: number; failed: number }) => (
+  default: (props: {
+    success: number;
+    failed: number;
+    results: Array<{ row: number; recipientEmail: string; badgeName: string; status: string; error?: string }>;
+    sessionId?: string;
+  }) => (
     <div data-testid="processing-complete">
       Done: {props.success} success, {props.failed} failed
+      {props.results?.length > 0 && <span data-testid="has-results">results:{props.results.length}</span>}
+      {props.sessionId && <span data-testid="session-id">{props.sessionId}</span>}
     </div>
   ),
 }));
@@ -231,5 +238,78 @@ describe('BulkPreviewPage', () => {
     });
     const secondCallUrl = (mockFetch.mock.calls[1] as [string])[0];
     expect(secondCallUrl).toContain('/api/bulk-issuance/confirm/');
+  });
+
+  it('should show processing complete with results after confirm', async () => {
+    const noErrorData = {
+      ...mockPreviewData,
+      errorRows: 0,
+      errors: [],
+    };
+    const confirmResults = [
+      { row: 2, recipientEmail: 'a@test.com', badgeName: 'Leadership', status: 'success' as const },
+      { row: 3, recipientEmail: 'b@test.com', badgeName: 'Leadership', status: 'failed' as const, error: 'User not found' },
+    ];
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(noErrorData),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({ success: true, processed: 1, failed: 1, results: confirmResults }),
+      });
+
+    renderWithRouter();
+    await waitFor(() => {
+      expect(screen.getByText(/Confirm Issuance/)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText(/Confirm Issuance/));
+    await waitFor(() => {
+      expect(screen.getByTestId('confirm-modal')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Confirm and Issue'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('processing-complete')).toBeInTheDocument();
+    });
+    expect(screen.getByTestId('has-results')).toHaveTextContent('results:2');
+    expect(screen.getByTestId('session-id')).toHaveTextContent('test-session-123');
+  });
+
+  it('should show error state when confirm API returns non-ok', async () => {
+    const noErrorData = {
+      ...mockPreviewData,
+      errorRows: 0,
+      errors: [],
+    };
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(noErrorData),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+      });
+
+    renderWithRouter();
+    await waitFor(() => {
+      expect(screen.getByText(/Confirm Issuance/)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText(/Confirm Issuance/));
+    await waitFor(() => {
+      expect(screen.getByTestId('confirm-modal')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Confirm and Issue'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Bulk issuance failed')).toBeInTheDocument();
+    });
   });
 });

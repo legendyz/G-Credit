@@ -70,6 +70,13 @@ export default function BulkPreviewPage() {
   const [processingResults, setProcessingResults] = useState<{
     success: number;
     failed: number;
+    results: Array<{
+      row: number;
+      recipientEmail: string;
+      badgeName: string;
+      status: 'success' | 'failed';
+      error?: string;
+    }>;
   } | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
@@ -165,6 +172,9 @@ export default function BulkPreviewPage() {
     setShowConfirmModal(false);
     setIsProcessing(true);
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
     try {
       const response = await fetch(
         `/api/bulk-issuance/confirm/${sessionId}`,
@@ -174,21 +184,44 @@ export default function BulkPreviewPage() {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
             'Content-Type': 'application/json',
           },
+          signal: controller.signal,
         },
       );
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error('Bulk issuance failed');
       }
 
-      const data: { processed: number; failed: number } =
-        await response.json();
-      setProcessingResults({ success: data.processed, failed: data.failed });
+      const data: {
+        processed: number;
+        failed: number;
+        results: Array<{
+          row: number;
+          recipientEmail: string;
+          badgeName: string;
+          status: 'success' | 'failed';
+          error?: string;
+        }>;
+      } = await response.json();
+      setProcessingResults({
+        success: data.processed,
+        failed: data.failed,
+        results: data.results,
+      });
       setProcessingComplete(true);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Issuance failed unexpectedly',
-      );
+      clearTimeout(timeoutId);
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        setError(
+          'Processing timed out after 30 seconds. Please check your badges and try again.',
+        );
+      } else {
+        setError(
+          err instanceof Error ? err.message : 'Issuance failed unexpectedly',
+        );
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -237,6 +270,8 @@ export default function BulkPreviewPage() {
       <ProcessingComplete
         success={processingResults.success}
         failed={processingResults.failed}
+        results={processingResults.results}
+        sessionId={sessionId}
         onViewBadges={() => navigate('/admin/badges')}
       />
     );
