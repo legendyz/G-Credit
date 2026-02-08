@@ -1,6 +1,6 @@
 # Story 10.2: ESLint Full Cleanup + CI Zero-Tolerance Gate
 
-**Status:** review  
+**Status:** complete  
 **Priority:** 🔴 HIGH  
 **Estimate:** 8h  
 **Sprint:** Sprint 10  

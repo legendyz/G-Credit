@@ -127,8 +127,8 @@ stories:
     title: "ESLint Full Cleanup + CI Zero-Tolerance Gate"
     priority: HIGH
     estimate: 8h
-    actual: null
-    status: review
+    actual: 8h
+    status: complete
     phase: 1-td
     file: "10-2-eslint-regression-ci-gate.md"
     dependencies: ["10-1"]  # MUST complete first
