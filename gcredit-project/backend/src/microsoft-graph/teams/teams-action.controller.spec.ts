@@ -17,7 +17,6 @@ import { BadgeStatus } from '@prisma/client';
 
 describe('TeamsActionController', () => {
   let controller: TeamsActionController;
-  let prismaService: jest.Mocked<PrismaService>;
 
   const mockPrismaService = {
     badge: {
@@ -25,6 +24,9 @@ describe('TeamsActionController', () => {
       update: jest.fn(),
     },
   };
+
+  // Alias preserves jest.Mock types for .mockResolvedValue()
+  const prismaService = mockPrismaService;
 
   const mockBadge = {
     id: 'badge-123',
@@ -67,7 +69,6 @@ describe('TeamsActionController', () => {
     }).compile();
 
     controller = module.get<TeamsActionController>(TeamsActionController);
-    prismaService = module.get(PrismaService);
   });
 
   afterEach(() => {
@@ -152,20 +153,20 @@ describe('TeamsActionController', () => {
 
       // Check for claimed status in card
       const factSet = result.adaptiveCard.body.find(
-        (item: any) => item.type === 'FactSet',
+        (item: { type?: string }) => item.type === 'FactSet',
       );
       expect(factSet).toBeDefined();
-      const statusFact = factSet.facts.find(
-        (fact: any) => fact.title === 'Status',
+      const statusFact = factSet!.facts!.find(
+        (fact: { title: string; value: string }) => fact.title === 'Status',
       );
-      expect(statusFact.value).toContain('CLAIMED');
+      expect(statusFact!.value).toContain('CLAIMED');
 
       // Check for success message
       const successContainer = result.adaptiveCard.body.find(
-        (item: any) => item.type === 'Container' && item.style === 'accent',
+        (item: { type?: string; style?: string }) => item.type === 'Container' && item.style === 'accent',
       );
       expect(successContainer).toBeDefined();
-      expect(successContainer.items[0].text).toContain('claimed successfully');
+      expect(successContainer!.items![0].text).toContain('claimed successfully');
     });
 
     it('should throw NotFoundException if badge not found', async () => {

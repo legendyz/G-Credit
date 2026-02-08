@@ -151,7 +151,7 @@ describe('Badge Issuance (e2e) - Isolated', () => {
         issuerId: adminUser.user.id,
       });
       validBadgeId = badge.id;
-      validClaimToken = badge.claimToken;
+      validClaimToken = badge.claimToken!;
     });
 
     it('should claim badge with valid token (PUBLIC endpoint - no auth required)', async () => {

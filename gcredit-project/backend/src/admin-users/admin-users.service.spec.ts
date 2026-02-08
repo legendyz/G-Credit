@@ -19,7 +19,23 @@ import { UserRole } from '@prisma/client';
 
 describe('AdminUsersService', () => {
   let service: AdminUsersService;
-  let prisma: jest.Mocked<PrismaService>;
+
+  // Mock PrismaService at describe scope — jest.fn() gives us jest.Mock type
+  const mockPrismaService = {
+    user: {
+      count: jest.fn(),
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+      updateMany: jest.fn(),
+    },
+    userRoleAuditLog: {
+      create: jest.fn(),
+    },
+    $transaction: jest.fn(),
+  };
+  // Alias preserves jest.Mock types so .mockResolvedValue() is available
+  const prisma = mockPrismaService;
 
   // Mock user data
   const mockUser = {
@@ -45,19 +61,7 @@ describe('AdminUsersService', () => {
   };
 
   beforeEach(async () => {
-    const mockPrismaService = {
-      user: {
-        count: jest.fn(),
-        findMany: jest.fn(),
-        findUnique: jest.fn(),
-        update: jest.fn(),
-        updateMany: jest.fn(),
-      },
-      userRoleAuditLog: {
-        create: jest.fn(),
-      },
-      $transaction: jest.fn(),
-    };
+    jest.clearAllMocks();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -70,7 +74,6 @@ describe('AdminUsersService', () => {
     }).compile();
 
     service = module.get<AdminUsersService>(AdminUsersService);
-    prisma = module.get(PrismaService);
   });
 
   afterEach(() => {

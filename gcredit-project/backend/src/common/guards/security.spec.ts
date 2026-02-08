@@ -130,7 +130,7 @@ describe('Evidence Upload Authorization (SEC-P1-001)', () => {
     it('should deny non-admin uploading to others badge', () => {
       const mockBadge = { id: 'badge-123', issuerId: 'user-456' };
       const uploaderId = 'user-789';
-      const userRole = 'ISSUER';
+      const userRole: string = 'ISSUER';
 
       // Logic: non-admin AND not the issuer = DENY
       const shouldDeny =

@@ -57,9 +57,9 @@ describe('BadgeNotificationCardBuilder - Story 7.4', () => {
       const card = BadgeNotificationCardBuilder.build(mockCardData);
 
       const headerContainer = card.body[0] as ACElement;
-      const columnSet = headerContainer.items[0];
-      const imageColumn = columnSet.columns[0];
-      const image = imageColumn.items[0];
+      const columnSet = headerContainer.items![0];
+      const imageColumn = columnSet!.columns![0];
+      const image = imageColumn!.items![0];
 
       expect(image.type).toBe('Image');
       expect(image.url).toBe(mockCardData.badgeImageUrl);
@@ -72,9 +72,9 @@ describe('BadgeNotificationCardBuilder - Story 7.4', () => {
       const card = BadgeNotificationCardBuilder.build(mockCardData);
 
       const headerContainer = card.body[0] as ACElement;
-      const columnSet = headerContainer.items[0];
-      const textColumn = columnSet.columns[1];
-      const items = textColumn.items;
+      const columnSet = headerContainer.items![0];
+      const textColumn = columnSet!.columns![1];
+      const items = textColumn!.items!;
 
       // Celebration message
       expect(items[0].text).toContain('🎉');
@@ -94,19 +94,19 @@ describe('BadgeNotificationCardBuilder - Story 7.4', () => {
       const card = BadgeNotificationCardBuilder.build(mockCardData);
 
       const detailsContainer = card.body[1] as ACElement;
-      const factSet = detailsContainer.items[0];
+      const factSet = detailsContainer.items![0];
 
-      expect(factSet.type).toBe('FactSet');
-      expect(factSet.facts).toHaveLength(3);
-      expect(factSet.facts[0]).toEqual({
+      expect(factSet!.type).toBe('FactSet');
+      expect(factSet!.facts).toHaveLength(3);
+      expect(factSet!.facts![0]).toEqual({
         title: 'Recipient:',
         value: mockCardData.recipientName,
       });
-      expect(factSet.facts[1]).toEqual({
+      expect(factSet!.facts![1]).toEqual({
         title: 'Issued On:',
         value: mockCardData.issueDate,
       });
-      expect(factSet.facts[2]).toEqual({
+      expect(factSet!.facts![2]).toEqual({
         title: 'Badge ID:',
         value: mockCardData.badgeId,
       });
@@ -116,7 +116,7 @@ describe('BadgeNotificationCardBuilder - Story 7.4', () => {
       const card = BadgeNotificationCardBuilder.build(mockCardData);
 
       const descriptionContainer = card.body[2] as ACElement;
-      const textBlock = descriptionContainer.items[0];
+      const textBlock = descriptionContainer.items![0];
 
       expect(textBlock.type).toBe('TextBlock');
       expect(textBlock.text).toBe(mockCardData.badgeDescription);
@@ -128,7 +128,7 @@ describe('BadgeNotificationCardBuilder - Story 7.4', () => {
       const card = BadgeNotificationCardBuilder.build(mockCardData);
 
       const viewBadgeAction = card.actions.find((action: ACElement) =>
-        action.title.includes('View Badge'),
+        action.title!.includes('View Badge'),
       ) as ACElement;
 
       expect(viewBadgeAction).toBeDefined();
@@ -141,7 +141,7 @@ describe('BadgeNotificationCardBuilder - Story 7.4', () => {
       const card = BadgeNotificationCardBuilder.build(mockCardData);
 
       const claimAction = card.actions.find((action: ACElement) =>
-        action.title.includes('Claim Now'),
+        action.title!.includes('Claim Now'),
       ) as ACElement;
 
       expect(claimAction).toBeDefined();
@@ -174,9 +174,9 @@ describe('BadgeNotificationCardBuilder - Story 7.4', () => {
       const card = BadgeNotificationCardBuilder.build(dataWithLongName);
 
       const headerContainer = card.body[0] as ACElement;
-      const columnSet = headerContainer.items[0];
-      const textColumn = columnSet.columns[1];
-      const badgeNameText = textColumn.items[1];
+      const columnSet = headerContainer.items![0];
+      const textColumn = columnSet!.columns![1];
+      const badgeNameText = textColumn!.items![1];
 
       expect(badgeNameText.text).toBe(dataWithLongName.badgeName);
       expect(badgeNameText.wrap).toBe(true);
@@ -192,9 +192,9 @@ describe('BadgeNotificationCardBuilder - Story 7.4', () => {
       const card = BadgeNotificationCardBuilder.build(dataWithLongDescription);
 
       const descriptionContainer = card.body[2] as ACElement;
-      const textBlock = descriptionContainer.items[0];
+      const textBlock = descriptionContainer.items![0];
 
-      expect(textBlock.maxLines).toBe(3); // Will truncate after 3 lines
+      expect(textBlock!.maxLines).toBe(3); // Will truncate after 3 lines
     });
   });
 

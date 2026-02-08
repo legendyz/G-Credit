@@ -221,16 +221,20 @@ export class AuthService {
     // 2. Hash new password
     const passwordHash = await bcrypt.hash(newPassword, 10);
 
-    // 3. Update user password
-    await this.prisma.user.update({
-      where: { id: resetToken.userId },
-      data: { passwordHash },
-    });
+    // 3-4. Update password and mark token as used atomically
+    // Architecture Audit: Prevents token reuse on crash between password update and token invalidation
+    await this.prisma.$transaction(async (tx) => {
+      // Update user password
+      await tx.user.update({
+        where: { id: resetToken.userId },
+        data: { passwordHash },
+      });
 
-    // 4. Mark token as used
-    await this.prisma.passwordResetToken.update({
-      where: { id: resetToken.id },
-      data: { used: true },
+      // Mark token as used (atomic with password update)
+      await tx.passwordResetToken.update({
+        where: { id: resetToken.id },
+        data: { used: true },
+      });
     });
 
     // 5. Log password reset

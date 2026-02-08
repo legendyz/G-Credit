@@ -9,7 +9,7 @@ describe('AssertionGeneratorService - Sprint 5 Story 6.1', () => {
 
   const mockConfigService = {
     get: jest.fn((key: string, defaultValue?: string) => {
-      const config = {
+      const config: Record<string, string> = {
         APP_URL: 'https://g-credit.example.com',
         EMAIL_FROM: 'badges@gcredit.example.com',
         BADGE_SALT: 'test-salt-12345',

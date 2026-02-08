@@ -43,8 +43,8 @@ describe('BadgeIssuanceService - Baked Badge (Story 6.4)', () => {
   };
 
   const mockConfigService = {
-    get: jest.fn((key: string, defaultValue?: any) => {
-      const config = {
+    get: jest.fn((key: string, defaultValue?: unknown) => {
+      const config: Record<string, string> = {
         GRAPH_EMAIL_FROM: 'test@test.com',
       };
       return config[key] || defaultValue;

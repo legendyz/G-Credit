@@ -91,10 +91,10 @@ describe.skip('GraphTeamsService', () => {
     });
   });
 
-  describe('sendActivityNotification', () => {
+  describe('sendChannelMessage', () => {
     it('should skip sending when disabled', async () => {
       const disabledConfigService = {
-        get: (key: string, defaultValue?: any) => {
+        get: (key: string, defaultValue?: unknown) => {
           if (key === 'ENABLE_TEAMS_NOTIFICATIONS') return 'false';
           return defaultValue;
         },
@@ -117,11 +117,10 @@ describe.skip('GraphTeamsService', () => {
       const disabledService = module.get<GraphTeamsService>(GraphTeamsService);
 
       await expect(
-        disabledService.sendActivityNotification(
-          'user@example.com',
-          'badgeEarned',
+        disabledService.sendChannelMessage(
+          'team-id',
+          'channel-id',
           'You earned a badge!',
-          { badgeName: 'Test Badge' },
         ),
       ).resolves.not.toThrow();
     });

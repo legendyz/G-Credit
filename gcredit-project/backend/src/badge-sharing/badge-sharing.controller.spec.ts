@@ -37,7 +37,7 @@ describe('BadgeSharingController', () => {
     };
 
     const userId = 'user-123';
-    const mockUser = { userId };
+    const mockUser = { userId, email: 'user@example.com', role: 'EMPLOYEE' };
 
     const expectedResponse = {
       success: true,
@@ -70,6 +70,8 @@ describe('BadgeSharingController', () => {
 
       await controller.shareBadgeViaEmail(shareDto, {
         userId: 'different-user-id',
+        email: 'diff@example.com',
+        role: 'EMPLOYEE',
       });
 
       expect(mockBadgeSharingService.shareBadgeViaEmail).toHaveBeenCalledWith(

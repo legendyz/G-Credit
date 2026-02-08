@@ -51,6 +51,9 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
+      - name: Type Check
+        run: npx tsc --noEmit
+
       - name: Run Unit Tests
         run: npm run test -- --coverage --passWithNoTests
 

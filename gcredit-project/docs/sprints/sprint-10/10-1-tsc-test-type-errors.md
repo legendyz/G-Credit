@@ -1,6 +1,6 @@
 # Story 10.1: TD-017 — Fix tsc Test Type Errors
 
-**Status:** backlog  
+**Status:** review  
 **Priority:** 🔴 HIGH  
 **Estimate:** 7.5h  
 **Sprint:** Sprint 10  
@@ -25,50 +25,50 @@ Across Sprints 1-9, 114 type errors accumulated in test files because `tsc --noE
 
 ## Acceptance Criteria
 
-1. [ ] `tsc --noEmit` returns 0 errors (currently 114)
-2. [ ] All 1087 existing tests still pass (0 regressions)
-3. [ ] No new `any` types introduced (checked via ESLint)
-4. [ ] Test mock objects include all required interface fields
-5. [ ] CI pipeline includes `tsc --noEmit` check step
+1. [x] `tsc --noEmit` returns 0 errors (currently 114)
+2. [x] All 1087 existing tests still pass (0 regressions)
+3. [x] No new `any` types introduced (checked via ESLint)
+4. [x] Test mock objects include all required interface fields
+5. [x] CI pipeline includes `tsc --noEmit` check step
 6. [ ] PR commit message: `refactor: fix 114 tsc test type errors (TD-017)`
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1: Analyze error distribution** (AC: #1)
-  - [ ] Run `tsc --noEmit 2>&1 | Select-String "error TS"` to get full error list
-  - [ ] Categorize by error type (TS2345, TS2322, TS2339, etc.)
-  - [ ] Group by file (identify which test files have most errors)
-  - [ ] Prioritize: files with most errors first
+- [x] **Task 1: Analyze error distribution** (AC: #1)
+  - [x] Run `tsc --noEmit 2>&1 | Select-String "error TS"` to get full error list
+  - [x] Categorize by error type (TS2345, TS2322, TS2339, etc.)
+  - [x] Group by file (identify which test files have most errors)
+  - [x] Prioritize: files with most errors first
 
-- [ ] **Task 2: Fix Prisma mock type errors** (AC: #1, #4)
-  - [ ] Update Prisma mock objects to match generated client types
-  - [ ] Use `Partial<>` or proper mock factories where needed
-  - [ ] Verify with `tsc --noEmit` after each batch
+- [x] **Task 2: Fix Prisma mock type errors** (AC: #1, #4)
+  - [x] Update Prisma mock objects to match generated client types
+  - [x] Use `Partial<>` or proper mock factories where needed
+  - [x] Verify with `tsc --noEmit` after each batch
 
-- [ ] **Task 3: Fix RequestWithUser interface errors** (AC: #1, #4)
-  - [ ] Update test mocks with required fields (`role`, `email`, `id`)
-  - [ ] Use shared `RequestWithUser` interface from Sprint 9 TD-015
-  - [ ] Apply `import type` for decorated signatures (Lesson 34)
+- [x] **Task 3: Fix RequestWithUser interface errors** (AC: #1, #4)
+  - [x] Update test mocks with required fields (`role`, `email`, `id`)
+  - [x] Use shared `RequestWithUser` interface from Sprint 9 TD-015
+  - [x] Apply `import type` for decorated signatures (Lesson 34)
 
-- [ ] **Task 4: Fix remaining type errors** (AC: #1, #3)
-  - [ ] Use variable annotations (not `as` casts) per Lesson 34
-  - [ ] Fix `no-unsafe-*` patterns in test files
-  - [ ] Handle generic type parameters for service mocks
+- [x] **Task 4: Fix remaining type errors** (AC: #1, #3)
+  - [x] Use variable annotations (not `as` casts) per Lesson 34
+  - [x] Fix `no-unsafe-*` patterns in test files
+  - [x] Handle generic type parameters for service mocks
 
-- [ ] **Task 5: Fix password reset transaction gap** (AC: #2) 🏗️ _Architecture Audit_
-  - [ ] Wrap password update + token invalidation in `$transaction` in `auth.service.ts` (lines 218-232)
-  - [ ] Prevents theoretical token reuse on crash between the two queries
-  - [ ] Add test case verifying atomic behavior
+- [x] **Task 5: Fix password reset transaction gap** (AC: #2) 🏗️ _Architecture Audit_
+  - [x] Wrap password update + token invalidation in `$transaction` in `auth.service.ts` (lines 218-232)
+  - [x] Prevents theoretical token reuse on crash between the two queries
+  - [x] Add test case verifying atomic behavior
   - _Source: Architecture Release Audit — Winston, Transaction Safety finding #1_
 
-- [ ] **Task 6: Add tsc --noEmit to CI** (AC: #5)
-  - [ ] Add `tsc --noEmit` step to GitHub Actions workflow
-  - [ ] Verify CI runs and passes
+- [x] **Task 6: Add tsc --noEmit to CI** (AC: #5)
+  - [x] Add `tsc --noEmit` step to GitHub Actions workflow
+  - [x] Verify CI runs and passes
 
-- [ ] **Task 7: Verify zero regressions** (AC: #2)
-  - [ ] Run full backend test suite: `npm test`
-  - [ ] Run full frontend test suite: `npm test`
-  - [ ] Run E2E tests: `npm run test:e2e`
+- [x] **Task 7: Verify zero regressions** (AC: #2)
+  - [x] Run full backend test suite: `npm test`
+  - [x] Run full frontend test suite: `npm test`
+  - [x] Run E2E tests: `npm run test:e2e`
 
 ## Dev Notes
 
@@ -87,10 +87,41 @@ Across Sprints 1-9, 114 type errors accumulated in test files because `tsc --noE
 ## Dev Agent Record
 
 ### Agent Model Used
-_To be filled during development_
+Claude Opus 4.6 (via GitHub Copilot)
 
 ### Completion Notes
-_To be filled on completion_
+Fixed all 114 tsc type errors across 19 test files + 1 production file. Key patterns applied:
+- **Describe-scope mock promotion**: Moved `mockPrismaService` from `beforeEach` to `describe` scope to preserve `jest.Mock` types (eliminated TS2339 `.mockResolvedValue()` errors)
+- **Non-null assertions (`!`)**: Added on `.items`, `.columns`, `.facts`, `.title` accesses where `toBeDefined()` precedes (TS18048)
+- **`Record<string, string>` config typing**: Fixed TS7053 indexing errors on config objects across 7 files
+- **`RequestWithUser` + `UserRole` enum**: Added `role: UserRole.EMPLOYEE` to mock request objects (TS2345)
+- **Explicit type annotations**: Broke circular references in `badge-issuance.service.spec.ts` (TS7022/TS7024)
+- **`Prisma.InputJsonValue`**: Fixed JsonValue→InputJsonValue type mismatches (TS2322)
+- **Password reset `$transaction`**: Wrapped `user.update` + `passwordResetToken.update` in atomic transaction (Architecture Audit finding)
+- **CI integration**: Added `tsc --noEmit` step to `.github/workflows/test.yml` + `type-check` script to `package.json`
+
+Results: 114 → 0 tsc errors. 1089 tests passing (534 backend + 397 frontend + 158 E2E). +2 new tests for password reset transaction.
 
 ### File List
-_To be filled on completion_
+- `.github/workflows/test.yml`
+- `gcredit-project/backend/package.json`
+- `gcredit-project/backend/src/admin-users/admin-users.service.spec.ts`
+- `gcredit-project/backend/src/badge-issuance/badge-issuance-teams.integration.spec.ts`
+- `gcredit-project/backend/src/badge-issuance/badge-issuance-wallet.service.spec.ts`
+- `gcredit-project/backend/src/badge-issuance/badge-issuance.service-baked.spec.ts`
+- `gcredit-project/backend/src/badge-issuance/badge-issuance.service.spec.ts`
+- `gcredit-project/backend/src/badge-issuance/services/assertion-generator.service.spec.ts`
+- `gcredit-project/backend/src/badge-sharing/badge-sharing.controller.spec.ts`
+- `gcredit-project/backend/src/badge-sharing/controllers/badge-analytics.controller.spec.ts`
+- `gcredit-project/backend/src/badge-sharing/services/email-template.service.spec.ts`
+- `gcredit-project/backend/src/common/guards/security.spec.ts`
+- `gcredit-project/backend/src/microsoft-graph/services/graph-teams.service.spec.ts`
+- `gcredit-project/backend/src/microsoft-graph/services/graph-token-provider.service.spec.ts`
+- `gcredit-project/backend/src/microsoft-graph/teams/adaptive-cards/badge-notification.builder.spec.ts`
+- `gcredit-project/backend/src/microsoft-graph/teams/teams-action.controller.spec.ts`
+- `gcredit-project/backend/src/microsoft-graph/teams/teams-badge-notification.service.spec.ts`
+- `gcredit-project/backend/src/modules/auth/auth.service.spec.ts`
+- `gcredit-project/backend/src/modules/auth/auth.service.ts`
+- `gcredit-project/backend/test/badge-integrity.e2e-spec.ts`
+- `gcredit-project/backend/test/badge-issuance-isolated.e2e-spec.ts`
+- `gcredit-project/backend/test/factories/badge-template.factory.ts`

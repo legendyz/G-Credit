@@ -46,7 +46,7 @@ describe.skip('TeamsBadgeNotificationService - Story 7.4', () => {
 
   const mockConfigService = {
     get: jest.fn((key: string) => {
-      const config = {
+      const config: Record<string, string | boolean> = {
         PLATFORM_URL: 'https://g-credit.com',
         ENABLE_TEAMS_NOTIFICATIONS: true,
       };
@@ -319,7 +319,7 @@ describe.skip('TeamsBadgeNotificationService - Story 7.4', () => {
       // Find the FactSet container
       const detailsContainer = adaptiveCard.body[1];
       const factSet = detailsContainer.items[0];
-      const issueDateFact = factSet.facts.find((f) => f.title === 'Issued On:');
+      const issueDateFact = factSet.facts.find((f: { title: string; value: string }) => f.title === 'Issued On:');
 
       expect(issueDateFact.value).toBe('January 30, 2026');
     });

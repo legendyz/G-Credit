@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ForbiddenException } from '@nestjs/common';
 import { BadgeAnalyticsController } from './badge-analytics.controller';
 import { BadgeAnalyticsService } from '../services/badge-analytics.service';
+import { UserRole } from '@prisma/client';
+import type { RequestWithUser } from '../../common/interfaces/request-with-user.interface';
 
 describe('BadgeAnalyticsController', () => {
   let controller: BadgeAnalyticsController;
@@ -12,10 +14,11 @@ describe('BadgeAnalyticsController', () => {
     getShareHistory: jest.fn(),
   };
 
-  const mockRequest = {
+  const mockRequest: RequestWithUser = {
     user: {
       userId: 'user-123',
       email: 'user@example.com',
+      role: UserRole.EMPLOYEE,
     },
   };
 
@@ -196,7 +199,7 @@ describe('BadgeAnalyticsController', () => {
     });
 
     it('should include metadata for Teams shares', async () => {
-      const teamsShare = mockShareHistory.find((s) => s.platform === 'teams');
+      const teamsShare = mockShareHistory.find((s) => s.platform === 'teams')!;
       jest.spyOn(service, 'getShareHistory').mockResolvedValue([teamsShare]);
 
       const result = await controller.getShareHistory(
@@ -212,7 +215,7 @@ describe('BadgeAnalyticsController', () => {
     });
 
     it('should include recipientEmail for email shares', async () => {
-      const emailShare = mockShareHistory.find((s) => s.platform === 'email');
+      const emailShare = mockShareHistory.find((s) => s.platform === 'email')!;
       jest.spyOn(service, 'getShareHistory').mockResolvedValue([emailShare]);
 
       const result = await controller.getShareHistory(

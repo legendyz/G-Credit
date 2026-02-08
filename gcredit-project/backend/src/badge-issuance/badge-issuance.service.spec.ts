@@ -21,7 +21,14 @@ describe('BadgeIssuanceService', () => {
   let _prismaService: PrismaService;
   let _assertionGenerator: AssertionGeneratorService;
 
-  const mockPrismaService = {
+  // Explicit type annotation breaks circular reference (TS7022/TS7024)
+  const mockPrismaService: {
+    badgeTemplate: { findUnique: jest.Mock };
+    user: { findUnique: jest.Mock };
+    badge: { create: jest.Mock; update: jest.Mock; findUnique: jest.Mock; count?: jest.Mock; findMany?: jest.Mock };
+    auditLog: { create: jest.Mock };
+    $transaction: jest.Mock;
+  } = {
     badgeTemplate: {
       findUnique: jest.fn(),
     },
@@ -38,8 +45,8 @@ describe('BadgeIssuanceService', () => {
     },
     // Interactive transaction: execute callback with tx proxy that delegates to badge mocks
     $transaction: jest.fn(
-      async (callback: (tx: unknown) => Promise<unknown>) => {
-        const tx = {
+      async (callback: (tx: unknown) => Promise<unknown>): Promise<unknown> => {
+        const tx: { badge: { create: jest.Mock; update: jest.Mock } } = {
           badge: {
             create: mockPrismaService.badge.create,
             update: mockPrismaService.badge.update,
@@ -73,6 +80,7 @@ describe('BadgeIssuanceService', () => {
 
   const mockMilestonesService = {
     checkMilestones: jest.fn().mockResolvedValue(undefined),
+    getUserAchievements: jest.fn().mockResolvedValue([]),
   };
 
   const mockStorageService = {
@@ -90,8 +98,8 @@ describe('BadgeIssuanceService', () => {
   };
 
   const mockConfigService = {
-    get: jest.fn((key: string, defaultValue?: any) => {
-      const config = {
+    get: jest.fn((key: string, defaultValue?: unknown) => {
+      const config: Record<string, string> = {
         GRAPH_EMAIL_FROM: 'test@test.com',
       };
       return config[key] || defaultValue;
@@ -765,7 +773,7 @@ describe('BadgeIssuanceService', () => {
 
         // Assert
         expect(result.status).toBe(BadgeStatus.REVOKED);
-        expect(result.alreadyRevoked).toBe(true);
+        expect(result).toHaveProperty('alreadyRevoked', true);
         expect(mockPrismaService.$transaction).not.toHaveBeenCalled();
       });
 

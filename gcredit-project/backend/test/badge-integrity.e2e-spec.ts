@@ -4,7 +4,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/common/prisma.service';
-import { UserRole, BadgeStatus } from '@prisma/client';
+import { UserRole, BadgeStatus, Prisma } from '@prisma/client';
 import { AssertionGeneratorService } from '../src/badge-issuance/services/assertion-generator.service';
 import * as bcrypt from 'bcrypt';
 
@@ -222,10 +222,14 @@ describe('Badge Integrity (e2e) - Story 6.5', () => {
       expect(body.storedHash).not.toBe(body.computedHash);
 
       // Restore original assertion for other tests
+      // Prisma JsonValue (output) ≠ InputJsonValue (input) — bridge via JSON roundtrip
+      const restoreJson: Prisma.InputJsonValue = JSON.parse(
+        JSON.stringify(badge!.assertionJson),
+      );
       await prisma.badge.update({
         where: { id: badgeId },
         data: {
-          assertionJson: badge!.assertionJson,
+          assertionJson: restoreJson,
         },
       });
     });
