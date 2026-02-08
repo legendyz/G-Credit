@@ -17,16 +17,16 @@ metadata:
 
 # Sprint Metrics (updated daily)
 metrics:
-  total_stories: 10
-  total_estimated_hours: 62.5h
-  buffer_hours: 17.5h
+  total_stories: 11
+  total_estimated_hours: 66h
+  buffer_hours: 14h
   
   completed_stories: 2
   completed_hours: 15.5h
   remaining_hours: 47h
   
   # Capacity breakdown
-  td_hours: 23.5h    # Stories 10.1-10.4 (10.2 upgraded to full cleanup)
+  td_hours: 27h    # Stories 10.1-10.4 + 10.3b (frontend ESLint from buffer)
   feature_hours: 6h   # Story 10.5
   uat_hours: 28h      # Stories 10.6-10.8
   release_hours: 6h    # Stories 10.9-10.10
@@ -142,6 +142,17 @@ stories:
     phase: 1-td
     file: "10-3-todo-fixme-cleanup.md"
     dependencies: []
+
+  10-3b-frontend-eslint-cleanup:
+    title: "TD-019: Frontend ESLint Cleanup + CI Gate"
+    priority: HIGH
+    estimate: 3.5h
+    actual: null
+    status: backlog
+    phase: 1-td
+    file: "10-3b-frontend-eslint-cleanup.md"
+    dependencies: []
+    discovered: "During Story 10.3 development"
     
   10-4-i18n-chinese-string-scan:
     title: "i18n Scan + UX/Code Quality Quick Wins"
@@ -237,6 +248,11 @@ technical_debt:
       story: "10.3"
       status: backlog
 
+    - id: TD-019
+      description: "Frontend ESLint cleanup (49 errors + 21,363 warnings) + CI gate"
+      story: "10.3b"
+      status: backlog
+
   deferred:
     - id: TD-006
       description: "Teams Channel Permissions (4 tests skipped)"
@@ -265,9 +281,9 @@ quality_gates:
     sprint_story: "10.1"
     
   eslint_warnings:
-    target: "≤280"
-    current: 423
-    sprint_story: "10.2"
+    target: "0 errors + 0 warnings"
+    current: "backend: 0/0 ✅ | frontend: 49 errors + 21,363 warnings"
+    sprint_story: "10.2 (backend) + 10.3b (frontend)"
     
   todo_fixme:
     target: 0

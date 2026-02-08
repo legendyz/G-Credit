@@ -16,7 +16,7 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 
 **Success Criteria:**
 - ✅ `tsc --noEmit` passes with 0 errors (src + test)
-- ✅ ESLint: 0 errors + 0 warnings with `--max-warnings=0` zero-tolerance CI gate
+- ✅ ESLint: 0 errors + 0 warnings with `--max-warnings=0` zero-tolerance CI gate (backend + frontend)
 - ✅ 0 TODO/FIXME markers in source code
 - ✅ 0 hardcoded `localhost:3000` URLs in frontend
 - ✅ 0 dead navigation links (all Quick Actions route to valid pages)
@@ -39,14 +39,14 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 ### Capacity Allocation
 | Category | Hours | % | Notes |
 |----------|-------|---|-------|
-| **Technical Debt** | 22h | 28% | Stories 10.1-10.4 (10.2 upgraded to full cleanup) |
+| **Technical Debt** | 25.5h | 32% | Stories 10.1-10.4 + 10.3b (frontend ESLint from buffer) |
 | **Feature Enhancement** | 6h | 8% | Story 10.5 (Analytics real data) |
 | **UAT Preparation** | 8h | 10% | Story 10.6 (Test plan + seed data) |
 | **UAT Execution** | 12h | 15% | Story 10.7 (Full UAT) |
 | **Bug Fix Buffer** | 8h | 10% | Story 10.8 (UAT bug fixes) |
 | **Release Documentation** | 4h | 5% | Story 10.9 (CHANGELOG + docs) |
 | **Release** | 2h | 3% | Story 10.10 (Merge + tag) |
-| **Buffer** | 18h | 23% | Sprint buffer (reduced by 5h for audit fixes + ESLint upgrade) |
+| **Buffer** | 14.5h | 18% | Sprint buffer (reduced by 3.5h for TD-019 frontend ESLint) |
 | **TOTAL** | **80h** | **100%** | |
 
 ### Velocity Reference (Lessons Learned)
@@ -55,7 +55,7 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 | Sprint 7 | 41-47h | 38.5h | 82-93% |
 | Sprint 8 | 76h | 80h | 95% |
 | Sprint 9 | 51h | 37h | 73% |
-| **Sprint 10** | **59.5h** | TBD | Target: >85% |
+| **Sprint 10** | **63h** | TBD | Target: >85% |
 
 ---
 
@@ -111,6 +111,26 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 - [ ] Add 404 catch-all route (🎨 UX Audit Critical #2)
 - [ ] Deferred items tracked as ADR or TD
 - [ ] Zero regressions
+
+---
+
+### Story 10.3b: TD-019 — Frontend ESLint Cleanup + CI Gate ⚠️ NEW
+**Priority:** 🔴 HIGH  
+**Estimate:** 3.5h (from buffer)  
+**Story Doc:** 📄 [10-3b-frontend-eslint-cleanup.md](10-3b-frontend-eslint-cleanup.md)  
+**Status:** 🔴 Not Started  
+**Dependencies:** None  
+**Discovered:** During Story 10.3 development  
+
+**Quick Summary:** As a developer, I want frontend ESLint at 0 errors + 0 warnings with CI enforcement, matching backend zero-tolerance standard.
+
+**Key Deliverables:**
+- [ ] Create `.gitattributes` to fix 21,354 CRLF warnings
+- [ ] Fix 49 ESLint errors (React Compiler, any, unused vars, a11y)
+- [ ] Fix 9 react-hooks/exhaustive-deps warnings
+- [ ] Add `--max-warnings=0` to frontend lint script
+- [ ] Add `npm run lint` to CI frontend-tests job
+- [ ] Zero regressions (Vitest + backend tests)
 
 ---
 
