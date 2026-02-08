@@ -53,9 +53,7 @@ export default function BulkPreviewHeader({
       {/* Template Breakdown Pills */}
       {templateBreakdown.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          <span className="text-sm text-gray-600 font-medium self-center">
-            Templates:
-          </span>
+          <span className="text-sm text-gray-600 font-medium self-center">Templates:</span>
           {templateBreakdown.map((item) => (
             <span
               key={item.templateName}

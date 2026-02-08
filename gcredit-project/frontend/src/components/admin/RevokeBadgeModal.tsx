@@ -1,7 +1,7 @@
 /**
  * RevokeBadgeModal Component
  * Sprint 7 - Story 9.5: Admin Badge Revocation UI
- * 
+ *
  * A confirmation modal for revoking badges with reason selection and notes.
  * Implements AC2: Revocation Confirmation Modal
  */
@@ -66,12 +66,7 @@ function getRecipientName(badge: Badge): string {
   return email;
 }
 
-export function RevokeBadgeModal({
-  badge,
-  isOpen,
-  onClose,
-  onSuccess,
-}: RevokeBadgeModalProps) {
+export function RevokeBadgeModal({ badge, isOpen, onClose, onSuccess }: RevokeBadgeModalProps) {
   const [reason, setReason] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
@@ -89,7 +84,7 @@ export function RevokeBadgeModal({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
+
     if (!badge || !reason) {
       setError('Please select a revocation reason');
       return;
@@ -128,18 +123,15 @@ export function RevokeBadgeModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent 
-        className="sm:max-w-[500px]"
-        aria-describedby="revoke-badge-description"
-      >
+      <DialogContent className="sm:max-w-[500px]" aria-describedby="revoke-badge-description">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-destructive">
             <AlertTriangle className="h-5 w-5" />
             Revoke Badge - {badge.template.name}
           </DialogTitle>
           <DialogDescription id="revoke-badge-description">
-            This action cannot be undone. The badge will be permanently revoked
-            and the recipient will be notified.
+            This action cannot be undone. The badge will be permanently revoked and the recipient
+            will be notified.
           </DialogDescription>
         </DialogHeader>
 
@@ -148,20 +140,17 @@ export function RevokeBadgeModal({
           <div className="rounded-md bg-muted p-3 text-sm">
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <span className="font-medium">Recipient:</span>{' '}
-                {getRecipientName(badge)}
+                <span className="font-medium">Recipient:</span> {getRecipientName(badge)}
               </div>
               <div>
-                <span className="font-medium">Issued:</span>{' '}
-                {formatDate(badge.issuedAt)}
+                <span className="font-medium">Issued:</span> {formatDate(badge.issuedAt)}
               </div>
               <div>
                 <span className="font-medium">Status:</span>{' '}
                 <span className="capitalize">{badge.status.toLowerCase()}</span>
               </div>
               <div>
-                <span className="font-medium">Template:</span>{' '}
-                {badge.template.name}
+                <span className="font-medium">Template:</span> {badge.template.name}
               </div>
             </div>
           </div>
@@ -171,16 +160,8 @@ export function RevokeBadgeModal({
             <Label htmlFor="reason" className="flex items-center gap-1">
               Revocation Reason <span className="text-destructive">*</span>
             </Label>
-            <Select
-              value={reason}
-              onValueChange={setReason}
-              required
-            >
-              <SelectTrigger 
-                id="reason"
-                aria-label="Select revocation reason"
-                aria-required="true"
-              >
+            <Select value={reason} onValueChange={setReason} required>
+              <SelectTrigger id="reason" aria-label="Select revocation reason" aria-required="true">
                 <SelectValue placeholder="Select a reason..." />
               </SelectTrigger>
               <SelectContent>
@@ -214,7 +195,7 @@ export function RevokeBadgeModal({
 
           {/* Error Message */}
           {error && (
-            <div 
+            <div
               className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
               role="alert"
               aria-live="polite"

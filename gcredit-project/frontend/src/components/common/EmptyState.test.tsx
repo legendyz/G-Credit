@@ -4,12 +4,7 @@
 
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import {
-  EmptyState,
-  NoBadgesState,
-  NoActivityState,
-  NoTeamMembersState,
-} from './EmptyState';
+import { EmptyState, NoBadgesState, NoActivityState, NoTeamMembersState } from './EmptyState';
 
 describe('EmptyState', () => {
   it('renders with title', () => {
@@ -18,12 +13,7 @@ describe('EmptyState', () => {
   });
 
   it('renders with description', () => {
-    render(
-      <EmptyState
-        title="No items"
-        description="Add some items to get started"
-      />
-    );
+    render(<EmptyState title="No items" description="Add some items to get started" />);
     expect(screen.getByText('Add some items to get started')).toBeInTheDocument();
   });
 
@@ -34,13 +24,7 @@ describe('EmptyState', () => {
 
   it('renders action button when provided', () => {
     const handleAction = vi.fn();
-    render(
-      <EmptyState
-        title="Empty"
-        actionText="Add Item"
-        onAction={handleAction}
-      />
-    );
+    render(<EmptyState title="Empty" actionText="Add Item" onAction={handleAction} />);
 
     const button = screen.getByRole('button', { name: 'Add Item' });
     expect(button).toBeInTheDocument();

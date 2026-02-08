@@ -6,11 +6,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import {
-  useAdminUsers,
-  useUpdateUserRole,
-  useUpdateUserStatus,
-} from './useAdminUsers';
+import { useAdminUsers, useUpdateUserRole, useUpdateUserStatus } from './useAdminUsers';
 
 // Test wrapper with QueryClient
 function createWrapper() {
@@ -23,11 +19,7 @@ function createWrapper() {
   });
 
   return function Wrapper({ children }: { children: ReactNode }) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        {children}
-      </QueryClientProvider>
-    );
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
   };
 }
 
@@ -93,10 +85,9 @@ describe('useAdminUsers', () => {
       json: () => Promise.resolve(mockUsersResponse),
     });
 
-    const { result } = renderHook(
-      () => useAdminUsers({ page: 1, limit: 25, search: 'john' }),
-      { wrapper: createWrapper() }
-    );
+    const { result } = renderHook(() => useAdminUsers({ page: 1, limit: 25, search: 'john' }), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 

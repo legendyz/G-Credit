@@ -1,7 +1,7 @@
 /**
  * Status Badge Component (Story 8.3 - AC3, UX-P1-007)
  * WCAG 1.4.3 - Color Contrast (4.5:1 minimum)
- * 
+ *
  * All colors verified for WCAG AA compliance:
  * - CLAIMED: green-800 on green-100 = 7.1:1 ✓
  * - PENDING: amber-800 on amber-100 = 5.9:1 ✓

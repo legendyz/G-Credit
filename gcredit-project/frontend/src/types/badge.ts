@@ -5,7 +5,7 @@ export const BadgeStatus = {
   REVOKED: 'REVOKED',
 } as const;
 
-export type BadgeStatus = typeof BadgeStatus[keyof typeof BadgeStatus];
+export type BadgeStatus = (typeof BadgeStatus)[keyof typeof BadgeStatus];
 
 export interface BadgeDetail {
   id: string;
@@ -29,7 +29,7 @@ export interface BadgeDetail {
     imageUrl: string | null;
     category: string;
     skillIds: string[];
-    issuanceCriteria: any;
+    issuanceCriteria: Record<string, unknown> | string | null;
   };
   recipient: {
     firstName: string;
@@ -82,6 +82,5 @@ export interface VerificationResponse {
     blobUrl: string;
     uploadedAt: string;
   }>;
-  assertionJson: any; // Open Badges 2.0 JSON-LD
+  assertionJson: Record<string, unknown>; // Open Badges 2.0 JSON-LD
 }
-

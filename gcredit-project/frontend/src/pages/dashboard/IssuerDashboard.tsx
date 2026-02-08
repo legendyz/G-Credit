@@ -1,6 +1,6 @@
 /**
  * IssuerDashboard Component - Story 8.1 (AC2)
- * 
+ *
  * Dashboard for Issuer role showing:
  * - Issuance summary (issued this month, pending, total recipients)
  * - Claim rate percentage
@@ -56,9 +56,7 @@ export const IssuerDashboard: React.FC = () => {
           <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">
             Issuer Dashboard
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Track your badge issuance activity
-          </p>
+          <p className="text-muted-foreground mt-1">Track your badge issuance activity</p>
         </div>
         {/* Manual refresh button (desktop) */}
         <Button
@@ -184,16 +182,11 @@ export const IssuerDashboard: React.FC = () => {
               {/* Mobile Cards */}
               <div className="md:hidden space-y-3">
                 {recentActivity.map((activity) => (
-                  <div
-                    key={activity.badgeId}
-                    className="p-4 rounded-lg border bg-card"
-                  >
+                  <div key={activity.badgeId} className="p-4 rounded-lg border bg-card">
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <p className="font-medium">{activity.recipientName}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {activity.recipientEmail}
-                        </p>
+                        <p className="text-sm text-muted-foreground">{activity.recipientEmail}</p>
                       </div>
                       <StatusBadge status={activity.status} />
                     </div>
@@ -234,9 +227,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
         <div>
           <p className="text-sm text-muted-foreground">{title}</p>
           <p className="text-3xl font-bold mt-1">{value}</p>
-          {description && (
-            <p className="text-xs text-muted-foreground mt-1">{description}</p>
-          )}
+          {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
         </div>
         <span className="text-2xl" aria-hidden="true">
           {icon}
@@ -250,11 +241,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
 const ClaimRateCard: React.FC<{ claimRate: number }> = ({ claimRate }) => {
   const percentage = Math.round(claimRate * 100);
   const color =
-    percentage >= 80
-      ? 'text-green-600'
-      : percentage >= 50
-        ? 'text-yellow-600'
-        : 'text-red-600';
+    percentage >= 80 ? 'text-green-600' : percentage >= 50 ? 'text-yellow-600' : 'text-red-600';
 
   return (
     <Card>
@@ -275,11 +262,7 @@ const ClaimRateCard: React.FC<{ claimRate: number }> = ({ claimRate }) => {
           <div
             className={cn(
               'h-full rounded-full transition-all duration-500',
-              percentage >= 80
-                ? 'bg-green-500'
-                : percentage >= 50
-                  ? 'bg-yellow-500'
-                  : 'bg-red-500'
+              percentage >= 80 ? 'bg-green-500' : percentage >= 50 ? 'bg-yellow-500' : 'bg-red-500'
             )}
             style={{ width: `${percentage}%` }}
             role="progressbar"

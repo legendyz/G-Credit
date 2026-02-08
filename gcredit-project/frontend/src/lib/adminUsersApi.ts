@@ -92,12 +92,13 @@ export async function getAdminUsers(
   params: AdminUsersQueryParams = {}
 ): Promise<AdminUsersResponse> {
   const searchParams = new URLSearchParams();
-  
+
   if (params.page) searchParams.set('page', params.page.toString());
   if (params.limit) searchParams.set('limit', params.limit.toString());
   if (params.search) searchParams.set('search', params.search);
   if (params.roleFilter) searchParams.set('roleFilter', params.roleFilter);
-  if (params.statusFilter !== undefined) searchParams.set('statusFilter', params.statusFilter.toString());
+  if (params.statusFilter !== undefined)
+    searchParams.set('statusFilter', params.statusFilter.toString());
   if (params.sortBy) searchParams.set('sortBy', params.sortBy);
   if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder);
   if (params.cursor) searchParams.set('cursor', params.cursor);

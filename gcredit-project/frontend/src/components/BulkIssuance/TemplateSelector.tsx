@@ -1,9 +1,9 @@
 /**
  * TemplateSelector Component - Story 8.1: P1 Enhancement
- * 
+ *
  * Autocomplete dropdown for selecting badge templates before downloading CSV.
  * Fetches approved badge templates and passes selection to parent.
- * 
+ *
  * P1 Priority — optional enhancement for Sprint 9 MVP.
  */
 
@@ -49,7 +49,7 @@ export function TemplateSelector({ onSelect, disabled = false }: TemplateSelecto
         if (response.ok) {
           const data = await response.json();
           // Handle both array response and paginated response
-          const templateList = Array.isArray(data) ? data : (data.data || data.items || []);
+          const templateList = Array.isArray(data) ? data : data.data || data.items || [];
           setTemplates(templateList);
         }
       } catch (error) {
@@ -73,17 +73,21 @@ export function TemplateSelector({ onSelect, disabled = false }: TemplateSelecto
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const filteredTemplates = templates.filter(t =>
-    t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    t.id.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredTemplates = templates.filter(
+    (t) =>
+      t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      t.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleSelect = useCallback((template: BadgeTemplate) => {
-    setSelectedTemplate(template);
-    setSearchTerm(template.name);
-    setIsOpen(false);
-    onSelect(template.id);
-  }, [onSelect]);
+  const handleSelect = useCallback(
+    (template: BadgeTemplate) => {
+      setSelectedTemplate(template);
+      setSearchTerm(template.name);
+      setIsOpen(false);
+      onSelect(template.id);
+    },
+    [onSelect]
+  );
 
   const handleClear = useCallback(() => {
     setSelectedTemplate(null);
@@ -119,6 +123,7 @@ export function TemplateSelector({ onSelect, disabled = false }: TemplateSelecto
                        min-h-[44px]"
             aria-label="Search badge templates"
             aria-expanded={isOpen}
+            aria-controls="template-listbox"
             aria-autocomplete="list"
             role="combobox"
           />
@@ -146,6 +151,7 @@ export function TemplateSelector({ onSelect, disabled = false }: TemplateSelecto
           className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg 
                      shadow-lg max-h-60 overflow-y-auto"
           role="listbox"
+          id="template-listbox"
           aria-label="Badge template options"
         >
           {filteredTemplates.map((template) => (
@@ -165,8 +171,10 @@ export function TemplateSelector({ onSelect, disabled = false }: TemplateSelecto
       )}
 
       {isOpen && searchTerm && filteredTemplates.length === 0 && !isLoading && (
-        <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg 
-                        shadow-lg p-4 text-sm text-gray-500 text-center">
+        <div
+          className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg 
+                        shadow-lg p-4 text-sm text-gray-500 text-center"
+        >
           No templates found matching "{searchTerm}"
         </div>
       )}

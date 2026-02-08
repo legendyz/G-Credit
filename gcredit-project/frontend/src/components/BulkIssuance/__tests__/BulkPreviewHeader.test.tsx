@@ -33,9 +33,7 @@ describe('BulkPreviewHeader', () => {
     expect(screen.getByText('100')).toBeInTheDocument();
     expect(screen.getByText('95')).toBeInTheDocument();
     expect(screen.getByText('5')).toBeInTheDocument();
-    expect(
-      screen.getByText('Bulk Issuance Preview — 100 Badges'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Bulk Issuance Preview — 100 Badges')).toBeInTheDocument();
   });
 
   it('should display template breakdown pills', () => {
@@ -52,9 +50,7 @@ describe('BulkPreviewHeader', () => {
   });
 
   it('should not show template section when no breakdown', () => {
-    render(
-      <BulkPreviewHeader {...defaultProps} templateBreakdown={[]} />,
-    );
+    render(<BulkPreviewHeader {...defaultProps} templateBreakdown={[]} />);
     expect(screen.queryByText('Templates:')).not.toBeInTheDocument();
   });
 });

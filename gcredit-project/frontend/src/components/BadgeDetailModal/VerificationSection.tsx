@@ -4,9 +4,7 @@ interface VerificationSectionProps {
   assertionUrl: string;
 }
 
-const VerificationSection: React.FC<VerificationSectionProps> = ({
-  assertionUrl,
-}) => {
+const VerificationSection: React.FC<VerificationSectionProps> = ({ assertionUrl }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopyUrl = async () => {
@@ -58,9 +56,7 @@ const VerificationSection: React.FC<VerificationSectionProps> = ({
       </button>
 
       {/* AC 4.6: QR code (future enhancement placeholder) */}
-      <p className="text-xs text-gray-500 text-center mt-4">
-        QR code verification coming soon
-      </p>
+      <p className="text-xs text-gray-500 text-center mt-4">QR code verification coming soon</p>
     </section>
   );
 };

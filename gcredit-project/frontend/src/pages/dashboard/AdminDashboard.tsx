@@ -1,6 +1,6 @@
 /**
  * AdminDashboard Component - Story 8.1 (AC4)
- * 
+ *
  * Dashboard for Admin role showing:
  * - System overview (users, badges, templates)
  * - System health status
@@ -48,9 +48,7 @@ export const AdminDashboard: React.FC = () => {
         <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">
           Admin Dashboard
         </h1>
-        <p className="text-muted-foreground mt-1">
-          System overview and platform management
-        </p>
+        <p className="text-muted-foreground mt-1">System overview and platform management</p>
       </div>
 
       {/* System Health Banner */}
@@ -178,11 +176,7 @@ const SystemHealthBanner: React.FC<{ health: 'healthy' | 'degraded' | 'critical'
   const { bg, border, text, icon, message } = config[health];
 
   return (
-    <div
-      className={cn('p-4 rounded-lg border', bg, border)}
-      role="status"
-      aria-live="polite"
-    >
+    <div className={cn('p-4 rounded-lg border', bg, border)} role="status" aria-live="polite">
       <div className="flex items-center gap-3">
         <span className="text-2xl" aria-hidden="true">
           {icon}
@@ -205,13 +199,7 @@ interface SummaryCardProps {
   onClick?: () => void;
 }
 
-const SummaryCard: React.FC<SummaryCardProps> = ({
-  title,
-  value,
-  icon,
-  description,
-  onClick,
-}) => (
+const SummaryCard: React.FC<SummaryCardProps> = ({ title, value, icon, description, onClick }) => (
   <Card
     className={cn(onClick && 'cursor-pointer hover:bg-accent/50 transition-colors')}
     onClick={onClick}
@@ -224,9 +212,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
         <div>
           <p className="text-sm text-muted-foreground">{title}</p>
           <p className="text-3xl font-bold mt-1">{value.toLocaleString()}</p>
-          {description && (
-            <p className="text-xs text-muted-foreground mt-1">{description}</p>
-          )}
+          {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
         </div>
         <span className="text-2xl" aria-hidden="true">
           {icon}
@@ -285,7 +271,14 @@ interface QuickActionButtonProps {
   className?: string;
 }
 
-const QuickActionButton: React.FC<QuickActionButtonProps> = ({ icon, label, onClick, disabled, title, className }) => (
+const QuickActionButton: React.FC<QuickActionButtonProps> = ({
+  icon,
+  label,
+  onClick,
+  disabled,
+  title,
+  className,
+}) => (
   <button
     onClick={disabled ? undefined : onClick}
     disabled={disabled}

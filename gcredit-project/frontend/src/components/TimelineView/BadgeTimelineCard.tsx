@@ -1,7 +1,7 @@
 /**
  * Badge Timeline Card Component
  * Sprint 8 - Story 8.3: WCAG 2.1 AA Accessibility
- * 
+ *
  * Keyboard accessible card with proper ARIA attributes.
  */
 
@@ -17,9 +17,9 @@ interface BadgeTimelineCardProps {
 
 export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
   const { openModal } = useBadgeDetailModal();
-  
+
   const isRevoked = badge.status === BadgeStatus.REVOKED;
-  
+
   const getStatusColor = (status: BadgeStatus) => {
     switch (status) {
       case BadgeStatus.CLAIMED:
@@ -34,12 +34,15 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
   };
 
   // Story 8.3: Keyboard handler for Enter/Space activation
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      openModal(badge.id);
-    }
-  }, [openModal, badge.id]);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openModal(badge.id);
+      }
+    },
+    [openModal, badge.id]
+  );
 
   return (
     <div className="relative flex items-start gap-4 pl-16">
@@ -51,7 +54,7 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
 
       {/* Card Content - Story 8.3: Keyboard accessible */}
       <div className="relative">
-        <div 
+        <div
           role="button"
           tabIndex={0}
           className={`flex-1 bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
@@ -77,8 +80,8 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
               </p>
 
               {/* Status Badge - Story 8.3: WCAG AA compliant colors */}
-              <StatusBadge 
-                status={badge.status as 'CLAIMED' | 'PENDING' | 'REVOKED' | 'EXPIRED'} 
+              <StatusBadge
+                status={badge.status as 'CLAIMED' | 'PENDING' | 'REVOKED' | 'EXPIRED'}
                 className="mb-2"
               />
 
@@ -90,7 +93,12 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
               {/* Story 9.3 AC1: Show revoked date if available */}
               {isRevoked && badge.revokedAt && (
                 <p className="text-sm text-red-600 mt-2">
-                  Revoked on {new Date(badge.revokedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  Revoked on{' '}
+                  {new Date(badge.revokedAt).toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
                 </p>
               )}
             </div>

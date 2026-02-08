@@ -10,15 +10,16 @@ import {
   countActiveFilters,
   filtersToChips,
   type BadgeForFilter,
-  type BadgeSearchFilters,
 } from './searchFilters';
 
-const createMockBadge = (overrides: Partial<BadgeForFilter> & { 
-  name?: string; 
-  description?: string; 
-  skills?: string[]; 
-} = {}): BadgeForFilter => {
-  const { name, description, skills, ...rest } = overrides;
+const createMockBadge = (
+  overrides: Partial<BadgeForFilter> & {
+    name?: string;
+    description?: string;
+    skills?: string[];
+  } = {}
+): BadgeForFilter => {
+  const { name, skills, ...rest } = overrides;
   return {
     id: 'badge-1',
     template: {
@@ -61,8 +62,13 @@ describe('filterBadges', () => {
 
     it('filters by issuer name', () => {
       const badges = [
-        createMockBadge({ issuer: { id: 'i1', firstName: 'Project', lastName: 'Manager', email: 'pm@test.com' } }),
-        createMockBadge({ id: '2', issuer: { id: 'i2', firstName: 'Code', lastName: 'Developer', email: 'dev@test.com' } }),
+        createMockBadge({
+          issuer: { id: 'i1', firstName: 'Project', lastName: 'Manager', email: 'pm@test.com' },
+        }),
+        createMockBadge({
+          id: '2',
+          issuer: { id: 'i2', firstName: 'Code', lastName: 'Developer', email: 'dev@test.com' },
+        }),
       ];
 
       const result = filterBadges(badges, { search: 'project' });
@@ -73,12 +79,12 @@ describe('filterBadges', () => {
 
     it('filters by template name', () => {
       const badges = [
-        createMockBadge({ 
-          template: { id: 't1', name: 'Gold Achievement', skillIds: [] }
+        createMockBadge({
+          template: { id: 't1', name: 'Gold Achievement', skillIds: [] },
         }),
-        createMockBadge({ 
-          id: '2', 
-          template: { id: 't2', name: 'Silver Award', skillIds: [] }
+        createMockBadge({
+          id: '2',
+          template: { id: 't2', name: 'Silver Award', skillIds: [] },
         }),
       ];
 
@@ -194,12 +200,12 @@ describe('filterBadges', () => {
   describe('issuer filter', () => {
     it('filters by issuer ID', () => {
       const badges = [
-        createMockBadge({ 
-          issuer: { id: 'issuer-1', firstName: 'John', lastName: 'Doe', email: 'john@test.com' }
+        createMockBadge({
+          issuer: { id: 'issuer-1', firstName: 'John', lastName: 'Doe', email: 'john@test.com' },
         }),
-        createMockBadge({ 
-          id: '2', 
-          issuer: { id: 'issuer-2', firstName: 'Jane', lastName: 'Doe', email: 'jane@test.com' }
+        createMockBadge({
+          id: '2',
+          issuer: { id: 'issuer-2', firstName: 'Jane', lastName: 'Doe', email: 'jane@test.com' },
         }),
       ];
 

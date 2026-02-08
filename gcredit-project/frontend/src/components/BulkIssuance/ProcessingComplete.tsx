@@ -36,14 +36,11 @@ export default function ProcessingComplete({
   const handleDownloadErrorReport = async () => {
     if (!sessionId) return;
     try {
-      const response = await fetch(
-        `/api/bulk-issuance/error-report/${sessionId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-          },
+      const response = await fetch(`/api/bulk-issuance/error-report/${sessionId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
-      );
+      });
 
       if (!response.ok) {
         throw new Error('Failed to download error report');
@@ -84,9 +81,7 @@ export default function ProcessingComplete({
         {/* Failed Badges Table */}
         {failedResults.length > 0 && (
           <div className="mb-6 text-left">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">
-              Failed Badges
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Failed Badges</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-sm border border-gray-200 rounded-lg">
                 <thead className="bg-gray-50">

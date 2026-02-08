@@ -14,11 +14,7 @@ const IssueTypes = {
   OTHER: 'Other',
 };
 
-const ReportIssueForm: React.FC<ReportIssueFormProps> = ({
-  badgeId,
-  userEmail,
-  onSuccess,
-}) => {
+const ReportIssueForm: React.FC<ReportIssueFormProps> = ({ badgeId, userEmail, onSuccess }) => {
   const [showForm, setShowForm] = useState(false);
   const [issueType, setIssueType] = useState(IssueTypes.INCORRECT_INFO);
   const [description, setDescription] = useState('');
@@ -28,7 +24,7 @@ const ReportIssueForm: React.FC<ReportIssueFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (description.trim().length === 0) {
       setError('Please provide a description');
       return;
@@ -59,7 +55,7 @@ const ReportIssueForm: React.FC<ReportIssueFormProps> = ({
       const data = await response.json();
       setDescription('');
       setShowForm(false);
-      
+
       if (onSuccess) {
         onSuccess();
       }

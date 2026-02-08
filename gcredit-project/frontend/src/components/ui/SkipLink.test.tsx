@@ -22,26 +22,26 @@ describe('SkipLink', () => {
 
   it('should render with default text', () => {
     render(<SkipLink />);
-    
+
     expect(screen.getByText('Skip to main content')).toBeInTheDocument();
   });
 
   it('should render with custom text', () => {
     render(<SkipLink>Skip navigation</SkipLink>);
-    
+
     expect(screen.getByText('Skip navigation')).toBeInTheDocument();
   });
 
   it('should have correct href attribute', () => {
     render(<SkipLink targetId="custom-target" />);
-    
+
     const link = screen.getByRole('link');
     expect(link).toHaveAttribute('href', '#custom-target');
   });
 
   it('should have skip-link class for styling', () => {
     render(<SkipLink />);
-    
+
     const link = screen.getByRole('link');
     expect(link).toHaveClass('skip-link');
   });
@@ -49,9 +49,9 @@ describe('SkipLink', () => {
   it('should focus target element on click', () => {
     const focusSpy = vi.spyOn(mainContent, 'focus');
     const scrollSpy = vi.spyOn(mainContent, 'scrollIntoView');
-    
+
     render(<SkipLink />);
-    
+
     const link = screen.getByRole('link');
     fireEvent.click(link);
 
@@ -61,9 +61,9 @@ describe('SkipLink', () => {
 
   it('should focus target element on Enter key', () => {
     const focusSpy = vi.spyOn(mainContent, 'focus');
-    
+
     render(<SkipLink />);
-    
+
     const link = screen.getByRole('link');
     fireEvent.keyDown(link, { key: 'Enter' });
 
@@ -72,9 +72,9 @@ describe('SkipLink', () => {
 
   it('should focus target element on Space key', () => {
     const focusSpy = vi.spyOn(mainContent, 'focus');
-    
+
     render(<SkipLink />);
-    
+
     const link = screen.getByRole('link');
     fireEvent.keyDown(link, { key: ' ' });
 
@@ -83,7 +83,7 @@ describe('SkipLink', () => {
 
   it('should set tabindex on target element', () => {
     render(<SkipLink />);
-    
+
     const link = screen.getByRole('link');
     fireEvent.click(link);
 
@@ -92,14 +92,14 @@ describe('SkipLink', () => {
 
   it('should handle missing target gracefully', () => {
     document.body.removeChild(mainContent);
-    
+
     render(<SkipLink targetId="non-existent" />);
-    
+
     const link = screen.getByRole('link');
-    
+
     // Should not throw
     expect(() => fireEvent.click(link)).not.toThrow();
-    
+
     // Re-add for cleanup
     document.body.appendChild(mainContent);
   });

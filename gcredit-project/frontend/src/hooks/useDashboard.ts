@@ -1,6 +1,6 @@
 /**
  * Dashboard API Hooks - Story 8.1
- * 
+ *
  * TanStack Query hooks for fetching dashboard data.
  */
 
@@ -18,10 +18,10 @@ import { API_BASE_URL } from '../lib/apiConfig';
  */
 async function fetchWithAuth<T>(endpoint: string): Promise<T> {
   const token = localStorage.getItem('accessToken');
-  
+
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     headers: {
-      'Authorization': `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
   });

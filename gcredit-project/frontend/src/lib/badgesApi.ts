@@ -7,13 +7,13 @@ import { API_BASE_URL } from './apiConfig';
 
 // Badge status constants matching backend Prisma enum
 export const BadgeStatus = {
-  PENDING: 'PENDING',   // Awaiting claim (same as "Issued" in UI)
+  PENDING: 'PENDING', // Awaiting claim (same as "Issued" in UI)
   CLAIMED: 'CLAIMED',
   REVOKED: 'REVOKED',
   EXPIRED: 'EXPIRED',
 } as const;
 
-export type BadgeStatus = typeof BadgeStatus[keyof typeof BadgeStatus];
+export type BadgeStatus = (typeof BadgeStatus)[keyof typeof BadgeStatus];
 
 // Revocation reasons constants matching backend enum (revoke-badge.dto.ts)
 export const RevocationReason = {
@@ -25,7 +25,7 @@ export const RevocationReason = {
   OTHER: 'Other',
 } as const;
 
-export type RevocationReason = typeof RevocationReason[keyof typeof RevocationReason];
+export type RevocationReason = (typeof RevocationReason)[keyof typeof RevocationReason];
 
 // Revocation reasons for dropdown (matches backend RevocationReason enum)
 export const REVOCATION_REASONS = [
@@ -136,7 +136,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
  */
 export async function getAllBadges(params: BadgeQueryParams = {}): Promise<BadgeListResponse> {
   const searchParams = new URLSearchParams();
-  
+
   if (params.page) searchParams.set('page', params.page.toString());
   if (params.limit) searchParams.set('limit', params.limit.toString());
   if (params.status && params.status !== 'all') searchParams.set('status', params.status);
@@ -165,7 +165,7 @@ export async function getIssuedBadges(params: BadgeQueryParams = {}): Promise<Ba
 /**
  * Revoke a badge
  * POST /api/badges/:id/revoke
- * 
+ *
  * @param badgeId - The badge ID to revoke
  * @param dto - Revocation reason and optional notes
  * @returns Revocation result with updated badge

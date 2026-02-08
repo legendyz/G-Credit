@@ -22,7 +22,7 @@ const FilteredEmptyState: React.FC<FilteredEmptyStateProps> = ({
           {/* Magnifying glass */}
           <circle cx="48" cy="48" r="32" stroke="currentColor" strokeWidth="6" />
           <path d="M72 72 L96 96" stroke="currentColor" strokeWidth="6" strokeLinecap="round" />
-          
+
           {/* X mark inside */}
           <path d="M36 36 L60 60" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
           <path d="M60 36 L36 60" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />

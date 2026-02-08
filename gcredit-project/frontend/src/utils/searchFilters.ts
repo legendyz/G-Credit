@@ -68,7 +68,7 @@ export function filterBadges<T extends BadgeForFilter>(
       const templateName = badge.template.name.toLowerCase();
       const issuerName = getFullName(badge.issuer).toLowerCase();
       const issuerEmail = badge.issuer.email.toLowerCase();
-      
+
       const matchesSearch =
         templateName.includes(searchLower) ||
         issuerName.includes(searchLower) ||
@@ -82,9 +82,7 @@ export function filterBadges<T extends BadgeForFilter>(
     // Skills filter (OR logic - badge has any of the selected skills)
     if (filters.skills && filters.skills.length > 0) {
       const badgeSkillIds = badge.template.skillIds || [];
-      const hasMatchingSkill = filters.skills.some((skillId) =>
-        badgeSkillIds.includes(skillId)
-      );
+      const hasMatchingSkill = filters.skills.some((skillId) => badgeSkillIds.includes(skillId));
 
       if (!hasMatchingSkill) {
         return false;
@@ -97,7 +95,7 @@ export function filterBadges<T extends BadgeForFilter>(
       const fromDate = new Date(filters.fromDate);
       // Set time to start of day for comparison
       fromDate.setHours(0, 0, 0, 0);
-      
+
       if (badgeDate < fromDate) {
         return false;
       }
@@ -109,7 +107,7 @@ export function filterBadges<T extends BadgeForFilter>(
       const toDate = new Date(filters.toDate);
       // Set time to end of day for comparison
       toDate.setHours(23, 59, 59, 999);
-      
+
       if (badgeDate > toDate) {
         return false;
       }
@@ -152,10 +150,7 @@ function getFullName(user: {
  * @param threshold - Threshold for switching to server-side (default: 50)
  * @returns true if server-side search should be used
  */
-export function shouldUseServerSearch(
-  totalBadges: number,
-  threshold: number = 50
-): boolean {
+export function shouldUseServerSearch(totalBadges: number, threshold: number = 50): boolean {
   return totalBadges >= threshold;
 }
 
@@ -178,14 +173,14 @@ export function hasActiveFilters(filters: BadgeSearchFilters): boolean {
  */
 export function countActiveFilters(filters: BadgeSearchFilters): number {
   let count = 0;
-  
+
   if (filters.search && filters.search.trim().length >= 2) count++;
   if (filters.skills && filters.skills.length > 0) count++;
   // Date range counts as one filter
   if (filters.fromDate || filters.toDate) count++;
   if (filters.status && filters.status !== 'all') count++;
   if (filters.issuerId) count++;
-  
+
   return count;
 }
 
@@ -210,14 +205,13 @@ export function filtersToChips(
   }
 
   if (filters.skills && filters.skills.length > 0) {
-    const skillLabels = filters.skills.map(
-      (id) => options?.skillNames?.[id] || id
-    );
+    const skillLabels = filters.skills.map((id) => options?.skillNames?.[id] || id);
     chips.push({
       id: 'skills',
-      label: skillLabels.length > 2
-        ? `${skillLabels.slice(0, 2).join(', ')} +${skillLabels.length - 2}`
-        : skillLabels.join(', '),
+      label:
+        skillLabels.length > 2
+          ? `${skillLabels.slice(0, 2).join(', ')} +${skillLabels.length - 2}`
+          : skillLabels.join(', '),
       category: 'Skills',
     });
   }

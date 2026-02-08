@@ -2,7 +2,7 @@
  * Badge Management Page
  * Sprint 7 - Story 9.5: Admin Badge Revocation UI
  * Sprint 8 - Story 8.2: Badge Search & Filter Enhancement (AC2)
- * 
+ *
  * Admin/Issuer page for managing badges with search, filter, and revocation.
  * Implements AC1, AC2, AC4, AC5
  */
@@ -10,16 +10,12 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Badge as BadgeType, BadgeQueryParams } from '@/lib/badgesApi';
-import { 
-  BadgeStatus, 
-  getAllBadges, 
-  getIssuedBadges,
-} from '@/lib/badgesApi';
+import { BadgeStatus, getAllBadges, getIssuedBadges } from '@/lib/badgesApi';
 import { RevokeBadgeModal } from '@/components/admin/RevokeBadgeModal';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { 
-  ChevronLeft, 
+import {
+  ChevronLeft,
   ChevronRight,
   Loader2,
   AlertCircle,
@@ -73,66 +69,70 @@ function getRecipientName(badge: BadgeType): string {
  */
 function StatusBadge({ status }: { status: BadgeStatus }) {
   const config = {
-    [BadgeStatus.PENDING]: { 
-      icon: Clock, 
-      label: 'Pending', 
-      className: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' 
+    [BadgeStatus.PENDING]: {
+      icon: Clock,
+      label: 'Pending',
+      className: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
     },
-    [BadgeStatus.CLAIMED]: { 
-      icon: CheckCircle2, 
-      label: 'Claimed', 
-      className: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
+    [BadgeStatus.CLAIMED]: {
+      icon: CheckCircle2,
+      label: 'Claimed',
+      className: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
     },
-    [BadgeStatus.REVOKED]: { 
-      icon: XCircle, 
-      label: 'Revoked', 
-      className: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' 
+    [BadgeStatus.REVOKED]: {
+      icon: XCircle,
+      label: 'Revoked',
+      className: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
     },
-    [BadgeStatus.EXPIRED]: { 
-      icon: AlertCircle, 
-      label: 'Expired', 
-      className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' 
+    [BadgeStatus.EXPIRED]: {
+      icon: AlertCircle,
+      label: 'Expired',
+      className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
     },
   };
 
   const { icon: Icon, label, className } = config[status] || config[BadgeStatus.PENDING];
 
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${className}`}>
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${className}`}
+    >
       <Icon className="h-3 w-3" />
       {label}
     </span>
   );
 }
 
-export function BadgeManagementPage({ 
-  userRole = MOCK_USER_ROLE, 
-  userId = MOCK_USER_ID 
+export function BadgeManagementPage({
+  userRole = MOCK_USER_ROLE,
+  userId = MOCK_USER_ID,
 }: BadgeManagementPageProps) {
   const queryClient = useQueryClient();
-  
+
   // State
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedBadge, setSelectedBadge] = useState<BadgeType | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch all badges for client-side filtering
-  const queryParams: BadgeQueryParams = useMemo(() => ({
-    page: currentPage,
-    limit: PAGE_SIZE,
-  }), [currentPage]);
+  const queryParams: BadgeQueryParams = useMemo(
+    () => ({
+      page: currentPage,
+      limit: PAGE_SIZE,
+    }),
+    [currentPage]
+  );
 
   // Fetch badges - Admin sees all, Issuer sees only their issued badges
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['badges', userRole, queryParams],
-    queryFn: () => userRole === 'ADMIN' 
-      ? getAllBadges(queryParams) 
-      : getIssuedBadges(queryParams),
+    queryFn: () =>
+      userRole === 'ADMIN' ? getAllBadges(queryParams) : getIssuedBadges(queryParams),
   });
-  
+
   // Fetch skills for filter dropdown (Story 8.2 AC2)
   const { data: skills = [] } = useSkills();
-  
+
   // Create skill names map for chip display
   const skillNames = useMemo(() => {
     return skills.reduce(
@@ -143,7 +143,7 @@ export function BadgeManagementPage({
       {} as Record<string, string>
     );
   }, [skills]);
-  
+
   // Convert badges to BadgeForFilter format for client-side filtering
   const badgesForFilter: BadgeForFilter[] = useMemo(() => {
     if (!data?.badges) return [];
@@ -172,8 +172,8 @@ export function BadgeManagementPage({
       claimedAt: badge.claimedAt,
       status: badge.status,
     }));
-  }, [data?.badges]);
-  
+  }, [data]);
+
   // Story 8.2 AC2: Badge search hook with enhanced filtering
   const {
     searchTerm,
@@ -197,46 +197,50 @@ export function BadgeManagementPage({
     totalCount: data?.total,
     skillNames,
   });
-  
+
   // Story 8.2 AC2: Derive unique issuers from badge data for filter dropdown
   const issuers = useMemo(() => {
     if (!data?.badges) return [];
     const issuerMap = new Map<string, string>();
     data.badges.forEach((badge) => {
       if (badge.issuer && !issuerMap.has(badge.issuer.id)) {
-        const name = badge.issuer.firstName && badge.issuer.lastName
-          ? `${badge.issuer.firstName} ${badge.issuer.lastName}`
-          : badge.issuer.email || 'Unknown';
+        const name =
+          badge.issuer.firstName && badge.issuer.lastName
+            ? `${badge.issuer.firstName} ${badge.issuer.lastName}`
+            : badge.issuer.email || 'Unknown';
         issuerMap.set(badge.issuer.id, name);
       }
     });
     return Array.from(issuerMap.entries()).map(([id, name]) => ({ id, name }));
-  }, [data?.badges]);
-  
+  }, [data]);
+
   // Map filtered badges back to original badge objects for display
   const displayBadges = useMemo(() => {
     if (!data?.badges) return [];
     const filteredIds = new Set(filteredBadges.map((b) => b.id));
     return data.badges.filter((badge) => filteredIds.has(badge.id));
-  }, [data?.badges, filteredBadges]);
+  }, [data, filteredBadges]);
 
   // Check if user can revoke a specific badge
-  const canRevokeBadge = useCallback((badge: BadgeType): boolean => {
-    // AC1: Only PENDING or CLAIMED badges can be revoked (PENDING = issued but unclaimed)
-    if (badge.status !== BadgeStatus.PENDING && badge.status !== BadgeStatus.CLAIMED) {
+  const canRevokeBadge = useCallback(
+    (badge: BadgeType): boolean => {
+      // AC1: Only PENDING or CLAIMED badges can be revoked (PENDING = issued but unclaimed)
+      if (badge.status !== BadgeStatus.PENDING && badge.status !== BadgeStatus.CLAIMED) {
+        return false;
+      }
+
+      // Admin can revoke any badge
+      if (userRole === 'ADMIN') return true;
+
+      // Issuer can only revoke badges they issued
+      if (userRole === 'ISSUER') {
+        return badge.issuerId === userId;
+      }
+
       return false;
-    }
-    
-    // Admin can revoke any badge
-    if (userRole === 'ADMIN') return true;
-    
-    // Issuer can only revoke badges they issued
-    if (userRole === 'ISSUER') {
-      return badge.issuerId === userId;
-    }
-    
-    return false;
-  }, [userRole, userId]);
+    },
+    [userRole, userId]
+  );
 
   // Handle revoke button click
   const handleRevokeClick = useCallback((badge: BadgeType) => {
@@ -262,7 +266,7 @@ export function BadgeManagementPage({
   const totalPages = Math.ceil(displayTotal / PAGE_SIZE) || 1;
   const canGoBack = currentPage > 1;
   const canGoForward = currentPage < totalPages;
-  
+
   // Paginate display badges
   const paginatedBadges = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
@@ -274,10 +278,12 @@ export function BadgeManagementPage({
       <div className="mx-auto max-w-7xl">
         {/* Header - Story 8.5 AC6: Responsive typography */}
         <div className="mb-4 md:mb-6">
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-slate-900">Badge Management</h1>
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-slate-900">
+            Badge Management
+          </h1>
           <p className="text-sm md:text-base text-slate-600">
-            {userRole === 'ADMIN' 
-              ? 'Manage all badges in the system' 
+            {userRole === 'ADMIN'
+              ? 'Manage all badges in the system'
               : 'Manage badges you have issued'}
           </p>
         </div>
@@ -304,7 +310,7 @@ export function BadgeManagementPage({
             onClearAllFilters={clearAllFilters}
             placeholder="Search by recipient or template..."
           />
-          
+
           {/* Results count */}
           {hasFilters && displayBadges.length > 0 && (
             <p className="mt-3 text-sm text-slate-500">
@@ -326,8 +332,8 @@ export function BadgeManagementPage({
               <p className="mt-2 text-slate-600">
                 {error instanceof Error ? error.message : 'Failed to load badges'}
               </p>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="mt-4"
                 onClick={() => queryClient.invalidateQueries({ queryKey: ['badges'] })}
               >
@@ -341,11 +347,7 @@ export function BadgeManagementPage({
                 {hasFilters ? 'No badges match your filters' : 'No badges found'}
               </p>
               {hasFilters && (
-                <Button 
-                  variant="outline" 
-                  className="mt-4"
-                  onClick={clearAllFilters}
-                >
+                <Button variant="outline" className="mt-4" onClick={clearAllFilters}>
                   Clear Filters
                 </Button>
               )}
@@ -377,9 +379,7 @@ export function BadgeManagementPage({
                           <div className="text-sm text-slate-600 truncate">
                             {getRecipientName(badge)}
                           </div>
-                          <div className="text-xs text-slate-500">
-                            {formatDate(badge.issuedAt)}
-                          </div>
+                          <div className="text-xs text-slate-500">{formatDate(badge.issuedAt)}</div>
                         </div>
                         <StatusBadge status={badge.status} />
                       </div>
@@ -436,16 +436,16 @@ export function BadgeManagementPage({
                     {paginatedBadges.map((badge) => {
                       const isRevoked = badge.status === BadgeStatus.REVOKED;
                       return (
-                        <tr 
-                          key={badge.id} 
+                        <tr
+                          key={badge.id}
                           className={isRevoked ? 'bg-slate-50 opacity-60' : 'hover:bg-slate-50'}
                         >
                           <td className="whitespace-nowrap px-4 py-4">
                             <div className="flex items-center gap-3">
                               {badge.template.imageUrl && (
-                                <img 
-                                  src={badge.template.imageUrl} 
-                                  alt="" 
+                                <img
+                                  src={badge.template.imageUrl}
+                                  alt=""
                                   className="h-10 w-10 rounded object-cover"
                                 />
                               )}
@@ -462,12 +462,8 @@ export function BadgeManagementPage({
                             </div>
                           </td>
                           <td className="whitespace-nowrap px-4 py-4">
-                            <div className="text-sm text-slate-900">
-                              {getRecipientName(badge)}
-                            </div>
-                            <div className="text-xs text-slate-500">
-                              {badge.recipient.email}
-                            </div>
+                            <div className="text-sm text-slate-900">{getRecipientName(badge)}</div>
+                            <div className="text-xs text-slate-500">{badge.recipient.email}</div>
                           </td>
                           <td className="whitespace-nowrap px-4 py-4 text-sm text-slate-600">
                             {formatDate(badge.issuedAt)}
@@ -506,7 +502,7 @@ export function BadgeManagementPage({
               {/* Pagination - Story 8.5: Touch-friendly buttons */}
               <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-3">
                 <div className="text-sm text-slate-600">
-                  Showing {((currentPage - 1) * PAGE_SIZE) + 1} to{' '}
+                  Showing {(currentPage - 1) * PAGE_SIZE + 1} to{' '}
                   {Math.min(currentPage * PAGE_SIZE, displayTotal)} of {displayTotal} badges
                 </div>
                 <div className="flex items-center gap-2">

@@ -3,7 +3,7 @@ import React from 'react';
 interface BadgeInfoProps {
   description: string;
   skills: string[];
-  criteria: any;
+  criteria: Record<string, unknown> | string | null;
 }
 
 const BadgeInfo: React.FC<BadgeInfoProps> = ({ description, skills, criteria }) => {
@@ -11,8 +11,8 @@ const BadgeInfo: React.FC<BadgeInfoProps> = ({ description, skills, criteria }) 
   const criteriaList = Array.isArray(criteria?.requirements)
     ? criteria.requirements
     : typeof criteria === 'string'
-    ? [criteria]
-    : [];
+      ? [criteria]
+      : [];
 
   return (
     <section className="px-6 py-6 border-b">

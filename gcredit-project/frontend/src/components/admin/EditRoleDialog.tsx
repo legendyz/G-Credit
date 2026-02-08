@@ -54,7 +54,7 @@ export function EditRoleDialog({
   const dialogRef = useFocusTrap<HTMLDivElement>({
     isActive: isOpen,
     onEscape: onClose,
-    returnFocusTo: triggerRef?.current,
+    returnFocusRef: triggerRef,
     autoFocus: true,
   });
 
@@ -66,10 +66,10 @@ export function EditRoleDialog({
 
   // Check if Admin role is involved (for warning)
   const isAdminRoleChange =
-    selectedRole !== user.role &&
-    (user.role === 'ADMIN' || selectedRole === 'ADMIN');
+    selectedRole !== user.role && (user.role === 'ADMIN' || selectedRole === 'ADMIN');
 
   // Reset form when dialog opens
+  /* eslint-disable react-hooks/set-state-in-effect -- Intentional form reset on dialog open */
   useEffect(() => {
     if (isOpen) {
       setSelectedRole(user.role);
@@ -77,6 +77,7 @@ export function EditRoleDialog({
       setShowAdminConfirm(false);
     }
   }, [isOpen, user.role]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Focus the select when dialog opens
   useEffect(() => {
@@ -124,7 +125,15 @@ export function EditRoleDialog({
         toast.error('Failed to update role');
       }
     }
-  }, [selectedRole, user, auditNote, updateRoleMutation, onClose, isAdminRoleChange, showAdminConfirm]);
+  }, [
+    selectedRole,
+    user,
+    auditNote,
+    updateRoleMutation,
+    onClose,
+    isAdminRoleChange,
+    showAdminConfirm,
+  ]);
 
   if (!isOpen) return null;
 
@@ -147,7 +156,10 @@ export function EditRoleDialog({
         {/* Header */}
         <div className="mb-4 flex items-start justify-between">
           <div>
-            <h2 id="edit-role-title" className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h2
+              id="edit-role-title"
+              className="text-lg font-semibold text-gray-900 dark:text-white"
+            >
               Edit User Role
             </h2>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -247,8 +259,7 @@ export function EditRoleDialog({
             htmlFor="audit-note"
             className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
           >
-            Reason for change{' '}
-            <span className="text-gray-400">(optional, max 200 chars)</span>
+            Reason for change <span className="text-gray-400">(optional, max 200 chars)</span>
           </label>
           <Textarea
             id="audit-note"
@@ -260,9 +271,7 @@ export function EditRoleDialog({
             disabled={isOwnRole}
             className="focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           />
-          <p className="mt-1 text-right text-xs text-gray-400">
-            {auditNote.length}/200
-          </p>
+          <p className="mt-1 text-right text-xs text-gray-400">{auditNote.length}/200</p>
         </div>
 
         {/* Warning Message */}

@@ -1,6 +1,6 @@
 /**
  * Claim Success Modal - Story 0.2a / UX-P0-004
- * 
+ *
  * Celebration modal shown after successfully claiming a badge.
  * Features: animated checkmark, congratulations message, "View in Wallet" button.
  */
@@ -14,21 +14,21 @@ interface ClaimSuccessModalProps {
   issuerMessage?: string | null;
 }
 
-export function ClaimSuccessModal({ 
-  isOpen, 
-  onClose, 
-  badgeName, 
-  issuerMessage 
+export function ClaimSuccessModal({
+  isOpen,
+  onClose,
+  badgeName,
+  issuerMessage,
 }: ClaimSuccessModalProps) {
   const navigate = useNavigate();
-  
+
   if (!isOpen) return null;
-  
+
   const handleViewInWallet = () => {
     onClose();
     navigate('/');
   };
-  
+
   return (
     <div
       style={{
@@ -100,7 +100,7 @@ export function ClaimSuccessModal({
             />
           </svg>
         </div>
-        
+
         {/* Congratulations Message */}
         <h2
           id="claim-success-title"
@@ -113,7 +113,7 @@ export function ClaimSuccessModal({
         >
           🎉 Congratulations!
         </h2>
-        
+
         <p
           style={{
             fontSize: '1rem',
@@ -121,10 +121,9 @@ export function ClaimSuccessModal({
             marginBottom: '1rem',
           }}
         >
-          You've earned the{' '}
-          <strong style={{ color: '#111827' }}>{badgeName}</strong> badge!
+          You've earned the <strong style={{ color: '#111827' }}>{badgeName}</strong> badge!
         </p>
-        
+
         {/* Issuer Message (if provided) */}
         {issuerMessage && (
           <div
@@ -146,7 +145,7 @@ export function ClaimSuccessModal({
             </p>
           </div>
         )}
-        
+
         {/* Action Buttons */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <button
@@ -168,7 +167,7 @@ export function ClaimSuccessModal({
           >
             View in Wallet
           </button>
-          
+
           <button
             onClick={onClose}
             style={{
@@ -196,7 +195,7 @@ export function ClaimSuccessModal({
           </button>
         </div>
       </div>
-      
+
       {/* CSS Animations */}
       <style>{`
         @keyframes fadeInScale {

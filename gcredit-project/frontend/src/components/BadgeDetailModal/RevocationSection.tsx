@@ -34,13 +34,9 @@ const RevocationSection: React.FC<RevocationSectionProps> = ({
       <div className="flex items-start gap-3">
         <AlertTriangle className="h-6 w-6 text-red-600 flex-shrink-0 mt-1" />
         <div className="flex-1">
-          <h3 className="text-xl font-bold text-red-900 mb-2">
-            🚫 Badge Revoked
-          </h3>
-          
-          <p className="text-red-800 mb-3">
-            This badge was revoked on {formattedDate}
-          </p>
+          <h3 className="text-xl font-bold text-red-900 mb-2">🚫 Badge Revoked</h3>
+
+          <p className="text-red-800 mb-3">This badge was revoked on {formattedDate}</p>
 
           {/* Story 9.3 Decision #2: Categorized reason display */}
           {isPublicReason ? (
@@ -49,7 +45,7 @@ const RevocationSection: React.FC<RevocationSectionProps> = ({
                 <span className="font-semibold text-red-900">Reason:</span>
                 <span className="text-red-800 ml-2">{revocationReason}</span>
               </div>
-              
+
               {revocationNotes && (
                 <div className="mb-2">
                   <span className="font-semibold text-red-900">Notes:</span>

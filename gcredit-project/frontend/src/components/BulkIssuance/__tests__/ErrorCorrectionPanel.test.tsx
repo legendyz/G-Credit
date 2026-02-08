@@ -30,9 +30,7 @@ describe('ErrorCorrectionPanel', () => {
 
   it('should render error count correctly', () => {
     render(<ErrorCorrectionPanel {...defaultProps} />);
-    expect(
-      screen.getByText(/5 errors prevent badge issuance/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/5 errors prevent badge issuance/)).toBeInTheDocument();
   });
 
   it('should show all error rows in table', () => {

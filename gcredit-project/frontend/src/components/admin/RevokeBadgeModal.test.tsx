@@ -1,7 +1,7 @@
 /**
  * RevokeBadgeModal.test.tsx
  * Sprint 7 - Story 9.5: Revoke Badge Modal Unit Tests
- * 
+ *
  * Tests for the revocation confirmation modal component
  */
 
@@ -142,8 +142,10 @@ describe('RevokeBadgeModal', () => {
     it('should limit notes to 1000 characters', async () => {
       render(<RevokeBadgeModal {...defaultProps} />);
 
-      const notesTextarea = screen.getByPlaceholderText(/Provide additional context/i) as HTMLTextAreaElement;
-      
+      const notesTextarea = screen.getByPlaceholderText(
+        /Provide additional context/i
+      ) as HTMLTextAreaElement;
+
       // Use fireEvent for faster input of long text
       const longText = 'a'.repeat(1100);
       fireEvent.change(notesTextarea, { target: { value: longText } });

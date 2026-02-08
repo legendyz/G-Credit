@@ -1,6 +1,6 @@
 /**
  * Protected Route Component - Story 0.2a: Login & Navigation System
- * 
+ *
  * Wraps routes that require authentication.
  * Redirects to login if not authenticated.
  */
@@ -17,13 +17,13 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps) {
   const { isAuthenticated, user } = useAuthStore();
   const location = useLocation();
-  
+
   // Check authentication
   if (!isAuthenticated) {
     // Redirect to login, preserving the attempted URL
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
-  
+
   // Check role authorization if required
   if (requiredRoles && requiredRoles.length > 0 && user) {
     if (!requiredRoles.includes(user.role)) {
@@ -31,7 +31,7 @@ export function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps)
       return <Navigate to="/" replace />;
     }
   }
-  
+
   return <>{children}</>;
 }
 

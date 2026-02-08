@@ -1,6 +1,6 @@
 /**
  * ErrorDisplay Component - Story 8.1 (UX-P1-003)
- * 
+ *
  * Consistent error display with retry functionality.
  * Shows error messages with optional retry button.
  */
@@ -59,24 +59,18 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
   if (variant === 'card') {
     return (
       <div
-        className={cn(
-          'rounded-lg border border-destructive/50 bg-destructive/10 p-4',
-          className
-        )}
+        className={cn('rounded-lg border border-destructive/50 bg-destructive/10 p-4', className)}
         role="alert"
       >
         <div className="flex items-start gap-3">
-          <span className="text-destructive text-xl" aria-hidden="true">⚠️</span>
+          <span className="text-destructive text-xl" aria-hidden="true">
+            ⚠️
+          </span>
           <div className="flex-1">
             <p className="font-medium text-destructive">{title}</p>
             <p className="text-sm text-muted-foreground mt-1">{message}</p>
             {onRetry && (
-              <Button
-                onClick={onRetry}
-                variant="outline"
-                size="sm"
-                className="mt-3"
-              >
+              <Button onClick={onRetry} variant="outline" size="sm" className="mt-3">
                 {retryText}
               </Button>
             )}

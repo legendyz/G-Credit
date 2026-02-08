@@ -32,12 +32,7 @@ export default defineConfig({
           ],
           'query-vendor': ['@tanstack/react-query'],
           'animation-vendor': ['framer-motion'],
-          'utils-vendor': [
-            'date-fns',
-            'clsx',
-            'tailwind-merge',
-            'class-variance-authority',
-          ],
+          'utils-vendor': ['date-fns', 'clsx', 'tailwind-merge', 'class-variance-authority'],
         },
       },
     },

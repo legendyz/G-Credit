@@ -19,7 +19,15 @@ const NewEmployeeEmptyState: React.FC<NewEmployeeEmptyStateProps> = ({
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <rect x="48" y="64" width="160" height="128" rx="8" stroke="currentColor" strokeWidth="4" />
+          <rect
+            x="48"
+            y="64"
+            width="160"
+            height="128"
+            rx="8"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
           <path d="M48 96 L208 96" stroke="currentColor" strokeWidth="4" />
           <circle cx="128" cy="140" r="24" stroke="currentColor" strokeWidth="4" />
           <path d="M128 116 L128 164" stroke="currentColor" strokeWidth="4" />
@@ -34,8 +42,8 @@ const NewEmployeeEmptyState: React.FC<NewEmployeeEmptyStateProps> = ({
 
       {/* AC 6.2: Description - Educational tone */}
       <p className="text-base md:text-lg text-gray-600 max-w-2xl mb-8">
-        Badges are digital credentials that recognize your skills and achievements. 
-        Start earning badges by completing learning programs.
+        Badges are digital credentials that recognize your skills and achievements. Start earning
+        badges by completing learning programs.
       </p>
 
       {/* AC 6.2: Primary and Secondary CTAs */}
@@ -57,9 +65,9 @@ const NewEmployeeEmptyState: React.FC<NewEmployeeEmptyStateProps> = ({
       {/* Additional helpful info */}
       <div className="mt-12 p-6 bg-blue-50 rounded-lg max-w-2xl">
         <p className="text-sm text-blue-800">
-          <strong>💡 Getting Started:</strong> Badges are awarded by completing training programs, 
-          achieving milestones, or demonstrating specific skills. Check with your manager or 
-          visit the badge catalog to see available opportunities.
+          <strong>💡 Getting Started:</strong> Badges are awarded by completing training programs,
+          achieving milestones, or demonstrating specific skills. Check with your manager or visit
+          the badge catalog to see available opportunities.
         </p>
       </div>
     </div>

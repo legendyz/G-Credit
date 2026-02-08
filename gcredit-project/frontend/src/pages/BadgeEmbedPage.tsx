@@ -27,47 +27,43 @@ const BadgeEmbedPage: React.FC = () => {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (badgeId) {
-      fetchBadgeData();
-    }
+    if (!badgeId) return;
+
+    const fetchBadgeData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const data = await getWidgetEmbedData(badgeId);
+        setBadge(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load badge data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBadgeData();
   }, [badgeId]);
 
   useEffect(() => {
-    if (badgeId) {
-      fetchWidgetHtml();
-    }
+    if (!badgeId) return;
+
+    const fetchWidgetHtml = async () => {
+      try {
+        const data = await getWidgetHtml(badgeId, { size, theme, showDetails });
+        setWidgetHtml(data);
+      } catch (err) {
+        console.error('Failed to fetch widget HTML:', err);
+      }
+    };
+
+    fetchWidgetHtml();
   }, [badgeId, size, theme, showDetails]);
-
-  const fetchBadgeData = async () => {
-    if (!badgeId) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const data = await getWidgetEmbedData(badgeId);
-      setBadge(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load badge data');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchWidgetHtml = async () => {
-    if (!badgeId) return;
-
-    try {
-      const data = await getWidgetHtml(badgeId, { size, theme, showDetails });
-      setWidgetHtml(data);
-    } catch (err) {
-      console.error('Failed to fetch widget HTML:', err);
-    }
-  };
 
   const generateIframeCode = () => {
     if (!badgeId) return '';
-    
+
     const baseUrl = window.location.origin;
     const params = new URLSearchParams({
       size,
@@ -138,9 +134,7 @@ ${widgetHtml.css}
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            🎨 Badge Widget Generator
-          </h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">🎨 Badge Widget Generator</h1>
           <p className="text-lg text-gray-600">
             Create an embeddable widget for <strong>{badge.badgeName}</strong>
           </p>
@@ -153,22 +147,18 @@ ${widgetHtml.css}
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Preview</h2>
               <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-8 flex items-center justify-center min-h-[300px]">
-                {widgetHtml && (
-                  <div dangerouslySetInnerHTML={{ __html: widgetHtml.html }} />
-                )}
+                {widgetHtml && <div dangerouslySetInnerHTML={{ __html: widgetHtml.html }} />}
               </div>
             </div>
 
             {/* Configuration Options */}
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Configuration</h2>
-              
+
               <div className="space-y-4">
                 {/* Size */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Widget Size
-                  </label>
+                  <span className="block text-sm font-medium text-gray-700 mb-2">Widget Size</span>
                   <div className="grid grid-cols-3 gap-2">
                     {(['small', 'medium', 'large'] as WidgetSize[]).map((s) => (
                       <button
@@ -193,9 +183,7 @@ ${widgetHtml.css}
 
                 {/* Theme */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Color Theme
-                  </label>
+                  <span className="block text-sm font-medium text-gray-700 mb-2">Color Theme</span>
                   <div className="grid grid-cols-3 gap-2">
                     {(['light', 'dark', 'auto'] as WidgetTheme[]).map((t) => (
                       <button
@@ -247,9 +235,7 @@ ${widgetHtml.css}
               <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
                 <code>{generateIframeCode()}</code>
               </pre>
-              <p className="text-xs text-gray-500 mt-2">
-                Best for embedding in existing websites
-              </p>
+              <p className="text-xs text-gray-500 mt-2">Best for embedding in existing websites</p>
             </div>
 
             {/* Standalone HTML */}
@@ -297,9 +283,7 @@ ${widgetHtml.css}
       </div>
 
       {/* Inject widget CSS */}
-      {widgetHtml && (
-        <style dangerouslySetInnerHTML={{ __html: widgetHtml.css }} />
-      )}
+      {widgetHtml && <style dangerouslySetInnerHTML={{ __html: widgetHtml.css }} />}
     </div>
   );
 };

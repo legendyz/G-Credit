@@ -18,9 +18,7 @@ describe('useKeyboardNavigation', () => {
   ];
 
   it('should initialize with focusedIndex at 0', () => {
-    const { result } = renderHook(() =>
-      useKeyboardNavigation({ items: mockItems })
-    );
+    const { result } = renderHook(() => useKeyboardNavigation({ items: mockItems }));
 
     expect(result.current.focusedIndex).toBe(0);
   });
@@ -34,9 +32,7 @@ describe('useKeyboardNavigation', () => {
   });
 
   it('should navigate right with ArrowRight key', () => {
-    const { result } = renderHook(() =>
-      useKeyboardNavigation({ items: mockItems })
-    );
+    const { result } = renderHook(() => useKeyboardNavigation({ items: mockItems }));
 
     act(() => {
       result.current.handleKeyDown({
@@ -64,9 +60,7 @@ describe('useKeyboardNavigation', () => {
   });
 
   it('should navigate down with ArrowDown key in grid', () => {
-    const { result } = renderHook(() =>
-      useKeyboardNavigation({ items: mockItems, columns: 3 })
-    );
+    const { result } = renderHook(() => useKeyboardNavigation({ items: mockItems, columns: 3 }));
 
     act(() => {
       result.current.handleKeyDown({
@@ -109,9 +103,7 @@ describe('useKeyboardNavigation', () => {
   });
 
   it('should jump to last item with End key', () => {
-    const { result } = renderHook(() =>
-      useKeyboardNavigation({ items: mockItems })
-    );
+    const { result } = renderHook(() => useKeyboardNavigation({ items: mockItems }));
 
     act(() => {
       result.current.handleKeyDown({
@@ -124,9 +116,7 @@ describe('useKeyboardNavigation', () => {
   });
 
   it('should wrap around when at start with ArrowLeft', () => {
-    const { result } = renderHook(() =>
-      useKeyboardNavigation({ items: mockItems, wrap: true })
-    );
+    const { result } = renderHook(() => useKeyboardNavigation({ items: mockItems, wrap: true }));
 
     act(() => {
       result.current.handleKeyDown({
@@ -155,9 +145,7 @@ describe('useKeyboardNavigation', () => {
 
   it('should call onActivate when Enter is pressed', () => {
     const onActivate = vi.fn();
-    const { result } = renderHook(() =>
-      useKeyboardNavigation({ items: mockItems, onActivate })
-    );
+    const { result } = renderHook(() => useKeyboardNavigation({ items: mockItems, onActivate }));
 
     act(() => {
       result.current.handleKeyDown({
@@ -186,9 +174,7 @@ describe('useKeyboardNavigation', () => {
   });
 
   it('should return correct item props', () => {
-    const { result } = renderHook(() =>
-      useKeyboardNavigation({ items: mockItems })
-    );
+    const { result } = renderHook(() => useKeyboardNavigation({ items: mockItems }));
 
     const props0 = result.current.getItemProps(0);
     const props1 = result.current.getItemProps(1);
@@ -201,9 +187,7 @@ describe('useKeyboardNavigation', () => {
   });
 
   it('should update focusedIndex on item focus', () => {
-    const { result } = renderHook(() =>
-      useKeyboardNavigation({ items: mockItems })
-    );
+    const { result } = renderHook(() => useKeyboardNavigation({ items: mockItems }));
 
     const props2 = result.current.getItemProps(2);
 
@@ -215,9 +199,7 @@ describe('useKeyboardNavigation', () => {
   });
 
   it('should handle empty items array', () => {
-    const { result } = renderHook(() =>
-      useKeyboardNavigation({ items: [] })
-    );
+    const { result } = renderHook(() => useKeyboardNavigation({ items: [] }));
 
     // Should not throw
     act(() => {

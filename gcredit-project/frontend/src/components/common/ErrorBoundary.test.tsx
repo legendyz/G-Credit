@@ -68,7 +68,7 @@ describe('ErrorBoundary', () => {
 
     // Click retry
     const retryButton = screen.getByRole('button', { name: /try again/i });
-    
+
     // Rerender with non-throwing component to simulate fix
     rerender(
       <ErrorBoundary>

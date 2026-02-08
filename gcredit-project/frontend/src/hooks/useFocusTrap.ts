@@ -1,11 +1,12 @@
 /**
  * useFocusTrap Hook (Story 8.3 - AC1)
  * WCAG 2.4.3 - Focus Order
- * 
+ *
  * Traps focus within a container (modal, dialog) for keyboard accessibility.
  * When Tab reaches the last focusable element, it wraps to the first.
  */
 
+import type { RefObject } from 'react';
 import { useEffect, useRef, useCallback } from 'react';
 
 interface UseFocusTrapOptions {
@@ -13,8 +14,8 @@ interface UseFocusTrapOptions {
   isActive: boolean;
   /** Callback when Escape is pressed */
   onEscape?: () => void;
-  /** Element to return focus to when trap is deactivated */
-  returnFocusTo?: HTMLElement | null;
+  /** Ref to element to return focus to when trap is deactivated */
+  returnFocusRef?: RefObject<HTMLElement | null>;
   /** Auto-focus first element when activated */
   autoFocus?: boolean;
 }
@@ -33,7 +34,7 @@ const FOCUSABLE_SELECTOR = [
 export function useFocusTrap<T extends HTMLElement>({
   isActive,
   onEscape,
-  returnFocusTo,
+  returnFocusRef,
   autoFocus = true,
 }: UseFocusTrapOptions) {
   const containerRef = useRef<T>(null);
@@ -119,13 +120,13 @@ export function useFocusTrap<T extends HTMLElement>({
   // Return focus when deactivated
   useEffect(() => {
     if (!isActive && previousActiveElement.current) {
-      const elementToFocus = returnFocusTo || previousActiveElement.current;
+      const elementToFocus = returnFocusRef?.current || previousActiveElement.current;
       if (elementToFocus && typeof elementToFocus.focus === 'function') {
         elementToFocus.focus();
       }
       previousActiveElement.current = null;
     }
-  }, [isActive, returnFocusTo]);
+  }, [isActive, returnFocusRef]);
 
   return containerRef;
 }

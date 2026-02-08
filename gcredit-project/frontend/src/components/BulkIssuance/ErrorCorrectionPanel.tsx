@@ -42,8 +42,7 @@ export default function ErrorCorrectionPanel({
 
         {validCount > 0 && (
           <p className="text-sm text-gray-600 mb-4">
-            Or: Continue with {validCount} valid badges ({errorCount} will be
-            skipped)
+            Or: Continue with {validCount} valid badges ({errorCount} will be skipped)
           </p>
         )}
 
@@ -73,15 +72,11 @@ export default function ErrorCorrectionPanel({
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                    Row #
-                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Row #</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
                     Template ID
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                    Email
-                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Email</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
                     Error Message
                   </th>
@@ -90,18 +85,12 @@ export default function ErrorCorrectionPanel({
               <tbody className="divide-y divide-gray-200">
                 {errors.map((error, idx) => (
                   <tr key={idx} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-800">
-                      {error.rowNumber}
-                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-800">{error.rowNumber}</td>
                     <td className="px-4 py-3 text-sm text-gray-600 font-mono truncate max-w-[200px]">
                       {error.badgeTemplateId}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {error.recipientEmail}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-red-600">
-                      {error.message}
-                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{error.recipientEmail}</td>
+                    <td className="px-4 py-3 text-sm text-red-600">{error.message}</td>
                   </tr>
                 ))}
               </tbody>

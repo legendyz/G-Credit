@@ -1,4 +1,4 @@
-# Python
+﻿# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -57,3 +57,6 @@ _bmad-output/playwright-sessions/
 
 # Claude Code files
 .claude/
+
+# ESLint reports
+**/eslint-report.txt

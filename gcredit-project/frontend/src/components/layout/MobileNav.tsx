@@ -25,6 +25,7 @@ export function MobileNav({ className = '' }: MobileNavProps) {
 
   // Close drawer on route change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync drawer state with route changes (external navigation)
     setIsOpen(false);
   }, [location.pathname]);
 
@@ -104,9 +105,7 @@ export function MobileNav({ className = '' }: MobileNavProps) {
     { to: '/admin/analytics', label: 'Analytics', roles: ['ADMIN', 'ISSUER'] },
   ];
 
-  const accessibleLinks = navLinks.filter(
-    (link) => user?.role && link.roles.includes(user.role)
-  );
+  const accessibleLinks = navLinks.filter((link) => user?.role && link.roles.includes(user.role));
 
   return (
     <nav
@@ -240,9 +239,7 @@ export function MobileNav({ className = '' }: MobileNavProps) {
               <p className="font-medium text-gray-900 truncate">
                 {user?.firstName} {user?.lastName}
               </p>
-              <p className="text-sm text-gray-500 capitalize">
-                {user?.role?.toLowerCase()}
-              </p>
+              <p className="text-sm text-gray-500 capitalize">{user?.role?.toLowerCase()}</p>
             </div>
           </div>
         </div>

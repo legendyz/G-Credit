@@ -1,6 +1,6 @@
 /**
  * ErrorBoundary Component - Story 8.1 (UX-P1-003)
- * 
+ *
  * React Error Boundary for catching and handling component errors.
  * Provides retry functionality for error recovery.
  */
@@ -58,7 +58,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       return (
         <ErrorDisplay
           title="Something went wrong"
-          message={this.props.errorMessage || this.state.error?.message || 'An unexpected error occurred'}
+          message={
+            this.props.errorMessage || this.state.error?.message || 'An unexpected error occurred'
+          }
           onRetry={this.handleReset}
           variant="page"
         />
@@ -72,6 +74,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 /**
  * HOC to wrap component with ErrorBoundary
  */
+// eslint-disable-next-line react-refresh/only-export-components -- HOC factory intentionally exports non-component function
 export function withErrorBoundary<P extends object>(
   WrappedComponent: React.ComponentType<P>,
   errorBoundaryProps?: Omit<ErrorBoundaryProps, 'children'>

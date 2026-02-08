@@ -67,20 +67,20 @@ describe('MobileNav', () => {
     it('opens drawer when hamburger is clicked', async () => {
       const user = userEvent.setup();
       renderMobileNav();
-      
+
       const menuButton = screen.getByRole('button', { name: /open menu/i });
       await user.click(menuButton);
-      
+
       expect(screen.getByRole('dialog')).toBeInTheDocument();
     });
 
     it('changes aria-expanded when drawer opens', async () => {
       const user = userEvent.setup();
       renderMobileNav();
-      
+
       const menuButton = screen.getByRole('button', { name: /open menu/i });
       expect(menuButton).toHaveAttribute('aria-expanded', 'false');
-      
+
       await user.click(menuButton);
       expect(menuButton).toHaveAttribute('aria-expanded', 'true');
     });
@@ -96,9 +96,9 @@ describe('MobileNav', () => {
     it('drawer slides in when opened', async () => {
       const user = userEvent.setup();
       renderMobileNav();
-      
+
       await user.click(screen.getByRole('button', { name: /open menu/i }));
-      
+
       const drawer = document.getElementById('mobile-nav-drawer');
       expect(drawer).toHaveClass('translate-x-0');
     });
@@ -106,13 +106,13 @@ describe('MobileNav', () => {
     it('closes drawer when close button is clicked', async () => {
       const user = userEvent.setup();
       renderMobileNav();
-      
+
       await user.click(screen.getByRole('button', { name: /open menu/i }));
-      
+
       // Get the close button inside the drawer (there are 2, get the one in the drawer header)
       const closeButtons = screen.getAllByRole('button', { name: /close menu/i });
       await user.click(closeButtons[0]);
-      
+
       const drawer = document.getElementById('mobile-nav-drawer');
       expect(drawer).toHaveClass('translate-x-full');
     });
@@ -120,10 +120,10 @@ describe('MobileNav', () => {
     it('closes drawer when Escape key is pressed', async () => {
       const user = userEvent.setup();
       renderMobileNav();
-      
+
       await user.click(screen.getByRole('button', { name: /open menu/i }));
       await user.keyboard('{Escape}');
-      
+
       const drawer = document.getElementById('mobile-nav-drawer');
       expect(drawer).toHaveClass('translate-x-full');
     });
@@ -131,15 +131,15 @@ describe('MobileNav', () => {
     it('closes drawer when backdrop is clicked', async () => {
       const user = userEvent.setup();
       renderMobileNav();
-      
+
       await user.click(screen.getByRole('button', { name: /open menu/i }));
-      
+
       // Click the backdrop (first fixed overlay)
       const backdrop = document.querySelector('.fixed.inset-0.bg-black\\/50');
       if (backdrop) {
         fireEvent.click(backdrop);
       }
-      
+
       await waitFor(() => {
         const drawer = document.getElementById('mobile-nav-drawer');
         expect(drawer).toHaveClass('translate-x-full');
@@ -151,9 +151,9 @@ describe('MobileNav', () => {
     it('displays navigation links for admin user', async () => {
       const user = userEvent.setup();
       renderMobileNav();
-      
+
       await user.click(screen.getByRole('button', { name: /open menu/i }));
-      
+
       expect(screen.getByRole('menuitem', { name: /my wallet/i })).toBeInTheDocument();
       expect(screen.getByRole('menuitem', { name: /badge management/i })).toBeInTheDocument();
       expect(screen.getByRole('menuitem', { name: /analytics/i })).toBeInTheDocument();
@@ -162,9 +162,9 @@ describe('MobileNav', () => {
     it('navigation links have 44px minimum height', async () => {
       const user = userEvent.setup();
       renderMobileNav();
-      
+
       await user.click(screen.getByRole('button', { name: /open menu/i }));
-      
+
       const walletLink = screen.getByRole('menuitem', { name: /my wallet/i });
       expect(walletLink).toHaveClass('min-h-[44px]');
     });
@@ -175,12 +175,12 @@ describe('MobileNav', () => {
         isAuthenticated: true,
         logout: mockLogout,
       });
-      
+
       const user = userEvent.setup();
       renderMobileNav();
-      
+
       await user.click(screen.getByRole('button', { name: /open menu/i }));
-      
+
       expect(screen.getByRole('menuitem', { name: /my wallet/i })).toBeInTheDocument();
       expect(screen.queryByRole('menuitem', { name: /badge management/i })).not.toBeInTheDocument();
     });
@@ -190,18 +190,18 @@ describe('MobileNav', () => {
     it('displays user initials in avatar', async () => {
       const user = userEvent.setup();
       renderMobileNav();
-      
+
       await user.click(screen.getByRole('button', { name: /open menu/i }));
-      
+
       expect(screen.getByText('TU')).toBeInTheDocument();
     });
 
     it('displays user name and role', async () => {
       const user = userEvent.setup();
       renderMobileNav();
-      
+
       await user.click(screen.getByRole('button', { name: /open menu/i }));
-      
+
       expect(screen.getByText('Test User')).toBeInTheDocument();
       expect(screen.getByText('admin')).toBeInTheDocument();
     });
@@ -211,9 +211,9 @@ describe('MobileNav', () => {
     it('logout button has 44px minimum height', async () => {
       const user = userEvent.setup();
       renderMobileNav();
-      
+
       await user.click(screen.getByRole('button', { name: /open menu/i }));
-      
+
       const logoutButton = screen.getByRole('button', { name: /sign out/i });
       expect(logoutButton).toHaveClass('min-h-[44px]');
     });
@@ -221,10 +221,10 @@ describe('MobileNav', () => {
     it('calls logout when sign out is clicked', async () => {
       const user = userEvent.setup();
       renderMobileNav();
-      
+
       await user.click(screen.getByRole('button', { name: /open menu/i }));
       await user.click(screen.getByRole('button', { name: /sign out/i }));
-      
+
       expect(mockLogout).toHaveBeenCalled();
     });
   });
@@ -233,9 +233,9 @@ describe('MobileNav', () => {
     it('drawer has proper ARIA attributes when open', async () => {
       const user = userEvent.setup();
       renderMobileNav();
-      
+
       await user.click(screen.getByRole('button', { name: /open menu/i }));
-      
+
       const drawer = screen.getByRole('dialog');
       expect(drawer).toHaveAttribute('aria-modal', 'true');
       expect(drawer).toHaveAttribute('aria-label', 'Navigation menu');
@@ -244,7 +244,7 @@ describe('MobileNav', () => {
 
     it('drawer has aria-hidden when closed', () => {
       renderMobileNav();
-      
+
       const drawer = document.getElementById('mobile-nav-drawer');
       expect(drawer).toHaveAttribute('aria-hidden', 'true');
     });
@@ -263,7 +263,7 @@ describe('MobileNav', () => {
         isAuthenticated: false,
         logout: mockLogout,
       });
-      
+
       const { container } = renderMobileNav();
       expect(container.firstChild).toBeNull();
     });

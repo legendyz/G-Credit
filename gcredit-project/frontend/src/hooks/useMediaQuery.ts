@@ -36,6 +36,7 @@ export function useMediaQuery(query: string): boolean {
     if (typeof window === 'undefined') return;
 
     const mediaQuery = window.matchMedia(query);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync state with browser matchMedia API on mount
     setMatches(mediaQuery.matches);
 
     const handler = (event: MediaQueryListEvent) => {
@@ -64,9 +65,7 @@ export function useIsMobile(): boolean {
  * Hook to detect if screen is tablet (768px - 1023px)
  */
 export function useIsTablet(): boolean {
-  return useMediaQuery(
-    `(min-width: ${BREAKPOINTS.md}px) and (max-width: ${BREAKPOINTS.lg - 1}px)`
-  );
+  return useMediaQuery(`(min-width: ${BREAKPOINTS.md}px) and (max-width: ${BREAKPOINTS.lg - 1}px)`);
 }
 
 /**

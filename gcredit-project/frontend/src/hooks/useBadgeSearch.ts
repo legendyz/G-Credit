@@ -102,7 +102,7 @@ export function useBadgeSearch({
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [issuerFilter, setIssuerFilter] = useState<string | undefined>(undefined);
   const [isSearching, setIsSearching] = useState(false);
-  
+
   // Track if initial mount to skip first server search trigger
   const isInitialMount = useRef(true);
 
@@ -133,12 +133,12 @@ export function useBadgeSearch({
       isInitialMount.current = false;
       return;
     }
-    
+
     // Only trigger server search if we're in server search mode and have a callback
     if (isServerSearch && onServerSearch && hasActiveFilters(activeFilters)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Track async search operation loading state
       setIsSearching(true);
-      onServerSearch(activeFilters)
-        .finally(() => setIsSearching(false));
+      onServerSearch(activeFilters).finally(() => setIsSearching(false));
     }
   }, [activeFilters, isServerSearch, onServerSearch]);
 

@@ -60,7 +60,7 @@ const SIZE_CONFIG = {
 function generateSrcSet(src: string, mobileSize: number, desktopSize: number): string {
   // If src already has query params, append with &, otherwise use ?
   const separator = src.includes('?') ? '&' : '?';
-  
+
   return [
     `${src}${separator}w=${mobileSize} ${mobileSize}w`,
     `${src}${separator}w=${Math.round(mobileSize * 1.5)} ${Math.round(mobileSize * 1.5)}w`,
@@ -90,7 +90,8 @@ export function BadgeImage({
   const imageSrc = src || '/placeholder-badge.png';
 
   // Use srcset only for external images that support sizing
-  const useSrcSet = src && (src.includes('cloudinary') || src.includes('imgix') || src.includes('imagekit'));
+  const useSrcSet =
+    src && (src.includes('cloudinary') || src.includes('imgix') || src.includes('imagekit'));
 
   const handleLoad = () => {
     setIsLoading(false);
@@ -111,7 +112,11 @@ export function BadgeImage({
       {/* Badge image with lazy loading */}
       <img
         src={hasError ? '/placeholder-badge.png' : imageSrc}
-        srcSet={useSrcSet && !hasError ? generateSrcSet(imageSrc, config.mobile, config.desktop) : undefined}
+        srcSet={
+          useSrcSet && !hasError
+            ? generateSrcSet(imageSrc, config.mobile, config.desktop)
+            : undefined
+        }
         sizes={useSrcSet && !hasError ? generateSizes(config.mobile, config.desktop) : undefined}
         alt={alt}
         loading="lazy"

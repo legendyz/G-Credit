@@ -1,7 +1,7 @@
 /**
  * badgesApi.test.ts
  * Sprint 7 - Story 9.5: Badge API Client Unit Tests
- * 
+ *
  * Tests for the badges API client functions
  */
 
@@ -233,9 +233,9 @@ describe('badgesApi', () => {
         json: () => Promise.resolve({ message: 'Badge not found' }),
       });
 
-      await expect(
-        revokeBadge('nonexistent', { reason: 'Other' })
-      ).rejects.toThrow('Badge not found');
+      await expect(revokeBadge('nonexistent', { reason: 'Other' })).rejects.toThrow(
+        'Badge not found'
+      );
     });
 
     it('should throw error on unauthorized revoke', async () => {
@@ -245,9 +245,9 @@ describe('badgesApi', () => {
         json: () => Promise.resolve({ message: 'Forbidden' }),
       });
 
-      await expect(
-        revokeBadge('badge-1', { reason: 'Policy Violation' })
-      ).rejects.toThrow('Forbidden');
+      await expect(revokeBadge('badge-1', { reason: 'Policy Violation' })).rejects.toThrow(
+        'Forbidden'
+      );
     });
   });
 

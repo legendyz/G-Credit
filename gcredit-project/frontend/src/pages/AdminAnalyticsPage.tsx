@@ -46,10 +46,10 @@ const AdminAnalyticsPage: React.FC = () => {
       // Analytics data provided via mock — real sharing-analytics endpoint integration deferred to Story 10.5
       // The existing backend /api/analytics/system-overview returns user/badge/template stats,
       // not sharing analytics (totalShares, platformDistribution, topBadges) needed here.
-      
+
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Mock data
       const mockData: AdminAnalyticsData = {
         totalShares: 1247,
@@ -144,16 +144,14 @@ const AdminAnalyticsPage: React.FC = () => {
 
   if (!data) return null;
 
-  const maxActivity = Math.max(...data.recentActivity.map(a => a.shares));
+  const maxActivity = Math.max(...data.recentActivity.map((a) => a.shares));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            📊 Badge Sharing Analytics
-          </h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">📊 Badge Sharing Analytics</h1>
           <p className="text-gray-600">
             Administrator dashboard for monitoring badge sharing across the platform
           </p>
@@ -188,21 +186,27 @@ const AdminAnalyticsPage: React.FC = () => {
             <div className="text-sm text-gray-600 mt-1">Total Shares</div>
           </div>
           <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-green-500">
-            <div className="text-3xl font-bold text-gray-900">{data.platformDistribution.email}</div>
+            <div className="text-3xl font-bold text-gray-900">
+              {data.platformDistribution.email}
+            </div>
             <div className="text-sm text-gray-600 mt-1">📧 Email Shares</div>
             <div className="text-xs text-gray-500 mt-2">
               {calculatePercentage(data.platformDistribution.email, data.totalShares)}% of total
             </div>
           </div>
           <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-purple-500">
-            <div className="text-3xl font-bold text-gray-900">{data.platformDistribution.teams}</div>
+            <div className="text-3xl font-bold text-gray-900">
+              {data.platformDistribution.teams}
+            </div>
             <div className="text-sm text-gray-600 mt-1">👥 Teams Shares</div>
             <div className="text-xs text-gray-500 mt-2">
               {calculatePercentage(data.platformDistribution.teams, data.totalShares)}% of total
             </div>
           </div>
           <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-orange-500">
-            <div className="text-3xl font-bold text-gray-900">{data.platformDistribution.widget}</div>
+            <div className="text-3xl font-bold text-gray-900">
+              {data.platformDistribution.widget}
+            </div>
             <div className="text-sm text-gray-600 mt-1">🔗 Widget Embeds</div>
             <div className="text-xs text-gray-500 mt-2">
               {calculatePercentage(data.platformDistribution.widget, data.totalShares)}% of total
@@ -220,13 +224,16 @@ const AdminAnalyticsPage: React.FC = () => {
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700">📧 Email</span>
                   <span className="text-sm font-bold text-gray-900">
-                    {data.platformDistribution.email} ({calculatePercentage(data.platformDistribution.email, data.totalShares)}%)
+                    {data.platformDistribution.email} (
+                    {calculatePercentage(data.platformDistribution.email, data.totalShares)}%)
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
                   <div
                     className="bg-green-500 h-3 rounded-full transition-all duration-500"
-                    style={{ width: `${calculatePercentage(data.platformDistribution.email, data.totalShares)}%` }}
+                    style={{
+                      width: `${calculatePercentage(data.platformDistribution.email, data.totalShares)}%`,
+                    }}
                   />
                 </div>
               </div>
@@ -236,13 +243,16 @@ const AdminAnalyticsPage: React.FC = () => {
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700">👥 Teams</span>
                   <span className="text-sm font-bold text-gray-900">
-                    {data.platformDistribution.teams} ({calculatePercentage(data.platformDistribution.teams, data.totalShares)}%)
+                    {data.platformDistribution.teams} (
+                    {calculatePercentage(data.platformDistribution.teams, data.totalShares)}%)
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
                   <div
                     className="bg-purple-500 h-3 rounded-full transition-all duration-500"
-                    style={{ width: `${calculatePercentage(data.platformDistribution.teams, data.totalShares)}%` }}
+                    style={{
+                      width: `${calculatePercentage(data.platformDistribution.teams, data.totalShares)}%`,
+                    }}
                   />
                 </div>
               </div>
@@ -252,13 +262,16 @@ const AdminAnalyticsPage: React.FC = () => {
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700">🔗 Widget</span>
                   <span className="text-sm font-bold text-gray-900">
-                    {data.platformDistribution.widget} ({calculatePercentage(data.platformDistribution.widget, data.totalShares)}%)
+                    {data.platformDistribution.widget} (
+                    {calculatePercentage(data.platformDistribution.widget, data.totalShares)}%)
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
                   <div
                     className="bg-orange-500 h-3 rounded-full transition-all duration-500"
-                    style={{ width: `${calculatePercentage(data.platformDistribution.widget, data.totalShares)}%` }}
+                    style={{
+                      width: `${calculatePercentage(data.platformDistribution.widget, data.totalShares)}%`,
+                    }}
                   />
                 </div>
               </div>
@@ -272,7 +285,10 @@ const AdminAnalyticsPage: React.FC = () => {
               {data.recentActivity.map((activity, index) => (
                 <div key={index} className="flex items-center space-x-3">
                   <div className="text-xs text-gray-500 w-20">
-                    {new Date(activity.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    {new Date(activity.date).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                    })}
                   </div>
                   <div className="flex-1">
                     <div className="w-full bg-gray-200 rounded-full h-6">
@@ -299,7 +315,9 @@ const AdminAnalyticsPage: React.FC = () => {
                 <tr className="border-b-2 border-gray-200">
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Rank</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Badge Name</th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-700">Total Shares</th>
+                  <th className="text-center py-3 px-4 font-semibold text-gray-700">
+                    Total Shares
+                  </th>
                   <th className="text-center py-3 px-4 font-semibold text-gray-700">📧 Email</th>
                   <th className="text-center py-3 px-4 font-semibold text-gray-700">👥 Teams</th>
                   <th className="text-center py-3 px-4 font-semibold text-gray-700">🔗 Widget</th>
@@ -316,7 +334,9 @@ const AdminAnalyticsPage: React.FC = () => {
                         {index === 0 && <span className="text-2xl mr-2">🥇</span>}
                         {index === 1 && <span className="text-2xl mr-2">🥈</span>}
                         {index === 2 && <span className="text-2xl mr-2">🥉</span>}
-                        {index > 2 && <span className="text-gray-500 font-medium">#{index + 1}</span>}
+                        {index > 2 && (
+                          <span className="text-gray-500 font-medium">#{index + 1}</span>
+                        )}
                       </div>
                     </td>
                     <td className="py-4 px-4 font-medium text-gray-900">{badge.badgeName}</td>
@@ -327,7 +347,9 @@ const AdminAnalyticsPage: React.FC = () => {
                     </td>
                     <td className="py-4 px-4 text-center text-gray-700">{badge.platforms.email}</td>
                     <td className="py-4 px-4 text-center text-gray-700">{badge.platforms.teams}</td>
-                    <td className="py-4 px-4 text-center text-gray-700">{badge.platforms.widget}</td>
+                    <td className="py-4 px-4 text-center text-gray-700">
+                      {badge.platforms.widget}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -338,15 +360,26 @@ const AdminAnalyticsPage: React.FC = () => {
         {/* Mock Data Notice */}
         <div className="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <div className="flex items-start">
-            <svg className="w-5 h-5 text-yellow-600 mt-0.5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-5 h-5 text-yellow-600 mt-0.5 mr-3"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             <div>
               <p className="text-sm font-medium text-yellow-800">
                 Demo Mode: This page is currently displaying mock data
               </p>
               <p className="text-xs text-yellow-700 mt-1">
-                To connect to real analytics data, implement the admin analytics aggregation endpoint in the backend API.
+                To connect to real analytics data, implement the admin analytics aggregation
+                endpoint in the backend API.
               </p>
             </div>
           </div>

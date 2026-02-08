@@ -1,7 +1,7 @@
 /**
  * useKeyboardNavigation Hook (Story 8.3 - AC1, UX-P1-005)
  * WCAG 2.1.1 - Keyboard Navigation
- * 
+ *
  * Provides arrow key navigation for grid/list components.
  * Supports: Arrow keys, Home, End, Enter, Space
  */

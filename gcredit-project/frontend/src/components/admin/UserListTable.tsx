@@ -15,7 +15,16 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { formatDistanceToNow, format } from 'date-fns';
-import { ArrowUpDown, ArrowUp, ArrowDown, Pencil, UserX, UserCheck, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Pencil,
+  UserX,
+  UserCheck,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RoleBadge } from './RoleBadge';
 import { StatusBadge } from './StatusBadge';
@@ -33,6 +42,45 @@ interface UserListTableProps {
 }
 
 type SortField = 'name' | 'email' | 'role' | 'lastLogin' | 'createdAt';
+
+/** Sort header component (extracted to avoid creating components during render) */
+function SortHeader({
+  field,
+  children,
+  className = '',
+  sortBy,
+  sortOrder,
+  onSort,
+}: {
+  field: SortField;
+  children: React.ReactNode;
+  className?: string;
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
+  onSort: (field: SortField) => void;
+}) {
+  const isActive = sortBy === field;
+  return (
+    <th className={`px-4 py-3 text-left ${className}`}>
+      <button
+        onClick={() => onSort(field)}
+        className="inline-flex items-center gap-1 font-medium text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-200"
+        aria-label={`Sort by ${field}`}
+      >
+        {children}
+        {isActive ? (
+          sortOrder === 'asc' ? (
+            <ArrowUp className="h-4 w-4" />
+          ) : (
+            <ArrowDown className="h-4 w-4" />
+          )
+        ) : (
+          <ArrowUpDown className="h-4 w-4 opacity-50" />
+        )}
+      </button>
+    </th>
+  );
+}
 
 export function UserListTable({
   users,
@@ -84,57 +132,26 @@ export function UserListTable({
     [onSort]
   );
 
-  // Sort header component
-  const SortHeader = ({
-    field,
-    children,
-    className = '',
-  }: {
-    field: SortField;
-    children: React.ReactNode;
-    className?: string;
-  }) => {
-    const isActive = sortBy === field;
-    return (
-      <th className={`px-4 py-3 text-left ${className}`}>
-        <button
-          onClick={() => handleSort(field)}
-          className="inline-flex items-center gap-1 font-medium text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-200"
-          aria-label={`Sort by ${field}`}
-        >
-          {children}
-          {isActive ? (
-            sortOrder === 'asc' ? (
-              <ArrowUp className="h-4 w-4" />
-            ) : (
-              <ArrowDown className="h-4 w-4" />
-            )
-          ) : (
-            <ArrowUpDown className="h-4 w-4 opacity-50" />
-          )}
-        </button>
-      </th>
-    );
-  };
+  // Handle sort click
+  const handleSort = useCallback(
+    (field: SortField) => {
+      onSort(field);
+    },
+    [onSort]
+  );
 
   // Open dialog handlers
-  const openRoleDialog = useCallback(
-    (user: AdminUser, buttonRef: HTMLButtonElement) => {
-      setSelectedUser(user);
-      setDialogType('role');
-      triggerRef.current = buttonRef;
-    },
-    []
-  );
+  const openRoleDialog = useCallback((user: AdminUser, buttonRef: HTMLButtonElement) => {
+    setSelectedUser(user);
+    setDialogType('role');
+    triggerRef.current = buttonRef;
+  }, []);
 
-  const openStatusDialog = useCallback(
-    (user: AdminUser, buttonRef: HTMLButtonElement) => {
-      setSelectedUser(user);
-      setDialogType('status');
-      triggerRef.current = buttonRef;
-    },
-    []
-  );
+  const openStatusDialog = useCallback((user: AdminUser, buttonRef: HTMLButtonElement) => {
+    setSelectedUser(user);
+    setDialogType('status');
+    triggerRef.current = buttonRef;
+  }, []);
 
   const closeDialog = useCallback(() => {
     setSelectedUser(null);
@@ -211,7 +228,9 @@ export function UserListTable({
                         variant="outline"
                         size="sm"
                         className={`min-h-[44px] min-w-[44px] flex-1 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                          user.isActive ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'
+                          user.isActive
+                            ? 'text-red-600 hover:text-red-700'
+                            : 'text-green-600 hover:text-green-700'
                         }`}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -268,14 +287,37 @@ export function UserListTable({
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-800">
             <tr>
-              <SortHeader field="name">Name</SortHeader>
-              <SortHeader field="email" className={isTablet ? 'hidden md:table-cell' : ''}>
+              <SortHeader field="name" sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort}>
+                Name
+              </SortHeader>
+              <SortHeader
+                field="email"
+                className={isTablet ? 'hidden md:table-cell' : ''}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={handleSort}
+              >
                 Email
               </SortHeader>
-              <SortHeader field="role">Role</SortHeader>
-              {!isTablet && <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Department</th>}
-              <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Status</th>
-              <SortHeader field="lastLogin">Last Login</SortHeader>
+              <SortHeader field="role" sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort}>
+                Role
+              </SortHeader>
+              {!isTablet && (
+                <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Department
+                </th>
+              )}
+              <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                Status
+              </th>
+              <SortHeader
+                field="lastLogin"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={handleSort}
+              >
+                Last Login
+              </SortHeader>
               {/* Pinned Actions column with sticky positioning */}
               <th className="sticky right-0 bg-gray-50 px-4 py-3 text-right font-medium text-gray-500 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)] dark:bg-gray-800 dark:text-gray-400">
                 Actions
@@ -293,11 +335,11 @@ export function UserListTable({
                   onKeyDown={(e) => {
                     if (e.key === 'ArrowDown') {
                       e.preventDefault();
-                      const nextRow = (e.currentTarget.nextElementSibling as HTMLElement);
+                      const nextRow = e.currentTarget.nextElementSibling as HTMLElement;
                       nextRow?.focus();
                     } else if (e.key === 'ArrowUp') {
                       e.preventDefault();
-                      const prevRow = (e.currentTarget.previousElementSibling as HTMLElement);
+                      const prevRow = e.currentTarget.previousElementSibling as HTMLElement;
                       prevRow?.focus();
                     }
                   }}

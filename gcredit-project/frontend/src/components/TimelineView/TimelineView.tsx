@@ -18,13 +18,13 @@ export type ViewMode = 'timeline' | 'grid';
 
 export function TimelineView() {
   const [viewMode, setViewMode] = useState<ViewMode>('timeline');
-  
+
   // Fetch all badges initially (status filter will be handled by search)
   const { data, isLoading, error } = useWallet({});
-  
+
   // Fetch available skills for filter dropdown
   const { data: skills = [] } = useSkills();
-  
+
   // Convert badges to BadgeForFilter format for client-side filtering
   const badgesForFilter: BadgeForFilter[] = useMemo(() => {
     if (!data?.badges) return [];
@@ -47,8 +47,8 @@ export function TimelineView() {
       claimedAt: badge.claimedAt,
       status: badge.status,
     }));
-  }, [data?.badges]);
-  
+  }, [data]);
+
   // Create skill names map for chip display
   const skillNames = useMemo(() => {
     return skills.reduce(
@@ -59,7 +59,7 @@ export function TimelineView() {
       {} as Record<string, string>
     );
   }, [skills]);
-  
+
   // Story 8.2: Badge search hook
   const {
     searchTerm,
@@ -81,12 +81,12 @@ export function TimelineView() {
     totalCount: data?.pagination?.total,
     skillNames,
   });
-  
+
   // Story 9.3 AC4: Persist status filter to sessionStorage
   useEffect(() => {
     sessionStorage.setItem('badgeWalletFilter', statusFilter || 'all');
   }, [statusFilter]);
-  
+
   // Restore status filter from sessionStorage on mount
   useEffect(() => {
     const saved = sessionStorage.getItem('badgeWalletFilter');
@@ -94,28 +94,28 @@ export function TimelineView() {
       setStatusFilter(saved);
     }
   }, [setStatusFilter]);
-  
+
   // Map filtered badges back to original badge objects for display
   const displayBadges = useMemo(() => {
     if (!data?.badges) return [];
     const filteredIds = new Set(filteredBadges.map((b) => b.id));
     return data.badges.filter((badge) => filteredIds.has(badge.id));
-  }, [data?.badges, filteredBadges]);
-  
+  }, [data, filteredBadges]);
+
   // Group badges by date for timeline display
   const dateGroups = useMemo(() => {
     if (!displayBadges.length) return [];
-    
+
     const groups: Array<{ label: string; count: number; startIndex: number }> = [];
     let currentLabel = '';
-    
+
     displayBadges.forEach((badge, index) => {
       const date = new Date(badge.issuedAt);
-      const label = date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long' 
+      const label = date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
       });
-      
+
       if (label !== currentLabel) {
         groups.push({ label, count: 1, startIndex: index });
         currentLabel = label;
@@ -123,7 +123,7 @@ export function TimelineView() {
         groups[groups.length - 1].count++;
       }
     });
-    
+
     return groups;
   }, [displayBadges]);
 
@@ -151,9 +151,9 @@ export function TimelineView() {
     // Calculate badge counts for scenario detection
     const totalBadges = data?.pagination?.total || 0;
     const badges = data?.badges ?? [];
-    const claimedBadges = badges.filter(b => b.status === 'CLAIMED').length;
-    const pendingBadges = badges.filter(b => b.status === 'PENDING').length;
-    const revokedBadges = badges.filter(b => b.status === 'REVOKED').length;
+    const claimedBadges = badges.filter((b) => b.status === 'CLAIMED').length;
+    const pendingBadges = badges.filter((b) => b.status === 'PENDING').length;
+    const revokedBadges = badges.filter((b) => b.status === 'REVOKED').length;
     const hasActiveFilter = hasFilters;
 
     const emptyScenario = detectEmptyStateScenario(
@@ -161,7 +161,7 @@ export function TimelineView() {
       claimedBadges,
       pendingBadges,
       revokedBadges,
-      hasActiveFilter,
+      hasActiveFilter
     );
 
     if (emptyScenario) {
@@ -192,14 +192,14 @@ export function TimelineView() {
       </div>
     );
   }
-  
+
   // Story 8.2: Empty state when filters return no results
   const showNoResults = displayBadges.length === 0 && hasFilters;
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
       {/* Date Navigation Sidebar - AC 1.6 (hidden on mobile, visible on desktop) */}
-      <DateNavigationSidebar 
+      <DateNavigationSidebar
         dateGroups={dateGroups}
         className="hidden lg:block w-60 flex-shrink-0"
       />
@@ -232,26 +232,34 @@ export function TimelineView() {
             placeholder="Search your badges..."
           />
         </div>
-        
+
         {/* Search results count - Story 8.2 */}
         {hasFilters && !showNoResults && (
           <p className="text-sm text-gray-500 mb-4">
             Showing {displayBadges.length} of {data.badges.length} badges
           </p>
         )}
-        
+
         {/* No results state - Story 8.2 AC1: Include query and suggestions */}
         {showNoResults && (
           <div className="text-center py-12">
             <div className="mx-auto w-16 h-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg
+                className="w-8 h-8 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
             </div>
             <p className="text-gray-700 text-lg font-medium">
-              {searchTerm 
-                ? `No badges found for "${searchTerm}"`
-                : 'No badges match your filters'}
+              {searchTerm ? `No badges found for "${searchTerm}"` : 'No badges match your filters'}
             </p>
             <ul className="text-gray-500 mt-3 space-y-1">
               <li>• Try different keywords</li>
@@ -292,10 +300,7 @@ export function TimelineView() {
 
                 return (
                   <div key={group.label} id={`group-${group.label}`}>
-                    <DateGroupHeader 
-                      label={group.label} 
-                      count={group.count} 
-                    />
+                    <DateGroupHeader label={group.label} count={group.count} />
                     <div className="space-y-4 mt-4">
                       {groupBadges.map((badge) => (
                         <BadgeTimelineCard key={badge.id} badge={badge} />
@@ -309,11 +314,9 @@ export function TimelineView() {
         )}
 
         {/* Grid View - With keyboard navigation (Story 8.3 UX-P1-005) */}
-        {viewMode === 'grid' && !showNoResults && (
-          <GridView badges={displayBadges} />
-        )}
+        {viewMode === 'grid' && !showNoResults && <GridView badges={displayBadges} />}
       </div>
-      
+
       {/* Badge Detail Modal - renders via Portal to document.body */}
       <BadgeDetailModal />
     </div>
@@ -369,10 +372,13 @@ function useResponsiveColumns(): number {
 function GridView({ badges }: GridViewProps) {
   const openModal = useBadgeDetailModal((s) => s.openModal);
   const columns = useResponsiveColumns(); // Story 8.3: Dynamic column count
-  
-  const handleActivate = useCallback((badge: GridViewProps['badges'][0]) => {
-    openModal(badge.id);
-  }, [openModal]);
+
+  const handleActivate = useCallback(
+    (badge: GridViewProps['badges'][0]) => {
+      openModal(badge.id);
+    },
+    [openModal]
+  );
 
   const { focusedIndex, handleKeyDown, getItemProps } = useKeyboardNavigation({
     items: badges,
@@ -418,8 +424,12 @@ function GridView({ badges }: GridViewProps) {
               loading="lazy"
               className="w-24 h-24 md:w-32 md:h-32 mx-auto mb-2 md:mb-3 object-contain"
             />
-            <h3 className="font-semibold text-center text-sm md:text-base">{badge.template.name}</h3>
-            <p className="text-xs md:text-sm text-gray-500 text-center">{badge.template.category}</p>
+            <h3 className="font-semibold text-center text-sm md:text-base">
+              {badge.template.name}
+            </h3>
+            <p className="text-xs md:text-sm text-gray-500 text-center">
+              {badge.template.category}
+            </p>
           </div>
         );
       })}

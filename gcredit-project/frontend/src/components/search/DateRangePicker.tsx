@@ -12,7 +12,7 @@
  * - Keyboard accessible
  */
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Calendar, X } from 'lucide-react';
 
 export interface DateRange {
@@ -70,8 +70,16 @@ export function DateRangePicker({
   disableFutureDates = false,
   presets,
 }: DateRangePickerProps) {
-  const [error, setError] = useState<string | null>(null);
-  
+  // Derive validation error from current values (no useEffect needed)
+  const error = useMemo(() => {
+    if (value.from && value.to) {
+      const fromDate = new Date(value.from);
+      const toDate = new Date(value.to);
+      if (fromDate > toDate) return 'From date cannot be after to date';
+    }
+    return null;
+  }, [value.from, value.to]);
+
   // Calculate effective max date
   const effectiveMaxDate = useMemo(() => {
     if (disableFutureDates) {
@@ -80,21 +88,6 @@ export function DateRangePicker({
     }
     return maxDate;
   }, [disableFutureDates, maxDate]);
-
-  // Validate date range
-  useEffect(() => {
-    if (value.from && value.to) {
-      const fromDate = new Date(value.from);
-      const toDate = new Date(value.to);
-      if (fromDate > toDate) {
-        setError('From date cannot be after to date');
-      } else {
-        setError(null);
-      }
-    } else {
-      setError(null);
-    }
-  }, [value.from, value.to]);
 
   // Handle from date change
   const handleFromChange = useCallback(
@@ -132,7 +125,7 @@ export function DateRangePicker({
           {label}
         </label>
       )}
-      
+
       {/* Presets */}
       {presets && presets.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-2">
@@ -195,9 +188,7 @@ export function DateRangePicker({
         {layout === 'inline' && !compact && (
           <span className="hidden sm:block text-gray-400 pb-2">to</span>
         )}
-        {compact && (
-          <span className="text-gray-400 text-sm">-</span>
-        )}
+        {compact && <span className="text-gray-400 text-sm">-</span>}
 
         {/* To Date */}
         <div className={compact ? 'flex-1' : 'flex-1 min-w-0'}>

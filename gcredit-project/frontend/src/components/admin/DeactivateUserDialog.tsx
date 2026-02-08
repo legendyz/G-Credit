@@ -38,7 +38,7 @@ export function DeactivateUserDialog({
   const dialogRef = useFocusTrap<HTMLDivElement>({
     isActive: isOpen,
     onEscape: onClose,
-    returnFocusTo: triggerRef?.current,
+    returnFocusRef: triggerRef,
     autoFocus: true,
   });
 
@@ -52,11 +52,13 @@ export function DeactivateUserDialog({
   const isSelf = user.id === currentUserId;
 
   // Reset form when dialog opens
+  /* eslint-disable react-hooks/set-state-in-effect -- Intentional form reset on dialog open */
   useEffect(() => {
     if (isOpen) {
       setAuditNote('');
     }
   }, [isOpen]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleConfirm = useCallback(async () => {
     try {
@@ -120,7 +122,10 @@ export function DeactivateUserDialog({
                 }`}
               />
             </div>
-            <h2 id="deactivate-title" className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h2
+              id="deactivate-title"
+              className="text-lg font-semibold text-gray-900 dark:text-white"
+            >
               {actionText} User
             </h2>
           </div>
@@ -174,18 +179,14 @@ export function DeactivateUserDialog({
             value={auditNote}
             onChange={(e) => setAuditNote(e.target.value.slice(0, 200))}
             placeholder={
-              isDeactivating
-                ? 'e.g., User left organization'
-                : 'e.g., User rejoined the company'
+              isDeactivating ? 'e.g., User left organization' : 'e.g., User rejoined the company'
             }
             rows={2}
             maxLength={200}
             disabled={isSelf && isDeactivating}
             className="focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           />
-          <p className="mt-1 text-right text-xs text-gray-400">
-            {auditNote.length}/200
-          </p>
+          <p className="mt-1 text-right text-xs text-gray-400">{auditNote.length}/200</p>
         </div>
 
         {/* Actions */}

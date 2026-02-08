@@ -55,12 +55,14 @@ describe('useMediaQuery', () => {
 
   it('updates when media query changes', () => {
     let listener: ((event: MediaQueryListEvent) => void) | null = null;
-    
+
     window.matchMedia = vi.fn().mockImplementation((query: string) => ({
       matches: false,
       media: query,
       onchange: null,
-      addEventListener: vi.fn((_, cb) => { listener = cb; }),
+      addEventListener: vi.fn((_, cb) => {
+        listener = cb;
+      }),
       removeEventListener: vi.fn(),
       dispatchEvent: vi.fn(),
     }));

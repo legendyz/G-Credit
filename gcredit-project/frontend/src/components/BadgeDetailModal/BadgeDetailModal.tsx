@@ -30,9 +30,34 @@ const BadgeDetailModal: React.FC = () => {
   const [claimSuccessOpen, setClaimSuccessOpen] = useState(false);
 
   useEffect(() => {
-    if (isOpen && badgeId) {
-      fetchBadgeDetails();
-    }
+    if (!isOpen || !badgeId) return;
+
+    const fetchBadgeDetails = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(`${API_BASE_URL}/badges/${badgeId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch badge details');
+        }
+
+        const data = await response.json();
+        setBadge(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBadgeDetails();
   }, [isOpen, badgeId]);
 
   // AC 4.14: Keyboard navigation - Escape key closes modal
@@ -53,31 +78,6 @@ const BadgeDetailModal: React.FC = () => {
       document.body.style.overflow = 'unset';
     };
   }, [isOpen, closeModal]);
-
-  const fetchBadgeDetails = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`${API_BASE_URL}/badges/${badgeId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch badge details');
-      }
-
-      const data = await response.json();
-      setBadge(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Sprint 6: Download badge as PNG (Story 6.4 - Baked Badge)
   const handleDownloadBadge = async () => {
@@ -125,7 +125,7 @@ const BadgeDetailModal: React.FC = () => {
       const response = await fetch(`${API_BASE_URL}/badges/${badge.id}/claim`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
@@ -137,20 +137,23 @@ const BadgeDetailModal: React.FC = () => {
 
       // Parse response (we don't need the full badge, just confirmation)
       await response.json();
-      
+
       // Update local badge state
-      setBadge((prev) => prev ? { ...prev, status: BadgeStatus.CLAIMED, claimedAt: new Date().toISOString() } : null);
-      
+      setBadge((prev) =>
+        prev ? { ...prev, status: BadgeStatus.CLAIMED, claimedAt: new Date().toISOString() } : null
+      );
+
       // Show celebration modal
       setClaimSuccessOpen(true);
-      
+
       toast.success('Badge claimed!', {
         description: `You've successfully claimed the ${badge.template.name} badge.`,
       });
     } catch (err) {
       console.error('Claim failed:', err);
       toast.error('Claim failed', {
-        description: err instanceof Error ? err.message : 'Unable to claim badge. Please try again.',
+        description:
+          err instanceof Error ? err.message : 'Unable to claim badge. Please try again.',
       });
     } finally {
       setClaiming(false);
@@ -178,7 +181,7 @@ const BadgeDetailModal: React.FC = () => {
         aria-labelledby="modal-title"
       >
         {/* AC1: Full screen on mobile (<768px), AC2-3: Centered max-width on tablet/desktop */}
-        <div 
+        <div
           className="bg-white md:rounded-lg shadow-2xl 
                      w-full h-full md:h-auto md:max-h-[90vh] md:max-w-3xl
                      overflow-hidden flex flex-col"
@@ -259,15 +262,17 @@ const BadgeDetailModal: React.FC = () => {
                 <EvidenceSection badgeId={badge.id} />
 
                 {/* Story 9.3 AC2: Revocation Details Section */}
-                {badge.status === BadgeStatus.REVOKED && badge.revokedAt && badge.revocationReason && (
-                  <RevocationSection
-                    revokedAt={badge.revokedAt}
-                    revocationReason={badge.revocationReason}
-                    revocationNotes={badge.revocationNotes}
-                    isPublicReason={badge.isPublicReason || false}
-                    revokedBy={badge.revokedBy}
-                  />
-                )}
+                {badge.status === BadgeStatus.REVOKED &&
+                  badge.revokedAt &&
+                  badge.revocationReason && (
+                    <RevocationSection
+                      revokedAt={badge.revokedAt}
+                      revocationReason={badge.revocationReason}
+                      revocationNotes={badge.revocationNotes}
+                      isPublicReason={badge.isPublicReason || false}
+                      revokedBy={badge.revokedBy}
+                    />
+                  )}
 
                 {/* AC 4.5: Timeline Section */}
                 <TimelineSection
@@ -277,9 +282,7 @@ const BadgeDetailModal: React.FC = () => {
                 />
 
                 {/* AC 4.6: Verification Section */}
-                <VerificationSection
-                  assertionUrl={badge.assertionUrl}
-                />
+                <VerificationSection assertionUrl={badge.assertionUrl} />
 
                 {/* Sprint 6: Badge Share Analytics (Story 7.5) */}
                 <BadgeAnalytics
@@ -309,16 +312,18 @@ const BadgeDetailModal: React.FC = () => {
           </div>
 
           {/* AC 4.8: Action Footer (Share/Download/Claim buttons) | Story 9.3 AC3: Disable for revoked badges */}
-          <footer style={{
-            padding: '1rem 1.5rem',
-            borderTop: '1px solid #e5e7eb',
-            backgroundColor: '#f9fafb',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '0.5rem'
-          }}>
+          <footer
+            style={{
+              padding: '1rem 1.5rem',
+              borderTop: '1px solid #e5e7eb',
+              backgroundColor: '#f9fafb',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '0.5rem',
+            }}
+          >
             {/* UX-P0-004: Claim Button for PENDING badges */}
             {badge?.status === BadgeStatus.PENDING && (
               <button
@@ -336,7 +341,7 @@ const BadgeDetailModal: React.FC = () => {
                   alignItems: 'center',
                   cursor: claiming ? 'not-allowed' : 'pointer',
                   border: 'none',
-                  transition: 'background-color 0.2s'
+                  transition: 'background-color 0.2s',
                 }}
                 onMouseEnter={(e) => {
                   if (!claiming) {
@@ -351,16 +356,42 @@ const BadgeDetailModal: React.FC = () => {
               >
                 {claiming ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     Claiming...
                   </>
                 ) : (
                   <>
-                    <svg style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                     Claim Badge
                   </>
@@ -371,11 +402,13 @@ const BadgeDetailModal: React.FC = () => {
             {/* Story 9.3 AC3: Disable Share button for revoked badges */}
             <button
               onClick={() => setShareModalOpen(true)}
-              disabled={badge?.status === BadgeStatus.REVOKED || badge?.status === BadgeStatus.PENDING}
+              disabled={
+                badge?.status === BadgeStatus.REVOKED || badge?.status === BadgeStatus.PENDING
+              }
               title={
-                badge?.status === BadgeStatus.REVOKED 
-                  ? 'Revoked badges cannot be shared' 
-                  : badge?.status === BadgeStatus.PENDING 
+                badge?.status === BadgeStatus.REVOKED
+                  ? 'Revoked badges cannot be shared'
+                  : badge?.status === BadgeStatus.PENDING
                     ? 'Claim this badge before sharing'
                     : 'Share this badge'
               }
@@ -384,28 +417,53 @@ const BadgeDetailModal: React.FC = () => {
                 fontSize: '0.875rem',
                 fontWeight: 500,
                 color: 'white',
-                backgroundColor: (badge?.status === BadgeStatus.REVOKED || badge?.status === BadgeStatus.PENDING) ? '#9ca3af' : '#2563eb',
+                backgroundColor:
+                  badge?.status === BadgeStatus.REVOKED || badge?.status === BadgeStatus.PENDING
+                    ? '#9ca3af'
+                    : '#2563eb',
                 borderRadius: '0.5rem',
                 display: 'flex',
                 alignItems: 'center',
-                cursor: (badge?.status === BadgeStatus.REVOKED || badge?.status === BadgeStatus.PENDING) ? 'not-allowed' : 'pointer',
+                cursor:
+                  badge?.status === BadgeStatus.REVOKED || badge?.status === BadgeStatus.PENDING
+                    ? 'not-allowed'
+                    : 'pointer',
                 border: 'none',
-                opacity: (badge?.status === BadgeStatus.REVOKED || badge?.status === BadgeStatus.PENDING) ? 0.5 : 1,
-                transition: 'background-color 0.2s'
+                opacity:
+                  badge?.status === BadgeStatus.REVOKED || badge?.status === BadgeStatus.PENDING
+                    ? 0.5
+                    : 1,
+                transition: 'background-color 0.2s',
               }}
               onMouseEnter={(e) => {
-                if (badge?.status !== BadgeStatus.REVOKED && badge?.status !== BadgeStatus.PENDING) {
+                if (
+                  badge?.status !== BadgeStatus.REVOKED &&
+                  badge?.status !== BadgeStatus.PENDING
+                ) {
                   e.currentTarget.style.backgroundColor = '#1d4ed8';
                 }
               }}
               onMouseLeave={(e) => {
-                if (badge?.status !== BadgeStatus.REVOKED && badge?.status !== BadgeStatus.PENDING) {
+                if (
+                  badge?.status !== BadgeStatus.REVOKED &&
+                  badge?.status !== BadgeStatus.PENDING
+                ) {
                   e.currentTarget.style.backgroundColor = '#2563eb';
                 }
               }}
             >
-              <svg style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              <svg
+                style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                />
               </svg>
               Share Badge
             </button>
@@ -426,7 +484,7 @@ const BadgeDetailModal: React.FC = () => {
                 alignItems: 'center',
                 cursor: downloading ? 'not-allowed' : 'pointer',
                 opacity: downloading ? 0.5 : 1,
-                transition: 'background-color 0.2s'
+                transition: 'background-color 0.2s',
               }}
               onMouseEnter={(e) => {
                 if (!downloading) {
@@ -441,16 +499,42 @@ const BadgeDetailModal: React.FC = () => {
             >
               {downloading ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-700"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Downloading...
                 </>
               ) : (
                 <>
-                  <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                    />
                   </svg>
                   Download PNG
                 </>

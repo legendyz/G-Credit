@@ -50,9 +50,7 @@ export function AdminUserManagementPage() {
   const [page, setPage] = useState(initialPage);
   const [sortBy, setSortBy] = useState<SortByField>(initialSortBy);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(initialSortOrder);
-  const [roleFilter, setRoleFilter] = useState<UserRole | 'ALL'>(
-    initialRoleFilter || 'ALL'
-  );
+  const [roleFilter, setRoleFilter] = useState<UserRole | 'ALL'>(initialRoleFilter || 'ALL');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>(
     initialStatusFilter === 'true' ? 'active' : initialStatusFilter === 'false' ? 'inactive' : 'all'
   );
@@ -142,8 +140,7 @@ export function AdminUserManagementPage() {
       setStatusFilter(value as 'all' | 'active' | 'inactive');
       setPage(1);
       updateUrlParams({
-        statusFilter:
-          value === 'active' ? 'true' : value === 'inactive' ? 'false' : null,
+        statusFilter: value === 'active' ? 'true' : value === 'inactive' ? 'false' : null,
         page: '1',
       });
     },
@@ -183,12 +180,8 @@ export function AdminUserManagementPage() {
             <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              User Management
-            </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Manage user roles and access
-            </p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">User Management</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Manage user roles and access</p>
           </div>
         </div>
         {data && (
@@ -259,11 +252,7 @@ export function AdminUserManagementPage() {
           <p className="mt-1 text-sm text-red-600 dark:text-red-300">
             {error instanceof Error ? error.message : 'An error occurred'}
           </p>
-          <Button
-            variant="outline"
-            className="mt-4"
-            onClick={() => window.location.reload()}
-          >
+          <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>
             Try again
           </Button>
         </div>
@@ -273,9 +262,7 @@ export function AdminUserManagementPage() {
       {isEmpty && (
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-12 text-center dark:border-gray-700 dark:bg-gray-800">
           <Users className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">
-            No users found
-          </h3>
+          <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">No users found</h3>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             {hasFilters
               ? 'No users match your search criteria. Try adjusting your filters.'
@@ -305,8 +292,7 @@ export function AdminUserManagementPage() {
             <div className="flex items-center justify-between border-t border-gray-200 pt-4 dark:border-gray-700">
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Showing {(page - 1) * PAGE_SIZE + 1} to{' '}
-                {Math.min(page * PAGE_SIZE, data.pagination.total)} of{' '}
-                {data.pagination.total} users
+                {Math.min(page * PAGE_SIZE, data.pagination.total)} of {data.pagination.total} users
               </p>
               <div className="flex gap-2">
                 <Button

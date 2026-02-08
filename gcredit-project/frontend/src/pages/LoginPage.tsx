@@ -1,7 +1,7 @@
 /**
  * Login Page - Story 0.2a: Login & Navigation System
  * Story 8.3: WCAG 2.1 AA Accessibility
- * 
+ *
  * Minimal login page for UAT testing.
  * Features: email/password form, error handling, redirect on success.
  */
@@ -16,9 +16,9 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const { login, isLoading, error, isAuthenticated, clearError } = useAuthStore();
-  
+
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
@@ -26,26 +26,26 @@ export function LoginPage() {
       navigate(from, { replace: true });
     }
   }, [isAuthenticated, navigate, location]);
-  
+
   // Clear error on unmount
   useEffect(() => {
     return () => clearError();
   }, [clearError]);
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email.trim() || !password.trim()) {
       toast.error('Please enter both email and password');
       return;
     }
-    
+
     try {
       await login(email, password);
       toast.success('Login successful', {
         description: 'Welcome back!',
       });
-      
+
       // Navigate to intended destination or home
       const from = (location.state as { from?: string })?.from || '/';
       navigate(from, { replace: true });
@@ -55,7 +55,7 @@ export function LoginPage() {
       });
     }
   };
-  
+
   return (
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
       <div className="w-full max-w-md">
@@ -64,14 +64,14 @@ export function LoginPage() {
           <h1 className="text-3xl font-bold text-gray-900">G-Credit</h1>
           <p className="text-gray-600 mt-2">Badge Management System</p>
         </div>
-        
+
         {/* Login Card */}
         <div className="bg-white rounded-lg shadow-xl p-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Sign In</h2>
-          
+
           {/* Error Alert - Story 8.3 AC4 */}
           {error && (
-            <div 
+            <div
               id="login-error"
               className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm"
               role="alert"
@@ -80,14 +80,15 @@ export function LoginPage() {
               {error}
             </div>
           )}
-          
-          <form onSubmit={handleSubmit} className="space-y-4" aria-describedby={error ? 'login-error' : undefined}>
+
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4"
+            aria-describedby={error ? 'login-error' : undefined}
+          >
             {/* Email Field */}
             <div>
-              <label 
-                htmlFor="email" 
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                 Email Address
               </label>
               <input
@@ -106,13 +107,10 @@ export function LoginPage() {
                 aria-required="true"
               />
             </div>
-            
+
             {/* Password Field */}
             <div>
-              <label 
-                htmlFor="password" 
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                 Password
               </label>
               <input
@@ -131,7 +129,7 @@ export function LoginPage() {
                 aria-required="true"
               />
             </div>
-            
+
             {/* Submit Button */}
             <button
               type="submit"
@@ -145,24 +143,24 @@ export function LoginPage() {
             >
               {isLoading ? (
                 <span className="flex items-center justify-center">
-                  <svg 
-                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    fill="none" 
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
                     viewBox="0 0 24 24"
                     aria-hidden="true"
                   >
-                    <circle 
-                      className="opacity-25" 
-                      cx="12" 
-                      cy="12" 
-                      r="10" 
-                      stroke="currentColor" 
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
                       strokeWidth="4"
                     />
-                    <path 
-                      className="opacity-75" 
-                      fill="currentColor" 
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                   </svg>
@@ -173,13 +171,13 @@ export function LoginPage() {
               )}
             </button>
           </form>
-          
+
           {/* Help Text */}
           <p className="mt-6 text-center text-xs text-gray-500">
             Contact your administrator if you need access
           </p>
         </div>
-        
+
         {/* Footer */}
         <p className="mt-4 text-center text-xs text-gray-500">
           © 2026 G-Credit. All rights reserved.
