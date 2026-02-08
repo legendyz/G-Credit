@@ -18,15 +18,15 @@ metadata:
 # Sprint Metrics (updated daily)
 metrics:
   total_stories: 10
-  total_estimated_hours: 59.5h
-  buffer_hours: 20.5h
+  total_estimated_hours: 62.5h
+  buffer_hours: 17.5h
   
   completed_stories: 0
   completed_hours: 0h
   remaining_hours: 59.5h
   
   # Capacity breakdown
-  td_hours: 20.5h    # Stories 10.1-10.4 (includes audit fixes)
+  td_hours: 23.5h    # Stories 10.1-10.4 (10.2 upgraded to full cleanup)
   feature_hours: 6h   # Story 10.5
   uat_hours: 28h      # Stories 10.6-10.8
   release_hours: 6h    # Stories 10.9-10.10
@@ -118,20 +118,20 @@ stories:
     priority: HIGH
     estimate: 7.5h
     actual: null
-    status: backlog
+    status: review
     phase: 1-td
     file: "10-1-tsc-test-type-errors.md"
     dependencies: []
     
   10-2-eslint-regression-ci-gate:
-    title: "ESLint Regression Fix + CI Gate"
+    title: "ESLint Full Cleanup + CI Zero-Tolerance Gate"
     priority: HIGH
-    estimate: 5h
+    estimate: 8h
     actual: null
     status: backlog
     phase: 1-td
     file: "10-2-eslint-regression-ci-gate.md"
-    dependencies: ["10-1"]  # Ideally after tsc fixes
+    dependencies: ["10-1"]  # MUST complete first
     
   10-3-todo-fixme-cleanup:
     title: "TD-018: TODO/FIXME Cleanup + UX Audit Critical Fixes"

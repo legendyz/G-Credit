@@ -16,7 +16,7 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 
 **Success Criteria:**
 - ✅ `tsc --noEmit` passes with 0 errors (src + test)
-- ✅ ESLint ≤ 280 warnings with CI gate preventing regression
+- ✅ ESLint: 0 errors + 0 warnings with `--max-warnings=0` zero-tolerance CI gate
 - ✅ 0 TODO/FIXME markers in source code
 - ✅ 0 hardcoded `localhost:3000` URLs in frontend
 - ✅ 0 dead navigation links (all Quick Actions route to valid pages)
@@ -39,14 +39,14 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 ### Capacity Allocation
 | Category | Hours | % | Notes |
 |----------|-------|---|-------|
-| **Technical Debt** | 19h | 24% | Stories 10.1-10.4 (includes audit fixes) |
+| **Technical Debt** | 22h | 28% | Stories 10.1-10.4 (10.2 upgraded to full cleanup) |
 | **Feature Enhancement** | 6h | 8% | Story 10.5 (Analytics real data) |
 | **UAT Preparation** | 8h | 10% | Story 10.6 (Test plan + seed data) |
 | **UAT Execution** | 12h | 15% | Story 10.7 (Full UAT) |
 | **Bug Fix Buffer** | 8h | 10% | Story 10.8 (UAT bug fixes) |
 | **Release Documentation** | 4h | 5% | Story 10.9 (CHANGELOG + docs) |
 | **Release** | 2h | 3% | Story 10.10 (Merge + tag) |
-| **Buffer** | 21h | 26% | Sprint buffer (reduced by 2h for audit fixes) |
+| **Buffer** | 18h | 23% | Sprint buffer (reduced by 5h for audit fixes + ESLint upgrade) |
 | **TOTAL** | **80h** | **100%** | |
 
 ### Velocity Reference (Lessons Learned)
@@ -78,18 +78,19 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 
 ---
 
-### Story 10.2: ESLint Regression Fix + CI Gate
+### Story 10.2: ESLint Full Cleanup + CI Zero-Tolerance Gate
 **Priority:** 🔴 HIGH  
-**Estimate:** 5h  
+**Estimate:** 8h  
 **Story Doc:** 📄 [10-2-eslint-regression-ci-gate.md](10-2-eslint-regression-ci-gate.md)  
 **Status:** 🔴 Not Started  
-**Dependencies:** Ideally after 10.1
+**Dependencies:** Story 10.1 must complete first
 
-**Quick Summary:** As a developer, I want ESLint warnings reduced from 423 to <280 with a CI gate preventing future regression.
+**Quick Summary:** As a developer, I want all ESLint errors and warnings eliminated (537→0) with a zero-tolerance CI gate.
 
 **Key Deliverables:**
-- [ ] ESLint warnings ≤ 280
-- [ ] CI gate: max-warnings cannot increase
+- [ ] 0 ESLint errors (currently 325, mostly auto-fixable)
+- [ ] 0 ESLint warnings (currently 212, all `no-unsafe-*` type-safety)
+- [ ] `--max-warnings=0` zero-tolerance CI gate
 - [ ] Zero regressions
 
 ---
