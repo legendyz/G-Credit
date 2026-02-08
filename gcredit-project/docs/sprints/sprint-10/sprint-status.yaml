@@ -21,9 +21,9 @@ metrics:
   total_estimated_hours: 66h
   buffer_hours: 14h
   
-  completed_stories: 2
-  completed_hours: 15.5h
-  remaining_hours: 47h
+  completed_stories: 3
+  completed_hours: 19.5h
+  remaining_hours: 43.5h
   
   # Capacity breakdown
   td_hours: 27h    # Stories 10.1-10.4 + 10.3b (frontend ESLint from buffer)
@@ -246,7 +246,7 @@ technical_debt:
     - id: TD-018
       description: "Code TODO/FIXME cleanup (14 markers)"
       story: "10.3"
-      status: backlog
+      status: complete
 
     - id: TD-019
       description: "Frontend ESLint cleanup (49 errors + 21,363 warnings) + CI gate"
@@ -287,8 +287,9 @@ quality_gates:
     
   todo_fixme:
     target: 0
-    current: 14
+    current: 0
     sprint_story: "10.3"
+    status: complete
     
   test_count:
     target: "≥1087"

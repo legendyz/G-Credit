@@ -95,22 +95,22 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 
 ---
 
-### Story 10.3: TD-018 — TODO/FIXME Cleanup + UX Audit Critical Fixes
+### Story 10.3: TD-018 — TODO/FIXME Cleanup + UX Audit Critical Fixes ✅ Complete
 **Priority:** 🔴 HIGH  
-**Estimate:** 5h  
+**Estimate:** 5h | **Actual:** 4h  
 **Story Doc:** 📄 [10-3-todo-fixme-cleanup.md](10-3-todo-fixme-cleanup.md)  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Complete (SM Accepted 2026-02-08)  
 **Dependencies:** None
 
 **Quick Summary:** As a developer, I want all 14 TODO/FIXME markers resolved, hardcoded localhost URLs replaced, and dead navigation links fixed.
 
 **Key Deliverables:**
-- [ ] 0 TODO/FIXME in src/ (backend + frontend)
-- [ ] Fix 8 hardcoded `localhost:3000` URLs (🎨 UX Audit Critical #3)
-- [ ] Fix 9 dead Quick Action links (🎨 UX Audit Critical #1)
-- [ ] Add 404 catch-all route (🎨 UX Audit Critical #2)
-- [ ] Deferred items tracked as ADR or TD
-- [ ] Zero regressions
+- [x] 0 TODO/FIXME in src/ (backend + frontend)
+- [x] Fix 8 hardcoded `localhost:3000` URLs (🎨 UX Audit Critical #3)
+- [x] Fix 9 dead Quick Action links (🎨 UX Audit Critical #1)
+- [x] Add 404 catch-all route (🎨 UX Audit Critical #2)
+- [x] Deferred items tracked as ADR or TD
+- [x] Zero regressions (534 backend + 397 frontend tests pass)
 
 ---
 
