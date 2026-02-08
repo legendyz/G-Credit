@@ -419,15 +419,18 @@ events:
     format: "Async update in sprint-status.yaml"
   
   review:
-    date: "2026-02-20"
+    date: "2026-02-08"
     duration: "1h"
     participants: ["Team", "Stakeholders"]
+    status: completed
+    outcome: "All 5 stories SM accepted, PO verified"
   
   retrospective:
-    date: "2026-02-20"
+    date: "2026-02-08"
     duration: "1h"
     participants: ["Team"]
-    status: optional
+    status: completed
+    outcome: "6 went-well items, 4 improvements, 7 action items"
 
 # Review Findings Integration
 reviews:

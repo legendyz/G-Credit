@@ -426,16 +426,14 @@ Process bulk badge issuance synchronously with up to 20 badges per batch. Simple
 
 #### Day 11 (Monday - Final Day)
 - [x] **Final Testing & Bug Fixes** — covered by per-story SM acceptance (1087 tests, 0 failures)
-- [ ] **Sprint Demo Preparation** (1h) — scheduled for 2026-02-20
-  - Prepare demo script
-  - Test demo environment
-- [ ] **Sprint Review Ceremony** (1.5h) — scheduled for 2026-02-20
-  - Demo bulk issuance flow
+- [x] **Sprint Review Ceremony** (completed 2026-02-08)
+  - Demo bulk issuance flow (5 stories reviewed)
   - Show TD improvements (ESLint, bundle size)
-- [ ] **Sprint Retrospective** (1.5h) — scheduled for 2026-02-20
-  - What went well
-  - Challenges encountered
-  - Action items for Sprint 10
+  - All 5 stories SM accepted ✅
+- [x] **Sprint Retrospective** (completed 2026-02-08)
+  - What went well (6 items)
+  - What could be improved (4 items)
+  - 7 action items for Sprint 10
 
 ---
 
@@ -456,10 +454,10 @@ Process bulk badge issuance synchronously with up to 20 badges per batch. Simple
 - [x] ESLint warnings ≤500 (78% reduction: 1303→282, exceeded target; note: 8.4 regressed to 423)
 - [x] Frontend bundle <400KB (235 KB, 66.8% reduction)
 - [x] nodemailer fully removed
-- [ ] Sprint demo conducted — scheduled 2026-02-20
-- [ ] Sprint retrospective completed — scheduled 2026-02-20
-- [ ] Sprint branch merged to main — after demo
-- [ ] Version v0.9.0 tagged in git — after merge
+- [x] Sprint demo conducted — completed 2026-02-08
+- [x] Sprint retrospective completed — completed 2026-02-08
+- [ ] Sprint branch merged to main — pending
+- [ ] Version v0.9.0 tagged in git — pending
 
 ---
 
