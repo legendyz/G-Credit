@@ -61,6 +61,13 @@ v1.0.0 represents the completion of Phase 3 (MVP Development) with 10 Epics, 108
   - [ ] Verify all doc links in README.md
   - [ ] Check for outdated information
 
+- [ ] **Task 7: Known Limitations & Post-MVP Backlog** (AC: #5)
+  - [ ] Document TD-006 (Teams Channel Permissions) as known limitation in release notes
+  - [ ] Note: Teams channel sharing requires tenant admin approval for `ChannelMessage.Send`
+  - [ ] Note: 4 integration tests skipped (tracked in SKIPPED-TESTS-TRACKER.md)
+  - [ ] Note: Email sharing is fully functional as alternative
+  - [ ] Create post-MVP backlog section listing TD-006 as Sprint 11+ priority item
+
 - [ ] **Task 6: Update package.json version to 1.0.0** (AC: #1) 🏗️ _Architecture Audit_
   - [ ] `backend/package.json`: update `"version"` from `"0.0.1"` to `"1.0.0"`
   - [ ] `frontend/package.json`: update `"version"` to `"1.0.0"` if applicable

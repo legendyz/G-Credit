@@ -403,6 +403,26 @@ Two release audits were conducted before Sprint 10 kickoff. All findings have be
 
 ---
 
+---
+
+## 📋 Post-MVP Backlog (Sprint 11+)
+
+Items deferred from v1.0.0 release, to be addressed in subsequent sprints.
+
+| ID | Item | Priority | Effort | Blocker | Notes |
+|----|------|----------|--------|---------|-------|
+| TD-006 | Teams Channel Permissions | 🟡 Medium | 1 day | Tenant admin approval for `ChannelMessage.Send` | 4 tests skipped; Email sharing functional as workaround. See [SKIPPED-TESTS-TRACKER.md](../../testing/SKIPPED-TESTS-TRACKER.md) |
+
+### TD-006 Resolution Steps
+1. Submit `ChannelMessage.Send` permission request to tenant admin
+2. Wait for admin approval (external dependency)
+3. Re-enable 4 skipped Teams integration tests
+4. Run full Teams sharing E2E validation
+5. Update SKIPPED-TESTS-TRACKER.md → mark resolved
+6. Update project-context.md → TD-006 status to ✅ Resolved
+
+---
+
 **Last Updated:** 2026-02-08  
 **Status:** Planning Complete  
 **Template Version:** Based on sprint-backlog-template.md v1.2
