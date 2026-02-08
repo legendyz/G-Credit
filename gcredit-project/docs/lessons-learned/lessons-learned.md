@@ -5,7 +5,7 @@
 **Last Updated:** 2026-02-05 (Sprint 8 Complete - Production-Ready MVP)  
 **Status:** Living document - update after each Sprint Retrospective  
 **Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 → Sprint 6 → Sprint 7 → Sprint 8 (Complete) + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
-**Total Lessons:** 33 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 8, Sprint 7: 3, Sprint 8: 3)
+**Total Lessons:** 35 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 8, Sprint 7: 3, Sprint 8: 3, Sprint 9: 3, Sprint 10: 2)
 
 ---
 
@@ -76,6 +76,9 @@
   - Lesson 31: Code Review as DoD Gate
   - Lesson 32: E2E Test Isolation with Schema-based Approach
   - Lesson 33: Accessibility First Approach
+- [Sprint 10 Lessons](#sprint-10-lessons-february-2026) - ESLint Zero-Tolerance Cleanup (2 lessons) 🆕
+  - Lesson 37: Jest Asymmetric Matchers Return `any` — Centralized Typed Wrappers
+  - Lesson 38: Centralize `eslint-disable` in Utility Files, Not Scattered Across Codebase
 - [Cross-Sprint Patterns](#cross-sprint-patterns) - 12 patterns
 - [Development Checklists](#development-checklists)
 - [Common Pitfalls](#common-pitfalls-to-avoid)
@@ -1851,6 +1854,129 @@ When estimating type-strictness refactoring, apply this multiplier:
 
 #### Key Takeaway
 > Replacing `any` with strict types is not just a source code change — it's a source + test change. Budget 30-50% extra time for updating test mocks, and always verify with `tsc --noEmit` since `npm test` won't catch the mock mismatches.
+
+---
+
+## Sprint 10 Lessons (February 2026)
+### ESLint Zero-Tolerance Cleanup
+
+### 🎯 Lesson 37: Jest Asymmetric Matchers Return `any` — Centralized Typed Wrappers
+
+**Category:** 🧪 Testing, 🔧 Tooling  
+**Impact:** HIGH (affects every test file using `expect.any()`, `expect.objectContaining()`, etc.)  
+**Sprint Discovered:** Sprint 10, Story 10.2 (ESLint Full Cleanup)  
+**Discovery Date:** 2026-02-08  
+**Related Story:** [10-2-eslint-regression-ci-gate.md](../../sprints/sprint-10/10-2-eslint-regression-ci-gate.md)
+
+#### Problem
+
+Jest's asymmetric matchers (`expect.any()`, `expect.objectContaining()`, `expect.stringContaining()`, `expect.arrayContaining()`) all return `any` in `@types/jest`. When used inside object literals in test assertions, they trigger `@typescript-eslint/no-unsafe-assignment` warnings:
+
+```typescript
+// ❌ Triggers no-unsafe-assignment because expect.any(Date) returns `any`
+expect(result).toEqual({
+  id: 'test-id',
+  createdAt: expect.any(Date),        // any → no-unsafe-assignment
+  name: expect.stringContaining('test'), // any → no-unsafe-assignment
+});
+```
+
+This is pervasive — nearly every test file with `toEqual()` or `toHaveBeenCalledWith()` assertions triggers these warnings when Jest matchers appear in object literals.
+
+#### Root Cause
+
+`@types/jest` defines asymmetric matchers with return type `any` (not a generic or branded type). This is a known limitation in Jest's TypeScript typings that the Jest team hasn't addressed.
+
+#### Solution
+
+Create a centralized `test/helpers/jest-typed-matchers.ts` utility file with typed wrapper functions:
+
+```typescript
+// test/helpers/jest-typed-matchers.ts
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+
+export function anyDate(): Date {
+  return expect.any(Date);
+}
+
+export function anyString(): string {
+  return expect.any(String);
+}
+
+export function anyNumber(): number {
+  return expect.any(Number);
+}
+
+export function containing<T extends Record<string, unknown>>(obj: T): T {
+  return expect.objectContaining(obj);
+}
+
+export function strContaining(s: string): string {
+  return expect.stringContaining(s);
+}
+
+/* eslint-enable @typescript-eslint/no-unsafe-return */
+```
+
+Usage in tests:
+```typescript
+import { anyDate, anyString, containing } from '../../test/helpers/jest-typed-matchers';
+
+// ✅ No ESLint warnings — all matchers return typed values
+expect(result).toEqual({
+  id: 'test-id',
+  createdAt: anyDate(),
+  name: strContaining('test'),
+});
+```
+
+#### Prevention for Future
+1. **Project Template:** Include `test/helpers/jest-typed-matchers.ts` in project boilerplate
+2. **Dev Prompt Rule:** "Use typed matcher helpers from `jest-typed-matchers.ts` instead of raw `expect.any()` in object literals"
+3. **Code Review Check:** Flag raw `expect.any()` inside object literals as ESLint hazard
+
+#### Key Takeaway
+> When `@types/jest` returns `any` from matcher functions, don't scatter `eslint-disable` across every test file. Instead, create a single typed wrapper utility that absorbs the `any` in one place, keeping the rest of the test codebase ESLint-clean.
+
+---
+
+### 🎯 Lesson 38: Centralize `eslint-disable` in Utility Files, Not Scattered Across Codebase
+
+**Category:** 📋 Process, 🔧 Tooling  
+**Impact:** MEDIUM (maintainability, auditability of ESLint exceptions)  
+**Sprint Discovered:** Sprint 10, Story 10.2 (ESLint Full Cleanup)  
+**Discovery Date:** 2026-02-08  
+**Related Story:** [10-2-eslint-regression-ci-gate.md](../../sprints/sprint-10/10-2-eslint-regression-ci-gate.md)
+
+#### Problem
+
+When fixing 204 `no-unsafe-*` warnings across 30+ files, there are two approaches:
+1. **Scattered:** Add `// eslint-disable-next-line` to each warning location (204 disable comments)
+2. **Centralized:** Fix warnings at the source, and where fixes are impossible (library type limitations), create utility wrappers that contain all `eslint-disable` in a single file
+
+Scattered disables make future audits difficult — you can't easily tell which disables are "necessary" (library limitation) vs "lazy" (should have been properly typed).
+
+#### Solution Applied in Story 10.2
+
+| Strategy | Where Applied | Result |
+|----------|--------------|--------|
+| **Fix at source** | Mock callbacks, error handlers, service calls | 190+ warnings eliminated with proper types |
+| **Centralized wrapper** | `test/helpers/jest-typed-matchers.ts` | 7 `eslint-disable` lines in ONE file, reused by 15+ test files |
+| **No scattered disables** | Entire codebase | 0 per-line `eslint-disable-next-line` added |
+
+Key patterns used to fix at source:
+- `$transaction.mockImplementation((callback: (tx: unknown) => unknown) => ...)` — typed mock callbacks
+- `catch (error: unknown)` + `instanceof Error` guards — typed error handling
+- `toHaveProperty('field', value)` instead of `result.field` — avoids unsafe member access
+- `jest.fn<() => Promise<Type>>()` — typed mock functions
+
+#### Prevention for Future
+1. **Zero-tolerance policy:** `--max-warnings=0` prevents new warnings from being introduced
+2. **When `eslint-disable` is needed:** Put it in a utility/wrapper file, not inline
+3. **Audit check:** `grep -r "eslint-disable" src/` should show minimal results, concentrated in utility files
+
+#### Key Takeaway
+> Treat `eslint-disable` like technical debt — if you must have it, concentrate it in utility files where it's visible, documented, and auditable. Never scatter it across the codebase where it becomes invisible and unmaintainable.
 
 ---
 
