@@ -1542,7 +1542,8 @@ Planning阶段: 创建Story文件框架（Story、AC、Tasks基本结构）
 | Sprint 6 | 2026-01-30 | ~90% | **未创建Story文件** | Stories 7.2/7.3无独立文件，导致Story 7.3未实现 |
 | Sprint 7 | 2026-01-31 | 100% | 无重大问题 | 使用v1.2 + 12,000行文档，28个Story文件 |
 | Sprint 8 | 2026-02-02 | 100% | 无重大问题 | 使用v1.4（新增UX/Arch审查），发现12个问题并修复 |
-| Sprint 9 | TBD | TBD | TBD | 计划使用v1.5（完整版：TD规划+Status更新+Kickoff） |
+| Sprint 9 | 2026-02-06 | 100% | ESLint regression (423 warnings) | 使用v1.5，TD嵌入Stories，5/5完成 |
+| Sprint 10 | 2026-02-08 | 100% | 无重大问题 | 使用v1.5（v1.0.0 Release Sprint），10 stories，首次纯TD+UAT+Release sprint |
 
 ---
 
