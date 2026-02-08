@@ -17,16 +17,16 @@ metadata:
 
 # Sprint Metrics (updated daily)
 metrics:
-  total_stories: 11
-  total_estimated_hours: 67h
-  buffer_hours: 13h
+  total_stories: 12
+  total_estimated_hours: 69h
+  buffer_hours: 11h
   
   completed_stories: 4
   completed_hours: 23h
   remaining_hours: 40h
   
   # Capacity breakdown
-  td_hours: 28h    # Stories 10.1-10.4 + 10.3b (10.4 includes TD-020/021)
+  td_hours: 30h    # Stories 10.1-10.4 + 10.3b + 10.3c (API path fixes from buffer)
   feature_hours: 6h   # Story 10.5
   uat_hours: 28h      # Stories 10.6-10.8
   release_hours: 6h    # Stories 10.9-10.10
@@ -155,6 +155,18 @@ stories:
     discovered: "During Story 10.3 development"
     accepted_date: "2026-02-09"
     commit: "80b693e"
+
+  10-3c-api-path-audit-fixes:
+    title: "API Path Audit Fixes: Route Mismatch + Hardcoded URL Cleanup"
+    priority: CRITICAL
+    estimate: 2h
+    actual: null
+    status: backlog
+    phase: 1-td
+    file: "10-3c-api-path-audit-fixes.md"
+    dependencies: []
+    discovered: "SM API Path Audit (2026-02-09)"
+    td_ref: "TD-022"
     
   10-4-i18n-chinese-string-scan:
     title: "i18n Scan + UX/Code Quality Quick Wins"

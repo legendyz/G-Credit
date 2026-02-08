@@ -39,14 +39,14 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 ### Capacity Allocation
 | Category | Hours | % | Notes |
 |----------|-------|---|-------|
-| **Technical Debt** | 26.5h | 33% | Stories 10.1-10.4 + 10.3b (10.4 includes TD-020/021) |
+| **Technical Debt** | 28.5h | 36% | Stories 10.1-10.4 + 10.3b + 10.3c (API path fixes from buffer) |
 | **Feature Enhancement** | 6h | 8% | Story 10.5 (Analytics real data) |
 | **UAT Preparation** | 8h | 10% | Story 10.6 (Test plan + seed data) |
 | **UAT Execution** | 12h | 15% | Story 10.7 (Full UAT) |
 | **Bug Fix Buffer** | 8h | 10% | Story 10.8 (UAT bug fixes) |
 | **Release Documentation** | 4h | 5% | Story 10.9 (CHANGELOG + docs) |
 | **Release** | 2h | 3% | Story 10.10 (Merge + tag) |
-| **Buffer** | 14.5h | 18% | Sprint buffer (reduced by 3.5h for TD-019 frontend ESLint) |
+| **Buffer** | 12.5h | 16% | Sprint buffer (reduced by 5.5h for TD-019 + API path fixes) |
 | **TOTAL** | **80h** | **100%** | |
 
 ### Velocity Reference (Lessons Learned)
@@ -131,6 +131,26 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 - [x] Add `--max-warnings=0` to frontend lint script
 - [x] Add `npm run lint` to CI frontend-tests job
 - [x] Zero regressions (Vitest + backend tests)
+
+---
+
+### Story 10.3c: API Path Audit Fixes — Route Mismatch + Hardcoded URL Cleanup
+**Priority:** 🔴 CRITICAL  
+**Estimate:** 2h (from buffer)  
+**Story Doc:** 📄 [10-3c-api-path-audit-fixes.md](10-3c-api-path-audit-fixes.md)  
+**Status:** 🔴 Not Started  
+**Dependencies:** None  
+**Discovered:** SM API Path Audit (2026-02-09)
+
+**Quick Summary:** 5 CRITICAL API path mismatches causing 404s. 4 backend controllers missing `api/` prefix + 2 frontend path bugs + 8 hardcoded URLs.
+
+**Key Deliverables:**
+- [ ] 4 backend controllers add `api/` prefix (auth, badge-templates, skills, skill-categories)
+- [ ] Fix Evidence download/preview path (missing `/badges` segment)
+- [ ] Fix Teams share path order (`/teams/share` → `/share/teams`)
+- [ ] 8 hardcoded `/api/...` → `${API_BASE_URL}/...`
+- [ ] E2E test paths updated
+- [ ] Zero regressions
 
 ---
 
