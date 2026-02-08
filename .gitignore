@@ -28,6 +28,7 @@ env/
 Scripts/
 Include/
 Lib/
+!gcredit-project/frontend/src/lib/
 pyvenv.cfg
 
 # IDEs
