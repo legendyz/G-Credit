@@ -113,7 +113,7 @@ export async function createAndLoginUser(
 
   // Login to get token
   const response = await request(app.getHttpServer() as App)
-    .post('/auth/login')
+    .post('/api/auth/login')
     .send(credentials)
     .expect(200); // Story 8.6: Login returns 200 OK
 

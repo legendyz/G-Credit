@@ -148,7 +148,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
 
     it('should update badge template', async () => {
       const response = await request(ctx.app.getHttpServer() as App)
-        .patch(`/badge-templates/${createdBadgeId}`)
+        .patch(`/api/badge-templates/${createdBadgeId}`)
         .set('Authorization', `Bearer ${adminUser.token}`)
         .field('description', 'Updated by isolated E2E test')
         .field('status', 'ACTIVE')
@@ -161,7 +161,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
 
     it('should get badge template by id', () => {
       return request(ctx.app.getHttpServer() as App)
-        .get(`/badge-templates/${createdBadgeId}`)
+        .get(`/api/badge-templates/${createdBadgeId}`)
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200)
         .expect((res) => {
@@ -453,13 +453,13 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
 
       // Delete the badge
       await request(ctx.app.getHttpServer() as App)
-        .delete(`/badge-templates/${badgeId}`)
+        .delete(`/api/badge-templates/${badgeId}`)
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200);
 
       // Verify badge is deleted
       await request(ctx.app.getHttpServer() as App)
-        .get(`/badge-templates/${badgeId}`)
+        .get(`/api/badge-templates/${badgeId}`)
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(404);
     });
