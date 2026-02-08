@@ -34,7 +34,7 @@ export function BulkIssuancePage() {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileSelected, setFileSelected] = useState(false);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const [_selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [uploadResult, setUploadResult] = useState<{
     totalRows: number;
     validRows: number;
