@@ -184,7 +184,29 @@ export class BulkIssuanceController {
   @Post('confirm/:sessionId')
   @Roles(UserRole.ISSUER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Confirm and execute bulk badge issuance' })
-  @ApiResponse({ status: 200, description: 'Processing complete' })
+  @ApiResponse({
+    status: 201,
+    description: 'Processing complete',
+    schema: {
+      properties: {
+        success: { type: 'boolean' },
+        processed: { type: 'number' },
+        failed: { type: 'number' },
+        results: {
+          type: 'array',
+          items: {
+            properties: {
+              row: { type: 'number' },
+              recipientEmail: { type: 'string' },
+              badgeName: { type: 'string' },
+              status: { type: 'string', enum: ['success', 'failed'] },
+              error: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+  })
   @ApiResponse({
     status: 400,
     description: 'Session not ready for confirmation',

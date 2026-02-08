@@ -7,6 +7,7 @@ import {
 import { BulkIssuanceService, SessionStatus } from './bulk-issuance.service';
 import { CsvValidationService } from './csv-validation.service';
 import { PrismaService } from '../common/prisma.service';
+import { BadgeIssuanceService } from '../badge-issuance/badge-issuance.service';
 
 describe('BulkIssuanceService', () => {
   let service: BulkIssuanceService;
@@ -33,12 +34,20 @@ describe('BulkIssuanceService', () => {
     $transaction: jest.fn(),
   };
 
+  const mockBadgeIssuanceService = {
+    issueBadge: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BulkIssuanceService,
         CsvValidationService,
         { provide: PrismaService, useValue: mockPrismaService },
+        {
+          provide: BadgeIssuanceService,
+          useValue: mockBadgeIssuanceService,
+        },
       ],
     }).compile();
 
@@ -722,6 +731,295 @@ template-123,user3@company.com`;
       expect(preview.rows.length).toBe(1);
       expect(preview.page).toBe(2);
       expect(preview.totalPages).toBe(2);
+    });
+  });
+
+  describe('confirmBulkIssuance - real issuance', () => {
+    const createValidatedSession = async (
+      validRows: Array<{
+        badgeTemplateId: string;
+        recipientEmail: string;
+        evidenceUrl?: string;
+      }>,
+    ) => {
+      const sessionId = 'session-confirm-test';
+      const session = {
+        id: sessionId,
+        issuerId: 'owner-123',
+        status: SessionStatus.VALIDATED,
+        validRows,
+        errorRows: [],
+        fileName: 'test.csv',
+        totalRows: validRows.length,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+      };
+      sessionStore[sessionId] = session;
+      return sessionId;
+    };
+
+    beforeEach(() => {
+      mockBadgeIssuanceService.issueBadge.mockResolvedValue({
+        id: 'badge-1',
+        status: 'PENDING',
+      });
+      mockPrismaService.badgeTemplate.findFirst.mockResolvedValue({
+        id: 'template-uuid-1',
+        name: 'Leadership Excellence',
+        status: 'ACTIVE',
+      });
+      mockPrismaService.user.findFirst.mockResolvedValue({
+        id: 'user-uuid-1',
+        email: 'user@company.com',
+        isActive: true,
+      });
+    });
+
+    it('should issue all valid badges successfully', async () => {
+      const sessionId = await createValidatedSession([
+        {
+          badgeTemplateId: 'Leadership Excellence',
+          recipientEmail: 'user@company.com',
+        },
+        {
+          badgeTemplateId: 'Leadership Excellence',
+          recipientEmail: 'user2@company.com',
+        },
+      ]);
+
+      const result = await service.confirmBulkIssuance(
+        sessionId,
+        'owner-123',
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.processed).toBe(2);
+      expect(result.failed).toBe(0);
+      expect(result.results).toHaveLength(2);
+      expect(result.results[0].status).toBe('success');
+      expect(result.results[1].status).toBe('success');
+      expect(mockBadgeIssuanceService.issueBadge).toHaveBeenCalledTimes(2);
+    });
+
+    it('should handle partial failures (some succeed, some fail)', async () => {
+      mockBadgeIssuanceService.issueBadge
+        .mockResolvedValueOnce({ id: 'badge-1' })
+        .mockRejectedValueOnce(new Error('Template inactive'));
+
+      const sessionId = await createValidatedSession([
+        {
+          badgeTemplateId: 'Leadership Excellence',
+          recipientEmail: 'user@company.com',
+        },
+        {
+          badgeTemplateId: 'Old Template',
+          recipientEmail: 'user2@company.com',
+        },
+      ]);
+
+      const result = await service.confirmBulkIssuance(
+        sessionId,
+        'owner-123',
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.processed).toBe(1);
+      expect(result.failed).toBe(1);
+      expect(result.results[0].status).toBe('success');
+      expect(result.results[1].status).toBe('failed');
+      expect(result.results[1].error).toContain('Template inactive');
+    });
+
+    it('should handle all failures and set status to FAILED', async () => {
+      mockBadgeIssuanceService.issueBadge.mockRejectedValue(
+        new Error('Service unavailable'),
+      );
+
+      const sessionId = await createValidatedSession([
+        {
+          badgeTemplateId: 'Leadership Excellence',
+          recipientEmail: 'user@company.com',
+        },
+      ]);
+
+      const result = await service.confirmBulkIssuance(
+        sessionId,
+        'owner-123',
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.processed).toBe(0);
+      expect(result.failed).toBe(1);
+      expect(sessionStore['session-confirm-test'].status).toBe(
+        SessionStatus.FAILED,
+      );
+    });
+
+    it('should resolve badge template by name', async () => {
+      const sessionId = await createValidatedSession([
+        {
+          badgeTemplateId: 'Leadership Excellence',
+          recipientEmail: 'user@company.com',
+        },
+      ]);
+
+      await service.confirmBulkIssuance(sessionId, 'owner-123');
+
+      expect(mockPrismaService.badgeTemplate.findFirst).toHaveBeenCalledWith({
+        where: {
+          OR: [
+            { id: 'Leadership Excellence' },
+            { name: 'Leadership Excellence' },
+          ],
+          status: 'ACTIVE',
+        },
+      });
+    });
+
+    it('should resolve badge template by UUID', async () => {
+      const sessionId = await createValidatedSession([
+        {
+          badgeTemplateId: 'template-uuid-1',
+          recipientEmail: 'user@company.com',
+        },
+      ]);
+
+      await service.confirmBulkIssuance(sessionId, 'owner-123');
+
+      expect(mockPrismaService.badgeTemplate.findFirst).toHaveBeenCalledWith({
+        where: {
+          OR: [{ id: 'template-uuid-1' }, { name: 'template-uuid-1' }],
+          status: 'ACTIVE',
+        },
+      });
+    });
+
+    it('should resolve recipient by email', async () => {
+      const sessionId = await createValidatedSession([
+        {
+          badgeTemplateId: 'Leadership Excellence',
+          recipientEmail: 'user@company.com',
+        },
+      ]);
+
+      await service.confirmBulkIssuance(sessionId, 'owner-123');
+
+      expect(mockPrismaService.user.findFirst).toHaveBeenCalledWith({
+        where: { email: 'user@company.com', isActive: true },
+      });
+    });
+
+    it('should reject session with >20 rows', async () => {
+      const manyRows = Array.from({ length: 21 }, (_, i) => ({
+        badgeTemplateId: 'Leadership Excellence',
+        recipientEmail: `user${i}@company.com`,
+      }));
+      const sessionId = await createValidatedSession(manyRows);
+
+      await expect(
+        service.confirmBulkIssuance(sessionId, 'owner-123'),
+      ).rejects.toThrow(/maximum 20 badges per batch/);
+    });
+
+    it('should reject non-VALIDATED session', async () => {
+      const sessionId = 'session-pending';
+      sessionStore[sessionId] = {
+        id: sessionId,
+        issuerId: 'owner-123',
+        status: SessionStatus.PROCESSING,
+        validRows: [],
+        errorRows: [],
+        fileName: 'test.csv',
+        totalRows: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+      };
+
+      await expect(
+        service.confirmBulkIssuance(sessionId, 'owner-123'),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should set status to COMPLETED on partial success', async () => {
+      mockBadgeIssuanceService.issueBadge
+        .mockResolvedValueOnce({ id: 'badge-1' })
+        .mockRejectedValueOnce(new Error('fail'));
+
+      const sessionId = await createValidatedSession([
+        {
+          badgeTemplateId: 'Leadership Excellence',
+          recipientEmail: 'user@company.com',
+        },
+        {
+          badgeTemplateId: 'Leadership Excellence',
+          recipientEmail: 'user2@company.com',
+        },
+      ]);
+
+      await service.confirmBulkIssuance(sessionId, 'owner-123');
+
+      expect(sessionStore[sessionId].status).toBe(SessionStatus.COMPLETED);
+    });
+
+    it('should fail when template not found at confirm time', async () => {
+      mockPrismaService.badgeTemplate.findFirst.mockResolvedValue(null);
+
+      const sessionId = await createValidatedSession([
+        {
+          badgeTemplateId: 'Nonexistent Template',
+          recipientEmail: 'user@company.com',
+        },
+      ]);
+
+      const result = await service.confirmBulkIssuance(
+        sessionId,
+        'owner-123',
+      );
+
+      expect(result.failed).toBe(1);
+      expect(result.results[0].error).toContain('not found or inactive');
+    });
+
+    it('should fail when recipient not found at confirm time', async () => {
+      mockPrismaService.user.findFirst.mockResolvedValue(null);
+
+      const sessionId = await createValidatedSession([
+        {
+          badgeTemplateId: 'Leadership Excellence',
+          recipientEmail: 'gone@company.com',
+        },
+      ]);
+
+      const result = await service.confirmBulkIssuance(
+        sessionId,
+        'owner-123',
+      );
+
+      expect(result.failed).toBe(1);
+      expect(result.results[0].error).toContain('No active user found');
+    });
+
+    it('should pass evidenceUrl through to issueBadge', async () => {
+      const sessionId = await createValidatedSession([
+        {
+          badgeTemplateId: 'Leadership Excellence',
+          recipientEmail: 'user@company.com',
+          evidenceUrl: 'https://storage.azure.com/evidence/cert.pdf',
+        },
+      ]);
+
+      await service.confirmBulkIssuance(sessionId, 'owner-123');
+
+      expect(mockBadgeIssuanceService.issueBadge).toHaveBeenCalledWith(
+        expect.objectContaining({
+          templateId: 'template-uuid-1',
+          recipientId: 'user-uuid-1',
+          evidenceUrl: 'https://storage.azure.com/evidence/cert.pdf',
+        }),
+        'owner-123',
+      );
     });
   });
 });

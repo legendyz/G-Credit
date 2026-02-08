@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { CsvValidationService } from './csv-validation.service';
+import { BadgeIssuanceService } from '../badge-issuance/badge-issuance.service';
 import { randomUUID } from 'crypto';
 import { Prisma } from '@prisma/client';
 
@@ -109,6 +110,7 @@ export class BulkIssuanceService {
   constructor(
     private prisma: PrismaService,
     private csvValidation: CsvValidationService,
+    private badgeIssuanceService: BadgeIssuanceService,
   ) {}
 
   /** Maximum rows allowed per CSV upload */
@@ -531,6 +533,9 @@ export class BulkIssuanceService {
   /**
    * Confirm and execute bulk issuance
    *
+   * Resolves CSV field values to UUIDs, then issues each badge
+   * via BadgeIssuanceService. Individual failures don't stop the batch.
+   *
    * CRITICAL: Validates ownership to prevent IDOR attacks (ARCH-C2)
    */
   async confirmBulkIssuance(
@@ -542,6 +547,8 @@ export class BulkIssuanceService {
     failed: number;
     results: Array<{
       row: number;
+      recipientEmail: string;
+      badgeName: string;
       status: 'success' | 'failed';
       error?: string;
     }>;
@@ -554,19 +561,33 @@ export class BulkIssuanceService {
       );
     }
 
+    const sessionValidRows = session.validRows as unknown as Array<{
+      badgeTemplateId: string;
+      recipientEmail: string;
+      evidenceUrl?: string;
+    }>;
+
+    // MVP limit: 20 badges max
+    if (sessionValidRows.length > BulkIssuanceService.MAX_ROWS) {
+      throw new BadRequestException(
+        `MVP limit: maximum ${BulkIssuanceService.MAX_ROWS} badges per batch`,
+      );
+    }
+
+    if (sessionValidRows.length === 0) {
+      throw new BadRequestException('No valid badges to process');
+    }
+
     // Update status to processing
     await this.prisma.bulkIssuanceSession.update({
       where: { id: sessionId },
       data: { status: SessionStatus.PROCESSING },
     });
 
-    const sessionValidRows = session.validRows as unknown as Array<{
-      recipientEmail: string;
-      templateId: string;
-      evidenceUrl?: string;
-    }>;
     const results: Array<{
       row: number;
+      recipientEmail: string;
+      badgeName: string;
       status: 'success' | 'failed';
       error?: string;
     }> = [];
@@ -577,36 +598,76 @@ export class BulkIssuanceService {
     for (let i = 0; i < sessionValidRows.length; i++) {
       const row = sessionValidRows[i];
       try {
-        // TODO: Call actual badge issuance service
-        // await this.badgeIssuanceService.issueBadge({
-        //   templateId: row.templateId,
-        //   recipientEmail: row.recipientEmail,
-        //   evidenceUrl: row.evidenceUrl,
-        // }, currentUserId);
+        // Resolve badgeTemplateId (could be name or UUID) → UUID
+        const template = await this.prisma.badgeTemplate.findFirst({
+          where: {
+            OR: [{ id: row.badgeTemplateId }, { name: row.badgeTemplateId }],
+            status: 'ACTIVE',
+          },
+        });
+
+        if (!template) {
+          throw new Error(
+            `Badge template "${row.badgeTemplateId}" not found or inactive`,
+          );
+        }
+
+        // Resolve recipientEmail → user UUID
+        const recipient = await this.prisma.user.findFirst({
+          where: { email: row.recipientEmail, isActive: true },
+        });
+
+        if (!recipient) {
+          throw new Error(
+            `No active user found with email: ${row.recipientEmail}`,
+          );
+        }
+
+        // Issue badge via BadgeIssuanceService
+        await this.badgeIssuanceService.issueBadge(
+          {
+            templateId: template.id,
+            recipientId: recipient.id,
+            evidenceUrl: row.evidenceUrl,
+          },
+          currentUserId,
+        );
 
         processed++;
-        results.push({ row: i + 2, status: 'success' });
+        results.push({
+          row: i + 2,
+          recipientEmail: row.recipientEmail,
+          badgeName: template.name,
+          status: 'success',
+        });
 
         this.logger.debug(
-          `Issued badge ${i + 1}/${sessionValidRows.length} to ${row.recipientEmail}`,
+          `Issued badge ${i + 1}/${sessionValidRows.length}: ${template.name} → ${row.recipientEmail}`,
         );
       } catch (error: unknown) {
         failed++;
         results.push({
           row: i + 2,
+          recipientEmail: row.recipientEmail,
+          badgeName: row.badgeTemplateId,
           status: 'failed',
           error: (error as Error).message,
         });
         this.logger.error(
-          `Failed to issue badge to ${row.recipientEmail}: ${(error as Error).message}`,
+          `Failed badge ${i + 1}/${sessionValidRows.length} to ${row.recipientEmail}: ${(error as Error).message}`,
         );
       }
     }
 
-    // Update session status
+    // Update session status based on results
+    const finalStatus =
+      failed === sessionValidRows.length
+        ? SessionStatus.FAILED
+        : SessionStatus.COMPLETED;
+
     await this.prisma.bulkIssuanceSession.update({
       where: { id: sessionId },
-      data: { status: SessionStatus.COMPLETED },
+      data: { status: finalStatus },
     });
 
     this.logger.log(
