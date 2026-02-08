@@ -192,8 +192,9 @@ Display preview of all badges to be issued before confirmation. Show validation 
 
 #### Story 8.4: Bulk Issuance Synchronous Processing (MVP) - 6.5h (原4h + P0修复2h + P1改进0.5h)
 **Priority:** MEDIUM  
-**Status:** backlog  
-**Assigned to:** TBD  
+**Status:** done  
+**Actual Hours:** 7h  
+**Assigned to:** Dev Agent (Claude Opus 4.6)  
 **Dependencies:** Story 8.3  
 **Security Critical:** 🔴 MUST implement C2 (Session IDOR) validation
 
@@ -412,13 +413,12 @@ Process bulk badge issuance synchronously with up to 20 badges per batch. Simple
   - SM accepted 2026-02-08
 
 #### Day 10 (Friday)
-- [ ] **Story 8.4: Batch Processing** (8h)
-  - Bull queue setup with Redis
-  - Background processor logic
-  - Job status API
-  - Progress tracking UI
-  - Email notification integration
-  - Testing
+- [x] **Story 8.4: Batch Processing + TD-014** (7h actual)
+  - TD-014: Remove nodemailer, unify to GraphEmailService
+  - Synchronous batch processing (up to 20 badges)
+  - ProcessingModal enhanced + translated to English
+  - ProcessingComplete with failed badges table
+  - 4 commits, SM accepted 2026-02-08
 
 #### Day 11 (Monday - Final Day)
 - [ ] **Final Testing & Bug Fixes** (6h)

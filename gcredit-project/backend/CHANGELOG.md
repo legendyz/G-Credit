@@ -70,8 +70,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Testing:** 1042 total tests (Backend 520 + Frontend 370 + E2E 152), 0 failures
 - **SM Acceptance:** All 5 code review findings verified as FALSE POSITIVE
 
-#### Remaining Stories
-- Story 8.4: Batch Processing Phase 1 + TD-014 (email unification)
+##### Story 8.4: Batch Processing Phase 1 + TD-014 Email Unification (7h actual) - 2026-02-08
+- **TD-014: Email System Unification** — Remove nodemailer
+  - `EmailService` rewritten to delegate to `GraphEmailService`
+  - `nodemailer` + `@types/nodemailer` removed from package.json
+  - `EmailModule` imports `MicrosoftGraphModule` for GraphEmailService access
+  - `sendPasswordReset()` API contract preserved (zero changes in AuthService)
+  - `EMAIL_SETUP_QUICK.md` updated for Graph API
+- **POST /api/bulk-issuance/confirm/:sessionId** — Synchronous batch processing
+  - Loop through up to 20 valid badges, call `BadgeIssuanceService.issueBadge()` each
+  - Template name/UUID → resolved to template UUID before issuance
+  - Recipient email → resolved to user UUID before issuance
+  - Partial failure handling (individual errors don't stop batch)
+  - Status transitions: VALIDATED → PROCESSING → COMPLETED/FAILED
+  - IDOR protection via `loadSession()` ownership check (ARCH-C2)
+  - Each badge issued in atomic `prisma.$transaction` (ARCH-C6)
+- **Frontend: ProcessingModal Enhancement**
+  - Chinese text translated to English (5 strings)
+  - Simulated per-badge progress (1-second ticks)
+  - Current badge label, success/remaining counts
+  - 30-second timeout via AbortController
+- **Frontend: ProcessingComplete Enhancement**
+  - Failed badges table with error details
+  - "Retry Failed Badges" button
+  - "Download Error Report" button
+  - Email notification error display
+- **Module Wiring:** BulkIssuanceModule imports BadgeIssuanceModule
+- **Testing:** 1087 total tests (Backend 532 + Frontend 397 + E2E 158), 0 failures
+- **SM Acceptance:** 5/6 code review findings verified as FALSE POSITIVE
+
+#### Sprint 9 Complete — All 5 Stories Done
 
 ##### TD-015: ESLint Type Safety Cleanup (8h actual) - 2026-02-07
 - **Warning Reduction:** 1303 → 284 warnings (78% reduction, exceeded 62% target)

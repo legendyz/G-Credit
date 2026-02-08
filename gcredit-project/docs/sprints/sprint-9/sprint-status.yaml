@@ -286,10 +286,25 @@ stories:
       e2e_tests: 8  # 4 limits + 4 IDOR security tests
       coverage_target: 80%
     
+    sm_acceptance:
+      date: "2026-02-08"
+      verdict: accepted
+      backend_tests: "532 passed, 28 skipped, 0 failures"
+      frontend_tests: "397 passed (27 new), 0 failures"
+      e2e_tests: "158 passed (6 new), 0 failures"
+      eslint: "423 warnings, 0 errors (regression from 308, needs investigation)"
+      tsc_errors: "114 (test-only, improved from 124, TD-017)"
+      bundle_size: "235 KB (unchanged, target ≤240 KB)"
+      code_review: "6 findings — 5 verified FALSE POSITIVE, 1 TRUE POSITIVE (low: E2E gap mitigated by unit tests)"
+      td_014: "Complete — nodemailer removed, EmailService delegates to GraphEmailService"
+      concern: "ESLint max-warnings bumped 280→423, needs cleanup in Sprint 10"
+    
     blocked: false
     blocker_reason: null
     start_date: "2026-02-08"
-    completion_date: "2026-02-08": ESLint Type Safety Warnings (promoted from TD task)
+    completion_date: "2026-02-08"
+
+  # TD-015: ESLint Type Safety Warnings (promoted from TD task)
   "TD-015":
     id: "TD-015"
     title: "Fix ESLint Type Safety Warnings"
