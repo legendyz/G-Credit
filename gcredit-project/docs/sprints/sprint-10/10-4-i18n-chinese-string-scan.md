@@ -2,10 +2,10 @@
 
 **Status:** backlog  
 **Priority:** 🟡 MEDIUM  
-**Estimate:** 3h  
+**Estimate:** 4h  
 **Sprint:** Sprint 10  
 **Type:** Technical Debt + UX Polish  
-**TD Reference:** Sprint 9 Retro Action Item #6, UX Release Audit Quick Wins
+**TD Reference:** Sprint 9 Retro Action Item #6, UX Release Audit Quick Wins, TD-020, TD-021
 
 ---
 
@@ -31,6 +31,8 @@ Sprint 9 discovered Chinese strings in `ProcessingModal.tsx` from early developm
 6. [ ] 0 `console.log` debug statements in frontend production code
 7. [ ] Desktop Navbar uses correct ARIA roles (no `role="menubar"` misuse)
 8. [ ] PR commit message: `fix: i18n scan + UX polish (audit quick wins)`
+9. [ ] CI `e2e-tests` job depends on both `lint-and-unit` AND `frontend-tests` (TD-020)
+10. [ ] `react-hooks/set-state-in-effect` rule disabled or downgraded at project level, 9 inline suppressions removed (TD-021)
 
 ## Tasks / Subtasks
 
@@ -73,6 +75,18 @@ Sprint 9 discovered Chinese strings in `ProcessingModal.tsx` from early developm
   - Key files: auth audit logs, startup messages, storage.service.ts, badge-templates.service.ts
   - _Source: Architecture Release Audit — Winston, Production Readiness finding_
 
+### 🔧 CI/ESLint Quick Fixes (from Story 10.3b Code Review)
+
+- [ ] **Task 8: TD-020 — Fix CI E2E job missing frontend dependency** (AC: #9) — 10min
+  - `.github/workflows/test.yml`: Change `e2e-tests` job `needs: lint-and-unit` to `needs: [lint-and-unit, frontend-tests]`
+  - _Source: Story 10.3b SM Code Review (2026-02-09)_
+
+- [ ] **Task 9: TD-021 — Downgrade react-hooks/set-state-in-effect to warn** (AC: #10) — 15min
+  - `frontend/eslint.config.js`: Add rule override `'react-hooks/set-state-in-effect': 'warn'`
+  - Remove 9 inline `// eslint-disable-next-line react-hooks/set-state-in-effect` from: ProcessingModal, CelebrationModal, useMediaQuery, EmployeeDashboard, DeactivateUserDialog, EditRoleDialog, SearchInput, MobileNav, useBadgeSearch
+  - Verify `npx eslint . --max-warnings=0` still passes (warnings become 0 after removing rule override... wait — need to set to `off` or keep as `warn` with 0 warnings tolerance. **Recommended:** Set to `'off'` since all 9 patterns are legitimate React 19 idioms)
+  - _Source: Story 10.3b SM Code Review (2026-02-09)_
+
 ## Dev Notes
 
 ### Scan Command
@@ -94,8 +108,10 @@ Select-String -Path "frontend/src/**/*.tsx","frontend/src/**/*.ts","backend/src/
 | console.log removal (FE) | UX Audit #7 | 5min |
 | Navbar ARIA fix + active styling | UX Audit #6 | 30min |
 | console.log → Logger (BE) | Arch Audit | 30min |
+| TD-020: CI E2E job fix | 10.3b Review | 10min |
+| TD-021: ESLint rule override + cleanup | 10.3b Review | 15min |
 | Testing & verification | — | 15min |
-| **Total** | | **~2h 20min** |
+| **Total** | | **~2h 45min** |
 
 ### References
 - Sprint 9 Retrospective: Chinese string issue in ProcessingModal

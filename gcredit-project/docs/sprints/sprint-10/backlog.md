@@ -39,7 +39,7 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 ### Capacity Allocation
 | Category | Hours | % | Notes |
 |----------|-------|---|-------|
-| **Technical Debt** | 25.5h | 32% | Stories 10.1-10.4 + 10.3b (frontend ESLint from buffer) |
+| **Technical Debt** | 26.5h | 33% | Stories 10.1-10.4 + 10.3b (10.4 includes TD-020/021) |
 | **Feature Enhancement** | 6h | 8% | Story 10.5 (Analytics real data) |
 | **UAT Preparation** | 8h | 10% | Story 10.6 (Test plan + seed data) |
 | **UAT Execution** | 12h | 15% | Story 10.7 (Full UAT) |
@@ -136,12 +136,12 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 
 ### Story 10.4: i18n Scan + UX/Code Quality Quick Wins
 **Priority:** 🟡 MEDIUM  
-**Estimate:** 3h  
+**Estimate:** 4h  
 **Story Doc:** 📄 [10-4-i18n-chinese-string-scan.md](10-4-i18n-chinese-string-scan.md)  
 **Status:** 🔴 Not Started  
 **Dependencies:** None
 
-**Quick Summary:** As a developer, I want all Chinese strings replaced with English and UX audit quick wins resolved.
+**Quick Summary:** As a developer, I want all Chinese strings replaced with English, UX audit quick wins resolved, and CI/ESLint gaps fixed.
 
 **Key Deliverables:**
 - [ ] Global scan for Chinese characters (\u4E00-\u9FFF)
@@ -149,6 +149,8 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 - [ ] Remove `console.log` from BadgeDetailModal (🎨 UX Audit)
 - [ ] Fix Navbar `role="menubar"` ARIA misuse (🎨 UX Audit)
 - [ ] Migrate ~30 backend `console.log` to NestJS Logger (🏗️ Arch Audit)
+- [ ] Fix CI E2E job dependency on frontend-tests (TD-020)
+- [ ] Downgrade/disable `react-hooks/set-state-in-effect` + remove 9 inline suppressions (TD-021)
 - [ ] Zero regressions
 
 ---
