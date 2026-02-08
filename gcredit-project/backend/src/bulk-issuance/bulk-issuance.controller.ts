@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Param,
+  Query,
   Body,
   Request,
   Res,
@@ -160,10 +161,19 @@ export class BulkIssuanceController {
   @ApiResponse({ status: 404, description: 'Session not found or expired' })
   async getPreview(
     @Param('sessionId') sessionId: string,
-    @Request() req: RequestWithUser,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+    @Request() req?: RequestWithUser,
   ) {
-    const userId = req.user.userId;
-    return this.bulkIssuanceService.getPreviewData(sessionId, userId);
+    const userId = req!.user.userId;
+    const pageNum = page ? parseInt(page, 10) : undefined;
+    const pageSizeNum = pageSize ? parseInt(pageSize, 10) : undefined;
+    return this.bulkIssuanceService.getPreviewData(
+      sessionId,
+      userId,
+      pageNum,
+      pageSizeNum,
+    );
   }
 
   /**

@@ -80,6 +80,15 @@ export default function BulkPreviewPage() {
     }
   }, [sessionId]);
 
+  // Auto-redirect after session expires (AC5)
+  useEffect(() => {
+    if (!sessionExpired) return;
+    const timer = setTimeout(() => {
+      navigate('/admin/bulk-issuance');
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [sessionExpired, navigate]);
+
   const fetchPreviewData = async () => {
     try {
       setIsLoading(true);
@@ -143,22 +152,46 @@ export default function BulkPreviewPage() {
   };
 
   const handleConfirmClick = () => {
-    if (!previewData || previewData.validRows === 0) return;
+    if (
+      !previewData ||
+      previewData.validRows === 0 ||
+      previewData.errorRows > 0
+    )
+      return;
     setShowConfirmModal(true);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     setShowConfirmModal(false);
     setIsProcessing(true);
-  };
 
-  const handleProcessingComplete = (results: {
-    success: number;
-    failed: number;
-  }) => {
-    setIsProcessing(false);
-    setProcessingComplete(true);
-    setProcessingResults(results);
+    try {
+      const response = await fetch(
+        `/api/bulk-issuance/confirm/${sessionId}`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error('Bulk issuance failed');
+      }
+
+      const data: { processed: number; failed: number } =
+        await response.json();
+      setProcessingResults({ success: data.processed, failed: data.failed });
+      setProcessingComplete(true);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Issuance failed unexpectedly',
+      );
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleReupload = () => {
@@ -224,6 +257,7 @@ export default function BulkPreviewPage() {
           </h2>
           <p className="text-gray-600 mb-4">
             Your preview session has expired. Please upload your CSV file again.
+            You will be redirected automatically in a few seconds.
           </p>
           <button
             onClick={handleReupload}
@@ -311,9 +345,11 @@ export default function BulkPreviewPage() {
 
         <button
           onClick={handleConfirmClick}
-          disabled={previewData.validRows === 0}
+          disabled={
+            previewData.validRows === 0 || previewData.errorRows > 0
+          }
           className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-            previewData.validRows > 0
+            previewData.validRows > 0 && previewData.errorRows === 0
               ? 'bg-green-600 text-white hover:bg-green-700'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
@@ -330,11 +366,10 @@ export default function BulkPreviewPage() {
         onCancel={() => setShowConfirmModal(false)}
       />
 
-      {/* Processing Modal */}
+      {/* Processing Modal (pseudo-progress visual indicator) */}
       <ProcessingModal
         totalBadges={previewData.validRows}
         isProcessing={isProcessing}
-        onComplete={handleProcessingComplete}
       />
     </div>
   );

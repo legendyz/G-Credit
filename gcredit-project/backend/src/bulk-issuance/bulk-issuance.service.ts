@@ -84,6 +84,9 @@ export interface EnrichedPreviewData extends Omit<PreviewData, 'rows'> {
     byTemplate: TemplateBreakdown[];
   };
   rows: EnrichedPreviewRow[];
+  page?: number;
+  pageSize?: number;
+  totalPages?: number;
 }
 
 /**
@@ -411,6 +414,8 @@ export class BulkIssuanceService {
   async getPreviewData(
     sessionId: string,
     currentUserId: string,
+    page?: number,
+    pageSize?: number,
   ): Promise<EnrichedPreviewData> {
     const session = await this.loadSession(sessionId, currentUserId);
 
@@ -489,6 +494,19 @@ export class BulkIssuanceService {
       }
     }
 
+    // Apply server-side pagination if requested (otherwise return all rows)
+    let paginatedRows: EnrichedPreviewRow[] = enrichedRows;
+    let currentPage: number | undefined;
+    let totalPages: number | undefined;
+
+    if (page !== undefined && pageSize !== undefined && pageSize > 0) {
+      const safePage = Math.max(1, page);
+      totalPages = Math.ceil(enrichedRows.length / pageSize);
+      currentPage = Math.min(safePage, Math.max(1, totalPages));
+      const start = (currentPage - 1) * pageSize;
+      paginatedRows = enrichedRows.slice(start, start + pageSize);
+    }
+
     return {
       sessionId: session.id,
       validRows: session.validCount,
@@ -498,10 +516,15 @@ export class BulkIssuanceService {
       status: session.status as SessionStatus,
       createdAt: session.createdAt,
       expiresAt: session.expiresAt,
-      rows: enrichedRows,
+      rows: paginatedRows,
       summary: {
         byTemplate: [...templateCountMap.values()],
       },
+      ...(currentPage !== undefined && {
+        page: currentPage,
+        pageSize,
+        totalPages,
+      }),
     };
   }
 

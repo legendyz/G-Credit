@@ -652,4 +652,76 @@ EXAMPLE-DELETE,example@company.com`;
       expect(preview.rows[0].isValid).toBe(false);
     });
   });
+
+  describe('getPreviewData - Pagination', () => {
+    it('should return all rows when no pagination params', async () => {
+      const csvContent = `badgeTemplateId,recipientEmail
+template-123,user1@company.com
+template-123,user2@company.com
+template-123,user3@company.com`;
+
+      const session = await service.createSession(csvContent, 'owner-123');
+
+      mockPrismaService.badgeTemplate.findMany.mockResolvedValue([]);
+      mockPrismaService.user.findMany.mockResolvedValue([]);
+
+      const preview = await service.getPreviewData(
+        session.sessionId,
+        'owner-123',
+      );
+
+      // All rows returned, no pagination metadata
+      expect(preview.rows.length).toBe(3);
+      expect(preview.page).toBeUndefined();
+      expect(preview.pageSize).toBeUndefined();
+      expect(preview.totalPages).toBeUndefined();
+    });
+
+    it('should paginate rows when page and pageSize are provided', async () => {
+      const csvContent = `badgeTemplateId,recipientEmail
+template-123,user1@company.com
+template-123,user2@company.com
+template-123,user3@company.com`;
+
+      const session = await service.createSession(csvContent, 'owner-123');
+
+      mockPrismaService.badgeTemplate.findMany.mockResolvedValue([]);
+      mockPrismaService.user.findMany.mockResolvedValue([]);
+
+      const preview = await service.getPreviewData(
+        session.sessionId,
+        'owner-123',
+        1,
+        2,
+      );
+
+      expect(preview.rows.length).toBe(2);
+      expect(preview.page).toBe(1);
+      expect(preview.pageSize).toBe(2);
+      expect(preview.totalPages).toBe(2);
+    });
+
+    it('should return last page correctly', async () => {
+      const csvContent = `badgeTemplateId,recipientEmail
+template-123,user1@company.com
+template-123,user2@company.com
+template-123,user3@company.com`;
+
+      const session = await service.createSession(csvContent, 'owner-123');
+
+      mockPrismaService.badgeTemplate.findMany.mockResolvedValue([]);
+      mockPrismaService.user.findMany.mockResolvedValue([]);
+
+      const preview = await service.getPreviewData(
+        session.sessionId,
+        'owner-123',
+        2,
+        2,
+      );
+
+      expect(preview.rows.length).toBe(1);
+      expect(preview.page).toBe(2);
+      expect(preview.totalPages).toBe(2);
+    });
+  });
 });

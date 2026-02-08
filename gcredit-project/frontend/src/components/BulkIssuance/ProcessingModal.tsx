@@ -3,65 +3,48 @@ import { useState, useEffect } from 'react';
 interface ProcessingModalProps {
   totalBadges: number;
   isProcessing: boolean;
-  onComplete?: (results: { success: number; failed: number }) => void;
 }
 
 /**
  * Processing Modal Component (UX-P0-1)
  * 
- * Displays real-time progress during bulk badge issuance:
- * - Visual progress bar
- * - Live success/failure counters
+ * Displays pseudo-progress during bulk badge issuance:
+ * - Visual progress bar (fills gradually to ~90%, waits for completion)
  * - Estimated remaining time
  * - Warning to prevent page close
+ *
+ * NOTE: This is a visual indicator only. Real results come from the
+ * backend API call in BulkPreviewPage.
  */
 export default function ProcessingModal({ 
   totalBadges, 
   isProcessing,
-  onComplete 
 }: ProcessingModalProps) {
-  const [progress, setProgress] = useState({ current: 0, success: 0, failed: 0 });
+  const [progress, setProgress] = useState(0);
   
   useEffect(() => {
     if (!isProcessing) {
-      setProgress({ current: 0, success: 0, failed: 0 });
+      setProgress(0);
       return;
     }
     
-    // Simulate progress (in real implementation, this would be from SSE or polling)
+    // Pseudo-progress: ramp quickly to 30%, slow to 60%, very slow to 90%
     const interval = setInterval(() => {
       setProgress(prev => {
-        if (prev.current >= totalBadges) {
-          clearInterval(interval);
-          if (onComplete) {
-            onComplete({ success: prev.success, failed: prev.failed });
-          }
-          return prev;
-        }
-        
-        const newCurrent = prev.current + 1;
-        // 90% success rate simulation (real data would come from backend)
-        const isSuccess = Math.random() > 0.1;
-        const newSuccess = prev.success + (isSuccess ? 1 : 0);
-        const newFailed = prev.failed + (isSuccess ? 0 : 1);
-        
-        return {
-          current: newCurrent,
-          success: newSuccess,
-          failed: newFailed
-        };
+        if (prev >= 90) return prev; // cap at 90% until real completion
+        if (prev < 30) return prev + 3;
+        if (prev < 60) return prev + 2;
+        return prev + 0.5;
       });
-    }, 1000);
+    }, 500);
     
     return () => clearInterval(interval);
-  }, [isProcessing, totalBadges, onComplete]);
+  }, [isProcessing]);
   
   if (!isProcessing) return null;
   
-  const percentComplete = totalBadges > 0 
-    ? Math.round((progress.current / totalBadges) * 100) 
-    : 0;
-  const remaining = totalBadges - progress.current;
+  const percentComplete = Math.round(progress);
+  const estimatedRemaining = Math.max(1, Math.ceil(totalBadges * (1 - progress / 100)));
   
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -74,7 +57,7 @@ export default function ProcessingModal({
         <div className="mb-6">
           <div className="flex justify-between mb-2 text-sm text-gray-600">
             <span className="font-medium">{percentComplete}%</span>
-            <span>{progress.current} / {totalBadges}</span>
+            <span>Processing {totalBadges} badges</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
             <div 
@@ -89,25 +72,9 @@ export default function ProcessingModal({
           <p className="text-gray-600">
             ⏱️ 预计剩余时间: 
             <span className="font-semibold text-gray-800 ml-1">
-              {remaining > 60 ? `${Math.ceil(remaining / 60)} 分钟` : `${remaining} 秒`}
+              {estimatedRemaining > 60 ? `${Math.ceil(estimatedRemaining / 60)} 分钟` : `${estimatedRemaining} 秒`}
             </span>
           </p>
-        </div>
-        
-        {/* Statistics Grid */}
-        <div className="grid grid-cols-3 gap-4 text-center mb-6">
-          <div className="bg-green-50 rounded-lg p-4">
-            <p className="text-green-600 font-bold text-2xl">{progress.success}</p>
-            <p className="text-green-700 text-sm">已完成 ✓</p>
-          </div>
-          <div className="bg-red-50 rounded-lg p-4">
-            <p className="text-red-600 font-bold text-2xl">{progress.failed}</p>
-            <p className="text-red-700 text-sm">失败 ✗</p>
-          </div>
-          <div className="bg-gray-50 rounded-lg p-4">
-            <p className="text-gray-600 font-bold text-2xl">{remaining}</p>
-            <p className="text-gray-700 text-sm">剩余</p>
-          </div>
         </div>
         
         {/* Processing Animation */}

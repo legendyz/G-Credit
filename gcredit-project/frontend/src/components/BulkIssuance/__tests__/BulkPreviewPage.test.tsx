@@ -160,10 +160,27 @@ describe('BulkPreviewPage', () => {
     });
   });
 
-  it('should open confirmation modal on confirm click', async () => {
+  it('should disable confirm button when errors exist (AC4)', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve(mockPreviewData),
+      json: () => Promise.resolve(mockPreviewData), // has errorRows: 2
+    });
+    renderWithRouter();
+    await waitFor(() => {
+      const confirmBtn = screen.getByText(/Confirm Issuance/);
+      expect(confirmBtn).toBeDisabled();
+    });
+  });
+
+  it('should open confirmation modal on confirm click when no errors', async () => {
+    const noErrorData = {
+      ...mockPreviewData,
+      errorRows: 0,
+      errors: [],
+    };
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(noErrorData),
     });
     renderWithRouter();
     await waitFor(() => {
@@ -173,5 +190,46 @@ describe('BulkPreviewPage', () => {
     await waitFor(() => {
       expect(screen.getByTestId('confirm-modal')).toBeInTheDocument();
     });
+  });
+
+  it('should call backend confirm API when confirmed (Fix #1)', async () => {
+    const noErrorData = {
+      ...mockPreviewData,
+      errorRows: 0,
+      errors: [],
+    };
+    // First call: preview data fetch
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(noErrorData),
+      })
+      // Second call: confirm API
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({ success: true, processed: 10, failed: 0, results: [] }),
+      });
+
+    renderWithRouter();
+    await waitFor(() => {
+      expect(screen.getByText(/Confirm Issuance/)).toBeInTheDocument();
+    });
+
+    // Click confirm button to open modal
+    fireEvent.click(screen.getByText(/Confirm Issuance/));
+    await waitFor(() => {
+      expect(screen.getByTestId('confirm-modal')).toBeInTheDocument();
+    });
+
+    // Click "Confirm and Issue" in the modal
+    fireEvent.click(screen.getByText('Confirm and Issue'));
+
+    // The second fetch call should be the confirm API
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
+    const secondCallUrl = (mockFetch.mock.calls[1] as [string])[0];
+    expect(secondCallUrl).toContain('/api/bulk-issuance/confirm/');
   });
 });
