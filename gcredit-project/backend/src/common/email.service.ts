@@ -1,15 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { EmailClient } from '@azure/communication-email';
-import * as nodemailer from 'nodemailer';
-import type { Transporter } from 'nodemailer';
+import { GraphEmailService } from '../microsoft-graph/services/graph-email.service';
 
 /**
- * Email Service
+ * Email Service — Thin wrapper over GraphEmailService (TD-014)
  *
- * Handles sending emails for password reset and badge notifications.
- * Development: Uses Ethereal (fake SMTP) - emails viewable via preview URL
- * Production: Uses Azure Communication Services
+ * All email delivery is handled by Microsoft Graph API.
+ * Legacy nodemailer/ACS/Ethereal paths have been removed.
+ *
+ * @see ADR-008: Microsoft Graph Integration Strategy
  */
 
 interface SendMailOptions {
@@ -22,164 +21,60 @@ interface SendMailOptions {
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private acsClient: EmailClient | null = null;
-  private etherealTransporter: Transporter | null = null;
-  private readonly isDevelopment: boolean;
   private readonly fromAddress: string;
-  private readonly useGraphEmail: boolean;
-  private etherealInitialized = false;
 
-  constructor(private config: ConfigService) {
-    this.isDevelopment = this.config.get<string>('NODE_ENV') !== 'production';
+  constructor(
+    private config: ConfigService,
+    private graphEmailService: GraphEmailService,
+  ) {
     this.fromAddress = this.config.get<string>(
-      'EMAIL_FROM',
-      'badges@gcredit.example.com',
+      'GRAPH_EMAIL_FROM',
+      this.config.get<string>('EMAIL_FROM', 'badges@gcredit.example.com'),
     );
-    this.useGraphEmail =
-      this.config.get<string>('ENABLE_GRAPH_EMAIL', 'false') === 'true';
-
-    if (this.useGraphEmail) {
-      // Skip Ethereal when Graph Email is configured
-      this.logger.log(
-        '✅ EmailService initialized (Graph Email enabled - Ethereal skipped)',
-      );
-    } else if (this.isDevelopment) {
-      // Initialize Ethereal asynchronously (non-blocking)
-      this.initializeEthereal().catch((err) => {
-        this.logger.warn(
-          '⚠️ Ethereal initialization delayed, will retry on first email send',
-        );
-      });
-    } else {
-      this.initializeACS();
-    }
-  }
-
-  /**
-   * Initialize Azure Communication Services (Production)
-   */
-  private initializeACS(): void {
-    const connectionString = this.config.get<string>(
-      'AZURE_COMMUNICATION_CONNECTION_STRING',
+    this.logger.log(
+      '✅ EmailService initialized (delegating to GraphEmailService)',
     );
-    if (!connectionString) {
-      this.logger.warn(
-        '⚠️ AZURE_COMMUNICATION_CONNECTION_STRING not configured',
-      );
-      return;
-    }
-    this.acsClient = new EmailClient(connectionString);
-    this.logger.log('✅ Azure Communication Services Email initialized');
   }
 
   /**
-   * Initialize Ethereal (Development)
-   */
-  private async initializeEthereal(): Promise<void> {
-    try {
-      const testAccount = await nodemailer.createTestAccount();
-      this.etherealTransporter = nodemailer.createTransport({
-        host: testAccount.smtp.host,
-        port: testAccount.smtp.port,
-        secure: testAccount.smtp.secure,
-        auth: {
-          user: testAccount.user,
-          pass: testAccount.pass,
-        },
-      });
-      this.etherealInitialized = true;
-      this.logger.log('✅ Ethereal Email initialized (development)');
-    } catch (error) {
-      this.logger.error('❌ Failed to initialize Ethereal:', error.message);
-    }
-  }
-
-  /**
-   * Send email (generic method for all email types)
+   * Send email via GraphEmailService
    */
   async sendMail(options: SendMailOptions): Promise<void> {
     try {
-      if (this.isDevelopment) {
-        await this.sendViaEthereal(options);
-      } else {
-        await this.sendViaACS(options);
+      const isDevelopment =
+        this.config.get<string>('NODE_ENV') !== 'production';
+
+      if (isDevelopment && !this.graphEmailService.isGraphEmailEnabled()) {
+        // Dev mode fallback: log email to console
+        this.logger.warn('⚠️ Graph Email disabled, logging email to console');
+        console.log('\n' + '='.repeat(80));
+        console.log('📧 [DEV MODE] Email (Graph Email not configured)');
+        console.log('='.repeat(80));
+        console.log(`To: ${options.to}`);
+        console.log(`Subject: ${options.subject}`);
+        console.log('='.repeat(80) + '\n');
+        return;
       }
+
+      await this.graphEmailService.sendEmail(
+        this.fromAddress,
+        [options.to],
+        options.subject,
+        options.html,
+        options.text,
+      );
       this.logger.log(`✅ Email sent to ${options.to}: ${options.subject}`);
-    } catch (error) {
+    } catch (error: unknown) {
       this.logger.error(
         `❌ Failed to send email to ${options.to}:`,
-        error.message,
+        (error as Error).message,
       );
       // Don't throw - email failure shouldn't block operations
     }
   }
 
   /**
-   * Send via Azure Communication Services
-   */
-  private async sendViaACS(options: SendMailOptions): Promise<void> {
-    if (!this.acsClient) {
-      throw new Error('Azure Communication Services not initialized');
-    }
-
-    const message = {
-      senderAddress: this.fromAddress,
-      content: {
-        subject: options.subject,
-        html: options.html,
-        plainText: options.text || this.stripHtml(options.html),
-      },
-      recipients: {
-        to: [{ address: options.to }],
-      },
-    };
-
-    const poller = await this.acsClient.beginSend(message);
-    await poller.pollUntilDone();
-  }
-
-  /**
-   * Send via Ethereal (Development)
-   */
-  private async sendViaEthereal(options: SendMailOptions): Promise<void> {
-    // Wait for initialization if not ready (max 5 seconds)
-    let retries = 0;
-    while (!this.etherealInitialized && retries < 10) {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      retries++;
-    }
-
-    if (!this.etherealTransporter) {
-      this.logger.warn('⚠️ Ethereal not initialized, logging email to console');
-      console.log('\n' + '='.repeat(80));
-      console.log('📧 [DEV MODE] Email (Ethereal not available)');
-      console.log('='.repeat(80));
-      console.log(`To: ${options.to}`);
-      console.log(`Subject: ${options.subject}`);
-      console.log('='.repeat(80) + '\n');
-      return;
-    }
-
-    const info = await this.etherealTransporter.sendMail({
-      from: this.fromAddress,
-      to: options.to,
-      subject: options.subject,
-      html: options.html,
-      text: options.text,
-    });
-
-    this.logger.log(`📧 Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
-  }
-
-  /**
-   * Strip HTML tags for plain text fallback
-   */
-  private stripHtml(html: string): string {
-    return html.replace(/<[^>]*>/g, '');
-  }
-
-  /**
-   * Send password reset email (legacy method, now uses sendMail)
+   * Send password reset email
    *
    * @param email User's email address
    * @param token Reset token

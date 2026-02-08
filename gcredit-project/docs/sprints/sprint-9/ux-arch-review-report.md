@@ -501,9 +501,9 @@ import { Throttle } from '@nestjs/throttler';
 @Controller('api/bulk-issuance')
 export class BulkIssuanceController {
 
-  // Story 8.2: 3 uploads per 5 minutes
+  // Story 8.2: 10 uploads per 5 minutes (env-configurable for test/dev)
   @Post('upload')
-  @Throttle({ default: { ttl: 300000, limit: 3 } })
+  @Throttle({ default: { ttl: 300000, limit: 10 } })
   async uploadCSV() { }
 
   // Story 8.4: 1 confirmation per minute
@@ -512,6 +512,12 @@ export class BulkIssuanceController {
   async confirmBulkIssuance() { }
 }
 ```
+
+> **📝 Change History (2026-02-07):** Upload limit raised from 3→10/5min per PM/Architect review.
+> **Rationale:** Endpoint requires JWT + ISSUER/ADMIN role, making anonymous DoS impossible.
+> 10/5min supports normal iterative upload workflow without compromising security.
+> Global rate limits (10/min, 50/10min, 200/hr) remain as additional protection layers.
+> Test/dev environments should use env-var override (`UPLOAD_THROTTLE_LIMIT=50`) for E2E suites.
 
 **Effort:** 0.5 hours  
 **Priority:** P1

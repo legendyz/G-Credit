@@ -4,6 +4,15 @@
 **Total TD Effort:** 13h (16% of 80h capacity)  
 **Approach:** Balanced Sprint (50-60% features + 20-30% tech debt)
 
+> **⚠️ Reorganization Notice (2026-02-07)**  
+> All TD tasks have been reorganized into Story format to unify the development workflow:  
+> - **TD-013** (3h) → Embedded in **Story 8.3** as Task 0 (prerequisite)  
+> - **TD-014** (2h) → Embedded in **Story 8.4** as Task 0 (prerequisite)  
+> - **TD-015** (8h) → Promoted to **standalone Story** → [td-015-eslint-type-safety.md](td-015-eslint-type-safety.md)  
+>  
+> This ensures all TD follows the same flow: **dev prompt → dev → code review → fix → test**,  
+> preventing TD from being overlooked at Sprint end. See individual story files for details.
+
 ---
 
 ## Technical Debt Priority Classification
@@ -97,8 +106,47 @@ Fix **300 more warnings** from:
 - [ ] Warning reduction progress documented for Sprint 10
 
 ### Future Work (Deferred)
-- **Phase 3 (Sprint 10):** Fix remaining 500 warnings
+- **Phase 3 (Sprint 10):** Fix remaining 284 ESLint warnings → see TD-015 Phase 3
 - **Phase 4 (Sprint 11):** Enable warnings as errors in CI
+- **TD-017 (Sprint 10):** Fix 124 `tsc --noEmit` errors → see [td-017-tsc-type-errors.md](td-017-tsc-type-errors.md)
+
+---
+
+## TD-017: Fix TypeScript Compiler (tsc) Type Errors - 5h
+
+**Priority:** P2  
+**Category:** Type Safety  
+**Source:** TD-015 SM Acceptance Review (2026-02-07)  
+**Status:** backlog (Sprint 10)  
+**Story File:** [td-017-tsc-type-errors.md](td-017-tsc-type-errors.md)
+
+### Problem Statement
+`npx tsc --noEmit` produces **124 errors** across 22 files (all src errors resolved via CI fixes):
+- **124 in test files** (100%): mock type mismatches, nullable access, implicit any
+- **0 in source files** (all 14 fixed via commits `5deace0`, `769a151`)
+
+### Error Distribution
+| Error Code | Count | Description |
+|-----------|-------|-------------|
+| TS2339 | 56 | Property does not exist on type |
+| TS18048 | 28 | Value is possibly 'undefined' |
+| TS2345 | 16 | Argument type not assignable |
+| TS7053 | 10 | Implicit 'any' (index access) |
+| TS7006 | 10 | Parameter implicitly 'any' |
+| TS2322 | 3 | Type not assignable |
+| Other | 1 | TS2367 |
+
+**100% in test files** (124/124).
+
+### Tasks
+- [x] Phase A.1: Fix src errors — ✅ all 14 done via CI fixes
+- [ ] Phase A.2-A.3: Fix test file errors (124) — 2.5h
+- [ ] Phase B: Verification + add `type-check` script to package.json — 2h
+
+### Success Criteria
+- [ ] `npx tsc --noEmit` → 0 errors
+- [ ] All 992+ tests pass
+- [ ] ESLint warnings stay ≤282
 
 ---
 
@@ -251,31 +299,38 @@ export default defineConfig({
 
 ## Integration with Story Work
 
-### Dependencies Between Stories and TD Tasks
-- **TD-013 (Bundle Size)** should be completed BEFORE Story 8.3 (Bulk Preview UI)
-  - Reason: Preview UI is complex component, starting with optimized bundle prevents bloat
-  - Recommended order: TD-013 → Story 8.3
+### ✅ Reorganized (2026-02-07): TD Tasks Embedded in Stories
 
-- **TD-014 (Email Unification)** should be completed BEFORE Story 8.4 (Batch Processing)
-  - Reason: Batch processing sends bulk emails, unified system prevents complexity
+All TD tasks are now tracked within their respective stories:
+
+| TD Task | Embedded In | Role | Hours |
+|---------|-------------|------|-------|
+| **TD-013** (Bundle Size) | **Story 8.3** (Task 0) | 前置任务 — Preview UI 开发前完成 | 3h |
+| **TD-014** (Email Unification) | **Story 8.4** (Task 0) | 前置任务 — 批量处理开发前完成 | 2h |
+| **TD-015** (ESLint Warnings) | **Standalone Story** | 独立 Story，可与其他 Story 并行 | 8h |
+
+### Sprint 9 Unified Story Execution Order
+1. ✅ **Story 8.1** — CSV Template & Validation (done)
+2. **Story 8.2** — CSV Upload & Parsing (11.5h)
+3. **Story 8.3** — Bulk Preview UI + **TD-013** (14.5h, includes 3h bundle optimization)
+4. **Story 8.4** — Batch Processing + **TD-014** (8.5h, includes 2h email unification)
+5. **Story TD-015** — ESLint Type Safety (8h, parallel-capable)
   - Recommended order: TD-014 → Story 8.4
 
 - **TD-015 (ESLint)** can be done in parallel with story work
   - No direct dependencies
   - Can be assigned to different developer if needed
 
-### Recommended Sprint 9 Development Order
+### Recommended Sprint 9 Development Order (Updated)
 1. **Week 1:**
-   - Story 8.1 (CSV Template) - 6h
-   - TD-013 (Bundle Size) - 3h
-   - Story 8.2 (CSV Upload) - 6h
-   - TD-015 Phase 1 (ESLint) - 4h
+   - Story 8.1 (CSV Template) ✅ done
+   - Story 8.2 (CSV Upload) - 11.5h
+   - Story TD-015 (ESLint Phase 1) - 4h (parallel-capable)
 
 2. **Week 2:**
-   - TD-014 (Email Unification) - 2h
-   - TD-015 Phase 2 (ESLint) - 4h
-   - Story 8.3 (Bulk Preview) - 8h
-   - Story 8.4 (Batch Processing) - 8h
+   - Story TD-015 (ESLint Phase 2) - 4h (parallel-capable)
+   - Story 8.3 (Preview UI + TD-013 bundle optimization) - 14.5h
+   - Story 8.4 (Batch Processing + TD-014 email unification) - 8.5h
 
 ---
 

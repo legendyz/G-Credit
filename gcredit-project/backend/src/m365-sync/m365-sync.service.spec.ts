@@ -31,7 +31,22 @@ import { Client } from '@microsoft/microsoft-graph-client';
 
 describe('M365SyncService', () => {
   let service: M365SyncService;
-  let prisma: jest.Mocked<PrismaService>;
+  let prisma: {
+    user: {
+      findFirst: jest.Mock;
+      findMany: jest.Mock;
+      create: jest.Mock;
+      update: jest.Mock;
+    };
+    m365SyncLog: {
+      create: jest.Mock;
+      update: jest.Mock;
+      findFirst: jest.Mock;
+      findMany: jest.Mock;
+      findUnique: jest.Mock;
+    };
+    userAuditLog: { create: jest.Mock };
+  };
   let graphTokenProvider: jest.Mocked<GraphTokenProviderService>;
 
   // Mock Azure users
@@ -154,7 +169,7 @@ describe('M365SyncService', () => {
       (Client.initWithMiddleware as jest.Mock).mockReturnValue({
         api: mockApi,
       });
-      graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
 
       const result = await service.getAllAzureUsers();
 
@@ -181,7 +196,7 @@ describe('M365SyncService', () => {
       (Client.initWithMiddleware as jest.Mock).mockReturnValue({
         api: mockApi,
       });
-      graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
 
       const result = await service.getAllAzureUsers();
 
@@ -200,7 +215,7 @@ describe('M365SyncService', () => {
       (Client.initWithMiddleware as jest.Mock).mockReturnValue({
         api: mockApi,
       });
-      graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
 
       const result = await service.getAllAzureUsers();
 
@@ -208,7 +223,7 @@ describe('M365SyncService', () => {
     });
 
     it('should throw error when Graph API is not configured', async () => {
-      graphTokenProvider.getAuthProvider.mockReturnValue(null);
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue(null);
 
       await expect(service.getAllAzureUsers()).rejects.toThrow(
         'Graph API not configured',
@@ -228,7 +243,7 @@ describe('M365SyncService', () => {
       (Client.initWithMiddleware as jest.Mock).mockReturnValue({
         api: mockApi,
       });
-      graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
 
       const result = await service.fetchWithRetry('/users');
 
@@ -247,7 +262,7 @@ describe('M365SyncService', () => {
       (Client.initWithMiddleware as jest.Mock).mockReturnValue({
         api: mockApi,
       });
-      graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
 
       // Use shorter delays for testing
       const result = await service.fetchWithRetry('/users', 3, 10);
@@ -267,7 +282,7 @@ describe('M365SyncService', () => {
       (Client.initWithMiddleware as jest.Mock).mockReturnValue({
         api: mockApi,
       });
-      graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
 
       const result = await service.fetchWithRetry('/users', 3, 10);
 
@@ -286,7 +301,7 @@ describe('M365SyncService', () => {
       (Client.initWithMiddleware as jest.Mock).mockReturnValue({
         api: mockApi,
       });
-      graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
 
       const result = await service.fetchWithRetry('/users', 3, 10);
 
@@ -301,7 +316,7 @@ describe('M365SyncService', () => {
       (Client.initWithMiddleware as jest.Mock).mockReturnValue({
         api: mockApi,
       });
-      graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
 
       await expect(service.fetchWithRetry('/users', 3, 10)).rejects.toEqual(
         error429,
@@ -316,7 +331,7 @@ describe('M365SyncService', () => {
       (Client.initWithMiddleware as jest.Mock).mockReturnValue({
         api: mockApi,
       });
-      graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
 
       await expect(service.fetchWithRetry('/users', 3, 10)).rejects.toEqual(
         error400,
@@ -331,7 +346,7 @@ describe('M365SyncService', () => {
       (Client.initWithMiddleware as jest.Mock).mockReturnValue({
         api: mockApi,
       });
-      graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
 
       await expect(service.fetchWithRetry('/users', 3, 10)).rejects.toEqual(
         error401,
@@ -346,7 +361,7 @@ describe('M365SyncService', () => {
       (Client.initWithMiddleware as jest.Mock).mockReturnValue({
         api: mockApi,
       });
-      graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
 
       await expect(service.fetchWithRetry('/users', 3, 10)).rejects.toEqual(
         error404,
@@ -430,7 +445,10 @@ describe('M365SyncService', () => {
       const localUser = { ...mockLocalUser, azureId: 'azure-id-123' };
 
       prisma.user.findMany.mockResolvedValue([localUser]);
-      prisma.user.update.mockResolvedValue({ ...localUser, isActive: false });
+      prisma.user.update.mockResolvedValue({
+        ...localUser,
+        isActive: false,
+      });
       prisma.userAuditLog.create.mockResolvedValue({} as any);
 
       const result = await service.syncUserDeactivations(
@@ -442,7 +460,7 @@ describe('M365SyncService', () => {
       expect(result.errors).toHaveLength(0);
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: localUser.id },
-        data: expect.objectContaining({ isActive: false }),
+        data: expect.objectContaining({ isActive: false }) as unknown,
       });
     });
 
@@ -451,7 +469,10 @@ describe('M365SyncService', () => {
       const localUser = { ...mockLocalUser, roleSetManually: true };
 
       prisma.user.findMany.mockResolvedValue([localUser]);
-      prisma.user.update.mockResolvedValue({ ...localUser, isActive: false });
+      prisma.user.update.mockResolvedValue({
+        ...localUser,
+        isActive: false,
+      });
       prisma.userAuditLog.create.mockResolvedValue({} as any);
 
       await service.syncUserDeactivations(azureUsers, 'sync-123');
@@ -461,7 +482,7 @@ describe('M365SyncService', () => {
         where: { id: localUser.id },
         data: {
           isActive: false,
-          lastSyncAt: expect.any(Date),
+          lastSyncAt: expect.any(Date) as unknown,
         },
       });
     });
@@ -507,7 +528,10 @@ describe('M365SyncService', () => {
       const localUser = { ...mockLocalUser, azureId: 'azure-disabled-id' };
 
       prisma.user.findMany.mockResolvedValue([localUser]);
-      prisma.user.update.mockResolvedValue({ ...localUser, isActive: false });
+      prisma.user.update.mockResolvedValue({
+        ...localUser,
+        isActive: false,
+      });
       prisma.userAuditLog.create.mockResolvedValue({} as any);
 
       const result = await service.syncUserDeactivations(
@@ -519,7 +543,7 @@ describe('M365SyncService', () => {
       expect(result.errors).toHaveLength(0);
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: localUser.id },
-        data: expect.objectContaining({ isActive: false }),
+        data: expect.objectContaining({ isActive: false }) as unknown,
       });
       // Verify audit log mentions disabled account
       expect(prisma.userAuditLog.create).toHaveBeenCalledWith({
@@ -527,8 +551,8 @@ describe('M365SyncService', () => {
           action: 'DEACTIVATED',
           changes: expect.objectContaining({
             reason: 'User account is disabled in Azure AD',
-          }),
-        }),
+          }) as unknown,
+        }) as unknown,
       });
     });
 
@@ -560,7 +584,10 @@ describe('M365SyncService', () => {
       const localUser = { ...mockLocalUser };
 
       prisma.user.findMany.mockResolvedValue([localUser]);
-      prisma.user.update.mockResolvedValue({ ...localUser, isActive: false });
+      prisma.user.update.mockResolvedValue({
+        ...localUser,
+        isActive: false,
+      });
       prisma.userAuditLog.create.mockResolvedValue({} as any);
 
       await service.syncUserDeactivations(azureUsers, 'sync-123');
@@ -570,7 +597,7 @@ describe('M365SyncService', () => {
           userId: localUser.id,
           action: 'DEACTIVATED',
           source: 'M365_SYNC',
-        }),
+        }) as unknown,
       });
     });
   });
@@ -587,7 +614,11 @@ describe('M365SyncService', () => {
         email: mockAzureUser.mail,
       } as any);
 
-      const result = await service.syncSingleUser(mockAzureUser);
+      const result = (await service.syncSingleUser(mockAzureUser)) as {
+        success: boolean;
+        action: string;
+        error?: string;
+      };
 
       expect(result.success).toBe(true);
       expect(result.action).toBe('created');
@@ -598,7 +629,11 @@ describe('M365SyncService', () => {
       prisma.user.findFirst.mockResolvedValue(mockLocalUser);
       prisma.user.update.mockResolvedValue(mockLocalUser);
 
-      const result = await service.syncSingleUser(mockAzureUser);
+      const result = (await service.syncSingleUser(mockAzureUser)) as {
+        success: boolean;
+        action: string;
+        error?: string;
+      };
 
       expect(result.success).toBe(true);
       expect(result.action).toBe('updated');
@@ -606,7 +641,11 @@ describe('M365SyncService', () => {
     });
 
     it('should skip disabled Azure accounts', async () => {
-      const result = await service.syncSingleUser(mockDisabledUser);
+      const result = (await service.syncSingleUser(mockDisabledUser)) as {
+        success: boolean;
+        action: string;
+        error?: string;
+      };
 
       expect(result.success).toBe(true);
       expect(result.action).toBe('skipped');
@@ -620,7 +659,11 @@ describe('M365SyncService', () => {
         userPrincipalName: '',
       };
 
-      const result = await service.syncSingleUser(userNoEmail);
+      const result = (await service.syncSingleUser(userNoEmail)) as {
+        success: boolean;
+        action: string;
+        error?: string;
+      };
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('No email');
@@ -634,14 +677,16 @@ describe('M365SyncService', () => {
       };
 
       prisma.user.findFirst.mockResolvedValue(null);
-      prisma.user.create.mockResolvedValue({ id: 'new-user' } as any);
+      prisma.user.create.mockResolvedValue({
+        id: 'new-user',
+      } as any);
 
       await service.syncSingleUser(userWithUPN);
 
       expect(prisma.user.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           email: 'john.upn@example.com',
-        }),
+        }) as unknown,
       });
     });
 
@@ -651,7 +696,11 @@ describe('M365SyncService', () => {
         new Error('Unique constraint violation'),
       );
 
-      const result = await service.syncSingleUser(mockAzureUser);
+      const result = (await service.syncSingleUser(mockAzureUser)) as {
+        success: boolean;
+        action: string;
+        error?: string;
+      };
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('Unique constraint violation');
@@ -676,7 +725,7 @@ describe('M365SyncService', () => {
       (Client.initWithMiddleware as jest.Mock).mockReturnValue({
         api: mockApi,
       });
-      graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
 
       await service.runSync('FULL');
 
@@ -684,7 +733,7 @@ describe('M365SyncService', () => {
         data: expect.objectContaining({
           syncType: 'FULL',
           status: 'IN_PROGRESS',
-        }),
+        }) as unknown,
       });
     });
 
@@ -698,9 +747,11 @@ describe('M365SyncService', () => {
       (Client.initWithMiddleware as jest.Mock).mockReturnValue({
         api: mockApi,
       });
-      graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
       prisma.user.findFirst.mockResolvedValue(null);
-      prisma.user.create.mockResolvedValue({ id: 'new-user' } as any);
+      prisma.user.create.mockResolvedValue({
+        id: 'new-user',
+      } as any);
 
       const result = await service.runSync('FULL');
 
@@ -709,7 +760,7 @@ describe('M365SyncService', () => {
         where: { id: mockSyncLog.id },
         data: expect.objectContaining({
           status: 'SUCCESS',
-        }),
+        }) as unknown,
       });
     });
 
@@ -726,9 +777,11 @@ describe('M365SyncService', () => {
       (Client.initWithMiddleware as jest.Mock).mockReturnValue({
         api: mockApi,
       });
-      graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
       prisma.user.findFirst.mockResolvedValue(null);
-      prisma.user.create.mockResolvedValue({ id: 'new-user' } as any);
+      prisma.user.create.mockResolvedValue({
+        id: 'new-user',
+      } as any);
 
       const result = await service.runSync('FULL');
 
@@ -737,8 +790,7 @@ describe('M365SyncService', () => {
     });
 
     it('should update sync log with FAILURE on complete failure', async () => {
-      const error = new Error('API unavailable');
-      graphTokenProvider.getAuthProvider.mockReturnValue(null);
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue(null);
 
       await expect(service.runSync('FULL')).rejects.toThrow(
         'Graph API not configured',
@@ -748,7 +800,7 @@ describe('M365SyncService', () => {
         where: { id: mockSyncLog.id },
         data: expect.objectContaining({
           status: 'FAILURE',
-        }),
+        }) as unknown,
       });
     });
 
@@ -759,15 +811,15 @@ describe('M365SyncService', () => {
       (Client.initWithMiddleware as jest.Mock).mockReturnValue({
         api: mockApi,
       });
-      graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
 
       await service.runSync('FULL');
 
       expect(prisma.m365SyncLog.update).toHaveBeenCalledWith({
         where: { id: mockSyncLog.id },
         data: expect.objectContaining({
-          durationMs: expect.any(Number),
-        }),
+          durationMs: expect.any(Number) as unknown,
+        }) as unknown,
       });
     });
 
@@ -779,14 +831,14 @@ describe('M365SyncService', () => {
       (Client.initWithMiddleware as jest.Mock).mockReturnValue({
         api: mockApi,
       });
-      graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
 
       await service.runSync('FULL', 'admin@example.com');
 
       expect(prisma.m365SyncLog.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           syncedBy: 'admin@example.com',
-        }),
+        }) as unknown,
       });
     });
 
@@ -797,14 +849,14 @@ describe('M365SyncService', () => {
       (Client.initWithMiddleware as jest.Mock).mockReturnValue({
         api: mockApi,
       });
-      graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
 
       await service.runSync('FULL');
 
       expect(prisma.m365SyncLog.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           syncedBy: 'SYSTEM',
-        }),
+        }) as unknown,
       });
     });
 
@@ -818,27 +870,29 @@ describe('M365SyncService', () => {
       (Client.initWithMiddleware as jest.Mock).mockReturnValue({
         api: mockApi,
       });
-      graphTokenProvider.getAuthProvider.mockReturnValue({} as any);
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
       prisma.user.findFirst.mockResolvedValue(null);
-      prisma.user.create.mockResolvedValue({ id: 'new-user' } as any);
+      prisma.user.create.mockResolvedValue({
+        id: 'new-user',
+      } as any);
 
       const result = await service.runSync('FULL');
 
       expect(result).toEqual(
         expect.objectContaining({
-          syncId: expect.any(String),
-          status: expect.any(String),
-          totalUsers: expect.any(Number),
-          syncedUsers: expect.any(Number),
-          createdUsers: expect.any(Number),
-          updatedUsers: expect.any(Number),
-          deactivatedUsers: expect.any(Number),
-          failedUsers: expect.any(Number),
-          errors: expect.any(Array),
-          durationMs: expect.any(Number),
-          startedAt: expect.any(Date),
-          completedAt: expect.any(Date),
-        }),
+          syncId: expect.any(String) as unknown,
+          status: expect.any(String) as unknown,
+          totalUsers: expect.any(Number) as unknown,
+          syncedUsers: expect.any(Number) as unknown,
+          createdUsers: expect.any(Number) as unknown,
+          updatedUsers: expect.any(Number) as unknown,
+          deactivatedUsers: expect.any(Number) as unknown,
+          failedUsers: expect.any(Number) as unknown,
+          errors: expect.any(Array) as unknown,
+          durationMs: expect.any(Number) as unknown,
+          startedAt: expect.any(Date) as unknown,
+          completedAt: expect.any(Date) as unknown,
+        }) as unknown,
       );
     });
   });

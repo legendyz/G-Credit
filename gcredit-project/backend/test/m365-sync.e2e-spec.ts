@@ -1,4 +1,5 @@
 import request from 'supertest';
+import { App } from 'supertest/types';
 import {
   TestContext,
   setupE2ETest,
@@ -65,7 +66,7 @@ describe('M365 Sync API (e2e) - Story 8.9', () => {
 
   describe('POST /api/admin/m365-sync', () => {
     it('should return 403 for non-admin (ISSUER)', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .post('/api/admin/m365-sync')
         .set('Authorization', `Bearer ${issuerUser.token}`)
         .send({})
@@ -73,7 +74,7 @@ describe('M365 Sync API (e2e) - Story 8.9', () => {
     });
 
     it('should return 403 for non-admin (EMPLOYEE)', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .post('/api/admin/m365-sync')
         .set('Authorization', `Bearer ${employeeUser.token}`)
         .send({})
@@ -81,7 +82,7 @@ describe('M365 Sync API (e2e) - Story 8.9', () => {
     });
 
     it('should return 401 without auth token', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .post('/api/admin/m365-sync')
         .send({})
         .expect(401);
@@ -90,7 +91,7 @@ describe('M365 Sync API (e2e) - Story 8.9', () => {
     // Note: Actual sync test - if Graph API is configured, returns 201
     // If not configured, returns 500. Both are valid outcomes.
     it('should trigger sync or fail if Graph not configured', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .post('/api/admin/m365-sync')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .send({ syncType: 'FULL' });
@@ -100,19 +101,19 @@ describe('M365 Sync API (e2e) - Story 8.9', () => {
 
       if (response.status === 201) {
         // Verify success response structure
-        expect(response.body).toHaveProperty('syncId');
-        expect(response.body).toHaveProperty('status');
-        expect(['SUCCESS', 'PARTIAL_SUCCESS', 'FAILED']).toContain(
-          response.body.status,
-        );
+        const body = response.body as { syncId: string; status: string };
+        expect(body).toHaveProperty('syncId');
+        expect(body).toHaveProperty('status');
+        expect(['SUCCESS', 'PARTIAL_SUCCESS', 'FAILED']).toContain(body.status);
       } else {
         // Verify error response structure
-        expect(response.body).toHaveProperty('message');
+        const body = response.body as { message: string };
+        expect(body).toHaveProperty('message');
       }
     });
 
     it('should accept INCREMENTAL sync type', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .post('/api/admin/m365-sync')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .send({ syncType: 'INCREMENTAL' });
@@ -124,16 +125,27 @@ describe('M365 Sync API (e2e) - Story 8.9', () => {
 
   describe('GET /api/admin/m365-sync/logs', () => {
     it('should return sync history for Admin', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/admin/m365-sync/logs')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200);
 
-      expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body.length).toBeGreaterThan(0);
+      const body = response.body as Array<{
+        id: string;
+        syncDate: string;
+        syncType: string;
+        status: string;
+        userCount: number;
+        syncedCount: number;
+        failedCount: number;
+        syncedBy: string;
+        metadata: unknown;
+      }>;
+      expect(Array.isArray(body)).toBe(true);
+      expect(body.length).toBeGreaterThan(0);
 
       // Validate structure including AC3 audit fields
-      const log = response.body[0];
+      const log = body[0];
       expect(log).toHaveProperty('id');
       expect(log).toHaveProperty('syncDate');
       expect(log).toHaveProperty('syncType');
@@ -146,34 +158,35 @@ describe('M365 Sync API (e2e) - Story 8.9', () => {
     });
 
     it('should return 403 for non-admin (ISSUER)', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/admin/m365-sync/logs')
         .set('Authorization', `Bearer ${issuerUser.token}`)
         .expect(403);
     });
 
     it('should return 403 for non-admin (EMPLOYEE)', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/admin/m365-sync/logs')
         .set('Authorization', `Bearer ${employeeUser.token}`)
         .expect(403);
     });
 
     it('should return 401 without auth token', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/admin/m365-sync/logs')
         .expect(401);
     });
 
     it('should respect limit parameter', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/admin/m365-sync/logs?limit=1')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200);
 
-      expect(Array.isArray(response.body)).toBe(true);
+      const body = response.body as unknown[];
+      expect(Array.isArray(body)).toBe(true);
       // May have 0 or 1 results depending on test order
-      expect(response.body.length).toBeLessThanOrEqual(1);
+      expect(body.length).toBeLessThanOrEqual(1);
     });
   });
 
@@ -193,15 +206,21 @@ describe('M365 Sync API (e2e) - Story 8.9', () => {
         return; // Skip if no log exists
       }
 
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get(`/api/admin/m365-sync/logs/${testLogId}`)
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('id', testLogId);
-      expect(response.body).toHaveProperty('syncDate');
-      expect(response.body).toHaveProperty('syncType');
-      expect(response.body).toHaveProperty('status');
+      const body = response.body as {
+        id: string;
+        syncDate: string;
+        syncType: string;
+        status: string;
+      };
+      expect(body).toHaveProperty('id', testLogId);
+      expect(body).toHaveProperty('syncDate');
+      expect(body).toHaveProperty('syncType');
+      expect(body).toHaveProperty('status');
     });
 
     it('should return 403 for non-admin', async () => {
@@ -209,21 +228,21 @@ describe('M365 Sync API (e2e) - Story 8.9', () => {
         return; // Skip if no log exists
       }
 
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get(`/api/admin/m365-sync/logs/${testLogId}`)
         .set('Authorization', `Bearer ${employeeUser.token}`)
         .expect(403);
     });
 
     it('should return 404 for non-existent log', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/admin/m365-sync/logs/00000000-0000-0000-0000-000000000000')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(404);
     });
 
     it('should return 400 for invalid UUID', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/admin/m365-sync/logs/invalid-uuid')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(400);
@@ -232,33 +251,34 @@ describe('M365 Sync API (e2e) - Story 8.9', () => {
 
   describe('GET /api/admin/m365-sync/status', () => {
     it('should return integration status for Admin', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/admin/m365-sync/status')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('available');
-      expect(typeof response.body.available).toBe('boolean');
+      const body = response.body as { available: boolean; lastSync: unknown };
+      expect(body).toHaveProperty('available');
+      expect(typeof body.available).toBe('boolean');
       // lastSync may be null if no syncs have been performed
-      expect(response.body).toHaveProperty('lastSync');
+      expect(body).toHaveProperty('lastSync');
     });
 
     it('should return 403 for non-admin (ISSUER)', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/admin/m365-sync/status')
         .set('Authorization', `Bearer ${issuerUser.token}`)
         .expect(403);
     });
 
     it('should return 403 for non-admin (EMPLOYEE)', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/admin/m365-sync/status')
         .set('Authorization', `Bearer ${employeeUser.token}`)
         .expect(403);
     });
 
     it('should return 401 without auth token', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/admin/m365-sync/status')
         .expect(401);
     });

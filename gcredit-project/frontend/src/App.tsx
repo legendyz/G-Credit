@@ -1,16 +1,48 @@
+import { lazy, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
-import { TimelineView } from '@/components/TimelineView/TimelineView';
-import { VerifyBadgePage } from '@/pages/VerifyBadgePage';
-import BadgeEmbedPage from '@/pages/BadgeEmbedPage';
-import AdminAnalyticsPage from '@/pages/AdminAnalyticsPage';
-import BadgeManagementPage from '@/pages/admin/BadgeManagementPage';
-import AdminUserManagementPage from '@/pages/AdminUserManagementPage';
-import { DashboardPage } from '@/pages/dashboard';
-import { LoginPage } from '@/pages/LoginPage';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Layout } from '@/components/layout/Layout';
+
+// Lazy-load all page components (TD-013: route-based code splitting)
+const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
+const LoginPage = lazy(() =>
+  import('@/pages/LoginPage').then((m) => ({ default: m.LoginPage })),
+);
+const TimelineView = lazy(() =>
+  import('@/components/TimelineView/TimelineView').then((m) => ({
+    default: m.TimelineView,
+  })),
+);
+const VerifyBadgePage = lazy(() =>
+  import('@/pages/VerifyBadgePage').then((m) => ({
+    default: m.VerifyBadgePage,
+  })),
+);
+const BadgeEmbedPage = lazy(() => import('@/pages/BadgeEmbedPage'));
+const AdminAnalyticsPage = lazy(() => import('@/pages/AdminAnalyticsPage'));
+const BadgeManagementPage = lazy(
+  () => import('@/pages/admin/BadgeManagementPage'),
+);
+const AdminUserManagementPage = lazy(
+  () => import('@/pages/AdminUserManagementPage'),
+);
+const BulkIssuancePage = lazy(() => import('@/pages/BulkIssuancePage'));
+const BulkPreviewPage = lazy(
+  () => import('@/components/BulkIssuance/BulkPreviewPage'),
+);
+
+/**
+ * Loading fallback for lazy-loaded routes (TD-013)
+ */
+function LoadingFallback() {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+    </div>
+  );
+}
 
 const queryClient = new QueryClient();
 
@@ -19,7 +51,8 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <Toaster richColors position="top-right" />
       <BrowserRouter>
-        <Routes>
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/verify/:verificationId" element={<VerifyBadgePage />} />
@@ -67,6 +100,26 @@ function App() {
             } 
           />
           <Route 
+            path="/admin/bulk-issuance" 
+            element={
+              <ProtectedRoute requiredRoles={['ADMIN', 'ISSUER']}>
+                <Layout pageTitle="Bulk Badge Issuance">
+                  <BulkIssuancePage />
+                </Layout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/bulk-issuance/preview/:sessionId" 
+            element={
+              <ProtectedRoute requiredRoles={['ADMIN', 'ISSUER']}>
+                <Layout pageTitle="Bulk Issuance Preview">
+                  <BulkPreviewPage />
+                </Layout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
             path="/admin/users" 
             element={
               <ProtectedRoute requiredRoles={['ADMIN']}>
@@ -77,6 +130,7 @@ function App() {
             } 
           />
         </Routes>
+        </Suspense>
       </BrowserRouter>
     </QueryClientProvider>
   );

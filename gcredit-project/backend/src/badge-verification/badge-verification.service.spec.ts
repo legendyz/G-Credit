@@ -6,7 +6,7 @@ import { AssertionGeneratorService } from '../badge-issuance/services/assertion-
 
 describe('BadgeVerificationService - Story 6.3', () => {
   let service: BadgeVerificationService;
-  let prisma: PrismaService;
+  let _prisma: PrismaService;
 
   const mockPrismaService = {
     badge: {
@@ -34,7 +34,7 @@ describe('BadgeVerificationService - Story 6.3', () => {
     }).compile();
 
     service = module.get<BadgeVerificationService>(BadgeVerificationService);
-    prisma = module.get<PrismaService>(PrismaService);
+    _prisma = module.get<PrismaService>(PrismaService);
   });
 
   describe('verifyBadge()', () => {

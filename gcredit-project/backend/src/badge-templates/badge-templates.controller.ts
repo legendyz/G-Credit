@@ -24,7 +24,6 @@ import {
   ApiBearerAuth,
   ApiConsumes,
   ApiBody,
-  ApiQuery,
 } from '@nestjs/swagger';
 import { MultipartJsonInterceptor } from '../common/interceptors/multipart-json.interceptor';
 import { BadgeTemplatesService } from './badge-templates.service';
@@ -41,7 +40,8 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Public } from '../common/decorators/public.decorator';
-import { UserRole, BadgeStatus } from '@prisma/client';
+import { UserRole } from '@prisma/client';
+import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
 
 @ApiTags('Badge Templates')
 @Controller('badge-templates')
@@ -127,7 +127,7 @@ export class BadgeTemplatesController {
     type: BadgeTemplateResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Badge template not found' })
-  async findOne(@Param('id') id: string, @Request() req: any) {
+  async findOne(@Param('id') id: string, @Request() req: RequestWithUser) {
     // ARCH-P0-002: Pass user role for access control (may be undefined for public access)
     const userRole = req.user?.role;
     return this.badgeTemplatesService.findOne(id, userRole);
@@ -196,9 +196,9 @@ export class BadgeTemplatesController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Admin/Issuer only' })
   async create(
-    @Body() body: any,
+    @Body() body: CreateBadgeTemplateDto,
     @UploadedFile() image: Express.Multer.File,
-    @Request() req: any,
+    @Request() req: RequestWithUser,
   ) {
     // JSON fields (skillIds, issuanceCriteria) are automatically parsed by MultipartJsonInterceptor
     const createDto: CreateBadgeTemplateDto = body;
@@ -264,9 +264,9 @@ export class BadgeTemplatesController {
   @ApiResponse({ status: 404, description: 'Badge template not found' })
   async update(
     @Param('id') id: string,
-    @Body() body: any,
+    @Body() body: UpdateBadgeTemplateDto,
     @UploadedFile() image: Express.Multer.File | undefined,
-    @Request() req: any,
+    @Request() req: RequestWithUser,
   ) {
     // ARCH-P1-004: Ownership check - ISSUER can only update own templates
     const userId = req.user.userId;
@@ -301,7 +301,7 @@ export class BadgeTemplatesController {
     description: 'Forbidden - Cannot delete templates created by others',
   })
   @ApiResponse({ status: 404, description: 'Badge template not found' })
-  async remove(@Param('id') id: string, @Request() req: any) {
+  async remove(@Param('id') id: string, @Request() req: RequestWithUser) {
     // ARCH-P1-004: Ownership check - ISSUER can only delete own templates
     const userId = req.user.userId;
     const userRole = req.user.role;

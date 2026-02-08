@@ -13,6 +13,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GraphTeamsService } from '../services/graph-teams.service';
 import { PrismaService } from '../../common/prisma.service';
+import type { Badge, BadgeTemplate } from '@prisma/client';
 import { BadgeNotificationService } from '../../badge-issuance/services/badge-notification.service';
 import {
   BadgeNotificationCardBuilder,
@@ -78,9 +79,9 @@ export class TeamsBadgeNotificationService {
     try {
       await this.sendEmailFallback(badge, recipient, claimUrl);
       this.logger.log(`✅ Badge issuance email sent to ${recipient.email}`);
-    } catch (error) {
+    } catch (error: unknown) {
       this.logger.error(
-        `❌ Failed to send badge issuance email to ${recipient.email}: ${error.message}`,
+        `❌ Failed to send badge issuance email to ${recipient.email}: ${(error as Error).message}`,
       );
       throw error;
     }
@@ -177,9 +178,9 @@ export class TeamsBadgeNotificationService {
       this.logger.log(
         `✅ Teams channel message sent successfully for badge ${badgeId}`,
       );
-    } catch (error) {
+    } catch (error: unknown) {
       this.logger.error(
-        `❌ Failed to send Teams channel message for badge ${badgeId}: ${error.message}`,
+        `❌ Failed to send Teams channel message for badge ${badgeId}: ${(error as Error).message}`,
       );
 
       // Task 6: Email fallback
@@ -192,9 +193,9 @@ export class TeamsBadgeNotificationService {
         this.logger.log(
           `✅ Email fallback sent successfully to ${recipient.email}`,
         );
-      } catch (emailError) {
+      } catch (emailError: unknown) {
         this.logger.error(
-          `❌ Email fallback also failed for ${recipient.email}: ${emailError.message}`,
+          `❌ Email fallback also failed for ${recipient.email}: ${emailError instanceof Error ? emailError.message : String(emailError)}`,
         );
         // Don't throw - notification failure shouldn't block badge issuance
       }
@@ -208,8 +209,12 @@ export class TeamsBadgeNotificationService {
    * Uses existing email template from Story 7.2
    */
   private async sendEmailFallback(
-    badge: any,
-    recipient: any,
+    badge: Badge & { template: BadgeTemplate },
+    recipient: {
+      firstName: string | null;
+      lastName: string | null;
+      email: string;
+    },
     claimUrl?: string,
   ): Promise<void> {
     const platformUrl = this.configService.get<string>('PLATFORM_URL');

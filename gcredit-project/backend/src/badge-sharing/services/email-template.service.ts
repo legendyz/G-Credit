@@ -79,7 +79,7 @@ export class EmailTemplateService {
       'PLATFORM_URL',
       'http://localhost:5173',
     );
-    const apiUrl = this.configService.get<string>(
+    const _apiUrl = this.configService.get<string>(
       'API_URL',
       'http://localhost:3000',
     );

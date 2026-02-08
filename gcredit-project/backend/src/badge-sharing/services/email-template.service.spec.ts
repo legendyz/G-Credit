@@ -4,7 +4,7 @@ import { EmailTemplateService } from './email-template.service';
 
 describe('EmailTemplateService', () => {
   let service: EmailTemplateService;
-  let configService: ConfigService;
+  let _configService: ConfigService;
 
   const mockConfigService = {
     get: (key: string, defaultValue?: string) => {
@@ -42,7 +42,7 @@ describe('EmailTemplateService', () => {
     }).compile();
 
     service = module.get<EmailTemplateService>(EmailTemplateService);
-    configService = module.get<ConfigService>(ConfigService);
+    _configService = module.get<ConfigService>(ConfigService);
   });
 
   it('should be defined', () => {

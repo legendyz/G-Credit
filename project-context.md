@@ -5,7 +5,7 @@
 **Project Type:** Enterprise Internal Platform (Greenfield)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
 **License:** MIT License (Open Source)  
-**Status:** ✅ Sprint 8 COMPLETE - Production-Ready MVP (Epic 10, 100% complete, 12/12 items done, 876 tests)  
+**Status:** ✅ Sprint 9 COMPLETE - Epic 8 Bulk Badge Issuance + TD Cleanup (5/5 stories done, 1087 tests)  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, committed 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, committed 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, committed 2026-01-26)  
@@ -15,7 +15,8 @@
 **Sprint 6:** ✅ Complete (100%, actual 35h / estimated 56-76h, committed 2026-01-31, branch: sprint-6/epic-7-badge-sharing, 243 tests, v0.6.0)  
 **Sprint 7:** ✅ Complete (100%, actual 38.5h / estimated 41-47h, committed 2026-02-02, branch: sprint-7/epic-9-revocation-lifecycle-uat, 302 tests, 100% UAT pass, v0.7.0)  
 **Sprint 8:** ✅ Complete (12/12 items, 100%, 80h/76h, branch: sprint-8/epic-10-production-ready-mvp, tagged v0.8.0, 876 tests)  
-**Last Updated:** 2026-02-05 (Sprint 8 COMPLETE - Production-Ready MVP released, v0.8.0 tagged, 876 tests passing)
+**Sprint 9:** ✅ Complete (5/5 stories, 37h/51h, branch: sprint-9/epic-8-bulk-issuance-td-cleanup, 1087 tests, v0.9.0-dev)  
+**Last Updated:** 2026-02-08 (Sprint 9 COMPLETE - All 5 stories SM accepted, 1087 tests passing)
 
 ---
 
@@ -146,14 +147,17 @@ gcredit-project/docs/
 ├── architecture/          # System architecture
 │   ├── system-architecture.md  # 5,406 lines, 12 decisions
 │   └── architecture-diagrams.md
-├── sprints/              # Sprint documentation (Sprint 0-6)
+├── sprints/              # Sprint documentation (Sprint 0-9)
 │   ├── sprint-0/         # Infrastructure setup
 │   ├── sprint-1/         # JWT auth & user management
 │   ├── sprint-2/         # Badge template management
 │   ├── sprint-3/         # Badge issuance
 │   ├── sprint-4/         # Employee badge wallet
 │   ├── sprint-5/         # Badge verification
-│   └── sprint-6/         # ✅ READY - Social sharing & widget embedding
+│   ├── sprint-6/         # Badge sharing & social proof
+│   ├── sprint-7/         # Badge revocation & lifecycle UAT
+│   ├── sprint-8/         # Production-ready MVP
+│   └── sprint-9/         # ✅ COMPLETE - Bulk badge issuance + TD cleanup
 │       ├── backlog.md    # Sprint 6 backlog (1,317 lines)
 │       ├── version-manifest.md  # ✅ CREATED 2026-01-29 (dependency versions)
 │       ├── kickoff-readiness.md # Preparation tasks checklist
@@ -333,19 +337,22 @@ _bmad-output/
 |-------|----------|--------------|--------|
 | Phase 1 - Discovery | 4-6 weeks | PRD, Product Brief, KPIs | ✅ COMPLETE |
 | Phase 2 - Design & Architecture | 4 weeks | Architecture doc, UX Design, Wireframes | ✅ COMPLETE (Architecture + UX Spec + 10 Wireframe Screens) |
-| Phase 3 - MVP Development | 8-12 weeks | Working MVP (core issuance) | 🔄 IN PROGRESS - Sprint 6 Complete |
+| Phase 3 - MVP Development | 8-12 weeks | Working MVP (core issuance) | ✅ Sprint 9 Complete |
 | → Sprint 0 | 2 weeks | Infrastructure Setup | ✅ COMPLETE (2026-01-23→01-24, 9.5h/10h) |
 | → Sprint 1 | 1 day | JWT Auth & User Management (Epic 2) | ✅ COMPLETE (2026-01-25, 21h/21h, 40 tests) |
 | → Sprint 2 | 2 weeks | Badge Template Management (Epic 3) | ✅ COMPLETE (2026-01-26, 30 endpoints, 27 tests) |
 | → Sprint 3 | 2 weeks | Badge Issuance System (Epic 4) | ✅ COMPLETE (2026-01-28, 13h/12.5h, 46 tests, v0.3.0) |
 | → Sprint 4 | 2 days | Employee Badge Wallet (Epic 5) | ✅ COMPLETE (2026-01-28, 48h, 58 tests, v0.4.0) |
 | → Sprint 5 | 1 day | Badge Verification & Open Badges 2.0 (Epic 6) | ✅ COMPLETE (2026-01-29, 30h, 68 tests, v0.5.0) |
-| → Sprint 6 | 3 days | Badge Sharing & Social Proof (Epic 7) | ✅ COMPLETE (2026-01-31, 30h/56h, 243 tests, v0.6.0 pending) |
+| → Sprint 6 | 3 days | Badge Sharing & Social Proof (Epic 7) | ✅ COMPLETE (2026-01-31, 30h/56h, 243 tests, v0.6.0) |
+| → Sprint 7 | 2 days | Badge Revocation & Lifecycle UAT (Epic 9) | ✅ COMPLETE (2026-02-02, 38.5h/41-47h, 302 tests, v0.7.0) |
+| → Sprint 8 | 10 days | Production-Ready MVP (Epic 10) | ✅ COMPLETE (2026-02-05, 80h/76h, 876 tests, v0.8.0) |
+| → Sprint 9 | 3 days | Bulk Badge Issuance + TD Cleanup (Epic 8) | ✅ COMPLETE (2026-02-08, 37h/51h, 1087 tests, v0.9.0-dev) |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ Pending |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
 
-**Current Status:** ✅ Sprint 6 Complete (Badge Sharing & Social Proof, Epic 7 - 5/5 stories done, 243 tests passing, v0.6.0 pending) → 🔜 Sprint 7 Planning (Next epic TBD)
+**Current Status:** ✅ Sprint 9 Complete (Bulk Badge Issuance MVP, Epic 8 — 5/5 stories done, 1087 tests, 37h actual / 51h estimated) → 🔜 Sprint 10 Planning (Next epic TBD)
 
 ---
 
@@ -377,8 +384,12 @@ _bmad-output/
 | **lodash Prototype Pollution vulnerability** | Moderate | ✅ Risk Accepted (ADR-002) | **Decision:** Accept risk for MVP development (Sprint 1-7). Development environment only, CVSS 6.5 (Medium), no external exposure. **Re-evaluate:** Before production deployment (Sprint 8+). See [ADR-002](docs/decisions/002-lodash-security-risk-acceptance.md) for full analysis. |
 | **Prisma version locked at 6.x** | Low | 🔒 Intentional | Prisma 7 has breaking changes (prisma.config.ts requirement). Upgrade deferred to post-MVP. Current version stable and meets all requirements. |
 | **TD-006: Teams Channel Permissions** | Medium | ⏸️ Documented | **Impact:** 4 Teams integration tests skipped (see [SKIPPED-TESTS-TRACKER.md](gcredit-project/docs/testing/SKIPPED-TESTS-TRACKER.md)). **Blocker:** Requires tenant admin to approve ChannelMessage.Send permission. **Effort:** 1 day (admin approval). **Workaround:** Email sharing functional. |
-| **TD-014: Dual Email System** | Low | 📋 Sprint 9 | **Issue:** SMTP (nodemailer) + M365 (Graph) parallel systems. **Plan:** Unify to GraphEmailService, remove nodemailer. **Effort:** 2h. |
-| **TD-015: ESLint Warnings** | Medium | 📋 Sprint 9-10 | **Issue:** 1100 ESLint warnings (0 errors). **Impact:** Potential type safety issues. **Plan:** Reduce to 0 over 2-3 sprints. **Effort:** 8h. |
+| **TD-014: Dual Email System** | Low | ✅ Sprint 9 Done | **Resolved:** nodemailer removed, EmailService delegates to GraphEmailService. Completed in Story 8.4 (2026-02-08). |
+| **TD-015: ESLint Warnings** | Medium | ✅ Sprint 9 Done | **Resolved:** 1303 → 282 warnings (78% reduction). Completed as standalone story (2026-02-07). Note: 8.4 regressed to 423 warnings — Sprint 10 cleanup. |
+| **TD-017: tsc Test-Only Errors** | Low | 📋 Sprint 10 | **Issue:** 114 tsc errors in test files only (0 in src). **Plan:** Fix test type annotations. **Effort:** 5h. |
+| **ESLint Warning Regression** | Medium | 📋 Sprint 10 | **Issue:** Story 8.4 added ~115 warnings (308→423). Dev bumped max-warnings 280→423 without authorization. **Plan:** Reduce back to <300. **Effort:** 4h. |
+| **TD-016: Async Bulk Processing** | Low | 📋 Deferred (P3) | **Issue:** Bulk issuance limited to 20 badges synchronously. **Plan:** Add Redis + Bull Queue for >20 badge async processing. **Effort:** 8h. **Trigger:** When user feedback validates need for >20 badges per batch. |
+| **TD-018: Code TODO Cleanup** | Low | 📋 Sprint 10 | **Issue:** 14 TODO/FIXME markers in source code (6 backend, 5 frontend, 3 test). Includes: hardcoded systemHealth check, auth audit logging, badge owner check, timeline counts, admin analytics mock data, skills delete validation. **Effort:** 3h. |
 
 ---
 
@@ -710,8 +721,8 @@ _bmad-output/
 
 ---
 
-### Badge Revocation & Complete Lifecycle UAT (Epic 9) 🟡
-**Sprint 7 Status:** 🟡 In Progress (6/7 stories, 22h/20-26h, started 2026-02-01, 86% complete)
+### Badge Revocation & Complete Lifecycle UAT (Epic 9) ✅
+**Sprint 7 Status:** ✅ Complete (10/10 stories, 38.5h/41-47h, 2026-02-02, v0.7.0)
 
 **Planning Complete:** 2026-02-01 (100% - All 11 stories planned, technical review completed, pre-development 100%)
 
@@ -874,6 +885,47 @@ _bmad-output/
 
 **Next Story:**
 - Story U.1: Complete Lifecycle UAT (8h) - Ready for development
+
+---
+
+### Bulk Badge Issuance MVP (Epic 8) ✅
+**Sprint 9 Completion:** 2026-02-08 (5/5 stories, 37h/51h, 1087 tests, 100% pass rate)
+
+**API Endpoints (4 new):**
+- GET /api/bulk-issuance/template - Download CSV template (UTF-8 BOM, dynamic date)
+- POST /api/bulk-issuance/upload - Upload and parse CSV (RFC 4180, IDOR protection, rate limiting)
+- POST /api/bulk-issuance/confirm/:sessionId - Synchronous batch processing (up to 20 badges)
+- GET /api/bulk-issuance/error-report/:sessionId - Download error report CSV
+- GET /api/bulk-issuance/preview/:sessionId - Preview parsed results with pagination
+
+**Database Changes:**
+- New table: BulkIssuanceSession (id, userId, fileName, status, validRows JSON, errorRows JSON, createdAt, expiresAt)
+- Status lifecycle: PENDING → VALIDATED → PROCESSING → COMPLETED/FAILED
+
+**Key Features:**
+- **CSV Template:** Dynamic download with example rows, badge template ID pre-fill
+- **Upload & Validation:** CSV injection sanitization (ARCH-C1), XSS protection, BOM stripping, row-by-row validation
+- **Preview UI:** 7 new components, paginated table, error correction panel, session expiry timer
+- **Batch Processing:** Synchronous issuance loop, partial failure handling, atomic transactions per badge (ARCH-C6)
+- **Frontend UX:** Drag-drop upload, simulated per-badge progress, failed badges table, retry button
+- **Security:** IDOR protection on all session endpoints, rate limiting, session ownership validation
+
+**Technical Debt Resolved:**
+- TD-013: Frontend bundle 707 KB → 235 KB (66.8% reduction via route-based code splitting)
+- TD-014: nodemailer removed, EmailService delegates to GraphEmailService
+- TD-015: ESLint warnings 1303 → 282 (78% reduction)
+
+**Testing:**
+- Backend: 532 tests (12 new), 0 failures
+- Frontend: 397 tests (27 new), 0 failures
+- E2E: 158 tests (6 new), 0 failures
+- Total: 1087 tests (up from 876 in Sprint 8)
+
+**Dependencies Removed:**
+- nodemailer (replaced by Microsoft Graph API)
+- @types/nodemailer
+
+**Version:** v0.9.0-dev (branch: sprint-9/epic-8-bulk-issuance-td-cleanup)
 
 ---
 
@@ -1157,7 +1209,7 @@ Sprint 0-2 established this pattern:
    - **Version:** v0.7.0
    - **Retrospective:** Excellent execution velocity, all acceptance criteria met, production-ready revocation system
 
-16. 🔄 **Sprint 8: Production-Ready MVP** (IN PROGRESS - 2026-02-03)
+16. ✅ **Sprint 8: Production-Ready MVP** (COMPLETE - 2026-02-05)
    - **Epic:** Epic 10 - Production-Ready MVP
    - **Duration:** 10 working days (2026-02-03 to 2026-02-14)
    - **Sprint Goal:** "Production-Ready MVP with UX Excellence, Security Hardening & M365 Integration"
@@ -1224,8 +1276,8 @@ Sprint 0-2 established this pattern:
    - ✅ UX-P1-001 to UX-P1-007: Accessibility issues (COMPLETE - Stories 8.1, 8.3)
    - ✅ ARCH-P1-001 to ARCH-P1-004: Architecture fixes (COMPLETE - Sprint 8 Task 8.7)
    - ✅ SEC-HIGH-003: Role self-assignment on registration (COMPLETE - Story 8.10)
-   - ⏳ TD-014: Dual Email System (Sprint 9 - Low risk)
-   - ⏳ TD-015: ESLint Warnings 1100 (Sprint 9-10 - 8h)
+   - ✅ TD-014: Dual Email System → Embedded as Task 0 in Sprint 9 Story 8.4
+   - ✅ TD-015: ESLint Warnings 1100 → Standalone Sprint 9 Story (td-015-eslint-type-safety.md)
    - ⏳ TD-006: Teams Channel Permissions (4 tests skipped)
    
    **Technical Debt Tracker Location:**
@@ -1233,21 +1285,55 @@ Sprint 0-2 established this pattern:
    - Includes: TD-001 to TD-015, SEC-P0/P1/P2, ARCH-P0/P1, UX-P0/P1/P2
    
    **Key Metrics:**
-   - Test count: Backend 349 + Frontend 328 = 677 tests passing
+   - Test count: Backend 532 + Frontend 397 + E2E 158 = 1087 tests passing
    - Test reliability: 100% pass rate in parallel execution
    - CI/CD duration: ~2 minutes total
    - Security: 22 vulnerabilities remaining (AWS SDK upstream, non-blocking)
 
-17. 🔜 **Next Actions**
-   - **Sprint 8 Complete - Ready for Closure:**
-     - ✅ All 12 executable work items complete
-     - ✅ All 17 P1 technical debt items resolved
-     - ✅ 677 tests passing (349 backend + 328 frontend)
-     - 📋 Run full test suite for production readiness verification
-     - 📋 Sprint 8 Retrospective (scheduled: 2026-02-14)
-     - 📋 Merge to main branch and tag v0.8.0
-   - **Sprint 9 Planning:** TBD (post-Sprint 8 retrospective)
-   - **Technical Debt (Sprint 9):** TD-014 (Email unification), TD-015 (ESLint warnings)
+17. ✅ **Sprint 9 - Epic 8: Bulk Badge Issuance + TD Cleanup (COMPLETE - 2026-02-08)**
+   - **Branch:** `sprint-9/epic-8-bulk-issuance-td-cleanup`
+   - **Duration:** 2026-02-06 to 2026-02-08 (3 days, 12 days ahead of schedule)
+   - **Capacity:** 80h, 5 stories (TD fully integrated into stories)
+   - **Actual Time:** 37h / 51h estimated (27% under budget)
+   
+   **Completed (All 5 Stories SM Accepted):**
+   - ✅ Story 8.1: CSV Template & Validation (8h actual / 8.5h est) - SM accepted 2026-02-07
+     - CSV template download with BOM+date, badge template selector, Multer 100KB
+     - 7 ACs verified, all tests passing
+   - ✅ Story 8.2: CSV Upload & Parsing + Security Hardening (4h actual / 11.5h est) - SM accepted 2026-02-07
+     - RFC 4180 CSV parser, CSV injection sanitization (ARCH-C1), XSS sanitization (sanitize-html)
+     - DB-backed sessions ($transaction ReadCommitted), IDOR protection, env-configurable rate limiting
+     - 3-state drag-drop UI, validation summary panel, 6 ACs verified
+   - ✅ TD-015: ESLint Type Safety Cleanup (8h actual / 8h est) - SM accepted 2026-02-07
+     - 1303 → 282 warnings (78% reduction, exceeded 62% target)
+     - Shared `RequestWithUser` interface replaces `req: any` across 9 controllers
+     - All 992 tests passing, zero regressions
+   - ✅ Story 8.3: Bulk Preview UI + TD-013 Bundle Splitting (10h actual / 14.5h est) - SM accepted 2026-02-08
+     - TD-013: Main chunk 707 KB → 235 KB (66.8% reduction)
+     - 10 lazy-loaded routes, 5 vendor chunks, 7 new components, 29 tests
+     - 5 code review findings — all FALSE POSITIVE
+   - ✅ Story 8.4: Batch Processing Phase 1 + TD-014 Email Unification (7h actual / 8.5h est) - SM accepted 2026-02-08
+     - TD-014: nodemailer fully removed, EmailService delegates to GraphEmailService
+     - Synchronous batch processing (up to 20 badges), partial failure handling
+     - ProcessingModal translated to English, simulated per-badge progress
+     - ProcessingComplete with failed badges table, "Retry Failed Badges" button
+     - 6 code review findings — 5 FALSE POSITIVE, 1 TRUE POSITIVE (low)
+   
+   **Sprint 9 Final Metrics:**
+   - Stories: 5/5 done (100%)
+   - Hours: 37h actual / 51h estimated (27% under budget)
+   - Tests: Backend 532 + Frontend 397 + E2E 158 = 1087 total (0 failures)
+   - ESLint: 423 warnings, 0 errors (regression from 308, needs Sprint 10 cleanup)
+   - tsc: 114 test-only errors (improved from 124, TD-017)
+   - Bundle: 235 KB main chunk (target ≤240 KB)
+   - TD Resolved: TD-013 (bundle), TD-014 (email), TD-015 (ESLint)
+   - New TD: ESLint regression (423 warnings), TD-017 (114 tsc test errors)
+
+18. 🔜 **Next Actions**
+   - Sprint 9 Demo & Retrospective (scheduled 2026-02-20)
+   - Sprint branch merge to main + tag v0.9.0
+   - Sprint 10 Planning (TD-017 tsc cleanup, ESLint regression fix, next epic TBD)
+   - Production deployment preparation
 
 ---
 

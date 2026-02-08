@@ -65,8 +65,10 @@ export class BadgeTemplatesService {
         category: createDto.category,
         skillIds: createDto.skillIds,
         issuanceCriteria: createDto.issuanceCriteria
-          ? JSON.parse(JSON.stringify(createDto.issuanceCriteria))
-          : null,
+          ? (JSON.parse(
+              JSON.stringify(createDto.issuanceCriteria),
+            ) as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
         validityPeriod: createDto.validityPeriod,
         status: TemplateStatus.DRAFT,
         createdBy: userId,
@@ -317,17 +319,22 @@ export class BadgeTemplatesService {
       }
     }
 
-    // Update template
-    const updateData: any = {
-      ...updateDto,
-      imageUrl,
-    };
+    // Update template - build data explicitly to avoid type spread issues
+    const updateData: Prisma.BadgeTemplateUpdateInput = {};
+    if (updateDto.name) updateData.name = updateDto.name;
+    if (updateDto.description) updateData.description = updateDto.description;
+    if (updateDto.category) updateData.category = updateDto.category;
+    if (updateDto.skillIds) updateData.skillIds = updateDto.skillIds;
+    if (updateDto.validityPeriod !== undefined)
+      updateData.validityPeriod = updateDto.validityPeriod;
+    if (updateDto.status) updateData.status = updateDto.status;
+    if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
 
     // Convert IssuanceCriteriaDto to plain JSON if present
     if (updateDto.issuanceCriteria) {
       updateData.issuanceCriteria = JSON.parse(
         JSON.stringify(updateDto.issuanceCriteria),
-      );
+      ) as Prisma.InputJsonValue;
     }
 
     const updated = await this.prisma.badgeTemplate.update({

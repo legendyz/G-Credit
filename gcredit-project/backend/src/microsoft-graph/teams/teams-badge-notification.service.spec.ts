@@ -22,10 +22,10 @@ import { BadgeNotificationService } from '../../badge-issuance/services/badge-no
 // SKIP: Teams notifications have issues pending Graph API permissions
 describe.skip('TeamsBadgeNotificationService - Story 7.4', () => {
   let service: TeamsBadgeNotificationService;
-  let graphTeamsService: GraphTeamsService;
-  let prismaService: PrismaService;
-  let configService: ConfigService;
-  let emailNotificationService: BadgeNotificationService;
+  let _graphTeamsService: GraphTeamsService;
+  let _prismaService: PrismaService;
+  let _configService: ConfigService;
+  let _emailNotificationService: BadgeNotificationService;
 
   const mockGraphTeamsService = {
     sendActivityNotification: jest.fn(),
@@ -113,10 +113,10 @@ describe.skip('TeamsBadgeNotificationService - Story 7.4', () => {
     service = module.get<TeamsBadgeNotificationService>(
       TeamsBadgeNotificationService,
     );
-    graphTeamsService = module.get<GraphTeamsService>(GraphTeamsService);
-    prismaService = module.get<PrismaService>(PrismaService);
-    configService = module.get<ConfigService>(ConfigService);
-    emailNotificationService = module.get<BadgeNotificationService>(
+    _graphTeamsService = module.get<GraphTeamsService>(GraphTeamsService);
+    _prismaService = module.get<PrismaService>(PrismaService);
+    _configService = module.get<ConfigService>(ConfigService);
+    _emailNotificationService = module.get<BadgeNotificationService>(
       BadgeNotificationService,
     );
 

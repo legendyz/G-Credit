@@ -62,6 +62,15 @@ export function Navbar() {
                   Badge Management
                 </Link>
                 <Link 
+                  to="/admin/bulk-issuance" 
+                  className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 active:bg-gray-100
+                             px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
+                             flex items-center"
+                  role="menuitem"
+                >
+                  Bulk Issuance
+                </Link>
+                <Link 
                   to="/admin/analytics" 
                   className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 active:bg-gray-100
                              px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]

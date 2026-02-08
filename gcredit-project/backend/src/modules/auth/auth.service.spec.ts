@@ -9,9 +9,9 @@ import { UserRole } from '@prisma/client';
 
 describe('AuthService', () => {
   let service: AuthService;
-  let prismaService: PrismaService;
-  let jwtService: JwtService;
-  let configService: ConfigService;
+  let _prismaService: PrismaService;
+  let _jwtService: JwtService;
+  let _configService: ConfigService;
 
   const mockUser = {
     id: 'user-123',
@@ -89,9 +89,9 @@ describe('AuthService', () => {
     }).compile();
 
     service = module.get<AuthService>(AuthService);
-    prismaService = module.get<PrismaService>(PrismaService);
-    jwtService = module.get<JwtService>(JwtService);
-    configService = module.get<ConfigService>(ConfigService);
+    _prismaService = module.get<PrismaService>(PrismaService);
+    _jwtService = module.get<JwtService>(JwtService);
+    _configService = module.get<ConfigService>(ConfigService);
   });
 
   it('should be defined', () => {

@@ -7,6 +7,128 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.0] - Sprint 9 Complete (2026-02-08)
+
+### Sprint 9 Summary - Epic 8: Bulk Badge Issuance + TD Cleanup
+
+**Branch:** `sprint-9/epic-8-bulk-issuance-td-cleanup`
+
+#### Completed Stories
+
+##### Story 8.1: CSV Template & Validation (8h actual) - 2026-02-07
+- **GET /api/bulk-issuance/template** - Download CSV template
+  - UTF-8 BOM header for Windows Excel compatibility
+  - Dynamic date in filename (`bulk-issuance-template-YYYY-MM-DD.csv`)
+  - Headers: badgeTemplateId, recipientEmail, evidenceUrl, narrativeJustification
+  - 2 example rows with "EXAMPLE-DELETE-THIS-ROW" prefix (UX-P0-2)
+- **Badge Template Selector** - Frontend TemplateSelector component
+  - Fetches approved templates via API, pre-fills badgeTemplateId column
+- **File Upload Infrastructure** - Multer with 100KB limit for 20-badge MVP
+- **Testing:** 7 ACs verified, all tests passing
+
+##### Story 8.2: CSV Upload & Parsing + Security Hardening (4h actual) - 2026-02-07
+- **POST /api/bulk-issuance/upload** - Upload and parse CSV
+  - RFC 4180 compliant CSV parser with CRLF support
+  - UTF-8 BOM stripping for Windows Excel files (ARCH-C5)
+  - CSV injection sanitization via `sanitizeCsvField()` (ARCH-C1)
+  - XSS input sanitization via `sanitize-html` (ARCH-C7)
+  - DB-backed sessions with `$transaction` ReadCommitted isolation (ARCH-C4)
+  - Row-by-row validation: badgeTemplateId exists + APPROVED, recipientEmail in DB
+  - IDOR protection on session retrieval (ARCH-C2)
+  - Rate limiting: `@Throttle` env-configurable (default 10 req/5min) (ARCH-C3)
+  - 429 status documented in Swagger
+- **GET /api/bulk-issuance/preview/:sessionId** - Preview parsed results
+- **POST /api/bulk-issuance/confirm/:sessionId** - Confirm bulk issuance
+- **GET /api/bulk-issuance/error-report/:sessionId** - Download error report CSV
+- **Frontend: BulkIssuancePage** (381 lines)
+  - 3-state drag-drop: default (gray) → drag-over (blue) → file-selected (green)
+  - File preview with size display, explicit Upload CSV button
+  - Validation summary panel with auto-navigate on 0 errors
+- **Database:** BulkIssuanceSession table with status tracking
+- **Testing:** 6 ACs verified, Backend 510 + Frontend 339 + E2E 143 = 992 total tests (0 failures)
+
+##### Story 8.3: Bulk Preview UI + TD-013 Bundle Splitting (10h actual) - 2026-02-08
+- **TD-013: Route-Based Code Splitting** - Bundle optimization
+  - Main chunk: 707 KB → 235 KB (66.8% reduction, target <400 KB)
+  - 10 lazy-loaded routes via `React.lazy()` + `<Suspense>`
+  - 5 vendor chunks: react-vendor, ui-vendor, query-vendor, animation-vendor, utils-vendor
+  - `vite.config.ts` `manualChunks` configuration
+- **Backend Preview Enrichment**
+  - Badge template name resolution for preview display
+  - Recipient name resolution from user records
+  - Template summary aggregation (badge counts per template)
+  - Server-side pagination support (`page`/`pageSize` query params)
+- **Frontend: 7 New Components** (959 lines, 29 tests)
+  - `BulkPreviewHeader` — Session summary with badge/recipient counts
+  - `BulkPreviewTable` — Paginated table with error highlighting and inline correction
+  - `ErrorCorrectionPanel` — Inline error editing with field validation
+  - `ConfirmationModal` — Final confirmation with error/valid row summary
+  - `EmptyPreviewState` — Empty state with navigation back to upload
+  - `SessionExpiryTimer` — Countdown timer with auto-redirect after 5s expiry
+  - `ProcessingComplete` — Success state with navigation options
+  - `BulkPreviewPage` — Complete rewrite (341 lines), composes all sub-components
+- **Testing:** 1042 total tests (Backend 520 + Frontend 370 + E2E 152), 0 failures
+- **SM Acceptance:** All 5 code review findings verified as FALSE POSITIVE
+
+##### Story 8.4: Batch Processing Phase 1 + TD-014 Email Unification (7h actual) - 2026-02-08
+- **TD-014: Email System Unification** — Remove nodemailer
+  - `EmailService` rewritten to delegate to `GraphEmailService`
+  - `nodemailer` + `@types/nodemailer` removed from package.json
+  - `EmailModule` imports `MicrosoftGraphModule` for GraphEmailService access
+  - `sendPasswordReset()` API contract preserved (zero changes in AuthService)
+  - `EMAIL_SETUP_QUICK.md` updated for Graph API
+- **POST /api/bulk-issuance/confirm/:sessionId** — Synchronous batch processing
+  - Loop through up to 20 valid badges, call `BadgeIssuanceService.issueBadge()` each
+  - Template name/UUID → resolved to template UUID before issuance
+  - Recipient email → resolved to user UUID before issuance
+  - Partial failure handling (individual errors don't stop batch)
+  - Status transitions: VALIDATED → PROCESSING → COMPLETED/FAILED
+  - IDOR protection via `loadSession()` ownership check (ARCH-C2)
+  - Each badge issued in atomic `prisma.$transaction` (ARCH-C6)
+- **Frontend: ProcessingModal Enhancement**
+  - Chinese text translated to English (5 strings)
+  - Simulated per-badge progress (1-second ticks)
+  - Current badge label, success/remaining counts
+  - 30-second timeout via AbortController
+- **Frontend: ProcessingComplete Enhancement**
+  - Failed badges table with error details
+  - "Retry Failed Badges" button
+  - "Download Error Report" button
+  - Email notification error display
+- **Module Wiring:** BulkIssuanceModule imports BadgeIssuanceModule
+- **Testing:** 1087 total tests (Backend 532 + Frontend 397 + E2E 158), 0 failures
+- **SM Acceptance:** 5/6 code review findings verified as FALSE POSITIVE
+
+#### Sprint 9 Complete — All 5 Stories Done
+
+##### TD-015: ESLint Type Safety Cleanup (8h actual) - 2026-02-07
+- **Warning Reduction:** 1303 → 284 warnings (78% reduction, exceeded 62% target)
+- **Shared `RequestWithUser` interface** — Replaces `req: any` across 9 controllers
+  - `src/common/interfaces/request-with-user.interface.ts` (new file)
+  - `AuthenticatedUser` + `RequestWithUser` typed with `UserRole` enum
+- **Rule-by-rule fixes:**
+  - `no-unsafe-member-access`: 497 → 78 (419 fixed)
+  - `no-unsafe-argument`: 253 → 51 (202 fixed)
+  - `no-unsafe-assignment`: 196 → 50 (146 fixed)
+  - `no-unsafe-call`: 121 → 65 (56 fixed)
+  - `no-unused-vars`: 89 → 0 (all fixed via removal/`_` prefix)
+  - `unbound-method`: 67 → 0 (eslint override for test files)
+  - `no-unsafe-return`: 50 → 40 (10 fixed)
+  - `require-await`: 29 → 0 (removed unnecessary `async`)
+  - `no-floating-promises`: 1 → 0 (added `await`)
+- **ESLint config enhancements:**
+  - `no-unused-vars` with `argsIgnorePattern: '^_'`, `varsIgnorePattern: '^_'`
+  - `unbound-method: 'off'` for `**/*.spec.ts` and `**/test/**/*.ts`
+- **`package.json` max-warnings:** 1310 → 284 → 282 (after CI fix)
+- **Testing:** All 992 tests passing (510 unit + 339 frontend + 143 E2E), zero regressions
+- **CI Fix** (commit 5deace0): Resolved 12 tsc build errors in src files
+  - `badge-issuance.service.ts`: Prisma `hasSome` filter type + JsonValue cast
+  - `csv-parser.service.ts`: cast `parse()` result, `instanceof Error` check
+  - `badge-analytics.service.spec.ts`: `Prisma.JsonNull` test expectation
+  - Remaining 126 tsc errors (98% test files) tracked as TD-017 (Sprint 10)
+
+---
+
 ## [0.8.0] - Sprint 8 Complete (2026-02-05)
 
 ### Sprint 8 Summary - Production-Ready MVP

@@ -1,4 +1,5 @@
 import request from 'supertest';
+import { App } from 'supertest/types';
 import * as fs from 'fs';
 import * as path from 'path';
 import {
@@ -63,20 +64,21 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
 
   describe('Story 3.6: Skill Category Management', () => {
     it('should get all skill categories', () => {
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .get('/skill-categories')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200)
         .expect((res) => {
-          expect(Array.isArray(res.body)).toBe(true);
-          expect(res.body.length).toBeGreaterThan(0);
+          const body = res.body as unknown[];
+          expect(Array.isArray(body)).toBe(true);
+          expect(body.length).toBeGreaterThan(0);
         });
     });
   });
 
   describe('Story 3.1: Create Skill', () => {
     it('should create a new skill', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .post('/skills')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .send({
@@ -85,14 +87,19 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
           categoryId: categoryId,
         });
 
+      const body = response.body as {
+        id: string;
+        name: string;
+        categoryId: string;
+      };
       expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty('id');
-      expect(response.body).toHaveProperty('name');
-      expect(response.body.categoryId).toBe(categoryId);
+      expect(body).toHaveProperty('id');
+      expect(body).toHaveProperty('name');
+      expect(body.categoryId).toBe(categoryId);
     });
 
     it('should require authentication', () => {
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .post('/skills')
         .send({
           name: 'Test Skill',
@@ -115,7 +122,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
         throw new Error(`Test image not found: ${testImagePath}`);
       }
 
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .post('/badge-templates')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .field('name', `E2E Badge ${Date.now()}`)
@@ -126,72 +133,91 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
         .attach('image', testImagePath)
         .expect(201);
 
-      expect(response.body).toHaveProperty('id');
-      expect(response.body).toHaveProperty('imageUrl');
-      expect(response.body.skillIds).toContain(skillId);
-      expect(response.body.issuanceCriteria.type).toBe('manual');
-      createdBadgeId = response.body.id;
+      const body = response.body as {
+        id: string;
+        imageUrl: string;
+        skillIds: string[];
+        issuanceCriteria: { type: string };
+      };
+      expect(body).toHaveProperty('id');
+      expect(body).toHaveProperty('imageUrl');
+      expect(body.skillIds).toContain(skillId);
+      expect(body.issuanceCriteria.type).toBe('manual');
+      createdBadgeId = body.id;
     });
 
     it('should update badge template', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .patch(`/badge-templates/${createdBadgeId}`)
         .set('Authorization', `Bearer ${adminUser.token}`)
         .field('description', 'Updated by isolated E2E test')
         .field('status', 'ACTIVE')
         .expect(200);
 
-      expect(response.body.description).toBe('Updated by isolated E2E test');
-      expect(response.body.status).toBe('ACTIVE');
+      const body = response.body as { description: string; status: string };
+      expect(body.description).toBe('Updated by isolated E2E test');
+      expect(body.status).toBe('ACTIVE');
     });
 
     it('should get badge template by id', () => {
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .get(`/badge-templates/${createdBadgeId}`)
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200)
         .expect((res) => {
-          expect(res.body.id).toBe(createdBadgeId);
+          const body = res.body as { id: string };
+          expect(body.id).toBe(createdBadgeId);
         });
     });
   });
 
   describe('Story 3.3: Query API', () => {
     it('should query badge templates with pagination', () => {
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .get('/badge-templates?page=1&limit=10')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200)
         .expect((res) => {
-          expect(res.body).toHaveProperty('data');
-          expect(res.body).toHaveProperty('meta');
-          expect(res.body.meta).toHaveProperty('total');
-          expect(res.body.meta).toHaveProperty('totalPages');
-          expect(res.body.meta.page).toBe(1);
-          expect(res.body.meta.limit).toBe(10);
+          const body = res.body as {
+            data: unknown[];
+            meta: {
+              total: number;
+              totalPages: number;
+              page: number;
+              limit: number;
+            };
+          };
+          expect(body).toHaveProperty('data');
+          expect(body).toHaveProperty('meta');
+          expect(body.meta).toHaveProperty('total');
+          expect(body.meta).toHaveProperty('totalPages');
+          expect(body.meta.page).toBe(1);
+          expect(body.meta.limit).toBe(10);
         });
     });
 
     it('should filter by category', () => {
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .get('/badge-templates?category=achievement')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200)
         .expect((res) => {
-          expect(res.body.data).toBeInstanceOf(Array);
-          res.body.data.forEach((badge: any) => {
+          const body = res.body as { data: { category: string }[] };
+          expect(body.data).toBeInstanceOf(Array);
+          body.data.forEach((badge: { category: string }) => {
             expect(badge.category).toBe('achievement');
           });
         });
     });
 
     it('should filter by status (public API - only ACTIVE)', () => {
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .get('/badge-templates')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200)
         .expect((res) => {
-          res.body.data.forEach((badge: any) => {
+          const body = res.body as { data: { status: string }[] };
+          body.data.forEach((badge: { status: string }) => {
             expect(badge.status).toBe('ACTIVE');
           });
         });
@@ -200,24 +226,26 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
 
   describe('Story 3.4: Search Optimization', () => {
     it('should search badges by name', () => {
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .get('/badge-templates?search=E2E')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200)
         .expect((res) => {
-          expect(res.body.data).toBeInstanceOf(Array);
+          const body = res.body as { data: unknown[] };
+          expect(body.data).toBeInstanceOf(Array);
         });
     });
 
     it('should sort badges by createdAt DESC', () => {
-      return request(ctx.app.getHttpServer())
+      return request(ctx.app.getHttpServer() as App)
         .get('/badge-templates?sortBy=createdAt&sortOrder=desc')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200)
         .expect((res) => {
-          const badges = res.body.data;
+          const body = res.body as { data: { createdAt: string }[] };
+          const badges = body.data;
           if (badges.length > 1) {
-            const dates = badges.map((b: any) =>
+            const dates = badges.map((b: { createdAt: string }) =>
               new Date(b.createdAt).getTime(),
             );
             for (let i = 1; i < dates.length; i++) {
@@ -235,7 +263,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
         '../test-images/test-optimal-256x256.png',
       );
 
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .post('/badge-templates')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .field('name', `Manual Badge ${Date.now()}`)
@@ -246,7 +274,8 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
         .attach('image', testImagePath)
         .expect(201);
 
-      expect(response.body.issuanceCriteria.type).toBe('manual');
+      const body = response.body as { issuanceCriteria: { type: string } };
+      expect(body.issuanceCriteria.type).toBe('manual');
     });
 
     it('should validate automatic issuance criteria (task)', async () => {
@@ -255,7 +284,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
         '../test-images/test-optimal-256x256.png',
       );
 
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .post('/badge-templates')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .field('name', `Auto Badge ${Date.now()}`)
@@ -276,8 +305,11 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
         .attach('image', testImagePath)
         .expect(201);
 
-      expect(response.body.issuanceCriteria.type).toBe('auto_task');
-      expect(response.body.issuanceCriteria.conditions).toHaveLength(2);
+      const body = response.body as {
+        issuanceCriteria: { type: string; conditions: unknown[] };
+      };
+      expect(body.issuanceCriteria.type).toBe('auto_task');
+      expect(body.issuanceCriteria.conditions).toHaveLength(2);
     });
 
     it('should reject invalid issuance criteria type', async () => {
@@ -286,7 +318,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
         '../test-images/test-optimal-256x256.png',
       );
 
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .post('/badge-templates')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .field('name', 'Invalid Badge')
@@ -311,7 +343,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
         return;
       }
 
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .post('/badge-templates')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .field('name', 'Too Small Badge')
@@ -334,7 +366,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
         return;
       }
 
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .post('/badge-templates')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .field('name', 'Too Large Badge')
@@ -352,7 +384,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
         '../test-images/test-optimal-256x256.png',
       );
 
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .post('/badge-templates')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .field('name', `Optimal Badge ${Date.now()}`)
@@ -363,7 +395,8 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
         .attach('image', testImagePath)
         .expect(201);
 
-      expect(response.body).toHaveProperty('imageUrl');
+      const body = response.body as { imageUrl: string };
+      expect(body).toHaveProperty('imageUrl');
     });
 
     it('should accept optimal size (512x512)', async () => {
@@ -377,7 +410,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
         return;
       }
 
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .post('/badge-templates')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .field('name', `Optimal 512 Badge ${Date.now()}`)
@@ -388,7 +421,8 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
         .attach('image', testImagePath)
         .expect(201);
 
-      expect(response.body).toHaveProperty('imageUrl');
+      const body512 = response.body as { imageUrl: string };
+      expect(body512).toHaveProperty('imageUrl');
     });
 
     it('should delete badge and its image', async () => {
@@ -398,7 +432,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
       );
 
       // Create a badge
-      const createResponse = await request(ctx.app.getHttpServer())
+      const createResponse = await request(ctx.app.getHttpServer() as App)
         .post('/badge-templates')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .field('name', `To Delete Badge ${Date.now()}`)
@@ -409,18 +443,22 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
         .attach('image', testImagePath)
         .expect(201);
 
-      const badgeId = createResponse.body.id;
-      const imageUrl = createResponse.body.imageUrl;
+      const createBody = createResponse.body as {
+        id: string;
+        imageUrl: string;
+      };
+      const badgeId = createBody.id;
+      const imageUrl = createBody.imageUrl;
       expect(imageUrl).toBeTruthy();
 
       // Delete the badge
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .delete(`/badge-templates/${badgeId}`)
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200);
 
       // Verify badge is deleted
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get(`/badge-templates/${badgeId}`)
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(404);

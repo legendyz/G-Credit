@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { BadgeStatus } from '@prisma/client';
+import { App } from 'supertest/types';
 import sharp from 'sharp';
 import {
   TestContext,
@@ -70,31 +70,32 @@ describe('Baked Badge PNG (e2e) - Story 6.4', () => {
 
   describe('GET /api/badges/:id/download/png - HTTP Authentication & Authorization', () => {
     it('should require authentication (401 without token)', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get(`/api/badges/${badgeId}/download/png`)
         .expect(401);
     });
 
     it('should require authentication (401 with invalid token)', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get(`/api/badges/${badgeId}/download/png`)
         .set('Authorization', 'Bearer invalid-token-12345')
         .expect(401);
     });
 
     it('should reject non-recipient (400 with valid token but wrong user)', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get(`/api/badges/${badgeId}/download/png`)
         .set('Authorization', `Bearer ${otherEmployeeUser.token}`)
         .expect(400);
 
-      expect(response.body.message).toContain('only download your own badges');
+      const body = response.body as { message: string };
+      expect(body.message).toContain('only download your own badges');
     });
 
     it('should return 404 for non-existent badge', async () => {
       const fakeId = '00000000-0000-0000-0000-000000000000';
 
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get(`/api/badges/${fakeId}/download/png`)
         .set('Authorization', `Bearer ${recipientUser.token}`)
         .expect(404);
@@ -103,15 +104,14 @@ describe('Baked Badge PNG (e2e) - Story 6.4', () => {
     it('should fail when Azure Blob download fails (mock URL)', async () => {
       // This will fail because imageUrl is a mock URL, not real Azure Blob
       // Currently returns 500 because downloadBlobBuffer throws unhandled error
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get(`/api/badges/${badgeId}/download/png`)
         .set('Authorization', `Bearer ${recipientUser.token}`)
         .expect(500);
 
+      const body = response.body as { message: string };
       // Should get error about downloading blob
-      expect(response.body.message).toMatch(
-        /Internal server error|Failed to download/i,
-      );
+      expect(body.message).toMatch(/Internal server error|Failed to download/i);
     });
   });
 

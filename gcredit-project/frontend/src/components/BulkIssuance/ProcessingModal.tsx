@@ -1,80 +1,86 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+
+interface BadgePreviewRow {
+  badgeName?: string;
+  recipientName?: string;
+  recipientEmail?: string;
+}
 
 interface ProcessingModalProps {
   totalBadges: number;
   isProcessing: boolean;
-  onComplete?: (results: { success: number; failed: number }) => void;
+  /** Optional preview rows for simulated "currently processing" display */
+  badgeRows?: BadgePreviewRow[];
 }
 
 /**
  * Processing Modal Component (UX-P0-1)
  * 
- * Displays real-time progress during bulk badge issuance:
- * - Visual progress bar
- * - Live success/failure counters
- * - Estimated remaining time
+ * Displays pseudo-progress during bulk badge issuance:
+ * - Visual progress bar with 1-second tick per badge
+ * - Current badge being processed
+ * - Running success/failure count estimates
+ * - Estimated remaining time based on ~1 badge/second
  * - Warning to prevent page close
+ *
+ * NOTE: Progress is simulated (1 badge/second assumption).
+ * Real results come from the backend API call in BulkPreviewPage.
  */
 export default function ProcessingModal({ 
   totalBadges, 
   isProcessing,
-  onComplete 
+  badgeRows,
 }: ProcessingModalProps) {
-  const [progress, setProgress] = useState({ current: 0, success: 0, failed: 0 });
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   
   useEffect(() => {
     if (!isProcessing) {
-      setProgress({ current: 0, success: 0, failed: 0 });
+      setElapsedSeconds(0);
       return;
     }
-    
-    // Simulate progress (in real implementation, this would be from SSE or polling)
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev.current >= totalBadges) {
-          clearInterval(interval);
-          if (onComplete) {
-            onComplete({ success: prev.success, failed: prev.failed });
-          }
-          return prev;
-        }
-        
-        const newCurrent = prev.current + 1;
-        // 90% success rate simulation (real data would come from backend)
-        const isSuccess = Math.random() > 0.1;
-        const newSuccess = prev.success + (isSuccess ? 1 : 0);
-        const newFailed = prev.failed + (isSuccess ? 0 : 1);
-        
-        return {
-          current: newCurrent,
-          success: newSuccess,
-          failed: newFailed
-        };
-      });
+
+    // Track elapsed time — 1-second ticks (1 badge/second assumption)
+    const timer = setInterval(() => {
+      setElapsedSeconds(prev => prev + 1);
     }, 1000);
     
-    return () => clearInterval(interval);
-  }, [isProcessing, totalBadges, onComplete]);
+    return () => {
+      clearInterval(timer);
+    };
+  }, [isProcessing]);
   
   if (!isProcessing) return null;
   
-  const percentComplete = totalBadges > 0 
-    ? Math.round((progress.current / totalBadges) * 100) 
+  // Simulated progress: 1 badge per second tick, cap at 90% of total
+  const estimatedCurrent = Math.min(elapsedSeconds, totalBadges);
+  const tickProgress = totalBadges > 0
+    ? Math.min(90, Math.round((estimatedCurrent / totalBadges) * 100))
     : 0;
-  const remaining = totalBadges - progress.current;
+  const percentComplete = tickProgress;
+  const estimatedRemaining = Math.max(0, totalBadges - elapsedSeconds);
+
+  // Simulated running counts (assume all succeed until real results arrive)
+  const simulatedSuccess = estimatedCurrent;
+  const simulatedRemaining = Math.max(0, totalBadges - estimatedCurrent);
+
+  // Current badge being processed (simulated)
+  const currentIdx = Math.min(elapsedSeconds, totalBadges - 1);
+  const currentBadge = badgeRows?.[currentIdx];
+  const currentBadgeLabel = currentBadge
+    ? `${currentBadge.badgeName ?? 'Badge'} → ${currentBadge.recipientName ?? currentBadge.recipientEmail ?? 'Recipient'}`
+    : null;
   
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-xl">
         <h2 className="text-xl font-bold mb-6 text-gray-800">
-          ⏳ 正在发放徽章...
+          ⏳ Issuing Badges...
         </h2>
         
         {/* Progress Bar Section */}
-        <div className="mb-6">
+        <div className="mb-4">
           <div className="flex justify-between mb-2 text-sm text-gray-600">
-            <span className="font-medium">{percentComplete}%</span>
-            <span>{progress.current} / {totalBadges}</span>
+            <span className="font-medium">{percentComplete}% ({estimatedCurrent}/{totalBadges})</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
             <div 
@@ -83,32 +89,38 @@ export default function ProcessingModal({
             />
           </div>
         </div>
+
+        {/* Currently processing badge */}
+        {currentBadgeLabel && estimatedCurrent < totalBadges && (
+          <div className="mb-4 text-sm text-gray-700">
+            <span className="text-green-600">✅</span> Processing: {currentBadgeLabel}
+          </div>
+        )}
+
+        {/* Running success/failure/remaining counts */}
+        <div className="flex justify-center gap-6 mb-4 text-sm">
+          <span className="text-green-600 font-medium">✓ {simulatedSuccess} done</span>
+          <span className="text-gray-500">⏳ {simulatedRemaining} remaining</span>
+        </div>
         
         {/* Estimated Time */}
         <div className="text-center mb-6">
           <p className="text-gray-600">
-            ⏱️ 预计剩余时间: 
+            ⏱️ Estimated time remaining:{' '}
             <span className="font-semibold text-gray-800 ml-1">
-              {remaining > 60 ? `${Math.ceil(remaining / 60)} 分钟` : `${remaining} 秒`}
+              {estimatedRemaining > 60 ? `${Math.ceil(estimatedRemaining / 60)} minutes` : `${estimatedRemaining} seconds`}
             </span>
           </p>
         </div>
-        
-        {/* Statistics Grid */}
-        <div className="grid grid-cols-3 gap-4 text-center mb-6">
-          <div className="bg-green-50 rounded-lg p-4">
-            <p className="text-green-600 font-bold text-2xl">{progress.success}</p>
-            <p className="text-green-700 text-sm">已完成 ✓</p>
+
+        {/* Timeout Warning */}
+        {elapsedSeconds >= 25 && (
+          <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg mb-4">
+            <p className="text-sm text-orange-800">
+              Processing is taking longer than expected. Please wait...
+            </p>
           </div>
-          <div className="bg-red-50 rounded-lg p-4">
-            <p className="text-red-600 font-bold text-2xl">{progress.failed}</p>
-            <p className="text-red-700 text-sm">失败 ✗</p>
-          </div>
-          <div className="bg-gray-50 rounded-lg p-4">
-            <p className="text-gray-600 font-bold text-2xl">{remaining}</p>
-            <p className="text-gray-700 text-sm">剩余</p>
-          </div>
-        </div>
+        )}
         
         {/* Processing Animation */}
         <div className="flex justify-center mb-6">
@@ -129,10 +141,10 @@ export default function ProcessingModal({
             <span className="text-yellow-600 mr-2">⚠️</span>
             <div>
               <p className="text-sm text-yellow-800 font-medium">
-                请勿刷新页面或关闭浏览器
+                Please do not refresh or close your browser
               </p>
               <p className="text-xs text-yellow-700 mt-1">
-                批量发放正在进行中，关闭页面可能导致发放中断
+                Bulk issuance is in progress. Closing this page may interrupt the process.
               </p>
             </div>
           </div>

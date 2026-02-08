@@ -103,7 +103,7 @@ export class M365SyncService {
       try {
         // Graph SDK uses relative paths (without https://graph.microsoft.com/v1.0)
         const relativePath = url.startsWith('/') ? url : `/${url}`;
-        return await client.api(relativePath).get();
+        return (await client.api(relativePath).get()) as T;
       } catch (error) {
         lastError = error as Error;
         const isRetryable = this.isRetryableError(error);
@@ -183,7 +183,7 @@ export class M365SyncService {
    */
   async syncUserDeactivations(
     azureUsers: GraphUser[],
-    syncLogId: string,
+    _syncLogId: string,
   ): Promise<DeactivationResult> {
     // Build maps for efficient lookups
     const azureUserById = new Map(azureUsers.map((u) => [u.id, u]));

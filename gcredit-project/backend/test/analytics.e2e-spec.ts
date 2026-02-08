@@ -1,4 +1,5 @@
 import request from 'supertest';
+import { App } from 'supertest/types';
 import {
   TestContext,
   setupE2ETest,
@@ -87,31 +88,37 @@ describe('Analytics API (e2e) - Story 8.4', () => {
 
   describe('AC1: GET /api/analytics/system-overview', () => {
     it('should return system overview for Admin', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/analytics/system-overview')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('users');
-      expect(response.body).toHaveProperty('badges');
-      expect(response.body).toHaveProperty('badgeTemplates');
-      expect(response.body).toHaveProperty('systemHealth');
+      const body = response.body as {
+        users: { total: number; byRole: unknown };
+        badges: { totalIssued: number; claimRate: number };
+        badgeTemplates: unknown;
+        systemHealth: { status: string };
+      };
+      expect(body).toHaveProperty('users');
+      expect(body).toHaveProperty('badges');
+      expect(body).toHaveProperty('badgeTemplates');
+      expect(body).toHaveProperty('systemHealth');
 
       // Validate structure
-      expect(response.body.users).toHaveProperty('total');
-      expect(response.body.users).toHaveProperty('byRole');
-      expect(response.body.badges).toHaveProperty('totalIssued');
-      expect(response.body.badges).toHaveProperty('claimRate');
-      expect(response.body.systemHealth.status).toBe('healthy');
+      expect(body.users).toHaveProperty('total');
+      expect(body.users).toHaveProperty('byRole');
+      expect(body.badges).toHaveProperty('totalIssued');
+      expect(body.badges).toHaveProperty('claimRate');
+      expect(body.systemHealth.status).toBe('healthy');
     });
 
     it('should reject non-admin users (403)', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/analytics/system-overview')
         .set('Authorization', `Bearer ${issuerUser.token}`)
         .expect(403);
 
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/analytics/system-overview')
         .set('Authorization', `Bearer ${employeeUser.token}`)
         .expect(403);
@@ -120,28 +127,34 @@ describe('Analytics API (e2e) - Story 8.4', () => {
 
   describe('AC2: GET /api/analytics/issuance-trends', () => {
     it('should return trends for Admin with period parameter', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/analytics/issuance-trends?period=30')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200);
 
-      expect(response.body.period).toBe('last30days');
-      expect(response.body).toHaveProperty('dataPoints');
-      expect(response.body).toHaveProperty('totals');
-      expect(Array.isArray(response.body.dataPoints)).toBe(true);
+      const body = response.body as {
+        period: string;
+        dataPoints: unknown[];
+        totals: unknown;
+      };
+      expect(body.period).toBe('last30days');
+      expect(body).toHaveProperty('dataPoints');
+      expect(body).toHaveProperty('totals');
+      expect(Array.isArray(body.dataPoints)).toBe(true);
     });
 
     it('should allow Issuer to view their own trends', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/analytics/issuance-trends?period=7')
         .set('Authorization', `Bearer ${issuerUser.token}`)
         .expect(200);
 
-      expect(response.body.period).toBe('last7days');
+      const body = response.body as { period: string };
+      expect(body.period).toBe('last7days');
     });
 
     it('should reject Employee access (403)', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/analytics/issuance-trends?period=30')
         .set('Authorization', `Bearer ${employeeUser.token}`)
         .expect(403);
@@ -150,14 +163,18 @@ describe('Analytics API (e2e) - Story 8.4', () => {
 
   describe('AC3: GET /api/analytics/top-performers', () => {
     it('should return top performers for Admin', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/analytics/top-performers?limit=10')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('topPerformers');
-      expect(response.body.period).toBe('allTime');
-      expect(Array.isArray(response.body.topPerformers)).toBe(true);
+      const body = response.body as {
+        topPerformers: unknown[];
+        period: string;
+      };
+      expect(body).toHaveProperty('topPerformers');
+      expect(body.period).toBe('allTime');
+      expect(Array.isArray(body.topPerformers)).toBe(true);
     });
 
     it('should allow Manager to view team performers', async () => {
@@ -168,24 +185,26 @@ describe('Analytics API (e2e) - Story 8.4', () => {
       });
 
       // Login the manager
-      const loginResponse = await request(ctx.app.getHttpServer())
+      const loginResponse = await request(ctx.app.getHttpServer() as App)
         .post('/auth/login')
         .send({ email: freshManagerUser.email, password: 'TestPassword123!' })
         .expect(200);
 
-      const freshManagerToken = loginResponse.body.accessToken;
+      const loginBody = loginResponse.body as { accessToken: string };
+      const freshManagerToken = loginBody.accessToken;
 
       // Manager can access their own team
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/analytics/top-performers?limit=5')
         .set('Authorization', `Bearer ${freshManagerToken}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('topPerformers');
+      const body = response.body as { topPerformers: unknown[] };
+      expect(body).toHaveProperty('topPerformers');
     });
 
     it('should reject Employee access (403)', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/analytics/top-performers')
         .set('Authorization', `Bearer ${employeeUser.token}`)
         .expect(403);
@@ -194,24 +213,29 @@ describe('Analytics API (e2e) - Story 8.4', () => {
 
   describe('AC4: GET /api/analytics/skills-distribution', () => {
     it('should return skills distribution for Admin', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/analytics/skills-distribution')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('totalSkills');
-      expect(response.body).toHaveProperty('topSkills');
-      expect(response.body).toHaveProperty('skillsByCategory');
-      expect(Array.isArray(response.body.topSkills)).toBe(true);
+      const body = response.body as {
+        totalSkills: number;
+        topSkills: unknown[];
+        skillsByCategory: unknown;
+      };
+      expect(body).toHaveProperty('totalSkills');
+      expect(body).toHaveProperty('topSkills');
+      expect(body).toHaveProperty('skillsByCategory');
+      expect(Array.isArray(body.topSkills)).toBe(true);
     });
 
     it('should reject non-admin users (403)', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/analytics/skills-distribution')
         .set('Authorization', `Bearer ${issuerUser.token}`)
         .expect(403);
 
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/analytics/skills-distribution')
         .set('Authorization', `Bearer ${managerUser.token}`)
         .expect(403);
@@ -220,28 +244,32 @@ describe('Analytics API (e2e) - Story 8.4', () => {
 
   describe('AC5: GET /api/analytics/recent-activity', () => {
     it('should return paginated activity feed for Admin', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/analytics/recent-activity?limit=20&offset=0')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('activities');
-      expect(response.body).toHaveProperty('pagination');
-      expect(Array.isArray(response.body.activities)).toBe(true);
-      expect(response.body.pagination).toHaveProperty('total');
-      expect(response.body.pagination.limit).toBe(20);
-      expect(response.body.pagination.offset).toBe(0);
+      const body = response.body as {
+        activities: Array<{ type: string; actor: string; timestamp: string }>;
+        pagination: { total: number; limit: number; offset: number };
+      };
+      expect(body).toHaveProperty('activities');
+      expect(body).toHaveProperty('pagination');
+      expect(Array.isArray(body.activities)).toBe(true);
+      expect(body.pagination).toHaveProperty('total');
+      expect(body.pagination.limit).toBe(20);
+      expect(body.pagination.offset).toBe(0);
 
       // Should have at least the audit log we created
-      if (response.body.activities.length > 0) {
-        expect(response.body.activities[0]).toHaveProperty('type');
-        expect(response.body.activities[0]).toHaveProperty('actor');
-        expect(response.body.activities[0]).toHaveProperty('timestamp');
+      if (body.activities.length > 0) {
+        expect(body.activities[0]).toHaveProperty('type');
+        expect(body.activities[0]).toHaveProperty('actor');
+        expect(body.activities[0]).toHaveProperty('timestamp');
       }
     });
 
     it('should reject non-admin users (403)', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/analytics/recent-activity')
         .set('Authorization', `Bearer ${issuerUser.token}`)
         .expect(403);
@@ -259,7 +287,9 @@ describe('Analytics API (e2e) - Story 8.4', () => {
       ];
 
       for (const endpoint of endpoints) {
-        await request(ctx.app.getHttpServer()).get(endpoint).expect(401);
+        await request(ctx.app.getHttpServer() as App)
+          .get(endpoint)
+          .expect(401);
       }
     });
   });

@@ -14,7 +14,7 @@ import { BadgeStatus } from '@prisma/client';
 
 describe('BadgeIssuanceService - Wallet (Story 4.1)', () => {
   let service: BadgeIssuanceService;
-  let prismaService: PrismaService;
+  let _prismaService: PrismaService;
 
   const mockPrismaService = {
     badge: {
@@ -109,7 +109,7 @@ describe('BadgeIssuanceService - Wallet (Story 4.1)', () => {
     }).compile();
 
     service = module.get<BadgeIssuanceService>(BadgeIssuanceService);
-    prismaService = module.get<PrismaService>(PrismaService);
+    _prismaService = module.get<PrismaService>(PrismaService);
 
     jest.clearAllMocks();
   });

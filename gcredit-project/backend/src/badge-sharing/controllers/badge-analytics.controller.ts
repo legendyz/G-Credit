@@ -29,6 +29,7 @@ import {
   ShareStatsDto,
   ShareHistoryDto,
 } from '../services/badge-analytics.service';
+import type { RequestWithUser } from '../../common/interfaces/request-with-user.interface';
 
 @ApiTags('Badge Analytics')
 @Controller('api/badges')
@@ -86,7 +87,7 @@ export class BadgeAnalyticsController {
   })
   async getShareStats(
     @Param('badgeId') badgeId: string,
-    @Request() req: any,
+    @Request() req: RequestWithUser,
   ): Promise<ShareStatsDto> {
     const userId = req.user.userId;
     return this.badgeAnalyticsService.getShareStats(badgeId, userId);
@@ -165,7 +166,7 @@ export class BadgeAnalyticsController {
   async getShareHistory(
     @Param('badgeId') badgeId: string,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-    @Request() req: any,
+    @Request() req: RequestWithUser,
   ): Promise<ShareHistoryDto[]> {
     const userId = req.user.userId;
     return this.badgeAnalyticsService.getShareHistory(badgeId, userId, limit);

@@ -1,8 +1,8 @@
 # G-Credit Project Documentation
 
-**Version:** 0.8.0  
-**Last Updated:** 2026-02-05  
-**Status:** Sprint 8 Complete - Production-Ready MVP
+**Version:** 0.9.0  
+**Last Updated:** 2026-02-08  
+**Status:** Sprint 9 Complete - Bulk Badge Issuance + TD Cleanup
 
 > 📌 **For project status, Sprint progress, and technical overview, see the [Main Project README](../../README.md)**
 
@@ -72,12 +72,15 @@ sprints/
 ├── sprint-5/ - Badge Verification & Open Badges 2.0 (v0.5.0)
 ├── sprint-6/ - Social Sharing & Integrations (v0.6.0)
 ├── sprint-7/ - Badge Revocation & Lifecycle (v0.7.0)
-└── sprint-8/ - Production-Ready MVP (v0.8.0) ✅ Current
+└── sprint-8/ - Production-Ready MVP (v0.8.0)
     ├── summary.md - Sprint 8 completion report
     └── retrospective.md - Sprint 8 retrospective
+└── sprint-9/ - Bulk Badge Issuance + TD Cleanup (v0.9.0) ✅ Current
+    ├── backlog.md - Sprint 9 backlog
+    └── sprint-status.yaml - Sprint 9 status tracking
 ```
 
-**Current Status:** Sprint 8 Complete - See [Main README](../../README.md) for detailed progress
+**Current Status:** Sprint 9 Complete - See [Main README](../../README.md) for detailed progress
 
 **Legacy Location:** Sprint 0-2 artifacts in `_bmad-output/implementation-artifacts/`
 
@@ -116,11 +119,11 @@ Testing strategies, test documentation, and quality assurance guides.
 - **Backend Tests:** See `../backend/test/` for E2E test code
 - **Frontend Tests:** See `../frontend/src/` for component tests
 
-**Test Coverage (Sprint 8):**
-- 876 tests total, 100% passing
-- 416 backend tests (unit + integration)
-- 328 frontend tests
-- 132 E2E tests
+**Test Coverage (Sprint 9):**
+- 1087 tests total, 100% passing
+- 532 backend tests (unit + integration)
+- 397 frontend tests
+- 158 E2E tests
 - WCAG 2.1 AA accessibility compliance
 
 **Purpose:** Understand testing strategy and how to validate system functionality.
@@ -149,10 +152,11 @@ Project knowledge base capturing what we've learned from experience.
 - [lessons-learned.md](./lessons-learned/lessons-learned.md) - 33 lessons from Sprint 0-8
 - **Categories:** Code Quality, Testing, Email, Prisma, TypeScript, Git, Documentation, Accessibility, Security
 
-**Recent Lessons (Sprint 8):**
-- Lesson 31: Code Review as DoD Gate
-- Lesson 32: E2E Test Isolation with unique identifiers
-- Lesson 33: Accessibility First Approach for WCAG compliance
+**Recent Lessons (Sprint 9):**
+- CSV injection prevention in bulk upload flows
+- UTF-8 BOM handling for Windows Excel compatibility
+- Route-based code splitting for bundle optimization
+- Email system unification (nodemailer → Graph API)
 
 **Purpose:** Learn from past experiences and build institutional knowledge.
 
@@ -253,22 +257,22 @@ All documents should include:
 
 ## 📊 Documentation Metrics
 
-### Coverage (Sprint 8)
+### Coverage (Sprint 9)
 - ✅ Architecture - 100% (system architecture documented)
 - ✅ Planning - 100% (14 epics, 85 user stories)
-- ✅ Lessons Learned - 100% (33 lessons from 8 sprints)
-- ✅ Backend API - 100% (complete API guide)
+- ✅ Lessons Learned - 100% (33+ lessons from 9 sprints)
+- ✅ Backend API - 100% (complete API guide incl. Bulk Issuance)
 - ✅ Deployment - 100% (Azure deployment guide)
-- ✅ Testing - 100% (876 tests, comprehensive guide)
+- ✅ Testing - 100% (1087 tests, comprehensive guide)
 - ✅ Security - 100% (security hardening complete)
 - ✅ Accessibility - 100% (WCAG 2.1 AA compliant)
 
 ### Quality Indicators
-- 📄 Total Documents: 50+
-- 📏 Total Content: ~400KB
-- ✅ All 8 sprints documented
+- 📄 Total Documents: 60+
+- 📏 Total Content: ~500KB
+- ✅ All 9 sprints documented
 - ✅ All major decisions recorded
-- ✅ Complete API coverage
+- ✅ Complete API coverage (incl. Bulk Issuance)
 - ✅ Production-Ready MVP
 
 ---
@@ -305,6 +309,6 @@ All documents should include:
 
 ---
 
-**Last Review:** 2026-02-05  
-**Next Review:** End of Sprint 9  
+**Last Review:** 2026-02-08  
+**Next Review:** End of Sprint 10  
 **Maintained By:** Development Team

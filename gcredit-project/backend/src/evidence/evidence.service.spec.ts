@@ -10,8 +10,8 @@ import {
 
 describe('EvidenceService - Story 4.3', () => {
   let service: EvidenceService;
-  let prismaService: PrismaService;
-  let storageService: StorageService;
+  let _prismaService: PrismaService;
+  let _storageService: StorageService;
 
   const mockPrismaService = {
     badge: {
@@ -45,8 +45,8 @@ describe('EvidenceService - Story 4.3', () => {
     }).compile();
 
     service = module.get<EvidenceService>(EvidenceService);
-    prismaService = module.get<PrismaService>(PrismaService);
-    storageService = module.get<StorageService>(StorageService);
+    _prismaService = module.get<PrismaService>(PrismaService);
+    _storageService = module.get<StorageService>(StorageService);
 
     jest.clearAllMocks();
   });
@@ -160,7 +160,7 @@ describe('EvidenceService - Story 4.3', () => {
         originalname: 'my certificate!@#.pdf',
       };
 
-      const result = await service.uploadEvidence(
+      const _result = await service.uploadEvidence(
         'badge-123',
         fileWithSpecialChars,
         'user-admin',
@@ -261,7 +261,7 @@ describe('EvidenceService - Story 4.3', () => {
       );
 
       const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 min
-      mockStorageService.generateEvidenceSasUrl.mockResolvedValue({
+      mockStorageService.generateEvidenceSasUrl.mockReturnValue({
         url: 'https://storage.blob.core.windows.net/evidence/...?sasToken=...',
         expiresAt,
       });
@@ -289,7 +289,7 @@ describe('EvidenceService - Story 4.3', () => {
       });
 
       const expiresAt = new Date();
-      mockStorageService.generateEvidenceSasUrl.mockResolvedValue({
+      mockStorageService.generateEvidenceSasUrl.mockReturnValue({
         url: 'https://...',
         expiresAt,
       });

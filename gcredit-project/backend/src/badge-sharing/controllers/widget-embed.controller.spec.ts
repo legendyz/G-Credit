@@ -15,7 +15,7 @@ describe('WidgetEmbedController', () => {
   let controller: WidgetEmbedController;
   let prismaService: PrismaService;
   let badgeAnalyticsService: BadgeAnalyticsService;
-  let configService: ConfigService;
+  let _configService: ConfigService;
 
   const mockBadge = {
     id: 'badge-123',
@@ -61,7 +61,7 @@ describe('WidgetEmbedController', () => {
     badgeAnalyticsService = module.get<BadgeAnalyticsService>(
       BadgeAnalyticsService,
     );
-    configService = module.get<ConfigService>(ConfigService);
+    _configService = module.get<ConfigService>(ConfigService);
 
     // Reset mocks
     jest.clearAllMocks();

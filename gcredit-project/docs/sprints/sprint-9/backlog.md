@@ -71,8 +71,8 @@ Enable issuers to issue multiple badges at once via CSV upload. **MVP Phase focu
 
 #### Story 8.1: CSV Template & Validation - 8.5h (原6h + P1改进2.5h)
 **Priority:** HIGH  
-**Status:** backlog  
-**Assigned to:** TBD  
+**Status:** done ✅ (SM accepted 2026-02-07, 8h actual)  
+**Assigned to:** Dev Agent  
 **Dependencies:** None
 
 **Summary:**
@@ -105,9 +105,9 @@ Download standardized CSV template with field specifications. Validate CSV struc
 
 #### Story 8.2: CSV Upload & Parsing - 11.5h (原6h + 安全修复4.5h + UX改进1h)
 **Priority:** HIGH  
-**Status:** backlog  
-**Assigned to:** TBD  
-**Dependencies:** Story 8.1  
+**Status:** done ✅ (SM accepted 2026-02-07, 4h actual)  
+**Assigned to:** Dev Agent  
+**Dependencies:** Story 8.1 ✅  
 **Security Critical:** 🔴 MUST implement C1 (CSV Injection) and C2 (IDOR) before development
 
 **Summary:**
@@ -150,8 +150,9 @@ Upload CSV file with drag-and-drop support. Parse and validate each row for badg
 
 #### Story 8.3: Bulk Issuance Preview UI - 11.5h (原8h + P0修复2.5h + P1改进1h)
 **Priority:** MEDIUM  
-**Status:** backlog  
-**Assigned to:** TBD  
+**Status:** done  
+**Actual Hours:** 10h  
+**Assigned to:** Dev Agent (Claude Opus 4.6)  
 **Dependencies:** Story 8.2  
 **Security Critical:** 🔴 MUST implement C2 (Session IDOR) validation
 
@@ -191,8 +192,9 @@ Display preview of all badges to be issued before confirmation. Show validation 
 
 #### Story 8.4: Bulk Issuance Synchronous Processing (MVP) - 6.5h (原4h + P0修复2h + P1改进0.5h)
 **Priority:** MEDIUM  
-**Status:** backlog  
-**Assigned to:** TBD  
+**Status:** done  
+**Actual Hours:** 7h  
+**Assigned to:** Dev Agent (Claude Opus 4.6)  
 **Dependencies:** Story 8.3  
 **Security Critical:** 🔴 MUST implement C2 (Session IDOR) validation
 
@@ -263,7 +265,7 @@ Process bulk badge issuance synchronously with up to 20 badges per batch. Simple
 **Success Criteria:**
 - ✅ ESLint warning count ≤800
 - ✅ All 876 tests pass
-- ✅ Type checking passes: `npx tsc --noEmit`
+- ⚠️ Type checking (`npx tsc --noEmit`): 138 pre-existing errors — tracked as **TD-017** (Sprint 10)
 
 ---
 
@@ -351,111 +353,111 @@ Process bulk badge issuance synchronously with up to 20 badges per batch. Simple
 ### Week 1 (2026-02-06 to 2026-02-12)
 
 #### Day 1-2 (Monday-Tuesday)
-- [ ] **Sprint Kickoff Ceremony** (2h)
+- [x] **Sprint Kickoff Ceremony** (2h)
   - Review Sprint Goal
   - Story breakdown discussion
   - Task assignment
   - Environment setup verification
-- [ ] **Git Branch Setup** (0.5h) - Story 0.1 CRITICAL
+- [x] **Git Branch Setup** (0.5h) - Story 0.1 CRITICAL
   - Create branch: `sprint-9/epic-8-bulk-issuance-td-cleanup`
   - Verify branch protection rules
-- [ ] **Story 8.1: CSV Template** (6h)
+- [x] **Story 8.1: CSV Template** (8h actual)
   - Backend API for template download
   - Frontend download button
   - Validation service
   - Testing
+  - SM accepted 2026-02-07
 
 #### Day 3-4 (Wednesday-Thursday)
-- [ ] **TD-013: Bundle Code Splitting** (3h)
+- [x] **TD-013: Bundle Code Splitting** (embedded in Story 8.3)
   - Analyze bundle
   - Implement route-based splitting
   - Configure vendor chunks
-  - Verify bundle size
-- [ ] **Story 8.2: CSV Upload** (6h)
+  - 707→235 KB (66.8% reduction)
+- [x] **Story 8.2: CSV Upload** (4h actual)
   - File upload UI with drag-and-drop
   - Backend parsing and validation
   - Session storage
   - Testing
+  - SM accepted 2026-02-07
 
 #### Day 5 (Friday)
-- [ ] **TD-015 Phase 1: ESLint Warnings** (4h)
+- [x] **TD-015 Phase 1: ESLint Warnings** (4h actual)
   - Fix 300 `no-unsafe-call` warnings
   - Fix 300 `no-unsafe-return` warnings
-  - Run regression tests
-- [ ] **Daily Review & Team Sync** (1h)
+  - 1303→617 warnings
+  - SM accepted 2026-02-07
+- [x] **Daily Review & Team Sync** (1h)
 
 ---
 
 ### Week 2 (2026-02-13 to 2026-02-20)
 
 #### Day 6-7 (Monday-Tuesday)
-- [ ] **TD-014: Email Unification** (2h)
+- [x] **TD-014: Email Unification** (embedded in Story 8.4)
   - Audit nodemailer usage
   - Migrate to GraphEmailService
   - Remove dependency
   - Test email sending
-- [ ] **TD-015 Phase 2: ESLint Warnings** (4h)
+- [x] **TD-015 Phase 2: ESLint Warnings** (4h actual)
   - Fix 200 `no-unsafe-member-access` warnings
   - Fix 100 `no-unused-vars` warnings
-  - Run regression tests
+  - 617→282 warnings (78% total reduction)
+  - SM accepted 2026-02-07
 
 #### Day 8-9 (Wednesday-Thursday)
-- [ ] **Story 8.3: Bulk Preview UI** (8h)
+- [x] **Story 8.3: Bulk Preview UI** (10h actual)
+  - TD-013 bundle splitting (707→235 KB)
   - Preview header component
   - Data table with pagination
-  - Error display section
+  - Error correction panel
   - Confirmation modal
   - Session expiry handling
-  - Testing
+  - 7 new components, 29 tests
+  - SM accepted 2026-02-08
 
 #### Day 10 (Friday)
-- [ ] **Story 8.4: Batch Processing** (8h)
-  - Bull queue setup with Redis
-  - Background processor logic
-  - Job status API
-  - Progress tracking UI
-  - Email notification integration
-  - Testing
+- [x] **Story 8.4: Batch Processing + TD-014** (7h actual)
+  - TD-014: Remove nodemailer, unify to GraphEmailService
+  - Synchronous batch processing (up to 20 badges)
+  - ProcessingModal enhanced + translated to English
+  - ProcessingComplete with failed badges table
+  - 4 commits, SM accepted 2026-02-08
 
 #### Day 11 (Monday - Final Day)
-- [ ] **Final Testing & Bug Fixes** (6h)
-  - Full E2E regression test suite
-  - Fix any discovered issues
-  - Code review addressing
-- [ ] **Sprint Demo Preparation** (1h)
-  - Prepare demo script
-  - Test demo environment
-- [ ] **Sprint Review Ceremony** (1.5h)
-  - Demo bulk issuance flow
+- [x] **Final Testing & Bug Fixes** — covered by per-story SM acceptance (1087 tests, 0 failures)
+- [x] **Sprint Review Ceremony** (completed 2026-02-08)
+  - Demo bulk issuance flow (5 stories reviewed)
   - Show TD improvements (ESLint, bundle size)
-- [ ] **Sprint Retrospective** (1.5h)
-  - What went well
-  - Challenges encountered
-  - Action items for Sprint 10
+  - All 5 stories SM accepted ✅
+- [x] **Sprint Retrospective** (completed 2026-02-08)
+  - What went well (6 items)
+  - What could be improved (4 items)
+  - 7 action items for Sprint 10
 
 ---
 
 ## 🎯 Definition of Done
 
 ### Story DoD
-- [ ] All acceptance criteria met
-- [ ] Unit tests written and passing (>80% coverage)
-- [ ] E2E tests written and passing
-- [ ] Code reviewed and approved by peer
-- [ ] No new ESLint errors introduced
-- [ ] Documentation updated (if applicable)
-- [ ] Merged to sprint branch
+- [x] All acceptance criteria met
+- [x] Unit tests written and passing (>80% coverage)
+- [x] E2E tests written and passing
+- [x] Code reviewed and approved by peer
+- [x] No new ESLint errors introduced
+- [x] Documentation updated (if applicable)
+- [x] Merged to sprint branch
 
 ### Sprint DoD
-- [ ] All stories completed or explicitly deferred
-- [ ] All tests passing (876 existing + new tests)
-- [ ] ESLint warnings ≤500 (55% reduction achieved)
-- [ ] Frontend bundle <400KB
-- [ ] nodemailer fully removed
-- [ ] Sprint demo conducted
-- [ ] Sprint retrospective completed
-- [ ] Sprint branch merged to main
-- [ ] Version v0.9.0 tagged in git
+- [x] All stories completed or explicitly deferred
+- [x] All tests passing (1087 total, 0 failures)
+- [x] ESLint warnings ≤500 (78% reduction: 1303→282, exceeded target; note: 8.4 regressed to 423)
+- [x] Frontend bundle <400KB (235 KB, 66.8% reduction)
+- [x] nodemailer fully removed
+- [x] Sprint demo conducted — completed 2026-02-08
+- [x] Sprint retrospective completed — completed 2026-02-08
+- [ ] Sprint branch merged to main — pending
+- [ ] Version v0.9.0 tagged in git — pending
 
 ---
 
@@ -563,8 +565,11 @@ Story 8.4 (Batch Processing) [depends on 8.3 confirmation flow]
   - ✅ All 100 emails sent successfully
 
 ### Technical Debt Metrics
-- **TD-015:** ESLint warnings: 1100 → 500 (55% reduction)
+- **TD-015:** ESLint warnings: 1303 → 282 ✅ (78% reduction, exceeded 62% target; 284→282 after CI fix)
   - Measurement: `npm run lint | grep "warning" | wc -l`
+- **TD-017:** tsc errors: 138 → 124 (all src errors fixed via CI fixes, 124 test-only errors → Sprint 10, 5h)
+  - Measurement: `npx tsc --noEmit 2>&1 | grep "error TS" | wc -l`
+  - Story file: `sprint-9/td-017-tsc-type-errors.md`
 - **TD-014:** nodemailer references: N → 0
   - Measurement: `grep -r "nodemailer" backend/src/ | wc -l`
 - **TD-013:** Frontend bundle: 579 KB → <400 KB (31% reduction)

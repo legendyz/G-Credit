@@ -100,6 +100,7 @@ export function MobileNav({ className = '' }: MobileNavProps) {
   const navLinks = [
     { to: '/', label: 'My Wallet', roles: ['ADMIN', 'ISSUER', 'MANAGER', 'EMPLOYEE'] },
     { to: '/admin/badges', label: 'Badge Management', roles: ['ADMIN', 'ISSUER'] },
+    { to: '/admin/bulk-issuance', label: 'Bulk Issuance', roles: ['ADMIN', 'ISSUER'] },
     { to: '/admin/analytics', label: 'Analytics', roles: ['ADMIN', 'ISSUER'] },
   ];
 

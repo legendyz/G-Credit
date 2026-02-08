@@ -6,7 +6,7 @@ import {
   NotFoundException,
   Logger,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserRole } from '@prisma/client';
 import { randomBytes } from 'crypto';
@@ -57,7 +57,7 @@ export class AuthService {
     console.log(`[AUDIT] User registered: ${user.email} (${user.id})`);
 
     // 5. Return user without password hash
-    const { passwordHash: _, ...result } = user;
+    const { passwordHash: _hash, ...result } = user;
     return result;
   }
 
@@ -106,7 +106,7 @@ export class AuthService {
     const refreshToken = this.jwtService.sign({ sub: user.id }, {
       secret: this.config.get<string>('JWT_REFRESH_SECRET'),
       expiresIn: refreshExpiresIn,
-    } as any);
+    } as JwtSignOptions);
 
     // 6. Store refresh token in database (use same expiry as JWT)
     const expiresAt = this.calculateExpiryDate(refreshExpiresIn);
@@ -131,7 +131,7 @@ export class AuthService {
     );
 
     // 9. Return tokens and user profile (without password hash)
-    const { passwordHash: _, ...userProfile } = user;
+    const { passwordHash: _hash2, ...userProfile } = user;
 
     return {
       accessToken,
@@ -180,8 +180,10 @@ export class AuthService {
     try {
       await this.emailService.sendPasswordReset(user.email, token);
       console.log(`[AUDIT] Password reset requested: ${user.email}`);
-    } catch (error) {
-      console.error(`[ERROR] Failed to send reset email: ${error.message}`);
+    } catch (error: unknown) {
+      console.error(
+        `[ERROR] Failed to send reset email: ${(error as Error).message}`,
+      );
       // Don't throw error - still return success to prevent email enumeration
     }
 
@@ -248,12 +250,11 @@ export class AuthService {
    */
   async refreshAccessToken(refreshToken: string) {
     // 1. Verify refresh token JWT signature
-    let payload;
     try {
-      payload = this.jwtService.verify(refreshToken, {
+      this.jwtService.verify(refreshToken, {
         secret: this.config.get<string>('JWT_REFRESH_SECRET'),
       });
-    } catch (error) {
+    } catch (_error) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
@@ -305,7 +306,7 @@ export class AuthService {
     const newRefreshToken = this.jwtService.sign({ sub: tokenRecord.user.id }, {
       secret: this.config.get<string>('JWT_REFRESH_SECRET'),
       expiresIn: refreshExpiresIn,
-    } as any);
+    } as JwtSignOptions);
 
     const expiresAt = this.calculateExpiryDate(refreshExpiresIn);
     await this.prisma.refreshToken.create({

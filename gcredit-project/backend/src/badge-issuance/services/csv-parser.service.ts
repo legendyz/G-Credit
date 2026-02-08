@@ -10,7 +10,7 @@ export class CSVParserService {
   parseBulkIssuanceCSV(fileBuffer: Buffer): BulkIssuanceRow[] {
     try {
       // Parse CSV with headers
-      const records = parse(fileBuffer, {
+      const records: Record<string, string>[] = parse(fileBuffer, {
         columns: true,
         skip_empty_lines: true,
         trim: true,
@@ -27,14 +27,16 @@ export class CSVParserService {
       // Validate and transform rows
       return records.map((row, index) => this.validateRow(row, index + 2)); // +2 for header row
     } catch (error) {
-      throw new BadRequestException(`CSV parsing failed: ${error.message}`);
+      throw new BadRequestException(
+        `CSV parsing failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   /**
    * Validate required CSV headers
    */
-  private validateHeaders(firstRow: any) {
+  private validateHeaders(firstRow: Record<string, string>) {
     const requiredHeaders = ['recipientEmail', 'templateId'];
     const optionalHeaders = ['evidenceUrl', 'expiresIn'];
     const allHeaders = [...requiredHeaders, ...optionalHeaders];
@@ -61,7 +63,10 @@ export class CSVParserService {
   /**
    * Validate and transform a single row
    */
-  private validateRow(row: any, rowNumber: number): BulkIssuanceRow {
+  private validateRow(
+    row: Record<string, string>,
+    rowNumber: number,
+  ): BulkIssuanceRow {
     const errors: string[] = [];
 
     // Validate recipientEmail

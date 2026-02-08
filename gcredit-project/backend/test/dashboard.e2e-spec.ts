@@ -9,6 +9,7 @@
  */
 
 import request from 'supertest';
+import { App } from 'supertest/types';
 import {
   TestContext,
   setupE2ETest,
@@ -23,7 +24,6 @@ describe('Dashboard E2E (Isolated)', () => {
   let issuerUser: TestUser;
   let managerUser: TestUser;
   let adminUser: TestUser;
-  let templateId: string;
 
   beforeAll(async () => {
     ctx = await setupE2ETest('dashboard');
@@ -50,7 +50,6 @@ describe('Dashboard E2E (Isolated)', () => {
       name: 'Dashboard Test Badge',
       description: 'Badge for dashboard testing',
     });
-    templateId = template.id;
 
     // Create some badges for the employee
     await ctx.badgeFactory.createClaimed({
@@ -68,41 +67,54 @@ describe('Dashboard E2E (Isolated)', () => {
 
   describe('GET /api/dashboard/employee', () => {
     it('should return employee dashboard for employee user', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/dashboard/employee')
         .set('Authorization', `Bearer ${employeeUser.token}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('badgeSummary');
-      expect(response.body.badgeSummary).toHaveProperty('total');
-      expect(response.body.badgeSummary).toHaveProperty('claimedThisMonth');
-      expect(response.body.badgeSummary).toHaveProperty('pendingCount');
-      expect(response.body).toHaveProperty('currentMilestone');
-      expect(response.body).toHaveProperty('recentBadges');
-      expect(Array.isArray(response.body.recentBadges)).toBe(true);
+      const body = response.body as {
+        badgeSummary: {
+          total: number;
+          claimedThisMonth: number;
+          pendingCount: number;
+        };
+        currentMilestone: unknown;
+        recentBadges: unknown[];
+      };
+      expect(body).toHaveProperty('badgeSummary');
+      expect(body.badgeSummary).toHaveProperty('total');
+      expect(body.badgeSummary).toHaveProperty('claimedThisMonth');
+      expect(body.badgeSummary).toHaveProperty('pendingCount');
+      expect(body).toHaveProperty('currentMilestone');
+      expect(body).toHaveProperty('recentBadges');
+      expect(Array.isArray(body.recentBadges)).toBe(true);
     });
 
     it('should include badge summary data', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/dashboard/employee')
         .set('Authorization', `Bearer ${employeeUser.token}`)
         .expect(200);
 
-      expect(response.body.badgeSummary.total).toBeGreaterThanOrEqual(2);
-      expect(response.body.badgeSummary.pendingCount).toBeGreaterThanOrEqual(1);
+      const body = response.body as {
+        badgeSummary: { total: number; pendingCount: number };
+      };
+      expect(body.badgeSummary.total).toBeGreaterThanOrEqual(2);
+      expect(body.badgeSummary.pendingCount).toBeGreaterThanOrEqual(1);
     });
 
     it('should be accessible by admin users', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/dashboard/employee')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('badgeSummary');
+      const body = response.body as { badgeSummary: unknown };
+      expect(body).toHaveProperty('badgeSummary');
     });
 
     it('should require authentication', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/dashboard/employee')
         .expect(401);
     });
@@ -110,38 +122,48 @@ describe('Dashboard E2E (Isolated)', () => {
 
   describe('GET /api/dashboard/issuer', () => {
     it('should return issuer dashboard for issuer user', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/dashboard/issuer')
         .set('Authorization', `Bearer ${issuerUser.token}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('issuanceSummary');
-      expect(response.body.issuanceSummary).toHaveProperty('issuedThisMonth');
-      expect(response.body.issuanceSummary).toHaveProperty('pendingClaims');
-      expect(response.body.issuanceSummary).toHaveProperty('totalRecipients');
-      expect(response.body.issuanceSummary).toHaveProperty('claimRate');
-      expect(response.body).toHaveProperty('recentActivity');
-      expect(Array.isArray(response.body.recentActivity)).toBe(true);
+      const body = response.body as {
+        issuanceSummary: {
+          issuedThisMonth: number;
+          pendingClaims: number;
+          totalRecipients: number;
+          claimRate: number;
+        };
+        recentActivity: unknown[];
+      };
+      expect(body).toHaveProperty('issuanceSummary');
+      expect(body.issuanceSummary).toHaveProperty('issuedThisMonth');
+      expect(body.issuanceSummary).toHaveProperty('pendingClaims');
+      expect(body.issuanceSummary).toHaveProperty('totalRecipients');
+      expect(body.issuanceSummary).toHaveProperty('claimRate');
+      expect(body).toHaveProperty('recentActivity');
+      expect(Array.isArray(body.recentActivity)).toBe(true);
     });
 
     it('should be accessible by admin users', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/dashboard/issuer')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('issuanceSummary');
+      const body = response.body as { issuanceSummary: unknown };
+      expect(body).toHaveProperty('issuanceSummary');
     });
 
     it('should deny access to employee users', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/dashboard/issuer')
         .set('Authorization', `Bearer ${employeeUser.token}`)
         .expect(403);
     });
 
     it('should require authentication', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/dashboard/issuer')
         .expect(401);
     });
@@ -149,44 +171,53 @@ describe('Dashboard E2E (Isolated)', () => {
 
   describe('GET /api/dashboard/manager', () => {
     it('should return manager dashboard for manager user', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/dashboard/manager')
         .set('Authorization', `Bearer ${managerUser.token}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('teamInsights');
-      expect(response.body.teamInsights).toHaveProperty('teamMembersCount');
-      expect(response.body.teamInsights).toHaveProperty('teamBadgesThisMonth');
-      expect(response.body.teamInsights).toHaveProperty('topPerformers');
-      expect(response.body).toHaveProperty('revocationAlerts');
-      expect(Array.isArray(response.body.revocationAlerts)).toBe(true);
+      const body = response.body as {
+        teamInsights: {
+          teamMembersCount: number;
+          teamBadgesThisMonth: number;
+          topPerformers: unknown[];
+        };
+        revocationAlerts: unknown[];
+      };
+      expect(body).toHaveProperty('teamInsights');
+      expect(body.teamInsights).toHaveProperty('teamMembersCount');
+      expect(body.teamInsights).toHaveProperty('teamBadgesThisMonth');
+      expect(body.teamInsights).toHaveProperty('topPerformers');
+      expect(body).toHaveProperty('revocationAlerts');
+      expect(Array.isArray(body.revocationAlerts)).toBe(true);
     });
 
     it('should be accessible by admin users', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/dashboard/manager')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('teamInsights');
+      const body = response.body as { teamInsights: unknown };
+      expect(body).toHaveProperty('teamInsights');
     });
 
     it('should deny access to employee users', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/dashboard/manager')
         .set('Authorization', `Bearer ${employeeUser.token}`)
         .expect(403);
     });
 
     it('should deny access to issuer users', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/dashboard/manager')
         .set('Authorization', `Bearer ${issuerUser.token}`)
         .expect(403);
     });
 
     it('should require authentication', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/dashboard/manager')
         .expect(401);
     });
@@ -194,49 +225,56 @@ describe('Dashboard E2E (Isolated)', () => {
 
   describe('GET /api/dashboard/admin', () => {
     it('should return admin dashboard for admin user', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/dashboard/admin')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('systemOverview');
-      expect(response.body.systemOverview).toHaveProperty('totalUsers');
-      expect(response.body.systemOverview).toHaveProperty('totalBadgesIssued');
-      expect(response.body.systemOverview).toHaveProperty(
-        'activeBadgeTemplates',
-      );
-      expect(response.body.systemOverview).toHaveProperty('systemHealth');
-      expect(response.body.systemOverview).toHaveProperty(
-        'activeUsersThisMonth',
-      );
-      expect(response.body.systemOverview).toHaveProperty('newUsersThisMonth');
-      expect(response.body).toHaveProperty('recentActivity');
-      expect(Array.isArray(response.body.recentActivity)).toBe(true);
+      const body = response.body as {
+        systemOverview: {
+          totalUsers: number;
+          totalBadgesIssued: number;
+          activeBadgeTemplates: number;
+          systemHealth: string;
+          activeUsersThisMonth: number;
+          newUsersThisMonth: number;
+        };
+        recentActivity: unknown[];
+      };
+      expect(body).toHaveProperty('systemOverview');
+      expect(body.systemOverview).toHaveProperty('totalUsers');
+      expect(body.systemOverview).toHaveProperty('totalBadgesIssued');
+      expect(body.systemOverview).toHaveProperty('activeBadgeTemplates');
+      expect(body.systemOverview).toHaveProperty('systemHealth');
+      expect(body.systemOverview).toHaveProperty('activeUsersThisMonth');
+      expect(body.systemOverview).toHaveProperty('newUsersThisMonth');
+      expect(body).toHaveProperty('recentActivity');
+      expect(Array.isArray(body.recentActivity)).toBe(true);
     });
 
     it('should deny access to employee users', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/dashboard/admin')
         .set('Authorization', `Bearer ${employeeUser.token}`)
         .expect(403);
     });
 
     it('should deny access to issuer users', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/dashboard/admin')
         .set('Authorization', `Bearer ${issuerUser.token}`)
         .expect(403);
     });
 
     it('should deny access to manager users', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/dashboard/admin')
         .set('Authorization', `Bearer ${managerUser.token}`)
         .expect(403);
     });
 
     it('should require authentication', async () => {
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .get('/api/dashboard/admin')
         .expect(401);
     });

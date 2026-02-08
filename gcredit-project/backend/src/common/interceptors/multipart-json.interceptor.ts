@@ -34,7 +34,9 @@ export class MultipartJsonInterceptor implements NestInterceptor {
   protected jsonFields: string[] = ['skillIds', 'issuanceCriteria'];
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const request = context.switchToHttp().getRequest();
+    const request = context
+      .switchToHttp()
+      .getRequest<{ body: Record<string, unknown> }>();
     const body = request.body;
 
     if (!body) {
@@ -46,9 +48,9 @@ export class MultipartJsonInterceptor implements NestInterceptor {
       if (body[field]) {
         try {
           body[field] = this.parseJsonField(field, body[field]);
-        } catch (error) {
+        } catch (error: unknown) {
           throw new BadRequestException(
-            `Invalid JSON in field '${field}': ${error.message}`,
+            `Invalid JSON in field '${field}': ${(error as Error).message}`,
           );
         }
       }
@@ -60,7 +62,7 @@ export class MultipartJsonInterceptor implements NestInterceptor {
   /**
    * Parse a single JSON field with automatic fixing of common issues
    */
-  private parseJsonField(fieldName: string, value: any): any {
+  private parseJsonField(fieldName: string, value: unknown): unknown {
     // Already parsed (object or array)
     if (typeof value !== 'string') {
       return value;
@@ -111,10 +113,10 @@ export class MultipartJsonInterceptor implements NestInterceptor {
 
     // Try standard JSON parse
     try {
-      const parsed = JSON.parse(jsonStr);
+      const parsed: unknown = JSON.parse(jsonStr);
       // Ensure it's an array
-      return Array.isArray(parsed) ? parsed : [parsed];
-    } catch (error) {
+      return Array.isArray(parsed) ? (parsed as string[]) : [parsed as string];
+    } catch (_error) {
       // If parse fails and it's a single UUID string, wrap it in array
       return [jsonStr.trim()];
     }
@@ -127,7 +129,7 @@ export class MultipartJsonInterceptor implements NestInterceptor {
    * - {"type":"manual"}
    * - {type:manual,config:{...}}
    */
-  private parseIssuanceCriteria(jsonStr: string): any {
+  private parseIssuanceCriteria(jsonStr: string): unknown {
     // Fix common JSON issues:
     // 1. Unquoted keys: {type:manual} -> {"type":manual}
     // 2. Unquoted string values: {"type":manual} -> {"type":"manual"}
@@ -139,31 +141,37 @@ export class MultipartJsonInterceptor implements NestInterceptor {
 
     // Fix unquoted string values: colon followed by word (before comma, } or end of string)
     // But preserve numbers and booleans
-    fixed = fixed.replace(/:(\w+)(,|}|$)/g, (match, value, after) => {
-      // Don't quote numbers or booleans
-      if (['true', 'false', 'null'].includes(value) || !isNaN(Number(value))) {
-        return `:${value}${after}`;
-      }
-      return `:"${value}"${after}`;
-    });
+    fixed = fixed.replace(
+      /:(\w+)(,|}|$)/g,
+      (match: string, value: string, after: string) => {
+        // Don't quote numbers or booleans
+        if (
+          ['true', 'false', 'null'].includes(value) ||
+          !isNaN(Number(value))
+        ) {
+          return `:${value}${after}`;
+        }
+        return `:"${value}"${after}`;
+      },
+    );
 
     // Parse the fixed JSON
     try {
-      return JSON.parse(fixed);
-    } catch (error) {
+      return JSON.parse(fixed) as unknown;
+    } catch (_error) {
       // If still fails, try standard parsing
-      return JSON.parse(jsonStr);
+      return JSON.parse(jsonStr) as unknown;
     }
   }
 
   /**
    * Generic JSON parser with error handling
    */
-  private parseGenericJson(jsonStr: string): any {
+  private parseGenericJson(jsonStr: string): unknown {
     try {
-      return JSON.parse(jsonStr);
-    } catch (error) {
-      throw new Error(`Failed to parse JSON: ${error.message}`);
+      return JSON.parse(jsonStr) as unknown;
+    } catch (error: unknown) {
+      throw new Error(`Failed to parse JSON: ${(error as Error).message}`);
     }
   }
 }

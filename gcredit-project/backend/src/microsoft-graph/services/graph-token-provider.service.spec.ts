@@ -44,8 +44,8 @@ describe('GraphTokenProviderService', () => {
   });
 
   describe('onModuleInit', () => {
-    it('should initialize credential with tenant/client/secret from config', async () => {
-      await service.onModuleInit();
+    it('should initialize credential with tenant/client/secret from config', () => {
+      service.onModuleInit();
 
       expect(ClientSecretCredential).toHaveBeenCalledWith(
         'test-tenant-id',
@@ -54,7 +54,7 @@ describe('GraphTokenProviderService', () => {
       );
     });
 
-    it('should throw error if AZURE_TENANT_ID missing', async () => {
+    it('should throw error if AZURE_TENANT_ID missing', () => {
       jest.spyOn(configService, 'get').mockImplementation((key: string) => {
         if (key === 'AZURE_TENANT_ID') return undefined;
         if (key === 'AZURE_CLIENT_ID') return 'test-client-id';
@@ -65,11 +65,11 @@ describe('GraphTokenProviderService', () => {
       });
 
       // Now gracefully degrades - should NOT throw
-      await expect(service.onModuleInit()).resolves.not.toThrow();
+      expect(() => service.onModuleInit()).not.toThrow();
       expect(service.isAvailable()).toBe(false);
     });
 
-    it('should gracefully degrade if AZURE_CLIENT_ID missing', async () => {
+    it('should gracefully degrade if AZURE_CLIENT_ID missing', () => {
       jest.spyOn(configService, 'get').mockImplementation((key: string) => {
         if (key === 'AZURE_TENANT_ID') return 'test-tenant-id';
         if (key === 'AZURE_CLIENT_ID') return undefined;
@@ -80,11 +80,11 @@ describe('GraphTokenProviderService', () => {
       });
 
       // Now gracefully degrades - should NOT throw
-      await expect(service.onModuleInit()).resolves.not.toThrow();
+      expect(() => service.onModuleInit()).not.toThrow();
       expect(service.isAvailable()).toBe(false);
     });
 
-    it('should gracefully degrade if AZURE_CLIENT_SECRET missing', async () => {
+    it('should gracefully degrade if AZURE_CLIENT_SECRET missing', () => {
       jest.spyOn(configService, 'get').mockImplementation((key: string) => {
         if (key === 'AZURE_TENANT_ID') return 'test-tenant-id';
         if (key === 'AZURE_CLIENT_ID') return 'test-client-id';
@@ -95,7 +95,7 @@ describe('GraphTokenProviderService', () => {
       });
 
       // Now gracefully degrades - should NOT throw
-      await expect(service.onModuleInit()).resolves.not.toThrow();
+      expect(() => service.onModuleInit()).not.toThrow();
       expect(service.isAvailable()).toBe(false);
     });
   });
@@ -142,7 +142,7 @@ describe('GraphTokenProviderService', () => {
         GraphTokenProviderService,
       );
 
-      await freshService.onModuleInit();
+      freshService.onModuleInit();
       const authProvider = freshService.getAuthProvider();
       expect(authProvider).toBeDefined();
     });
@@ -202,7 +202,7 @@ describe('GraphTokenProviderService', () => {
         GraphTokenProviderService,
       );
 
-      await freshService.onModuleInit();
+      freshService.onModuleInit();
       const token = await freshService.getAccessToken();
 
       expect(mockGetToken).toHaveBeenCalledWith(

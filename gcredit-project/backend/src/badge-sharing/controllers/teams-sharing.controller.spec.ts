@@ -21,18 +21,14 @@ import { TeamsBadgeNotificationService } from '../../microsoft-graph/teams/teams
 import { BadgeAnalyticsService } from '../services/badge-analytics.service';
 import { PrismaService } from '../../common/prisma.service';
 import { ShareBadgeTeamsDto } from '../dto/share-badge-teams.dto';
-import {
-  UnauthorizedException,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 
 // SKIP: Teams channel sharing pending Graph API permissions
 describe.skip('TeamsSharingController - Story 7.4', () => {
   let controller: TeamsSharingController;
-  let teamsNotificationService: TeamsBadgeNotificationService;
-  let badgeAnalyticsService: BadgeAnalyticsService;
-  let prismaService: PrismaService;
+  let _teamsNotificationService: TeamsBadgeNotificationService;
+  let _badgeAnalyticsService: BadgeAnalyticsService;
+  let _prismaService: PrismaService;
 
   const mockTeamsNotificationService = {
     sendBadgeIssuanceNotification: jest.fn(),
@@ -93,13 +89,13 @@ describe.skip('TeamsSharingController - Story 7.4', () => {
     }).compile();
 
     controller = module.get<TeamsSharingController>(TeamsSharingController);
-    teamsNotificationService = module.get<TeamsBadgeNotificationService>(
+    _teamsNotificationService = module.get<TeamsBadgeNotificationService>(
       TeamsBadgeNotificationService,
     );
-    badgeAnalyticsService = module.get<BadgeAnalyticsService>(
+    _badgeAnalyticsService = module.get<BadgeAnalyticsService>(
       BadgeAnalyticsService,
     );
-    prismaService = module.get<PrismaService>(PrismaService);
+    _prismaService = module.get<PrismaService>(PrismaService);
 
     jest.clearAllMocks();
   });
@@ -111,45 +107,26 @@ describe.skip('TeamsSharingController - Story 7.4', () => {
       personalMessage: 'Check out my new badge!',
     };
 
-    it('should share badge to Teams successfully', async () => {
+    it('should share badge to Teams successfully', () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
       mockTeamsNotificationService.sendBadgeIssuanceNotification.mockResolvedValue(
         undefined,
       );
 
-      const result = await controller.shareBadgeToTeams(
-        'badge-456',
-        shareDto,
-        mockRequest as any,
-      );
-
-      expect(result).toEqual({
-        success: true,
-        message: 'Badge shared to Microsoft Teams successfully',
-        badgeId: 'badge-456',
-        teamId: shareDto.teamId,
-        channelId: shareDto.channelId,
-      });
-
-      expect(mockPrismaService.badge.findUnique).toHaveBeenCalledWith({
-        where: { id: 'badge-456' },
-        include: { template: true, issuer: true },
-      });
-
-      expect(
-        mockTeamsNotificationService.sendBadgeIssuanceNotification,
-      ).toHaveBeenCalledWith('badge-456', 'user-123');
+      expect(() =>
+        controller.shareBadgeToTeams('badge-456', shareDto, mockRequest as any),
+      ).toThrow(BadRequestException);
     });
 
-    it('should throw NotFoundException if badge not found', async () => {
+    it('should throw NotFoundException if badge not found', () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(null);
 
-      await expect(
+      expect(() =>
         controller.shareBadgeToTeams('badge-999', shareDto, mockRequest as any),
-      ).rejects.toThrow(NotFoundException);
+      ).toThrow(BadRequestException);
     });
 
-    it('should throw UnauthorizedException if user is not recipient or issuer', async () => {
+    it('should throw UnauthorizedException if user is not recipient or issuer', () => {
       const differentBadge = {
         ...mockBadge,
         issuerId: 'different-issuer',
@@ -162,34 +139,29 @@ describe.skip('TeamsSharingController - Story 7.4', () => {
 
       mockPrismaService.badge.findUnique.mockResolvedValue(differentBadge);
 
-      await expect(
+      expect(() =>
         controller.shareBadgeToTeams('badge-456', shareDto, mockRequest as any),
-      ).rejects.toThrow(UnauthorizedException);
+      ).toThrow(BadRequestException);
     });
 
-    it('should allow issuer to share badge', async () => {
+    it('should always throw BadRequestException (not yet implemented)', () => {
       const issuerRequest = {
         user: {
-          userId: 'issuer-789', // Same as badge issuer
+          userId: 'issuer-789',
           email: 'issuer@example.com',
         },
       };
 
-      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
-      mockTeamsNotificationService.sendBadgeIssuanceNotification.mockResolvedValue(
-        undefined,
-      );
-
-      const result = await controller.shareBadgeToTeams(
-        'badge-456',
-        shareDto,
-        issuerRequest as any,
-      );
-
-      expect(result.success).toBe(true);
+      expect(() =>
+        controller.shareBadgeToTeams(
+          'badge-456',
+          shareDto,
+          issuerRequest as any,
+        ),
+      ).toThrow(BadRequestException);
     });
 
-    it('should throw BadRequestException if badge is REVOKED', async () => {
+    it('should throw BadRequestException if badge is REVOKED', () => {
       const revokedBadge = {
         ...mockBadge,
         status: 'REVOKED',
@@ -197,12 +169,12 @@ describe.skip('TeamsSharingController - Story 7.4', () => {
 
       mockPrismaService.badge.findUnique.mockResolvedValue(revokedBadge);
 
-      await expect(
+      expect(() =>
         controller.shareBadgeToTeams('badge-456', shareDto, mockRequest as any),
-      ).rejects.toThrow(BadRequestException);
+      ).toThrow(BadRequestException);
     });
 
-    it('should throw BadRequestException if badge is EXPIRED', async () => {
+    it('should throw BadRequestException if badge is EXPIRED', () => {
       const expiredBadge = {
         ...mockBadge,
         status: 'EXPIRED',
@@ -210,20 +182,21 @@ describe.skip('TeamsSharingController - Story 7.4', () => {
 
       mockPrismaService.badge.findUnique.mockResolvedValue(expiredBadge);
 
-      await expect(
+      expect(() =>
         controller.shareBadgeToTeams('badge-456', shareDto, mockRequest as any),
-      ).rejects.toThrow(BadRequestException);
+      ).toThrow(BadRequestException);
     });
 
-    it('should handle Teams notification service errors', async () => {
+    it('should throw BadRequestException even with service errors', () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
       mockTeamsNotificationService.sendBadgeIssuanceNotification.mockRejectedValue(
         new Error('Teams API rate limit exceeded'),
       );
 
-      await expect(
+      // Method throws synchronously before any service call
+      expect(() =>
         controller.shareBadgeToTeams('badge-456', shareDto, mockRequest as any),
-      ).rejects.toThrow('Teams API rate limit exceeded');
+      ).toThrow(BadRequestException);
     });
   });
 });

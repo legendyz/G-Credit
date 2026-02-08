@@ -6,7 +6,6 @@ import { GraphTeamsService } from './services/graph-teams.service';
 import { TeamsBadgeNotificationService } from './teams/teams-badge-notification.service';
 import { TeamsActionController } from './teams/teams-action.controller';
 import { PrismaModule } from '../common/prisma.module';
-import { EmailModule } from '../common/email.module';
 import { BadgeNotificationService } from '../badge-issuance/services/badge-notification.service';
 
 /**
@@ -27,9 +26,12 @@ import { BadgeNotificationService } from '../badge-issuance/services/badge-notif
  * @see ADR-008: Microsoft Graph Integration Strategy
  * @see Sprint 6 Story 0.4: Microsoft Graph Module Foundation
  * @see Sprint 6 Story 7.4: Microsoft Teams Notifications
+ *
+ * NOTE (TD-014): EmailModule import removed — EmailModule now imports
+ * MicrosoftGraphModule (not the reverse) to get GraphEmailService.
  */
 @Module({
-  imports: [ConfigModule, PrismaModule, EmailModule],
+  imports: [ConfigModule, PrismaModule],
   controllers: [TeamsActionController],
   providers: [
     GraphTokenProviderService,

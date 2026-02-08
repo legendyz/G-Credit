@@ -1,8 +1,8 @@
 # Sprint Documentation Index
 
-**Last Updated:** 2026-01-29  
-**Current Sprint:** Sprint 5 Complete (v0.5.0) → Planning Sprint 6  
-**Total Sprints:** 6 (Sprint 0-5)
+**Last Updated:** 2026-02-08  
+**Current Sprint:** Sprint 9 Complete (v0.9.0) | Sprint 10 Planning  
+**Total Sprints:** 10 (Sprint 0-9)
 
 ---
 
@@ -16,6 +16,10 @@
 | [Sprint 3](./sprint-3/) | Badge Issuance System | ✅ Complete | 2 weeks | 6 stories | 46 tests | v0.3.0 |
 | [Sprint 4](./sprint-4/) | Employee Badge Wallet | ✅ Complete | 2 weeks | 7 stories | 58 tests | v0.4.0 |
 | [Sprint 5](./sprint-5/) | Badge Verification & Open Badges 2.0 | ✅ Complete | 1 day | 5 stories | 68 tests | v0.5.0 |
+| [Sprint 6](./sprint-6/) | Badge Sharing & Social Proof | ✅ Complete | 1 day | 7 stories | 207 tests | v0.6.0 |
+| [Sprint 7](./sprint-7/) | Badge Revocation & Lifecycle UAT | ✅ Complete | 1 day | 10 stories | 605 tests | v0.7.0 |
+| [Sprint 8](./sprint-8/) | Production-Ready MVP | ✅ Complete | 3 days | 12 items | 876 tests | v0.8.0 |
+| [Sprint 9](./sprint-9/) | Bulk Badge Issuance + TD Cleanup | ✅ Complete | 3 days | 5 stories | 1087 tests | v0.9.0 |
 
 ---
 
@@ -185,81 +189,95 @@ sprint-N/
 
 [View Sprint 5 Details →](./sprint-5/)
 
-**Technologies:**
-- Azure Communication Services (email)
-- CSV parsing and validation
-- Open Badges 2.0 standard
+---
 
-[View Sprint 3 Details →](./sprint-3/)
+### Sprint 6 - Badge Sharing & Social Proof ✅ COMPLETE
+**Focus:** Social sharing and badge presentation
+
+**Status:** ✅ Complete (v0.6.0, 2026-01-31)
+
+**Key Deliverables:**
+- Badge sharing with unique URLs
+- LinkedIn / social media integration
+- Badge collections and portfolios
+- Public profile pages
+- Share analytics tracking
+
+**Metrics:**
+- 7 stories completed (100%)
+- 207 tests (100% pass rate)
+- 35h actual / 56-76h estimated
+
+[View Sprint 6 Details →](./sprint-6/)
 
 ---
 
-### Sprint 4 - Employee Badge Wallet ⭐ ✅ COMPLETE
-**Focus:** Complete employee badge viewing and management experience
+### Sprint 7 - Badge Revocation & Lifecycle UAT ✅ COMPLETE
+**Focus:** Badge lifecycle management and user acceptance testing
 
-**Status:** ✅ Complete (2026-01-28, 7 stories, 58 tests)
+**Status:** ✅ Complete (v0.7.0, 2026-02-02)
 
 **Key Deliverables:**
-- **Timeline View** - Chronological badge display with date navigation (replacing grid)
-- **Badge Detail Modal** - 10 sub-components with comprehensive badge information
-- **Evidence Files** - Azure Blob integration with SAS tokens (5-min expiry)
-- **Similar Badges** - Recommendation algorithm based on skills, category, issuer
-- **Admin Milestones** - Configurable achievement triggers (badge count, skill tracks, anniversaries)
-- **Empty States** - 4 contextual scenarios (new employee, pending, revoked, filtered)
-- **Issue Reporting** - Inline form for badge problems
-
-**Database Changes:**
-- 3 new tables: evidence_files, milestone_configs, milestone_achievements
-- UNIQUE constraint on milestone achievements (no duplicates)
-- Azure Blob integration for evidence file storage
-
-**API Endpoints Added (9):**
-- GET /api/badges/wallet - Timeline view with pagination
-- GET /api/badges/:id/similar - Recommendation algorithm
-- GET /api/badges/:id/evidence - List evidence files
-- GET /api/badges/:id/evidence/:fileId/download - SAS token generation
-- POST /api/badges/:id/report - Issue reporting
-- POST /api/admin/milestones - Create milestone config
-- GET /api/admin/milestones - List configs
-- PATCH /api/admin/milestones/:id - Update config
-- GET /api/milestones/achievements - User achievements
-
-**Frontend Components (20+ files):**
-- TimelineView with date sidebar navigation
-- BadgeDetailModal with 10 sub-components
-- EmptyState with 4 scenario handlers
-- SimilarBadgesSection horizontal scroll
-- Zustand modal state management
-
-**Testing:**
-- 58 backend tests (100% pass rate)
-- 19 milestone service tests
-- 11 evidence service tests
-- 8 recommendations tests
-- 6 wallet API tests
-
-**Technologies:**
-- Azure Communication Services (email)
-- csv-parse library
-- Multer file upload
-- Open Badges 2.0 specification
-- UUID v4 claim tokens
+- Badge revocation with reason tracking
+- Revocation notification system
+- Badge lifecycle state machine
+- Comprehensive UAT scenarios
+- Badge expiry management
 
 **Metrics:**
-- 6/6 stories (100%)
-- 46 total tests (26 E2E + 20 unit, 100% pass)
-- 7 UAT scenarios (100% acceptance)
-- 13h actual vs 12.5h estimated (104%)
-- 82% test coverage (exceeds 80% target)
-- 0 critical bugs
-- Sprint grade: A+ (9.5/10)
+- 10 stories completed (100%)
+- 605 tests (100% pass rate)
+- 38.5h actual / 41-47h estimated
 
-**Key Achievements:**
-- Complete badge lifecycle (issue → claim → verify → revoke)
-- Fixed UUID validation bug through comprehensive testing
-- Phase 1-3 documentation reorganization (45%→100% compliance)
+[View Sprint 7 Details →](./sprint-7/)
 
-[View Sprint 3 Details →](./sprint-3/)
+---
+
+### Sprint 8 - Production-Ready MVP ✅ COMPLETE
+**Focus:** UX excellence, security hardening & M365 integration
+
+**Status:** ✅ Complete (v0.8.0, 2026-02-05)
+
+**Key Deliverables:**
+- Dashboard homepage with key metrics
+- Badge search & filter enhancement
+- WCAG 2.1 AA accessibility compliance
+- Analytics API with caching
+- Responsive design optimization
+- M365 Sync API (Graph API)
+- Admin user management
+- Security hardening (17 P1 items)
+
+**Metrics:**
+- 12 items completed (100%)
+- 876 tests (100% pass rate)
+- 80h actual / 76h estimated
+
+[View Sprint 8 Details →](./sprint-8/)
+
+---
+
+### Sprint 9 - Bulk Badge Issuance + TD Cleanup ✅ COMPLETE
+**Focus:** Batch badge issuance via CSV and technical debt resolution
+
+**Status:** ✅ Complete (v0.9.0, 2026-02-08)
+
+**Key Deliverables:**
+- CSV template download with Excel compatibility (UTF-8 BOM)
+- CSV upload with RFC 4180 parsing and security sanitization
+- Preview UI with pagination and error correction
+- Batch processing with partial failure handling
+- Error report download
+- TD-013: Route-based code splitting (707→235 KB, 66.8% reduction)
+- TD-014: Email system unification (nodemailer → Graph API)
+- TD-015: ESLint type safety cleanup (1303→284 warnings, 78% reduction)
+
+**Metrics:**
+- 5 stories completed (100%)
+- 1087 tests (532 backend + 397 frontend + 158 E2E, 0 failures)
+- 37h actual / 51h estimated (27% under budget)
+
+[View Sprint 9 Details →](./sprint-9/)
 
 ---
 
@@ -271,27 +289,45 @@ Sprint 0:  Setup Phase (N/A)
 Sprint 1:  4/4 stories ✅ (100%)
 Sprint 2:  5/5 stories ✅ (100%)
 Sprint 3:  6/6 stories ✅ (100%)
+Sprint 4:  7/7 stories ✅ (100%)
+Sprint 5:  5/5 stories ✅ (100%)
+Sprint 6:  7/7 stories ✅ (100%)
+Sprint 7:  10/10 stories ✅ (100%)
+Sprint 8:  12/12 items ✅ (100%)
+Sprint 9:  5/5 stories ✅ (100%)
 ────────────────────────────
-Total:     15/15 stories ✅
+Total:     61/61 stories ✅
 ```
 
 ### Test Coverage
 ```
 Sprint 0:  N/A (Infrastructure)
-Sprint 1:  Unit tests + Integration tests
-Sprint 2:  Integration tests + E2E tests
-Sprint 3:  26 E2E tests + 20 unit tests + 7 UAT ✅
+Sprint 1:  40 tests
+Sprint 2:  27 tests
+Sprint 3:  46 tests
+Sprint 4:  58 tests
+Sprint 5:  68 tests
+Sprint 6:  207 tests
+Sprint 7:  605 tests
+Sprint 8:  876 tests
+Sprint 9:  1087 tests (532 backend + 397 frontend + 158 E2E)
 ────────────────────────────
-Current:   46+ automated tests
+Current:   1087 automated tests (0 failures)
 ```
 
 ### Time Efficiency
 ```
-Sprint 1:  ~100% efficient
-Sprint 2:  ~95% efficient
-Sprint 3:  96% efficient (13h / 12.5h)
+Sprint 1:  21h / 21h (~100%)
+Sprint 2:  29h / 32h (91%)
+Sprint 3:  13h / 12.5h (104%)
+Sprint 4:  48h / 48h (100%)
+Sprint 5:  30h / 28h (107%)
+Sprint 6:  35h / 56-76h (46-63%)
+Sprint 7:  38.5h / 41-47h (82-94%)
+Sprint 8:  80h / 76h (105%)
+Sprint 9:  37h / 51h (73%)
 ────────────────────────────
-Average:   ~97% efficiency ✅
+Average:   ~87% efficiency ✅
 ```
 
 ---
@@ -302,15 +338,31 @@ Average:   ~97% efficiency ✅
 
 **Authentication & Security**
 → Sprint 1: User auth, JWT, RBAC, password reset
+→ Sprint 8: Security hardening (17 P1 items)
 
 **Badge Templates**
 → Sprint 2: Template management, image upload, search
 
 **Badge Issuance**
-→ Sprint 3: Issuing badges, claiming, notifications, revocation
+→ Sprint 3: Single issuance, claiming, notifications, revocation
+→ Sprint 9: Bulk issuance via CSV (up to 20 badges)
+
+**Badge Wallet & UX**
+→ Sprint 4: Timeline view, detail modal, evidence files
+→ Sprint 8: Dashboard, search enhancement, WCAG 2.1 AA
+
+**Badge Verification & Standards**
+→ Sprint 5: Open Badges 2.0, public verification, baked PNGs
+
+**Badge Sharing**
+→ Sprint 6: Social sharing, LinkedIn, portfolios
+
+**Badge Lifecycle**
+→ Sprint 7: Revocation, lifecycle UAT, expiry management
 
 **Infrastructure**
 → Sprint 0: Project setup, environment, standards
+→ Sprint 9: Code splitting, email unification, ESLint cleanup
 
 ---
 
@@ -319,12 +371,14 @@ Average:   ~97% efficiency ✅
 **Azure Services**
 - Sprint 2: Azure Blob Storage (images)
 - Sprint 3: Azure Communication Services (email)
+- Sprint 8: M365 Graph API (sync, email)
 
 **Database (Prisma)**
 - Sprint 0: Initial setup
 - Sprint 1: User model
 - Sprint 2: BadgeTemplate model
 - Sprint 3: Badge model
+- Sprint 9: BulkIssuanceSession model
 
 **Authentication**
 - Sprint 1: Complete auth system
@@ -332,6 +386,11 @@ Average:   ~97% efficiency ✅
 **File Upload**
 - Sprint 2: Images (Azure Blob)
 - Sprint 3: CSV files (Multer)
+- Sprint 9: Bulk issuance CSV (100KB limit)
+
+**Performance**
+- Sprint 8: Analytics caching
+- Sprint 9: Route-based code splitting (66.8% bundle reduction)
 
 ---
 
@@ -364,12 +423,12 @@ Looking to create sprint documentation?
 
 ## 🚀 Next Sprint
 
-Planning Sprint 4? Common next steps:
-- Badge display and sharing
-- Analytics and reporting
-- Advanced badge features
-- Performance optimization
+Planning Sprint 10? Priorities:
+- TD-017: Fix 114 tsc type errors in test files
+- ESLint warning regression (423 → target <300)
+- Enterprise features planning
 - Production deployment preparation
+- Performance monitoring setup
 
 ---
 

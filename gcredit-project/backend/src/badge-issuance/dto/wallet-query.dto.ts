@@ -55,14 +55,14 @@ export class WalletQueryDto {
     type: [String],
   })
   @IsOptional()
-  @Transform(({ value }) => {
+  @Transform(({ value }: { value: unknown }) => {
     if (typeof value === 'string') {
       return value
         .split(',')
         .map((s) => s.trim())
         .filter(Boolean);
     }
-    return value;
+    return value as string[];
   })
   @IsArray()
   @IsUUID('4', { each: true })

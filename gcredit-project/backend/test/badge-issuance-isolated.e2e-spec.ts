@@ -6,6 +6,7 @@
  */
 
 import request from 'supertest';
+import { App } from 'supertest/types';
 import { RevocationReason } from '../src/badge-issuance/dto/revoke-badge.dto';
 import {
   setupE2ETest,
@@ -69,14 +70,24 @@ describe('Badge Issuance (e2e) - Isolated', () => {
         })
         .expect(201);
 
-      expect(response.body).toHaveProperty('id');
-      expect(response.body.status).toBe('PENDING');
-      expect(response.body.claimToken).toHaveLength(32);
-      expect(response.body).toHaveProperty('claimUrl');
-      expect(response.body).toHaveProperty('assertionUrl');
-      expect(response.body.template.id).toBe(templateId);
-      expect(response.body.recipient.id).toBe(recipientUser.user.id);
-      expect(response.body).toHaveProperty('expiresAt');
+      const body = response.body as {
+        id: string;
+        status: string;
+        claimToken: string;
+        claimUrl: string;
+        assertionUrl: string;
+        template: { id: string };
+        recipient: { id: string };
+        expiresAt: string;
+      };
+      expect(body).toHaveProperty('id');
+      expect(body.status).toBe('PENDING');
+      expect(body.claimToken).toHaveLength(32);
+      expect(body).toHaveProperty('claimUrl');
+      expect(body).toHaveProperty('assertionUrl');
+      expect(body.template.id).toBe(templateId);
+      expect(body.recipient.id).toBe(recipientUser.user.id);
+      expect(body).toHaveProperty('expiresAt');
     });
 
     it('should return 403 when unauthorized user (EMPLOYEE) tries to issue badge', async () => {
@@ -101,7 +112,8 @@ describe('Badge Issuance (e2e) - Isolated', () => {
         })
         .expect(404);
 
-      expect(response.body.message).toContain('not found');
+      const body = response.body as { message: string };
+      expect(body.message).toContain('not found');
     });
 
     it('should return 400 when validation fails (invalid UUID)', async () => {
@@ -143,44 +155,52 @@ describe('Badge Issuance (e2e) - Isolated', () => {
     });
 
     it('should claim badge with valid token (PUBLIC endpoint - no auth required)', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .post(`/api/badges/${validBadgeId}/claim`)
         .send({
           claimToken: validClaimToken,
         })
         .expect(201);
 
-      expect(response.body.status).toBe('CLAIMED');
-      expect(response.body.claimedAt).toBeDefined();
-      expect(response.body.message).toContain('successfully');
-      expect(response.body.assertionUrl).toContain(validBadgeId);
+      const body = response.body as {
+        status: string;
+        claimedAt: string;
+        message: string;
+        assertionUrl: string;
+      };
+      expect(body.status).toBe('CLAIMED');
+      expect(body.claimedAt).toBeDefined();
+      expect(body.message).toContain('successfully');
+      expect(body.assertionUrl).toContain(validBadgeId);
     });
 
     it('should return 400 for invalid claim token', async () => {
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .post(`/api/badges/${validBadgeId}/claim`)
         .send({
           claimToken: 'invalid-token-' + 'x'.repeat(19), // 32 chars total
         })
         .expect(400);
 
-      expect(response.body.message).toBeDefined();
+      const body = response.body as { message: string };
+      expect(body.message).toBeDefined();
     });
 
     it('should return 404 when badge claim token already used (one-time use)', async () => {
       // First claim
-      await request(ctx.app.getHttpServer())
+      await request(ctx.app.getHttpServer() as App)
         .post(`/api/badges/${validBadgeId}/claim`)
         .send({ claimToken: validClaimToken })
         .expect(201);
 
       // Second claim attempt - token has been cleared
-      const response = await request(ctx.app.getHttpServer())
+      const response = await request(ctx.app.getHttpServer() as App)
         .post(`/api/badges/${validBadgeId}/claim`)
         .send({ claimToken: validClaimToken })
         .expect(404); // Token no longer exists in DB
 
-      expect(response.body.message).toContain('Invalid claim token');
+      const body = response.body as { message: string };
+      expect(body.message).toContain('Invalid claim token');
     });
   });
 
@@ -206,9 +226,12 @@ describe('Badge Issuance (e2e) - Isolated', () => {
         })
         .expect(200); // Story 9.1: Revoke returns 200 OK, not 201
 
-      expect(response.body.badge.status).toBe('REVOKED');
-      expect(response.body.badge.revokedAt).toBeDefined();
-      expect(response.body.badge.revocationReason).toBe(
+      const body = response.body as {
+        badge: { status: string; revokedAt: string; revocationReason: string };
+      };
+      expect(body.badge.status).toBe('REVOKED');
+      expect(body.badge.revokedAt).toBeDefined();
+      expect(body.badge.revocationReason).toBe(
         RevocationReason.POLICY_VIOLATION,
       );
     });
@@ -250,13 +273,20 @@ describe('Badge Issuance (e2e) - Isolated', () => {
         .get('/api/badges/issued') // Correct endpoint
         .expect(200);
 
+      const body = response.body as {
+        badges: Array<{ id: string; status: string }>;
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+      };
       // getIssuedBadges returns: { badges: [], total, page, limit, totalPages }
-      expect(Array.isArray(response.body.badges)).toBe(true);
-      expect(response.body.badges.length).toBeGreaterThan(0);
-      expect(response.body).toHaveProperty('total');
-      expect(response.body).toHaveProperty('page');
-      expect(response.body).toHaveProperty('limit');
-      expect(response.body).toHaveProperty('totalPages');
+      expect(Array.isArray(body.badges)).toBe(true);
+      expect(body.badges.length).toBeGreaterThan(0);
+      expect(body).toHaveProperty('total');
+      expect(body).toHaveProperty('page');
+      expect(body).toHaveProperty('limit');
+      expect(body).toHaveProperty('totalPages');
     });
 
     it('should return 403 for EMPLOYEE listing all badges', async () => {

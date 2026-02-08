@@ -175,7 +175,7 @@ export class EvidenceService {
     }
 
     // AC 3.6: Generate SAS token (5-minute expiry, read-only)
-    const { url, expiresAt } = await this.storage.generateEvidenceSasUrl(
+    const { url, expiresAt } = this.storage.generateEvidenceSasUrl(
       evidenceFile.fileName,
     );
 

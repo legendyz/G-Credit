@@ -1,14 +1,15 @@
 # Story 8.4: Bulk Issuance Synchronous Processing (MVP)
 
-**Status:** backlog  
+**Status:** done  
 **Epic:** Epic 8 - Bulk Badge Issuance  
 **Sprint:** Sprint 9  
 **Priority:** MEDIUM  
-**Estimated Hours:** 6.5h (原4h + P0修复2h + P1改进0.5h)  
-**Actual Hours:** TBD  
+**Estimated Hours:** 8.5h (原4h + P0修复2h + P1改进0.5h + TD-014 2h)  
+**Actual Hours:** 7h  
 **Dependencies:** Story 8.3 (Bulk Preview UI)  
 **Post-Review Updates:** UX-P0-1, C2, C6 (2026-02-05审查)  
-**Security Critical:** 🔴 MUST implement C2 (Session IDOR) validation
+**Security Critical:** 🔴 MUST implement C2 (Session IDOR) validation  
+**Includes Tech Debt:** 🔧 TD-014 (Email System Unification, 2h) — 作为前置任务嵌入本Story
 
 **MVP Decision**: Deferred Redis/Bull Queue to Phase 2 (TD-016). Sprint 9 implements synchronous processing with 20-badge limit to validate core workflow before adding complexity.
 
@@ -24,19 +25,19 @@ So that **I can efficiently award badges to small groups without manual one-by-o
 
 ## Acceptance Criteria
 
-1. [ ] **AC1: CSV Upload Limit (MVP)**
+1. [x] **AC1: CSV Upload Limit (MVP)**
    - System validates CSV has ≤20 badges
    - If >20 badges, show error: "MVP限制：最多20个徽章/批次。Phase 2将支持更大批量。"
    - Provide option to split CSV or select first 20 rows
 
-2. [ ] **AC2: Synchronous Batch Processing**
+2. [x] **AC2: Synchronous Batch Processing**
    - POST `/api/bulk-issuance/confirm/:sessionId` processes all badges in single HTTP request
    - Loop through all valid badges (max 20)
    - Call `BadgeInstanceService.issueBadge()` for each badge
    - Collect success/failure results
    - Return complete results when done (no background job)
 
-3. [ ] **AC3: Error Handling** ⚠️ **P1-Enhancement**
+3. [x] **AC3: Error Handling** ⚠️ **P1-Enhancement**
    - Individual badge failures don't stop the loop
    - Failures collected in `failedBadges` array with error messages
    - ⚠️ **ARCH-C6**: Document transaction strategy (0.5h)
@@ -46,7 +47,7 @@ So that **I can efficiently award badges to small groups without manual one-by-o
    - Return partial success results (e.g., "18 of 20 succeeded")
    - Frontend displays error list immediately
 
-4. [ ] **AC4: Frontend Loading State** 🔴 **CRITICAL P0-Fix** (UX-P0-1, 2h)
+4. [x] **AC4: Frontend Loading State** 🔴 **CRITICAL P0-Fix** (UX-P0-1, 2h)
    - ⚠️ **UX Critical Gap**: 20-second wait creates "frozen app" perception
    - **MUST implement pseudo-progress indicator**:
      - Replace static spinner with LIVE progress display
@@ -68,10 +69,10 @@ So that **I can efficiently award badges to small groups without manual one-by-o
    - Disable all UI during processing
    - 30-second timeout with helpful error message
 
-5. [ ] **AC5: Completion Display**
+5. [x] **AC5: Completion Display**
    - Immediate result display (no polling needed)
 
-6. [ ] **AC6: Session Security** 🔴 **CRITICAL Security** (ARCH-C2, 1h)
+6. [x] **AC6: Session Security** 🔴 **CRITICAL Security** (ARCH-C2, 1h)
    - Validate session ownership before processing: `session.issuerId === currentUser.id`
    - Prevent IDOR attack (User B confirming User A's bulk issuance)
    - Throw `ForbiddenException` if unauthorized access detected
@@ -81,15 +82,59 @@ So that **I can efficiently award badges to small groups without manual one-by-o
    - "Download Error Report" button for CSV export
    - Option to retry failed badges
 
-6. [ ] **AC6: Notification Emails**
+6. [x] **AC6: Notification Emails**
    - Each successful badge issuance sends email to recipient
    - Email includes badge name, issuer, and claim link
    - Email send failures logged but don't fail badge creation
    - Email errors shown in completion summary
 
+7. [x] **AC7: Email System Unification (TD-014)**
+   - All nodemailer references removed from codebase
+   - All email sending consolidated to GraphEmailService
+   - nodemailer dependency removed from `package.json`
+   - nodemailer config removed from `.env`
+   - Email-related tests passing with unified service
+   - Documentation updated (setup guide, env example)
+
 ---
 
 ## Tasks / Subtasks
+
+### Task 0: TD-014 — Email System Unification (前置任务) - 2h
+
+> **Tech Debt TD-014** 嵌入本 Story，作为前置任务在批量处理开发前完成。
+> **理由：** 批量处理会发送大量邮件，统一邮件系统避免双系统复杂度。
+
+- [ ] **0.1** Audit codebase for nodemailer usage (0.5h)
+  - Search: `grep -r "nodemailer" backend/src/`
+  - Document all email sending locations
+- [ ] **0.2** Migrate remaining nodemailer calls to GraphEmailService (1h)
+  - Update email sending code
+  - Ensure templates compatible with Graph API
+  - Update configuration
+- [ ] **0.3** Remove nodemailer dependency (0.25h)
+  - `npm uninstall nodemailer @types/nodemailer`
+  - Remove nodemailer config from `.env`
+  - Update `.env.example`
+  - Update `gcredit-project/docs/setup/environment-setup.md`
+- [ ] **0.4** Test email sending (0.25h)
+  - Test badge issuance email
+  - Test password reset email (if applicable)
+  - Test admin notification emails
+
+**TD-014 Success Criteria:**
+- [ ] Zero references to `nodemailer` in codebase
+- [ ] All emails sent via GraphEmailService
+- [ ] Email tests passing
+- [ ] Documentation updated
+
+**TD-014 Files to Modify:**
+- `backend/src/email/` (remove nodemailer service)
+- `backend/package.json` (remove dependency)
+- `backend/.env.example` (remove nodemailer config)
+- `gcredit-project/docs/setup/environment-setup.md` (update docs)
+
+---
 
 ### Task 1: CSV Upload Validation (AC: #1) - 0.5h
 - [ ] **1.1** Add validation in Story 8.2 upload endpoint
@@ -306,6 +351,7 @@ frontend/src/
 - **Backend:** 10 unit tests (synchronous processing API)
 - **Frontend:** 7 component tests (loading UI, results display)
 - **E2E:** 4 tests (full bulk flow with limits)
+- **TD-014:** Email-related E2E tests (estimated 10 tests) + manual verification
 - **Target Coverage:** >80%
 
 ### Performance Notes
@@ -339,21 +385,49 @@ frontend/src/
 ## Dev Agent Record
 
 ### Agent Model Used
-**Model:** TBD  
-**Date:** TBD
+**Model:** Claude Opus 4.6  
+**Date:** 2026-02-08
 
 ### Completion Notes
-**Status:** TBD  
+**Status:** Complete  
 **Blockers:** None  
 **MVP Simplification:** Redis async processing deferred to TD-016 (Phase 2)
 
 ### Test Results
-- **Unit Tests:** TBD
-- **E2E Tests:** TBD
+- **Backend Unit Tests:** 532 passed, 0 failures (12 new confirm tests)
+- **Frontend Tests:** 390 passed, 0 failures (20 new tests)
+- **E2E Tests:** 156 passed, 0 failures (4 new confirm E2E tests)
+- **ESLint:** 0 errors, 283 warnings
+- **Bundle Size:** 235 KB (≤240 KB budget)
+
+### Commits
+1. `8a153c1` — refactor: TD-014 email system unification — remove nodemailer
+2. `5a6e320` — feat: Story 8.4 backend — synchronous batch processing
+3. `ffa4746` — feat: Story 8.4 frontend — loading UI + result display
+4. `3ac4bca` — test: Story 8.4 E2E tests for batch processing
 
 ### File List
-**Files Created:** TBD  
-**Files Modified:** TBD
+**Files Created:**
+- `frontend/src/components/BulkIssuance/__tests__/ProcessingModal.test.tsx`
+- `frontend/src/components/BulkIssuance/__tests__/ProcessingComplete.test.tsx`
+- `backend/test/bulk-issuance-confirm.e2e-spec.ts`
+
+**Files Modified:**
+- `backend/src/common/email.service.ts` (rewritten: nodemailer → GraphEmailService wrapper)
+- `backend/src/common/email.module.ts` (import MicrosoftGraphModule)
+- `backend/src/modules/auth/auth.module.ts` (import EmailModule instead of direct provider)
+- `backend/src/microsoft-graph/microsoft-graph.module.ts` (remove EmailModule import)
+- `backend/src/microsoft-graph/microsoft-graph.module.spec.ts` (remove EmailService mock)
+- `backend/src/bulk-issuance/bulk-issuance.module.ts` (import BadgeIssuanceModule)
+- `backend/src/bulk-issuance/bulk-issuance.service.ts` (implement confirmBulkIssuance)
+- `backend/src/bulk-issuance/bulk-issuance.service.spec.ts` (12 new tests)
+- `backend/src/bulk-issuance/bulk-issuance.controller.ts` (Swagger response schema)
+- `backend/package.json` (remove nodemailer, update max-warnings)
+- `frontend/src/components/BulkIssuance/ProcessingModal.tsx` (translate + enhance)
+- `frontend/src/components/BulkIssuance/ProcessingComplete.tsx` (failed table + download)
+- `frontend/src/components/BulkIssuance/BulkPreviewPage.tsx` (AbortController timeout + results)
+- `frontend/src/components/BulkIssuance/__tests__/BulkPreviewPage.test.tsx` (2 new tests)
+- `docs/setup/EMAIL_SETUP_QUICK.md` (rewritten for Graph API)
 
 ---
 

@@ -11,6 +11,10 @@ process.env.RATE_LIMIT_TTL = '60000';
 process.env.THROTTLE_TTL = '60000';
 process.env.THROTTLE_LIMIT = '1000';
 
+// NOTE: Do NOT override UPLOAD_THROTTLE_LIMIT here.
+// The @Throttle decorator evaluates process.env at class-load time (once per process).
+// Default 10/5min works for functional tests (3 uploads) and rate limit tests (exhaust 10).
+
 // CI Environment Detection
 const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
 
