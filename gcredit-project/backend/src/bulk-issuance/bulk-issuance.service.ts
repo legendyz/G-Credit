@@ -33,6 +33,18 @@ export interface SessionError {
 }
 
 /**
+ * Preview row data
+ */
+export interface PreviewRow {
+  rowNumber: number;
+  badgeTemplateId: string;
+  recipientEmail: string;
+  evidenceUrl?: string;
+  isValid: boolean;
+  error?: string;
+}
+
+/**
  * Preview data returned after CSV upload
  */
 export interface PreviewData {
@@ -44,14 +56,34 @@ export interface PreviewData {
   status: SessionStatus;
   createdAt: Date;
   expiresAt: Date;
-  rows: Array<{
-    rowNumber: number;
-    badgeTemplateId: string;
-    recipientEmail: string;
-    evidenceUrl?: string;
-    isValid: boolean;
-    error?: string;
-  }>;
+  rows: PreviewRow[];
+}
+
+/**
+ * Enriched preview row with badge and recipient names
+ */
+export interface EnrichedPreviewRow extends PreviewRow {
+  badgeName?: string;
+  recipientName?: string;
+}
+
+/**
+ * Template breakdown entry for summary
+ */
+export interface TemplateBreakdown {
+  templateId: string;
+  templateName: string;
+  count: number;
+}
+
+/**
+ * Enriched preview data with badge/recipient names and template summary
+ */
+export interface EnrichedPreviewData extends Omit<PreviewData, 'rows'> {
+  summary: {
+    byTemplate: TemplateBreakdown[];
+  };
+  rows: EnrichedPreviewRow[];
 }
 
 /**
@@ -379,11 +411,83 @@ export class BulkIssuanceService {
   async getPreviewData(
     sessionId: string,
     currentUserId: string,
-  ): Promise<PreviewData> {
+  ): Promise<EnrichedPreviewData> {
     const session = await this.loadSession(sessionId, currentUserId);
 
     const sessionErrors = session.errors as any as SessionError[];
-    const sessionRows = session.rows as any as PreviewData['rows'];
+    const sessionRows = session.rows as any as PreviewRow[];
+
+    // Collect unique badge template IDs and recipient emails for batch lookup
+    const uniqueTemplateIds: string[] = [
+      ...new Set(sessionRows.map((r) => r.badgeTemplateId).filter(Boolean)),
+    ];
+    const uniqueEmails: string[] = [
+      ...new Set(
+        sessionRows
+          .filter((r) => r.isValid)
+          .map((r) => r.recipientEmail)
+          .filter(Boolean),
+      ),
+    ];
+
+    // Batch query badge templates (badgeTemplateId can be UUID or name)
+    const templateMap = new Map<string, string>();
+    if (uniqueTemplateIds.length > 0) {
+      const templates = await this.prisma.badgeTemplate.findMany({
+        where: {
+          OR: [
+            { id: { in: uniqueTemplateIds } },
+            { name: { in: uniqueTemplateIds } },
+          ],
+        },
+        select: { id: true, name: true },
+      });
+      for (const t of templates) {
+        templateMap.set(t.id, t.name);
+        templateMap.set(t.name, t.name);
+      }
+    }
+
+    // Batch query users by email
+    const userMap = new Map<string, string>();
+    if (uniqueEmails.length > 0) {
+      const users = await this.prisma.user.findMany({
+        where: { email: { in: uniqueEmails } },
+        select: { email: true, firstName: true, lastName: true },
+      });
+      for (const u of users) {
+        const fullName: string = [u.firstName, u.lastName]
+          .filter(Boolean)
+          .join(' ');
+        userMap.set(u.email, fullName || u.email);
+      }
+    }
+
+    // Enrich rows with badge and recipient names
+    const enrichedRows: EnrichedPreviewRow[] = sessionRows.map((row) => ({
+      ...row,
+      badgeName: templateMap.get(row.badgeTemplateId),
+      recipientName: row.isValid ? userMap.get(row.recipientEmail) : undefined,
+    }));
+
+    // Build template breakdown summary from valid rows
+    const templateCountMap = new Map<
+      string,
+      { templateId: string; templateName: string; count: number }
+    >();
+    for (const row of enrichedRows.filter((r) => r.isValid)) {
+      const key = row.badgeTemplateId;
+      const existing = templateCountMap.get(key);
+      if (existing) {
+        existing.count++;
+      } else {
+        templateCountMap.set(key, {
+          templateId: key,
+          templateName: row.badgeName || key,
+          count: 1,
+        });
+      }
+    }
 
     return {
       sessionId: session.id,
@@ -394,7 +498,10 @@ export class BulkIssuanceService {
       status: session.status as SessionStatus,
       createdAt: session.createdAt,
       expiresAt: session.expiresAt,
-      rows: sessionRows,
+      rows: enrichedRows,
+      summary: {
+        byTemplate: [...templateCountMap.values()],
+      },
     };
   }
 

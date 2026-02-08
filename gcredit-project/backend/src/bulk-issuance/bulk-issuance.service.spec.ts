@@ -24,9 +24,11 @@ describe('BulkIssuanceService', () => {
     },
     badgeTemplate: {
       findFirst: jest.fn(),
+      findMany: jest.fn(),
     },
     user: {
       findFirst: jest.fn(),
+      findMany: jest.fn(),
     },
     $transaction: jest.fn(),
   };
@@ -54,6 +56,14 @@ describe('BulkIssuanceService', () => {
       email: 'user@company.com',
       isActive: true,
     });
+
+    // Default findMany for enrichment
+    mockPrismaService.badgeTemplate.findMany.mockResolvedValue([
+      { id: 'template-123', name: 'Leadership Excellence' },
+    ]);
+    mockPrismaService.user.findMany.mockResolvedValue([
+      { email: 'user@company.com', firstName: 'John', lastName: 'Doe' },
+    ]);
 
     // Mock $transaction to execute the callback with a transaction client that delegates to the same mocks
     mockPrismaService.$transaction.mockImplementation(
@@ -487,6 +497,159 @@ EXAMPLE-DELETE,example@company.com`;
 
       expect(result.validRows).toBe(1);
       expect(result.errorRows).toBe(0);
+    });
+  });
+
+  describe('getPreviewData - Enrichment', () => {
+    it('should enrich rows with badge template names', async () => {
+      const csvContent = `badgeTemplateId,recipientEmail\ntemplate-123,user@company.com`;
+
+      const session = await service.createSession(csvContent, 'owner-123');
+
+      mockPrismaService.badgeTemplate.findMany.mockResolvedValue([
+        { id: 'template-123', name: 'Leadership Excellence' },
+      ]);
+      mockPrismaService.user.findMany.mockResolvedValue([
+        { email: 'user@company.com', firstName: 'John', lastName: 'Doe' },
+      ]);
+
+      const preview = await service.getPreviewData(
+        session.sessionId,
+        'owner-123',
+      );
+
+      expect(preview.rows[0].badgeName).toBe('Leadership Excellence');
+    });
+
+    it('should enrich rows with recipient names', async () => {
+      const csvContent = `badgeTemplateId,recipientEmail\ntemplate-123,user@company.com`;
+
+      const session = await service.createSession(csvContent, 'owner-123');
+
+      mockPrismaService.badgeTemplate.findMany.mockResolvedValue([
+        { id: 'template-123', name: 'Leadership Excellence' },
+      ]);
+      mockPrismaService.user.findMany.mockResolvedValue([
+        { email: 'user@company.com', firstName: 'Jane', lastName: 'Smith' },
+      ]);
+
+      const preview = await service.getPreviewData(
+        session.sessionId,
+        'owner-123',
+      );
+
+      expect(preview.rows[0].recipientName).toBe('Jane Smith');
+    });
+
+    it('should fallback to template ID when template not found', async () => {
+      const csvContent = `badgeTemplateId,recipientEmail\ntemplate-123,user@company.com`;
+
+      const session = await service.createSession(csvContent, 'owner-123');
+
+      mockPrismaService.badgeTemplate.findMany.mockResolvedValue([]);
+      mockPrismaService.user.findMany.mockResolvedValue([]);
+
+      const preview = await service.getPreviewData(
+        session.sessionId,
+        'owner-123',
+      );
+
+      expect(preview.rows[0].badgeName).toBeUndefined();
+      expect(preview.summary.byTemplate[0].templateName).toBe('template-123');
+    });
+
+    it('should fallback to email when user not found', async () => {
+      const csvContent = `badgeTemplateId,recipientEmail\ntemplate-123,user@company.com`;
+
+      const session = await service.createSession(csvContent, 'owner-123');
+
+      mockPrismaService.badgeTemplate.findMany.mockResolvedValue([
+        { id: 'template-123', name: 'Leadership Excellence' },
+      ]);
+      mockPrismaService.user.findMany.mockResolvedValue([]);
+
+      const preview = await service.getPreviewData(
+        session.sessionId,
+        'owner-123',
+      );
+
+      expect(preview.rows[0].recipientName).toBeUndefined();
+    });
+
+    it('should build template breakdown summary', async () => {
+      mockPrismaService.badgeTemplate.findFirst.mockResolvedValue({
+        id: 'template-123',
+        name: 'template-123',
+        status: 'ACTIVE',
+      });
+      mockPrismaService.user.findFirst.mockResolvedValue({
+        id: 'user-1',
+        email: 'user@company.com',
+        isActive: true,
+      });
+
+      const csvContent = `badgeTemplateId,recipientEmail\ntemplate-123,user@company.com\ntemplate-123,user@company.com`;
+
+      const session = await service.createSession(csvContent, 'owner-123');
+
+      mockPrismaService.badgeTemplate.findMany.mockResolvedValue([
+        { id: 'template-123', name: 'Leadership Excellence' },
+      ]);
+      mockPrismaService.user.findMany.mockResolvedValue([
+        { email: 'user@company.com', firstName: 'John', lastName: 'Doe' },
+      ]);
+
+      const preview = await service.getPreviewData(
+        session.sessionId,
+        'owner-123',
+      );
+
+      expect(preview.summary.byTemplate).toHaveLength(1);
+      expect(preview.summary.byTemplate[0]).toEqual({
+        templateId: 'template-123',
+        templateName: 'Leadership Excellence',
+        count: 2,
+      });
+    });
+
+    it('should handle first name only (no last name)', async () => {
+      const csvContent = `badgeTemplateId,recipientEmail\ntemplate-123,user@company.com`;
+
+      const session = await service.createSession(csvContent, 'owner-123');
+
+      mockPrismaService.badgeTemplate.findMany.mockResolvedValue([
+        { id: 'template-123', name: 'Leadership Excellence' },
+      ]);
+      mockPrismaService.user.findMany.mockResolvedValue([
+        { email: 'user@company.com', firstName: 'John', lastName: null },
+      ]);
+
+      const preview = await service.getPreviewData(
+        session.sessionId,
+        'owner-123',
+      );
+
+      expect(preview.rows[0].recipientName).toBe('John');
+    });
+
+    it('should not set recipientName on invalid rows', async () => {
+      mockPrismaService.badgeTemplate.findFirst.mockResolvedValue(null);
+      mockPrismaService.user.findFirst.mockResolvedValue(null);
+
+      const csvContent = `badgeTemplateId,recipientEmail\nEXAMPLE-DELETE-THIS-ROW,example@company.com`;
+
+      const session = await service.createSession(csvContent, 'owner-123');
+
+      mockPrismaService.badgeTemplate.findMany.mockResolvedValue([]);
+      mockPrismaService.user.findMany.mockResolvedValue([]);
+
+      const preview = await service.getPreviewData(
+        session.sessionId,
+        'owner-123',
+      );
+
+      expect(preview.rows[0].recipientName).toBeUndefined();
+      expect(preview.rows[0].isValid).toBe(false);
     });
   });
 });
