@@ -413,6 +413,30 @@ Items deferred from v1.0.0 release, to be addressed in subsequent sprints.
 | ID | Item | Priority | Effort | Blocker | Notes |
 |----|------|----------|--------|---------|-------|
 | TD-006 | Teams Channel Permissions | 🟡 Medium | 1 day | Tenant admin approval for `ChannelMessage.Send` | 4 tests skipped; Email sharing functional as workaround. See [SKIPPED-TESTS-TRACKER.md](../../testing/SKIPPED-TESTS-TRACKER.md) |
+| FEAT-001 | AI Agent 对话式集成层 | 🟢 Low | 3-5 days | 无 | 83 个 JSON API 已覆盖全部业务功能，可构建 Agent 中间层实现对话式操作 |
+
+### FEAT-001: AI Agent Integration Layer
+**产品方向：** 用户通过与 AI Agent 对话完成所有系统功能
+
+**现状评估（v1.0.0）：**
+- 88 个 API 端点中 83 个返回 JSON，天然适合 Agent 调用
+- RESTful 设计 + JWT 认证，Agent 可直接调用
+- 覆盖：认证、发证、模板管理、批量操作、分享、分析、管理等全部业务
+
+**需要构建的能力：**
+1. **Agent 中间层**（MCP Server 或 Function Calling Schema）— 意图识别→API 映射
+2. **多步骤工作流编排** — 如"创建模板→发证→分享到 Teams"串联操作
+3. **文件处理适配** — 模板上传（multipart）、CSV 批量导入、PNG/CSV 下载转发
+4. **会话状态管理** — 对话上下文、操作确认、结果反馈
+5. **实时通知机制** — SSE/WebSocket 支持异步任务完成通知（如批量导入完成）
+6. **安全 Token 代理** — Agent 代表用户操作的权限边界控制
+
+**典型对话场景：**
+- "给张三发一个 Azure 认证徽章" → `POST /api/badges`
+- "我有哪些徽章？" → `GET /api/badges/my-badges`
+- "本月发证趋势如何？" → `GET /api/analytics/issuance-trends`
+- "批量导入这个名单" → `POST /api/badges/bulk`
+- "把我的徽章分享到 Teams" → `POST /api/badges/:id/share/teams`
 
 ### TD-006 Resolution Steps
 1. Submit `ChannelMessage.Send` permission request to tenant admin
