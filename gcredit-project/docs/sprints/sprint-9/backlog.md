@@ -353,53 +353,57 @@ Process bulk badge issuance synchronously with up to 20 badges per batch. Simple
 ### Week 1 (2026-02-06 to 2026-02-12)
 
 #### Day 1-2 (Monday-Tuesday)
-- [ ] **Sprint Kickoff Ceremony** (2h)
+- [x] **Sprint Kickoff Ceremony** (2h)
   - Review Sprint Goal
   - Story breakdown discussion
   - Task assignment
   - Environment setup verification
-- [ ] **Git Branch Setup** (0.5h) - Story 0.1 CRITICAL
+- [x] **Git Branch Setup** (0.5h) - Story 0.1 CRITICAL
   - Create branch: `sprint-9/epic-8-bulk-issuance-td-cleanup`
   - Verify branch protection rules
-- [ ] **Story 8.1: CSV Template** (6h)
+- [x] **Story 8.1: CSV Template** (8h actual)
   - Backend API for template download
   - Frontend download button
   - Validation service
   - Testing
+  - SM accepted 2026-02-07
 
 #### Day 3-4 (Wednesday-Thursday)
-- [ ] **TD-013: Bundle Code Splitting** (3h)
+- [x] **TD-013: Bundle Code Splitting** (embedded in Story 8.3)
   - Analyze bundle
   - Implement route-based splitting
   - Configure vendor chunks
-  - Verify bundle size
-- [ ] **Story 8.2: CSV Upload** (6h)
+  - 707→235 KB (66.8% reduction)
+- [x] **Story 8.2: CSV Upload** (4h actual)
   - File upload UI with drag-and-drop
   - Backend parsing and validation
   - Session storage
   - Testing
+  - SM accepted 2026-02-07
 
 #### Day 5 (Friday)
-- [ ] **TD-015 Phase 1: ESLint Warnings** (4h)
+- [x] **TD-015 Phase 1: ESLint Warnings** (4h actual)
   - Fix 300 `no-unsafe-call` warnings
   - Fix 300 `no-unsafe-return` warnings
-  - Run regression tests
-- [ ] **Daily Review & Team Sync** (1h)
+  - 1303→617 warnings
+  - SM accepted 2026-02-07
+- [x] **Daily Review & Team Sync** (1h)
 
 ---
 
 ### Week 2 (2026-02-13 to 2026-02-20)
 
 #### Day 6-7 (Monday-Tuesday)
-- [ ] **TD-014: Email Unification** (2h)
+- [x] **TD-014: Email Unification** (embedded in Story 8.4)
   - Audit nodemailer usage
   - Migrate to GraphEmailService
   - Remove dependency
   - Test email sending
-- [ ] **TD-015 Phase 2: ESLint Warnings** (4h)
+- [x] **TD-015 Phase 2: ESLint Warnings** (4h actual)
   - Fix 200 `no-unsafe-member-access` warnings
   - Fix 100 `no-unused-vars` warnings
-  - Run regression tests
+  - 617→282 warnings (78% total reduction)
+  - SM accepted 2026-02-07
 
 #### Day 8-9 (Wednesday-Thursday)
 - [x] **Story 8.3: Bulk Preview UI** (10h actual)
@@ -421,17 +425,14 @@ Process bulk badge issuance synchronously with up to 20 badges per batch. Simple
   - 4 commits, SM accepted 2026-02-08
 
 #### Day 11 (Monday - Final Day)
-- [ ] **Final Testing & Bug Fixes** (6h)
-  - Full E2E regression test suite
-  - Fix any discovered issues
-  - Code review addressing
-- [ ] **Sprint Demo Preparation** (1h)
+- [x] **Final Testing & Bug Fixes** — covered by per-story SM acceptance (1087 tests, 0 failures)
+- [ ] **Sprint Demo Preparation** (1h) — scheduled for 2026-02-20
   - Prepare demo script
   - Test demo environment
-- [ ] **Sprint Review Ceremony** (1.5h)
+- [ ] **Sprint Review Ceremony** (1.5h) — scheduled for 2026-02-20
   - Demo bulk issuance flow
   - Show TD improvements (ESLint, bundle size)
-- [ ] **Sprint Retrospective** (1.5h)
+- [ ] **Sprint Retrospective** (1.5h) — scheduled for 2026-02-20
   - What went well
   - Challenges encountered
   - Action items for Sprint 10
@@ -441,24 +442,24 @@ Process bulk badge issuance synchronously with up to 20 badges per batch. Simple
 ## 🎯 Definition of Done
 
 ### Story DoD
-- [ ] All acceptance criteria met
-- [ ] Unit tests written and passing (>80% coverage)
-- [ ] E2E tests written and passing
-- [ ] Code reviewed and approved by peer
-- [ ] No new ESLint errors introduced
-- [ ] Documentation updated (if applicable)
-- [ ] Merged to sprint branch
+- [x] All acceptance criteria met
+- [x] Unit tests written and passing (>80% coverage)
+- [x] E2E tests written and passing
+- [x] Code reviewed and approved by peer
+- [x] No new ESLint errors introduced
+- [x] Documentation updated (if applicable)
+- [x] Merged to sprint branch
 
 ### Sprint DoD
-- [ ] All stories completed or explicitly deferred
-- [ ] All tests passing (876 existing + new tests)
-- [ ] ESLint warnings ≤500 (55% reduction achieved)
-- [ ] Frontend bundle <400KB
-- [ ] nodemailer fully removed
-- [ ] Sprint demo conducted
-- [ ] Sprint retrospective completed
-- [ ] Sprint branch merged to main
-- [ ] Version v0.9.0 tagged in git
+- [x] All stories completed or explicitly deferred
+- [x] All tests passing (1087 total, 0 failures)
+- [x] ESLint warnings ≤500 (78% reduction: 1303→282, exceeded target; note: 8.4 regressed to 423)
+- [x] Frontend bundle <400KB (235 KB, 66.8% reduction)
+- [x] nodemailer fully removed
+- [ ] Sprint demo conducted — scheduled 2026-02-20
+- [ ] Sprint retrospective completed — scheduled 2026-02-20
+- [ ] Sprint branch merged to main — after demo
+- [ ] Version v0.9.0 tagged in git — after merge
 
 ---
 
