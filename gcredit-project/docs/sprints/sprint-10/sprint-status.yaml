@@ -168,6 +168,8 @@ stories:
     discovered: "SM API Path Audit (2026-02-09)"
     td_ref: "TD-022"
     commit: "69aa5b3"
+    fixup_commit: "414de4c"
+    accepted_date: "2026-02-09"
     
   10-4-i18n-chinese-string-scan:
     title: "i18n Scan + UX/Code Quality Quick Wins"
