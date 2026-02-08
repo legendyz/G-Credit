@@ -44,7 +44,7 @@ import { UserRole } from '@prisma/client';
 import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
 
 @ApiTags('Badge Templates')
-@Controller('badge-templates')
+@Controller('api/badge-templates')
 export class BadgeTemplatesController {
   constructor(private readonly badgeTemplatesService: BadgeTemplatesService) {}
 

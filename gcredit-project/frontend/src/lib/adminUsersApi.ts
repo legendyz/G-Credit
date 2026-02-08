@@ -72,7 +72,9 @@ export interface UpdateStatusResponse {
   isActive: boolean;
 }
 
-const API_BASE = '/api/admin/users';
+import { API_BASE_URL } from './apiConfig';
+
+const API_BASE = `${API_BASE_URL}/admin/users`;
 
 /**
  * Helper to get auth headers

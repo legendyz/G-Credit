@@ -65,7 +65,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
   describe('Story 3.6: Skill Category Management', () => {
     it('should get all skill categories', () => {
       return request(ctx.app.getHttpServer() as App)
-        .get('/skill-categories')
+        .get('/api/skill-categories')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200)
         .expect((res) => {
@@ -79,7 +79,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
   describe('Story 3.1: Create Skill', () => {
     it('should create a new skill', async () => {
       const response = await request(ctx.app.getHttpServer() as App)
-        .post('/skills')
+        .post('/api/skills')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .send({
           name: `E2E Skill ${Date.now()}`,
@@ -100,7 +100,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
 
     it('should require authentication', () => {
       return request(ctx.app.getHttpServer() as App)
-        .post('/skills')
+        .post('/api/skills')
         .send({
           name: 'Test Skill',
           description: 'Test',
@@ -123,7 +123,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
       }
 
       const response = await request(ctx.app.getHttpServer() as App)
-        .post('/badge-templates')
+        .post('/api/badge-templates')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .field('name', `E2E Badge ${Date.now()}`)
         .field('description', 'Created by isolated E2E test')
@@ -174,7 +174,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
   describe('Story 3.3: Query API', () => {
     it('should query badge templates with pagination', () => {
       return request(ctx.app.getHttpServer() as App)
-        .get('/badge-templates?page=1&limit=10')
+        .get('/api/badge-templates?page=1&limit=10')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200)
         .expect((res) => {
@@ -198,7 +198,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
 
     it('should filter by category', () => {
       return request(ctx.app.getHttpServer() as App)
-        .get('/badge-templates?category=achievement')
+        .get('/api/badge-templates?category=achievement')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200)
         .expect((res) => {
@@ -212,7 +212,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
 
     it('should filter by status (public API - only ACTIVE)', () => {
       return request(ctx.app.getHttpServer() as App)
-        .get('/badge-templates')
+        .get('/api/badge-templates')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200)
         .expect((res) => {
@@ -227,7 +227,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
   describe('Story 3.4: Search Optimization', () => {
     it('should search badges by name', () => {
       return request(ctx.app.getHttpServer() as App)
-        .get('/badge-templates?search=E2E')
+        .get('/api/badge-templates?search=E2E')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200)
         .expect((res) => {
@@ -238,7 +238,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
 
     it('should sort badges by createdAt DESC', () => {
       return request(ctx.app.getHttpServer() as App)
-        .get('/badge-templates?sortBy=createdAt&sortOrder=desc')
+        .get('/api/badge-templates?sortBy=createdAt&sortOrder=desc')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .expect(200)
         .expect((res) => {
@@ -264,7 +264,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
       );
 
       const response = await request(ctx.app.getHttpServer() as App)
-        .post('/badge-templates')
+        .post('/api/badge-templates')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .field('name', `Manual Badge ${Date.now()}`)
         .field('description', 'Manual issuance test')
@@ -285,7 +285,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
       );
 
       const response = await request(ctx.app.getHttpServer() as App)
-        .post('/badge-templates')
+        .post('/api/badge-templates')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .field('name', `Auto Badge ${Date.now()}`)
         .field('description', 'Automatic task test')
@@ -319,7 +319,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
       );
 
       await request(ctx.app.getHttpServer() as App)
-        .post('/badge-templates')
+        .post('/api/badge-templates')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .field('name', 'Invalid Badge')
         .field('description', 'Invalid criteria test')
@@ -344,7 +344,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
       }
 
       await request(ctx.app.getHttpServer() as App)
-        .post('/badge-templates')
+        .post('/api/badge-templates')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .field('name', 'Too Small Badge')
         .field('description', 'Image too small')
@@ -367,7 +367,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
       }
 
       await request(ctx.app.getHttpServer() as App)
-        .post('/badge-templates')
+        .post('/api/badge-templates')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .field('name', 'Too Large Badge')
         .field('description', 'Image too large')
@@ -385,7 +385,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
       );
 
       const response = await request(ctx.app.getHttpServer() as App)
-        .post('/badge-templates')
+        .post('/api/badge-templates')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .field('name', `Optimal Badge ${Date.now()}`)
         .field('description', 'Optimal size test')
@@ -411,7 +411,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
       }
 
       const response = await request(ctx.app.getHttpServer() as App)
-        .post('/badge-templates')
+        .post('/api/badge-templates')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .field('name', `Optimal 512 Badge ${Date.now()}`)
         .field('description', 'Optimal 512 size test')
@@ -433,7 +433,7 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
 
       // Create a badge
       const createResponse = await request(ctx.app.getHttpServer() as App)
-        .post('/badge-templates')
+        .post('/api/badge-templates')
         .set('Authorization', `Bearer ${adminUser.token}`)
         .field('name', `To Delete Badge ${Date.now()}`)
         .field('description', 'Will be deleted')

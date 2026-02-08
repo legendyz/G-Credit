@@ -42,7 +42,7 @@ describe('Auth E2E (Simple)', () => {
 
     // Register
     const registerResponse = await request(app.getHttpServer() as App)
-      .post('/auth/register')
+      .post('/api/auth/register')
       .send({
         email: uniqueEmail,
         password,
@@ -57,7 +57,7 @@ describe('Auth E2E (Simple)', () => {
 
     // Login
     const loginResponse = await request(app.getHttpServer() as App)
-      .post('/auth/login')
+      .post('/api/auth/login')
       .send({
         email: uniqueEmail,
         password,

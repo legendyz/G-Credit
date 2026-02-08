@@ -7,6 +7,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import type { Skill } from '@/components/search/SkillsFilter';
+import { API_BASE_URL } from '@/lib/apiConfig';
 
 interface SkillApiResponse {
   id: string;
@@ -36,11 +37,11 @@ export function useSkills(options: UseSkillsOptions = {}) {
   return useQuery({
     queryKey: ['skills', { categoryId, search }],
     queryFn: async (): Promise<Skill[]> => {
-      let url = '/api/skills';
+      let url = `${API_BASE_URL}/skills`;
       const params = new URLSearchParams();
 
       if (search && search.length >= 2) {
-        url = '/api/skills/search';
+        url = `${API_BASE_URL}/skills/search`;
         params.set('q', search);
       } else if (categoryId) {
         params.set('categoryId', categoryId);

@@ -62,11 +62,14 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
   const handleDownload = async (fileId: string) => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`${API_BASE_URL}/evidence/${badgeId}/${fileId}/download`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/badges/${badgeId}/evidence/${fileId}/download`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error('Failed to generate download link');
@@ -95,7 +98,7 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
 
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`${API_BASE_URL}/evidence/${badgeId}/${fileId}/preview`, {
+      const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/evidence/${fileId}/preview`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

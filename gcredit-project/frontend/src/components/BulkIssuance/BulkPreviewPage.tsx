@@ -8,6 +8,7 @@ import ConfirmationModal from './ConfirmationModal';
 import EmptyPreviewState from './EmptyPreviewState';
 import ProcessingComplete from './ProcessingComplete';
 import ProcessingModal from './ProcessingModal';
+import { API_BASE_URL } from '../../lib/apiConfig';
 
 interface PreviewRow {
   rowNumber: number;
@@ -90,7 +91,7 @@ export default function BulkPreviewPage() {
         setIsLoading(true);
         setError(null);
 
-        const response = await fetch(`/api/bulk-issuance/preview/${sessionId}`, {
+        const response = await fetch(`${API_BASE_URL}/bulk-issuance/preview/${sessionId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },
@@ -129,7 +130,7 @@ export default function BulkPreviewPage() {
 
   const handleDownloadErrorReport = async () => {
     try {
-      const response = await fetch(`/api/bulk-issuance/error-report/${sessionId}`, {
+      const response = await fetch(`${API_BASE_URL}/bulk-issuance/error-report/${sessionId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -166,7 +167,7 @@ export default function BulkPreviewPage() {
     const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     try {
-      const response = await fetch(`/api/bulk-issuance/confirm/${sessionId}`, {
+      const response = await fetch(`${API_BASE_URL}/bulk-issuance/confirm/${sessionId}`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,

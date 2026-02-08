@@ -30,7 +30,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 
 @ApiTags('Skill Categories')
-@Controller('skill-categories')
+@Controller('api/skill-categories')
 export class SkillCategoriesController {
   constructor(
     private readonly skillCategoriesService: SkillCategoriesService,

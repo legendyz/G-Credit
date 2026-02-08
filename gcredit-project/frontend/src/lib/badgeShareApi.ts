@@ -91,7 +91,7 @@ export async function shareBadgeToTeams(
 ): Promise<{ message: string; activityId: string }> {
   const token = localStorage.getItem('accessToken');
 
-  const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/teams/share`, {
+  const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/share/teams`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

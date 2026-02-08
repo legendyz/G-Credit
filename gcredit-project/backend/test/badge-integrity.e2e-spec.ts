@@ -76,7 +76,7 @@ describe('Badge Integrity (e2e) - Story 6.5', () => {
 
     // Login to get tokens
     await request(app.getHttpServer() as App)
-      .post('/auth/login')
+      .post('/api/auth/login')
       .send({
         email: 'admin-integrity@test.com',
         password: 'Admin123!',
@@ -84,7 +84,7 @@ describe('Badge Integrity (e2e) - Story 6.5', () => {
       .expect(200);
 
     await request(app.getHttpServer() as App)
-      .post('/auth/login')
+      .post('/api/auth/login')
       .send({
         email: 'recipient-integrity@test.com',
         password: 'Recipient123!',
@@ -222,7 +222,7 @@ describe('Badge Integrity (e2e) - Story 6.5', () => {
       expect(body.storedHash).not.toBe(body.computedHash);
 
       // Restore original assertion for other tests
-      // Prisma JsonValue (output) ≠ InputJsonValue (input) — bridge via JSON roundtrip
+      // Prisma JsonValue (output) 鈮?InputJsonValue (input) 鈥?bridge via JSON roundtrip
       const restoreJson: unknown = JSON.parse(
         JSON.stringify(badge!.assertionJson),
       );
