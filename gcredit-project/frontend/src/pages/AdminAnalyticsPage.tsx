@@ -24,6 +24,7 @@ import {
   ActivitySkeleton,
 } from '../components/analytics/AnalyticsSkeleton';
 import { PageTemplate } from '../components/layout/PageTemplate';
+import { useUserRole } from '../stores/authStore';
 
 // ─── Period selector config ────────────────────────────────────────────
 const PERIOD_OPTIONS = [
@@ -68,6 +69,7 @@ function healthColor(status: string): string {
 
 // ─── Main page component ──────────────────────────────────────────────
 const AdminAnalyticsPage: React.FC = () => {
+  const role = useUserRole();
   const [trendPeriod, setTrendPeriod] = useState(30);
 
   // Independent hooks — each section loads/errors separately
@@ -99,7 +101,7 @@ const AdminAnalyticsPage: React.FC = () => {
 
   return (
     <PageTemplate
-      title="Admin Analytics"
+      title={role === 'ISSUER' ? 'Issuer Analytics' : 'Admin Analytics'}
       description="System-wide overview of users, badges, skills, and activity"
     >
       {/* ─── Section A: KPI Overview Cards ────────────────────── */}

@@ -75,7 +75,7 @@ export const IssuerDashboard: React.FC = () => {
         <CardContent>
           <div className="flex flex-wrap gap-3">
             <Button
-              onClick={() => navigate('/admin/badges')}
+              onClick={() => navigate('/admin/badges/issue')}
               className="flex items-center gap-2 min-h-[44px] bg-brand-600 hover:bg-brand-700 text-white"
             >
               <PlusCircle className="h-4 w-4" />

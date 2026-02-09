@@ -102,11 +102,21 @@ export const AdminDashboard: React.FC = () => {
               description="System activity will appear here."
             />
           ) : (
-            <div className="space-y-3">
-              {recentActivity.slice(0, 5).map((activity) => (
-                <ActivityItem key={activity.id} activity={activity} />
-              ))}
-            </div>
+            <>
+              <div className="space-y-3">
+                {recentActivity.slice(0, 5).map((activity) => (
+                  <ActivityItem key={activity.id} activity={activity} />
+                ))}
+              </div>
+              {recentActivity.length > 5 && (
+                <button
+                  onClick={() => navigate('/admin/analytics')}
+                  className="mt-3 text-sm font-medium text-brand-600 hover:text-brand-700 hover:underline"
+                >
+                  View all activity →
+                </button>
+              )}
+            </>
           )}
         </CardContent>
       </Card>

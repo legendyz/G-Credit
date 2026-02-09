@@ -47,7 +47,7 @@ export function Layout({ children, pageTitle, showNavbar = true, className = '' 
         id="main-content"
         role="main"
         tabIndex={-1}
-        className={`px-4 py-6 md:px-8 md:py-8 ${className}`}
+        className={`${className}`}
         aria-label={pageTitle || 'Main content'}
       >
         <div className="max-w-7xl mx-auto">

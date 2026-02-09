@@ -192,6 +192,37 @@ export function BulkIssuancePage() {
       title="Bulk Badge Issuance"
       description="Issue multiple badges at once using a CSV file"
     >
+      {/* Step Indicator */}
+      <div className="flex items-center gap-2 text-sm">
+        <span className="flex items-center gap-1.5 font-medium text-brand-600">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-white text-xs font-bold">
+            1
+          </span>
+          Download
+        </span>
+        <span className="text-neutral-300">→</span>
+        <span className="flex items-center gap-1.5 font-medium text-brand-600">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-white text-xs font-bold">
+            2
+          </span>
+          Upload
+        </span>
+        <span className="text-neutral-300">→</span>
+        <span className="flex items-center gap-1.5 text-neutral-400">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-200 text-neutral-500 text-xs font-bold">
+            3
+          </span>
+          Preview
+        </span>
+        <span className="text-neutral-300">→</span>
+        <span className="flex items-center gap-1.5 text-neutral-400">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-200 text-neutral-500 text-xs font-bold">
+            4
+          </span>
+          Confirm
+        </span>
+      </div>
+
       {/* Step 1: Download Template */}
       <div className="bg-white rounded-lg shadow-elevation-1 border border-neutral-200 p-6">
         <h3 className="text-lg font-semibold text-neutral-900 mb-4">Step 1: Download Template</h3>

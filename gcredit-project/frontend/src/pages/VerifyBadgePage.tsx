@@ -146,6 +146,17 @@ export function VerifyBadgePage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
+      {/* Public Branding Header */}
+      <div className="flex items-center gap-3 mb-8">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-600">
+          <span className="text-white font-bold text-lg">G</span>
+        </div>
+        <div>
+          <h1 className="text-xl font-bold text-neutral-900">G-Credit</h1>
+          <p className="text-xs text-neutral-500">Badge Verification</p>
+        </div>
+      </div>
+
       {/* Story 9.2 AC1-AC2: Revoked Badge Alert */}
       {isRevoked && (badge.revokedAt || badge.revocationReason) && (
         <RevokedBadgeAlert

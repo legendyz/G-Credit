@@ -12,6 +12,7 @@ import BadgeDetailModal from '../BadgeDetailModal/BadgeDetailModal';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useBadgeDetailModal } from '../../stores/badgeDetailModal';
 import { BadgeSearchBar } from '../search/BadgeSearchBar';
+import { PageTemplate } from '../layout/PageTemplate';
 import type { BadgeForFilter } from '../../utils/searchFilters';
 
 export type ViewMode = 'timeline' | 'grid';
@@ -197,129 +198,127 @@ export function TimelineView() {
   const showNoResults = displayBadges.length === 0 && hasFilters;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
-      {/* Date Navigation Sidebar - AC 1.6 (hidden on mobile, visible on desktop) */}
-      <DateNavigationSidebar
-        dateGroups={dateGroups}
-        className="hidden lg:block w-60 flex-shrink-0"
-      />
+    <PageTemplate title="My Badges" actions={<ViewToggle mode={viewMode} onChange={setViewMode} />}>
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+        {/* Date Navigation Sidebar - AC 1.6 (hidden on mobile, visible on desktop) */}
+        <DateNavigationSidebar
+          dateGroups={dateGroups}
+          className="hidden lg:block w-60 flex-shrink-0"
+        />
 
-      {/* Main Content */}
-      <div className="flex-1 min-w-0">
-        {/* Header with View Toggle - AC 1.5, Story 8.5: Responsive typography */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4 md:mb-6">
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">My Badge Wallet</h1>
-          <ViewToggle mode={viewMode} onChange={setViewMode} />
-        </div>
+        {/* Main Content */}
+        <div className="flex-1 min-w-0">
+          {/* Story 8.2 AC1 & AC4: Badge Search Bar with sticky positioning */}
+          <div className="sticky top-0 z-10 bg-white pb-4 -mx-4 px-4 md:-mx-6 md:px-6 pt-2 shadow-sm">
+            <BadgeSearchBar
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              onSearchClear={() => setSearchTerm('')}
+              isSearchLoading={isSearching}
+              skills={skills}
+              selectedSkills={selectedSkills}
+              onSkillsChange={setSelectedSkills}
+              dateRange={dateRange}
+              onDateRangeChange={setDateRange}
+              statusFilter={statusFilter}
+              onStatusChange={setStatusFilter}
+              filterChips={filterChips}
+              onRemoveFilter={removeFilter}
+              onClearAllFilters={clearAllFilters}
+              placeholder="Search your badges..."
+            />
+          </div>
 
-        {/* Story 8.2 AC1 & AC4: Badge Search Bar with sticky positioning */}
-        <div className="sticky top-0 z-10 bg-white pb-4 -mx-4 px-4 md:-mx-6 md:px-6 pt-2 shadow-sm">
-          <BadgeSearchBar
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            onSearchClear={() => setSearchTerm('')}
-            isSearchLoading={isSearching}
-            skills={skills}
-            selectedSkills={selectedSkills}
-            onSkillsChange={setSelectedSkills}
-            dateRange={dateRange}
-            onDateRangeChange={setDateRange}
-            statusFilter={statusFilter}
-            onStatusChange={setStatusFilter}
-            filterChips={filterChips}
-            onRemoveFilter={removeFilter}
-            onClearAllFilters={clearAllFilters}
-            placeholder="Search your badges..."
-          />
-        </div>
-
-        {/* Search results count - Story 8.2 */}
-        {hasFilters && !showNoResults && (
-          <p className="text-sm text-neutral-500 mb-4">
-            Showing {displayBadges.length} of {data.badges.length} badges
-          </p>
-        )}
-
-        {/* No results state - Story 8.2 AC1: Include query and suggestions */}
-        {showNoResults && (
-          <div className="text-center py-12">
-            <div className="mx-auto w-16 h-16 mb-4 rounded-full bg-neutral-100 flex items-center justify-center">
-              <svg
-                className="w-8 h-8 text-neutral-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </div>
-            <p className="text-neutral-700 text-lg font-medium">
-              {searchTerm ? `No badges found for "${searchTerm}"` : 'No badges match your filters'}
+          {/* Search results count - Story 8.2 */}
+          {hasFilters && !showNoResults && (
+            <p className="text-sm text-neutral-500 mb-4">
+              Showing {displayBadges.length} of {data.badges.length} badges
             </p>
-            <ul className="text-neutral-500 mt-3 space-y-1">
-              <li>• Try different keywords</li>
-              <li>• Check your spelling</li>
-              {hasFilters && <li>• Remove some filters</li>}
-            </ul>
-            <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
-              {hasFilters && (
-                <button
-                  onClick={clearAllFilters}
-                  className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 
-                             focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
+          )}
+
+          {/* No results state - Story 8.2 AC1: Include query and suggestions */}
+          {showNoResults && (
+            <div className="text-center py-12">
+              <div className="mx-auto w-16 h-16 mb-4 rounded-full bg-neutral-100 flex items-center justify-center">
+                <svg
+                  className="w-8 h-8 text-neutral-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  Clear all filters
-                </button>
-              )}
-              <a
-                href="/wallet"
-                className="px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+              <p className="text-neutral-700 text-lg font-medium">
+                {searchTerm
+                  ? `No badges found for "${searchTerm}"`
+                  : 'No badges match your filters'}
+              </p>
+              <ul className="text-neutral-500 mt-3 space-y-1">
+                <li>• Try different keywords</li>
+                <li>• Check your spelling</li>
+                {hasFilters && <li>• Remove some filters</li>}
+              </ul>
+              <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+                {hasFilters && (
+                  <button
+                    onClick={clearAllFilters}
+                    className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 
+                             focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
+                  >
+                    Clear all filters
+                  </button>
+                )}
+                <a
+                  href="/wallet"
+                  className="px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50
                            focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
-              >
-                Browse all badges
-              </a>
+                >
+                  Browse all badges
+                </a>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Timeline View - AC 1.1-1.4 */}
-        {viewMode === 'timeline' && !showNoResults && (
-          <div className="relative">
-            <TimelineLine />
-            <div className="space-y-8">
-              {dateGroups.map((group) => {
-                const groupBadges = displayBadges.slice(
-                  group.startIndex,
-                  group.startIndex + group.count
-                );
+          {/* Timeline View - AC 1.1-1.4 */}
+          {viewMode === 'timeline' && !showNoResults && (
+            <div className="relative">
+              <TimelineLine />
+              <div className="space-y-8">
+                {dateGroups.map((group) => {
+                  const groupBadges = displayBadges.slice(
+                    group.startIndex,
+                    group.startIndex + group.count
+                  );
 
-                return (
-                  <div key={group.label} id={`group-${group.label}`}>
-                    <DateGroupHeader label={group.label} count={group.count} />
-                    <div className="space-y-4 mt-4">
-                      {groupBadges.map((badge) => (
-                        <BadgeTimelineCard key={badge.id} badge={badge} />
-                      ))}
+                  return (
+                    <div key={group.label} id={`group-${group.label}`}>
+                      <DateGroupHeader label={group.label} count={group.count} />
+                      <div className="space-y-4 mt-4">
+                        {groupBadges.map((badge) => (
+                          <BadgeTimelineCard key={badge.id} badge={badge} />
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Grid View - With keyboard navigation (Story 8.3 UX-P1-005) */}
-        {viewMode === 'grid' && !showNoResults && <GridView badges={displayBadges} />}
+          {/* Grid View - With keyboard navigation (Story 8.3 UX-P1-005) */}
+          {viewMode === 'grid' && !showNoResults && <GridView badges={displayBadges} />}
+        </div>
+
+        {/* Badge Detail Modal - renders via Portal to document.body */}
+        <BadgeDetailModal />
       </div>
-
-      {/* Badge Detail Modal - renders via Portal to document.body */}
-      <BadgeDetailModal />
-    </div>
+    </PageTemplate>
   );
 }
 
