@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 
 interface VerificationSectionProps {
   assertionUrl: string;
@@ -12,8 +13,8 @@ const VerificationSection: React.FC<VerificationSectionProps> = ({ assertionUrl 
       await navigator.clipboard.writeText(assertionUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
+    } catch {
+      toast.error('Failed to copy to clipboard');
     }
   };
 

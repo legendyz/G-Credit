@@ -105,8 +105,7 @@ const BadgeDetailModal: React.FC = () => {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    } catch (err) {
-      console.error('Download failed:', err);
+    } catch {
       toast.error('Download failed', {
         description: 'Unable to download badge. Please try again.',
       });
@@ -150,7 +149,6 @@ const BadgeDetailModal: React.FC = () => {
         description: `You've successfully claimed the ${badge.template.name} badge.`,
       });
     } catch (err) {
-      console.error('Claim failed:', err);
       toast.error('Claim failed', {
         description:
           err instanceof Error ? err.message : 'Unable to claim badge. Please try again.',

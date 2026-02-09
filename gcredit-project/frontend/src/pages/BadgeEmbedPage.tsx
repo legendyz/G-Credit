@@ -5,6 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import { getWidgetEmbedData, getWidgetHtml } from '../lib/badgeShareApi';
 import type { WidgetEmbedData, WidgetHtmlData } from '../lib/badgeShareApi';
 
@@ -53,8 +54,8 @@ const BadgeEmbedPage: React.FC = () => {
       try {
         const data = await getWidgetHtml(badgeId, { size, theme, showDetails });
         setWidgetHtml(data);
-      } catch (err) {
-        console.error('Failed to fetch widget HTML:', err);
+      } catch {
+        toast.error('Failed to load badge widget');
       }
     };
 

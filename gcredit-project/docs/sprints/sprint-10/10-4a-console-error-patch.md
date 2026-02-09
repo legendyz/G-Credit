@@ -44,10 +44,10 @@ Story 10.4 验收发现 10 个 `console.error` 残留在 catch blocks 中。AC6 
 
 ## Acceptance Criteria
 
-1. [ ] `Get-ChildItem -Recurse -Include "*.ts","*.tsx" frontend/src -Exclude "*.test.*","*.spec.*" | Select-String "console\.error"` returns **only 1 match** (ErrorBoundary.tsx)
-2. [ ] All existing frontend tests pass (`npx vitest run` — 397 tests)
-3. [ ] Frontend ESLint passes (`npm run lint` — 0 errors, 0 warnings)
-4. [ ] Commit message: `fix: remove 9 frontend console.error — replace with toast or delete redundant`
+1. [x] `Get-ChildItem -Recurse -Include "*.ts","*.tsx" frontend/src -Exclude "*.test.*","*.spec.*" | Select-String "console\.error"` returns **only 1 match** (ErrorBoundary.tsx)
+2. [x] All existing frontend tests pass (`npx vitest run` — 397 tests)
+3. [x] Frontend ESLint passes (`npm run lint` — 0 errors, 0 warnings)
+4. [x] Commit message: `fix: remove 9 frontend console.error — replace with toast or delete redundant`
 
 ---
 

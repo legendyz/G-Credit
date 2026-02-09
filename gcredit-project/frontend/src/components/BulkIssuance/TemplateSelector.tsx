@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { toast } from 'sonner';
 import { API_BASE_URL } from '../../lib/apiConfig';
 
 interface BadgeTemplate {
@@ -52,8 +53,8 @@ export function TemplateSelector({ onSelect, disabled = false }: TemplateSelecto
           const templateList = Array.isArray(data) ? data : data.data || data.items || [];
           setTemplates(templateList);
         }
-      } catch (error) {
-        console.error('Failed to fetch badge templates:', error);
+      } catch {
+        toast.error('Failed to load badge templates');
       } finally {
         setIsLoading(false);
       }

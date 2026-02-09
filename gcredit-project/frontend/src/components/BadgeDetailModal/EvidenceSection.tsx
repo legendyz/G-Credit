@@ -79,8 +79,7 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
 
       // Open in new tab to trigger download
       window.open(sasUrl, '_blank');
-    } catch (err) {
-      console.error('Download error:', err);
+    } catch {
       toast.error('Download failed', {
         description: 'Unable to download file. Please try again.',
       });
@@ -112,8 +111,7 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
 
       // Open in new tab for preview
       window.open(sasUrl, '_blank');
-    } catch (err) {
-      console.error('Preview error:', err);
+    } catch {
       toast.error('Preview failed', {
         description: 'Unable to preview file. Please try again.',
       });

@@ -74,9 +74,8 @@ export function BulkIssuancePage() {
       window.URL.revokeObjectURL(url);
 
       toast.success('CSV template downloaded successfully');
-    } catch (error) {
+    } catch {
       toast.error('Failed to download template. Please try again.');
-      console.error('Template download error:', error);
     } finally {
       setIsDownloading(false);
     }
@@ -140,7 +139,6 @@ export function BulkIssuancePage() {
         toast.error(
           error instanceof Error ? error.message : 'Failed to upload CSV. Please try again.'
         );
-        console.error('Upload error:', error);
       } finally {
         setIsUploading(false);
       }
