@@ -394,6 +394,20 @@ frontend/src/
 
 ### Design Token 使用规范 (ADR-009)
 
+**源头文档：** `docs/planning/ux-design-specification.md` (3,321 行) — 完整 UX 设计规范  
+**技术实现：** `docs/decisions/ADR-009-tailwind-v4-css-first-config.md` — Tailwind v4 CSS-first 配置  
+**Token 定义：** `frontend/src/index.css` `@theme {}` 块 — 所有品牌色、字体、阴影、圆角
+
+**UX 规范核心要点（dev 必读）：**
+- 字体：Inter, Segoe UI — 专业企业级风格（非卡通风）
+- 配色：Microsoft Fluent 品牌色体系 — `brand-600: #0078D4` 为主色
+- 间距：8px 基准（`xs:0.5rem`, `sm:1rem`, `md:1.5rem`, `lg:2rem`）
+- 圆角：Cards/Badges 用 `rounded-lg` (12px)，Inputs 用 `rounded-md` (8px)
+- 阴影层级：`elevation-1` (2px) 日常卡片 → `elevation-4` (16px) 模态框
+- 交互反馈：hover 时 `shadow-lg` + 微上移，按钮 active 缩小
+- 响应式：Desktop-first（`md:768px`, `lg:1024px`），mobile 为功能性回退
+- 无障碍：WCAG 2.1 AA — 对比度 4.5:1+, 焦点环 2px, 触控目标 44px
+
 **必须使用 design tokens，禁止使用硬编码 Tailwind 色：**
 
 | ✅ 正确 | ❌ 错误 |
