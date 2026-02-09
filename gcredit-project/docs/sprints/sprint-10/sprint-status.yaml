@@ -21,9 +21,9 @@ metrics:
   total_estimated_hours: 69h
   buffer_hours: 11h
   
-  completed_stories: 5
-  completed_hours: 24.5h
-  remaining_hours: 38.5h
+  completed_stories: 6
+  completed_hours: 27h
+  remaining_hours: 36h
   
   # Capacity breakdown
   td_hours: 30h    # Stories 10.1-10.4 + 10.3b + 10.3c (API path fixes from buffer)
@@ -175,13 +175,16 @@ stories:
     title: "i18n Scan + UX/Code Quality Quick Wins"
     priority: MEDIUM
     estimate: 4h
-    actual: 2h
-    status: done
+    actual: 2.5h
+    status: complete
     phase: 1-td
     file: "10-4-i18n-chinese-string-scan.md"
     dependencies: []
     includes: ["TD-020", "TD-021"]
     completed_date: "2026-02-09"
+    accepted_date: "2026-02-09"
+    commit: "0ba885e"
+    patch: "10.4a — console.error cleanup (db05565)"
 
   # Phase 2: Feature Enhancement (6h)
   10-5-admin-analytics-real-data:
@@ -255,12 +258,12 @@ technical_debt:
     - id: TD-017
       description: "tsc test type errors (114)"
       story: "10.1"
-      status: backlog
+      status: complete
       
     - id: ESLint-Regression
       description: "Warning regression 423→<280 + CI gate"
       story: "10.2"
-      status: backlog
+      status: complete
       
     - id: TD-018
       description: "Code TODO/FIXME cleanup (14 markers)"
@@ -270,6 +273,21 @@ technical_debt:
     - id: TD-019
       description: "Frontend ESLint cleanup (49 errors + 21,363 warnings) + CI gate"
       story: "10.3b"
+      status: complete
+
+    - id: TD-020
+      description: "CI E2E job missing frontend dependency"
+      story: "10.4"
+      status: complete
+
+    - id: TD-021
+      description: "react-hooks/set-state-in-effect → project-level 'off'"
+      story: "10.4"
+      status: complete
+
+    - id: TD-022
+      description: "API path mismatches (5 critical)"
+      story: "10.3c"
       status: complete
 
   deferred:
@@ -296,8 +314,9 @@ technical_debt:
 quality_gates:
   tsc_noEmit:
     target: 0 errors
-    current: 114 errors (test-only)
+    current: "0 errors ✅"
     sprint_story: "10.1"
+    status: complete
     
   eslint_warnings:
     target: "0 errors + 0 warnings"

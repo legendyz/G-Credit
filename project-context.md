@@ -396,8 +396,8 @@ _bmad-output/
 | **TD-025: Husky Pre-commit Hooks** | Low | 📋 Post-v1.0 | **Issue:** No local pre-commit validation. CI is the only quality gate, meaning bad code gets committed before being caught. **Plan:** Install husky + lint-staged, run ESLint + Prettier + related tests on staged files. **Trigger:** When multiple human developers join the project. **Effort:** 2h. |
 | **TD-018: Code TODO Cleanup** | Low | ✅ Sprint 10 Done | **Resolved:** 14 TODO/FIXME markers resolved (6 backend, 5 frontend, 3 test). Hardcoded localhost URLs centralized to apiConfig.ts. Dead nav links fixed. 404 catch-all added. Completed in Story 10.3 (2026-02-08). |
 | **TD-019: Frontend ESLint Cleanup** | High | ✅ Sprint 10 Done | **Resolved:** Frontend ESLint 49 errors + 21,363 warnings → 0 errors + 0 warnings. Added `.gitattributes` (LF normalization), fixed 49 errors (react-hooks, typescript, a11y), 13 eslint-disable with justifications. CI `npm run lint --max-warnings=0` gate added to frontend-tests job. 135 files changed. Completed in Story 10.3b (2026-02-09, commit `80b693e`). |
-| **TD-020: CI E2E Job Missing Frontend Dependency** | Medium | 📋 Sprint 10 (Story 10.4) | **Issue:** `e2e-tests` job in `.github/workflows/test.yml` has `needs: lint-and-unit` (backend only). Frontend lint/test failures do NOT block E2E execution. **Plan:** Change to `needs: [lint-and-unit, frontend-tests]`. **Effort:** 0.5h. **Discovered:** Story 10.3b code review (2026-02-09). |
-| **TD-021: react-hooks/set-state-in-effect Inline Suppressions** | Low | 📋 Sprint 10 (Story 10.4) | **Issue:** 9 inline `eslint-disable react-hooks/set-state-in-effect` across frontend (ProcessingModal, CelebrationModal, useMediaQuery, EmployeeDashboard, DeactivateUserDialog, EditRoleDialog, SearchInput, MobileNav, useBadgeSearch). All are legitimate setState-in-effect patterns. **Plan:** Consider project-level override in `eslint.config.js` to downgrade rule to `warn` instead of maintaining 9+ inline suppressions. **Effort:** 0.5h. **Discovered:** Story 10.3b code review (2026-02-09). |
+| **TD-020: CI E2E Job Missing Frontend Dependency** | Medium | ✅ Resolved (Story 10.4, `0ba885e`) | **Resolved:** `e2e-tests` job now has `needs: [lint-and-unit, frontend-tests]`. Frontend lint/test failures correctly block E2E execution. Completed in Story 10.4 (2026-02-09). |
+| **TD-021: react-hooks/set-state-in-effect Inline Suppressions** | Low | ✅ Resolved (Story 10.4, `0ba885e`) | **Resolved:** Project-level override `react-hooks/set-state-in-effect: 'off'` added in `eslint.config.js`. All 9 inline `eslint-disable` suppressions removed. Completed in Story 10.4 (2026-02-09). |
 | **TD-022: API Path Mismatches** | Critical | ✅ Resolved (Story 10.3c, `69aa5b3`+`414de4c`) | **Issue:** 5 CRITICAL API path mismatches found in SM audit. (1) 4 backend controllers (`auth`, `badge-templates`, `skills`, `skill-categories`) missing `api/` prefix — frontend calls `/api/...` but backend routes don't have `api/` prefix. (2) EvidenceSection.tsx evidence download/preview paths missing `/badges` segment. (3) badgeShareApi.ts Teams share path order reversed (`/teams/share` vs `/share/teams`). (4) 8 frontend files hardcode `/api/...` bypassing `API_BASE_URL`. **Resolution:** Added `api/` prefix to 4 controllers, fixed 3 frontend path bugs, unified 8 hardcoded URLs to `API_BASE_URL`. All tests pass. **Code Review Finding:** BadgeEmbedPage.tsx has pre-existing hardcoded `/api/` in widget embed URL (MEDIUM, out of scope). |
 
 ---
@@ -1391,10 +1391,10 @@ Sprint 0-2 established this pattern:
      - Phase 4 (Day 12-13): Release — Stories 10.9-10.10 (6h)
    
    **Stories:**
-   - ⬜ 10.1: TD-017 Fix 114 tsc Test Type Errors (7h, HIGH)
-   - ⬜ 10.2: ESLint Regression 423→<280 + CI Gate (5h, HIGH)
-   - ⬜ 10.3: TD-018 TODO/FIXME Cleanup (3h, MEDIUM)
-   - ⬜ 10.4: i18n Chinese String Scan (2h, LOW)
+   - ✅ 10.1: TD-017 Fix 114 tsc Test Type Errors (7h, HIGH)
+   - ✅ 10.2: ESLint Regression 423→<280 + CI Gate (5h, HIGH)
+   - ✅ 10.3: TD-018 TODO/FIXME Cleanup (3h, MEDIUM)
+   - ✅ 10.4: i18n Chinese String Scan + UX Quick Wins (2.5h, MEDIUM)
    - ⬜ 10.5: Admin Analytics Real Data (6h, MEDIUM)
    - ⬜ 10.6: UAT Test Plan & Seed Data (8h, HIGH)
    - ⬜ 10.7: Full UAT Execution (12h, HIGH)
