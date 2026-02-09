@@ -8,6 +8,12 @@ import {
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 
+// Production safety guard
+if (process.env.NODE_ENV === 'production') {
+  console.error('❌ Cannot run UAT seed in production environment!');
+  process.exit(1);
+}
+
 const prisma = new PrismaClient();
 
 // Fixed UUIDs for easy reference during UAT
