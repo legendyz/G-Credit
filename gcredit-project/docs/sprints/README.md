@@ -1,8 +1,8 @@
 # Sprint Documentation Index
 
-**Last Updated:** 2026-02-08  
-**Current Sprint:** Sprint 9 Complete (v0.9.0) | Sprint 10 Planning  
-**Total Sprints:** 10 (Sprint 0-9)
+**Last Updated:** 2026-02-09  
+**Current Sprint:** Sprint 10 In Progress (v1.0.0 Release Sprint)  
+**Total Sprints:** 11 (Sprint 0-10)
 
 ---
 
@@ -20,6 +20,7 @@
 | [Sprint 7](./sprint-7/) | Badge Revocation & Lifecycle UAT | ✅ Complete | 1 day | 10 stories | 605 tests | v0.7.0 |
 | [Sprint 8](./sprint-8/) | Production-Ready MVP | ✅ Complete | 3 days | 12 items | 876 tests | v0.8.0 |
 | [Sprint 9](./sprint-9/) | Bulk Badge Issuance + TD Cleanup | ✅ Complete | 3 days | 5 stories | 1087 tests | v0.9.0 |
+| [Sprint 10](./sprint-10/) | v1.0.0 Release Sprint | 🔄 In Progress | 2 weeks | 12 stories | 976 tests | v1.0.0 |
 
 ---
 
@@ -421,14 +422,15 @@ Looking to create sprint documentation?
 
 ---
 
-## 🚀 Next Sprint
+## 🚀 Current Sprint
 
-Planning Sprint 10? Priorities:
-- TD-017: Fix 114 tsc type errors in test files
-- ESLint warning regression (423 → target <300)
-- Enterprise features planning
-- Production deployment preparation
-- Performance monitoring setup
+Sprint 10 is in progress — v1.0.0 Release Sprint:
+- Phase 1: TD Cleanup (Stories 10.1-10.3c) ✅ Complete
+- Phase 2: Feature Polish (Stories 10.4-10.5) ✅ Complete
+- Phase 3: UAT (Stories 10.6-10.8) ⏳ Next
+- Phase 4: Release (Stories 10.9-10.10) ⏳ Planned
+
+→ [Sprint 10 Details](./sprint-10/)
 
 ---
 

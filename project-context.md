@@ -5,7 +5,7 @@
 **Project Type:** Enterprise Internal Platform (Greenfield)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
 **License:** MIT License (Open Source)  
-**Status:** 🟡 Sprint 10 PLANNED - v1.0.0 Release Sprint (TD Cleanup + UAT + Release, 10 stories, 57h/80h capacity)  
+**Status:** � Sprint 10 IN PROGRESS - v1.0.0 Release Sprint (Phase 1+2 complete, 7/12 stories, entering UAT)  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, committed 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, committed 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, committed 2026-01-26)  
@@ -16,8 +16,8 @@
 **Sprint 7:** ✅ Complete (100%, actual 38.5h / estimated 41-47h, committed 2026-02-02, branch: sprint-7/epic-9-revocation-lifecycle-uat, 302 tests, 100% UAT pass, v0.7.0)  
 **Sprint 8:** ✅ Complete (12/12 items, 100%, 80h/76h, branch: sprint-8/epic-10-production-ready-mvp, tagged v0.8.0, 876 tests)  
 **Sprint 9:** ✅ Complete (5/5 stories, 37h/51h, branch: sprint-9/epic-8-bulk-issuance-td-cleanup, 1087 tests, v0.9.0-dev)  
-**Sprint 10:** 🟡 Planned (10 stories, 57h/80h, branch: sprint-10/v1-release, goal: v1.0.0 Release)  
-**Last Updated:** 2026-02-08 (Sprint 10 PLANNING COMPLETE - v1.0.0 Release Sprint, 10 stories, kickoff ready)
+**Sprint 10:** 🟢 In Progress (7/12 stories, 33h/69h, branch: sprint-10/v1-release, goal: v1.0.0 Release)
+**Last Updated:** 2026-02-09 (Sprint 10 Day 1 — Phase 1 TD + Phase 2 Feature complete, entering Phase 3 UAT)
 
 ---
 
@@ -158,7 +158,8 @@ gcredit-project/docs/
 │   ├── sprint-6/         # Badge sharing & social proof
 │   ├── sprint-7/         # Badge revocation & lifecycle UAT
 │   ├── sprint-8/         # Production-ready MVP
-│   └── sprint-9/         # ✅ COMPLETE - Bulk badge issuance + TD cleanup
+│   ├── sprint-9/         # ✅ COMPLETE - Bulk badge issuance + TD cleanup
+│   └── sprint-10/        # 🔄 IN PROGRESS - v1.0.0 Release Sprint (12 stories)
 │       ├── backlog.md    # Sprint 6 backlog (1,317 lines)
 │       ├── version-manifest.md  # ✅ CREATED 2026-01-29 (dependency versions)
 │       ├── kickoff-readiness.md # Preparation tasks checklist
@@ -237,7 +238,7 @@ _bmad-output/
 
 ### Core Technologies
 - **Architecture Pattern:** Modular Monolith (monorepo: `frontend` + `backend`)
-- **Language:** TypeScript 5.9.3 (both frontend and backend)
+- **Language:** TypeScript 5.9.3 (frontend) / 5.7.3 (backend)
 - **Runtime:** Node.js 20.20.0 LTS
 - **Database:** PostgreSQL 16 (Azure Flexible Server)
 - **ORM:** Prisma 6.19.2 ⚠️ **Version locked** (Prisma 7 has breaking changes)
@@ -246,27 +247,28 @@ _bmad-output/
 - **Framework:** React 19.2.3 (with Concurrent Features)
 - **Build Tool:** Vite 7.3.1 (instant HMR, optimized production builds)
 - **UI Framework:** Tailwind CSS 4.1.18 + @tailwindcss/postcss + Shadcn/ui components
-- **State Management:** TanStack Query v5 (server state) + Zustand (client state) - *to be added Sprint 1+*
-- **Routing:** React Router v6 - *to be added Sprint 1+*
-- **Form Handling:** React Hook Form + Zod validation - *to be added Sprint 1+*
+- **State Management:** TanStack Query v5 (server state) + Zustand (client state)
+- **Routing:** React Router v6
+- **Form Handling:** React Hook Form + Zod validation
+- **Charts:** Recharts 3.x (Admin Analytics)
 
 ### Backend Stack
 - **Framework:** NestJS 11.1.12 (Core), 11.0.16 (CLI) (enterprise-grade Node.js)
-- **API Design:** RESTful JSON API (14 endpoints implemented)
-- **Authentication:** ✅ Passport.js + JWT (Access 15min, Refresh 7d, Azure AD integration deferred to Sprint 8+)
+- **API Design:** RESTful JSON API (50+ endpoints implemented)
+- **Authentication:** ✅ Passport.js + JWT (Access 15min, Refresh 7d, M365 Graph integration via Client Credentials)
 - **Authorization:** ✅ RBAC with 4 roles (ADMIN, ISSUER, MANAGER, EMPLOYEE)
 - **Job Queue:** Bull (Redis-backed async processing) - *to be added Sprint 2+*
 - **Validation:** ✅ Class-validator + Class-transformer (all DTOs validated)
 - **Security:** ✅ bcrypt password hashing, JWT guards, role-based guards, token revocation
 
 ### Azure Cloud Services
-- **Compute:** Azure App Service (frontend + backend) - *to be configured Sprint 1+*
+- **Compute:** Azure App Service (frontend + backend)
 - **Database:** ✅ Azure Database for PostgreSQL Flexible Server (B1ms, gcredit-dev-db-lz)
 - **Storage:** ✅ Azure Blob Storage (gcreditdevstoragelz, containers: badges [public], evidence [private])
-- **Identity:** Azure AD (Entra ID) OAuth 2.0 SSO - *to be integrated Sprint 1+*
-- **Secrets:** Azure Key Vault (API keys, connection strings) - *to be added Sprint 2+*
-- **Monitoring:** Azure Application Insights (telemetry, logs, alerts) - *to be added Sprint 2+*
-- **Caching:** Azure Cache for Redis (job queues, future session storage) - *to be added Sprint 2+*
+- **Identity:** ✅ Azure AD (Entra ID) — M365 Graph API integrated (user sync, email, Teams)
+- **Secrets:** Azure Key Vault — planned for production
+- **Monitoring:** Azure Application Insights — planned for production
+- **Caching:** Azure Cache for Redis — planned for production (Bull queue for async bulk processing)
 
 ### Standards & Compliance
 - **Digital Credentials:** Open Badges 2.0 JSON-LD format
@@ -388,8 +390,8 @@ _bmad-output/
 | **TD-006: Teams Channel Permissions** | Medium | ⏸️ Documented | **Impact:** 4 Teams integration tests skipped (see [SKIPPED-TESTS-TRACKER.md](gcredit-project/docs/testing/SKIPPED-TESTS-TRACKER.md)). **Blocker:** Requires tenant admin to approve ChannelMessage.Send permission. **Effort:** 1 day (admin approval). **Workaround:** Email sharing functional. |
 | **TD-014: Dual Email System** | Low | ✅ Sprint 9 Done | **Resolved:** nodemailer removed, EmailService delegates to GraphEmailService. Completed in Story 8.4 (2026-02-08). |
 | **TD-015: ESLint Warnings** | Medium | ✅ Sprint 9 Done | **Resolved:** 1303 → 282 warnings (78% reduction). Completed as standalone story (2026-02-07). Note: 8.4 regressed to 423 warnings — Sprint 10 cleanup. |
-| **TD-017: tsc Test-Only Errors** | Low | 📋 Sprint 10 | **Issue:** 114 tsc errors in test files only (0 in src). **Plan:** Fix test type annotations. **Effort:** 5h. |
-| **ESLint Warning Regression** | Medium | 📋 Sprint 10 | **Issue:** Story 8.4 added ~115 warnings (308→423). Dev bumped max-warnings 280→423 without authorization. **Plan:** Reduce back to <300. **Effort:** 4h. |
+| **TD-017: tsc Test-Only Errors** | Low | ✅ Sprint 10 Done | **Resolved:** 114 tsc errors in test files fixed. Completed in Story 10.1 (2026-02-09). |
+| **ESLint Warning Regression** | Medium | ✅ Sprint 10 Done | **Resolved:** ESLint 423 warnings → 0 errors + 0 warnings (backend + frontend). CI `--max-warnings=0` gate on both. Completed in Stories 10.2 + 10.3b (2026-02-09). |
 | **TD-016: Async Bulk Processing** | Low | 📋 Deferred (P3) | **Issue:** Bulk issuance limited to 20 badges synchronously. **Plan:** Add Redis + Bull Queue for >20 badge async processing. **Effort:** 8h. **Trigger:** When user feedback validates need for >20 badges per batch. |
 | **TD-023: CI Chinese Character Gate** | Low | 📋 Post-v1.0 | **Issue:** No automated CI check for Chinese characters in source code. Currently relies on manual review + coding standards doc. **Plan:** Add `grep [\u4E00-\u9FFF]` scan step to CI workflow, fail on match. **Effort:** 1h. |
 | **TD-024: CI console.log Gate** | Low | 📋 Post-v1.0 | **Issue:** No automated CI check for `console.log/error/warn` in production code. Currently relies on coding standards doc + code review. **Plan:** Add scan step to CI workflow excluding test/spec files, fail on match. **Effort:** 1h. |
@@ -1099,7 +1101,7 @@ Sprint 0-2 established this pattern:
 7. ✅ **Sprint Planning** (DONE - 2026-01-23)
    - Sprint 0 plan created (2 weeks, 28 hours capacity)
    - 5 core stories + 3 bonus stories defined
-   - Solo developer, 业余时间, realistic velocity
+   - Solo developer, spare-time project, realistic velocity
 
 8. ✅ **Sprint 0: Infrastructure Setup** (COMPLETE - 2026-01-23 to 2026-01-24)
    - ✅ Story 1.1: Frontend initialization (React 18.3.1 + Vite 7.2.4 + TypeScript 5.9.3 + Tailwind CSS 4.1.18 + Shadcn/ui)
@@ -1390,11 +1392,13 @@ Sprint 0-2 established this pattern:
      - Phase 3 (Day 6-11): UAT — Stories 10.6-10.8 (28h)
      - Phase 4 (Day 12-13): Release — Stories 10.9-10.10 (6h)
    
-   **Stories:**
-   - ✅ 10.1: TD-017 Fix 114 tsc Test Type Errors (7h, HIGH)
-   - ✅ 10.2: ESLint Regression 423→<280 + CI Gate (5h, HIGH)
-   - ✅ 10.3: TD-018 TODO/FIXME Cleanup (3h, MEDIUM)
-   - ✅ 10.4: i18n Chinese String Scan + UX Quick Wins (2.5h, MEDIUM)
+   **Stories (12 total):**
+   - ✅ 10.1: TD-017 Fix 114 tsc Test Type Errors (7.5h, HIGH)
+   - ✅ 10.2: ESLint Regression 423→0 + CI Gate (8h, HIGH)
+   - ✅ 10.3: TD-018 TODO/FIXME Cleanup (4h, HIGH)
+   - ✅ 10.3b: TD-019 Frontend ESLint Cleanup + CI Gate (3.5h, HIGH) — discovered mid-sprint
+   - ✅ 10.3c: TD-022 API Path Audit Fixes (1.5h, CRITICAL) — discovered mid-sprint
+   - ✅ 10.4: i18n Chinese String Scan + UX Quick Wins (2.5h, MEDIUM) + Patch 10.4a
    - ✅ 10.5: Admin Analytics Real Data (6h, MEDIUM)
    - ⬜ 10.6: UAT Test Plan & Seed Data (8h, HIGH)
    - ⬜ 10.7: Full UAT Execution (12h, HIGH)

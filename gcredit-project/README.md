@@ -4,7 +4,8 @@
 
 ## 📊 Project Status
 
-**Current Sprint:** ✅ Sprint 9 Complete (100%, 5/5 stories, Epic 8 - Bulk Badge Issuance + TD Cleanup)  
+**Current Sprint:** 🔄 Sprint 10 In Progress (v1.0.0 Release Sprint — 7/12 stories, Phase 1+2 complete)  
+**Sprint 10:** 🔄 In Progress (7/12 stories, 33h/69h, 2026-02-09 to 2026-02-22, v1.0.0 target)  
 **Sprint 9:** ✅ Complete (100%, 5/5 stories, actual 37h / estimated 51h, 2026-02-08, v0.9.0-dev)  
 **Sprint 8:** ✅ Complete (100%, 12/12 items, actual 80h / estimated 76h, 2026-02-05, v0.8.0)  
 **Sprint 7:** ✅ Complete (100%, 10/10 stories, actual 38.5h / estimated 41-47h, 2026-02-02, v0.7.0)  
@@ -15,7 +16,7 @@
 **Sprint 2:** ✅ Complete (100%, 29h/32h, 2026-01-26, Badge Templates)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, 2026-01-25, Authentication)  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, 2026-01-24, Infrastructure)  
-**Version:** v0.9.0-dev (Sprint 9 complete, 1087 tests total, 100% pass rate)  
+**Version:** v1.0.0-dev (Sprint 10 in progress, 976 tests total, 100% pass rate)  
 **License:** MIT
 
 ## 🚀 Tech Stack
@@ -26,14 +27,14 @@
 - **Vite** 7.3.1
 - **Tailwind CSS** 4.1.18
 - **Shadcn/ui** components
-- **React Router** (TBD in Sprint 1)
+- **React Router** 7.x
 
 ### Backend
 - **NestJS** 11.1.12 (Core), 11.0.16 (CLI)
 - **TypeScript** 5.9.3 (strict mode)
 - **Prisma** 6.19.2 ORM 🔒 Version Locked
 - **PostgreSQL** 16
-- **JWT** Authentication (TBD in Sprint 1)
+- **JWT** Authentication (Azure AD + MSAL)
 
 ### Infrastructure (Phase 1 - MVP)
 - **Azure PostgreSQL Flexible Server** (B1ms, ~$15/month)
@@ -404,7 +405,7 @@ Remove-Item -Recurse -Force backend\.git
 - **Sprint 7:** ✅ Badge Revocation & Lifecycle UAT (Complete)
 - **Sprint 8:** ✅ Production-Ready MVP - Dashboard, Accessibility, Security (Complete)
 - **Sprint 9:** ✅ Bulk Badge Issuance + TD Cleanup (Complete, 37h/51h, 1087 tests)
-- **Sprint 10+:** TD Cleanup, Enterprise Features, Production Deployment
+- **Sprint 10:** 🔄 v1.0.0 Release Sprint — TD Cleanup + Feature Polish + UAT + Release (In Progress, 33h/69h, 976 tests)
 
 ## 📝 License
 
@@ -422,6 +423,6 @@ For issues and questions:
 
 ---
 
-**Last Updated:** 2026-02-08  
-**Version:** v0.9.0-dev (Sprint 9 Complete - Bulk Badge Issuance + TD Cleanup)  
-**Sprint Status:** Sprint 0-9 Complete ✅ | Sprint 10 Planning 🔜
+**Last Updated:** 2026-02-09  
+**Version:** v1.0.0-dev (Sprint 10 In Progress — v1.0.0 Release Sprint)  
+**Sprint Status:** Sprint 0-9 Complete ✅ | Sprint 10 In Progress 🔄

@@ -1,9 +1,9 @@
 # GCredit API Documentation
 
-**Version:** 0.5.0 (Sprint 5 Complete)  
+**Version:** 1.0.0-dev (Sprint 10 In Progress)  
 **Base URL:** `http://localhost:3000`  
-**API Prefix:** `/api` (for badge resources) or `/auth` (for authentication)  
-**Last Updated:** 2026-01-29
+**API Prefix:** `/api` (all endpoints, including `/api/auth`)  
+**Last Updated:** 2026-02-09
 
 ## Overview
 
@@ -28,77 +28,97 @@ The API uses **JWT (JSON Web Token)** authentication with access and refresh tok
 
 ### Getting Started
 
-1. **Register:** `POST /auth/register` - Create new user account
-2. **Login:** `POST /auth/login` - Get access and refresh tokens
+1. **Register:** `POST /api/auth/register` - Create new user account
+2. **Login:** `POST /api/auth/login` - Get access and refresh tokens
 3. **Use Token:** Include `Authorization: Bearer <access_token>` in subsequent requests
-4. **Refresh:** `POST /auth/refresh` - Get new access token when expired
+4. **Refresh:** `POST /api/auth/refresh` - Get new access token when expired
 
 See [Authentication API](./authentication.md) for detailed endpoint documentation.
 
 ## API Modules
 
-### 1. Authentication & Authorization
-- **Path:** `/auth`
+### 1. Authentication & Authorization (9 routes)
+- **Path:** `/api/auth`
 - **Documentation:** [authentication.md](./authentication.md)
-- **Endpoints:** Register, Login, Password Reset, Profile Management
-- **Roles:** `USER`, `ISSUER`, `MANAGER`, `ADMIN`
+- **Endpoints:** Register, Login, Logout, Refresh, Profile (GET/PATCH), Password Reset, Change Password
+- **Roles:** `EMPLOYEE`, `ISSUER`, `MANAGER`, `ADMIN`
 
-### 2. Badge Issuance
+### 2. Badge Issuance & Wallet (13 routes)
 - **Path:** `/api/badges`
 - **Documentation:** [badge-issuance.md](./badge-issuance.md)
-- **Endpoints:** Issue, Claim, Query, Revoke, Open Badges Assertion
+- **Endpoints:** Issue, Claim, My Badges, Wallet, Issued, Get by ID, Revoke, Assertion, Bulk, Similar, Report, Download PNG, Integrity
 - **Key Features:**
-  - Single badge issuance
-  - Bulk badge issuance via CSV
+  - Single badge issuance + simple bulk
   - Public claiming with token
-  - Badge revocation
-  - Open Badges 2.0 compliance
+  - Badge wallet with timeline view
+  - Badge revocation with audit
+  - Open Badges 2.0 assertions & baked PNG
+  - Integrity verification (SHA-256)
 
-### 3. Badge Templates
+### 3. Badge Templates (8 routes)
 - **Path:** `/api/badge-templates`
 - **Documentation:** [badge-templates.md](./badge-templates.md)
-- **Endpoints:** CRUD operations, search, filtering
+- **Endpoints:** List (public), List All (admin), Get by ID, Create, Update, Delete, Criteria Templates
 - **Key Features:**
-  - Template management
-  - Image upload to Azure Blob Storage
+  - Template management with image upload (Azure Blob)
   - Skill and category association
-  - Criteria templates
+  - Criteria templates library
 
-### 4. Skills
+### 4. Skills (6 routes)
 - **Path:** `/api/skills`
-- **Documentation:** [skills.md](./skills.md)
-- **Endpoints:** CRUD operations, hierarchical skill management
-- **Key Features:**
-  - Skill categories
-  - Parent-child relationships
-  - Search and filtering
+- **Endpoints:** List, Search, Get by ID, Create, Update, Delete
 
-### 5. Skill Categories
+### 5. Skill Categories (6 routes)
 - **Path:** `/api/skill-categories`
-- **Documentation:** [skill-categories.md](./skill-categories.md)
-- **Endpoints:** CRUD operations, hierarchical category management
+- **Endpoints:** List (hierarchical), List (flat), Get by ID, Create, Update, Delete
 
-### 6. Badge Wallet (Sprint 4)
-- **Path:** `/api/badges/wallet`
-- **Documentation:** In development
-- **Endpoints:** Timeline view, similar badges, evidence management, milestones
-- **Key Features:**
-  - Timeline view with date grouping
-  - Badge detail modal data
-  - Evidence file upload and download (SAS tokens)
-  - Similar badge recommendations
-  - Milestone achievements
+### 6. Badge Verification (1 route)
+- **Path:** `/api/verify`
+- **Endpoints:** GET `:verificationId` — Public verification page
 
-### 7. Badge Verification (Sprint 5) 🆕
-- **Path:** `/verify/:verificationId` and `/api/verify/:verificationId`
-- **Documentation:** In development
-- **Endpoints:** Public verification, assertion export, baked PNG, integrity check
-- **Key Features:**
-  - Public HTML verification page (no auth)
-  - Open Badges 2.0 JSON-LD assertions
-  - Baked badge PNG download (JWT protected)
-  - SHA-256 integrity verification
-  - CORS-enabled public APIs
+### 7. Badge Sharing (4 routes)
+- **Path:** `/api/badges/share`, `/api/badges/:badgeId/share/teams`
+- **Endpoints:** Share via Email, Share via Teams, Analytics, Share History
+
+### 8. Badge Widget & Embed (2 routes)
+- **Path:** `/api/badges/:badgeId/embed`, `/api/badges/:badgeId/widget`
+- **Endpoints:** Embeddable badge card, Badge widget
+
+### 9. Evidence Management (4 routes)
+- **Path:** `/api/badges/:badgeId/evidence`
+- **Endpoints:** Upload, List, Download (SAS token), Preview
+
+### 10. Dashboard (4 routes)
+- **Path:** `/api/dashboard`
+- **Endpoints:** Employee, Issuer, Manager, Admin role-based dashboards
+
+### 11. Analytics (5 routes)
+- **Path:** `/api/analytics`
+- **Endpoints:** System Overview, Issuance Trends, Top Performers, Skills Distribution, Recent Activity
+- **Caching:** 15-minute cache on most endpoints
+
+### 12. Bulk Issuance (5 routes)
+- **Path:** `/api/bulk-issuance`
+- **Endpoints:** Download Template, Upload CSV, Preview, Confirm, Error Report
+- **Limits:** 20 badges per session, 100KB file size, 30-min session expiry
+
+### 13. Admin User Management (4 routes)
+- **Path:** `/api/admin/users`
+- **Endpoints:** List Users, Get User, Update Role (optimistic locking), Update Status
+
+### 14. M365 Sync (4 routes)
+- **Path:** `/api/admin/m365-sync`
+- **Endpoints:** Trigger Sync, Get Logs, Get Log Detail, Integration Status
+
+### 15. Milestones (5 routes)
+- **Path:** `/api/admin/milestones`, `/api/milestones/achievements`
+- **Endpoints:** Create, List, Update, Delete (admin); Get Achievements (employee)
+
+### 16. Teams Actions (1 route)
+- **Path:** `/api/teams/actions`
+- **Endpoints:** Claim Badge (from Teams Adaptive Card)
+
+> **Full API Usage Guide:** See [API-GUIDE.md](./API-GUIDE.md) for detailed endpoint documentation with curl examples and response schemas.
 
 ## Common Patterns
 
@@ -208,10 +228,10 @@ All errors follow a consistent structure:
 
 ## Rate Limiting
 
-Currently, no rate limiting is implemented. Future versions will include:
-- 100 requests per minute for authenticated users
-- 20 requests per minute for unauthenticated users
-- Separate limits for bulk operations
+Global rate limiting is implemented via NestJS `ThrottlerGuard` (Sprint 8):
+- **Default:** 100 requests per 60 seconds per IP
+- **Bulk Upload:** 10 requests per 5 minutes per user
+- Custom limits per endpoint as needed
 
 ## Testing
 
@@ -263,13 +283,25 @@ Interactive API documentation available at:
 
 ## Quick Reference
 
-| Module | Base Path | Auth Required | Documentation |
-|--------|-----------|---------------|---------------|
-| Authentication | `/auth` | Mixed | [View](./authentication.md) |
-| Badge Issuance | `/api/badges` | Yes (except claim) | [View](./badge-issuance.md) |
-| Badge Templates | `/api/badge-templates` | Yes | [View](./badge-templates.md) |
-| Skills | `/api/skills` | Yes | [View](./skills.md) |
-| Skill Categories | `/api/skill-categories` | Yes | [View](./skill-categories.md) |
+| Module | Base Path | Auth | Routes |
+|--------|-----------|------|--------|
+| Authentication | `/api/auth` | Mixed | 9 |
+| Badge Issuance & Wallet | `/api/badges` | Mixed | 13 |
+| Badge Templates | `/api/badge-templates` | Mixed | 8 |
+| Skills | `/api/skills` | Mixed | 6 |
+| Skill Categories | `/api/skill-categories` | Mixed | 6 |
+| Badge Verification | `/api/verify` | Public | 1 |
+| Badge Sharing | `/api/badges/share` | Yes | 4 |
+| Widget & Embed | `/api/badges/:id/embed` | Public | 2 |
+| Evidence | `/api/badges/:id/evidence` | Yes | 4 |
+| Dashboard | `/api/dashboard` | Yes | 4 |
+| Analytics | `/api/analytics` | Admin | 5 |
+| Bulk Issuance | `/api/bulk-issuance` | Yes | 5 |
+| Admin Users | `/api/admin/users` | Admin | 4 |
+| M365 Sync | `/api/admin/m365-sync` | Admin | 4 |
+| Milestones | `/api/admin/milestones` | Admin | 5 |
+| Teams Actions | `/api/teams/actions` | Yes | 1 |
+| **Total** | | | **~77** |
 
 ## Support
 
@@ -280,5 +312,6 @@ For questions or issues:
 
 ---
 
-**Last Updated:** January 27, 2026  
+**Last Updated:** February 9, 2026  
+**Version:** 1.0.0-dev (Sprint 10 In Progress)  
 **Maintained By:** GCredit Development Team
