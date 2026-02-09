@@ -8,26 +8,26 @@ metadata:
   sprint_type: "Release Sprint"
   version_target: "v1.0.0"
   start_date: "2026-02-09"
-  end_date: "2026-02-22"
-  total_days: 14
-  team_capacity: 80h
+  end_date: "extended"  # No hard deadline - experimental project
+  total_days: 14+
+  team_capacity: extended
   planning_complete: true
   planning_date: "2026-02-08"
   branch: "sprint-10/v1-release"
 
 # Sprint Metrics (updated daily)
 metrics:
-  total_stories: 14
-  total_estimated_hours: 75h
-  buffer_hours: 5h
+  total_stories: 15
+  total_estimated_hours: 95h
+  buffer_hours: 0h  # Extended sprint - no buffer needed
   
-  completed_stories: 7
-  completed_hours: 33h
-  remaining_hours: 36h
+  completed_stories: 8
+  completed_hours: 35h
+  remaining_hours: 54h
   
   # Capacity breakdown
   td_hours: 30h    # Stories 10.1-10.4 + 10.3b + 10.3c (API path fixes from buffer)
-  feature_hours: 12h  # Story 10.5 + 10.6b (single issuance UI)
+  feature_hours: 32h  # Story 10.5 + 10.6b (single issuance UI) + 10.6d (UI overhaul)
   uat_hours: 30h      # Stories 10.6a + 10.6c + 10.7 + 10.8
   release_hours: 6h    # Stories 10.9-10.10
 
@@ -205,12 +205,14 @@ stories:
     title: "UI Walkthrough & Screenshot Baseline"
     priority: HIGH
     estimate: 2h
-    actual: null
-    status: backlog
+    actual: 2h
+    status: complete
+    completed_date: "2026-02-09"
     phase: 3-uat
     file: "10-6a-ui-walkthrough-screenshot-baseline.md"
     dependencies: ["10-1", "10-2", "10-3", "10-5"]
     discovered: "Sprint Planning review (2026-02-09)"
+    notes: "All pages functional but critical UI gaps found. Created Story 10.6d (20h UI overhaul)."
 
   10-6b-single-badge-issuance-ui:
     title: "Single Badge Issuance UI"
@@ -231,8 +233,19 @@ stories:
     status: backlog
     phase: 3-uat
     file: "10-6c-uat-test-plan-seed-data.md"
-    dependencies: ["10-6a", "10-6b"]
-    
+    dependencies: ["10-6a", "10-6b", "10-6d"]
+
+  10-6d-design-system-ui-overhaul:
+    title: "Frontend Design System & UI Overhaul"
+    priority: HIGH
+    estimate: 20h
+    actual: null
+    status: backlog
+    phase: 2-feature
+    file: "10-6d-design-system-ui-overhaul.md"
+    dependencies: ["10-6a"]
+    discovered: "Story 10.6a UI Walkthrough (2026-02-09)"
+
   10-7-full-uat-execution:
     title: "Full UAT Execution (All 10 Epics)"
     priority: HIGH
@@ -241,7 +254,7 @@ stories:
     status: backlog
     phase: 3-uat
     file: "10-7-full-uat-execution.md"
-    dependencies: ["10-6c"]
+    dependencies: ["10-6c", "10-6d"]
     
   10-8-uat-bug-fixes:
     title: "UAT Bug Fixes"
@@ -272,7 +285,7 @@ stories:
     status: backlog
     phase: 4-release
     file: "10-10-merge-main-tag-v1.md"
-    dependencies: ["10-1", "10-2", "10-3", "10-4", "10-5", "10-6a", "10-6b", "10-6c", "10-7", "10-8", "10-9"]
+    dependencies: ["10-1", "10-2", "10-3", "10-4", "10-5", "10-6a", "10-6b", "10-6c", "10-6d", "10-7", "10-8", "10-9"]
 
 # ============================================================
 # TECHNICAL DEBT STATUS

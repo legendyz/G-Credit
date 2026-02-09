@@ -132,14 +132,6 @@ export function UserListTable({
     [onSort]
   );
 
-  // Handle sort click
-  const handleSort = useCallback(
-    (field: SortField) => {
-      onSort(field);
-    },
-    [onSort]
-  );
-
   // Open dialog handlers
   const openRoleDialog = useCallback((user: AdminUser, buttonRef: HTMLButtonElement) => {
     setSelectedUser(user);

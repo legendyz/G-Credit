@@ -34,22 +34,22 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 
 ### Team Composition
 - **Developers:** 2 full-time (40h each)
-- **Total Capacity:** 80 hours
+- **Total Capacity:** Extended sprint — no hard time constraint (experimental project)
 
 ### Capacity Allocation
-| Category | Hours | % | Notes |
-|----------|-------|---|-------|
-| **Technical Debt** | 28.5h | 36% | Stories 10.1-10.4 + 10.3b + 10.3c (API path fixes from buffer) |
-| **Feature Enhancement** | 6h | 8% | Story 10.5 (Analytics real data) |
-| **UI Walkthrough** | 2h | 3% | Story 10.6a (Screenshot baseline) |
-| **Feature: Issuance UI** | 6h | 8% | Story 10.6b (Single badge issuance form) |
-| **UAT Preparation** | 6h | 8% | Story 10.6c (Test plan + seed data) |
-| **UAT Execution** | 12h | 15% | Story 10.7 (Full UAT) |
-| **Bug Fix Buffer** | 8h | 10% | Story 10.8 (UAT bug fixes) |
-| **Release Documentation** | 4h | 5% | Story 10.9 (CHANGELOG + docs) |
-| **Release** | 2h | 3% | Story 10.10 (Merge + tag) |
-| **Buffer** | 6.5h | 8% | Sprint buffer (reduced by 5.5h for TD-019 + API path fixes + 6h for 10.6a/b split) |
-| **TOTAL** | **80h** | **100%** | |
+| Category | Hours | Notes |
+|----------|-------|---|
+| **Technical Debt** | 28.5h | Stories 10.1-10.4 + 10.3b + 10.3c (API path fixes from buffer) |
+| **Feature Enhancement** | 6h | Story 10.5 (Analytics real data) |
+| **UI Walkthrough** | 2h | Story 10.6a (Screenshot baseline) |
+| **Feature: Issuance UI** | 6h | Story 10.6b (Single badge issuance form) |
+| **UAT Preparation** | 6h | Story 10.6c (Test plan + seed data) |
+| **UI Overhaul** | 20h | Story 10.6d (Design system + full UI fix) |
+| **UAT Execution** | 12h | Story 10.7 (Full UAT) |
+| **Bug Fix Buffer** | 8h | Story 10.8 (UAT bug fixes) |
+| **Release Documentation** | 4h | Story 10.9 (CHANGELOG + docs) |
+| **Release** | 2h | Story 10.10 (Merge + tag) |
+| **TOTAL** | **94.5h** | Extended sprint — no time constraint |
 
 ### Velocity Reference (Lessons Learned)
 | Sprint | Estimated | Actual | Accuracy |
@@ -251,6 +251,26 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 
 ---
 
+### Story 10.6d: Frontend Design System & UI Overhaul
+**Priority:** 🔴 HIGH  
+**Estimate:** 20h  
+**Story Doc:** 📄 [10-6d-design-system-ui-overhaul.md](10-6d-design-system-ui-overhaul.md)  
+**Status:** 🔴 Not Started  
+**Dependencies:** Story 10.6a complete  
+**Discovered:** Story 10.6a UI Walkthrough (2026-02-09)
+
+**Quick Summary:** Implement UX design specification: Inter font, Microsoft Fluent palette, Tailwind theme, PageTemplate component, fix all page layouts.
+
+**Key Deliverables:**
+- [ ] Design system foundation (font + theme + CSS variables + PageTemplate)
+- [ ] All 4 Dashboard pages: clean grid layouts
+- [ ] Admin pages: consistent table/form layouts
+- [ ] Wallet + public pages: polished UI
+- [ ] Mobile responsive maintained
+- [ ] All tests passing (0 regressions)
+
+---
+
 ### Story 10.7: Full UAT Execution (All 10 Epics)
 **Priority:** 🔴 HIGH  
 **Estimate:** 12h  
@@ -333,11 +353,12 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 | 10.6a | UI Walkthrough & Screenshot Baseline | 🔴 HIGH | 2h | 3-UAT | 🔴 |
 | 10.6b | Single Badge Issuance UI | 🔴 HIGH | 6h | 2-Feature | 🔴 |
 | 10.6c | UAT Test Plan & Seed Data | 🔴 HIGH | 6h | 3-UAT | 🔴 |
+| 10.6d | Design System & UI Overhaul | 🔴 HIGH | 20h | 2-Feature | 🔴 |
 | 10.7 | Full UAT Execution | 🔴 HIGH | 12h | 3-UAT | 🔴 |
 | 10.8 | UAT Bug Fixes | 🟡 MED | 8h | 3-UAT | 🔴 |
 | 10.9 | Release Documentation | 🟡 MED | 4h | 4-Release | 🔴 |
 | 10.10 | Merge + Tag v1.0.0 | 🔴 HIGH | 2h | 4-Release | 🔴 |
-| **Total** | | | **65.5h** | | |
+| **Total** | | | **85.5h** | | |
 
 ---
 
@@ -374,6 +395,7 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 | 10.6a | 🟢 LOW | Self Review | Visual walkthrough — no code |
 | 10.6b | 🟡 MEDIUM | AI Review + Self | Frontend feature — new component + route |
 | 10.6c | 🟢 LOW | Self Review | Documentation + seed script |
+| 10.6d | 🔴 HIGH | AI Review + Self | Major UI refactor — high regression risk |
 | 10.7 | N/A | N/A | Manual UAT — no code |
 | 10.8 | 🔴 HIGH | AI Review + Self | Bug fixes — high regression risk |
 | 10.9 | 🟢 LOW | Self Review | Documentation only |
@@ -399,7 +421,8 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 Phase 1 (Parallel): 10.1, 10.3, 10.4 can run in parallel
 Phase 1 (Sequential): 10.2 ideally after 10.1
 Phase 2: 10.5 after 10.3 (TODO marker removal)
-Phase 3: 10.6a → 10.6b → 10.6c → 10.7 → 10.8 (strict sequence)
+Phase 3: 10.6a → 10.6b (parallel with 10.6d) → 10.6c → 10.7 → 10.8 (strict sequence)
+            10.6a → 10.6d (can run parallel with 10.6b)
 Phase 4: 10.9 → 10.10 (strict sequence, after all others)
 ```
 
