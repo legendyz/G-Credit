@@ -520,6 +520,7 @@ Items deferred from v1.0.0 release, to be addressed in subsequent sprints.
 
 | ID | Item | Priority | Effort | Blocker | Notes |
 |----|------|----------|--------|---------|-------|
+| BUG-001 | Navbar "My Wallet" 标签指向 Dashboard (`/`) | 🔴 High | 1h | 无 | 导航首链接 `to="/"` 标签为 "My Wallet"，实际应为 "Dashboard"；且无链接指向 `/wallet`（真正钱包页）。Desktop Navbar + MobileNav 均受影响。发现于 10.6d 验收截屏审查。 |
 | TD-006 | Teams Channel Permissions | 🟡 Medium | 1 day | Tenant admin approval for `ChannelMessage.Send` | 4 tests skipped; Email sharing functional as workaround. See [SKIPPED-TESTS-TRACKER.md](../../testing/SKIPPED-TESTS-TRACKER.md) |
 | FEAT-001 | AI Agent 对话式集成层 | 🟢 Low | 3-5 days | 无 | 83 个 JSON API 已覆盖全部业务功能，可构建 Agent 中间层实现对话式操作 |
 
