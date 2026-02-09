@@ -523,6 +523,7 @@ Items deferred from v1.0.0 release, to be addressed in subsequent sprints.
 | BUG-001 | Navbar "My Wallet" 标签指向 Dashboard (`/`) | 🔴 High | 1h | 无 | 导航首链接 `to="/"` 标签为 "My Wallet"，实际应为 "Dashboard"；且无链接指向 `/wallet`（真正钱包页）。Desktop Navbar + MobileNav 均受影响。发现于 10.6d 验收截屏审查。 |
 | TD-006 | Teams Channel Permissions | 🟡 Medium | 1 day | Tenant admin approval for `ChannelMessage.Send` | 4 tests skipped; Email sharing functional as workaround. See [SKIPPED-TESTS-TRACKER.md](../../testing/SKIPPED-TESTS-TRACKER.md) |
 | FEAT-001 | AI Agent 对话式集成层 | 🟢 Low | 3-5 days | 无 | 83 个 JSON API 已覆盖全部业务功能，可构建 Agent 中间层实现对话式操作 |
+| FEAT-002 | 邀请式 Badge 发放（非注册用户） | 🟡 Medium | 2-3 days | 无 | 当前 Badge 发放仅限系统内已注册用户（DB 外键约束 + API 校验）。Open Badges 2.0 标准支持向任意邮箱发放，收件人通过邮件链接注册后认领。需改造：1) 新增 PendingBadge 模型或 Badge 状态扩展 2) 发放时支持输入任意邮箱 3) 邮件含认领链接 4) 注册/登录后自动关联 Badge。参考 Credly/Badgr 的 claim 流程。 |
 
 ### FEAT-001: AI Agent Integration Layer
 **产品方向：** 用户通过与 AI Agent 对话完成所有系统功能
