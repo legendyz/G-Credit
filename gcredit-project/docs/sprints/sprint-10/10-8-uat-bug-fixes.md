@@ -32,6 +32,17 @@ This story is a buffer allocation for bugs discovered during full UAT (Story 10.
 
 _Tasks will be populated after Story 10.7 UAT execution._
 
+### Pre-UAT Known Bugs
+
+- [ ] **BUG-001: Navbar "My Wallet" 标签指向 Dashboard** (P1 — 1h)
+  - Navbar.tsx 第一个链接 `to="/"` 标签为 "My Wallet"，实际 `/` 是 Dashboard
+  - 无导航链接指向 `/wallet`（真正的钱包页），导致 Wallet 页导航无高亮
+  - 同时影响 MobileNav.tsx（`to: '/'` 标签也是 "My Wallet"）
+  - **修复方案：** 将 `to="/"` 标签改为 "Dashboard"，新增 `to="/wallet"` 标签 "My Wallet"
+  - 发现于：Story 10.6d 验收截屏审查 (2026-02-09)
+
+### UAT-Discovered Bugs
+
 - [ ] **Task 1: Bug Triage** (AC: #1, #2, #3)
   - [ ] Classify discovered bugs by severity (P0/P1/P2)
   - [ ] Assign fix priority
