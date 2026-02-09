@@ -321,3 +321,53 @@ Claude Opus 4.6 (GitHub Copilot)
 | MODIFY | `frontend/src/pages/AdminAnalyticsPage.tsx` |
 | MODIFY | `frontend/src/pages/BulkIssuancePage.tsx` |
 | MODIFY | `frontend/src/pages/BulkIssuancePage.test.tsx` |
+
+---
+
+## Acceptance Rejection & Fix Record
+
+### Rejection (2026-02-09)
+
+**Rejected by:** SM (Bob)  
+**Reason:** UI walkthrough (`walkthrough_post_10_6d.py`, 31 screenshots) revealed **zero CSS styling applied** — Times New Roman font, body margin 8px, no brand colors, no shadows. All pages render as raw unstyled HTML.
+
+**Root Cause:** Project uses **Tailwind CSS v4.1.18** but `tailwind.config.js` is v3 format. Tailwind v4 completely ignores JS config files — all design tokens (brand colors, shadows, fonts, spacing, radii) defined in `tailwind.config.js` were never compiled to CSS. Additionally, `@tailwind base/components/utilities` (v3 syntax) does not properly load preflight in v4.
+
+**Evidence (from debug_css.py):**
+- `body.fontFamily`: "Times New Roman" (preflight not loading)
+- `body.margin`: "8px" (preflight not loading)
+- CSS rules containing 'brand': **0**
+- CSS rules containing 'elevation': **0**
+
+**Fix prompt:** `docs/sprints/sprint-10/10-6d-fix-prompt.md`
+
+**Lesson learned:** Added as Lesson #39 — always visual-verify after UI stories, never accept based on test/build alone.
+
+### Fix Scope
+
+Migrate Tailwind config from v3 JS format to v4 CSS-first `@theme {}` format:
+1. Replace `@tailwind base/components/utilities` → `@import "tailwindcss"`
+2. Add `@theme {}` block with all design tokens from `tailwind.config.js`
+3. Clean up / delete `tailwind.config.js`
+4. Remove `autoprefixer` from PostCSS (v4 bundles Lightning CSS)
+5. Fix `text-h2` missing `font-semibold` (v4 fontSize no longer includes fontWeight)
+
+### Re-Acceptance Criteria
+
+After dev completes the fix, SM must:
+1. Run all tests: `npx vitest run` — 442/442 pass (0 regressions)
+2. Run ESLint: `npx eslint --max-warnings=0 .` — 0 errors, 0 warnings
+3. Run build: `npx vite build` — clean
+4. **Visual walkthrough (MANDATORY):** Re-run `_bmad-output/playwright-sessions/walkthrough_post_10_6d.py` — all 31 screenshots must show correct styling:
+   - Inter font (not Times New Roman/serif)
+   - body margin 0px (preflight active)
+   - Brand colors visible (bg-brand-600 = #0078D4)
+   - Elevation shadows visible on cards
+   - Neutral palette applied to text/backgrounds
+5. Browser console CSS verification:
+   - `getComputedStyle(document.body).margin` === "0px"
+   - `getComputedStyle(document.body).fontFamily` contains "Inter"
+   - Brand color classes generate actual CSS (not transparent)
+   - Shadow-elevation classes produce box-shadow (not "none")
+6. All 15 original ACs re-verified against visual evidence
+7. **No acceptance without visual proof** — lesson from this rejection
