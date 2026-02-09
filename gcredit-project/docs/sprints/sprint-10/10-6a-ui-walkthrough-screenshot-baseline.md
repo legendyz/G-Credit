@@ -30,7 +30,7 @@ All 10 Epics have been developed across Sprints 0-9 with 976 automated tests. Ho
 1. [x] Application started (backend + frontend) with seed data loaded
 2. [x] All 11 routes visited and screenshotted for each applicable role
 3. [x] 4 role-based walkthroughs completed (Admin, Issuer, Manager, Employee)
-4. [x] Screenshot baseline saved to `docs/sprints/sprint-10/screenshots/`
+4. [x] Screenshot baseline saved to `_bmad-output/playwright-sessions/screenshots/10-6a-ui-walkthrough/`
 5. [x] UI issues checklist created comparing actual vs. UX spec
 6. [x] Any P0 UI issues flagged for immediate fix (before UAT)
 7. [x] Sign-off: UI is acceptable for UAT execution
@@ -84,7 +84,7 @@ All 10 Epics have been developed across Sprints 0-9 with 976 automated tests. Ho
 
 ## Output Files
 
-- `docs/sprints/sprint-10/screenshots/` (directory with PNG screenshots)
+- `_bmad-output/playwright-sessions/screenshots/10-6a-ui-walkthrough/` (directory with PNG screenshots)
 - UI issues noted in completion notes below
 
 ## Dev Notes
@@ -139,7 +139,6 @@ SM agent (Claude Opus 4.6) — SM/PO review, no Dev agent needed
 **Decision:** P0 issues are too severe for UAT. Created **Story 10.6d** (20h) for full Design System & UI Overhaul. UAT (10.6c/10.7) will execute AFTER 10.6d is complete.
 
 ### File List
-- `docs/sprints/sprint-10/screenshots/` — 22 PNG screenshots (all roles + public pages)
-- `docs/sprints/sprint-10/screenshots/capture-ui-v2.py` — Playwright capture script
-- `docs/sprints/sprint-10/screenshots/debug-auth.py` — Auth diagnostic script
+- `_bmad-output/playwright-sessions/screenshots/10-6a-ui-walkthrough/` — 22 PNG screenshots (all roles + public pages)
+- `_bmad-output/playwright-sessions/capture-ui-v2.py` — Playwright capture script
 - `gcredit-project/scripts/check-users.js` — Temporary user seeding script
