@@ -44,7 +44,7 @@ export function TemplateSelector({ onSelect, disabled = false }: TemplateSelecto
     const fetchTemplates = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/badge-templates?status=APPROVED`, {
+        const response = await fetch(`${API_BASE_URL}/badge-templates?status=ACTIVE`, {
           headers: getAuthHeaders(),
         });
         if (response.ok) {

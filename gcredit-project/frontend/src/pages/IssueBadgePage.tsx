@@ -54,7 +54,7 @@ export function IssueBadgePage() {
     const fetchTemplates = async () => {
       try {
         const token = localStorage.getItem('accessToken');
-        const response = await fetch(`${API_BASE_URL}/badge-templates?status=APPROVED`, {
+        const response = await fetch(`${API_BASE_URL}/badge-templates?status=ACTIVE`, {
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         });
         if (!response.ok) throw new Error('Failed to load templates');

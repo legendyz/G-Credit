@@ -2,6 +2,7 @@
  * IssueBadgePage Tests - Story 10.6b: Single Badge Issuance UI
  */
 
+import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -37,6 +38,85 @@ vi.mock('@/lib/badgesApi', () => ({
 const mockGetAdminUsers = vi.fn();
 vi.mock('@/lib/adminUsersApi', () => ({
   getAdminUsers: (...args: unknown[]) => mockGetAdminUsers(...args),
+}));
+
+// Mock shadcn Select as native <select> for testability
+vi.mock('@/components/ui/select', () => ({
+  Select: ({
+    children,
+    value,
+    onValueChange,
+    disabled,
+  }: {
+    children: React.ReactNode;
+    value: string;
+    onValueChange: (v: string) => void;
+    disabled?: boolean;
+  }) => (
+    <div data-testid="mock-select">
+      {React.Children.map(children, (child) => {
+        if (
+          React.isValidElement(child) &&
+          (child.type as { displayName?: string })?.displayName === 'MockSelectTrigger'
+        ) {
+          return child;
+        }
+        if (
+          React.isValidElement(child) &&
+          (child.type as { displayName?: string })?.displayName === 'MockSelectContent'
+        ) {
+          return React.cloneElement(
+            child as React.ReactElement<{
+              onValueChange: (v: string) => void;
+              value: string;
+              disabled?: boolean;
+            }>,
+            { onValueChange, value, disabled }
+          );
+        }
+        return child;
+      })}
+    </div>
+  ),
+  SelectTrigger: Object.assign(
+    ({
+      children,
+      ...props
+    }: {
+      children: React.ReactNode;
+      id?: string;
+      [key: string]: unknown;
+    }) => <div {...props}>{children}</div>,
+    { displayName: 'MockSelectTrigger' }
+  ),
+  SelectValue: ({ placeholder }: { placeholder?: string }) => <span>{placeholder}</span>,
+  SelectContent: Object.assign(
+    ({
+      children,
+      onValueChange,
+      value,
+      disabled,
+    }: {
+      children: React.ReactNode;
+      onValueChange?: (v: string) => void;
+      value?: string;
+      disabled?: boolean;
+    }) => (
+      <select
+        data-testid="native-select"
+        value={value || ''}
+        disabled={disabled}
+        onChange={(e) => onValueChange?.(e.target.value)}
+      >
+        <option value="">-- select --</option>
+        {children}
+      </select>
+    ),
+    { displayName: 'MockSelectContent' }
+  ),
+  SelectItem: ({ children, value }: { children: React.ReactNode; value: string }) => (
+    <option value={value}>{children}</option>
+  ),
 }));
 
 // Mock global fetch for template loading
@@ -132,7 +212,7 @@ describe('IssueBadgePage', () => {
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/badge-templates?status=APPROVED'),
+        expect.stringContaining('/badge-templates?status=ACTIVE'),
         expect.objectContaining({
           headers: expect.objectContaining({
             'Content-Type': 'application/json',
@@ -181,37 +261,64 @@ describe('IssueBadgePage', () => {
 
   it('submits the form successfully and navigates', async () => {
     mockIssueBadge.mockResolvedValue({ id: 'badge-1', status: 'PENDING' });
+    const user = userEvent.setup();
     renderPage();
 
+    // Wait for data to load
     await waitFor(() => expect(mockFetch).toHaveBeenCalled());
     await waitFor(() => expect(mockGetAdminUsers).toHaveBeenCalled());
 
-    // Directly call the submit handler logic since RadixUI Select is hard to test
-    // We verify the API integration works
-    await mockIssueBadge({
-      templateId: 'tpl-1',
-      recipientId: 'user-1',
+    // Select template and recipient via native <select> (mocked)
+    const selects = screen.getAllByTestId('native-select');
+    await user.selectOptions(selects[0], 'tpl-1'); // Template
+    await user.selectOptions(selects[1], 'user-1'); // Recipient
+
+    // Submit the form
+    const submitBtn = screen.getByRole('button', { name: /Issue Badge/i });
+    await user.click(submitBtn);
+
+    // Verify API called with correct args
+    await waitFor(() => {
+      expect(mockIssueBadge).toHaveBeenCalledWith({
+        templateId: 'tpl-1',
+        recipientId: 'user-1',
+      });
     });
 
-    expect(mockIssueBadge).toHaveBeenCalledWith({
-      templateId: 'tpl-1',
-      recipientId: 'user-1',
+    // Verify success feedback
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith('Badge issued successfully!');
     });
+
+    // Verify navigation
+    expect(mockNavigate).toHaveBeenCalledWith('/admin/badges');
   });
 
   it('handles API error on form submission', async () => {
     mockIssueBadge.mockRejectedValue(new Error('Template not found'));
+    const user = userEvent.setup();
     renderPage();
 
+    // Wait for data to load
     await waitFor(() => expect(mockFetch).toHaveBeenCalled());
+    await waitFor(() => expect(mockGetAdminUsers).toHaveBeenCalled());
 
-    // Verify error handling path exists
-    try {
-      await mockIssueBadge({ templateId: 'bad-id', recipientId: 'user-1' });
-    } catch (err) {
-      expect(err).toBeInstanceOf(Error);
-      expect((err as Error).message).toBe('Template not found');
-    }
+    // Select template and recipient
+    const selects = screen.getAllByTestId('native-select');
+    await user.selectOptions(selects[0], 'tpl-1');
+    await user.selectOptions(selects[1], 'user-1');
+
+    // Submit the form
+    const submitBtn = screen.getByRole('button', { name: /Issue Badge/i });
+    await user.click(submitBtn);
+
+    // Verify error toast shown with server error message
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Template not found');
+    });
+
+    // Verify NO navigation on error
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 
   it('shows loading state on submit button', () => {
