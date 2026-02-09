@@ -255,19 +255,19 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 **Priority:** 🔴 HIGH  
 **Estimate:** 20h  
 **Story Doc:** 📄 [10-6d-design-system-ui-overhaul.md](10-6d-design-system-ui-overhaul.md)  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Accepted (2026-02-10)  
 **Dependencies:** Story 10.6a complete  
 **Discovered:** Story 10.6a UI Walkthrough (2026-02-09)
 
 **Quick Summary:** Implement UX design specification: Inter font, Microsoft Fluent palette, Tailwind theme, PageTemplate component, fix all page layouts.
 
 **Key Deliverables:**
-- [ ] Design system foundation (font + theme + CSS variables + PageTemplate)
-- [ ] All 4 Dashboard pages: clean grid layouts
-- [ ] Admin pages: consistent table/form layouts
-- [ ] Wallet + public pages: polished UI
-- [ ] Mobile responsive maintained
-- [ ] All tests passing (0 regressions)
+- [x] Design system foundation (font + theme + CSS variables + PageTemplate)
+- [x] All 4 Dashboard pages: clean grid layouts
+- [x] Admin pages: consistent table/form layouts
+- [x] Wallet + public pages: polished UI
+- [x] Mobile responsive maintained
+- [x] All tests passing (0 regressions)
 
 ---
 
@@ -353,7 +353,7 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 | 10.6a | UI Walkthrough & Screenshot Baseline | 🔴 HIGH | 2h | 3-UAT | 🔴 |
 | 10.6b | Single Badge Issuance UI | 🔴 HIGH | 6h | 2-Feature | 🔴 |
 | 10.6c | UAT Test Plan & Seed Data | 🔴 HIGH | 6h | 3-UAT | 🔴 |
-| 10.6d | Design System & UI Overhaul | 🔴 HIGH | 20h | 2-Feature | 🔴 |
+| 10.6d | Design System & UI Overhaul | 🔴 HIGH | 20h | 2-Feature | ✅ |
 | 10.7 | Full UAT Execution | 🔴 HIGH | 12h | 3-UAT | 🔴 |
 | 10.8 | UAT Bug Fixes | 🟡 MED | 8h | 3-UAT | 🔴 |
 | 10.9 | Release Documentation | 🟡 MED | 4h | 4-Release | 🔴 |
