@@ -8,8 +8,9 @@ interface BadgeInfoProps {
 
 const BadgeInfo: React.FC<BadgeInfoProps> = ({ description, skills, criteria }) => {
   // Parse criteria (assuming it's a JSON object with a 'requirements' array)
-  const criteriaList = Array.isArray(criteria?.requirements)
-    ? criteria.requirements
+  const parsedCriteria = typeof criteria === 'object' && criteria !== null ? criteria : null;
+  const criteriaList = Array.isArray(parsedCriteria?.requirements)
+    ? (parsedCriteria.requirements as string[])
     : typeof criteria === 'string'
       ? [criteria]
       : [];
