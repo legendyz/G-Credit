@@ -192,7 +192,6 @@ export function BulkIssuancePage() {
       title="Bulk Badge Issuance"
       description="Issue multiple badges at once using a CSV file"
     >
-
       {/* Step 1: Download Template */}
       <div className="bg-white rounded-lg shadow-elevation-1 border border-neutral-200 p-6">
         <h3 className="text-lg font-semibold text-neutral-900 mb-4">Step 1: Download Template</h3>

@@ -205,7 +205,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ title, value, icon, descripti
   <Card
     className={cn(
       'shadow-elevation-1 hover:shadow-elevation-2 transition-shadow',
-      onClick && 'cursor-pointer hover:bg-accent/50 transition-colors',
+      onClick && 'cursor-pointer hover:bg-accent/50 transition-colors'
     )}
     onClick={onClick}
     tabIndex={onClick ? 0 : undefined}

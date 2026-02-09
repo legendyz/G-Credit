@@ -67,7 +67,6 @@ export const IssuerDashboard: React.FC = () => {
         </Button>
       }
     >
-
       {/* AC2: Quick Actions */}
       <Card className="shadow-elevation-1">
         <CardHeader>

@@ -266,7 +266,9 @@ export function VerifyBadgePage() {
           {/* Skills */}
           {badge.badge.skills && badge.badge.skills.length > 0 && (
             <div>
-              <div className="font-semibold text-sm text-neutral-500 mb-2">Skills & Competencies</div>
+              <div className="font-semibold text-sm text-neutral-500 mb-2">
+                Skills & Competencies
+              </div>
               <div className="flex flex-wrap gap-2">
                 {badge.badge.skills.map((skillId: string) => (
                   <span

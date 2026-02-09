@@ -65,7 +65,6 @@ export const ManagerDashboard: React.FC = () => {
         </Button>
       }
     >
-
       {/* AC3: Quick Actions */}
       <Card className="shadow-elevation-1">
         <CardHeader>

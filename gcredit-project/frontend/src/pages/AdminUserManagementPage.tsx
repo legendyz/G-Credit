@@ -184,7 +184,6 @@ export function AdminUserManagementPage() {
         ) : undefined
       }
     >
-
       {/* Filters */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         {/* Search */}
@@ -240,9 +239,7 @@ export function AdminUserManagementPage() {
       {isError && (
         <div className="rounded-lg border border-red-200 bg-error-light p-6 text-center">
           <AlertCircle className="mx-auto h-10 w-10 text-error" />
-          <h3 className="mt-2 text-lg font-medium text-error">
-            Failed to load users
-          </h3>
+          <h3 className="mt-2 text-lg font-medium text-error">Failed to load users</h3>
           <p className="mt-1 text-sm text-error">
             {error instanceof Error ? error.message : 'An error occurred'}
           </p>

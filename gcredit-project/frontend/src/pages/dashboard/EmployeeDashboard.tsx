@@ -162,7 +162,6 @@ export const EmployeeDashboard: React.FC = () => {
         </Button>
       }
     >
-
       {/* AC1: Quick Actions */}
       <Card className="shadow-elevation-1">
         <CardHeader>

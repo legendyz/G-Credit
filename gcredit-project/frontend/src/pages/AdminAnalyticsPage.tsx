@@ -102,207 +102,206 @@ const AdminAnalyticsPage: React.FC = () => {
       title="Admin Analytics"
       description="System-wide overview of users, badges, skills, and activity"
     >
+      {/* ─── Section A: KPI Overview Cards ────────────────────── */}
+      {overview.isLoading ? (
+        <KpiRowSkeleton />
+      ) : overview.isError ? (
+        <SectionError
+          message={overview.error?.message || 'Failed to load overview'}
+          onRetry={() => overview.refetch()}
+        />
+      ) : overview.data ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Total Users */}
+          <div className="bg-white rounded-lg shadow-elevation-1 p-6 border-l-4 border-brand-500">
+            <div className="text-3xl font-bold text-neutral-900">{overview.data.users.total}</div>
+            <div className="text-sm text-neutral-600 mt-1">Total Users</div>
+            <div className="text-xs text-neutral-500 mt-2">
+              {overview.data.users.activeThisMonth} active this month
+            </div>
+          </div>
 
-        {/* ─── Section A: KPI Overview Cards ────────────────────── */}
-        {overview.isLoading ? (
-          <KpiRowSkeleton />
-        ) : overview.isError ? (
-          <SectionError
-            message={overview.error?.message || 'Failed to load overview'}
-            onRetry={() => overview.refetch()}
-          />
-        ) : overview.data ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Total Users */}
-            <div className="bg-white rounded-lg shadow-elevation-1 p-6 border-l-4 border-brand-500">
-              <div className="text-3xl font-bold text-neutral-900">{overview.data.users.total}</div>
-              <div className="text-sm text-neutral-600 mt-1">Total Users</div>
-              <div className="text-xs text-neutral-500 mt-2">
-                {overview.data.users.activeThisMonth} active this month
+          {/* Badges Issued */}
+          <div className="bg-white rounded-lg shadow-elevation-1 p-6 border-l-4 border-success">
+            <div className="text-3xl font-bold text-neutral-900">
+              {overview.data.badges.totalIssued}
+            </div>
+            <div className="text-sm text-neutral-600 mt-1">Badges Issued</div>
+            <div className="text-xs text-neutral-500 mt-2">
+              {(overview.data.badges.claimRate * 100).toFixed(0)}% claim rate
+            </div>
+          </div>
+
+          {/* Active Templates */}
+          <div className="bg-white rounded-lg shadow-elevation-1 p-6 border-l-4 border-brand-700">
+            <div className="text-3xl font-bold text-neutral-900">
+              {overview.data.badgeTemplates.active}
+            </div>
+            <div className="text-sm text-neutral-600 mt-1">Active Templates</div>
+            <div className="text-xs text-neutral-500 mt-2">
+              {overview.data.badgeTemplates.total} total
+            </div>
+          </div>
+
+          {/* System Health */}
+          <div className="bg-white rounded-lg shadow-elevation-1 p-6 border-l-4 border-neutral-300">
+            <div className="flex items-center gap-2">
+              <span
+                className={`inline-block w-3 h-3 rounded-full ${healthColor(overview.data.systemHealth.status)}`}
+              />
+              <span className="text-xl font-bold text-neutral-900 capitalize">
+                {overview.data.systemHealth.status}
+              </span>
+            </div>
+            <div className="text-sm text-neutral-600 mt-1">System Health</div>
+            <div className="text-xs text-neutral-500 mt-2">
+              Response: {overview.data.systemHealth.apiResponseTime}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* ─── Section B: Issuance Trends ───────────────────────── */}
+      <div className="mt-8">
+        {trends.isLoading ? (
+          <ChartSkeleton />
+        ) : trends.isError ? (
+          <div className="bg-white rounded-lg shadow-elevation-1 p-6">
+            <h2 className="text-xl font-bold text-neutral-900 mb-4">Issuance Trends</h2>
+            <SectionError
+              message={trends.error?.message || 'Failed to load trends'}
+              onRetry={() => trends.refetch()}
+            />
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow-elevation-1 p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+              <h2 className="text-xl font-bold text-neutral-900">Issuance Trends</h2>
+              <div className="flex gap-2 mt-3 sm:mt-0">
+                {PERIOD_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setTrendPeriod(opt.value)}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-lg border transition-all ${
+                      trendPeriod === opt.value
+                        ? 'border-brand-500 bg-brand-50 text-brand-700'
+                        : 'border-neutral-300 bg-white text-neutral-700 hover:border-neutral-400'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Badges Issued */}
-            <div className="bg-white rounded-lg shadow-elevation-1 p-6 border-l-4 border-success">
-              <div className="text-3xl font-bold text-neutral-900">
-                {overview.data.badges.totalIssued}
-              </div>
-              <div className="text-sm text-neutral-600 mt-1">Badges Issued</div>
-              <div className="text-xs text-neutral-500 mt-2">
-                {(overview.data.badges.claimRate * 100).toFixed(0)}% claim rate
-              </div>
-            </div>
-
-            {/* Active Templates */}
-            <div className="bg-white rounded-lg shadow-elevation-1 p-6 border-l-4 border-brand-700">
-              <div className="text-3xl font-bold text-neutral-900">
-                {overview.data.badgeTemplates.active}
-              </div>
-              <div className="text-sm text-neutral-600 mt-1">Active Templates</div>
-              <div className="text-xs text-neutral-500 mt-2">
-                {overview.data.badgeTemplates.total} total
-              </div>
-            </div>
-
-            {/* System Health */}
-            <div className="bg-white rounded-lg shadow-elevation-1 p-6 border-l-4 border-neutral-300">
-              <div className="flex items-center gap-2">
-                <span
-                  className={`inline-block w-3 h-3 rounded-full ${healthColor(overview.data.systemHealth.status)}`}
-                />
-                <span className="text-xl font-bold text-neutral-900 capitalize">
-                  {overview.data.systemHealth.status}
+            {/* Totals summary */}
+            {trends.data?.totals && (
+              <div className="flex gap-6 mb-4 text-sm">
+                <span className="text-brand-600 font-medium">
+                  Issued: {trends.data.totals.issued}
+                </span>
+                <span className="text-success font-medium">
+                  Claimed: {trends.data.totals.claimed}
+                </span>
+                <span className="text-error font-medium">
+                  Revoked: {trends.data.totals.revoked}
                 </span>
               </div>
-              <div className="text-sm text-neutral-600 mt-1">System Health</div>
-              <div className="text-xs text-neutral-500 mt-2">
-                Response: {overview.data.systemHealth.apiResponseTime}
-              </div>
-            </div>
-          </div>
-        ) : null}
+            )}
 
-        {/* ─── Section B: Issuance Trends ───────────────────────── */}
-        <div className="mt-8">
-          {trends.isLoading ? (
+            <IssuanceTrendChart dataPoints={trends.data?.dataPoints || []} />
+          </div>
+        )}
+      </div>
+
+      {/* ─── Section C & D: Performers + Skills ───────────────── */}
+      <div className="mt-8 grid lg:grid-cols-2 gap-8">
+        {/* Top Performers */}
+        <div>
+          {performers.isLoading ? (
+            <TableSkeleton />
+          ) : performers.isError ? (
+            <div className="bg-white rounded-lg shadow-elevation-1 p-6">
+              <h2 className="text-xl font-bold text-neutral-900 mb-4">Top Performers</h2>
+              <SectionError
+                message={performers.error?.message || 'Failed to load performers'}
+                onRetry={() => performers.refetch()}
+              />
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow-elevation-1 p-6">
+              <h2 className="text-xl font-bold text-neutral-900 mb-4">🏆 Top Performers</h2>
+              <TopPerformersTable performers={performers.data?.topPerformers || []} />
+            </div>
+          )}
+        </div>
+
+        {/* Skills Distribution */}
+        <div>
+          {skills.isLoading ? (
             <ChartSkeleton />
-          ) : trends.isError ? (
+          ) : skills.isError ? (
             <div className="bg-white rounded-lg shadow-elevation-1 p-6">
-              <h2 className="text-xl font-bold text-neutral-900 mb-4">Issuance Trends</h2>
+              <h2 className="text-xl font-bold text-neutral-900 mb-4">Skills Distribution</h2>
               <SectionError
-                message={trends.error?.message || 'Failed to load trends'}
-                onRetry={() => trends.refetch()}
+                message={skills.error?.message || 'Failed to load skills'}
+                onRetry={() => skills.refetch()}
               />
             </div>
           ) : (
             <div className="bg-white rounded-lg shadow-elevation-1 p-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-                <h2 className="text-xl font-bold text-neutral-900">Issuance Trends</h2>
-                <div className="flex gap-2 mt-3 sm:mt-0">
-                  {PERIOD_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      onClick={() => setTrendPeriod(opt.value)}
-                      className={`px-3 py-1.5 text-sm font-medium rounded-lg border transition-all ${
-                        trendPeriod === opt.value
-                          ? 'border-brand-500 bg-brand-50 text-brand-700'
-                          : 'border-neutral-300 bg-white text-neutral-700 hover:border-neutral-400'
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Totals summary */}
-              {trends.data?.totals && (
-                <div className="flex gap-6 mb-4 text-sm">
-                  <span className="text-brand-600 font-medium">
-                    Issued: {trends.data.totals.issued}
-                  </span>
-                  <span className="text-success font-medium">
-                    Claimed: {trends.data.totals.claimed}
-                  </span>
-                  <span className="text-error font-medium">
-                    Revoked: {trends.data.totals.revoked}
-                  </span>
-                </div>
-              )}
-
-              <IssuanceTrendChart dataPoints={trends.data?.dataPoints || []} />
+              <h2 className="text-xl font-bold text-neutral-900 mb-4">Skills Distribution</h2>
+              <SkillsDistributionChart
+                topSkills={skills.data?.topSkills || []}
+                skillsByCategory={skills.data?.skillsByCategory || {}}
+              />
             </div>
           )}
         </div>
+      </div>
 
-        {/* ─── Section C & D: Performers + Skills ───────────────── */}
-        <div className="mt-8 grid lg:grid-cols-2 gap-8">
-          {/* Top Performers */}
-          <div>
-            {performers.isLoading ? (
-              <TableSkeleton />
-            ) : performers.isError ? (
-              <div className="bg-white rounded-lg shadow-elevation-1 p-6">
-                <h2 className="text-xl font-bold text-neutral-900 mb-4">Top Performers</h2>
-                <SectionError
-                  message={performers.error?.message || 'Failed to load performers'}
-                  onRetry={() => performers.refetch()}
-                />
-              </div>
-            ) : (
-              <div className="bg-white rounded-lg shadow-elevation-1 p-6">
-                <h2 className="text-xl font-bold text-neutral-900 mb-4">🏆 Top Performers</h2>
-                <TopPerformersTable performers={performers.data?.topPerformers || []} />
-              </div>
-            )}
+      {/* ─── Section E: Recent Activity ───────────────────────── */}
+      <div className="mt-8">
+        {activity.isLoading ? (
+          <ActivitySkeleton />
+        ) : activity.isError ? (
+          <div className="bg-white rounded-lg shadow-elevation-1 p-6">
+            <h2 className="text-xl font-bold text-neutral-900 mb-4">Recent Activity</h2>
+            <SectionError
+              message={activity.error?.message || 'Failed to load activity'}
+              onRetry={() => activity.refetch()}
+            />
           </div>
-
-          {/* Skills Distribution */}
-          <div>
-            {skills.isLoading ? (
-              <ChartSkeleton />
-            ) : skills.isError ? (
-              <div className="bg-white rounded-lg shadow-elevation-1 p-6">
-                <h2 className="text-xl font-bold text-neutral-900 mb-4">Skills Distribution</h2>
-                <SectionError
-                  message={skills.error?.message || 'Failed to load skills'}
-                  onRetry={() => skills.refetch()}
-                />
-              </div>
-            ) : (
-              <div className="bg-white rounded-lg shadow-elevation-1 p-6">
-                <h2 className="text-xl font-bold text-neutral-900 mb-4">Skills Distribution</h2>
-                <SkillsDistributionChart
-                  topSkills={skills.data?.topSkills || []}
-                  skillsByCategory={skills.data?.skillsByCategory || {}}
-                />
-              </div>
-            )}
+        ) : (
+          <div className="bg-white rounded-lg shadow-elevation-1 p-6">
+            <h2 className="text-xl font-bold text-neutral-900 mb-4">Recent Activity</h2>
+            <RecentActivityFeed activities={activity.data?.activities || []} />
           </div>
-        </div>
+        )}
+      </div>
 
-        {/* ─── Section E: Recent Activity ───────────────────────── */}
-        <div className="mt-8">
-          {activity.isLoading ? (
-            <ActivitySkeleton />
-          ) : activity.isError ? (
-            <div className="bg-white rounded-lg shadow-elevation-1 p-6">
-              <h2 className="text-xl font-bold text-neutral-900 mb-4">Recent Activity</h2>
-              <SectionError
-                message={activity.error?.message || 'Failed to load activity'}
-                onRetry={() => activity.refetch()}
-              />
-            </div>
-          ) : (
-            <div className="bg-white rounded-lg shadow-elevation-1 p-6">
-              <h2 className="text-xl font-bold text-neutral-900 mb-4">Recent Activity</h2>
-              <RecentActivityFeed activities={activity.data?.activities || []} />
-            </div>
-          )}
-        </div>
-
-        {/* ─── Section F: Footer / Last Updated ─────────────────── */}
-        <div className="mt-6 flex items-center justify-between text-sm text-neutral-500">
-          <span>
-            {lastUpdated
-              ? `Last updated: ${new Date(lastUpdated).toLocaleTimeString()}`
-              : 'Loading...'}
-          </span>
-          <button
-            onClick={handleRefreshAll}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-neutral-600 bg-white border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors"
-          >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              />
-            </svg>
-            Refresh
-          </button>
-        </div>
+      {/* ─── Section F: Footer / Last Updated ─────────────────── */}
+      <div className="mt-6 flex items-center justify-between text-sm text-neutral-500">
+        <span>
+          {lastUpdated
+            ? `Last updated: ${new Date(lastUpdated).toLocaleTimeString()}`
+            : 'Loading...'}
+        </span>
+        <button
+          onClick={handleRefreshAll}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-neutral-600 bg-white border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors"
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+          Refresh
+        </button>
+      </div>
     </PageTemplate>
   );
 };
