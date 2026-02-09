@@ -25,7 +25,7 @@ export function PageTemplate({
       {/* Page Header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-h2 text-neutral-900">{title}</h1>
+          <h1 className="text-h2 font-semibold text-neutral-900">{title}</h1>
           {description && <p className="mt-1 text-body text-neutral-600">{description}</p>}
         </div>
         {actions && <div className="flex items-center gap-2">{actions}</div>}
