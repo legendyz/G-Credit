@@ -1,6 +1,6 @@
 # Story 10.6d: Frontend Design System & UI Overhaul
 
-**Status:** needs-fix  
+**Status:** accepted  
 **Priority:** 🔴 HIGH  
 **Estimate:** 20h  
 **Sprint:** Sprint 10  
@@ -30,21 +30,21 @@ The UX Design Specification (`docs/planning/ux-design-specification.md`, 3,321 l
 
 ## Acceptance Criteria
 
-1. [ ] Inter font loaded via Google Fonts CDN; fallback chain: Inter → Segoe UI → system-ui → sans-serif
-2. [ ] Tailwind theme configured with all design tokens (colors, spacing, typography, shadows, radii)
-3. [ ] Shadcn CSS variables updated to match Microsoft Fluent palette (Primary #0078D4)
-4. [ ] `PageTemplate` component created — unified page header + content area + consistent spacing
-5. [ ] Double padding eliminated — Layout provides shell, pages use PageTemplate for content
-6. [ ] `<title>` set to "G-Credit" (not "frontend")
-7. [ ] All 4 Dashboard pages have clean, organized grid layouts
-8. [ ] Admin Dashboard: Recent Activity limited to 5 items with "View All" link
-9. [ ] Analytics page: Charts and statistics properly organized in grid
-10. [ ] Bulk Issuance: Upload area sized appropriately (not oversized cloud icon)
-11. [ ] Manager Dashboard: Fix "Team Dashboard" vs "My Dashboard" title inconsistency
-12. [ ] Analytics page title reflects user role (Admin Analytics / Issuer Analytics)
-13. [ ] Mobile responsive maintained (375px viewport functional)
-14. [ ] All existing tests pass (0 regressions)
-15. [ ] ESLint 0 errors + 0 warnings
+1. [x] Inter font loaded via Google Fonts CDN; fallback chain: Inter → Segoe UI → system-ui → sans-serif
+2. [x] Tailwind theme configured with all design tokens (colors, spacing, typography, shadows, radii)
+3. [x] Shadcn CSS variables updated to match Microsoft Fluent palette (Primary #0078D4)
+4. [x] `PageTemplate` component created — unified page header + content area + consistent spacing
+5. [x] Double padding eliminated — Layout provides shell, pages use PageTemplate for content
+6. [x] `<title>` set to "G-Credit" (not "frontend")
+7. [x] All 4 Dashboard pages have clean, organized grid layouts
+8. [x] Admin Dashboard: Recent Activity limited to 5 items with "View All" link
+9. [x] Analytics page: Charts and statistics properly organized in grid
+10. [x] Bulk Issuance: Upload area sized appropriately (not oversized cloud icon)
+11. [x] Manager Dashboard: Fix "Team Dashboard" vs "My Dashboard" title inconsistency
+12. [x] Analytics page title reflects user role (Admin Analytics / Issuer Analytics)
+13. [x] Mobile responsive maintained (375px viewport functional)
+14. [x] All existing tests pass (0 regressions)
+15. [x] ESLint 0 errors + 0 warnings
 
 ## Tasks / Subtasks
 
@@ -371,3 +371,23 @@ After dev completes the fix, SM must:
    - Shadow-elevation classes produce box-shadow (not "none")
 6. All 15 original ACs re-verified against visual evidence
 7. **No acceptance without visual proof** — lesson from this rejection
+
+### Re-Acceptance (2026-02-09)
+
+**Accepted by:** SM (Bob)  
+**Fix commit:** `602c9ac` — migrate design tokens to Tailwind v4 CSS-first @theme  
+
+**Re-Acceptance Evidence:**
+- Tests: 442/442 passed (0 regressions)
+- ESLint: 0 errors, 0 warnings
+- Build: clean (6.94s)
+- Visual walkthrough: 31/31 screenshots captured, 0 issues detected
+- CSS verification (7/7 PASS):
+  - body.margin: 0px (preflight active)
+  - body.fontFamily: Inter, "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif
+  - Brand bg color: rgb(230, 243, 255) (not transparent)
+  - Shadow: rgba(0,0,0,0.08) 0px 2px 4px (not none)
+  - Neutral color: rgb(59, 58, 57) = #3B3A39 (not black)
+  - Brand CSS rules: 2 (was 0)
+  - Elevation CSS rules: 1 (was 0)
+- All 15 ACs re-verified against code + visual evidence
