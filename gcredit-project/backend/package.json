@@ -21,6 +21,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed": "ts-node prisma/seed.ts",
+    "seed:uat": "ts-node prisma/seed-uat.ts",
+    "seed:reset": "npx prisma migrate reset --force && ts-node prisma/seed-uat.ts",
     "sync:m365": "ts-node scripts/sync-m365.ts"
   },
   "prisma": {
