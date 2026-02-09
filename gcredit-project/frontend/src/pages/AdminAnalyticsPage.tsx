@@ -23,6 +23,7 @@ import {
   TableSkeleton,
   ActivitySkeleton,
 } from '../components/analytics/AnalyticsSkeleton';
+import { PageTemplate } from '../components/layout/PageTemplate';
 
 // ─── Period selector config ────────────────────────────────────────────
 const PERIOD_OPTIONS = [
@@ -39,14 +40,14 @@ interface SectionErrorProps {
 }
 
 const SectionError: React.FC<SectionErrorProps> = ({ message, onRetry }) => (
-  <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center justify-between">
+  <div className="bg-error-light border border-red-200 rounded-lg p-4 flex items-center justify-between">
     <div className="flex items-center gap-2">
-      <span className="text-red-500 text-lg">⚠️</span>
-      <p className="text-sm text-red-700">{message}</p>
+      <span className="text-error text-lg">⚠️</span>
+      <p className="text-sm text-error">{message}</p>
     </div>
     <button
       onClick={onRetry}
-      className="px-3 py-1.5 text-sm font-medium text-red-700 bg-red-100 rounded-lg hover:bg-red-200 transition-colors"
+      className="px-3 py-1.5 text-sm font-medium text-error bg-red-100 rounded-lg hover:bg-red-200 transition-colors"
     >
       Retry
     </button>
@@ -57,11 +58,11 @@ const SectionError: React.FC<SectionErrorProps> = ({ message, onRetry }) => (
 function healthColor(status: string): string {
   switch (status) {
     case 'healthy':
-      return 'bg-green-500';
+      return 'bg-success';
     case 'degraded':
-      return 'bg-yellow-500';
+      return 'bg-warning';
     default:
-      return 'bg-red-500';
+      return 'bg-error';
   }
 }
 
@@ -97,15 +98,10 @@ const AdminAnalyticsPage: React.FC = () => {
     .pop();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        {/* ─── Header ──────────────────────────────────────────── */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Admin Analytics</h1>
-          <p className="text-gray-600">
-            System-wide overview of users, badges, skills, and activity
-          </p>
-        </div>
+    <PageTemplate
+      title="Admin Analytics"
+      description="System-wide overview of users, badges, skills, and activity"
+    >
 
         {/* ─── Section A: KPI Overview Cards ────────────────────── */}
         {overview.isLoading ? (
@@ -118,48 +114,48 @@ const AdminAnalyticsPage: React.FC = () => {
         ) : overview.data ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Total Users */}
-            <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-blue-500">
-              <div className="text-3xl font-bold text-gray-900">{overview.data.users.total}</div>
-              <div className="text-sm text-gray-600 mt-1">Total Users</div>
-              <div className="text-xs text-gray-500 mt-2">
+            <div className="bg-white rounded-lg shadow-elevation-1 p-6 border-l-4 border-brand-500">
+              <div className="text-3xl font-bold text-neutral-900">{overview.data.users.total}</div>
+              <div className="text-sm text-neutral-600 mt-1">Total Users</div>
+              <div className="text-xs text-neutral-500 mt-2">
                 {overview.data.users.activeThisMonth} active this month
               </div>
             </div>
 
             {/* Badges Issued */}
-            <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-green-500">
-              <div className="text-3xl font-bold text-gray-900">
+            <div className="bg-white rounded-lg shadow-elevation-1 p-6 border-l-4 border-success">
+              <div className="text-3xl font-bold text-neutral-900">
                 {overview.data.badges.totalIssued}
               </div>
-              <div className="text-sm text-gray-600 mt-1">Badges Issued</div>
-              <div className="text-xs text-gray-500 mt-2">
+              <div className="text-sm text-neutral-600 mt-1">Badges Issued</div>
+              <div className="text-xs text-neutral-500 mt-2">
                 {(overview.data.badges.claimRate * 100).toFixed(0)}% claim rate
               </div>
             </div>
 
             {/* Active Templates */}
-            <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-purple-500">
-              <div className="text-3xl font-bold text-gray-900">
+            <div className="bg-white rounded-lg shadow-elevation-1 p-6 border-l-4 border-brand-700">
+              <div className="text-3xl font-bold text-neutral-900">
                 {overview.data.badgeTemplates.active}
               </div>
-              <div className="text-sm text-gray-600 mt-1">Active Templates</div>
-              <div className="text-xs text-gray-500 mt-2">
+              <div className="text-sm text-neutral-600 mt-1">Active Templates</div>
+              <div className="text-xs text-neutral-500 mt-2">
                 {overview.data.badgeTemplates.total} total
               </div>
             </div>
 
             {/* System Health */}
-            <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-gray-300">
+            <div className="bg-white rounded-lg shadow-elevation-1 p-6 border-l-4 border-neutral-300">
               <div className="flex items-center gap-2">
                 <span
                   className={`inline-block w-3 h-3 rounded-full ${healthColor(overview.data.systemHealth.status)}`}
                 />
-                <span className="text-xl font-bold text-gray-900 capitalize">
+                <span className="text-xl font-bold text-neutral-900 capitalize">
                   {overview.data.systemHealth.status}
                 </span>
               </div>
-              <div className="text-sm text-gray-600 mt-1">System Health</div>
-              <div className="text-xs text-gray-500 mt-2">
+              <div className="text-sm text-neutral-600 mt-1">System Health</div>
+              <div className="text-xs text-neutral-500 mt-2">
                 Response: {overview.data.systemHealth.apiResponseTime}
               </div>
             </div>
@@ -171,17 +167,17 @@ const AdminAnalyticsPage: React.FC = () => {
           {trends.isLoading ? (
             <ChartSkeleton />
           ) : trends.isError ? (
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Issuance Trends</h2>
+            <div className="bg-white rounded-lg shadow-elevation-1 p-6">
+              <h2 className="text-xl font-bold text-neutral-900 mb-4">Issuance Trends</h2>
               <SectionError
                 message={trends.error?.message || 'Failed to load trends'}
                 onRetry={() => trends.refetch()}
               />
             </div>
           ) : (
-            <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="bg-white rounded-lg shadow-elevation-1 p-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Issuance Trends</h2>
+                <h2 className="text-xl font-bold text-neutral-900">Issuance Trends</h2>
                 <div className="flex gap-2 mt-3 sm:mt-0">
                   {PERIOD_OPTIONS.map((opt) => (
                     <button
@@ -189,8 +185,8 @@ const AdminAnalyticsPage: React.FC = () => {
                       onClick={() => setTrendPeriod(opt.value)}
                       className={`px-3 py-1.5 text-sm font-medium rounded-lg border transition-all ${
                         trendPeriod === opt.value
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                          ? 'border-brand-500 bg-brand-50 text-brand-700'
+                          : 'border-neutral-300 bg-white text-neutral-700 hover:border-neutral-400'
                       }`}
                     >
                       {opt.label}
@@ -202,13 +198,13 @@ const AdminAnalyticsPage: React.FC = () => {
               {/* Totals summary */}
               {trends.data?.totals && (
                 <div className="flex gap-6 mb-4 text-sm">
-                  <span className="text-blue-600 font-medium">
+                  <span className="text-brand-600 font-medium">
                     Issued: {trends.data.totals.issued}
                   </span>
-                  <span className="text-green-600 font-medium">
+                  <span className="text-success font-medium">
                     Claimed: {trends.data.totals.claimed}
                   </span>
-                  <span className="text-red-600 font-medium">
+                  <span className="text-error font-medium">
                     Revoked: {trends.data.totals.revoked}
                   </span>
                 </div>
@@ -226,16 +222,16 @@ const AdminAnalyticsPage: React.FC = () => {
             {performers.isLoading ? (
               <TableSkeleton />
             ) : performers.isError ? (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Top Performers</h2>
+              <div className="bg-white rounded-lg shadow-elevation-1 p-6">
+                <h2 className="text-xl font-bold text-neutral-900 mb-4">Top Performers</h2>
                 <SectionError
                   message={performers.error?.message || 'Failed to load performers'}
                   onRetry={() => performers.refetch()}
                 />
               </div>
             ) : (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">🏆 Top Performers</h2>
+              <div className="bg-white rounded-lg shadow-elevation-1 p-6">
+                <h2 className="text-xl font-bold text-neutral-900 mb-4">🏆 Top Performers</h2>
                 <TopPerformersTable performers={performers.data?.topPerformers || []} />
               </div>
             )}
@@ -246,16 +242,16 @@ const AdminAnalyticsPage: React.FC = () => {
             {skills.isLoading ? (
               <ChartSkeleton />
             ) : skills.isError ? (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Skills Distribution</h2>
+              <div className="bg-white rounded-lg shadow-elevation-1 p-6">
+                <h2 className="text-xl font-bold text-neutral-900 mb-4">Skills Distribution</h2>
                 <SectionError
                   message={skills.error?.message || 'Failed to load skills'}
                   onRetry={() => skills.refetch()}
                 />
               </div>
             ) : (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Skills Distribution</h2>
+              <div className="bg-white rounded-lg shadow-elevation-1 p-6">
+                <h2 className="text-xl font-bold text-neutral-900 mb-4">Skills Distribution</h2>
                 <SkillsDistributionChart
                   topSkills={skills.data?.topSkills || []}
                   skillsByCategory={skills.data?.skillsByCategory || {}}
@@ -270,23 +266,23 @@ const AdminAnalyticsPage: React.FC = () => {
           {activity.isLoading ? (
             <ActivitySkeleton />
           ) : activity.isError ? (
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Activity</h2>
+            <div className="bg-white rounded-lg shadow-elevation-1 p-6">
+              <h2 className="text-xl font-bold text-neutral-900 mb-4">Recent Activity</h2>
               <SectionError
                 message={activity.error?.message || 'Failed to load activity'}
                 onRetry={() => activity.refetch()}
               />
             </div>
           ) : (
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Activity</h2>
+            <div className="bg-white rounded-lg shadow-elevation-1 p-6">
+              <h2 className="text-xl font-bold text-neutral-900 mb-4">Recent Activity</h2>
               <RecentActivityFeed activities={activity.data?.activities || []} />
             </div>
           )}
         </div>
 
         {/* ─── Section F: Footer / Last Updated ─────────────────── */}
-        <div className="mt-6 flex items-center justify-between text-sm text-gray-500">
+        <div className="mt-6 flex items-center justify-between text-sm text-neutral-500">
           <span>
             {lastUpdated
               ? `Last updated: ${new Date(lastUpdated).toLocaleTimeString()}`
@@ -294,7 +290,7 @@ const AdminAnalyticsPage: React.FC = () => {
           </span>
           <button
             onClick={handleRefreshAll}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-neutral-600 bg-white border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path
@@ -307,8 +303,7 @@ const AdminAnalyticsPage: React.FC = () => {
             Refresh
           </button>
         </div>
-      </div>
-    </div>
+    </PageTemplate>
   );
 };
 

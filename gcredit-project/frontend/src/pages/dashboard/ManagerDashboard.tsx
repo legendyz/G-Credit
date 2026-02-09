@@ -16,6 +16,7 @@ import { ErrorDisplay } from '../../components/common/ErrorDisplay';
 import { EmptyState, NoTeamMembersState } from '../../components/common/EmptyState';
 import { cn } from '../../lib/utils';
 import { RefreshCw, Award, Users } from 'lucide-react';
+import { PageTemplate } from '../../components/layout/PageTemplate';
 
 export const ManagerDashboard: React.FC = () => {
   const { data, isLoading, error, refetch, isFetching } = useManagerDashboard();
@@ -47,16 +48,10 @@ export const ManagerDashboard: React.FC = () => {
   const { teamInsights, revocationAlerts } = data;
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 space-y-6">
-      {/* Page Header with Refresh Button */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">
-            Team Dashboard
-          </h1>
-          <p className="text-muted-foreground mt-1">Monitor your team's badge performance</p>
-        </div>
-        {/* Manual refresh button (desktop) */}
+    <PageTemplate
+      title="Manager Dashboard"
+      description="Monitor your team's badge performance"
+      actions={
         <Button
           variant="outline"
           size="sm"
@@ -68,10 +63,11 @@ export const ManagerDashboard: React.FC = () => {
           <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} />
           {isFetching ? 'Refreshing...' : 'Refresh'}
         </Button>
-      </div>
+      }
+    >
 
       {/* AC3: Quick Actions */}
-      <Card>
+      <Card className="shadow-elevation-1">
         <CardHeader>
           <CardTitle className="text-lg">Quick Actions</CardTitle>
         </CardHeader>
@@ -213,7 +209,7 @@ export const ManagerDashboard: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </PageTemplate>
   );
 };
 

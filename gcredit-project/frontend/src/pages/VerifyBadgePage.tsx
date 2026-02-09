@@ -182,7 +182,7 @@ export function VerifyBadgePage() {
       <Card className={`mb-6 ${isRevoked ? 'opacity-60' : ''}`}>
         <CardHeader>
           {isRevoked && (
-            <div className="text-sm text-gray-600 italic mb-2">
+            <div className="text-sm text-neutral-600 italic mb-2">
               Historical Information Only - This badge is no longer valid
             </div>
           )}
@@ -192,7 +192,7 @@ export function VerifyBadgePage() {
               <img
                 src={badge.badge.imageUrl}
                 alt={badge.badge.name}
-                className="w-32 h-32 rounded-lg object-cover border-2 border-gray-200"
+                className="w-32 h-32 rounded-lg object-cover border-2 border-neutral-200"
               />
             )}
 
@@ -213,39 +213,39 @@ export function VerifyBadgePage() {
         <CardContent className="space-y-6">
           {/* Recipient */}
           <div className="flex items-start gap-3">
-            <User className="h-5 w-5 text-gray-500 mt-0.5" />
+            <User className="h-5 w-5 text-neutral-500 mt-0.5" />
             <div>
-              <div className="font-semibold text-sm text-gray-500">Awarded To</div>
+              <div className="font-semibold text-sm text-neutral-500">Awarded To</div>
               <div className="text-lg">{badge.recipient.name}</div>
-              <div className="text-sm text-gray-500">{badge.recipient.email}</div>
+              <div className="text-sm text-neutral-500">{badge.recipient.email}</div>
             </div>
           </div>
 
           {/* Issuer */}
           <div className="flex items-start gap-3">
-            <Building2 className="h-5 w-5 text-gray-500 mt-0.5" />
+            <Building2 className="h-5 w-5 text-neutral-500 mt-0.5" />
             <div>
-              <div className="font-semibold text-sm text-gray-500">Issued By</div>
+              <div className="font-semibold text-sm text-neutral-500">Issued By</div>
               <div className="text-lg">{badge.issuer.name}</div>
-              <div className="text-sm text-gray-500">{badge.issuer.email}</div>
+              <div className="text-sm text-neutral-500">{badge.issuer.email}</div>
             </div>
           </div>
 
           {/* Dates */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-start gap-3">
-              <Calendar className="h-5 w-5 text-gray-500 mt-0.5" />
+              <Calendar className="h-5 w-5 text-neutral-500 mt-0.5" />
               <div>
-                <div className="font-semibold text-sm text-gray-500">Issued On</div>
+                <div className="font-semibold text-sm text-neutral-500">Issued On</div>
                 <div>{format(new Date(badge.issuedAt), 'MMMM d, yyyy')}</div>
               </div>
             </div>
 
             {badge.expiresAt && (
               <div className="flex items-start gap-3">
-                <Calendar className="h-5 w-5 text-gray-500 mt-0.5" />
+                <Calendar className="h-5 w-5 text-neutral-500 mt-0.5" />
                 <div>
-                  <div className="font-semibold text-sm text-gray-500">Expires On</div>
+                  <div className="font-semibold text-sm text-neutral-500">Expires On</div>
                   <div>{format(new Date(badge.expiresAt), 'MMMM d, yyyy')}</div>
                 </div>
               </div>
@@ -254,24 +254,24 @@ export function VerifyBadgePage() {
 
           {/* Criteria */}
           <div className="flex items-start gap-3">
-            <Award className="h-5 w-5 text-gray-500 mt-0.5" />
+            <Award className="h-5 w-5 text-neutral-500 mt-0.5" />
             <div className="flex-1">
-              <div className="font-semibold text-sm text-gray-500 mb-2">
+              <div className="font-semibold text-sm text-neutral-500 mb-2">
                 Criteria for Earning Badge
               </div>
-              <div className="text-gray-700">{badge.badge.criteria}</div>
+              <div className="text-neutral-700">{badge.badge.criteria}</div>
             </div>
           </div>
 
           {/* Skills */}
           {badge.badge.skills && badge.badge.skills.length > 0 && (
             <div>
-              <div className="font-semibold text-sm text-gray-500 mb-2">Skills & Competencies</div>
+              <div className="font-semibold text-sm text-neutral-500 mb-2">Skills & Competencies</div>
               <div className="flex flex-wrap gap-2">
                 {badge.badge.skills.map((skillId: string) => (
                   <span
                     key={skillId}
-                    className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                    className="px-3 py-1 bg-brand-100 text-brand-800 rounded-full text-sm"
                   >
                     {skillId}
                   </span>
@@ -283,7 +283,7 @@ export function VerifyBadgePage() {
           {/* Evidence Files */}
           {badge.evidenceFiles && badge.evidenceFiles.length > 0 && (
             <div>
-              <div className="font-semibold text-sm text-gray-500 mb-2">Evidence</div>
+              <div className="font-semibold text-sm text-neutral-500 mb-2">Evidence</div>
               <div className="space-y-2">
                 {badge.evidenceFiles.map(
                   (file: { blobUrl: string; filename: string }, index: number) => (
@@ -292,7 +292,7 @@ export function VerifyBadgePage() {
                       href={file.blobUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline"
+                      className="flex items-center gap-2 text-brand-600 hover:text-brand-800 hover:underline"
                     >
                       <ExternalLink className="h-4 w-4" />
                       {file.filename}

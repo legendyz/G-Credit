@@ -28,12 +28,12 @@ export function Navbar() {
   }
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200" aria-label="Main navigation">
+    <nav className="bg-white shadow-elevation-1 border-b border-neutral-200" aria-label="Main navigation">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo - Story 8.5: Touch-friendly size */}
           <Link to="/" className="flex items-center min-h-[44px]" aria-label="G-Credit Home">
-            <span className="text-xl font-bold text-blue-600">G-Credit</span>
+            <span className="text-xl font-bold text-brand-600">G-Credit</span>
           </Link>
 
           {/* Navigation Links - Story 8.5: Touch-friendly padding */}
@@ -44,8 +44,8 @@ export function Navbar() {
                 className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
                            flex items-center ${
                              isActive('/')
-                               ? 'text-blue-600 bg-blue-50'
-                               : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50 active:bg-gray-100'
+                               ? 'text-brand-600 bg-brand-50'
+                               : 'text-neutral-700 hover:text-brand-600 hover:bg-neutral-100 active:bg-neutral-200'
                            }`}
                 aria-current={isActive('/') ? 'page' : undefined}
               >
@@ -62,8 +62,8 @@ export function Navbar() {
                     className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
                                flex items-center ${
                                  isActive('/admin/badges')
-                                   ? 'text-blue-600 bg-blue-50'
-                                   : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50 active:bg-gray-100'
+                                   ? 'text-brand-600 bg-brand-50'
+                                   : 'text-neutral-700 hover:text-brand-600 hover:bg-neutral-100 active:bg-neutral-200'
                                }`}
                     aria-current={isActive('/admin/badges') ? 'page' : undefined}
                   >
@@ -76,8 +76,8 @@ export function Navbar() {
                     className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
                                flex items-center ${
                                  isActive('/admin/bulk-issuance')
-                                   ? 'text-blue-600 bg-blue-50'
-                                   : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50 active:bg-gray-100'
+                                   ? 'text-brand-600 bg-brand-50'
+                                   : 'text-neutral-700 hover:text-brand-600 hover:bg-neutral-100 active:bg-neutral-200'
                                }`}
                     aria-current={isActive('/admin/bulk-issuance') ? 'page' : undefined}
                   >
@@ -90,8 +90,8 @@ export function Navbar() {
                     className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
                                flex items-center ${
                                  isActive('/admin/analytics')
-                                   ? 'text-blue-600 bg-blue-50'
-                                   : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50 active:bg-gray-100'
+                                   ? 'text-brand-600 bg-brand-50'
+                                   : 'text-neutral-700 hover:text-brand-600 hover:bg-neutral-100 active:bg-neutral-200'
                                }`}
                     aria-current={isActive('/admin/analytics') ? 'page' : undefined}
                   >
@@ -110,19 +110,19 @@ export function Navbar() {
               aria-label={`Signed in as ${user?.firstName} ${user?.lastName}`}
             >
               <div
-                className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center"
+                className="w-9 h-9 bg-brand-50 rounded-full flex items-center justify-center"
                 aria-hidden="true"
               >
-                <span className="text-blue-600 text-sm font-medium">
+                <span className="text-brand-600 text-sm font-medium">
                   {user?.firstName?.[0]}
                   {user?.lastName?.[0]}
                 </span>
               </div>
               <div className="text-sm hidden lg:block">
-                <p className="font-medium text-gray-900">
+                <p className="font-medium text-neutral-900">
                   {user?.firstName} {user?.lastName}
                 </p>
-                <p className="text-xs text-gray-500 capitalize">{user?.role?.toLowerCase()}</p>
+                <p className="text-xs text-neutral-500 capitalize">{user?.role?.toLowerCase()}</p>
               </div>
             </div>
 
@@ -130,7 +130,7 @@ export function Navbar() {
             <button
               onClick={handleLogout}
               className="flex items-center justify-center min-w-[44px] min-h-[44px]
-                         text-gray-600 hover:text-red-600 hover:bg-red-50 active:bg-red-100
+                         text-neutral-600 hover:text-error hover:bg-error-light active:bg-error-light
                          px-3 py-2 text-sm font-medium transition-colors rounded-lg"
               aria-label="Sign out"
             >

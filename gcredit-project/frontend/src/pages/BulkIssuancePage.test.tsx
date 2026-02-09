@@ -266,7 +266,7 @@ describe('BulkIssuancePage', () => {
       dataTransfer: { files: [] },
     });
 
-    expect(dropZone.className).toContain('border-blue-500');
-    expect(dropZone.className).toContain('bg-blue-50');
+    expect(dropZone.className).toContain('border-brand-500');
+    expect(dropZone.className).toContain('bg-brand-50');
   });
 });

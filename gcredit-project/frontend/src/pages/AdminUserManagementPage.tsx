@@ -27,6 +27,7 @@ import { RoleBadge } from '@/components/admin/RoleBadge';
 import { useAdminUsers } from '@/hooks/useAdminUsers';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useAuthStore } from '@/stores/authStore';
+import { PageTemplate } from '@/components/layout/PageTemplate';
 import type { UserRole, AdminUsersQueryParams } from '@/lib/adminUsersApi';
 
 type SortByField = 'name' | 'email' | 'role' | 'lastLogin' | 'createdAt';
@@ -172,43 +173,36 @@ export function AdminUserManagementPage() {
   const hasFilters = debouncedSearch || roleFilter !== 'ALL' || statusFilter !== 'all';
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
-            <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">User Management</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Manage user roles and access</p>
-          </div>
-        </div>
-        {data && (
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+    <PageTemplate
+      title="User Management"
+      description="Manage user accounts and roles"
+      actions={
+        data ? (
+          <p className="text-sm text-neutral-500">
             {data.pagination.total} user{data.pagination.total !== 1 ? 's' : ''}
           </p>
-        )}
-      </div>
+        ) : undefined
+      }
+    >
 
       {/* Filters */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         {/* Search */}
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
           <Input
             type="text"
             placeholder="Search by name or email..."
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-10 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="pl-10 focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
             aria-label="Search users"
           />
         </div>
 
         {/* Role Filter */}
         <Select value={roleFilter} onValueChange={handleRoleFilterChange}>
-          <SelectTrigger className="w-full sm:w-[180px] focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+          <SelectTrigger className="w-full sm:w-[180px] focus:ring-2 focus:ring-brand-500 focus:ring-offset-2">
             <Filter className="mr-2 h-4 w-4" />
             <SelectValue placeholder="Filter by role" />
           </SelectTrigger>
@@ -223,7 +217,7 @@ export function AdminUserManagementPage() {
 
         {/* Status Filter */}
         <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
-          <SelectTrigger className="w-full sm:w-[150px] focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+          <SelectTrigger className="w-full sm:w-[150px] focus:ring-2 focus:ring-brand-500 focus:ring-offset-2">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -237,19 +231,19 @@ export function AdminUserManagementPage() {
       {/* Loading State */}
       {isLoading && (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-          <span className="ml-2 text-gray-500 dark:text-gray-400">Loading users...</span>
+          <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
+          <span className="ml-2 text-neutral-500">Loading users...</span>
         </div>
       )}
 
       {/* Error State */}
       {isError && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900 dark:bg-red-900/20">
-          <AlertCircle className="mx-auto h-10 w-10 text-red-500" />
-          <h3 className="mt-2 text-lg font-medium text-red-800 dark:text-red-200">
+        <div className="rounded-lg border border-red-200 bg-error-light p-6 text-center">
+          <AlertCircle className="mx-auto h-10 w-10 text-error" />
+          <h3 className="mt-2 text-lg font-medium text-error">
             Failed to load users
           </h3>
-          <p className="mt-1 text-sm text-red-600 dark:text-red-300">
+          <p className="mt-1 text-sm text-error">
             {error instanceof Error ? error.message : 'An error occurred'}
           </p>
           <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>
@@ -260,10 +254,10 @@ export function AdminUserManagementPage() {
 
       {/* Empty State */}
       {isEmpty && (
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-12 text-center dark:border-gray-700 dark:bg-gray-800">
-          <Users className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">No users found</h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-12 text-center">
+          <Users className="mx-auto h-12 w-12 text-neutral-400" />
+          <h3 className="mt-4 text-lg font-medium text-neutral-900">No users found</h3>
+          <p className="mt-1 text-sm text-neutral-500">
             {hasFilters
               ? 'No users match your search criteria. Try adjusting your filters.'
               : 'There are no users in the system yet.'}
@@ -289,8 +283,8 @@ export function AdminUserManagementPage() {
 
           {/* Pagination */}
           {data.pagination.totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-gray-200 pt-4 dark:border-gray-700">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex items-center justify-between border-t border-neutral-200 pt-4">
+              <p className="text-sm text-neutral-500">
                 Showing {(page - 1) * PAGE_SIZE + 1} to{' '}
                 {Math.min(page * PAGE_SIZE, data.pagination.total)} of {data.pagination.total} users
               </p>
@@ -300,7 +294,7 @@ export function AdminUserManagementPage() {
                   size="sm"
                   onClick={() => handlePageChange(page - 1)}
                   disabled={page === 1}
-                  className="min-h-[44px] min-w-[44px] focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  className="min-h-[44px] min-w-[44px] focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
                 >
                   Previous
                 </Button>
@@ -309,7 +303,7 @@ export function AdminUserManagementPage() {
                   size="sm"
                   onClick={() => handlePageChange(page + 1)}
                   disabled={!data.pagination.hasMore}
-                  className="min-h-[44px] min-w-[44px] focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  className="min-h-[44px] min-w-[44px] focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
                 >
                   Next
                 </Button>
@@ -318,7 +312,7 @@ export function AdminUserManagementPage() {
           )}
         </>
       )}
-    </div>
+    </PageTemplate>
   );
 }
 

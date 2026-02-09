@@ -17,6 +17,7 @@ import { EmptyState, NoActivityState } from '../../components/common/EmptyState'
 import { cn } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { RefreshCw, PlusCircle, List } from 'lucide-react';
+import { PageTemplate } from '../../components/layout/PageTemplate';
 
 export const IssuerDashboard: React.FC = () => {
   const { data, isLoading, error, refetch, isFetching } = useIssuerDashboard();
@@ -49,16 +50,10 @@ export const IssuerDashboard: React.FC = () => {
   const { issuanceSummary, recentActivity } = data;
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 space-y-6">
-      {/* Page Header with Refresh Button */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">
-            Issuer Dashboard
-          </h1>
-          <p className="text-muted-foreground mt-1">Track your badge issuance activity</p>
-        </div>
-        {/* Manual refresh button (desktop) */}
+    <PageTemplate
+      title="Issuer Dashboard"
+      description="Track your badge issuance activity"
+      actions={
         <Button
           variant="outline"
           size="sm"
@@ -70,10 +65,11 @@ export const IssuerDashboard: React.FC = () => {
           <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} />
           {isFetching ? 'Refreshing...' : 'Refresh'}
         </Button>
-      </div>
+      }
+    >
 
       {/* AC2: Quick Actions */}
-      <Card>
+      <Card className="shadow-elevation-1">
         <CardHeader>
           <CardTitle className="text-lg">Quick Actions</CardTitle>
         </CardHeader>
@@ -81,7 +77,7 @@ export const IssuerDashboard: React.FC = () => {
           <div className="flex flex-wrap gap-3">
             <Button
               onClick={() => navigate('/admin/badges')}
-              className="flex items-center gap-2 min-h-[44px]"
+              className="flex items-center gap-2 min-h-[44px] bg-brand-600 hover:bg-brand-700 text-white"
             >
               <PlusCircle className="h-4 w-4" />
               Issue New Badge
@@ -123,7 +119,7 @@ export const IssuerDashboard: React.FC = () => {
       </div>
 
       {/* Recent Issuance Activity */}
-      <Card>
+      <Card className="shadow-elevation-1">
         <CardHeader>
           <CardTitle className="text-lg">Recent Issuance Activity</CardTitle>
         </CardHeader>
@@ -201,7 +197,7 @@ export const IssuerDashboard: React.FC = () => {
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageTemplate>
   );
 };
 

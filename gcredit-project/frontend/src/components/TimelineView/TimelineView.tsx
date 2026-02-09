@@ -131,8 +131,8 @@ export function TimelineView() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading your badges...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mx-auto"></div>
+          <p className="mt-4 text-neutral-600">Loading your badges...</p>
         </div>
       </div>
     );
@@ -140,8 +140,8 @@ export function TimelineView() {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">Failed to load badges. Please try again.</p>
+      <div className="bg-error-light border border-red-200 rounded-lg p-4">
+        <p className="text-error">Failed to load badges. Please try again.</p>
       </div>
     );
   }
@@ -187,8 +187,8 @@ export function TimelineView() {
     // Fallback if no scenario matches
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500 text-lg">No badges found</p>
-        <p className="text-gray-400 mt-2">Start earning badges to see them here!</p>
+        <p className="text-neutral-500 text-lg">No badges found</p>
+        <p className="text-neutral-400 mt-2">Start earning badges to see them here!</p>
       </div>
     );
   }
@@ -235,7 +235,7 @@ export function TimelineView() {
 
         {/* Search results count - Story 8.2 */}
         {hasFilters && !showNoResults && (
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-neutral-500 mb-4">
             Showing {displayBadges.length} of {data.badges.length} badges
           </p>
         )}
@@ -243,9 +243,9 @@ export function TimelineView() {
         {/* No results state - Story 8.2 AC1: Include query and suggestions */}
         {showNoResults && (
           <div className="text-center py-12">
-            <div className="mx-auto w-16 h-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+            <div className="mx-auto w-16 h-16 mb-4 rounded-full bg-neutral-100 flex items-center justify-center">
               <svg
-                className="w-8 h-8 text-gray-400"
+                className="w-8 h-8 text-neutral-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -258,10 +258,10 @@ export function TimelineView() {
                 />
               </svg>
             </div>
-            <p className="text-gray-700 text-lg font-medium">
+            <p className="text-neutral-700 text-lg font-medium">
               {searchTerm ? `No badges found for "${searchTerm}"` : 'No badges match your filters'}
             </p>
-            <ul className="text-gray-500 mt-3 space-y-1">
+            <ul className="text-neutral-500 mt-3 space-y-1">
               <li>• Try different keywords</li>
               <li>• Check your spelling</li>
               {hasFilters && <li>• Remove some filters</li>}
@@ -270,16 +270,16 @@ export function TimelineView() {
               {hasFilters && (
                 <button
                   onClick={clearAllFilters}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
-                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 
+                             focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
                 >
                   Clear all filters
                 </button>
               )}
               <a
                 href="/wallet"
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50
-                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50
+                           focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
               >
                 Browse all badges
               </a>
@@ -412,10 +412,10 @@ function GridView({ badges }: GridViewProps) {
               border rounded-lg p-3 md:p-4 cursor-pointer
               transition-all duration-150
               min-h-[44px]
-              hover:border-blue-400 hover:shadow-md
-              active:bg-gray-50
-              focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
-              ${focusedIndex === index ? 'border-blue-400 shadow-md' : 'border-gray-200'}
+              hover:border-brand-400 hover:shadow-md
+              active:bg-neutral-50
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2
+              ${focusedIndex === index ? 'border-brand-400 shadow-md' : 'border-neutral-200'}
             `}
           >
             <img
@@ -427,7 +427,7 @@ function GridView({ badges }: GridViewProps) {
             <h3 className="font-semibold text-center text-sm md:text-base">
               {badge.template.name}
             </h3>
-            <p className="text-xs md:text-sm text-gray-500 text-center">
+            <p className="text-xs md:text-sm text-neutral-500 text-center">
               {badge.template.category}
             </p>
           </div>

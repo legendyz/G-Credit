@@ -18,6 +18,7 @@ import { BadgeEarnedCelebration } from '../../components/common/CelebrationModal
 import { cn } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { RefreshCw, Wallet, Search, CheckCircle } from 'lucide-react';
+import { PageTemplate } from '../../components/layout/PageTemplate';
 
 // Celebration tracking localStorage key (AC1 requirement)
 const CELEBRATED_BADGES_KEY = 'celebratedBadges';
@@ -144,16 +145,10 @@ export const EmployeeDashboard: React.FC = () => {
   const { badgeSummary, currentMilestone, recentBadges, recentAchievements } = data;
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 space-y-6">
-      {/* Page Header with Refresh Button */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">
-            My Dashboard
-          </h1>
-          <p className="text-muted-foreground mt-1">Track your badges and achievements</p>
-        </div>
-        {/* AC1: Manual refresh button (desktop) */}
+    <PageTemplate
+      title="My Dashboard"
+      description="Track your badges and achievements"
+      actions={
         <Button
           variant="outline"
           size="sm"
@@ -165,10 +160,11 @@ export const EmployeeDashboard: React.FC = () => {
           <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} />
           {isFetching ? 'Refreshing...' : 'Refresh'}
         </Button>
-      </div>
+      }
+    >
 
       {/* AC1: Quick Actions */}
-      <Card>
+      <Card className="shadow-elevation-1">
         <CardHeader>
           <CardTitle className="text-lg">Quick Actions</CardTitle>
         </CardHeader>
@@ -417,7 +413,7 @@ export const EmployeeDashboard: React.FC = () => {
           navigate('/wallet');
         }}
       />
-    </div>
+    </PageTemplate>
   );
 };
 

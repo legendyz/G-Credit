@@ -13,8 +13,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { PageLoader } from '../../components/common/LoadingSpinner';
 import { ErrorDisplay } from '../../components/common/ErrorDisplay';
 import { EmptyState, NoActivityState } from '../../components/common/EmptyState';
+import { PageTemplate } from '../../components/layout/PageTemplate';
 import { cn } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
+import {
+  Users,
+  TrendingUp,
+  Award,
+  LayoutTemplate,
+  FileText,
+  BarChart3,
+  Settings,
+} from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
   const { data, isLoading, error, refetch } = useAdminDashboard();
@@ -42,15 +52,7 @@ export const AdminDashboard: React.FC = () => {
   const { systemOverview, recentActivity } = data;
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 space-y-6">
-      {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">
-          Admin Dashboard
-        </h1>
-        <p className="text-muted-foreground mt-1">System overview and platform management</p>
-      </div>
-
+    <PageTemplate title="Admin Dashboard" description="System overview and platform management">
       {/* System Health Banner */}
       <SystemHealthBanner health={systemOverview.systemHealth} />
 
@@ -59,36 +61,36 @@ export const AdminDashboard: React.FC = () => {
         <SummaryCard
           title="Total Users"
           value={systemOverview.totalUsers}
-          icon="👥"
+          icon={<Users className="h-6 w-6 text-brand-600" />}
           description="Platform users"
           onClick={() => navigate('/admin/users')}
         />
         <SummaryCard
           title="Active This Month"
           value={systemOverview.activeUsersThisMonth}
-          icon="📈"
+          icon={<TrendingUp className="h-6 w-6 text-brand-500" />}
           description={`${systemOverview.newUsersThisMonth} new`}
         />
         <SummaryCard
           title="Total Badges Issued"
           value={systemOverview.totalBadgesIssued}
-          icon="🏆"
+          icon={<Award className="h-6 w-6 text-gold" />}
           description="All time"
         />
         <SummaryCard
           title="Active Templates"
           value={systemOverview.activeBadgeTemplates}
-          icon="📋"
+          icon={<LayoutTemplate className="h-6 w-6 text-brand-700" />}
           description="Badge templates"
           onClick={() => navigate('/admin/badges')}
         />
       </div>
 
       {/* Recent Activity */}
-      <Card>
+      <Card className="shadow-elevation-1">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <span>📜</span>
+            <FileText className="h-5 w-5 text-neutral-500" />
             Recent Activity
           </CardTitle>
         </CardHeader>
@@ -101,7 +103,7 @@ export const AdminDashboard: React.FC = () => {
             />
           ) : (
             <div className="space-y-3">
-              {recentActivity.map((activity) => (
+              {recentActivity.slice(0, 5).map((activity) => (
                 <ActivityItem key={activity.id} activity={activity} />
               ))}
             </div>
@@ -110,29 +112,29 @@ export const AdminDashboard: React.FC = () => {
       </Card>
 
       {/* Quick Actions */}
-      <Card>
+      <Card className="shadow-elevation-1">
         <CardHeader>
           <CardTitle className="text-lg">Quick Actions</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <QuickActionButton
-              icon="👥"
+              icon={<Users className="h-6 w-6 text-brand-600" />}
               label="Manage Users"
               onClick={() => navigate('/admin/users')}
             />
             <QuickActionButton
-              icon="📋"
+              icon={<LayoutTemplate className="h-6 w-6 text-brand-600" />}
               label="Badge Templates"
               onClick={() => navigate('/admin/badges')}
             />
             <QuickActionButton
-              icon="📊"
+              icon={<BarChart3 className="h-6 w-6 text-brand-600" />}
               label="Analytics"
               onClick={() => navigate('/admin/analytics')}
             />
             <QuickActionButton
-              icon="⚙️"
+              icon={<Settings className="h-6 w-6 text-neutral-400" />}
               label="Settings"
               disabled
               title="Coming in Phase 2"
@@ -141,7 +143,7 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </PageTemplate>
   );
 };
 
@@ -194,14 +196,17 @@ const SystemHealthBanner: React.FC<{ health: 'healthy' | 'degraded' | 'critical'
 interface SummaryCardProps {
   title: string;
   value: string | number;
-  icon: string;
+  icon: React.ReactNode;
   description?: string;
   onClick?: () => void;
 }
 
 const SummaryCard: React.FC<SummaryCardProps> = ({ title, value, icon, description, onClick }) => (
   <Card
-    className={cn(onClick && 'cursor-pointer hover:bg-accent/50 transition-colors')}
+    className={cn(
+      'shadow-elevation-1 hover:shadow-elevation-2 transition-shadow',
+      onClick && 'cursor-pointer hover:bg-accent/50 transition-colors',
+    )}
     onClick={onClick}
     tabIndex={onClick ? 0 : undefined}
     role={onClick ? 'button' : undefined}
@@ -210,13 +215,11 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ title, value, icon, descripti
     <CardContent className="pt-6">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm text-muted-foreground">{title}</p>
+          <p className="text-sm text-neutral-600">{title}</p>
           <p className="text-3xl font-bold mt-1">{value.toLocaleString()}</p>
-          {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
+          {description && <p className="text-xs text-neutral-500 mt-1">{description}</p>}
         </div>
-        <span className="text-2xl" aria-hidden="true">
-          {icon}
-        </span>
+        <div aria-hidden="true">{icon}</div>
       </div>
     </CardContent>
   </Card>
@@ -263,7 +266,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
 
 // Quick Action Button
 interface QuickActionButtonProps {
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   onClick?: () => void;
   disabled?: boolean;
@@ -285,15 +288,13 @@ const QuickActionButton: React.FC<QuickActionButtonProps> = ({
     title={title}
     className={cn(
       'flex flex-col items-center justify-center gap-2 p-4 rounded-lg border',
-      'bg-card transition-colors',
+      'bg-card shadow-elevation-1 hover:shadow-elevation-2 transition-all',
       !disabled && 'hover:bg-accent/50',
       'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
       className
     )}
   >
-    <span className="text-2xl" aria-hidden="true">
-      {icon}
-    </span>
+    <div aria-hidden="true">{icon}</div>
     <span className="text-sm font-medium">{label}</span>
   </button>
 );

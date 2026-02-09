@@ -57,23 +57,23 @@ export function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-50 to-brand-100 px-4">
       <div className="w-full max-w-md">
         {/* Logo/Branding */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">G-Credit</h1>
-          <p className="text-gray-600 mt-2">Badge Management System</p>
+          <h1 className="text-3xl font-bold text-neutral-900">G-Credit</h1>
+          <p className="text-neutral-600 mt-2">Badge Management System</p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-white rounded-lg shadow-xl p-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Sign In</h2>
+        <div className="bg-white rounded-lg shadow-elevation-4 p-8">
+          <h2 className="text-xl font-semibold text-neutral-900 mb-6">Sign In</h2>
 
           {/* Error Alert - Story 8.3 AC4 */}
           {error && (
             <div
               id="login-error"
-              className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm"
+              className="mb-4 p-3 bg-error-light border border-red-200 rounded-md text-error text-sm"
               role="alert"
               aria-live="assertive"
             >
@@ -88,7 +88,7 @@ export function LoginPage() {
           >
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-1">
                 Email Address
               </label>
               <input
@@ -100,17 +100,17 @@ export function LoginPage() {
                 autoComplete="email"
                 required
                 disabled={isLoading}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-                         placeholder-gray-400 focus:outline-none focus:ring-2 
-                         focus:ring-blue-500 focus:border-blue-500
-                         disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm 
+                         placeholder-neutral-400 focus:outline-none focus:ring-2 
+                         focus:ring-brand-500 focus:border-brand-500
+                         disabled:bg-neutral-100 disabled:cursor-not-allowed"
                 aria-required="true"
               />
             </div>
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-1">
                 Password
               </label>
               <input
@@ -122,10 +122,10 @@ export function LoginPage() {
                 autoComplete="current-password"
                 required
                 disabled={isLoading}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-                         placeholder-gray-400 focus:outline-none focus:ring-2 
-                         focus:ring-blue-500 focus:border-blue-500
-                         disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm 
+                         placeholder-neutral-400 focus:outline-none focus:ring-2 
+                         focus:ring-brand-500 focus:border-brand-500
+                         disabled:bg-neutral-100 disabled:cursor-not-allowed"
                 aria-required="true"
               />
             </div>
@@ -136,9 +136,9 @@ export function LoginPage() {
               disabled={isLoading}
               aria-busy={isLoading}
               className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm 
-                       text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 
-                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-                       disabled:bg-blue-400 disabled:cursor-not-allowed
+                       text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 
+                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500
+                       disabled:bg-brand-400 disabled:cursor-not-allowed
                        transition-colors duration-200"
             >
               {isLoading ? (
@@ -173,13 +173,13 @@ export function LoginPage() {
           </form>
 
           {/* Help Text */}
-          <p className="mt-6 text-center text-xs text-gray-500">
+          <p className="mt-6 text-center text-xs text-neutral-500">
             Contact your administrator if you need access
           </p>
         </div>
 
         {/* Footer */}
-        <p className="mt-4 text-center text-xs text-gray-500">
+        <p className="mt-4 text-center text-xs text-neutral-500">
           © 2026 G-Credit. All rights reserved.
         </p>
       </div>
