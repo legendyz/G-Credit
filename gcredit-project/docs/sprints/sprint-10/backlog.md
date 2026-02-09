@@ -351,7 +351,7 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 | 10.4 | i18n Scan + UX/Code Quality Quick Wins | 🟡 MED | 3h | 1-TD | 🔴 |
 | 10.5 | Analytics: Mock → Real Data | 🟡 MED | 6h | 2-Feature | 🔴 |
 | 10.6a | UI Walkthrough & Screenshot Baseline | 🔴 HIGH | 2h | 3-UAT | 🔴 |
-| 10.6b | Single Badge Issuance UI | 🔴 HIGH | 6h | 2-Feature | 🔴 |
+| 10.6b | Single Badge Issuance UI | 🔴 HIGH | 6h | 2-Feature | ✅ |
 | 10.6c | UAT Test Plan & Seed Data | 🔴 HIGH | 6h | 3-UAT | 🔴 |
 | 10.6d | Design System & UI Overhaul | 🔴 HIGH | 20h | 2-Feature | ✅ |
 | 10.7 | Full UAT Execution | 🔴 HIGH | 12h | 3-UAT | 🔴 |

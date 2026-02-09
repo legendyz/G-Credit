@@ -1,6 +1,6 @@
 # Story 10.6b: Single Badge Issuance UI
 
-**Status:** complete  
+**Status:** accepted  
 **Priority:** 🔴 HIGH  
 **Estimate:** 6h  
 **Sprint:** Sprint 10  

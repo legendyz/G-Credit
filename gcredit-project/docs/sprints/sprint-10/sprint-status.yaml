@@ -21,9 +21,9 @@ metrics:
   total_estimated_hours: 95h
   buffer_hours: 0h  # Extended sprint - no buffer needed
   
-  completed_stories: 9
-  completed_hours: 55h
-  remaining_hours: 34h
+  completed_stories: 10
+  completed_hours: 61h
+  remaining_hours: 28h
   
   # Capacity breakdown
   td_hours: 30h    # Stories 10.1-10.4 + 10.3b + 10.3c (API path fixes from buffer)
@@ -218,12 +218,13 @@ stories:
     title: "Single Badge Issuance UI"
     priority: HIGH
     estimate: 6h
-    actual: null
-    status: backlog
+    actual: 6h
+    status: accepted
     phase: 2-feature
     file: "10-6b-single-badge-issuance-ui.md"
     dependencies: ["10-1", "10-2", "10-3", "10-5"]
     discovered: "Sprint Planning review (2026-02-09)"
+    notes: "IssueBadgePage at /admin/badges/issue. Code review: APPROVED→ACTIVE fix + test rewrite. 453/453 tests pass."
 
   10-6c-uat-test-plan-seed-data:
     title: "UAT Test Plan & Seed Data Preparation"
