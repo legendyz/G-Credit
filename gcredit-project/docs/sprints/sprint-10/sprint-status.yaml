@@ -21,9 +21,9 @@ metrics:
   total_estimated_hours: 95h
   buffer_hours: 0h  # Extended sprint - no buffer needed
   
-  completed_stories: 9
-  completed_hours: 55h
-  remaining_hours: 34h
+  completed_stories: 8
+  completed_hours: 35h
+  remaining_hours: 54h
   
   # Capacity breakdown
   td_hours: 30h    # Stories 10.1-10.4 + 10.3b + 10.3c (API path fixes from buffer)
@@ -239,14 +239,13 @@ stories:
     title: "Frontend Design System & UI Overhaul"
     priority: HIGH
     estimate: 20h
-    actual: 20h
-    status: accepted
-    accepted_date: "2026-02-10"
+    actual: null
+    status: needs-fix
     phase: 2-feature
     file: "10-6d-design-system-ui-overhaul.md"
     dependencies: ["10-6a"]
     discovered: "Story 10.6a UI Walkthrough (2026-02-09)"
-    notes: "All 15 ACs verified. 10 code review fixes applied (4 HIGH + 6 MEDIUM). Tests 442/442, ESLint 0, build clean."
+    notes: "REVERTED from accepted. Root cause: Tailwind v4 ignores tailwind.config.js — all design tokens (brand colors, shadows, spacing, fonts) never generated CSS. Visual walkthrough confirmed zero styling. Must migrate tokens to @theme CSS blocks."
 
   10-7-full-uat-execution:
     title: "Full UAT Execution (All 10 Epics)"

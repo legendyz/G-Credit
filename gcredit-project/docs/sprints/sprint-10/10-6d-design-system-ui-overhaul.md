@@ -1,6 +1,6 @@
 # Story 10.6d: Frontend Design System & UI Overhaul
 
-**Status:** accepted  
+**Status:** needs-fix  
 **Priority:** 🔴 HIGH  
 **Estimate:** 20h  
 **Sprint:** Sprint 10  
