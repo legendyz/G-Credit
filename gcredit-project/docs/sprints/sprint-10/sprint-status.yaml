@@ -21,9 +21,9 @@ metrics:
   total_estimated_hours: 69h
   buffer_hours: 11h
   
-  completed_stories: 6
-  completed_hours: 27h
-  remaining_hours: 36h
+  completed_stories: 7
+  completed_hours: 33h
+  remaining_hours: 30h
   
   # Capacity breakdown
   td_hours: 30h    # Stories 10.1-10.4 + 10.3b + 10.3c (API path fixes from buffer)
@@ -191,11 +191,14 @@ stories:
     title: "Admin Analytics: Mock Data → Real Data"
     priority: MEDIUM
     estimate: 6h
-    actual: null
-    status: backlog
+    actual: 6h
+    status: complete
     phase: 2-feature
     file: "10-5-admin-analytics-real-data.md"
-    dependencies: ["10-3"]  # TODO marker removal
+    dependencies: ["10-3"]
+    completed_date: "2026-02-09"
+    accepted_date: "2026-02-09"
+    commit: "912888a"
 
   # Phase 3: UAT (28h)
   10-6-uat-test-plan-seed-data:
@@ -332,7 +335,7 @@ quality_gates:
     
   test_count:
     target: "≥1087"
-    current: 1087
+    current: 976  # 534 backend + 442 frontend
     
   uat_p0_pass_rate:
     target: "100%"

@@ -1395,7 +1395,7 @@ Sprint 0-2 established this pattern:
    - ✅ 10.2: ESLint Regression 423→<280 + CI Gate (5h, HIGH)
    - ✅ 10.3: TD-018 TODO/FIXME Cleanup (3h, MEDIUM)
    - ✅ 10.4: i18n Chinese String Scan + UX Quick Wins (2.5h, MEDIUM)
-   - ⬜ 10.5: Admin Analytics Real Data (6h, MEDIUM)
+   - ✅ 10.5: Admin Analytics Real Data (6h, MEDIUM)
    - ⬜ 10.6: UAT Test Plan & Seed Data (8h, HIGH)
    - ⬜ 10.7: Full UAT Execution (12h, HIGH)
    - ⬜ 10.8: UAT Bug Fix Buffer (8h, MEDIUM)
