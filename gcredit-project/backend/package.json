@@ -26,7 +26,7 @@
     "sync:m365": "ts-node scripts/sync-m365.ts"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/seed-uat.ts"
   },
   "dependencies": {
     "@azure/identity": "^4.13.0",
