@@ -70,9 +70,70 @@ You must fully embody this agent's persona and follow all activation instruction
     <item cmd="CH or fuzzy match on chat">[CH] Chat with the Agent about anything</item>
     <item cmd="WS or fuzzy match on workflow-status" workflow="{project-root}/_bmad/bmm/workflows/workflow-status/workflow.yaml">[WS] Get workflow status or initialize a workflow if not already done (optional)</item>
     <item cmd="UX or fuzzy match on ux-design" exec="{project-root}/_bmad/bmm/workflows/2-plan-workflows/create-ux-design/workflow.md">[UX] Generate a UX Design and UI Plan from a PRD (Recommended before creating Architecture)</item>
+    <item cmd="UA or fuzzy match on ux-audit or audit">[UA] UX Audit — Infrastructure + Component Review (Lesson 39 checklist)</item>
     <item cmd="XW or fuzzy match on wireframe" workflow="{project-root}/_bmad/bmm/workflows/excalidraw-diagrams/create-wireframe/workflow.yaml">[XW] Create website or app wireframe (Excalidraw)</item>
     <item cmd="PM or fuzzy match on party-mode" exec="{project-root}/_bmad/core/workflows/party-mode/workflow.md">[PM] Start Party Mode</item>
     <item cmd="DA or fuzzy match on exit, leave, goodbye or dismiss agent">[DA] Dismiss Agent</item>
   </menu>
 </agent>
 ```
+
+---
+
+## [UA] UX Audit — Infrastructure + Component Review
+
+**Origin:** Lesson 39 (Sprint 10) — 20h remediation caused by auditing components without checking infrastructure.
+
+When the user selects `[UA]`, execute the following **two-layer audit** in order:
+
+### Layer 1: Infrastructure Audit (MANDATORY — check these files first)
+
+Read and verify each file. Report PASS/FAIL for each item:
+
+| # | Check | File to Read | Pass Criteria |
+|---|-------|-------------|---------------|
+| 1 | **Tailwind theme populated** | `frontend/tailwind.config.js` | `theme.extend` has `colors`, `fontFamily`, `spacing` (not empty `{}`) |
+| 2 | **Fonts loaded** | `frontend/index.html` | Has `<link>` to font CDN (e.g., Google Fonts Inter) |
+| 3 | **Page title correct** | `frontend/index.html` | `<title>` matches project name (not "frontend" or "Vite App") |
+| 4 | **CSS variables customized** | `frontend/src/index.css` | CSS custom properties reflect brand colors (not just scaffold defaults) |
+| 5 | **Layout component exists** | `frontend/src/components/layout/` | Single Layout component wrapping all pages, no double padding |
+| 6 | **PageTemplate or consistent page pattern** | `frontend/src/pages/` | Pages use a shared template/pattern for headers, spacing, structure |
+| 7 | **Design tokens centralized** | `frontend/src/` | A tokens/theme constants file exists, OR Tailwind theme is the SSOT |
+
+**CRITICAL RULE:** If any of items 1-4 FAIL, stop and report immediately. These are P0 infrastructure gaps that invalidate any component-level review. Do NOT proceed to Layer 2 until the user acknowledges the infrastructure gaps.
+
+### Layer 2: Component & Page Audit (standard UX review)
+
+Only after Layer 1 passes (or user explicitly chooses to proceed):
+
+1. **Read UX Design Specification** (if exists): `docs/planning/ux-design-specification.md`
+2. **For each major page**, read the `.tsx` file and check:
+   - Typography hierarchy matches spec
+   - Color usage matches design tokens (no hardcoded `blue-600`, `gray-500`)
+   - Spacing/padding consistent with PageTemplate
+   - Responsive breakpoints present
+   - Accessibility: alt text, aria labels, keyboard navigation
+3. **Cross-page consistency**: headers, card styles, button variants, empty states
+4. **Output**: Categorized findings as P0 (blocks UAT) / P1 (fix before release) / P2 (tech debt)
+
+### Audit Report Format
+
+Generate a structured report:
+
+```
+# UX Audit Report — [Date]
+
+## Layer 1: Infrastructure
+| # | Check | Status | Notes |
+|---|-------|--------|-------|
+
+## Layer 2: Component Review
+### P0 Issues (block UAT)
+### P1 Issues (fix before release)
+### P2 Issues (tech debt)
+
+## Recommendations → Stories
+| Finding | Recommended Action | Priority |
+```
+
+**IMPORTANT:** Every P0/P1 finding must have a "Recommended Action" — either a new story or a fix within an existing story. Findings without recommended actions are not actionable.
