@@ -80,7 +80,7 @@
   - Lesson 37: Jest Asymmetric Matchers Return `any` — Centralized Typed Wrappers
   - Lesson 38: Centralize `eslint-disable` in Utility Files, Not Scattered Across Codebase
   - Lesson 39: UX Spec ≠ Implementation — Design System Foundation Must Be a Sprint 0 Story 🔴
-- [Cross-Sprint Patterns](#cross-sprint-patterns) - 12 patterns
+- [Cross-Sprint Patterns](#cross-sprint-patterns) - 13 patterns
 - [Development Checklists](#development-checklists)
 - [Common Pitfalls](#common-pitfalls-to-avoid)
 - [Best Practices Summary](#best-practices-summary)
@@ -3866,6 +3866,38 @@ Sprint 2: 0.75h/story (copy existing patterns, simple CRUD)
 
 ---
 
+### Pattern 13: UX Spec → Code Translation Requires Explicit Stories (Sprint 10)
+
+**Observation:**
+A 3,321-line UX Design Specification existed from Sprint 0. It defined fonts, colors, typography scales, design tokens, and a phased implementation plan. After 10 sprints, none of it was implemented — `tailwind.config.js` was empty, fonts were never loaded, no design tokens existed.
+
+**Root Cause:**
+Everyone assumed "the spec exists, so someone will implement it." But specs don't auto-translate into code. Without explicit stories, the gap grows silently — each sprint builds more components on bare defaults, increasing remediation cost exponentially.
+
+**The Pattern:**
+```
+Spec Written (Sprint 0) → Assumption: "It'll get done" → 10 sprints pass
+→ Nobody notices (audits review components, not infrastructure)
+→ Discovery at UAT stage → 20h remediation (10x original cost)
+```
+
+**Prevention Pattern:**
+| Spec Section | Must Generate | Verification |
+|-------------|---------------|---------------|
+| Fonts / Typography | Sprint 0 story: "Load fonts + configure Tailwind typography" | `index.html` has `<link>`, `tailwind.config.js` has `fontFamily` |
+| Color System | Sprint 0 story: "Configure Tailwind theme colors" | `tailwind.config.js` has `colors` populated |
+| Design Tokens | Sprint 0 story: "Create design token file" | `tokens.ts` or CSS variables customized |
+| Page Layout | Sprint 0 story: "Create PageTemplate component" | `PageTemplate.tsx` exists and is used by all pages |
+| Component Library | Sprint 1 story: "Customize shadcn theme" | `components.json` + CSS variables match brand |
+
+**Broader Principle:**
+> Every "Phase" or "Implementation Plan" section in a spec document must map 1:1 to backlog stories. If it's not a story, it won't get done. SM should cross-check spec phases against backlog during Sprint Planning.
+
+**Key Takeaway:**
+> Installation ≠ Configuration. Spec ≠ Implementation. Code Review ≠ Visual Review. Each transition requires an explicit story and verification step.
+
+---
+
 ## Development Checklists
 
 ### ✅ Before Starting ANY Story
@@ -3888,6 +3920,8 @@ Sprint 2: 0.75h/story (copy existing patterns, simple CRUD)
 [ ] Confirm all stories have clear acceptance criteria
 [ ] Review lessons learned from previous sprint
 [ ] Update project-context.md if structure changed
+[ ] Cross-check: Do spec "Implementation Phases" have corresponding backlog stories?
+[ ] Cross-check: Were previous UX audit recommendations converted to stories?
 ```
 
 ### ✅ Before Committing Code
@@ -3910,6 +3944,7 @@ Sprint 2: 0.75h/story (copy existing patterns, simple CRUD)
 [ ] Review time estimates vs actual (adjust future estimates)
 [ ] Identify any "yak shaving" moments (prevent next time)
 [ ] Document any new patterns or decisions
+[ ] Visual spot-check: Start the app, verify 2-3 pages match UX spec (every 2-3 sprints)
 ```
 
 ---
@@ -4023,6 +4058,19 @@ Story 3.2 almost created new Azure Storage account (Sprint 0 already had one).
    - Update docs as you go
    - Test everything before committing
 
+7. **Design System & Visual Quality** ⭐ (Added Sprint 10)
+   - Sprint 0 must include "Design System Foundation" story (fonts, theme, tokens, PageTemplate)
+   - UX audit scope includes infrastructure files (`tailwind.config.js`, `index.html`), not just components
+   - Visual UI review (running app + screenshots) every 2-3 sprints
+   - Audit recommendations → stories pipeline (triage at Sprint Planning, never silently ignore)
+   - "Present" ≠ "Configured" — verify values match brand spec, not just that variables exist
+
+8. **Quality Gates from Day 1** ⭐ (Added Sprint 10)
+   - `tsc --noEmit` in CI from Sprint 0 (Lesson 35: 114 type errors accumulated over 8 sprints)
+   - `eslint --max-warnings=0` from Sprint 0 (Lesson 37-38: 204 warnings accumulated)
+   - Visual regression baseline from Sprint 1
+   - Every spec "Phase" must have a corresponding story (Lesson 39: 20h remediation)
+
 ---
 
 ## Metrics to Track
@@ -4079,6 +4127,16 @@ Copy this to each new Sprint Retrospective:
 8. Any security issues discovered?
    - [ ] Yes → Documented in security-notes.md
    - [ ] No
+
+9. Spec-to-Implementation gap check:
+   - [ ] Are all UX/architecture spec "Implementation Phases" covered by backlog stories?
+   - [ ] Were previous audit recommendations converted to stories or explicitly deferred?
+
+10. Visual verification (every 2-3 sprints):
+    - [ ] Start frontend + backend
+    - [ ] Spot-check 3+ pages against UX spec
+    - [ ] Screenshot comparison if baseline exists
+    - [ ] Note any visual regressions
 ```
 
 ---
@@ -4808,6 +4866,43 @@ Created `docs/setup/external-services-setup-guide.md`:
 **Symptom:** App crashes when Graph API unavailable  
 **Cost:** Poor user experience, difficult debugging  
 **Fix:** Feature flags, isEnabled checks, graceful degradation
+
+## Common Pitfalls (Sprint 10 Additions — Lesson 39)
+
+### ❌ Pitfall 19: Writing Spec Without Creating Implementation Stories
+**Symptom:** Comprehensive UX/architecture spec exists but its "Implementation Plan" was never translated into backlog stories  
+**Cost:** 20h remediation (G-Credit Lesson 39) — largest single rework in project history  
+**Fix:** SM cross-checks every spec's "Phase" or "Implementation" sections against backlog. If it's not a story, it won't get done. Add to Sprint Planning checklist.
+
+### ❌ Pitfall 20: UX Audit Scope Limited to Components
+**Symptom:** UX audit reviews `.tsx` component files but never opens `tailwind.config.js`, `index.html`, or layout infrastructure  
+**Cost:** Design system absence goes undetected for 10 sprints  
+**Fix:** UX Audit Infrastructure Checklist (mandatory):
+```
+□ tailwind.config.js — theme colors, fonts, spacing defined?
+□ index.html — font CDN links present? <title> correct?
+□ index.css — CSS variables customized or just scaffold defaults?
+□ Layout component — single source of page chrome?
+□ PageTemplate — consistent header/spacing pattern?
+□ Design tokens file — centralized constants?
+□ Visual comparison — at least 3 pages vs UX spec (requires running app)
+```
+
+### ❌ Pitfall 21: Audit Recommendations Filed but Never Tracked
+**Symptom:** Audit report contains actionable recommendations, but no one converts them to stories  
+**Cost:** Recommendations decay; same issues rediscovered later at higher cost  
+**Fix:** SM triages every audit finding in next Sprint Planning:
+- **Fix Now** → current sprint
+- **Create Story** → add to backlog with priority
+- **Accept Risk** → document decision and rationale
+- **Never:** silently ignore
+
+### ❌ Pitfall 22: Confusing "Present" with "Configured"
+**Symptom:** Audit sees CSS variables in `index.css` and reports "design tokens implemented" — but variables are auto-generated scaffold defaults, not customized  
+**Cost:** False sense of completion; release audit gives 4/5 to a 1/5 reality  
+**Fix:** Auditor must verify values, not just presence. Ask: "Do these values match our brand spec?" not "Do CSS variables exist?"
+
+---
 
 ## Common Pitfalls (Sprint 9 Additions)
 
