@@ -17,18 +17,18 @@ metadata:
 
 # Sprint Metrics (updated daily)
 metrics:
-  total_stories: 12
-  total_estimated_hours: 69h
-  buffer_hours: 11h
+  total_stories: 14
+  total_estimated_hours: 75h
+  buffer_hours: 5h
   
   completed_stories: 7
   completed_hours: 33h
-  remaining_hours: 30h
+  remaining_hours: 36h
   
   # Capacity breakdown
   td_hours: 30h    # Stories 10.1-10.4 + 10.3b + 10.3c (API path fixes from buffer)
-  feature_hours: 6h   # Story 10.5
-  uat_hours: 28h      # Stories 10.6-10.8
+  feature_hours: 12h  # Story 10.5 + 10.6b (single issuance UI)
+  uat_hours: 30h      # Stories 10.6a + 10.6c + 10.7 + 10.8
   release_hours: 6h    # Stories 10.9-10.10
 
 # ============================================================
@@ -200,16 +200,38 @@ stories:
     accepted_date: "2026-02-09"
     commit: "912888a"
 
-  # Phase 3: UAT (28h)
-  10-6-uat-test-plan-seed-data:
-    title: "UAT Test Plan & Seed Data Preparation"
+  # Phase 3: UAT (30h)
+  10-6a-ui-walkthrough-screenshot-baseline:
+    title: "UI Walkthrough & Screenshot Baseline"
     priority: HIGH
-    estimate: 8h
+    estimate: 2h
     actual: null
     status: backlog
     phase: 3-uat
-    file: "10-6-uat-test-plan-seed-data.md"
-    dependencies: ["10-1", "10-2", "10-3", "10-5"]  # Phase 1+2 complete
+    file: "10-6a-ui-walkthrough-screenshot-baseline.md"
+    dependencies: ["10-1", "10-2", "10-3", "10-5"]
+    discovered: "Sprint Planning review (2026-02-09)"
+
+  10-6b-single-badge-issuance-ui:
+    title: "Single Badge Issuance UI"
+    priority: HIGH
+    estimate: 6h
+    actual: null
+    status: backlog
+    phase: 2-feature
+    file: "10-6b-single-badge-issuance-ui.md"
+    dependencies: ["10-1", "10-2", "10-3", "10-5"]
+    discovered: "Sprint Planning review (2026-02-09)"
+
+  10-6c-uat-test-plan-seed-data:
+    title: "UAT Test Plan & Seed Data Preparation"
+    priority: HIGH
+    estimate: 6h
+    actual: null
+    status: backlog
+    phase: 3-uat
+    file: "10-6c-uat-test-plan-seed-data.md"
+    dependencies: ["10-6a", "10-6b"]
     
   10-7-full-uat-execution:
     title: "Full UAT Execution (All 10 Epics)"
@@ -219,7 +241,7 @@ stories:
     status: backlog
     phase: 3-uat
     file: "10-7-full-uat-execution.md"
-    dependencies: ["10-6"]
+    dependencies: ["10-6c"]
     
   10-8-uat-bug-fixes:
     title: "UAT Bug Fixes"
@@ -250,7 +272,7 @@ stories:
     status: backlog
     phase: 4-release
     file: "10-10-merge-main-tag-v1.md"
-    dependencies: ["10-1", "10-2", "10-3", "10-4", "10-5", "10-6", "10-7", "10-8", "10-9"]
+    dependencies: ["10-1", "10-2", "10-3", "10-4", "10-5", "10-6a", "10-6b", "10-6c", "10-7", "10-8", "10-9"]
 
 # ============================================================
 # TECHNICAL DEBT STATUS

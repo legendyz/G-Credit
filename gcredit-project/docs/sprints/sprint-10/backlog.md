@@ -41,12 +41,14 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 |----------|-------|---|-------|
 | **Technical Debt** | 28.5h | 36% | Stories 10.1-10.4 + 10.3b + 10.3c (API path fixes from buffer) |
 | **Feature Enhancement** | 6h | 8% | Story 10.5 (Analytics real data) |
-| **UAT Preparation** | 8h | 10% | Story 10.6 (Test plan + seed data) |
+| **UI Walkthrough** | 2h | 3% | Story 10.6a (Screenshot baseline) |
+| **Feature: Issuance UI** | 6h | 8% | Story 10.6b (Single badge issuance form) |
+| **UAT Preparation** | 6h | 8% | Story 10.6c (Test plan + seed data) |
 | **UAT Execution** | 12h | 15% | Story 10.7 (Full UAT) |
 | **Bug Fix Buffer** | 8h | 10% | Story 10.8 (UAT bug fixes) |
 | **Release Documentation** | 4h | 5% | Story 10.9 (CHANGELOG + docs) |
 | **Release** | 2h | 3% | Story 10.10 (Merge + tag) |
-| **Buffer** | 12.5h | 16% | Sprint buffer (reduced by 5.5h for TD-019 + API path fixes) |
+| **Buffer** | 6.5h | 8% | Sprint buffer (reduced by 5.5h for TD-019 + API path fixes + 6h for 10.6a/b split) |
 | **TOTAL** | **80h** | **100%** | |
 
 ### Velocity Reference (Lessons Learned)
@@ -196,14 +198,50 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 
 ## 📦 Phase 3: UAT (28h)
 
-### Story 10.6: UAT Test Plan & Seed Data Preparation
+### Story 10.6a: UI Walkthrough & Screenshot Baseline
 **Priority:** 🔴 HIGH  
-**Estimate:** 8h  
-**Story Doc:** 📄 [10-6-uat-test-plan-seed-data.md](10-6-uat-test-plan-seed-data.md)  
+**Estimate:** 2h  
+**Story Doc:** 📄 [10-6a-ui-walkthrough-screenshot-baseline.md](10-6a-ui-walkthrough-screenshot-baseline.md)  
 **Status:** 🔴 Not Started  
-**Dependencies:** Phase 1 & 2 complete
+**Dependencies:** Phase 1 & 2 complete  
+**Discovered:** Sprint Planning review (2026-02-09)
 
-**Quick Summary:** Create comprehensive UAT test plan covering all 10 Epics with realistic seed data.
+**Quick Summary:** Visual walkthrough of all pages across 4 roles before UAT. Establish screenshot baseline and verify UI matches UX specs.
+
+**Key Deliverables:**
+- [ ] 4-role UI walkthrough completed
+- [ ] Screenshot baseline saved
+- [ ] UI issues checklist (P0/P1/P2)
+- [ ] Sign-off: UI acceptable for UAT
+
+---
+
+### Story 10.6b: Single Badge Issuance UI
+**Priority:** 🔴 HIGH  
+**Estimate:** 6h  
+**Story Doc:** 📄 [10-6b-single-badge-issuance-ui.md](10-6b-single-badge-issuance-ui.md)  
+**Status:** 🔴 Not Started  
+**Dependencies:** Phase 1 & 2 complete  
+**Discovered:** Sprint Planning review (2026-02-09)
+
+**Quick Summary:** Add frontend form for single badge issuance. Backend API already complete (Sprint 3). Fix IssuerDashboard "Issue New Badge" navigation.
+
+**Key Deliverables:**
+- [ ] IssueBadgePage component + route (`/admin/badges/issue`)
+- [ ] API service function (`issueBadge()`)
+- [ ] Dashboard navigation fix
+- [ ] Unit tests (≥5)
+
+---
+
+### Story 10.6c: UAT Test Plan & Seed Data Preparation
+**Priority:** 🔴 HIGH  
+**Estimate:** 6h  
+**Story Doc:** 📄 [10-6c-uat-test-plan-seed-data.md](10-6c-uat-test-plan-seed-data.md)  
+**Status:** 🔴 Not Started  
+**Dependencies:** Stories 10.6a, 10.6b complete
+
+**Quick Summary:** Create comprehensive UAT test plan covering all 10 Epics (including single issuance) with realistic seed data.
 
 **Key Deliverables:**
 - [ ] UAT test plan (30+ test cases)
@@ -292,12 +330,14 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 | 10.3 | TD-018: TODO/FIXME + UX Critical Fixes | 🔴 HIGH | 5h | 1-TD | 🔴 |
 | 10.4 | i18n Scan + UX/Code Quality Quick Wins | 🟡 MED | 3h | 1-TD | 🔴 |
 | 10.5 | Analytics: Mock → Real Data | 🟡 MED | 6h | 2-Feature | 🔴 |
-| 10.6 | UAT Test Plan & Seed Data | 🔴 HIGH | 8h | 3-UAT | 🔴 |
+| 10.6a | UI Walkthrough & Screenshot Baseline | 🔴 HIGH | 2h | 3-UAT | 🔴 |
+| 10.6b | Single Badge Issuance UI | 🔴 HIGH | 6h | 2-Feature | 🔴 |
+| 10.6c | UAT Test Plan & Seed Data | 🔴 HIGH | 6h | 3-UAT | 🔴 |
 | 10.7 | Full UAT Execution | 🔴 HIGH | 12h | 3-UAT | 🔴 |
 | 10.8 | UAT Bug Fixes | 🟡 MED | 8h | 3-UAT | 🔴 |
 | 10.9 | Release Documentation | 🟡 MED | 4h | 4-Release | 🔴 |
 | 10.10 | Merge + Tag v1.0.0 | 🔴 HIGH | 2h | 4-Release | 🔴 |
-| **Total** | | | **59.5h** | | |
+| **Total** | | | **65.5h** | | |
 
 ---
 
@@ -331,7 +371,9 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 | 10.3 | 🟡 MEDIUM | Self Review | Mixed fixes — moderate scope |
 | 10.4 | 🟢 LOW | Self Review | Simple find-and-replace |
 | 10.5 | 🟡 MEDIUM | AI Review + Self | Frontend-backend integration |
-| 10.6 | 🟢 LOW | Self Review | Documentation + seed script |
+| 10.6a | 🟢 LOW | Self Review | Visual walkthrough — no code |
+| 10.6b | 🟡 MEDIUM | AI Review + Self | Frontend feature — new component + route |
+| 10.6c | 🟢 LOW | Self Review | Documentation + seed script |
 | 10.7 | N/A | N/A | Manual UAT — no code |
 | 10.8 | 🔴 HIGH | AI Review + Self | Bug fixes — high regression risk |
 | 10.9 | 🟢 LOW | Self Review | Documentation only |
@@ -357,7 +399,7 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 Phase 1 (Parallel): 10.1, 10.3, 10.4 can run in parallel
 Phase 1 (Sequential): 10.2 ideally after 10.1
 Phase 2: 10.5 after 10.3 (TODO marker removal)
-Phase 3: 10.6 → 10.7 → 10.8 (strict sequence)
+Phase 3: 10.6a → 10.6b → 10.6c → 10.7 → 10.8 (strict sequence)
 Phase 4: 10.9 → 10.10 (strict sequence, after all others)
 ```
 
@@ -377,7 +419,8 @@ Phase 4: 10.9 → 10.10 (strict sequence, after all others)
 ### Sprint 10 Expectations
 - Stories 10.1-10.5 should **not decrease** test count
 - Story 10.5 adds tests for analytics integration
-- Story 10.6 adds seed data script (testable)
+- Story 10.6b adds single issuance UI (testable)
+- Story 10.6c adds seed data script (testable)
 - Story 10.8 adds regression tests for any bugs found
 - **Target: 1100+ tests at Sprint end**
 

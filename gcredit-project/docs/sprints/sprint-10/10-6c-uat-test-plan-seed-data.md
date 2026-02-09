@@ -1,10 +1,11 @@
-# Story 10.6: UAT Test Plan & Seed Data Preparation
+# Story 10.6c: UAT Test Plan & Seed Data Preparation
 
 **Status:** backlog  
 **Priority:** 🔴 HIGH  
-**Estimate:** 8h  
+**Estimate:** 6h  
 **Sprint:** Sprint 10  
-**Type:** UAT Preparation
+**Type:** UAT Preparation  
+**Split From:** Original Story 10.6 (split into 10.6a + 10.6b + 10.6c on 2026-02-09)
 
 ---
 
@@ -16,7 +17,12 @@ So that **we can systematically validate every feature before v1.0.0 release**.
 
 ## Background
 
-G-Credit has completed 10 Epics across 9 Sprints with 1087 tests at the unit/integration/E2E level. Before tagging v1.0.0, we need manual UAT to validate end-to-end user journeys that automated tests may not fully cover — particularly UX flow, cross-module interactions, and edge cases.
+G-Credit has completed 10 Epics across 9 Sprints with 976 tests at the unit/integration/E2E level. Before tagging v1.0.0, we need manual UAT to validate end-to-end user journeys that automated tests may not fully cover — particularly UX flow, cross-module interactions, and edge cases.
+
+**Note:** Original 8h Story 10.6 was split into three stories:
+- **10.6a** (2h): UI Walkthrough & Screenshot Baseline — visual review before UAT
+- **10.6b** (6h): Single Badge Issuance UI — add missing issuance form
+- **10.6c** (6h): This story — UAT test plan + seed data + known limitations
 
 ## Acceptance Criteria
 
@@ -35,7 +41,7 @@ G-Credit has completed 10 Epics across 9 Sprints with 1087 tests at the unit/int
   - [ ] Epic 1 (Infrastructure): Health check, API availability
   - [ ] Epic 2 (Auth): Register, login, logout, password reset, role access
   - [ ] Epic 3 (Templates): Create, edit, archive, search badge templates
-  - [ ] Epic 4 (Issuance): Issue single badge, claim badge, verify assertion
+  - [ ] Epic 4 (Issuance): Issue single badge (via new 10.6b UI), claim badge, verify assertion
   - [ ] Epic 5 (Wallet): View wallet, timeline, badge detail, evidence, milestones
   - [ ] Epic 6 (Verification): Public verification page, baked badge, JSON-LD
   - [ ] Epic 7 (Sharing): Email share, Teams notification, sharing analytics
