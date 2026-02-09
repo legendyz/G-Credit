@@ -87,7 +87,6 @@ export function SearchInput({
   // Sync internal value with controlled value
   useEffect(() => {
     if (controlledValue !== undefined) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Controlled component value synchronization
       setInternalValue(controlledValue);
     }
   }, [controlledValue]);

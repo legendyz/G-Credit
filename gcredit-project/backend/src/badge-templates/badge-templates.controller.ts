@@ -162,8 +162,11 @@ export class BadgeTemplatesController {
     schema: {
       type: 'object',
       properties: {
-        name: { type: 'string', example: 'TypeScript高级认证' },
-        description: { type: 'string', example: '完成TypeScript高级课程' },
+        name: { type: 'string', example: 'TypeScript Advanced Certification' },
+        description: {
+          type: 'string',
+          example: 'Complete the advanced TypeScript course',
+        },
         category: {
           type: 'string',
           enum: ['achievement', 'skill', 'certification', 'participation'],

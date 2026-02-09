@@ -103,7 +103,6 @@ export const EmployeeDashboard: React.FC = () => {
 
   // Trigger celebration check when data loads
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Mount-only check: show celebration for newly earned badges
     checkAndTriggerCelebration();
   }, [checkAndTriggerCelebration]);
 

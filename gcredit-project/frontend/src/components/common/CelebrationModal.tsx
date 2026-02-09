@@ -66,7 +66,6 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync confetti animation state with modal open prop
       setShowConfetti(true);
       // Clean up confetti after animation
       const timer = setTimeout(() => setShowConfetti(false), 3000);

@@ -52,13 +52,11 @@ export function DeactivateUserDialog({
   const isSelf = user.id === currentUserId;
 
   // Reset form when dialog opens
-  /* eslint-disable react-hooks/set-state-in-effect -- Intentional form reset on dialog open */
   useEffect(() => {
     if (isOpen) {
       setAuditNote('');
     }
   }, [isOpen]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleConfirm = useCallback(async () => {
     try {

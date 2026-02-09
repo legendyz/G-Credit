@@ -82,7 +82,7 @@ export class AdminUsersService {
    *
    * Implements hybrid pagination:
    * - <1000 users: offset-based pagination
-   * - 鈮?000 users: cursor-based pagination
+   * - ≥1000 users: cursor-based pagination
    */
   async findAll(query: AdminUsersQueryDto): Promise<UserListResponse> {
     const {
@@ -342,7 +342,7 @@ export class AdminUsersService {
     });
 
     this.logger.log(
-      `Role updated for user ${result.email}: ${currentUser.role} 鈫?${dto.role} by admin ${adminId}`,
+      `Role updated for user ${result.email}: ${currentUser.role} → ${dto.role} by admin ${adminId}`,
     );
 
     return result as RoleUpdateResponse;

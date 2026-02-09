@@ -391,6 +391,9 @@ _bmad-output/
 | **TD-017: tsc Test-Only Errors** | Low | 📋 Sprint 10 | **Issue:** 114 tsc errors in test files only (0 in src). **Plan:** Fix test type annotations. **Effort:** 5h. |
 | **ESLint Warning Regression** | Medium | 📋 Sprint 10 | **Issue:** Story 8.4 added ~115 warnings (308→423). Dev bumped max-warnings 280→423 without authorization. **Plan:** Reduce back to <300. **Effort:** 4h. |
 | **TD-016: Async Bulk Processing** | Low | 📋 Deferred (P3) | **Issue:** Bulk issuance limited to 20 badges synchronously. **Plan:** Add Redis + Bull Queue for >20 badge async processing. **Effort:** 8h. **Trigger:** When user feedback validates need for >20 badges per batch. |
+| **TD-023: CI Chinese Character Gate** | Low | 📋 Post-v1.0 | **Issue:** No automated CI check for Chinese characters in source code. Currently relies on manual review + coding standards doc. **Plan:** Add `grep [\u4E00-\u9FFF]` scan step to CI workflow, fail on match. **Effort:** 1h. |
+| **TD-024: CI console.log Gate** | Low | 📋 Post-v1.0 | **Issue:** No automated CI check for `console.log/error/warn` in production code. Currently relies on coding standards doc + code review. **Plan:** Add scan step to CI workflow excluding test/spec files, fail on match. **Effort:** 1h. |
+| **TD-025: Husky Pre-commit Hooks** | Low | 📋 Post-v1.0 | **Issue:** No local pre-commit validation. CI is the only quality gate, meaning bad code gets committed before being caught. **Plan:** Install husky + lint-staged, run ESLint + Prettier + related tests on staged files. **Trigger:** When multiple human developers join the project. **Effort:** 2h. |
 | **TD-018: Code TODO Cleanup** | Low | ✅ Sprint 10 Done | **Resolved:** 14 TODO/FIXME markers resolved (6 backend, 5 frontend, 3 test). Hardcoded localhost URLs centralized to apiConfig.ts. Dead nav links fixed. 404 catch-all added. Completed in Story 10.3 (2026-02-08). |
 | **TD-019: Frontend ESLint Cleanup** | High | ✅ Sprint 10 Done | **Resolved:** Frontend ESLint 49 errors + 21,363 warnings → 0 errors + 0 warnings. Added `.gitattributes` (LF normalization), fixed 49 errors (react-hooks, typescript, a11y), 13 eslint-disable with justifications. CI `npm run lint --max-warnings=0` gate added to frontend-tests job. 135 files changed. Completed in Story 10.3b (2026-02-09, commit `80b693e`). |
 | **TD-020: CI E2E Job Missing Frontend Dependency** | Medium | 📋 Sprint 10 (Story 10.4) | **Issue:** `e2e-tests` job in `.github/workflows/test.yml` has `needs: lint-and-unit` (backend only). Frontend lint/test failures do NOT block E2E execution. **Plan:** Change to `needs: [lint-and-unit, frontend-tests]`. **Effort:** 0.5h. **Discovered:** Story 10.3b code review (2026-02-09). |
@@ -932,6 +935,47 @@ _bmad-output/
 - @types/nodemailer
 
 **Version:** v0.9.0-dev (branch: sprint-9/epic-8-bulk-issuance-td-cleanup)
+
+---
+
+## Coding Standards (Quick Reference)
+
+> **Canonical source:** `gcredit-project/docs/development/coding-standards.md` (1055 lines, 14 sections)
+> Dev Agent and Code Review workflows MUST follow these rules.
+
+### Critical Rules
+
+| # | Rule | Detail |
+|---|------|--------|
+| 1 | **All code in English** | Variables, comments, `@ApiProperty`, logs, tests — no Chinese characters in source code |
+| 2 | **Controller prefix `api/`** | Every `@Controller()` must include `api/` (e.g., `@Controller('api/badges')`). No `setGlobalPrefix`. |
+| 3 | **`API_BASE_URL` for all API calls** | Frontend must import from `@/lib/apiConfig.ts`. Never hardcode `/api/...`. |
+| 4 | **Zustand for state management** | Use `create()` + `persist` from Zustand. Do NOT use React Context for global state. Stores in `src/stores/`. |
+| 5 | **NestJS Logger only** | Backend: `private readonly logger = new Logger(ClassName.name)`. No `console.log/error/warn`. |
+| 6 | **Frontend: Sonner toast** | User-facing messages use `toast.success()` / `toast.error()` from `sonner`. No `window.alert`. |
+| 7 | **TODO must reference TD ticket** | Format: `// TODO(TD-XXX): description`. Orphan TODOs flagged in code review. |
+
+### Platform-Specific Conventions
+
+| Item | Backend | Frontend |
+|------|---------|----------|
+| ESLint config | `eslint.config.mjs` (flat, `tseslint.config()`) | `eslint.config.js` (flat, `defineConfig()`) |
+| `no-explicit-any` | `'off'` (MVP phase) | `recommended` default |
+| Prettier `trailingComma` | `"all"` | `"es5"` |
+| Prettier `printWidth` | `80` (default) | `100` |
+| Test file suffix | `.spec.ts` | `.test.ts` / `.test.tsx` |
+| E2E test suffix | `.e2e-spec.ts` | — |
+
+### Pre-commit Checklist
+
+- [ ] `npm run lint` passes (0 errors)
+- [ ] `npm test` passes (all tests)
+- [ ] `npx tsc --noEmit` passes (type check)
+- [ ] No Chinese characters in source code
+- [ ] No `console.log` in production code
+- [ ] All API calls use `API_BASE_URL`
+- [ ] Controller `@Controller()` includes `api/`
+- [ ] DTOs have class-validator decorators + Swagger docs
 
 ---
 

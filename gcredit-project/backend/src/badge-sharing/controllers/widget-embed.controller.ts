@@ -316,7 +316,7 @@ export class WidgetEmbedController {
   const widget = document.querySelector('[data-badge-id="${badge.badgeId}"]');
   if (widget) {
     widget.addEventListener('click', function() {
-      console.log('G-Credit badge clicked:', '${badge.badgeId}');
+      widget.dispatchEvent(new CustomEvent('gcredit:badge-click', { detail: { badgeId: '${badge.badgeId}' }, bubbles: true }));
     });
   }
 })();`.trim();

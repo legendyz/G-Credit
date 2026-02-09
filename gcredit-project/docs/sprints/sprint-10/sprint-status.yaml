@@ -175,12 +175,13 @@ stories:
     title: "i18n Scan + UX/Code Quality Quick Wins"
     priority: MEDIUM
     estimate: 4h
-    actual: null
-    status: backlog
+    actual: 2h
+    status: done
     phase: 1-td
     file: "10-4-i18n-chinese-string-scan.md"
     dependencies: []
     includes: ["TD-020", "TD-021"]
+    completed_date: "2026-02-09"
 
   # Phase 2: Feature Enhancement (6h)
   10-5-admin-analytics-real-data:

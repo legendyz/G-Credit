@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   BlobServiceClient,
@@ -10,6 +10,7 @@ import {
 
 @Injectable()
 export class StorageService implements OnModuleInit {
+  private readonly logger = new Logger(StorageService.name);
   private blobServiceClient: BlobServiceClient;
   private badgesContainer: ContainerClient;
   private evidenceContainer: ContainerClient;
@@ -22,7 +23,7 @@ export class StorageService implements OnModuleInit {
     );
 
     if (!connectionString) {
-      console.warn('⚠️ Azure Storage connection string not configured');
+      this.logger.warn('Azure Storage connection string not configured');
       return;
     }
 
@@ -45,10 +46,10 @@ export class StorageService implements OnModuleInit {
         evidenceContainerName,
       );
 
-      console.log('✅ Azure Storage connected successfully');
+      this.logger.log('Azure Storage connected successfully');
     } catch (error: unknown) {
       const errMsg = error instanceof Error ? error.message : String(error);
-      console.error('❌ Failed to connect to Azure Storage:', errMsg);
+      this.logger.error(`Failed to connect to Azure Storage: ${errMsg}`);
     }
   }
 

@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
@@ -15,6 +16,8 @@ import { TemplateStatus, Prisma } from '@prisma/client';
 
 @Injectable()
 export class BadgeTemplatesService {
+  private readonly logger = new Logger(BadgeTemplatesService.name);
+
   constructor(
     private prisma: PrismaService,
     private blobStorage: BlobStorageService,
@@ -50,7 +53,7 @@ export class BadgeTemplatesService {
 
       // Log image metadata and suggestions
       if (uploadResult.metadata.suggestions) {
-        console.log(
+        this.logger.log(
           `Image optimization suggestions: ${uploadResult.metadata.suggestions.join('; ')}`,
         );
       }
@@ -299,7 +302,7 @@ export class BadgeTemplatesService {
           await this.blobStorage.deleteImage(existing.imageUrl);
         } catch (error) {
           // Log error but don't fail the update
-          console.error('Failed to delete old image:', error);
+          this.logger.error('Failed to delete old image:', error);
         }
       }
 
@@ -313,7 +316,7 @@ export class BadgeTemplatesService {
 
       // Log image metadata and suggestions
       if (uploadResult.metadata.suggestions) {
-        console.log(
+        this.logger.log(
           `Image optimization suggestions: ${uploadResult.metadata.suggestions.join('; ')}`,
         );
       }
@@ -373,7 +376,7 @@ export class BadgeTemplatesService {
       try {
         await this.blobStorage.deleteImage(template.imageUrl);
       } catch (error) {
-        console.error('Failed to delete image:', error);
+        this.logger.error('Failed to delete image:', error);
       }
     }
 

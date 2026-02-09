@@ -48,10 +48,10 @@ if (import.meta.env.DEV) {
           { id: 'aria-input-field-name', enabled: true }, // Input fields named
         ],
       });
-      console.log('🔍 Axe accessibility testing enabled - WCAG 2.1 AA (Story 8.3)');
+      // axe-core initialized — violations logged by axe itself
     })
-    .catch((err) => {
-      console.warn('⚠️ Could not load @axe-core/react:', err);
+    .catch(() => {
+      // @axe-core/react not available — non-critical in DEV
     });
 }
 

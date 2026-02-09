@@ -35,7 +35,6 @@ export default function ProcessingModal({
 
   useEffect(() => {
     if (!isProcessing) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset timer when processing prop transitions to false
       setElapsedSeconds(0);
       return;
     }

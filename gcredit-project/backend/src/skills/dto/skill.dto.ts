@@ -15,14 +15,14 @@ export enum SkillLevel {
 }
 
 export class CreateSkillDto {
-  @ApiProperty({ example: 'React.js', description: '技能名称' })
+  @ApiProperty({ example: 'React.js', description: 'Skill name' })
   @IsString()
   @MaxLength(100)
   name: string;
 
   @ApiPropertyOptional({
     example: 'React 18+ with Hooks and Context',
-    description: '技能描述',
+    description: 'Skill description',
   })
   @IsOptional()
   @IsString()
@@ -30,7 +30,7 @@ export class CreateSkillDto {
 
   @ApiProperty({
     example: 'uuid',
-    description: '所属分类ID',
+    description: 'Category ID',
   })
   @IsUUID()
   categoryId: string;
@@ -38,7 +38,7 @@ export class CreateSkillDto {
   @ApiPropertyOptional({
     enum: SkillLevel,
     example: SkillLevel.INTERMEDIATE,
-    description: '技能等级',
+    description: 'Skill level',
   })
   @IsOptional()
   @IsEnum(SkillLevel)
@@ -46,7 +46,7 @@ export class CreateSkillDto {
 }
 
 export class UpdateSkillDto {
-  @ApiPropertyOptional({ example: 'React.js', description: '技能名称' })
+  @ApiPropertyOptional({ example: 'React.js', description: 'Skill name' })
   @IsOptional()
   @IsString()
   @MaxLength(100)
@@ -54,7 +54,7 @@ export class UpdateSkillDto {
 
   @ApiPropertyOptional({
     example: 'React 18+ with Hooks and Context',
-    description: '技能描述',
+    description: 'Skill description',
   })
   @IsOptional()
   @IsString()
@@ -63,7 +63,7 @@ export class UpdateSkillDto {
   @ApiPropertyOptional({
     enum: SkillLevel,
     example: SkillLevel.INTERMEDIATE,
-    description: '技能等级',
+    description: 'Skill level',
   })
   @IsOptional()
   @IsEnum(SkillLevel)
@@ -92,6 +92,6 @@ export class SkillResponseDto {
   @ApiProperty()
   updatedAt: Date;
 
-  @ApiProperty({ type: Object, description: '所属分类信息' })
+  @ApiProperty({ type: Object, description: 'Category information' })
   category?: any;
 }

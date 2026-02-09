@@ -304,7 +304,7 @@ const BadgeDetailModal: React.FC = () => {
                   badgeId={badge.id}
                   userEmail={badge.recipient.email}
                   onSuccess={() => {
-                    console.log('Report submitted successfully');
+                    toast.success('Report submitted successfully');
                   }}
                 />
               </>

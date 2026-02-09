@@ -7,13 +7,15 @@
  * Desktop navigation (hidden on mobile <768px where MobileNav is used).
  */
 
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { toast } from 'sonner';
 
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuthStore();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const isActive = (path: string) => pathname === path;
 
   const handleLogout = () => {
     logout();
@@ -35,50 +37,70 @@ export function Navbar() {
           </Link>
 
           {/* Navigation Links - Story 8.5: Touch-friendly padding */}
-          <div className="hidden md:flex items-center space-x-1" role="menubar">
-            <Link
-              to="/"
-              className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 active:bg-gray-100
-                         px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
-                         flex items-center"
-              role="menuitem"
-            >
-              My Wallet
-            </Link>
+          <ul className="hidden md:flex items-center space-x-1">
+            <li>
+              <Link
+                to="/"
+                className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
+                           flex items-center ${
+                             isActive('/')
+                               ? 'text-blue-600 bg-blue-50'
+                               : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50 active:bg-gray-100'
+                           }`}
+                aria-current={isActive('/') ? 'page' : undefined}
+              >
+                My Wallet
+              </Link>
+            </li>
 
             {/* Admin Links */}
             {user?.role && ['ADMIN', 'ISSUER'].includes(user.role) && (
               <>
-                <Link
-                  to="/admin/badges"
-                  className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 active:bg-gray-100
-                             px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
-                             flex items-center"
-                  role="menuitem"
-                >
-                  Badge Management
-                </Link>
-                <Link
-                  to="/admin/bulk-issuance"
-                  className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 active:bg-gray-100
-                             px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
-                             flex items-center"
-                  role="menuitem"
-                >
-                  Bulk Issuance
-                </Link>
-                <Link
-                  to="/admin/analytics"
-                  className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 active:bg-gray-100
-                             px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
-                             flex items-center"
-                  role="menuitem"
-                >
-                  Analytics
-                </Link>
+                <li>
+                  <Link
+                    to="/admin/badges"
+                    className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
+                               flex items-center ${
+                                 isActive('/admin/badges')
+                                   ? 'text-blue-600 bg-blue-50'
+                                   : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50 active:bg-gray-100'
+                               }`}
+                    aria-current={isActive('/admin/badges') ? 'page' : undefined}
+                  >
+                    Badge Management
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/admin/bulk-issuance"
+                    className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
+                               flex items-center ${
+                                 isActive('/admin/bulk-issuance')
+                                   ? 'text-blue-600 bg-blue-50'
+                                   : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50 active:bg-gray-100'
+                               }`}
+                    aria-current={isActive('/admin/bulk-issuance') ? 'page' : undefined}
+                  >
+                    Bulk Issuance
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/admin/analytics"
+                    className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
+                               flex items-center ${
+                                 isActive('/admin/analytics')
+                                   ? 'text-blue-600 bg-blue-50'
+                                   : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50 active:bg-gray-100'
+                               }`}
+                    aria-current={isActive('/admin/analytics') ? 'page' : undefined}
+                  >
+                    Analytics
+                  </Link>
+                </li>
               </>
             )}
-          </div>
+          </ul>
 
           {/* User Menu - Story 8.5: Touch-friendly elements */}
           <div className="flex items-center space-x-2 md:space-x-4">

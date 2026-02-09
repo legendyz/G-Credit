@@ -69,7 +69,6 @@ export function EditRoleDialog({
     selectedRole !== user.role && (user.role === 'ADMIN' || selectedRole === 'ADMIN');
 
   // Reset form when dialog opens
-  /* eslint-disable react-hooks/set-state-in-effect -- Intentional form reset on dialog open */
   useEffect(() => {
     if (isOpen) {
       setSelectedRole(user.role);
@@ -77,7 +76,6 @@ export function EditRoleDialog({
       setShowAdminConfirm(false);
     }
   }, [isOpen, user.role]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Focus the select when dialog opens
   useEffect(() => {

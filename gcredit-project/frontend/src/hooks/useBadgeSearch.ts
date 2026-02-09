@@ -136,7 +136,6 @@ export function useBadgeSearch({
 
     // Only trigger server search if we're in server search mode and have a callback
     if (isServerSearch && onServerSearch && hasActiveFilters(activeFilters)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Track async search operation loading state
       setIsSearching(true);
       onServerSearch(activeFilters).finally(() => setIsSearching(false));
     }

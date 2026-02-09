@@ -34,6 +34,8 @@ export default defineConfig([
     },
     rules: {
       'prettier/prettier': 'warn',
+      // TD-021: Disable false-positive rule for legitimate setState-in-effect patterns
+      'react-hooks/set-state-in-effect': 'off',
       // Accessibility rules for Sprint 7 MVP (basic compliance)
       'jsx-a11y/alt-text': 'error', // Images must have alt text
       'jsx-a11y/aria-props': 'error', // Valid ARIA props only

@@ -32,13 +32,13 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   currentFilter = null,
   onExploreCatalog = () => (window.location.href = '/badges/templates'),
   onLearnMore = () => (window.location.href = '/docs/help/earning-badges'),
-  onViewPending = () => console.log('Switch to Pending tab'),
+  onViewPending = () => {},
   onContactSupport = () => {
     // AC 6.8: Pre-filled mailto with subject
     window.location.href = 'mailto:g-credit@outlook.com?subject=Badge%20Revocation%20Inquiry';
   },
   onViewPolicy = () => (window.location.href = '/policies/revocation'),
-  onClearFilters = () => console.log('Clear filters'),
+  onClearFilters = () => {},
 }) => {
   // AC 6.14: Automatic scenario detection and rendering
   switch (scenario) {
