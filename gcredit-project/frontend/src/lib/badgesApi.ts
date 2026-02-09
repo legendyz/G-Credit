@@ -196,12 +196,31 @@ export async function getBadgeById(badgeId: string): Promise<Badge> {
   return handleResponse<Badge>(response);
 }
 
+// --- Single Badge Issuance (Story 10.6b) ---
+
+export interface IssueBadgeRequest {
+  templateId: string;
+  recipientId: string;
+  evidenceUrl?: string;
+  expiresIn?: number;
+}
+
+export async function issueBadge(dto: IssueBadgeRequest): Promise<Badge> {
+  const response = await fetch(`${API_BASE_URL}/badges`, {
+    method: 'POST',
+    headers: getAuthHeader(),
+    body: JSON.stringify(dto),
+  });
+  return handleResponse<Badge>(response);
+}
+
 // Export as namespace for cleaner imports
 export const badgesApi = {
   getAllBadges,
   getIssuedBadges,
   revokeBadge,
   getBadgeById,
+  issueBadge,
 };
 
 export default badgesApi;

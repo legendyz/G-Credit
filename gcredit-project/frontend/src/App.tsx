@@ -24,6 +24,9 @@ const BadgeManagementPage = lazy(() => import('@/pages/admin/BadgeManagementPage
 const AdminUserManagementPage = lazy(() => import('@/pages/AdminUserManagementPage'));
 const BulkIssuancePage = lazy(() => import('@/pages/BulkIssuancePage'));
 const BulkPreviewPage = lazy(() => import('@/components/BulkIssuance/BulkPreviewPage'));
+const IssueBadgePage = lazy(() =>
+  import('@/pages/IssueBadgePage').then((m) => ({ default: m.IssueBadgePage }))
+);
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 /**
@@ -88,6 +91,16 @@ function App() {
                 <ProtectedRoute requiredRoles={['ADMIN', 'ISSUER']}>
                   <Layout pageTitle="Badge Management">
                     <BadgeManagementPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/badges/issue"
+              element={
+                <ProtectedRoute requiredRoles={['ADMIN', 'ISSUER']}>
+                  <Layout pageTitle="Issue Badge">
+                    <IssueBadgePage />
                   </Layout>
                 </ProtectedRoute>
               }
