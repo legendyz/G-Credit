@@ -34,11 +34,8 @@ vi.mock('@/lib/badgesApi', () => ({
   issueBadge: (...args: unknown[]) => mockIssueBadge(...args),
 }));
 
-// Mock adminUsersApi
-const mockGetAdminUsers = vi.fn();
-vi.mock('@/lib/adminUsersApi', () => ({
-  getAdminUsers: (...args: unknown[]) => mockGetAdminUsers(...args),
-}));
+// Note: IssueBadgePage now uses fetch('/badges/recipients') instead of getAdminUsers
+// Recipients are mocked via global.fetch alongside templates
 
 // Mock shadcn Select as native <select> for testability
 vi.mock('@/components/ui/select', () => ({
@@ -127,36 +124,20 @@ const mockTemplates = [
   { id: 'tpl-2', name: 'Security Pro', description: 'Security certification' },
 ];
 
-const mockUsers = [
+const mockRecipients = [
   {
     id: 'user-1',
-    email: 'john@example.com',
     firstName: 'John',
     lastName: 'Doe',
-    role: 'EMPLOYEE' as const,
-    department: null,
-    isActive: true,
-    lastLoginAt: null,
-    roleSetManually: false,
-    roleUpdatedAt: null,
-    roleUpdatedBy: null,
-    roleVersion: 1,
-    createdAt: '2026-01-01T00:00:00Z',
+    email: 'john@example.com',
+    department: 'Engineering',
   },
   {
     id: 'user-2',
-    email: 'jane@example.com',
     firstName: 'Jane',
     lastName: 'Smith',
-    role: 'EMPLOYEE' as const,
-    department: null,
-    isActive: true,
-    lastLoginAt: null,
-    roleSetManually: false,
-    roleUpdatedAt: null,
-    roleUpdatedBy: null,
-    roleVersion: 1,
-    createdAt: '2026-01-01T00:00:00Z',
+    email: 'jane@example.com',
+    department: 'Marketing',
   },
 ];
 
@@ -167,18 +148,17 @@ describe('IssueBadgePage', () => {
     // Mock localStorage
     vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('test-token');
 
-    // Mock fetch for templates
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockTemplates),
-    });
+    // Mock fetch for both templates (first call) and recipients (second call)
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockTemplates),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockRecipients),
+      });
     global.fetch = mockFetch;
-
-    // Mock admin users
-    mockGetAdminUsers.mockResolvedValue({
-      users: mockUsers,
-      pagination: { total: 2, page: 1, limit: 100, totalPages: 1, hasMore: false },
-    });
   });
 
   const renderPage = () =>
@@ -222,12 +202,17 @@ describe('IssueBadgePage', () => {
     });
   });
 
-  it('loads users from admin API on mount', async () => {
+  it('loads recipients from API on mount', async () => {
     renderPage();
 
     await waitFor(() => {
-      expect(mockGetAdminUsers).toHaveBeenCalledWith({ limit: 100, statusFilter: true });
+      // Verify fetch was called at least twice (templates + recipients)
+      expect(mockFetch).toHaveBeenCalledTimes(2);
     });
+
+    // Second call should be for recipients
+    const secondCallUrl = mockFetch.mock.calls[1]?.[0];
+    expect(secondCallUrl).toContain('/badges/recipients');
   });
 
   it('shows validation error when submitting without template', async () => {
@@ -264,9 +249,8 @@ describe('IssueBadgePage', () => {
     const user = userEvent.setup();
     renderPage();
 
-    // Wait for data to load
-    await waitFor(() => expect(mockFetch).toHaveBeenCalled());
-    await waitFor(() => expect(mockGetAdminUsers).toHaveBeenCalled());
+    // Wait for data to load (both templates and recipients via fetch)
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2));
 
     // Select template and recipient via native <select> (mocked)
     const selects = screen.getAllByTestId('native-select');
@@ -299,9 +283,8 @@ describe('IssueBadgePage', () => {
     const user = userEvent.setup();
     renderPage();
 
-    // Wait for data to load
-    await waitFor(() => expect(mockFetch).toHaveBeenCalled());
-    await waitFor(() => expect(mockGetAdminUsers).toHaveBeenCalled());
+    // Wait for data to load (both templates and recipients via fetch)
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2));
 
     // Select template and recipient
     const selects = screen.getAllByTestId('native-select');
@@ -329,10 +312,16 @@ describe('IssueBadgePage', () => {
   });
 
   it('shows error toast when template fetch fails', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      json: () => Promise.resolve({ message: 'Unauthorized' }),
-    });
+    mockFetch.mockReset();
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: false,
+        json: () => Promise.resolve({ message: 'Unauthorized' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockRecipients),
+      });
 
     renderPage();
 
@@ -342,7 +331,17 @@ describe('IssueBadgePage', () => {
   });
 
   it('shows error toast when user fetch fails', async () => {
-    mockGetAdminUsers.mockRejectedValueOnce(new Error('Network error'));
+    // Reset and reconfigure: templates succeed, recipients fail
+    mockFetch.mockReset();
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockTemplates),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        json: () => Promise.resolve({ message: 'Unauthorized' }),
+      });
 
     renderPage();
 

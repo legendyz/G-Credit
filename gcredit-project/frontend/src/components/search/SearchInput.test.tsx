@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SearchInput } from './SearchInput';
 
@@ -28,17 +28,20 @@ describe('SearchInput', () => {
   });
 
   it('calls onChange when input changes in controlled mode', async () => {
-    const user = userEvent.setup();
     const onChange = vi.fn();
 
-    render(<SearchInput value="" onChange={onChange} />);
+    render(<SearchInput value="" onChange={onChange} debounceMs={100} />);
 
     const input = screen.getByRole('searchbox');
-    await user.type(input, 'test');
+    await userEvent.setup().type(input, 'test');
 
-    // Controlled mode: onChange called for each keystroke
-    expect(onChange).toHaveBeenCalledTimes(4);
-    expect(onChange).toHaveBeenLastCalledWith('t');
+    // onChange fires via debounce after typing completes
+    await waitFor(
+      () => {
+        expect(onChange).toHaveBeenCalledWith('test');
+      },
+      { timeout: 2000 }
+    );
   });
 
   it('clears input when clear button is clicked', async () => {
