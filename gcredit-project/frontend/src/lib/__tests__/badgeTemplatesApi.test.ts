@@ -86,8 +86,7 @@ describe('badgeTemplatesApi', () => {
     it('returns data.data when response is paginated', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () =>
-          Promise.resolve({ data: [MOCK_TEMPLATE], total: 1, page: 1, limit: 20 }),
+        json: () => Promise.resolve({ data: [MOCK_TEMPLATE], total: 1, page: 1, limit: 20 }),
       });
 
       const result = await getAllTemplates();
@@ -221,9 +220,9 @@ describe('badgeTemplatesApi', () => {
         json: () => Promise.resolve({ message: 'Name is required' }),
       });
 
-      await expect(
-        createTemplate({ name: '', category: 'skill' })
-      ).rejects.toThrow('Name is required');
+      await expect(createTemplate({ name: '', category: 'skill' })).rejects.toThrow(
+        'Name is required'
+      );
     });
   });
 
@@ -287,9 +286,7 @@ describe('badgeTemplatesApi', () => {
         json: () => Promise.resolve({ message: 'Cannot delete active template' }),
       });
 
-      await expect(deleteTemplate('tpl-1')).rejects.toThrow(
-        'Cannot delete active template'
-      );
+      await expect(deleteTemplate('tpl-1')).rejects.toThrow('Cannot delete active template');
     });
 
     it('does not throw on successful delete', async () => {

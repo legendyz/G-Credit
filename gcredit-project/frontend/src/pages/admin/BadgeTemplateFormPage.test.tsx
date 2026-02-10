@@ -63,20 +63,14 @@ vi.mock('@/components/ui/select', () => ({
       {children}
     </select>
   ),
-  SelectTrigger: ({ children, id }: { children: React.ReactNode; id?: string }) => (
-    <>{children}</>
-  ),
+  SelectTrigger: ({ children }: { children: React.ReactNode; id?: string }) => <>{children}</>,
   SelectValue: ({ placeholder }: { placeholder?: string }) => (
     <option value="">{placeholder || 'Select...'}</option>
   ),
   SelectContent: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  SelectItem: ({
-    children,
-    value,
-  }: {
-    children: React.ReactNode;
-    value: string;
-  }) => <option value={value}>{children}</option>,
+  SelectItem: ({ children, value }: { children: React.ReactNode; value: string }) => (
+    <option value={value}>{children}</option>
+  ),
 }));
 
 // Mock navigate
@@ -168,7 +162,7 @@ describe('BadgeTemplateFormPage', () => {
       const categorySelect = screen.getAllByRole('combobox')[0];
       await user.selectOptions(categorySelect, 'skill');
 
-      // Type then clear name — the input has HTML required, so blank submit 
+      // Type then clear name — the input has HTML required, so blank submit
       // is blocked by native validation. Type something, then clear it.
       const nameInput = screen.getByLabelText(/name/i);
       await user.type(nameInput, '  '); // whitespace only — passes required but fails trim check
@@ -212,9 +206,7 @@ describe('BadgeTemplateFormPage', () => {
       fireEvent.submit(form);
 
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith(
-          'Validity period must be between 1 and 3650 days'
-        );
+        expect(toast.error).toHaveBeenCalledWith('Validity period must be between 1 and 3650 days');
       });
     });
 

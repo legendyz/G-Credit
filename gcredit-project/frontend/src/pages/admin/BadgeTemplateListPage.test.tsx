@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
@@ -241,9 +241,7 @@ describe('BadgeTemplateListPage', () => {
 
       // The Activate button is inside the card actions, find it by exact text "Activate"
       const allButtons = screen.getAllByRole('button');
-      const activateBtn = allButtons.find(
-        (btn) => btn.textContent?.trim() === 'Activate'
-      );
+      const activateBtn = allButtons.find((btn) => btn.textContent?.trim() === 'Activate');
       expect(activateBtn).toBeTruthy();
       await user.click(activateBtn!);
 
@@ -262,9 +260,7 @@ describe('BadgeTemplateListPage', () => {
       });
 
       const allButtons = screen.getAllByRole('button');
-      const activateBtn = allButtons.find(
-        (btn) => btn.textContent?.trim() === 'Activate'
-      );
+      const activateBtn = allButtons.find((btn) => btn.textContent?.trim() === 'Activate');
       expect(activateBtn).toBeTruthy();
       await user.click(activateBtn!);
 
@@ -285,11 +281,7 @@ describe('BadgeTemplateListPage', () => {
         expect(screen.getByText('Cloud Expert')).toBeInTheDocument();
       });
 
-      // Click the first delete button (trash icon)
-      const deleteButtons = screen.getAllByRole('button').filter((btn) => {
-        return btn.querySelector('.lucide-trash-2') !== null;
-      });
-      // Fall back to aria or class-based finder
+      // Find delete button by class
       const trashButtons = screen.getAllByRole('button');
       const deleteBtn = trashButtons.find(
         (btn) => btn.textContent === '' && btn.classList.contains('text-error')
@@ -314,9 +306,7 @@ describe('BadgeTemplateListPage', () => {
 
       // Find delete button by the error text class
       const allButtons = screen.getAllByRole('button');
-      const deleteBtn = allButtons.find((btn) =>
-        btn.className.includes('text-error')
-      );
+      const deleteBtn = allButtons.find((btn) => btn.className.includes('text-error'));
       if (deleteBtn) {
         await user.click(deleteBtn);
       }

@@ -277,9 +277,7 @@ describe('ProfilePage', () => {
       await user.click(screen.getByRole('button', { name: /change password/i }));
 
       await waitFor(() => {
-        expect(
-          screen.getByText('New password must be at least 8 characters')
-        ).toBeInTheDocument();
+        expect(screen.getByText('New password must be at least 8 characters')).toBeInTheDocument();
       });
     });
 
@@ -298,9 +296,7 @@ describe('ProfilePage', () => {
       await user.click(screen.getByRole('button', { name: /change password/i }));
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/must contain at least one uppercase/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/must contain at least one uppercase/i)).toBeInTheDocument();
       });
     });
 
@@ -319,9 +315,7 @@ describe('ProfilePage', () => {
       await user.click(screen.getByRole('button', { name: /change password/i }));
 
       await waitFor(() => {
-        expect(
-          screen.getByText('New password and confirmation do not match')
-        ).toBeInTheDocument();
+        expect(screen.getByText('New password and confirmation do not match')).toBeInTheDocument();
       });
     });
 
