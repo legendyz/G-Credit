@@ -207,9 +207,10 @@ export class BadgeSharingService {
             entityId: badge.id,
             action: 'SHARED',
             actorId: userId,
-            actorEmail: badge.recipientId === userId
-              ? badge.recipient.email
-              : badge.issuer.email,
+            actorEmail:
+              badge.recipientId === userId
+                ? badge.recipient.email
+                : badge.issuer.email,
             metadata: {
               platform: 'email',
               recipientEmail: dto.recipientEmail,
