@@ -2,6 +2,7 @@ import { Injectable, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import type { Request } from 'express';
+import type { Observable } from 'rxjs';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 /**
@@ -17,7 +18,9 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     super();
   }
 
-  async canActivate(context: ExecutionContext) {
+  canActivate(
+    context: ExecutionContext,
+  ): boolean | Promise<boolean> | Observable<boolean> {
     // Check if route is marked as public
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
@@ -29,10 +32,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       const request = context.switchToHttp().getRequest<Request>();
       const authHeader = request.headers.authorization;
       if (authHeader?.startsWith('Bearer ')) {
-        try {
-          await super.canActivate(context);
-        } catch {
-          // Token invalid or expired — allow access as public route
+        const result = super.canActivate(context);
+        if (result instanceof Promise) {
+          // Wait for JWT validation to populate req.user, but always allow access
+          return result.then(() => true).catch(() => true);
         }
       }
       return true;
