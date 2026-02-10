@@ -2,15 +2,17 @@ import React, { useState } from 'react';
 import { toast } from 'sonner';
 
 interface VerificationSectionProps {
-  assertionUrl: string;
+  verificationId: string;
 }
 
-const VerificationSection: React.FC<VerificationSectionProps> = ({ assertionUrl }) => {
+const VerificationSection: React.FC<VerificationSectionProps> = ({ verificationId }) => {
   const [copied, setCopied] = useState(false);
+
+  const verificationUrl = `${window.location.origin}/verify/${verificationId}`;
 
   const handleCopyUrl = async () => {
     try {
-      await navigator.clipboard.writeText(assertionUrl);
+      await navigator.clipboard.writeText(verificationUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -19,8 +21,8 @@ const VerificationSection: React.FC<VerificationSectionProps> = ({ assertionUrl 
   };
 
   const handleVerify = () => {
-    // AC 4.6: Open verification URL in new tab
-    window.open(assertionUrl, '_blank');
+    // AC 4.6: Open verification page in new tab
+    window.open(verificationUrl, '_blank');
   };
 
   return (
@@ -33,7 +35,7 @@ const VerificationSection: React.FC<VerificationSectionProps> = ({ assertionUrl 
         <div className="flex items-center gap-2">
           <input
             type="text"
-            value={assertionUrl}
+            value={verificationUrl}
             readOnly
             className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />

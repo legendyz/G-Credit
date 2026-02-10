@@ -280,7 +280,7 @@ const BadgeDetailModal: React.FC = () => {
                 />
 
                 {/* AC 4.6: Verification Section */}
-                <VerificationSection assertionUrl={badge.assertionUrl} />
+                <VerificationSection verificationId={badge.verificationId} />
 
                 {/* Sprint 6: Badge Share Analytics (Story 7.5) */}
                 <BadgeAnalytics
