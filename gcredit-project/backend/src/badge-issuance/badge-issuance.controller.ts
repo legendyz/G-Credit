@@ -76,8 +76,10 @@ export class BadgeIssuanceController {
   }
 
   @Post(':id/claim')
-  @Public() // No authentication required - anyone with token can claim
-  @ApiOperation({ summary: 'Claim a badge using claim token' })
+  @Public() // No authentication required when using claimToken; auth required when claiming by ID
+  @ApiOperation({
+    summary: 'Claim a badge using claim token or badge ID (authenticated)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Badge claimed successfully',
@@ -98,10 +100,18 @@ export class BadgeIssuanceController {
     },
   })
   @ApiResponse({ status: 400, description: 'Badge already claimed' })
-  @ApiResponse({ status: 404, description: 'Invalid claim token' })
+  @ApiResponse({ status: 404, description: 'Invalid claim token or badge not found' })
   @ApiResponse({ status: 410, description: 'Badge expired or revoked' })
-  async claimBadge(@Param('id') id: string, @Body() dto: ClaimBadgeDto) {
-    return this.badgeService.claimBadge(dto.claimToken);
+  async claimBadge(
+    @Param('id') id: string,
+    @Body() dto: ClaimBadgeDto,
+    @Request() req: RequestWithUser,
+  ) {
+    if (dto.claimToken) {
+      return this.badgeService.claimBadge(dto.claimToken);
+    }
+    // Authenticated user claiming their own badge by ID
+    return this.badgeService.claimBadgeById(id, req.user?.userId);
   }
 
   @Get('my-badges')

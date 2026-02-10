@@ -225,6 +225,34 @@ export class BadgeIssuanceService {
   /**
    * Claim a badge using claim token
    */
+  /**
+   * Claim a badge by ID — authenticated user must be the recipient
+   */
+  async claimBadgeById(badgeId: string, userId?: string) {
+    if (!userId) {
+      throw new BadRequestException(
+        'Authentication required to claim badge by ID',
+      );
+    }
+
+    const badge = await this.prisma.badge.findUnique({
+      where: { id: badgeId },
+      include: { template: true, recipient: true },
+    });
+
+    if (!badge) {
+      throw new NotFoundException('Badge not found');
+    }
+
+    if (badge.recipientId !== userId) {
+      throw new BadRequestException(
+        'You can only claim badges assigned to you',
+      );
+    }
+
+    return this.processClaimBadge(badge);
+  }
+
   async claimBadge(claimToken: string) {
     // 1. Find badge by claim token
     const badge = await this.prisma.badge.findUnique({
@@ -235,6 +263,25 @@ export class BadgeIssuanceService {
       },
     });
 
+    if (!badge) {
+      throw new NotFoundException('Invalid claim token');
+    }
+
+    return this.processClaimBadge(badge);
+  }
+
+  /**
+   * Shared claim logic for both token-based and ID-based claiming
+   */
+  private async processClaimBadge(badge: {
+    id: string;
+    status: string;
+    expiresAt: Date | null;
+    issuedAt: Date;
+    recipientId: string;
+    template: { name: string; description: string | null; imageUrl: string | null };
+    recipient: { id: string; email: string };
+  }) {
     if (!badge) {
       throw new NotFoundException('Invalid claim token');
     }
