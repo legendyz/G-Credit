@@ -42,10 +42,12 @@ import {
   UserListItem,
   RoleUpdateResponse,
   StatusUpdateResponse,
+  DepartmentUpdateResponse,
 } from './admin-users.service';
 import { AdminUsersQueryDto } from './dto/admin-users-query.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
+import { UpdateUserDepartmentDto } from './dto/update-user-department.dto';
 import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
 
 @ApiTags('admin-users')
@@ -213,5 +215,31 @@ export class AdminUsersController {
     const action = dto.isActive ? 'activating' : 'deactivating';
     this.logger.log(`Admin ${req.user.email} ${action} user ${id}`);
     return this.adminUsersService.updateStatus(id, dto, req.user.userId);
+  }
+
+  /**
+   * Update user department
+   * PATCH /api/admin/users/:id/department
+   */
+  @Patch(':id/department')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update user department' })
+  @ApiParam({ name: 'id', type: String, description: 'User ID (UUID)' })
+  @ApiResponse({
+    status: 200,
+    description: 'User department updated successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async updateDepartment(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateUserDepartmentDto,
+    @Request() req: RequestWithUser,
+  ): Promise<DepartmentUpdateResponse> {
+    this.logger.log(
+      `Admin ${req.user.email} updating department for user ${id} to "${dto.department}"`,
+    );
+    return this.adminUsersService.updateDepartment(id, dto, req.user.userId);
   }
 }

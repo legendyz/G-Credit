@@ -9,9 +9,11 @@ import {
   getAdminUsers,
   updateUserRole,
   updateUserStatus,
+  updateUserDepartment,
   type AdminUsersQueryParams,
   type UpdateRoleRequest,
   type UpdateStatusRequest,
+  type UpdateDepartmentRequest,
 } from '@/lib/adminUsersApi';
 
 // Query key factory
@@ -62,6 +64,21 @@ export function useUpdateUserStatus() {
       updateUserStatus(userId, data),
     onSuccess: () => {
       // Invalidate all user lists to refetch
+      queryClient.invalidateQueries({ queryKey: adminUsersKeys.lists() });
+    },
+  });
+}
+
+/**
+ * Hook to update user department
+ */
+export function useUpdateUserDepartment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ userId, data }: { userId: string; data: UpdateDepartmentRequest }) =>
+      updateUserDepartment(userId, data),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminUsersKeys.lists() });
     },
   });

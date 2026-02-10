@@ -72,6 +72,17 @@ export interface UpdateStatusResponse {
   isActive: boolean;
 }
 
+export interface UpdateDepartmentRequest {
+  department: string;
+  auditNote?: string;
+}
+
+export interface UpdateDepartmentResponse {
+  id: string;
+  email: string;
+  department: string;
+}
+
 import { API_BASE_URL } from './apiConfig';
 
 const API_BASE = `${API_BASE_URL}/admin/users`;
@@ -189,6 +200,30 @@ export async function updateUserStatus(
       throw new Error('User not found');
     }
     throw new Error('Failed to update user status');
+  }
+
+  return response.json();
+}
+
+/**
+ * Update user department
+ */
+export async function updateUserDepartment(
+  userId: string,
+  data: UpdateDepartmentRequest
+): Promise<UpdateDepartmentResponse> {
+  const response = await fetch(`${API_BASE}/${userId}/department`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error('User not found');
+    }
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'Failed to update department');
   }
 
   return response.json();

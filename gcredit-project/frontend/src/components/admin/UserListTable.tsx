@@ -24,13 +24,17 @@ import {
   UserCheck,
   ChevronDown,
   ChevronUp,
+  Check,
+  X as XIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { RoleBadge } from './RoleBadge';
 import { StatusBadge } from './StatusBadge';
 import { EditRoleDialog } from './EditRoleDialog';
 import { DeactivateUserDialog } from './DeactivateUserDialog';
 import { useIsMobile, useIsTablet } from '@/hooks/useMediaQuery';
+import { useUpdateUserDepartment } from '@/hooks/useAdminUsers';
 import type { AdminUser } from '@/lib/adminUsersApi';
 
 interface UserListTableProps {
@@ -94,7 +98,11 @@ export function UserListTable({
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [dialogType, setDialogType] = useState<'role' | 'status' | null>(null);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+  const [editingDeptUserId, setEditingDeptUserId] = useState<string | null>(null);
+  const [editingDeptValue, setEditingDeptValue] = useState('');
   const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const deptInputRef = useRef<HTMLInputElement | null>(null);
+  const updateDeptMutation = useUpdateUserDepartment();
 
   // Toggle card expansion (mobile only)
   const toggleCardExpand = useCallback((userId: string) => {
@@ -148,6 +156,38 @@ export function UserListTable({
   const closeDialog = useCallback(() => {
     setSelectedUser(null);
     setDialogType(null);
+  }, []);
+
+  // Inline department editing
+  const startEditDept = useCallback((user: AdminUser) => {
+    setEditingDeptUserId(user.id);
+    setEditingDeptValue(user.department || '');
+    setTimeout(() => deptInputRef.current?.focus(), 50);
+  }, []);
+
+  const saveDept = useCallback(
+    async (userId: string) => {
+      const trimmed = editingDeptValue.trim();
+      if (!trimmed) {
+        setEditingDeptUserId(null);
+        return;
+      }
+      try {
+        await updateDeptMutation.mutateAsync({
+          userId,
+          data: { department: trimmed },
+        });
+        toast.success('Department updated');
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Failed to update department');
+      }
+      setEditingDeptUserId(null);
+    },
+    [editingDeptValue, updateDeptMutation]
+  );
+
+  const cancelEditDept = useCallback(() => {
+    setEditingDeptUserId(null);
   }, []);
 
   // Mobile card view with tap-to-expand (AC1)
@@ -356,7 +396,43 @@ export function UserListTable({
                   </td>
                   {!isTablet && (
                     <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
-                      {user.department || '—'}
+                      {editingDeptUserId === user.id ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            ref={deptInputRef}
+                            type="text"
+                            value={editingDeptValue}
+                            onChange={(e) => setEditingDeptValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') saveDept(user.id);
+                              if (e.key === 'Escape') cancelEditDept();
+                            }}
+                            className="w-28 rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
+                          />
+                          <button
+                            onClick={() => saveDept(user.id)}
+                            className="p-1 text-green-600 hover:text-green-700"
+                            title="Save"
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={cancelEditDept}
+                            className="p-1 text-gray-400 hover:text-gray-600"
+                            title="Cancel"
+                          >
+                            <XIcon className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <span
+                          className="cursor-pointer hover:text-blue-600 hover:underline"
+                          onClick={() => startEditDept(user)}
+                          title="Click to edit department"
+                        >
+                          {user.department || '—'}
+                        </span>
+                      )}
                     </td>
                   )}
                   <td className="whitespace-nowrap px-4 py-3">
