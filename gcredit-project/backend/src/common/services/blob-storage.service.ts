@@ -5,10 +5,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  BlobServiceClient,
-  ContainerClient,
-} from '@azure/storage-blob';
+import { BlobServiceClient, ContainerClient } from '@azure/storage-blob';
 import { v4 as uuidv4 } from 'uuid';
 import sharp from 'sharp';
 
