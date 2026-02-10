@@ -422,7 +422,8 @@ EXAMPLE-DELETE,example@company.com`;
         expect.any(Function),
         expect.objectContaining({
           isolationLevel: 'ReadCommitted',
-          timeout: 10000,
+          timeout: 30000,
+          maxWait: 10000,
         }),
       );
     });

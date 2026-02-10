@@ -431,3 +431,5 @@ export function ProfilePage() {
     </PageTemplate>
   );
 }
+
+export default ProfilePage;
