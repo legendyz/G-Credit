@@ -182,15 +182,16 @@ describe('BulkPreviewPage', () => {
     });
   });
 
-  it('should disable confirm button when errors exist (AC4)', async () => {
+  it('should allow partial confirm when errors exist with valid rows (UX-002)', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve(mockPreviewData), // has errorRows: 2
+      json: () => Promise.resolve(mockPreviewData), // has errorRows: 2, validRows: 10
     });
     renderWithRouter();
     await waitFor(() => {
       const confirmBtn = screen.getByText(/Confirm Issuance/);
-      expect(confirmBtn).toBeDisabled();
+      expect(confirmBtn).not.toBeDisabled();
+      expect(confirmBtn.textContent).toContain('10 of 12');
     });
   });
 

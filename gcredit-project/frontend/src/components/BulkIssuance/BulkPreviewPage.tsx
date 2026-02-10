@@ -155,7 +155,7 @@ export default function BulkPreviewPage() {
   };
 
   const handleConfirmClick = () => {
-    if (!previewData || previewData.validRows === 0 || previewData.errorRows > 0) return;
+    if (!previewData || previewData.validRows === 0) return;
     setShowConfirmModal(true);
   };
 
@@ -366,14 +366,16 @@ export default function BulkPreviewPage() {
 
         <button
           onClick={handleConfirmClick}
-          disabled={previewData.validRows === 0 || previewData.errorRows > 0}
+          disabled={previewData.validRows === 0}
           className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-            previewData.validRows > 0 && previewData.errorRows === 0
+            previewData.validRows > 0
               ? 'bg-green-600 text-white hover:bg-green-700'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >
-          Confirm Issuance ({previewData.validRows} badges) →
+          {previewData.errorRows > 0
+            ? `Confirm Issuance (${previewData.validRows} of ${previewData.totalRows} badges) →`
+            : `Confirm Issuance (${previewData.validRows} badges) →`}
         </button>
       </div>
 

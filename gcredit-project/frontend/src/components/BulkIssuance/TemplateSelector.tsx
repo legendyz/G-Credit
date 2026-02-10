@@ -129,9 +129,19 @@ export function TemplateSelector({ onSelect, disabled = false }: TemplateSelecto
             role="combobox"
           />
           {selectedTemplate && (
-            <span className="absolute right-8 top-1/2 -translate-y-1/2 text-xs text-gray-400">
-              {selectedTemplate.id.substring(0, 8)}...
-            </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(selectedTemplate.id);
+                toast.success('Template ID copied to clipboard');
+              }}
+              className="absolute right-8 top-1/2 -translate-y-1/2 text-xs text-gray-400 hover:text-brand-600 cursor-pointer"
+              title={`Click to copy: ${selectedTemplate.id}`}
+              aria-label="Copy template ID"
+            >
+              📋 {selectedTemplate.id.substring(0, 8)}...
+            </button>
           )}
         </div>
         {selectedTemplate && (

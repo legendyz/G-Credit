@@ -70,19 +70,21 @@ export const AdminDashboard: React.FC = () => {
           value={systemOverview.activeUsersThisMonth}
           icon={<TrendingUp className="h-6 w-6 text-brand-500" />}
           description={`${systemOverview.newUsersThisMonth} new`}
+          onClick={() => navigate('/admin/analytics')}
         />
         <SummaryCard
           title="Total Badges Issued"
           value={systemOverview.totalBadgesIssued}
           icon={<Award className="h-6 w-6 text-gold" />}
           description="All time"
+          onClick={() => navigate('/admin/analytics')}
         />
         <SummaryCard
           title="Active Templates"
           value={systemOverview.activeBadgeTemplates}
           icon={<LayoutTemplate className="h-6 w-6 text-brand-700" />}
           description="Badge templates"
-          onClick={() => navigate('/admin/badges')}
+          onClick={() => navigate('/admin/templates')}
         />
       </div>
 
@@ -214,8 +216,8 @@ interface SummaryCardProps {
 const SummaryCard: React.FC<SummaryCardProps> = ({ title, value, icon, description, onClick }) => (
   <Card
     className={cn(
-      'shadow-elevation-1 hover:shadow-elevation-2 transition-shadow',
-      onClick && 'cursor-pointer hover:bg-accent/50 transition-colors'
+      'shadow-elevation-1 transition-shadow',
+      onClick && 'cursor-pointer hover:shadow-elevation-2 hover:bg-accent/50 transition-colors'
     )}
     onClick={onClick}
     tabIndex={onClick ? 0 : undefined}

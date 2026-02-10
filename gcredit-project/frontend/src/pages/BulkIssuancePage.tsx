@@ -34,7 +34,7 @@ export function BulkIssuancePage() {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileSelected, setFileSelected] = useState(false);
-  const [, setSelectedTemplateId] = useState<string | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [uploadResult, setUploadResult] = useState<{
     totalRows: number;
     validRows: number;
@@ -48,7 +48,10 @@ export function BulkIssuancePage() {
   const handleDownloadTemplate = useCallback(async () => {
     setIsDownloading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/bulk-issuance/template`, {
+      const templateUrl = selectedTemplateId
+        ? `${API_BASE_URL}/bulk-issuance/template?templateId=${encodeURIComponent(selectedTemplateId)}`
+        : `${API_BASE_URL}/bulk-issuance/template`;
+      const response = await fetch(templateUrl, {
         headers: getAuthHeaders(),
       });
 
@@ -80,7 +83,7 @@ export function BulkIssuancePage() {
     } finally {
       setIsDownloading(false);
     }
-  }, []);
+  }, [selectedTemplateId]);
 
   /**
    * Validate file before upload
