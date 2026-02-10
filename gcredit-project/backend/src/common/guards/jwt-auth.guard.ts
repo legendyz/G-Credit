@@ -1,6 +1,7 @@
 import { Injectable, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
+import type { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 /**
@@ -25,8 +26,8 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
     if (isPublic) {
       // Still try to authenticate if a Bearer token is present (best-effort)
-      const request = context.switchToHttp().getRequest();
-      const authHeader = request.headers?.authorization;
+      const request = context.switchToHttp().getRequest<Request>();
+      const authHeader = request.headers.authorization;
       if (authHeader?.startsWith('Bearer ')) {
         try {
           await super.canActivate(context);

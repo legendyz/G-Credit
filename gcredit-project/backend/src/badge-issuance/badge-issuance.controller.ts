@@ -100,7 +100,10 @@ export class BadgeIssuanceController {
     },
   })
   @ApiResponse({ status: 400, description: 'Badge already claimed' })
-  @ApiResponse({ status: 404, description: 'Invalid claim token or badge not found' })
+  @ApiResponse({
+    status: 404,
+    description: 'Invalid claim token or badge not found',
+  })
   @ApiResponse({ status: 410, description: 'Badge expired or revoked' })
   async claimBadge(
     @Param('id') id: string,

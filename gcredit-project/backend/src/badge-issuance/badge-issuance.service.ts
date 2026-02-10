@@ -279,7 +279,11 @@ export class BadgeIssuanceService {
     expiresAt: Date | null;
     issuedAt: Date;
     recipientId: string;
-    template: { name: string; description: string | null; imageUrl: string | null };
+    template: {
+      name: string;
+      description: string | null;
+      imageUrl: string | null;
+    };
     recipient: { id: string; email: string };
   }) {
     if (!badge) {
