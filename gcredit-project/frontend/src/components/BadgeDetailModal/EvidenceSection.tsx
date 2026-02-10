@@ -75,10 +75,10 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
         throw new Error('Failed to generate download link');
       }
 
-      const { sasUrl } = await response.json();
+      const { url } = await response.json();
 
       // Open in new tab to trigger download
-      window.open(sasUrl, '_blank');
+      window.open(url, '_blank');
     } catch {
       toast.error('Download failed', {
         description: 'Unable to download file. Please try again.',
@@ -107,10 +107,10 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
         throw new Error('Failed to generate preview link');
       }
 
-      const { sasUrl } = await response.json();
+      const { url } = await response.json();
 
       // Open in new tab for preview
-      window.open(sasUrl, '_blank');
+      window.open(url, '_blank');
     } catch {
       toast.error('Preview failed', {
         description: 'Unable to preview file. Please try again.',
@@ -143,7 +143,7 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
   }
 
   return (
-    <div className="py-6 border-t">
+    <section className="px-6 py-6 border-b">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
         Evidence Files ({evidenceFiles.length})
       </h3>
@@ -170,7 +170,7 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
               {(file.mimeType.startsWith('image/') || file.mimeType.includes('pdf')) && (
                 <button
                   onClick={() => handlePreview(file.id, file.mimeType)}
-                  className="px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors"
+                  className="px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors cursor-pointer"
                   aria-label={`Preview ${file.originalName}`}
                 >
                   Preview
@@ -180,7 +180,7 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
               {/* AC 3.9: Download with SAS token */}
               <button
                 onClick={() => handleDownload(file.id)}
-                className="px-3 py-1.5 text-xs font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-200 rounded transition-colors"
+                className="px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors cursor-pointer"
                 aria-label={`Download ${file.originalName}`}
               >
                 Download
@@ -194,7 +194,7 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
       {evidenceFiles.length >= 5 && (
         <p className="mt-3 text-xs text-gray-500 italic">Maximum of 5 evidence files reached</p>
       )}
-    </div>
+    </section>
   );
 };
 
