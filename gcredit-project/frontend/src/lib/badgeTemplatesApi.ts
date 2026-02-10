@@ -85,9 +85,8 @@ export async function createTemplate(
   formData.append('name', data.name);
   if (data.description) formData.append('description', data.description);
   formData.append('category', data.category);
-  if (data.skillIds) {
-    data.skillIds.forEach((id) => formData.append('skillIds', id));
-  }
+  // Always send skillIds — even empty array — as JSON string for MultipartJsonInterceptor
+  formData.append('skillIds', JSON.stringify(data.skillIds || []));
   if (data.issuanceCriteria) {
     formData.append('issuanceCriteria', JSON.stringify(data.issuanceCriteria));
   }
@@ -124,9 +123,8 @@ export async function updateTemplate(
   if (data.name !== undefined) formData.append('name', data.name);
   if (data.description !== undefined) formData.append('description', data.description);
   if (data.category !== undefined) formData.append('category', data.category);
-  if (data.skillIds) {
-    data.skillIds.forEach((id) => formData.append('skillIds', id));
-  }
+  // Always send skillIds as JSON string for MultipartJsonInterceptor
+  formData.append('skillIds', JSON.stringify(data.skillIds || []));
   if (data.issuanceCriteria !== undefined) {
     formData.append('issuanceCriteria', JSON.stringify(data.issuanceCriteria));
   }

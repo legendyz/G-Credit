@@ -182,7 +182,7 @@ describe('badgeTemplatesApi', () => {
       expect(formData.get('name')).toBe('Cloud Expert');
       expect(formData.get('description')).toBe('Cloud cert');
       expect(formData.get('category')).toBe('certification');
-      expect(formData.getAll('skillIds')).toEqual(['skill-1', 'skill-2']);
+      expect(formData.get('skillIds')).toBe('["skill-1","skill-2"]');
       expect(formData.get('issuanceCriteria')).toBe('{"type":"manual"}');
       expect(formData.get('validityPeriod')).toBe('365');
     });

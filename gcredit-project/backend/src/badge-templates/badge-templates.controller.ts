@@ -187,7 +187,7 @@ export class BadgeTemplatesController {
           description: 'Badge template image (PNG/JPG, max 2MB)',
         },
       },
-      required: ['name', 'category', 'skillIds', 'issuanceCriteria'],
+      required: ['name', 'category'],
     },
   })
   @ApiResponse({

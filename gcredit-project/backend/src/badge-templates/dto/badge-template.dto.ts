@@ -49,14 +49,16 @@ export class CreateBadgeTemplateDto {
   })
   category: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: ['uuid-1', 'uuid-2'],
-    description: 'Associated skill IDs',
+    description: 'Associated skill IDs (optional, defaults to empty array)',
     type: [String],
+    default: [],
   })
+  @IsOptional()
   @IsArray()
   @IsUUID('4', { each: true })
-  skillIds: string[];
+  skillIds: string[] = [];
 
   @ApiProperty({
     example: {
