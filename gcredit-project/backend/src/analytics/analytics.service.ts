@@ -371,7 +371,7 @@ export class AnalyticsService {
       skillStats.set(skill.id, {
         skillId: skill.id,
         skillName: skill.name,
-        categoryName: skill.category.name,
+        categoryName: skill.category.nameEn || skill.category.name,
         badgeCount: 0,
         employees: new Set(),
       });
