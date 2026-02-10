@@ -66,13 +66,13 @@ const IDS = {
   scatCloud: 'uat-scat-0001-0001-0001-000000000012',
   scatCommunication: 'uat-scat-0001-0001-0001-000000000021',
   scatLeadership: 'uat-scat-0001-0001-0001-000000000022',
-  // Skills
-  skillTypescript: 'uat-skil-0001-0001-0001-000000000001',
-  skillAzure: 'uat-skil-0001-0001-0001-000000000002',
-  skillDocker: 'uat-skil-0001-0001-0001-000000000003',
-  skillPublicSpeaking: 'uat-skil-0001-0001-0001-000000000004',
-  skillTeamLeadership: 'uat-skil-0001-0001-0001-000000000005',
-  skillProjectMgmt: 'uat-skil-0001-0001-0001-000000000006',
+  // Skills (must be valid UUID v4 — DTO validates @IsUUID('4'))
+  skillTypescript: 'a0a00001-0001-4001-a001-000000000001',
+  skillAzure: 'a0a00002-0002-4002-a002-000000000002',
+  skillDocker: 'a0a00003-0003-4003-a003-000000000003',
+  skillPublicSpeaking: 'a0a00004-0004-4004-a004-000000000004',
+  skillTeamLeadership: 'a0a00005-0005-4005-a005-000000000005',
+  skillProjectMgmt: 'a0a00006-0006-4006-a006-000000000006',
 };
 
 const UAT_SALT = 'gcredit-uat-salt';
@@ -196,7 +196,7 @@ async function main() {
   });
   // Clean skill data (skills before categories due to FK)
   await prisma.skill.deleteMany({
-    where: { id: { in: Object.values(IDS).filter((id) => id.startsWith('uat-skil')) } },
+    where: { id: { in: Object.values(IDS).filter((id) => id.startsWith('a0a0000')) } },
   });
   await prisma.skillCategory.deleteMany({
     where: { id: { in: Object.values(IDS).filter((id) => id.startsWith('uat-scat')) } },
