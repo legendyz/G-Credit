@@ -46,22 +46,16 @@ export default function ClaimBadgePage() {
               ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
             },
             body: JSON.stringify({ claimToken: token }),
-          },
+          }
         );
 
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
-          throw new Error(
-            data.message || `Claim failed (${response.status})`,
-          );
+          throw new Error(data.message || `Claim failed (${response.status})`);
         }
 
         const data = await response.json();
-        const name =
-          data.badge?.name ||
-          data.template?.name ||
-          data.badgeName ||
-          'Badge';
+        const name = data.badge?.name || data.template?.name || data.badgeName || 'Badge';
         setBadgeName(name);
         setState('success');
 
@@ -74,9 +68,7 @@ export default function ClaimBadgePage() {
         setTimeout(() => navigate('/wallet', { replace: true }), 2000);
       } catch (err) {
         setState('error');
-        setErrorMessage(
-          err instanceof Error ? err.message : 'Unable to claim badge',
-        );
+        setErrorMessage(err instanceof Error ? err.message : 'Unable to claim badge');
       }
     };
 
@@ -96,12 +88,9 @@ export default function ClaimBadgePage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="max-w-md w-full text-center space-y-4">
           <div className="text-6xl">⚠️</div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Missing Claim Token
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900">Missing Claim Token</h1>
           <p className="text-gray-600">
-            No claim token found in the URL. Please use the link from your badge
-            notification email.
+            No claim token found in the URL. Please use the link from your badge notification email.
           </p>
           <button
             onClick={() => navigate('/wallet', { replace: true })}
@@ -120,12 +109,8 @@ export default function ClaimBadgePage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="max-w-md w-full text-center space-y-4">
           <div className="animate-spin text-5xl">⏳</div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Claiming Your Badge...
-          </h1>
-          <p className="text-gray-600">
-            Please wait while we process your badge claim.
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">Claiming Your Badge...</h1>
+          <p className="text-gray-600">Please wait while we process your badge claim.</p>
         </div>
       </div>
     );
@@ -140,8 +125,8 @@ export default function ClaimBadgePage() {
           <h1 className="text-2xl font-bold text-gray-900">Badge Claimed!</h1>
           <p className="text-gray-600">
             You&apos;ve successfully claimed{' '}
-            <span className="font-semibold">&ldquo;{badgeName}&rdquo;</span>.
-            Redirecting to your wallet...
+            <span className="font-semibold">&ldquo;{badgeName}&rdquo;</span>. Redirecting to your
+            wallet...
           </p>
           <button
             onClick={() => navigate('/wallet', { replace: true })}
