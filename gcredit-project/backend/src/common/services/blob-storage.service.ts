@@ -134,7 +134,7 @@ export class BlobStorageService implements OnModuleInit {
         width: metadata.width.toString(),
         height: metadata.height.toString(),
         format: metadata.format,
-        originalName: file.originalname,
+        originalName: Buffer.from(file.originalname).toString('base64'),
       },
     });
 
