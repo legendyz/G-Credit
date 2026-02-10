@@ -354,7 +354,7 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 | 10.6b | Single Badge Issuance UI | 🔴 HIGH | 6h | 2-Feature | ✅ |
 | 10.6c | UAT Test Plan & Seed Data | 🔴 HIGH | 6h | 3-UAT | ✅ |
 | 10.6d | Design System & UI Overhaul | 🔴 HIGH | 20h | 2-Feature | ✅ |
-| 10.7 | Full UAT Execution | 🔴 HIGH | 12h | 3-UAT | 🔴 |
+| 10.7 | Full UAT Execution | 🔴 HIGH | 4h | 3-UAT | ❗ UAT NOT PASSED |
 | 10.8 | UAT Bug Fixes | 🟡 MED | 8h | 3-UAT | 🔴 |
 | 10.9 | Release Documentation | 🟡 MED | 4h | 4-Release | 🔴 |
 | 10.10 | Merge + Tag v1.0.0 | 🔴 HIGH | 2h | 4-Release | 🔴 |
@@ -525,6 +525,7 @@ Items deferred from v1.0.0 release, to be addressed in subsequent sprints.
 | FEAT-001 | AI Agent 对话式集成层 | 🟢 Low | 3-5 days | 无 | 83 个 JSON API 已覆盖全部业务功能，可构建 Agent 中间层实现对话式操作 |
 | FEAT-002 | 邀请式 Badge 发放（非注册用户） | 🟡 Medium | 2-3 days | 无 | 当前 Badge 发放仅限系统内已注册用户（DB 外键约束 + API 校验）。Open Badges 2.0 标准支持向任意邮箱发放，收件人通过邮件链接注册后认领。需改造：1) 新增 PendingBadge 模型或 Badge 状态扩展 2) 发放时支持输入任意邮箱 3) 邮件含认领链接 4) 注册/登录后自动关联 Badge。参考 Credly/Badgr 的 claim 流程。 |
 | FEAT-003 | M365 同步自动角色映射 + Manager 团队层级 | 🟡 Medium | 3-4 days | 无 | 当前 M365 同步仅导入身份数据（name/email/department），所有新用户统一为 EMPLOYEE，角色需 Admin 手动分配。改进方案：1) 基于 Azure AD Security Group 映射（创建 GCredit-Issuers/GCredit-Managers 组，同步时查 `/memberOf`）2) 基于 `jobTitle` 关键词规则映射 3) 基于 `directReports` 自动识别 Manager。需新增角色映射配置表或 env 配置。Sprint 7 Decision #14 已讨论 directReports 方案。`jobTitle` 已在 Graph API `$select` 中但未使用。**关联决策：** 若采用 `directReports` 方案自动识别 Manager，需同时在 User 模型新增 `managerId` 外键建立显式上下级关系（当前仅靠 department 文本匹配模拟团队，Manager 无法精确管理自己的下属）。两者存在设计耦合：M365 同步自动写入 `managerId` vs Admin 手动指定 vs 混合模式，需在开发前做架构决策。 |
+| FEAT-004 | 角色模型重构：Issuer 作为权限标签而非独立角色 | 🟡 Medium | 2-3 days | 无 | UAT-033 发现的架构问题。当前 4 角色互斥（ADMIN/ISSUER/MANAGER/EMPLOYEE），导致 Manager 无法同时具有发证权限。建议重构为：Role（Admin/Manager/Employee 三选一）+ Permission Flag（can_issue, can_revoke）。或多角色模型：用户可同时具有多个角色。需评估对 RBAC Guard、前端导航、API 权限检查的全面影响。 |
 
 ### FEAT-001: AI Agent Integration Layer
 **产品方向：** 用户通过与 AI Agent 对话完成所有系统功能

@@ -1,11 +1,14 @@
 # Story 10.7: Full UAT Execution (All 10 Epics)
 
-**Status:** backlog  
+**Status:** complete (UAT NOT PASSED — 7 bugs → Story 10.8)  
 **Priority:** 🔴 HIGH  
 **Estimate:** 12h  
+**Actual:** 4h  
 **Sprint:** Sprint 10  
 **Type:** UAT Execution  
-**Dependencies:** Story 10.6 (UAT Test Plan & Seed Data)
+**Dependencies:** Story 10.6 (UAT Test Plan & Seed Data)  
+**Executed By:** LegendZhu (Product Owner)  
+**Execution Date:** 2026-02-10
 
 ---
 
@@ -21,15 +24,15 @@ Sprint 7 UAT covered Epic 9 (Revocation) only with 15 scenarios at 100% pass. Sp
 
 ## Acceptance Criteria
 
-1. [ ] All UAT test cases from Story 10.6 executed
-2. [ ] Each test case has documented pass/fail result with evidence (screenshots optional)
-3. [ ] 100% pass rate for P0 scenarios (core lifecycle)
-4. [ ] Any P1 bugs discovered → logged and assigned to Story 10.8
-5. [ ] UAT Results summary report created
-6. [ ] All 4 roles tested (Admin, Issuer, Manager, Employee)
-7. [ ] Cross-Epic lifecycle test: issue → claim → share → verify → revoke → re-verify
-8. [ ] Mobile responsive verification (key pages)
-9. [ ] Accessibility spot-check (keyboard navigation on 3+ pages)
+1. [x] All UAT test cases from Story 10.6 executed (35/35 attempted)
+2. [x] Each test case has documented pass/fail result with evidence (screenshots optional)
+3. [ ] ~~100% pass rate for P0 scenarios~~ — **NOT MET: 5.7% pass, 4 P0 bugs found**
+4. [x] Any P1 bugs discovered → logged and assigned to Story 10.8 (7 bugs total: BUG-002 to BUG-008)
+5. [x] UAT Results summary report created (`uat-results.md`)
+6. [x] All 4 roles tested (Admin, Issuer, Manager, Employee)
+7. [ ] ~~Cross-Epic lifecycle test~~ — **BLOCKED by BUG-003 (no template creation UI)**
+8. [ ] ~~Mobile responsive verification~~ — **DEFERRED until P0 bugs fixed**
+9. [ ] ~~Accessibility spot-check~~ — **DEFERRED until P0 bugs fixed**
 
 ## Tasks / Subtasks
 
@@ -119,10 +122,12 @@ Pre-UAT review → Fix P0 → Execute UAT → Fix bugs → Re-test
 ## Dev Agent Record
 
 ### Agent Model Used
-_To be filled during development_
+Manual UAT by Product Owner + SM analysis by Claude Opus 4.6
 
 ### Completion Notes
-_To be filled on completion_
+UAT executed 2026-02-10. 35 test cases attempted: 2 PASS, 7 PARTIAL, 25 FAIL, 1 SKIP.
+7 unique bugs identified (4 P0 + 3 P1). All cascading from root-cause issues.
+Bugs logged → Story 10.8 for fix. Re-test required after 10.8.
 
 ### File List
-_To be filled on completion_
+- `docs/sprints/sprint-10/uat-results.md` — Full UAT results report

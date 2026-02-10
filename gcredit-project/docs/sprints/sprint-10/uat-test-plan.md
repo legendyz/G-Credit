@@ -65,8 +65,8 @@
 
 | ID | Epic | Scenario | Pre-condition | Steps | Expected Result | Pass/Fail |
 |----|------|----------|---------------|-------|-----------------|-----------|
-| UAT-001 | Epic 1 | Health check endpoint | Backend running | 1. Open browser to `http://localhost:3000/api/health` | JSON response `{ "status": "ok" }` with HTTP 200 | |
-| UAT-002 | Epic 1 | API documentation available | Backend running | 1. Open browser to `http://localhost:3000/api/docs` | Swagger UI loads with all API endpoints listed | |
+| UAT-001 | Epic 1 | Health check endpoint | Backend running | 1. Open browser to `http://localhost:3000/health` | JSON response `{ "status": "ok" }` with HTTP 200 | |
+| UAT-002 | Epic 1 | API documentation available | Backend running | 1. Open browser to `http://localhost:3000/api-docs` | Swagger UI loads with all API endpoints listed | |
 
 ### Epic 2: Authentication & User Management (5 cases)
 
