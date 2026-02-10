@@ -160,7 +160,7 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">{file.originalName}</p>
                 <p className="text-xs text-gray-500">
-                  {formatFileSize(file.fileSize)} �?{new Date(file.uploadedAt).toLocaleDateString()}
+                  {formatFileSize(file.fileSize)} · {new Date(file.uploadedAt).toLocaleDateString()}
                 </p>
               </div>
             </div>
