@@ -43,21 +43,21 @@ export function VerifyBadgePage() {
 
         // Transform API response to match frontend type
         const apiData = response.data;
+        const meta = apiData._meta || {};
         const transformedData: VerificationResponse = {
           id: apiData.id,
           verificationId: verificationId!,
           status:
-            apiData.status ||
-            (apiData.revoked
+            apiData.verificationStatus === 'revoked'
               ? 'REVOKED'
-              : apiData.verificationStatus === 'valid'
-                ? 'ACTIVE'
-                : 'EXPIRED'),
-          badge: apiData.badge || apiData._meta?.badge || {},
-          recipient: apiData.recipient || apiData._meta?.recipient || {},
-          issuer: apiData.issuer || apiData._meta?.issuer || {},
-          issuedAt: apiData.issuedAt || apiData.issuedOn || new Date().toISOString(),
-          expiresAt: apiData.expiresAt || apiData.expires || null,
+              : apiData.verificationStatus === 'expired'
+                ? 'EXPIRED'
+                : 'ACTIVE',
+          badge: meta.badge || {},
+          recipient: meta.recipient || {},
+          issuer: meta.issuer || {},
+          issuedAt: apiData.issuedOn || new Date().toISOString(),
+          expiresAt: apiData.expiresAt || null,
           claimedAt: apiData.claimedAt || null,
           isValid: apiData.isValid !== undefined ? apiData.isValid : true,
           revokedAt: apiData.revokedAt || undefined,
@@ -65,8 +65,8 @@ export function VerifyBadgePage() {
           revocationNotes: apiData.revocationNotes || undefined,
           isPublicReason: apiData.isPublicReason || false,
           revokedBy: apiData.revokedBy || undefined,
-          evidenceFiles: apiData.evidenceFiles || apiData._meta?.evidenceFiles || [],
-          assertionJson: apiData.assertionJson || apiData,
+          evidenceFiles: meta.evidenceFiles || [],
+          assertionJson: apiData,
         };
 
         setBadge(transformedData);
