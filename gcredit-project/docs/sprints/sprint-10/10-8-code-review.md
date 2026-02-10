@@ -30,3 +30,17 @@
 
 ## Notes
 - AC5 (re-run affected UAT cases) and AC6 (full test suite) are not evidenced in repo artifacts; verify before release.
+
+## Re-review (2026-02-10)
+
+### HIGH
+1. **Editing a template forces `issuanceCriteria` to `manual`, which can destroy existing auto-criteria definitions.** The form always sends `{ type: 'manual', description }` on update, so any template with `conditions` or non-manual type will be overwritten. See [criteria build](gcredit-project/frontend/src/pages/admin/BadgeTemplateFormPage.tsx#L161-L166) and [update payload](gcredit-project/frontend/src/pages/admin/BadgeTemplateFormPage.tsx#L169-L182).
+
+### MEDIUM
+2. **Skill selections are not persisted on edit.** The UI allows toggling skills, but `updateTemplate` never sends `skillIds`, so changes are dropped. See [skill state](gcredit-project/frontend/src/pages/admin/BadgeTemplateFormPage.tsx#L65-L109) and [update payload](gcredit-project/frontend/src/pages/admin/BadgeTemplateFormPage.tsx#L169-L182).
+3. **Touch targets in Badge Template list are below 44px.** Filter tabs and action buttons use `min-h-[36px]`, which conflicts with the Story 10.8 touch-target requirement. See [filter tabs](gcredit-project/frontend/src/pages/admin/BadgeTemplateListPage.tsx#L241) and [card actions](gcredit-project/frontend/src/pages/admin/BadgeTemplateListPage.tsx#L349-L416).
+
+### Resolved From Prior Review
+- `issuanceCriteria` now includes a valid `type` field for create/update. See [criteria build](gcredit-project/frontend/src/pages/admin/BadgeTemplateFormPage.tsx#L161-L166).
+- `skillIds` are populated on create via selected skills. See [create payload](gcredit-project/frontend/src/pages/admin/BadgeTemplateFormPage.tsx#L186-L190).
+- List page status badges use theme tokens for warning/success states. See [status badge config](gcredit-project/frontend/src/pages/admin/BadgeTemplateListPage.tsx#L47-L68).

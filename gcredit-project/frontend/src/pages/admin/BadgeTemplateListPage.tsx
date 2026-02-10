@@ -238,7 +238,7 @@ export function BadgeTemplateListPage() {
               <button
                 key={tab.value}
                 onClick={() => setStatusFilter(tab.value)}
-                className={`px-4 py-2 text-sm font-medium rounded-lg min-h-[36px] transition-colors
+                className={`px-4 py-2 text-sm font-medium rounded-lg min-h-[44px] transition-colors
                   ${
                     statusFilter === tab.value
                       ? 'bg-brand-600 text-white'
@@ -346,7 +346,7 @@ export function BadgeTemplateListPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => navigate(`/admin/templates/${template.id}/edit`)}
-                    className="min-h-[36px] flex-1"
+                    className="min-h-[44px] flex-1"
                   >
                     <Pencil className="h-3.5 w-3.5 mr-1.5" />
                     Edit
@@ -358,7 +358,7 @@ export function BadgeTemplateListPage() {
                       size="sm"
                       onClick={() => handleStatusChange(template, 'ACTIVE')}
                       disabled={actionLoading === template.id}
-                      className="bg-success hover:bg-success-bright text-white min-h-[36px] flex-1"
+                      className="bg-success hover:bg-success-bright text-white min-h-[44px] flex-1"
                     >
                       {actionLoading === template.id ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -376,7 +376,7 @@ export function BadgeTemplateListPage() {
                       size="sm"
                       onClick={() => handleStatusChange(template, 'ARCHIVED')}
                       disabled={actionLoading === template.id}
-                      className="min-h-[36px] flex-1"
+                      className="min-h-[44px] flex-1"
                     >
                       {actionLoading === template.id ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -394,7 +394,7 @@ export function BadgeTemplateListPage() {
                       size="sm"
                       onClick={() => handleStatusChange(template, 'ACTIVE')}
                       disabled={actionLoading === template.id}
-                      className="min-h-[36px] flex-1"
+                      className="min-h-[44px] flex-1"
                     >
                       {actionLoading === template.id ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -413,7 +413,7 @@ export function BadgeTemplateListPage() {
                     size="sm"
                     onClick={() => handleDelete(template)}
                     disabled={actionLoading === template.id}
-                    className="min-h-[36px] text-error hover:bg-error-light"
+                    className="min-h-[44px] text-error hover:bg-error-light"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>

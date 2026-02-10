@@ -67,6 +67,9 @@ export function BadgeTemplateFormPage() {
   // Skills data
   const { data: availableSkills = [] } = useSkills();
 
+  // Preserve original criteria shape from backend (edit mode)
+  const [originalCriteria, setOriginalCriteria] = useState<Record<string, unknown> | null>(null);
+
   // Image state
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -90,17 +93,15 @@ export function BadgeTemplateFormPage() {
         setStatus(template.status);
         setExistingImageUrl(template.imageUrl || null);
 
-        // Parse issuanceCriteria for display
+        // Preserve original criteria shape (type, conditions, logicOperator)
         if (template.issuanceCriteria) {
-          const criteria = template.issuanceCriteria as {
-            description?: string;
-            requirements?: string[];
-          };
-          if (criteria.description) {
+          const criteria = template.issuanceCriteria as Record<string, unknown>;
+          setOriginalCriteria(criteria);
+          if (typeof criteria.description === 'string') {
             setCriteriaText(criteria.description);
-          } else if (criteria.requirements) {
+          } else if (Array.isArray(criteria.requirements)) {
             // Legacy format fallback
-            setCriteriaText(criteria.requirements.join('\n'));
+            setCriteriaText((criteria.requirements as string[]).join('\n'));
           }
         }
 
@@ -157,11 +158,11 @@ export function BadgeTemplateFormPage() {
       return;
     }
 
-    // Build issuance criteria – backend requires `type` field (IssuanceCriteriaDto)
-    const issuanceCriteria = {
-      type: 'manual' as const,
-      description: criteriaText.trim() || undefined,
-    };
+    // Build issuance criteria – preserve existing type/conditions on edit
+    const issuanceCriteria =
+      isEditMode && originalCriteria
+        ? { ...originalCriteria, description: criteriaText.trim() || undefined }
+        : { type: 'manual' as const, description: criteriaText.trim() || undefined };
 
     setIsSubmitting(true);
     try {
@@ -172,6 +173,7 @@ export function BadgeTemplateFormPage() {
             name: name.trim(),
             description: description.trim() || undefined,
             category: category as TemplateCategory,
+            skillIds: selectedSkills,
             issuanceCriteria,
             validityPeriod: validityPeriod ? Number(validityPeriod) : undefined,
             status,
