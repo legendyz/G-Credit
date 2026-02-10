@@ -14,6 +14,8 @@ export class StorageService implements OnModuleInit {
   private blobServiceClient: BlobServiceClient;
   private badgesContainer: ContainerClient;
   private evidenceContainer: ContainerClient;
+  private accountName: string;
+  private accountKey: string;
 
   constructor(private configService: ConfigService) {}
 
@@ -26,6 +28,13 @@ export class StorageService implements OnModuleInit {
       this.logger.warn('Azure Storage connection string not configured');
       return;
     }
+
+    // Parse AccountName and AccountKey from connection string
+    // Format: DefaultEndpointsProtocol=https;AccountName=...;AccountKey=...;EndpointSuffix=...
+    const nameMatch = connectionString.match(/AccountName=([^;]+)/);
+    const keyMatch = connectionString.match(/AccountKey=([^;]+)/);
+    if (nameMatch) this.accountName = nameMatch[1];
+    if (keyMatch) this.accountKey = keyMatch[1];
 
     try {
       this.blobServiceClient =
@@ -88,7 +97,7 @@ export class StorageService implements OnModuleInit {
   }
 
   getBadgeImageUrl(fileName: string): string {
-    return `https://${this.configService.get('AZURE_STORAGE_ACCOUNT_NAME')}.blob.core.windows.net/badges/${fileName}`;
+    return `https://${this.accountName}.blob.core.windows.net/badges/${fileName}`;
   }
 
   /**
@@ -96,22 +105,15 @@ export class StorageService implements OnModuleInit {
    * 5-minute expiry, read-only permission
    */
   generateEvidenceSasUrl(fileName: string): { url: string; expiresAt: Date } {
-    const accountName = this.configService.get<string>(
-      'AZURE_STORAGE_ACCOUNT_NAME',
-    );
-    const accountKey = this.configService.get<string>(
-      'AZURE_STORAGE_ACCOUNT_KEY',
-    );
-
-    if (!accountName || !accountKey) {
+    if (!this.accountName || !this.accountKey) {
       throw new Error(
         'Azure Storage credentials not configured for SAS token generation',
       );
     }
 
     const sharedKeyCredential = new StorageSharedKeyCredential(
-      accountName,
-      accountKey,
+      this.accountName,
+      this.accountKey,
     );
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 5); // 5-minute expiry
@@ -129,7 +131,7 @@ export class StorageService implements OnModuleInit {
       sharedKeyCredential,
     ).toString();
 
-    const url = `https://${accountName}.blob.core.windows.net/${this.configService.get('AZURE_STORAGE_CONTAINER_EVIDENCE', 'evidence')}/${fileName}?${sasToken}`;
+    const url = `https://${this.accountName}.blob.core.windows.net/${this.configService.get('AZURE_STORAGE_CONTAINER_EVIDENCE', 'evidence')}/${fileName}?${sasToken}`;
 
     return { url, expiresAt };
   }
