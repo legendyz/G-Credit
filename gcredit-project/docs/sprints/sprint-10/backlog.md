@@ -536,7 +536,34 @@ Two release audits were conducted before Sprint 10 kickoff. All findings have be
 
 ---
 
-## 📋 Post-MVP Backlog (Sprint 11+)
+## � UAT 期间变更管理规则
+
+**生效日期:** 2026-02-11（Re-UAT Round 2 起）  
+**适用范围:** UAT 阶段发现的所有改动请求
+
+### 判断标准
+
+> **如果改动影响超过 2 个文件 且 涉及新 API 端点或数据库变更 → 先在 Post-MVP Backlog 记录再决定是否开工。否则直接修复。**
+
+### 分类处理流程
+
+| 改动类型 | 判断条件 | 处理方式 | 示例 |
+|----------|----------|----------|------|
+| **直接修复** | ≤ 2 文件，无新 API/DB 变更 | 在 Story 10.8 buffer 内直接修复 + commit | UI 文案修正、按钮样式、现有 API 逻辑调整 |
+| **记录后修复** | > 2 文件 或 新 API 端点，但为 UAT 测试 blocker | 在 backlog.md 记录后立即修复，标注"UAT blocker" | Claim 页面 404、部门编辑功能 |
+| **延后 Post-MVP** | 非 blocker 的新功能需求 | 记录到 Post-MVP Backlog (FEAT-00X)，不实现 | 用户自助编辑 Profile |
+| **拒绝** | 超出 v1.0.0 范围且非 UAT blocker | 告知 PO 不在本 Sprint 处理 | — |
+
+### 质量底线（所有改动必须满足）
+
+- ✅ `npx prettier --check` 通过
+- ✅ 现有测试全部 PASS（backend 534 + frontend 527）
+- ✅ 有清晰的 commit message
+- ✅ P0/P1 bug 不允许延后
+
+---
+
+## �📋 Post-MVP Backlog (Sprint 11+)
 
 Items deferred from v1.0.0 release, to be addressed in subsequent sprints.
 
@@ -548,7 +575,10 @@ Items deferred from v1.0.0 release, to be addressed in subsequent sprints.
 | FEAT-002 | 邀请式 Badge 发放（非注册用户） | 🟡 Medium | 2-3 days | 无 | 当前 Badge 发放仅限系统内已注册用户（DB 外键约束 + API 校验）。Open Badges 2.0 标准支持向任意邮箱发放，收件人通过邮件链接注册后认领。需改造：1) 新增 PendingBadge 模型或 Badge 状态扩展 2) 发放时支持输入任意邮箱 3) 邮件含认领链接 4) 注册/登录后自动关联 Badge。参考 Credly/Badgr 的 claim 流程。 |
 | FEAT-003 | M365 同步自动角色映射 + Manager 团队层级 | 🟡 Medium | 3-4 days | 无 | 当前 M365 同步仅导入身份数据（name/email/department），所有新用户统一为 EMPLOYEE，角色需 Admin 手动分配。改进方案：1) 基于 Azure AD Security Group 映射（创建 GCredit-Issuers/GCredit-Managers 组，同步时查 `/memberOf`）2) 基于 `jobTitle` 关键词规则映射 3) 基于 `directReports` 自动识别 Manager。需新增角色映射配置表或 env 配置。Sprint 7 Decision #14 已讨论 directReports 方案。`jobTitle` 已在 Graph API `$select` 中但未使用。**关联决策：** 若采用 `directReports` 方案自动识别 Manager，需同时在 User 模型新增 `managerId` 外键建立显式上下级关系（当前仅靠 department 文本匹配模拟团队，Manager 无法精确管理自己的下属）。两者存在设计耦合：M365 同步自动写入 `managerId` vs Admin 手动指定 vs 混合模式，需在开发前做架构决策。 |
 | FEAT-004 | 角色模型重构：Issuer 作为权限标签而非独立角色 | 🟡 Medium | 2-3 days | 无 | UAT-033 发现的架构问题。当前 4 角色互斥（ADMIN/ISSUER/MANAGER/EMPLOYEE），导致 Manager 无法同时具有发证权限。建议重构为：Role（Admin/Manager/Employee 三选一）+ Permission Flag（can_issue, can_revoke）。或多角色模型：用户可同时具有多个角色。需评估对 RBAC Guard、前端导航、API 权限检查的全面影响。**扩展点：** Issuer-based revocation — 颁发者始终有权撤销自己颁发的 badge，不受角色变化和部门限制（MVP 中 Manager 撤销仅基于当前部门匹配）。 |
+| FEAT-005 | 用户自助编辑个人资料（Profile Self-Edit） | 🟢 Low | 1-2 days | 无 | 当前用户只能修改密码，无法编辑 firstName、lastName、department 等个人资料字段。需新增：1) `PATCH /api/users/me/profile` 端点（允许用户更新自己的 firstName/lastName/department 等非敏感字段）2) 前端 Profile 页面添加编辑表单 3) 审计日志记录变更。需讨论：哪些字段允许用户自行修改（如 department 变更是否需要 Admin 审批）、与 M365 同步的冲突处理策略。PO 提出于 Re-UAT Round 2，待讨论后决定范围。 |
 | TD-007 | 统一 Azure Storage Service：合并 StorageService 与 BlobStorageService | 🟡 Medium | 0.5-1 day | 无 | 当前存在两个独立的 Azure Blob Storage 服务：`StorageService`（全局，处理 badges+evidence 上传/下载/SAS）和 `BlobStorageService`（仅 BadgeTemplatesModule，处理图片验证/sharp 元数据/缩略图）。两者都连接 badges 容器，职责重叠。建议将 `BlobStorageService` 的图片处理能力（sharp 验证、尺寸检查、缩略图生成）合并到 `StorageService`，消除重复连接和职责不清的架构问题。发现于 Sprint 10 UAT 期间（BlobStorageService 环境变量加载时序 bug 排查时）。 |
+| FEAT-006 | Badge Template 管理增强：Category 可配置 + Skill/Category 管理 UI | 🟢 Low | 3-4 days | 无 | **Category 可配置：** 当前 template category 是硬编码 4 个值（achievement/skill/certification/participation），前后端都写死。需改为数据库驱动，支持 Admin 增删改 category。**Skill 管理 UI：** 后端已有完整的 Skills + SkillCategories CRUD API（`/api/skills`、`/api/skill-categories`），但无前端管理页面。需新增 Admin Skills 管理页（CRUD + 分类树 + 拖拽排序）。两者均属于 template 创建体验的增强，建议合并开发。PO 提出于 Re-UAT Round 2 UAT-008 测试期间。 |
+| FEAT-007 | Session 管理增强：集中化 HTTP Client + 自动 Token 刷新 + 闲置超时 | 🟡 Medium | 2-3 days | 无 | **v1.0.0 已实现基础：** App 启动时检查 Access Token 过期 → 尝试 Refresh Token 换新 → 失败则自动 Logout。**Post-MVP 增强：** 1) 集中化 HTTP Client（替换各 hook/page 零散的 `localStorage.getItem('accessToken')` + `fetch` 调用）2) 全局 401 Interceptor：API 返回 401 时自动尝试 refresh → 重试原请求 → 失败则 logout 3) 闲置超时自动 Logout（如 30 分钟无操作，`visibilitychange` + idle timer）4) Token 刷新队列（多个并发请求同时 401 时只发一次 refresh）。发现于 Re-UAT Round 2，PO 反馈用户关闭浏览器后再开会跳过登录直接进入。 |
 
 ### FEAT-001: AI Agent Integration Layer
 **产品方向：** 用户通过与 AI Agent 对话完成所有系统功能

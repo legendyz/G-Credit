@@ -9,6 +9,20 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { API_BASE_URL } from '../lib/apiConfig';
 
+/**
+ * Decode JWT and check if it's expired.
+ * Uses a 30-second buffer to avoid edge cases.
+ */
+function isTokenExpired(token: string | null): boolean {
+  if (!token) return true;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.exp * 1000 < Date.now() + 30_000;
+  } catch {
+    return true;
+  }
+}
+
 export interface User {
   id: string;
   email: string;
@@ -35,6 +49,10 @@ interface AuthState {
   // Token management
   setTokens: (accessToken: string, refreshToken: string) => void;
   getAccessToken: () => string | null;
+
+  // Session validation (checks token expiry on app startup)
+  sessionValidated: boolean;
+  validateSession: () => Promise<boolean>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -47,6 +65,7 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: false,
       error: null,
+      sessionValidated: false,
 
       // Login action
       login: async (email: string, password: string) => {
@@ -102,6 +121,7 @@ export const useAuthStore = create<AuthState>()(
           accessToken: null,
           refreshToken: null,
           isAuthenticated: false,
+          sessionValidated: false,
           error: null,
         });
       },
@@ -123,6 +143,57 @@ export const useAuthStore = create<AuthState>()(
       getAccessToken: () => {
         const state = get();
         return state.accessToken || localStorage.getItem('accessToken');
+      },
+
+      // Validate session on app startup
+      // Checks access token expiry → tries refresh → logs out if both expired
+      validateSession: async () => {
+        const state = get();
+        if (!state.isAuthenticated) {
+          set({ sessionValidated: true });
+          return false;
+        }
+
+        const accessToken = state.accessToken || localStorage.getItem('accessToken');
+
+        // Access token still valid → session OK
+        if (!isTokenExpired(accessToken)) {
+          set({ sessionValidated: true });
+          return true;
+        }
+
+        // Access token expired → try refresh
+        const refreshTk = state.refreshToken || localStorage.getItem('refreshToken');
+
+        if (!refreshTk || isTokenExpired(refreshTk)) {
+          // Refresh token also expired → force logout
+          get().logout();
+          set({ sessionValidated: true });
+          return false;
+        }
+
+        try {
+          const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken: refreshTk }),
+          });
+
+          if (!response.ok) {
+            get().logout();
+            set({ sessionValidated: true });
+            return false;
+          }
+
+          const data = await response.json();
+          get().setTokens(data.accessToken, data.refreshToken);
+          set({ sessionValidated: true });
+          return true;
+        } catch {
+          get().logout();
+          set({ sessionValidated: true });
+          return false;
+        }
       },
     }),
     {

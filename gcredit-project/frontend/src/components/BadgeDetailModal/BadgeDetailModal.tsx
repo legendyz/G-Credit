@@ -465,32 +465,40 @@ const BadgeDetailModal: React.FC = () => {
               </svg>
               Share Badge
             </button>
-            {/* Story 9.3 AC3: Download button remains enabled for revoked badges (employees can keep records) */}
+            {/* Story 9.3 AC3: Download button disabled for revoked badges (PO decision: prevent misuse of revoked credential PNG) */}
             <button
               onClick={handleDownloadBadge}
-              disabled={downloading}
-              title={downloading ? 'Downloading...' : 'Download badge as PNG'}
+              disabled={downloading || badge?.status === BadgeStatus.REVOKED}
+              title={
+                badge?.status === BadgeStatus.REVOKED
+                  ? 'Revoked badges cannot be downloaded'
+                  : downloading
+                    ? 'Downloading...'
+                    : 'Download badge as PNG'
+              }
               style={{
                 padding: '0.625rem 1.5rem',
                 fontSize: '0.875rem',
                 fontWeight: 500,
                 color: 'white',
-                backgroundColor: downloading ? '#9ca3af' : '#2563eb',
+                backgroundColor:
+                  downloading || badge?.status === BadgeStatus.REVOKED ? '#9ca3af' : '#2563eb',
                 border: 'none',
                 borderRadius: '0.5rem',
                 display: 'flex',
                 alignItems: 'center',
-                cursor: downloading ? 'not-allowed' : 'pointer',
-                opacity: downloading ? 0.5 : 1,
+                cursor:
+                  downloading || badge?.status === BadgeStatus.REVOKED ? 'not-allowed' : 'pointer',
+                opacity: downloading || badge?.status === BadgeStatus.REVOKED ? 0.5 : 1,
                 transition: 'background-color 0.2s',
               }}
               onMouseEnter={(e) => {
-                if (!downloading) {
+                if (!downloading && badge?.status !== BadgeStatus.REVOKED) {
                   e.currentTarget.style.backgroundColor = '#1d4ed8';
                 }
               }}
               onMouseLeave={(e) => {
-                if (!downloading) {
+                if (!downloading && badge?.status !== BadgeStatus.REVOKED) {
                   e.currentTarget.style.backgroundColor = '#2563eb';
                 }
               }}

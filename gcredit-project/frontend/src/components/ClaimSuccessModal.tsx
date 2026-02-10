@@ -6,6 +6,7 @@
  */
 
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ClaimSuccessModalProps {
   isOpen: boolean;
@@ -21,12 +22,15 @@ export function ClaimSuccessModal({
   issuerMessage,
 }: ClaimSuccessModalProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   if (!isOpen) return null;
 
   const handleViewInWallet = () => {
     onClose();
-    navigate('/');
+    queryClient.invalidateQueries({ queryKey: ['wallet'] });
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    navigate('/wallet');
   };
 
   return (

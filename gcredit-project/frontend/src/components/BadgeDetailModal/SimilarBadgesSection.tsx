@@ -153,7 +153,7 @@ const SimilarBadgesSection: React.FC<SimilarBadgesSectionProps> = ({ badgeId, on
 
       {/* AC 5.8: Scroll hint for mobile */}
       {similarBadges.length > 1 && (
-        <p className="text-xs text-gray-500 text-center mt-2">�?Scroll to see more �?</p>
+        <p className="text-xs text-gray-500 text-center mt-2">← Scroll to see more →</p>
       )}
     </section>
   );

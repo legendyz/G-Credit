@@ -294,11 +294,11 @@ export function BadgeTemplateListPage() {
           {filteredTemplates.map((template) => (
             <Card
               key={template.id}
-              className="shadow-elevation-1 hover:shadow-elevation-2 transition-shadow group"
+              className="shadow-elevation-1 hover:shadow-elevation-2 transition-shadow group flex flex-col"
             >
               {/* Image */}
               {template.imageUrl ? (
-                <div className="h-40 overflow-hidden rounded-t-xl bg-neutral-100">
+                <div className="h-40 overflow-hidden rounded-t-xl bg-neutral-100 flex-shrink-0">
                   <img
                     src={template.imageUrl}
                     alt={template.name}
@@ -306,12 +306,12 @@ export function BadgeTemplateListPage() {
                   />
                 </div>
               ) : (
-                <div className="h-40 rounded-t-xl bg-gradient-to-br from-brand-50 to-brand-100 flex items-center justify-center">
+                <div className="h-40 rounded-t-xl bg-gradient-to-br from-brand-50 to-brand-100 flex items-center justify-center flex-shrink-0">
                   <LayoutGrid className="h-12 w-12 text-brand-300" />
                 </div>
               )}
 
-              <CardContent className="p-4 space-y-3">
+              <CardContent className="p-4 flex flex-col flex-1">
                 {/* Header: name + status */}
                 <div className="flex items-start justify-between gap-2">
                   <h3 className="text-h4 font-semibold text-neutral-900 line-clamp-1">
@@ -321,27 +321,23 @@ export function BadgeTemplateListPage() {
                 </div>
 
                 {/* Category + date */}
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap mt-3">
                   <CategoryBadge category={template.category} />
                   <span className="text-xs text-neutral-500">{formatDate(template.createdAt)}</span>
                 </div>
 
                 {/* Description */}
-                {template.description && (
-                  <p className="text-body-sm text-neutral-600 line-clamp-2">
-                    {template.description}
-                  </p>
-                )}
+                <p className="text-body-sm text-neutral-600 line-clamp-2 mt-3 min-h-[2.5rem]">
+                  {template.description || '\u00A0'}
+                </p>
 
                 {/* Validity */}
-                {template.validityPeriod && (
-                  <p className="text-xs text-neutral-500">
-                    Valid for {template.validityPeriod} days
-                  </p>
-                )}
+                <p className="text-xs text-neutral-500 mt-2 min-h-[1rem]">
+                  {template.validityPeriod ? `Valid for ${template.validityPeriod} days` : '\u00A0'}
+                </p>
 
-                {/* Actions */}
-                <div className="flex items-center gap-2 pt-2 border-t border-neutral-100">
+                {/* Actions - always at bottom */}
+                <div className="flex items-center gap-2 pt-2 mt-auto border-t border-neutral-100">
                   <Button
                     variant="outline"
                     size="sm"
@@ -390,11 +386,10 @@ export function BadgeTemplateListPage() {
                   )}
                   {template.status === 'ARCHIVED' && (
                     <Button
-                      variant="outline"
                       size="sm"
                       onClick={() => handleStatusChange(template, 'ACTIVE')}
                       disabled={actionLoading === template.id}
-                      className="min-h-[44px] flex-1"
+                      className="min-h-[44px] flex-1 bg-brand-600 hover:bg-brand-700 text-white"
                     >
                       {actionLoading === template.id ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />

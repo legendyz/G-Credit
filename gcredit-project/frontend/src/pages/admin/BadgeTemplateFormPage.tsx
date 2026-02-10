@@ -46,8 +46,8 @@ const STATUSES: { value: TemplateStatus; label: string }[] = [
   { value: 'ARCHIVED', label: 'Archived' },
 ];
 
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
-const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB (matches backend BlobStorageService limit)
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png'];
 
 export function BadgeTemplateFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -123,11 +123,11 @@ export function BadgeTemplateFormPage() {
     if (!file) return;
 
     if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-      toast.error('Please select a JPG, PNG, GIF, or WebP image');
+      toast.error('Only JPG and PNG images are accepted');
       return;
     }
     if (file.size > MAX_IMAGE_SIZE) {
-      toast.error('Image must be less than 5MB');
+      toast.error('Image must be less than 2MB');
       return;
     }
 
@@ -429,7 +429,10 @@ export function BadgeTemplateFormPage() {
             {/* Image Upload */}
             <div className="space-y-2">
               <Label className="text-body font-medium text-neutral-700">
-                Badge Image <span className="text-neutral-500">(optional, max 5MB)</span>
+                Badge Image{' '}
+                <span className="text-neutral-500">
+                  (optional, JPG/PNG, max 2MB, 128×128 ~ 2048×2048 px)
+                </span>
               </Label>
 
               {/* Current/Preview Image */}
@@ -457,7 +460,7 @@ export function BadgeTemplateFormPage() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  accept="image/jpeg,image/png"
                   onChange={handleImageSelect}
                   className="hidden"
                   id="image-upload"

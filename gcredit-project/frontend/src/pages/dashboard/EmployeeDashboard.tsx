@@ -317,6 +317,10 @@ export const EmployeeDashboard: React.FC = () => {
                       >
                         Claim Badge
                       </Button>
+                    ) : badgeSummary.latestBadge.status === 'REVOKED' ? (
+                      <span className="inline-flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
+                        🚫 Revoked
+                      </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
                         <CheckCircle className="h-4 w-4" />
