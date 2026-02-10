@@ -8,6 +8,8 @@
 **Date(s):** _______________  
 **Bug Fix Commit Range:** `65bee78` — `74bd9f3` (10 commits)
 
+> **📌 Story 10.8b 补充：** 技能分类种子数据（SkillCategory + Skill）将在 10.8b 完成后加入 UAT 环境。Round B UAT-008（创建模板）需要在 10.8b seed 之后重新验证技能选择器功能。
+
 ---
 
 ## 1. Re-UAT 目的
@@ -113,7 +115,7 @@ npm run dev
 
 | # | ID | 场景 | 类型 | 关联修复 | 关键验证点 | 预期 | Pass/Fail |
 |---|-----|------|------|---------|-----------|------|-----------|
-| 8 | UAT-008 | Admin 创建 DRAFT 模板 | 🔁 | BUG-003 | ①导航到"Badge Templates"页面 ②点击"Create Template" ③填写 name/description/category ④保存为 DRAFT | 模板创建成功，列表可见 | |
+| 8 | UAT-008 | Admin 创建 DRAFT 模板 | 🔁 | BUG-003, BUG-009 | ①导航到"Badge Templates"页面 ②点击"Create Template" ③填写 name/description/category ④**选择 Skills（10.8b 后可选）** ⑤保存为 DRAFT | 模板创建成功，列表可见，skillIds 正确保存 | |
 | 9 | UAT-009 | Admin 激活模板 | 🔁 | BUG-003 | ①在列表点模板的 status 操作（如 Activate 按钮） ②状态变 ACTIVE | 模板可用于颁发 | |
 | 10 | UAT-010 | Admin 归档模板 | 🔁 | BUG-003 | ①将 ACTIVE 模板 Archive ②状态变 ARCHIVED | 模板不再可用于颁发 | |
 | 11 | UAT-011 | 模板搜索 | 🔁 | BUG-003+005 | ①在 Templates 页面搜索框输入文字 ②按 category tab 过滤 ③文字可正常输入（不再有 BUG-005 输入无效问题） | 搜索过滤正常 | |

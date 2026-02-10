@@ -47,9 +47,10 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 | **UI Overhaul** | 20h | Story 10.6d (Design system + full UI fix) |
 | **UAT Execution** | 12h | Story 10.7 (Full UAT) |
 | **Bug Fix Buffer** | 8h | Story 10.8 (UAT bug fixes) |
+| **UAT Seed Fix** | 1h | Story 10.8b (Skill taxonomy seed) |
 | **Release Documentation** | 4h | Story 10.9 (CHANGELOG + docs) |
 | **Release** | 2h | Story 10.10 (Merge + tag) |
-| **TOTAL** | **94.5h** | Extended sprint — no time constraint |
+| **TOTAL** | **95.5h** | Extended sprint — no time constraint |
 
 ### Velocity Reference (Lessons Learned)
 | Sprint | Estimated | Actual | Accuracy |
@@ -289,7 +290,7 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 ---
 
 ### Story 10.8: UAT Bug Fixes
-**Priority:** � HIGH  
+**Priority:** 🔴 HIGH  
 **Estimate:** 20h (expanded from 8h — all 7 bugs MVP core)  
 **Actual:** ~18h  
 **Story Doc:** 📄 [10-8-uat-bug-fixes.md](10-8-uat-bug-fixes.md)  
@@ -299,10 +300,29 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 **Quick Summary:** Fix all P0/P1 bugs discovered during UAT.
 
 **Key Deliverables:**
-- [ ] All P0 bugs fixed
-- [ ] P1 bugs fixed or workaround documented
-- [ ] Regression tests added
+- [x] All P0 bugs fixed
+- [x] P1 bugs fixed or workaround documented
+- [x] Regression tests added
 - [ ] Re-run UAT passes
+
+---
+
+### Story 10.8b: UAT Skill Taxonomy Seed Data
+**Priority:** 🟡 MEDIUM  
+**Estimate:** 1h  
+**Story Doc:** 📄 [10-8b-uat-skill-taxonomy-seed.md](10-8b-uat-skill-taxonomy-seed.md)  
+**Status:** 🔴 Not Started  
+**Dependencies:** Story 10.8 (BUG-009 fix)
+
+**Quick Summary:** Add SkillCategory + Skill seed data to UAT environment so skill taxonomy feature can be tested.
+
+**Discovered:** Re-UAT Round 2 — PO noticed skill selector shows "No skills available". Sprint 2 implemented full skill taxonomy (5大分类 + 20子分类) but seed-uat.ts never included this data.
+
+**Key Deliverables:**
+- [ ] 5 system-defined SkillCategories + sub-categories in seed-uat.ts
+- [ ] 6+ Skills with varying SkillLevel values
+- [ ] 2+ UAT templates with skillIds linked to real Skills
+- [ ] Frontend skill selector loads and works during UAT
 
 ---
 
@@ -356,10 +376,11 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 | 10.6c | UAT Test Plan & Seed Data | 🔴 HIGH | 6h | 3-UAT | ✅ |
 | 10.6d | Design System & UI Overhaul | 🔴 HIGH | 20h | 2-Feature | ✅ |
 | 10.7 | Full UAT Execution | 🔴 HIGH | 4h | 3-UAT | ❗ UAT NOT PASSED |
-| 10.8 | UAT Bug Fixes (7 bugs) | 🔴 HIGH | 20h | 3-UAT | 🔴 |
+| 10.8 | UAT Bug Fixes (7 bugs) | 🔴 HIGH | 20h | 3-UAT | ✅ |
+| 10.8b | UAT Skill Taxonomy Seed | 🟡 MED | 1h | 3-UAT | 🔴 |
 | 10.9 | Release Documentation | 🟡 MED | 4h | 4-Release | 🔴 |
 | 10.10 | Merge + Tag v1.0.0 | 🔴 HIGH | 2h | 4-Release | 🔴 |
-| **Total** | | | **85.5h** | | |
+| **Total** | | | **86.5h** | | |
 
 ---
 
