@@ -23,7 +23,7 @@ metrics:
   
   completed_stories: 12
   completed_hours: 71h
-  remaining_hours: 18h
+  remaining_hours: 30h
   
   # Capacity breakdown
   td_hours: 30h    # Stories 10.1-10.4 + 10.3b + 10.3c (API path fixes from buffer)
@@ -267,13 +267,16 @@ stories:
     
   10-8-uat-bug-fixes:
     title: "UAT Bug Fixes"
-    priority: MEDIUM
-    estimate: 8h
+    priority: HIGH
+    estimate: 20h
     actual: null
     status: backlog
     phase: 3-uat
     file: "10-8-uat-bug-fixes.md"
     dependencies: ["10-7"]
+    dev_prompt: "10-8-dev-prompt.md"
+    bugs: ["BUG-002", "BUG-003", "BUG-004", "BUG-005", "BUG-006", "BUG-007", "BUG-008"]
+    notes: "Expanded from 8h buffer. Includes new pages: Template CRUD, Profile. UX review required."
 
   # Phase 4: Release (6h)
   10-9-release-documentation:

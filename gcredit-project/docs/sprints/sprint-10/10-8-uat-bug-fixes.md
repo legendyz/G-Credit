@@ -1,10 +1,10 @@
 # Story 10.8: UAT Bug Fixes
 
 **Status:** backlog  
-**Priority:** 🟡 MEDIUM  
-**Estimate:** 8h (buffer)  
+**Priority:** � HIGH  
+**Estimate:** 20h (expanded from 8h — all bugs are MVP core)  
 **Sprint:** Sprint 10  
-**Type:** Bug Fix Buffer  
+**Type:** Bug Fix + New Pages  
 **Dependencies:** Story 10.7 (UAT Execution)
 
 ---
@@ -30,35 +30,65 @@ This story is a buffer allocation for bugs discovered during full UAT (Story 10.
 
 ## Tasks / Subtasks
 
-_Tasks will be populated after Story 10.7 UAT execution._
+### P0 Bug Fixes (must fix)
 
-### Pre-UAT Known Bugs
+- [ ] **BUG-002: Nav "My Wallet" links to `/` instead of `/wallet`** (P0, 0.5h)
+  - [ ] Navbar.tsx: change My Wallet `to="/wallet"`, add Dashboard `to="/"`
+  - [ ] MobileNav.tsx: add Dashboard entry, change My Wallet `to="/wallet"`
+  - [ ] Update nav active state checks
+  - [ ] Regression tests for Navbar/MobileNav
 
-- [ ] **BUG-001: Navbar "My Wallet" 标签指向 Dashboard** (P1 — 1h)
-  - Navbar.tsx 第一个链接 `to="/"` 标签为 "My Wallet"，实际 `/` 是 Dashboard
-  - 无导航链接指向 `/wallet`（真正的钱包页），导致 Wallet 页导航无高亮
-  - 同时影响 MobileNav.tsx（`to: '/'` 标签也是 "My Wallet"）
-  - **修复方案：** 将 `to="/"` 标签改为 "Dashboard"，新增 `to="/wallet"` 标签 "My Wallet"
-  - 发现于：Story 10.6d 验收截屏审查 (2026-02-09)
+- [ ] **BUG-005: BadgeSearchBar input doesn't accept typing** (P0, 1h)
+  - [ ] Fix SearchInput.tsx controlled mode: use `internalValue` for display
+  - [ ] Eliminate double-debounce conflict
+  - [ ] Test: Badge Management search + Wallet search
+  - [ ] Regression test for SearchInput controlled mode
 
-### UAT-Discovered Bugs
+- [ ] **BUG-004: Issue Badge recipient dropdown not loading** (P0, 1.5h)
+  - [ ] Backend: add `GET /api/badges/recipients` (ADMIN + ISSUER)
+  - [ ] Frontend: update IssueBadgePage to use new endpoint
+  - [ ] Verify Issuer Quick Action "Issue New Badge" navigation
+  - [ ] Regression test for recipient loading
 
-- [ ] **Task 1: Bug Triage** (AC: #1, #2, #3)
-  - [ ] Classify discovered bugs by severity (P0/P1/P2)
-  - [ ] Assign fix priority
+- [ ] **BUG-003: No Badge Template Management UI** (P0, 10h)
+  - [ ] Create `badgeTemplatesApi.ts` (CRUD API layer)
+  - [ ] Create `BadgeTemplateListPage.tsx` (list + filter + search)
+  - [ ] Create `BadgeTemplateFormPage.tsx` (create/edit form)
+  - [ ] Add routes in App.tsx (`/admin/templates`, `/admin/templates/new`, `/admin/templates/:id/edit`)
+  - [ ] Update Navbar + MobileNav + AdminDashboard Quick Action
+  - [ ] Regression tests for list + form pages
+  - [ ] **⚠️ Design System compliance required — UX review needed**
 
-- [ ] **Task 2: Fix P0 Bugs** (AC: #1)
-  - [ ] _To be determined_
+### P1 Bug Fixes
 
-- [ ] **Task 3: Fix P1 Bugs** (AC: #2)
-  - [ ] _To be determined_
+- [ ] **BUG-008: Prisma P2028 transaction timeout** (P1, 1h)
+  - [ ] Increase transaction timeout to 30s + maxWait 10s
+  - [ ] Verify first-time bulk issuance succeeds
 
-- [ ] **Task 4: Add Regression Tests** (AC: #4)
-  - [ ] Write test for each fixed bug
+- [ ] **BUG-006: Manager has no revocation UI** (P1, 2h)
+  - [ ] Backend: add MANAGER to revoke endpoint roles + department check
+  - [ ] Frontend: add MANAGER to Badge Management route + nav
+  - [ ] Manager view: filter to same-department, hide Issue buttons
+  - [ ] Regression tests for Manager revoke (same dept pass, cross dept 403)
 
-- [ ] **Task 5: Re-run UAT** (AC: #5, #6)
-  - [ ] Re-execute failed UAT test cases
-  - [ ] Verify full test suite
+- [ ] **BUG-007: No Profile / password change page** (P1, 4h)
+  - [ ] Create `ProfilePage.tsx` (profile info + password change)
+  - [ ] Add `/profile` route in App.tsx
+  - [ ] Add Profile link in Navbar + MobileNav
+  - [ ] Regression tests for profile update + password change
+  - [ ] **⚠️ Design System compliance required — UX review needed**
+
+### Quality Assurance
+
+- [ ] **QA: UX Designer Review** (AC: new pages)
+  - [ ] Screenshot all new pages (Template List, Template Form, Profile, Manager view)
+  - [ ] Submit for UX review
+  - [ ] Apply feedback if any
+
+- [ ] **QA: Full Test Suite** (AC: #4, #6)
+  - [ ] All existing backend tests pass (534+)
+  - [ ] All new frontend tests pass
+  - [ ] `tsc --noEmit` + `lint` clean
 
 ## Dev Notes
 
