@@ -474,9 +474,9 @@ const BadgeDetailModal: React.FC = () => {
                 padding: '0.625rem 1.5rem',
                 fontSize: '0.875rem',
                 fontWeight: 500,
-                color: '#374151',
-                backgroundColor: 'white',
-                border: '1px solid #d1d5db',
+                color: 'white',
+                backgroundColor: downloading ? '#9ca3af' : '#2563eb',
+                border: 'none',
                 borderRadius: '0.5rem',
                 display: 'flex',
                 alignItems: 'center',
@@ -486,19 +486,19 @@ const BadgeDetailModal: React.FC = () => {
               }}
               onMouseEnter={(e) => {
                 if (!downloading) {
-                  e.currentTarget.style.backgroundColor = '#f3f4f6';
+                  e.currentTarget.style.backgroundColor = '#1d4ed8';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!downloading) {
-                  e.currentTarget.style.backgroundColor = 'white';
+                  e.currentTarget.style.backgroundColor = '#2563eb';
                 }
               }}
             >
               {downloading ? (
                 <>
                   <svg
-                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-700"
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
