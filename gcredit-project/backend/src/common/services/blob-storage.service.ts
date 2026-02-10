@@ -1,6 +1,14 @@
-import { Injectable, BadRequestException, Logger } from '@nestjs/common';
-import { ContainerClient } from '@azure/storage-blob';
-import { getBadgesContainerClient } from '../../config/azure-blob.config';
+import {
+  Injectable,
+  BadRequestException,
+  Logger,
+  OnModuleInit,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import {
+  BlobServiceClient,
+  ContainerClient,
+} from '@azure/storage-blob';
 import { v4 as uuidv4 } from 'uuid';
 import sharp from 'sharp';
 
@@ -21,10 +29,9 @@ export interface UploadImageResult {
 }
 
 @Injectable()
-export class BlobStorageService {
+export class BlobStorageService implements OnModuleInit {
   private readonly logger = new Logger(BlobStorageService.name);
   private containerClient: ContainerClient | null = null;
-  private initialized = false;
 
   // Recommended dimensions for badge images
   private readonly RECOMMENDED_SIZES = [256, 512, 1024];
@@ -32,22 +39,30 @@ export class BlobStorageService {
   private readonly MIN_DIMENSION = 128;
   private readonly MAX_DIMENSION = 2048;
 
-  constructor() {
-    // Lazy initialization - don't throw in constructor
-    this.initializeClient();
-  }
+  constructor(private configService: ConfigService) {}
 
-  private initializeClient(): void {
-    if (this.initialized) return;
-    this.initialized = true;
+  onModuleInit() {
+    const connectionString = this.configService.get<string>(
+      'AZURE_STORAGE_CONNECTION_STRING',
+    );
+    const containerName = this.configService.get<string>(
+      'AZURE_STORAGE_CONTAINER_BADGES',
+      'badges',
+    );
+
+    if (!connectionString) {
+      this.logger.warn(
+        'Azure Blob Storage not configured - operations will return mock data',
+      );
+      return;
+    }
 
     try {
-      this.containerClient = getBadgesContainerClient();
-      if (!this.containerClient) {
-        this.logger.warn(
-          'Azure Blob Storage not configured - operations will return mock data',
-        );
-      }
+      const blobServiceClient =
+        BlobServiceClient.fromConnectionString(connectionString);
+      this.containerClient =
+        blobServiceClient.getContainerClient(containerName);
+      this.logger.log('Azure Blob Storage (badges) connected successfully');
     } catch (error: unknown) {
       const errMsg = error instanceof Error ? error.message : String(error);
       this.logger.warn(`Failed to initialize Azure Blob Storage: ${errMsg}`);
@@ -56,7 +71,6 @@ export class BlobStorageService {
   }
 
   private ensureClient(): ContainerClient {
-    this.initializeClient();
     if (!this.containerClient) {
       throw new BadRequestException('Azure Blob Storage is not configured');
     }
@@ -67,7 +81,6 @@ export class BlobStorageService {
    * Check if Azure Blob Storage is available
    */
   isAvailable(): boolean {
-    this.initializeClient();
     return this.containerClient !== null;
   }
 
