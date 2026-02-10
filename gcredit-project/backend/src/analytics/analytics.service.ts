@@ -457,6 +457,7 @@ export class AnalyticsService {
         ISSUED: 'BADGE_ISSUED',
         CLAIMED: 'BADGE_CLAIMED',
         REVOKED: 'BADGE_REVOKED',
+        SHARED: 'BADGE_SHARED',
         CREATED:
           log.entityType === 'Template'
             ? 'TEMPLATE_CREATED'

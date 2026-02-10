@@ -15,6 +15,7 @@ const ACTIVITY_CONFIG: Record<ActivityType, { icon: string; verb: string }> = {
   BADGE_ISSUED: { icon: '🏅', verb: 'issued' },
   BADGE_CLAIMED: { icon: '✅', verb: 'claimed' },
   BADGE_REVOKED: { icon: '🚫', verb: 'revoked' },
+  BADGE_SHARED: { icon: '📤', verb: 'shared' },
   TEMPLATE_CREATED: { icon: '📝', verb: 'created template' },
   USER_REGISTERED: { icon: '👤', verb: 'registered' },
 };
@@ -47,6 +48,8 @@ function buildDescription(activity: ActivityItem): string {
       return `${actor} ${config.verb} "${templateName}"`;
     case 'BADGE_REVOKED':
       return `${actor} ${config.verb} "${templateName}" from ${targetName}`;
+    case 'BADGE_SHARED':
+      return `${actor} ${config.verb} "${templateName}" via email`;
     case 'TEMPLATE_CREATED':
       return `${actor} ${config.verb} "${templateName}"`;
     case 'USER_REGISTERED':

@@ -199,6 +199,30 @@ export class BadgeSharingService {
         this.logger.warn(`Failed to record share analytics: ${errMsg}`);
       }
 
+      // Record in global audit log for Admin Analytics (UAT-023)
+      try {
+        await this.prisma.auditLog.create({
+          data: {
+            entityType: 'Badge',
+            entityId: badge.id,
+            action: 'SHARED',
+            actorId: userId,
+            actorEmail: badge.recipientId === userId
+              ? badge.recipient.email
+              : badge.issuer.email,
+            metadata: {
+              platform: 'email',
+              recipientEmail: dto.recipientEmail,
+              templateName: badge.template.name,
+            },
+          },
+        });
+      } catch (auditError: unknown) {
+        this.logger.warn(
+          `Failed to record share audit log: ${auditError instanceof Error ? auditError.message : String(auditError)}`,
+        );
+      }
+
       return {
         success: true,
         message: 'Badge shared successfully via email',

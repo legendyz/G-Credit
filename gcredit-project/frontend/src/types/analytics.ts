@@ -100,6 +100,7 @@ export type ActivityType =
   | 'BADGE_ISSUED'
   | 'BADGE_CLAIMED'
   | 'BADGE_REVOKED'
+  | 'BADGE_SHARED'
   | 'TEMPLATE_CREATED'
   | 'USER_REGISTERED';
 
