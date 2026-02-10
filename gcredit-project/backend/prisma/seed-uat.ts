@@ -164,13 +164,22 @@ async function main() {
   console.log('✅ 4 users created/updated');
 
   // ========================================
-  // 2. BADGE TEMPLATES (5 templates, all ACTIVE)
+  // CLEANUP: Delete existing UAT data in FK-safe order
   // ========================================
-
-  // Clean existing UAT templates if re-running
+  await prisma.evidenceFile.deleteMany({
+    where: { id: { in: Object.values(IDS).filter((id) => id.startsWith('uat-evid')) } },
+  });
+  await prisma.badge.deleteMany({
+    where: { id: { in: Object.values(IDS).filter((id) => id.startsWith('uat-bdge')) } },
+  });
   await prisma.badgeTemplate.deleteMany({
     where: { id: { in: Object.values(IDS).filter((id) => id.startsWith('uat-tmpl')) } },
   });
+  console.log('🧹 Cleaned existing UAT data (evidence → badges → templates)');
+
+  // ========================================
+  // 2. BADGE TEMPLATES (5 templates, all ACTIVE)
+  // ========================================
 
   const templates = await Promise.all([
     prisma.badgeTemplate.create({
@@ -285,13 +294,6 @@ async function main() {
   // ========================================
   // 3. BADGES (11 total, various states)
   // ========================================
-  // Clean existing UAT badges if re-running
-  await prisma.evidenceFile.deleteMany({
-    where: { id: { in: Object.values(IDS).filter((id) => id.startsWith('uat-evid')) } },
-  });
-  await prisma.badge.deleteMany({
-    where: { id: { in: Object.values(IDS).filter((id) => id.startsWith('uat-bdge')) } },
-  });
 
   const now = new Date();
   const oneYearLater = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);

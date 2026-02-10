@@ -21,9 +21,9 @@ metrics:
   total_estimated_hours: 95h
   buffer_hours: 0h  # Extended sprint - no buffer needed
   
-  completed_stories: 10
-  completed_hours: 61h
-  remaining_hours: 28h
+  completed_stories: 11
+  completed_hours: 67h
+  remaining_hours: 22h
   
   # Capacity breakdown
   td_hours: 30h    # Stories 10.1-10.4 + 10.3b + 10.3c (API path fixes from buffer)
@@ -230,11 +230,13 @@ stories:
     title: "UAT Test Plan & Seed Data Preparation"
     priority: HIGH
     estimate: 6h
-    actual: null
-    status: backlog
+    actual: 6h
+    status: accepted
     phase: 3-uat
     file: "10-6c-uat-test-plan-seed-data.md"
     dependencies: ["10-6a", "10-6b", "10-6d"]
+    accepted_date: "2026-02-10"
+    notes: "35 test cases, seed script idempotent, FK order fix applied by SM during acceptance. 534/534 tests pass."
 
   10-6d-design-system-ui-overhaul:
     title: "Frontend Design System & UI Overhaul"

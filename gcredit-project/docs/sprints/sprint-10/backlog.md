@@ -238,16 +238,16 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 **Priority:** 🔴 HIGH  
 **Estimate:** 6h  
 **Story Doc:** 📄 [10-6c-uat-test-plan-seed-data.md](10-6c-uat-test-plan-seed-data.md)  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Accepted (2026-02-10)  
 **Dependencies:** Stories 10.6a, 10.6b complete
 
 **Quick Summary:** Create comprehensive UAT test plan covering all 10 Epics (including single issuance) with realistic seed data.
 
 **Key Deliverables:**
-- [ ] UAT test plan (30+ test cases)
-- [ ] Demo seed script (`npm run seed:uat`)
-- [ ] Test accounts (4 roles)
-- [ ] Known limitations document
+- [x] UAT test plan (35 test cases)
+- [x] Demo seed script (`npm run seed:uat`)
+- [x] Test accounts (4 roles)
+- [x] Known limitations document (5 items)
 
 ---
 
@@ -352,7 +352,7 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 | 10.5 | Analytics: Mock → Real Data | 🟡 MED | 6h | 2-Feature | 🔴 |
 | 10.6a | UI Walkthrough & Screenshot Baseline | 🔴 HIGH | 2h | 3-UAT | 🔴 |
 | 10.6b | Single Badge Issuance UI | 🔴 HIGH | 6h | 2-Feature | ✅ |
-| 10.6c | UAT Test Plan & Seed Data | 🔴 HIGH | 6h | 3-UAT | 🔴 |
+| 10.6c | UAT Test Plan & Seed Data | 🔴 HIGH | 6h | 3-UAT | ✅ |
 | 10.6d | Design System & UI Overhaul | 🔴 HIGH | 20h | 2-Feature | ✅ |
 | 10.7 | Full UAT Execution | 🔴 HIGH | 12h | 3-UAT | 🔴 |
 | 10.8 | UAT Bug Fixes | 🟡 MED | 8h | 3-UAT | 🔴 |
