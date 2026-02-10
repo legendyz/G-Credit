@@ -20,8 +20,9 @@ export function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps)
 
   // Check authentication
   if (!isAuthenticated) {
-    // Redirect to login, preserving the attempted URL
-    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+    // Redirect to login, preserving the attempted URL (including query string)
+    const fullPath = location.pathname + location.search;
+    return <Navigate to="/login" state={{ from: fullPath }} replace />;
   }
 
   // Check role authorization if required

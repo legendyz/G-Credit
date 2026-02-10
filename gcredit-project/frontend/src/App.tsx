@@ -27,6 +27,7 @@ const BulkPreviewPage = lazy(() => import('@/components/BulkIssuance/BulkPreview
 const IssueBadgePage = lazy(() =>
   import('@/pages/IssueBadgePage').then((m) => ({ default: m.IssueBadgePage }))
 );
+const ClaimBadgePage = lazy(() => import('@/pages/ClaimBadgePage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 const BadgeTemplateListPage = lazy(() => import('@/pages/admin/BadgeTemplateListPage'));
 const BadgeTemplateFormPage = lazy(() => import('@/pages/admin/BadgeTemplateFormPage'));
@@ -56,6 +57,14 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/verify/:verificationId" element={<VerifyBadgePage />} />
             <Route path="/badges/:badgeId/embed" element={<BadgeEmbedPage />} />
+            <Route
+              path="/claim"
+              element={
+                <ProtectedRoute>
+                  <ClaimBadgePage />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Protected Routes */}
             <Route
