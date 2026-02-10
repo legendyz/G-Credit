@@ -4,6 +4,7 @@ import {
   TemplateStatus,
   BadgeStatus,
   MilestoneType,
+  SkillLevel,
 } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
@@ -54,6 +55,24 @@ const IDS = {
   // Milestones
   milestone1: 'uat-mile-0001-0001-0001-000000000001',
   milestone2: 'uat-mile-0001-0001-0001-000000000002',
+  // Skill Categories (Level 1)
+  scatTech: 'uat-scat-0001-0001-0001-000000000001',
+  scatSoft: 'uat-scat-0001-0001-0001-000000000002',
+  scatDomain: 'uat-scat-0001-0001-0001-000000000003',
+  scatCompany: 'uat-scat-0001-0001-0001-000000000004',
+  scatProfessional: 'uat-scat-0001-0001-0001-000000000005',
+  // Skill Categories (Level 2 — sub-categories)
+  scatProgramming: 'uat-scat-0001-0001-0001-000000000011',
+  scatCloud: 'uat-scat-0001-0001-0001-000000000012',
+  scatCommunication: 'uat-scat-0001-0001-0001-000000000021',
+  scatLeadership: 'uat-scat-0001-0001-0001-000000000022',
+  // Skills
+  skillTypescript: 'uat-skil-0001-0001-0001-000000000001',
+  skillAzure: 'uat-skil-0001-0001-0001-000000000002',
+  skillDocker: 'uat-skil-0001-0001-0001-000000000003',
+  skillPublicSpeaking: 'uat-skil-0001-0001-0001-000000000004',
+  skillTeamLeadership: 'uat-skil-0001-0001-0001-000000000005',
+  skillProjectMgmt: 'uat-skil-0001-0001-0001-000000000006',
 };
 
 const UAT_SALT = 'gcredit-uat-salt';
@@ -175,10 +194,198 @@ async function main() {
   await prisma.badgeTemplate.deleteMany({
     where: { id: { in: Object.values(IDS).filter((id) => id.startsWith('uat-tmpl')) } },
   });
-  console.log('🧹 Cleaned existing UAT data (evidence → badges → templates)');
+  // Clean skill data (skills before categories due to FK)
+  await prisma.skill.deleteMany({
+    where: { id: { in: Object.values(IDS).filter((id) => id.startsWith('uat-skil')) } },
+  });
+  await prisma.skillCategory.deleteMany({
+    where: { id: { in: Object.values(IDS).filter((id) => id.startsWith('uat-scat')) } },
+  });
+  console.log('🧹 Cleaned existing UAT data (evidence → badges → templates → skills → categories)');
 
   // ========================================
-  // 2. BADGE TEMPLATES (5 templates, all ACTIVE)
+  // 2. SKILL CATEGORIES + SKILLS (Story 10.8b)
+  // ========================================
+
+  // 2a. Create 5 top-level skill categories
+  const skillCategories = await Promise.all([
+    prisma.skillCategory.create({
+      data: {
+        id: IDS.scatTech,
+        name: '技术技能',
+        nameEn: 'Technical Skills',
+        description: '编程、开发工具、云平台等技术相关能力',
+        level: 1,
+        isSystemDefined: true,
+        isEditable: false,
+        displayOrder: 1,
+      },
+    }),
+    prisma.skillCategory.create({
+      data: {
+        id: IDS.scatSoft,
+        name: '软技能',
+        nameEn: 'Soft Skills',
+        description: '沟通、领导力、团队协作等人际交往能力',
+        level: 1,
+        isSystemDefined: true,
+        isEditable: false,
+        displayOrder: 2,
+      },
+    }),
+    prisma.skillCategory.create({
+      data: {
+        id: IDS.scatDomain,
+        name: '行业知识',
+        nameEn: 'Domain Knowledge',
+        description: '特定行业的专业知识与经验',
+        level: 1,
+        isSystemDefined: true,
+        isEditable: false,
+        displayOrder: 3,
+      },
+    }),
+    prisma.skillCategory.create({
+      data: {
+        id: IDS.scatCompany,
+        name: '公司特定能力',
+        nameEn: 'Company-Specific Competencies',
+        description: '企业文化、内部流程、专有工具等公司特有的能力要求',
+        level: 1,
+        isSystemDefined: true,
+        isEditable: false,
+        displayOrder: 4,
+      },
+    }),
+    prisma.skillCategory.create({
+      data: {
+        id: IDS.scatProfessional,
+        name: '通用职业技能',
+        nameEn: 'Professional Skills',
+        description: '项目管理、数据分析等跨行业的通用职业技能',
+        level: 1,
+        isSystemDefined: true,
+        isEditable: false,
+        displayOrder: 5,
+      },
+    }),
+  ]);
+  console.log(`✅ ${skillCategories.length} top-level skill categories created`);
+
+  // 2b. Create 4 sub-categories (level 2)
+  const subCategories = await Promise.all([
+    prisma.skillCategory.create({
+      data: {
+        id: IDS.scatProgramming,
+        name: '编程语言',
+        nameEn: 'Programming Languages',
+        level: 2,
+        parentId: IDS.scatTech,
+        isSystemDefined: true,
+        isEditable: false,
+        displayOrder: 1,
+      },
+    }),
+    prisma.skillCategory.create({
+      data: {
+        id: IDS.scatCloud,
+        name: '云平台',
+        nameEn: 'Cloud Platforms',
+        level: 2,
+        parentId: IDS.scatTech,
+        isSystemDefined: true,
+        isEditable: false,
+        displayOrder: 3,
+      },
+    }),
+    prisma.skillCategory.create({
+      data: {
+        id: IDS.scatCommunication,
+        name: '沟通能力',
+        nameEn: 'Communication',
+        level: 2,
+        parentId: IDS.scatSoft,
+        isSystemDefined: true,
+        isEditable: false,
+        displayOrder: 1,
+      },
+    }),
+    prisma.skillCategory.create({
+      data: {
+        id: IDS.scatLeadership,
+        name: '领导力',
+        nameEn: 'Leadership',
+        level: 2,
+        parentId: IDS.scatSoft,
+        isSystemDefined: true,
+        isEditable: false,
+        displayOrder: 2,
+      },
+    }),
+  ]);
+  console.log(`✅ ${subCategories.length} sub-categories created`);
+
+  // 2c. Create 6 skills across different categories and levels
+  const skills = await Promise.all([
+    prisma.skill.create({
+      data: {
+        id: IDS.skillTypescript,
+        name: 'TypeScript',
+        description: 'Static typing for JavaScript, used in enterprise web development',
+        categoryId: IDS.scatProgramming,
+        level: SkillLevel.INTERMEDIATE,
+      },
+    }),
+    prisma.skill.create({
+      data: {
+        id: IDS.skillAzure,
+        name: 'Azure Cloud',
+        description: 'Microsoft Azure cloud platform services and architecture',
+        categoryId: IDS.scatCloud,
+        level: SkillLevel.ADVANCED,
+      },
+    }),
+    prisma.skill.create({
+      data: {
+        id: IDS.skillDocker,
+        name: 'Docker',
+        description: 'Container technology for application packaging and deployment',
+        categoryId: IDS.scatCloud,
+        level: SkillLevel.INTERMEDIATE,
+      },
+    }),
+    prisma.skill.create({
+      data: {
+        id: IDS.skillPublicSpeaking,
+        name: 'Public Speaking',
+        description: 'Presenting ideas clearly and persuasively to audiences',
+        categoryId: IDS.scatCommunication,
+        level: SkillLevel.BEGINNER,
+      },
+    }),
+    prisma.skill.create({
+      data: {
+        id: IDS.skillTeamLeadership,
+        name: 'Team Leadership',
+        description: 'Leading and motivating teams to achieve objectives',
+        categoryId: IDS.scatLeadership,
+        level: SkillLevel.EXPERT,
+      },
+    }),
+    prisma.skill.create({
+      data: {
+        id: IDS.skillProjectMgmt,
+        name: 'Project Management',
+        description: 'Planning, executing, and closing projects effectively',
+        categoryId: IDS.scatProfessional,
+        level: SkillLevel.ADVANCED,
+      },
+    }),
+  ]);
+  console.log(`✅ ${skills.length} skills created`);
+
+  // ========================================
+  // 3. BADGE TEMPLATES (5 templates, all ACTIVE)
   // ========================================
 
   const templates = await Promise.all([
@@ -190,7 +397,7 @@ async function main() {
           'Awarded for demonstrating advanced cloud computing skills including architecture, deployment, and security best practices.',
         imageUrl: 'https://picsum.photos/400/400?random=1',
         category: 'Technical',
-        skillIds: [],
+        skillIds: [IDS.skillTypescript, IDS.skillAzure, IDS.skillDocker],
         issuanceCriteria: {
           requirements: [
             'Complete cloud architecture certification',
@@ -211,7 +418,7 @@ async function main() {
           'Recognizes outstanding leadership qualities, mentorship, and team development capabilities.',
         imageUrl: 'https://picsum.photos/400/400?random=2',
         category: 'Leadership',
-        skillIds: [],
+        skillIds: [IDS.skillTeamLeadership, IDS.skillPublicSpeaking],
         issuanceCriteria: {
           requirements: [
             'Lead a cross-functional project',
@@ -274,7 +481,7 @@ async function main() {
           'Recognizes exceptional collaboration, positive team culture contribution, and cross-team cooperation.',
         imageUrl: 'https://picsum.photos/400/400?random=5',
         category: 'Teamwork',
-        skillIds: [],
+        skillIds: [IDS.skillProjectMgmt],
         issuanceCriteria: {
           requirements: [
             'Consistently supports team goals',
