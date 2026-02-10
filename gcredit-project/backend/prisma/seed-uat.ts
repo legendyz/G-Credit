@@ -18,54 +18,56 @@ if (process.env.NODE_ENV === 'production') {
 const prisma = new PrismaClient();
 
 // Fixed UUIDs for easy reference during UAT
+// Format: valid UUID v4 (8-4-4-4-12 hex, version=4, variant=a)
+// Scheme: 00000000-0000-4000-a000-TTTTNNNNNNNN (T=type, N=sequence)
 const IDS = {
-  // Templates
-  tmpl1: 'uat-tmpl-0001-0001-0001-000000000001',
-  tmpl2: 'uat-tmpl-0001-0001-0001-000000000002',
-  tmpl3: 'uat-tmpl-0001-0001-0001-000000000003',
-  tmpl4: 'uat-tmpl-0001-0001-0001-000000000004',
-  tmpl5: 'uat-tmpl-0001-0001-0001-000000000005',
-  // Badges
-  badge1: 'uat-bdge-0001-0001-0001-000000000001',
-  badge2: 'uat-bdge-0001-0001-0001-000000000002',
-  badge3: 'uat-bdge-0001-0001-0001-000000000003',
-  badge4: 'uat-bdge-0001-0001-0001-000000000004',
-  badge5: 'uat-bdge-0001-0001-0001-000000000005',
-  badge6: 'uat-bdge-0001-0001-0001-000000000006',
-  badge7: 'uat-bdge-0001-0001-0001-000000000007',
-  badge8: 'uat-bdge-0001-0001-0001-000000000008',
-  badge9: 'uat-bdge-0001-0001-0001-000000000009',
-  badge10: 'uat-bdge-0001-0001-0001-000000000010',
-  badge11: 'uat-bdge-0001-0001-0001-000000000011',
-  // Verification IDs
-  verify1: 'uat-veri-0001-0001-0001-000000000001',
-  verify2: 'uat-veri-0001-0001-0001-000000000002',
-  verify3: 'uat-veri-0001-0001-0001-000000000003',
-  verify4: 'uat-veri-0001-0001-0001-000000000004',
-  verify5: 'uat-veri-0001-0001-0001-000000000005',
-  verify6: 'uat-veri-0001-0001-0001-000000000006',
-  verify7: 'uat-veri-0001-0001-0001-000000000007',
-  verify8: 'uat-veri-0001-0001-0001-000000000008',
-  verify9: 'uat-veri-0001-0001-0001-000000000009',
-  verify10: 'uat-veri-0001-0001-0001-000000000010',
-  verify11: 'uat-veri-0001-0001-0001-000000000011',
-  // Evidence
-  evidence1: 'uat-evid-0001-0001-0001-000000000001',
-  evidence2: 'uat-evid-0001-0001-0001-000000000002',
-  // Milestones
-  milestone1: 'uat-mile-0001-0001-0001-000000000001',
-  milestone2: 'uat-mile-0001-0001-0001-000000000002',
-  // Skill Categories (Level 1)
-  scatTech: 'uat-scat-0001-0001-0001-000000000001',
-  scatSoft: 'uat-scat-0001-0001-0001-000000000002',
-  scatDomain: 'uat-scat-0001-0001-0001-000000000003',
-  scatCompany: 'uat-scat-0001-0001-0001-000000000004',
-  scatProfessional: 'uat-scat-0001-0001-0001-000000000005',
-  // Skill Categories (Level 2 — sub-categories)
-  scatProgramming: 'uat-scat-0001-0001-0001-000000000011',
-  scatCloud: 'uat-scat-0001-0001-0001-000000000012',
-  scatCommunication: 'uat-scat-0001-0001-0001-000000000021',
-  scatLeadership: 'uat-scat-0001-0001-0001-000000000022',
+  // Templates (type=0001)
+  tmpl1: '00000000-0000-4000-a000-000100000001',
+  tmpl2: '00000000-0000-4000-a000-000100000002',
+  tmpl3: '00000000-0000-4000-a000-000100000003',
+  tmpl4: '00000000-0000-4000-a000-000100000004',
+  tmpl5: '00000000-0000-4000-a000-000100000005',
+  // Badges (type=0002)
+  badge1: '00000000-0000-4000-a000-000200000001',
+  badge2: '00000000-0000-4000-a000-000200000002',
+  badge3: '00000000-0000-4000-a000-000200000003',
+  badge4: '00000000-0000-4000-a000-000200000004',
+  badge5: '00000000-0000-4000-a000-000200000005',
+  badge6: '00000000-0000-4000-a000-000200000006',
+  badge7: '00000000-0000-4000-a000-000200000007',
+  badge8: '00000000-0000-4000-a000-000200000008',
+  badge9: '00000000-0000-4000-a000-000200000009',
+  badge10: '00000000-0000-4000-a000-000200000010',
+  badge11: '00000000-0000-4000-a000-000200000011',
+  // Verification IDs (type=0003)
+  verify1: '00000000-0000-4000-a000-000300000001',
+  verify2: '00000000-0000-4000-a000-000300000002',
+  verify3: '00000000-0000-4000-a000-000300000003',
+  verify4: '00000000-0000-4000-a000-000300000004',
+  verify5: '00000000-0000-4000-a000-000300000005',
+  verify6: '00000000-0000-4000-a000-000300000006',
+  verify7: '00000000-0000-4000-a000-000300000007',
+  verify8: '00000000-0000-4000-a000-000300000008',
+  verify9: '00000000-0000-4000-a000-000300000009',
+  verify10: '00000000-0000-4000-a000-000300000010',
+  verify11: '00000000-0000-4000-a000-000300000011',
+  // Evidence (type=0004)
+  evidence1: '00000000-0000-4000-a000-000400000001',
+  evidence2: '00000000-0000-4000-a000-000400000002',
+  // Milestones (type=0005)
+  milestone1: '00000000-0000-4000-a000-000500000001',
+  milestone2: '00000000-0000-4000-a000-000500000002',
+  // Skill Categories Level 1 (type=0006)
+  scatTech: '00000000-0000-4000-a000-000600000001',
+  scatSoft: '00000000-0000-4000-a000-000600000002',
+  scatDomain: '00000000-0000-4000-a000-000600000003',
+  scatCompany: '00000000-0000-4000-a000-000600000004',
+  scatProfessional: '00000000-0000-4000-a000-000600000005',
+  // Skill Categories Level 2 — sub-categories (type=0006, seq=1x/2x)
+  scatProgramming: '00000000-0000-4000-a000-000600000011',
+  scatCloud: '00000000-0000-4000-a000-000600000012',
+  scatCommunication: '00000000-0000-4000-a000-000600000021',
+  scatLeadership: '00000000-0000-4000-a000-000600000022',
   // Skills (must be valid UUID v4 — DTO validates @IsUUID('4'))
   skillTypescript: 'a0a00001-0001-4001-a001-000000000001',
   skillAzure: 'a0a00002-0002-4002-a002-000000000002',
@@ -184,22 +186,60 @@ async function main() {
 
   // ========================================
   // CLEANUP: Delete existing UAT data in FK-safe order
+  // Handles both old (uat-*) and new (00000000-*) ID formats
   // ========================================
+  // Evidence files: by ID (new) or badge claimToken (old+new)
   await prisma.evidenceFile.deleteMany({
-    where: { id: { in: Object.values(IDS).filter((id) => id.startsWith('uat-evid')) } },
+    where: {
+      OR: [
+        { id: { in: [IDS.evidence1, IDS.evidence2] } },
+        { badge: { claimToken: { startsWith: 'uat-claim-token-' } } },
+      ],
+    },
   });
+  // Badges: by claimToken pattern (covers both old and new ID schemes)
   await prisma.badge.deleteMany({
-    where: { id: { in: Object.values(IDS).filter((id) => id.startsWith('uat-bdge')) } },
+    where: { claimToken: { startsWith: 'uat-claim-token-' } },
   });
+  // Templates: by new IDs and old uat-tmpl-* IDs
   await prisma.badgeTemplate.deleteMany({
-    where: { id: { in: Object.values(IDS).filter((id) => id.startsWith('uat-tmpl')) } },
+    where: {
+      id: {
+        in: [
+          IDS.tmpl1, IDS.tmpl2, IDS.tmpl3, IDS.tmpl4, IDS.tmpl5,
+          // Old format IDs for migration cleanup
+          'uat-tmpl-0001-0001-0001-000000000001',
+          'uat-tmpl-0001-0001-0001-000000000002',
+          'uat-tmpl-0001-0001-0001-000000000003',
+          'uat-tmpl-0001-0001-0001-000000000004',
+          'uat-tmpl-0001-0001-0001-000000000005',
+        ],
+      },
+    },
   });
   // Clean skill data (skills before categories due to FK)
   await prisma.skill.deleteMany({
     where: { id: { in: Object.values(IDS).filter((id) => id.startsWith('a0a0000')) } },
   });
+  // Skill categories: by new IDs and old uat-scat-* IDs
   await prisma.skillCategory.deleteMany({
-    where: { id: { in: Object.values(IDS).filter((id) => id.startsWith('uat-scat')) } },
+    where: {
+      id: {
+        in: [
+          ...Object.values(IDS).filter((id) => id.startsWith('00000000-0000-4000-a000-0006')),
+          // Old format IDs for migration cleanup
+          'uat-scat-0001-0001-0001-000000000001',
+          'uat-scat-0001-0001-0001-000000000002',
+          'uat-scat-0001-0001-0001-000000000003',
+          'uat-scat-0001-0001-0001-000000000004',
+          'uat-scat-0001-0001-0001-000000000005',
+          'uat-scat-0001-0001-0001-000000000011',
+          'uat-scat-0001-0001-0001-000000000012',
+          'uat-scat-0001-0001-0001-000000000021',
+          'uat-scat-0001-0001-0001-000000000022',
+        ],
+      },
+    },
   });
   console.log('🧹 Cleaned existing UAT data (evidence → badges → templates → skills → categories)');
 
@@ -768,7 +808,16 @@ async function main() {
   // ========================================
 
   await prisma.milestoneConfig.deleteMany({
-    where: { id: { in: [IDS.milestone1, IDS.milestone2] } },
+    where: {
+      id: {
+        in: [
+          IDS.milestone1, IDS.milestone2,
+          // Old format IDs for migration cleanup
+          'uat-mile-0001-0001-0001-000000000001',
+          'uat-mile-0001-0001-0001-000000000002',
+        ],
+      },
+    },
   });
 
   await prisma.milestoneConfig.create({
