@@ -30,6 +30,7 @@ import {
   type TemplateCategory,
   type TemplateStatus,
 } from '@/lib/badgeTemplatesApi';
+import { useSkills } from '@/hooks/useSkills';
 import { LayoutGrid, Save, Loader2, Upload, X, AlertCircle } from 'lucide-react';
 
 const CATEGORIES: { value: TemplateCategory; label: string }[] = [
@@ -61,6 +62,10 @@ export function BadgeTemplateFormPage() {
   const [validityPeriod, setValidityPeriod] = useState('');
   const [status, setStatus] = useState<TemplateStatus>('DRAFT');
   const [criteriaText, setCriteriaText] = useState('');
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+
+  // Skills data
+  const { data: availableSkills = [] } = useSkills();
 
   // Image state
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -87,12 +92,21 @@ export function BadgeTemplateFormPage() {
 
         // Parse issuanceCriteria for display
         if (template.issuanceCriteria) {
-          const criteria = template.issuanceCriteria as { requirements?: string[] };
-          if (criteria.requirements) {
+          const criteria = template.issuanceCriteria as {
+            description?: string;
+            requirements?: string[];
+          };
+          if (criteria.description) {
+            setCriteriaText(criteria.description);
+          } else if (criteria.requirements) {
+            // Legacy format fallback
             setCriteriaText(criteria.requirements.join('\n'));
-          } else {
-            setCriteriaText(JSON.stringify(template.issuanceCriteria, null, 2));
           }
+        }
+
+        // Populate selected skills
+        if (template.skillIds && Array.isArray(template.skillIds)) {
+          setSelectedSkills(template.skillIds);
         }
       } catch (err) {
         setLoadError(err instanceof Error ? err.message : 'Failed to load template');
@@ -143,10 +157,11 @@ export function BadgeTemplateFormPage() {
       return;
     }
 
-    // Build issuance criteria from text
-    const issuanceCriteria = criteriaText.trim()
-      ? { requirements: criteriaText.split('\n').filter((line) => line.trim()) }
-      : { requirements: [] };
+    // Build issuance criteria – backend requires `type` field (IssuanceCriteriaDto)
+    const issuanceCriteria = {
+      type: 'manual' as const,
+      description: criteriaText.trim() || undefined,
+    };
 
     setIsSubmitting(true);
     try {
@@ -170,7 +185,7 @@ export function BadgeTemplateFormPage() {
             name: name.trim(),
             description: description.trim() || undefined,
             category: category as TemplateCategory,
-            skillIds: [],
+            skillIds: selectedSkills,
             issuanceCriteria,
             validityPeriod: validityPeriod ? Number(validityPeriod) : undefined,
           },
@@ -330,6 +345,45 @@ export function BadgeTemplateFormPage() {
                 className="focus:ring-brand-500"
               />
               <p className="text-xs text-neutral-500">One requirement per line</p>
+            </div>
+
+            {/* Skills Selection */}
+            <div className="space-y-2">
+              <Label className="text-body font-medium text-neutral-700">Related Skills</Label>
+              {availableSkills.length > 0 ? (
+                <div className="flex flex-wrap gap-2 p-3 border border-neutral-200 rounded-md bg-neutral-50 max-h-48 overflow-y-auto">
+                  {availableSkills.map((skill) => {
+                    const isSelected = selectedSkills.includes(skill.id);
+                    return (
+                      <button
+                        key={skill.id}
+                        type="button"
+                        onClick={() =>
+                          setSelectedSkills((prev) =>
+                            isSelected
+                              ? prev.filter((sid) => sid !== skill.id)
+                              : [...prev, skill.id]
+                          )
+                        }
+                        className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                          isSelected
+                            ? 'bg-brand-600 text-white'
+                            : 'bg-white text-neutral-700 border border-neutral-300 hover:border-brand-400'
+                        }`}
+                      >
+                        {skill.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm text-neutral-500">No skills available</p>
+              )}
+              {selectedSkills.length > 0 && (
+                <p className="text-xs text-neutral-500">
+                  {selectedSkills.length} skill{selectedSkills.length > 1 ? 's' : ''} selected
+                </p>
+              )}
             </div>
 
             {/* Validity Period */}

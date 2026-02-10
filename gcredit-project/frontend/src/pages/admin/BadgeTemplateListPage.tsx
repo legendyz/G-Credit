@@ -52,12 +52,12 @@ function TemplateStatusBadge({ status }: { status: TemplateStatus }) {
     DRAFT: {
       icon: FileText,
       label: 'Draft',
-      className: 'bg-amber-100 text-amber-800',
+      className: 'bg-warning-light text-warning',
     },
     ACTIVE: {
       icon: CheckCircle2,
       label: 'Active',
-      className: 'bg-green-100 text-green-800',
+      className: 'bg-success-light text-success',
     },
     ARCHIVED: {
       icon: Archive,
@@ -358,7 +358,7 @@ export function BadgeTemplateListPage() {
                       size="sm"
                       onClick={() => handleStatusChange(template, 'ACTIVE')}
                       disabled={actionLoading === template.id}
-                      className="bg-green-600 hover:bg-green-700 text-white min-h-[36px] flex-1"
+                      className="bg-success hover:bg-success-bright text-white min-h-[36px] flex-1"
                     >
                       {actionLoading === template.id ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
