@@ -28,6 +28,9 @@ const IssueBadgePage = lazy(() =>
   import('@/pages/IssueBadgePage').then((m) => ({ default: m.IssueBadgePage }))
 );
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
+const BadgeTemplateListPage = lazy(() => import('@/pages/admin/BadgeTemplateListPage'));
+const BadgeTemplateFormPage = lazy(() => import('@/pages/admin/BadgeTemplateFormPage'));
+const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
 
 /**
  * Loading fallback for lazy-loaded routes (TD-013)
@@ -88,7 +91,7 @@ function App() {
             <Route
               path="/admin/badges"
               element={
-                <ProtectedRoute requiredRoles={['ADMIN', 'ISSUER']}>
+                <ProtectedRoute requiredRoles={['ADMIN', 'ISSUER', 'MANAGER']}>
                   <Layout pageTitle="Badge Management">
                     <BadgeManagementPage />
                   </Layout>
@@ -101,6 +104,36 @@ function App() {
                 <ProtectedRoute requiredRoles={['ADMIN', 'ISSUER']}>
                   <Layout pageTitle="Issue Badge">
                     <IssueBadgePage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/templates"
+              element={
+                <ProtectedRoute requiredRoles={['ADMIN', 'ISSUER']}>
+                  <Layout pageTitle="Badge Templates">
+                    <BadgeTemplateListPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/templates/new"
+              element={
+                <ProtectedRoute requiredRoles={['ADMIN', 'ISSUER']}>
+                  <Layout pageTitle="Create Template">
+                    <BadgeTemplateFormPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/templates/:id/edit"
+              element={
+                <ProtectedRoute requiredRoles={['ADMIN', 'ISSUER']}>
+                  <Layout pageTitle="Edit Template">
+                    <BadgeTemplateFormPage />
                   </Layout>
                 </ProtectedRoute>
               }
@@ -131,6 +164,16 @@ function App() {
                 <ProtectedRoute requiredRoles={['ADMIN']}>
                   <Layout pageTitle="User Management">
                     <AdminUserManagementPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Layout pageTitle="My Profile">
+                    <ProfilePage />
                   </Layout>
                 </ProtectedRoute>
               }

@@ -98,10 +98,13 @@ export function MobileNav({ className = '' }: MobileNavProps) {
   if (!isAuthenticated) return null;
 
   const navLinks = [
-    { to: '/', label: 'My Wallet', roles: ['ADMIN', 'ISSUER', 'MANAGER', 'EMPLOYEE'] },
-    { to: '/admin/badges', label: 'Badge Management', roles: ['ADMIN', 'ISSUER'] },
+    { to: '/', label: 'Dashboard', roles: ['ADMIN', 'ISSUER', 'MANAGER', 'EMPLOYEE'] },
+    { to: '/wallet', label: 'My Wallet', roles: ['ADMIN', 'ISSUER', 'MANAGER', 'EMPLOYEE'] },
+    { to: '/admin/templates', label: 'Badge Templates', roles: ['ADMIN', 'ISSUER'] },
+    { to: '/admin/badges', label: 'Badge Management', roles: ['ADMIN', 'ISSUER', 'MANAGER'] },
     { to: '/admin/bulk-issuance', label: 'Bulk Issuance', roles: ['ADMIN', 'ISSUER'] },
     { to: '/admin/analytics', label: 'Analytics', roles: ['ADMIN', 'ISSUER'] },
+    { to: '/profile', label: 'Profile', roles: ['ADMIN', 'ISSUER', 'MANAGER', 'EMPLOYEE'] },
   ];
 
   const accessibleLinks = navLinks.filter((link) => user?.role && link.roles.includes(user.role));

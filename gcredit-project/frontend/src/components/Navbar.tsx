@@ -52,13 +52,41 @@ export function Navbar() {
                            }`}
                 aria-current={isActive('/') ? 'page' : undefined}
               >
+                Dashboard
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/wallet"
+                className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
+                           flex items-center ${
+                             isActive('/wallet')
+                               ? 'text-brand-600 bg-brand-50'
+                               : 'text-neutral-700 hover:text-brand-600 hover:bg-neutral-100 active:bg-neutral-200'
+                           }`}
+                aria-current={isActive('/wallet') ? 'page' : undefined}
+              >
                 My Wallet
               </Link>
             </li>
 
-            {/* Admin Links */}
+            {/* Admin/Issuer Links */}
             {user?.role && ['ADMIN', 'ISSUER'].includes(user.role) && (
               <>
+                <li>
+                  <Link
+                    to="/admin/templates"
+                    className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
+                               flex items-center ${
+                                 isActive('/admin/templates')
+                                   ? 'text-brand-600 bg-brand-50'
+                                   : 'text-neutral-700 hover:text-brand-600 hover:bg-neutral-100 active:bg-neutral-200'
+                               }`}
+                    aria-current={isActive('/admin/templates') ? 'page' : undefined}
+                  >
+                    Badge Templates
+                  </Link>
+                </li>
                 <li>
                   <Link
                     to="/admin/badges"
@@ -103,6 +131,24 @@ export function Navbar() {
                 </li>
               </>
             )}
+
+            {/* Manager Links */}
+            {user?.role === 'MANAGER' && (
+              <li>
+                <Link
+                  to="/admin/badges"
+                  className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
+                             flex items-center ${
+                               isActive('/admin/badges')
+                                 ? 'text-brand-600 bg-brand-50'
+                                 : 'text-neutral-700 hover:text-brand-600 hover:bg-neutral-100 active:bg-neutral-200'
+                             }`}
+                  aria-current={isActive('/admin/badges') ? 'page' : undefined}
+                >
+                  Badge Management
+                </Link>
+              </li>
+            )}
           </ul>
 
           {/* User Menu - Story 8.5: Touch-friendly elements */}
@@ -128,6 +174,36 @@ export function Navbar() {
                 <p className="text-xs text-neutral-500 capitalize">{user?.role?.toLowerCase()}</p>
               </div>
             </div>
+
+            {/* Profile Link */}
+            <Link
+              to="/profile"
+              className="flex items-center justify-center min-w-[44px] min-h-[44px]
+                         text-neutral-600 hover:text-brand-600 hover:bg-neutral-100 active:bg-neutral-200
+                         px-2 py-2 text-sm font-medium transition-colors rounded-lg"
+              aria-label="Profile"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            </Link>
 
             {/* Logout Button - Story 8.5: 44×44px touch target */}
             <button

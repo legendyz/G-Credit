@@ -15,13 +15,20 @@ import {
 } from '@/components/ui/select';
 import { issueBadge } from '@/lib/badgesApi';
 import { API_BASE_URL } from '@/lib/apiConfig';
-import { getAdminUsers, type AdminUser } from '@/lib/adminUsersApi';
 import { Award, Send, Loader2 } from 'lucide-react';
 
 interface BadgeTemplate {
   id: string;
   name: string;
   description?: string;
+}
+
+interface Recipient {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  department?: string;
 }
 
 function isValidUrl(str: string): boolean {
@@ -45,7 +52,7 @@ export function IssueBadgePage() {
 
   // Data state
   const [templates, setTemplates] = useState<BadgeTemplate[]>([]);
-  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [users, setUsers] = useState<Recipient[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
 
@@ -70,12 +77,17 @@ export function IssueBadgePage() {
     fetchTemplates();
   }, []);
 
-  // Fetch users on mount
+  // Fetch recipients on mount (uses /badges/recipients - accessible by ADMIN + ISSUER)
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await getAdminUsers({ limit: 100, statusFilter: true });
-        setUsers(response.users);
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(`${API_BASE_URL}/badges/recipients`, {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        });
+        if (!response.ok) throw new Error('Failed to load recipients');
+        const data = await response.json();
+        setUsers(Array.isArray(data) ? data : []);
       } catch {
         toast.error('Failed to load users');
       } finally {

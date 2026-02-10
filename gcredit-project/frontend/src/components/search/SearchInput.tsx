@@ -80,8 +80,9 @@ export function SearchInput({
     [onFocusChange]
   );
 
-  // Use controlled value if provided
-  const value = controlledValue !== undefined ? controlledValue : internalValue;
+  // Always use internalValue for display to ensure immediate keystroke feedback.
+  // In controlled mode, debounce triggers onChange to parent; display stays responsive.
+  const value = internalValue;
   const debouncedValue = useDebounce(value, debounceMs);
 
   // Sync internal value with controlled value
@@ -95,25 +96,17 @@ export function SearchInput({
   useEffect(() => {
     // Only call onChange if value meets minimum character requirement or is empty (to clear)
     if (debouncedValue.length >= minSearchLength || debouncedValue.length === 0) {
-      // Don't call onChange if using controlled mode and value hasn't changed
-      if (controlledValue === undefined || debouncedValue !== controlledValue) {
-        onChange(debouncedValue);
-      }
+      onChange(debouncedValue);
     }
-  }, [debouncedValue, minSearchLength, onChange, controlledValue]);
+  }, [debouncedValue, minSearchLength, onChange]);
 
   // Handle input change
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = e.target.value;
-      setInternalValue(newValue);
-      // In controlled mode, notify parent immediately (parent handles debounce)
-      if (controlledValue !== undefined) {
-        onChange(newValue);
-      }
-    },
-    [controlledValue, onChange]
-  );
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setInternalValue(newValue);
+    // In both modes, let debounce handle the onChange callback.
+    // Don't call onChange immediately to avoid double-fire in controlled mode.
+  }, []);
 
   // Handle clear button click
   const handleClear = useCallback(() => {

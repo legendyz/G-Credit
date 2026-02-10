@@ -52,6 +52,15 @@ export class BadgeIssuanceController {
     private readonly recommendationsService: RecommendationsService,
   ) {}
 
+  @Get('recipients')
+  @Roles(UserRole.ADMIN, UserRole.ISSUER)
+  @ApiOperation({ summary: 'Get list of users available as badge recipients' })
+  @ApiResponse({ status: 200, description: 'Recipients list retrieved' })
+  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  async getRecipients() {
+    return this.badgeService.getRecipients();
+  }
+
   @Post()
   @Roles(UserRole.ADMIN, UserRole.ISSUER)
   @ApiOperation({ summary: 'Issue a single badge' })
@@ -129,9 +138,10 @@ export class BadgeIssuanceController {
   }
 
   @Get('issued')
-  @Roles(UserRole.ADMIN, UserRole.ISSUER)
+  @Roles(UserRole.ADMIN, UserRole.ISSUER, UserRole.MANAGER)
   @ApiOperation({
-    summary: 'Get badges issued by current user (ISSUER) or all badges (ADMIN)',
+    summary:
+      'Get badges issued by current user (ISSUER), department badges (MANAGER), or all badges (ADMIN)',
   })
   @ApiResponse({ status: 200, description: 'Badges retrieved successfully' })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
@@ -176,7 +186,7 @@ export class BadgeIssuanceController {
   }
 
   @Post(':id/revoke')
-  @Roles(UserRole.ADMIN, UserRole.ISSUER) // Sprint 7: Allow ISSUER to revoke own badges
+  @Roles(UserRole.ADMIN, UserRole.ISSUER, UserRole.MANAGER) // Sprint 7: ISSUER own badges, Sprint 10: MANAGER same-department
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary:

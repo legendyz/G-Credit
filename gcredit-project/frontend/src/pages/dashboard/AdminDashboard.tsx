@@ -136,7 +136,7 @@ export const AdminDashboard: React.FC = () => {
             <QuickActionButton
               icon={<LayoutTemplate className="h-6 w-6 text-brand-600" />}
               label="Badge Templates"
-              onClick={() => navigate('/admin/badges')}
+              onClick={() => navigate('/admin/templates')}
             />
             <QuickActionButton
               icon={<BarChart3 className="h-6 w-6 text-brand-600" />}

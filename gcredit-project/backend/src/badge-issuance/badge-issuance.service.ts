@@ -45,6 +45,23 @@ export class BadgeIssuanceService {
   ) {}
 
   /**
+   * Get list of active users available as badge recipients
+   */
+  async getRecipients() {
+    return this.prisma.user.findMany({
+      where: { isActive: true },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        department: true,
+      },
+      orderBy: { lastName: 'asc' },
+    });
+  }
+
+  /**
    * Issue a single badge
    */
   async issueBadge(dto: IssueBadgeDto, issuerId: string) {
@@ -318,9 +335,17 @@ export class BadgeIssuanceService {
     }
 
     // Step 2: Authorization check (must happen before idempotency to prevent info leak)
-    const canRevoke =
+    let canRevoke =
       actor.role === UserRole.ADMIN ||
       (actor.role === UserRole.ISSUER && badge.issuerId === actorId);
+
+    // BUG-006: MANAGER can revoke badges for recipients in their own department
+    if (actor.role === UserRole.MANAGER) {
+      canRevoke =
+        !!actor.department &&
+        !!badge.recipient?.department &&
+        actor.department === badge.recipient.department;
+    }
 
     if (!canRevoke) {
       throw new ForbiddenException(
@@ -582,6 +607,19 @@ export class BadgeIssuanceService {
     // ISSUER can only see badges they issued
     if (userRole === UserRole.ISSUER) {
       where.issuerId = userId;
+    }
+    // MANAGER can only see badges for recipients in their department (BUG-006)
+    else if (userRole === UserRole.MANAGER) {
+      const manager = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { department: true },
+      });
+      if (manager?.department) {
+        where.recipient = { department: manager.department };
+      } else {
+        // Manager without department sees nothing
+        where.id = 'none';
+      }
     }
     // ADMIN can see all badges (no filter) - but Story 8.2 allows issuer filter
     else if (query.issuerId) {

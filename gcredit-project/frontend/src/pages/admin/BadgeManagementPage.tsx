@@ -29,14 +29,11 @@ import { useBadgeSearch } from '@/hooks/useBadgeSearch';
 import { BadgeSearchBar } from '@/components/search/BadgeSearchBar';
 import { PageTemplate } from '@/components/layout/PageTemplate';
 import type { BadgeForFilter } from '@/utils/searchFilters';
-
-// For demo purposes - in production this would come from auth context
-const MOCK_USER_ROLE = 'ADMIN'; // or 'ISSUER'
-const MOCK_USER_ID = 'current-user-id';
+import { useCurrentUser } from '@/stores/authStore';
 
 interface BadgeManagementPageProps {
   /** User role - determines which badges to show and actions available */
-  userRole?: 'ADMIN' | 'ISSUER';
+  userRole?: 'ADMIN' | 'ISSUER' | 'MANAGER';
   /** Current user ID - for checking badge ownership */
   userId?: string;
 }
@@ -105,9 +102,12 @@ function StatusBadge({ status }: { status: BadgeStatus }) {
 }
 
 export function BadgeManagementPage({
-  userRole = MOCK_USER_ROLE,
-  userId = MOCK_USER_ID,
+  userRole: userRoleProp,
+  userId: userIdProp,
 }: BadgeManagementPageProps) {
+  const currentUser = useCurrentUser();
+  const userRole = userRoleProp || (currentUser?.role as 'ADMIN' | 'ISSUER' | 'MANAGER') || 'ADMIN';
+  const userId = userIdProp || currentUser?.id || 'unknown';
   const queryClient = useQueryClient();
 
   // State
@@ -124,7 +124,7 @@ export function BadgeManagementPage({
     [currentPage]
   );
 
-  // Fetch badges - Admin sees all, Issuer sees only their issued badges
+  // Fetch badges - Admin sees all, Issuer sees own, Manager sees department badges
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['badges', userRole, queryParams],
     queryFn: () =>
@@ -238,6 +238,9 @@ export function BadgeManagementPage({
         return badge.issuerId === userId;
       }
 
+      // Manager can revoke department badges (backend enforces same-department)
+      if (userRole === 'MANAGER') return true;
+
       return false;
     },
     [userRole, userId]
@@ -282,7 +285,9 @@ export function BadgeManagementPage({
           description={
             userRole === 'ADMIN'
               ? 'Manage all badges in the system'
-              : 'Manage badges you have issued'
+              : userRole === 'MANAGER'
+                ? 'Manage badges for your department'
+                : 'Manage badges you have issued'
           }
         >
           {/* Story 8.2 AC2: Enhanced Search & Filter Controls */}
