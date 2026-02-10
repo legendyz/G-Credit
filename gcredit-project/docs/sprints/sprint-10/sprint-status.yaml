@@ -22,8 +22,9 @@ metrics:
   buffer_hours: 0h  # Extended sprint - no buffer needed
   
   completed_stories: 12
-  completed_hours: 71h
-  remaining_hours: 30h
+  in_progress_stories: 1  # 10.8 dev-complete, awaiting acceptance
+  completed_hours: 89h
+  remaining_hours: 12h  # 10.9 (4h) + 10.10 (2h) + 10.8 acceptance (6h)
   
   # Capacity breakdown
   td_hours: 30h    # Stories 10.1-10.4 + 10.3b + 10.3c (API path fixes from buffer)
@@ -266,17 +267,37 @@ stories:
     notes: "4 P0 + 3 P1 bugs. Most failures cascade from 5 root causes. Bugs → Story 10.8."
     
   10-8-uat-bug-fixes:
-    title: "UAT Bug Fixes"
+    title: "UAT Bug Fixes + UX Polish"
     priority: HIGH
     estimate: 20h
-    actual: null
-    status: backlog
+    actual: 18h
+    status: dev-complete
     phase: 3-uat
     file: "10-8-uat-bug-fixes.md"
     dependencies: ["10-7"]
     dev_prompt: "10-8-dev-prompt.md"
     bugs: ["BUG-002", "BUG-003", "BUG-004", "BUG-005", "BUG-006", "BUG-007", "BUG-008"]
-    notes: "Expanded from 8h buffer. Includes new pages: Template CRUD, Profile. UX review required."
+    ux_fixes: ["UX-001", "UX-002", "UX-003"]
+    commits:
+      bug_fixes: ["65bee78", "6c5d9de", "eaa727e"]
+      code_review: "34ae235"
+      unit_tests: ["e40e4b8", "729e4f0"]
+      uat_rerun: "480fa3a"
+      ux_fixes: "6709b22"
+    test_evidence:
+      frontend: "527/527 passed (45 files)"
+      backend: "534/534 passed (35 suites)"
+      new_tests: 74
+      ci_run: "#178 green"
+    notes: |
+      All 7 UAT bugs fixed (BUG-002 through BUG-008).
+      Code review: 3 findings fixed.
+      74 new regression tests (badgeTemplatesApi, BadgeTemplateListPage, BadgeTemplateFormPage, ProfilePage).
+      3 UX polish items resolved (were keeping UAT-025/027/031 at PARTIAL):
+        UX-001: CSV template pre-fills selected templateId + copy-to-clipboard button
+        UX-002: Allow partial CSV confirm when valid rows exist (shows X of Y count)
+        UX-003: All dashboard summary cards clickable with correct navigation
+      Awaiting SM acceptance.
 
   # Phase 4: Release (6h)
   10-9-release-documentation:
@@ -382,9 +403,10 @@ quality_gates:
     
   test_count:
     target: "≥976"  # adjusted - Sprint 9 test restructuring removed duplicates
-    current: 976  # 534 backend + 442 frontend
+    current: 1061  # 534 backend + 527 frontend (+74 new in Story 10.8)
     
   uat_p0_pass_rate:
     target: "100%"
-    current: "pending"
-    sprint_story: "10.7"
+    current: "7/7 bugs fixed, all verified — awaiting UAT re-execution"
+    sprint_story: "10.7 → 10.8"
+    ux_polish: "3/3 UX items resolved (UX-001/002/003)"
