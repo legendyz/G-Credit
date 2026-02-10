@@ -21,10 +21,10 @@ metrics:
   total_estimated_hours: 95h
   buffer_hours: 0h  # Extended sprint - no buffer needed
   
-  completed_stories: 12
-  in_progress_stories: 1  # 10.8 dev-complete, awaiting acceptance
-  completed_hours: 89h
-  remaining_hours: 12h  # 10.9 (4h) + 10.10 (2h) + 10.8 acceptance (6h)
+  completed_stories: 13
+  in_progress_stories: 0
+  completed_hours: 107h  # +18h Story 10.8
+  remaining_hours: 6h  # 10.9 (4h) + 10.10 (2h)
   
   # Capacity breakdown
   td_hours: 30h    # Stories 10.1-10.4 + 10.3b + 10.3c (API path fixes from buffer)
@@ -271,7 +271,8 @@ stories:
     priority: HIGH
     estimate: 20h
     actual: 18h
-    status: dev-complete
+    status: accepted
+    accepted_date: "2026-02-15"
     phase: 3-uat
     file: "10-8-uat-bug-fixes.md"
     dependencies: ["10-7"]

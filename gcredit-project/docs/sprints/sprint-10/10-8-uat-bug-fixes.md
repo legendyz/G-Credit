@@ -1,12 +1,13 @@
 # Story 10.8: UAT Bug Fixes
 
-**Status:** done  
+**Status:** accepted  
 **Priority:** 🔴 HIGH  
 **Estimate:** 20h (expanded from 8h — all bugs are MVP core)  
-**Actual:** ~12h  
+**Actual:** ~18h  
 **Sprint:** Sprint 10  
 **Type:** Bug Fix + New Pages  
-**Dependencies:** Story 10.7 (UAT Execution)
+**Dependencies:** Story 10.7 (UAT Execution)  
+**Accepted:** 2026-02-15
 
 ---
 

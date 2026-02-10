@@ -289,10 +289,11 @@ Deliver a production-ready v1.0.0 by resolving all remaining technical debt, exe
 ---
 
 ### Story 10.8: UAT Bug Fixes
-**Priority:** 🟡 MEDIUM  
-**Estimate:** 8h (buffer)  
+**Priority:** � HIGH  
+**Estimate:** 20h (expanded from 8h — all 7 bugs MVP core)  
+**Actual:** ~18h  
 **Story Doc:** 📄 [10-8-uat-bug-fixes.md](10-8-uat-bug-fixes.md)  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Accepted (2026-02-15)  
 **Dependencies:** Story 10.7
 
 **Quick Summary:** Fix all P0/P1 bugs discovered during UAT.
