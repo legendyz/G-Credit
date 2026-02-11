@@ -21,10 +21,10 @@ metrics:
   total_estimated_hours: 95h
   buffer_hours: 0h  # Extended sprint - no buffer needed
   
-  completed_stories: 13
+  completed_stories: 14
   in_progress_stories: 0
-  completed_hours: 107h  # +18h Story 10.8
-  remaining_hours: 6h  # 10.9 (4h) + 10.10 (2h)
+  completed_hours: 109h  # +2h Story 10.10
+  remaining_hours: 4h  # Story 10.11 retrospective
   
   # Capacity breakdown
   td_hours: 30h    # Stories 10.1-10.4 + 10.3b + 10.3c (API path fixes from buffer)
@@ -318,8 +318,9 @@ stories:
     title: "Merge to Main + Tag v1.0.0"
     priority: HIGH
     estimate: 2h
-    actual: null
-    status: backlog
+    actual: 2h
+    status: accepted
+    accepted_date: "2026-02-11"
     phase: 4-release
     file: "10-10-merge-main-tag-v1.md"
     dependencies: ["10-1", "10-2", "10-3", "10-4", "10-5", "10-6a", "10-6b", "10-6c", "10-6d", "10-7", "10-8", "10-9"]
