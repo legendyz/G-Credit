@@ -643,11 +643,19 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 | CQ-008: HTTP Client unification (51 fetch) | P2, large refactor | Sprint 12 |
 | CQ-009: Large component splitting | P2, 8-12h | Sprint 12 |
 | CQ-010/011: Additional test coverage | P2, 24-36h | Sprint 12-13 |
+| FEAT-008: User Management enhancements | P1, manual add + M365 sync UI | Sprint 12 |
 | FR27: Azure AD SSO | P3, 16-24h | Sprint 12 |
 | PROD: Production deployment | Depends on SSO | Sprint 12 |
 | TD-006: Teams channel permissions | External blocker | When admin approves |
 | UX-001~009: UI polish items | P2 | Sprint 12+ |
 | FEAT-001~006: Backlog features | Phase 2 | Deferred |
+
+> **⚠️ 依赖关系说明 (FEAT-008 ↔ FR27):**
+> M365 同步创建的用户 `passwordHash` 为空（代码注释: *"Empty - user will authenticate via SSO"*），
+> 在当前 JWT 密码登录体系下这些用户**无法登录**。Sprint 12 规划时需决定：
+> - **方案 A:** 先做 FR27 (SSO) → M365 用户通过 Azure AD 登录（推荐，架构一致）
+> - **方案 B:** FEAT-008 中为 M365 同步用户生成临时密码 + password reset 邮件 → 用现有密码登录
+> - **执行顺序:** 若选方案 A，则 FR27 → FEAT-008；若选方案 B，则 FEAT-008 可独立先行
 
 ---
 

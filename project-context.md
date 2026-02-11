@@ -1477,6 +1477,9 @@ Sprint 0-2 established this pattern:
 21. 🔜 **Next Actions (Post-Sprint 11)**
    - Phase 4 Pilot planning (L&D program pilot)
    - FEAT-008: User Management enhancements (manual add, M365 sync UI) — P1
+     > ⚠️ **依赖 FR27:** M365 同步用户 passwordHash 为空，无法用当前 JWT 密码登录。需先决定 SSO 优先还是临时密码方案。
+   - FR27: Azure AD SSO (Entra ID OAuth 2.0 替代密码登录) — P3, 16-24h
+     > ⚠️ **与 FEAT-008 关联:** 若先做 SSO 则 M365 用户可直接登录；否则 FEAT-008 需增加临时密码生成逻辑。
    - FEAT-007: Session management (idle timeout, centralized HTTP client) — P2
    - FEAT-004: Role model refactor (Issuer as permission flag) — P2
    - TD-006: Teams Channel Permissions (requires tenant admin approval) — External
