@@ -115,8 +115,6 @@
 - ✅ JSON-LD badge assertions export
 - ✅ Email masking for recipient privacy
 - ✅ Badge revocation with reason tracking
-- 🔜 Baked Badge PNG support (Sprint 5+)
-- 🔜 Public verification pages with UI (Sprint 4+)
 
 ### Employee Experience ✅ **Sprint 3 Complete**
 - ✅ Badge claiming workflow (secure token-based)
