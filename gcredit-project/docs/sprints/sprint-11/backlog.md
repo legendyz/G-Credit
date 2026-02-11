@@ -718,6 +718,22 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 
 **SM 建议:** 短期方案 B（Sprint 12），长期方案 C（Phase 2）。
 
+### DEC-006: Badge 邮件分享送达率问题
+**背景:** Badge 邮件分享发送给外部收件人时，多次被收件方邮件服务器安全策略拦截。原因：发件域名 `2wjh85.onmicrosoft.com` 是 M365 开发者租户默认域名，未配置 SPF/DKIM/DMARC 认证记录，外部邮件服务器判定为可疑。非系统代码问题，是域名/邮件信誉问题。
+
+| 方案 | 描述 | 改动范围 | 效果 |
+|------|------|---------|------|
+| **A. 自定义域名 + SPF/DKIM/DMARC** | M365 租户添加企业域名，配置邮件认证 DNS 记录 | IT admin 操作，代码仅改 `GRAPH_EMAIL_FROM` | 根本解决，外部送达率大幅提升 |
+| **B. SendGrid/Mailgun** | 外部收件人走专业邮件服务，内部仍用 Graph API | 新增 Service + 分流逻辑 | 高送达率，Free Tier 100封/天 |
+| **C. 不依赖邮件** | 增强“复制链接”“下载图片”“二维码”等替代分享方式 | 前端 UI 增强 | 规避邮件问题，但用户体验变化 |
+| **D. 混合策略** | 内部用 Graph API，外部用 SendGrid + 复制链接兜底 | 后端分流 + 前端兜底 | 最佳平衡 |
+
+**短期行动（无需写代码）:**
+- [ ] IT admin 配置自定义域名 + SPF/DKIM/DMARC
+- [ ] 确认前端 Badge 分享页是否已有“复制链接”按钮作为兜底
+
+**SM 建议:** 短期方案 A（IT admin 操作，无开发成本），中期方案 D（Sprint 12+）。
+
 ---
 
 **Last Updated:** 2026-02-12  

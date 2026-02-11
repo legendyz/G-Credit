@@ -1491,6 +1491,7 @@ Sprint 0-2 established this pattern:
      - DEC-003: 手工创建用户的长期定位（迁移关闭 vs 长期并存）
      - DEC-004: FEAT-008 与 FR27 执行顺序（详见 Sprint 11 backlog 待决策清单）
      - DEC-005: Admin 初始化机制（M365 同步默认 EMPLOYEE，无生产级 Admin bootstrap，需决定环境变量/Azure AD Group/CLI 方案）
+     - DEC-006: Badge 邮件分享送达率（发件域 `2wjh85.onmicrosoft.com` 被外部拦截，需配置自定义域名+SPF/DKIM/DMARC 或接入 SendGrid）
 
 ---
 
