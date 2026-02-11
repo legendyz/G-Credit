@@ -124,21 +124,21 @@
 - Social sharing (LinkedIn, email, personal websites)
 - Badge download and export
 
-### Analytics & Insights
-- Admin dashboards (issuance trends, claim rates, share rates)
-- Organizational skill inventory
-- Department and role-based skill distribution
-- Program effectiveness metrics
-- Exportable reports for HR planning
+### Analytics & Insights ✅ **Sprint 8 Complete**
+- ✅ Admin dashboards (issuance trends, claim rates, share rates)
+- ⚠️ Organizational skill inventory (analytics chart only, no standalone page)
+- ⚠️ Department and role-based skill distribution (category-level only)
+- 🔜 Program effectiveness metrics
+- 🔜 Exportable reports for HR planning
 
-### System Integrations
-- Azure AD (Entra ID) SSO authentication
-- HRIS employee directory sync
-- LMS Webhook consumption (automated issuance)
-- Microsoft Teams notifications and bot
-- Outlook email notifications
-- LinkedIn sharing integration
-- RESTful APIs (external system access)
+### System Integrations ✅ **Sprint 6 Complete**
+- ⚠️ Azure AD (Entra ID) — server-to-server Graph API auth (user SSO planned)
+- ⚠️ HRIS employee directory sync (M365 user sync implemented, Workday/ADP planned)
+- 🔜 LMS Webhook consumption (automated issuance)
+- ⚠️ Microsoft Teams notifications (code ready, disabled pending permissions — TD-006)
+- ✅ Outlook email notifications (Graph API Mail.Send)
+- ⚠️ LinkedIn sharing integration (embed widget only, no API)
+- ✅ RESTful APIs with Swagger/OpenAPI documentation
 
 ---
 
