@@ -704,6 +704,20 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 
 **SM 建议:** FR27 先行（方案 A），避免临时密码的额外开发和安全审计成本。
 
+### DEC-005: Admin 初始化机制（Bootstrap 问题）
+**背景:** M365 同步创建的用户全部默认为 EMPLOYEE 角色（`role: 'EMPLOYEE'`）。当前的 Admin 用户完全依赖 seed 脚本硬编码（`admin@gcredit.com`），无生产级的 Admin bootstrap 机制。如果统一走 M365 导入，“第一个 Admin 从哪里来？”
+
+| 方案 | 描述 | 优点 | 缺点 |
+|------|------|------|------|
+| **A. Seed 脚本** | 部署时运行 seed 创建初始 Admin | 简单，当前已有 | 仅适合开发/UAT，非生产级 |
+| **B. 环境变量** | `INITIAL_ADMIN_EMAIL=xxx`，M365 同步时匹配设为 ADMIN | 配置简单，生产可用 | 仅解决首次部署，不可扩展 |
+| **C. Azure AD Group 映射** | 读取 M365 Security Group（如 "G-Credit Admins"）自动设 Admin | 企业级，可扩展，与组织 IT 对齐 | 开发量较大，需 Graph API 权限 |
+| **D. CLI 提权工具** | `npx promote-admin --email xxx` 一次性命令 | 直接简单 | 手动操作，无审计记录 |
+
+**关联:** Decision #14（M365 auto role detection via directReports）设计了 Manager 角色自动检测，但 Admin bootstrap 未设计。
+
+**SM 建议:** 短期方案 B（Sprint 12），长期方案 C（Phase 2）。
+
 ---
 
 **Last Updated:** 2026-02-12  
