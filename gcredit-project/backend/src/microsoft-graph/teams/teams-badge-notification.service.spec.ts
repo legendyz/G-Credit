@@ -3,10 +3,8 @@
  * Story 7.4 - Microsoft Teams Notifications
  * Task 6: Email Fallback Testing
  *
- * NOTE: Some tests may fail due to Teams channel sharing being technical debt.
- * Teams channel sharing requires ChannelMessage.Send Graph API permission.
- * See: docs/sprints/sprint-6/technical-debt.md
- * TODO: Re-enable when Teams permissions are configured (TD-003)
+ * ADR: Tests skipped pending ChannelMessage.Send permission approval (TD-006).
+ * See Post-MVP Backlog and SKIPPED-TESTS-TRACKER.md for resolution steps.
  * Core email notification functionality is working and tested.
  */
 
@@ -27,8 +25,21 @@ describe.skip('TeamsBadgeNotificationService - Story 7.4', () => {
   let _configService: ConfigService;
   let _emailNotificationService: BadgeNotificationService;
 
+  /** Shape of adaptive-card data accessed in test assertions. */
+  interface TestAdaptiveCard {
+    actions: unknown[];
+    body: Array<{
+      items: Array<{
+        facts: Array<{ title: string; value: string }>;
+      }>;
+    }>;
+  }
+
   const mockGraphTeamsService = {
-    sendActivityNotification: jest.fn(),
+    sendActivityNotification: jest.fn<
+      Promise<void>,
+      [string, string, string, unknown, TestAdaptiveCard]
+    >(),
     isGraphTeamsEnabled: jest.fn().mockReturnValue(true),
   };
 
@@ -46,7 +57,7 @@ describe.skip('TeamsBadgeNotificationService - Story 7.4', () => {
 
   const mockConfigService = {
     get: jest.fn((key: string) => {
-      const config = {
+      const config: Record<string, string | boolean> = {
         PLATFORM_URL: 'https://g-credit.com',
         ENABLE_TEAMS_NOTIFICATIONS: true,
       };
@@ -319,9 +330,11 @@ describe.skip('TeamsBadgeNotificationService - Story 7.4', () => {
       // Find the FactSet container
       const detailsContainer = adaptiveCard.body[1];
       const factSet = detailsContainer.items[0];
-      const issueDateFact = factSet.facts.find((f) => f.title === 'Issued On:');
+      const issueDateFact = factSet.facts.find(
+        (f: { title: string; value: string }) => f.title === 'Issued On:',
+      );
 
-      expect(issueDateFact.value).toBe('January 30, 2026');
+      expect(issueDateFact?.value).toBe('January 30, 2026');
     });
   });
 

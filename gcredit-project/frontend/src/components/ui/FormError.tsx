@@ -1,7 +1,7 @@
 /**
  * Form Error Component (Story 8.3 - AC4)
  * WCAG 3.3.1 - Error Identification
- * 
+ *
  * Accessible error message display for form validation.
  * Uses role="alert" for immediate screen reader announcement.
  */
@@ -26,15 +26,9 @@ export function FormError({ message, id, className }: FormErrorProps) {
       id={id}
       role="alert"
       aria-live="polite"
-      className={cn(
-        'flex items-center gap-1.5 text-sm text-red-600 mt-1.5',
-        className
-      )}
+      className={cn('flex items-center gap-1.5 text-sm text-red-600 mt-1.5', className)}
     >
-      <AlertCircle 
-        className="h-4 w-4 flex-shrink-0" 
-        aria-hidden="true" 
-      />
+      <AlertCircle className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
       <span>{message}</span>
     </div>
   );
@@ -64,16 +58,10 @@ export function FormErrorSummary({
     <div
       role="alert"
       aria-live="assertive"
-      className={cn(
-        'rounded-md bg-red-50 border border-red-200 p-4 mb-4',
-        className
-      )}
+      className={cn('rounded-md bg-red-50 border border-red-200 p-4 mb-4', className)}
     >
       <div className="flex">
-        <AlertCircle
-          className="h-5 w-5 text-red-600 flex-shrink-0"
-          aria-hidden="true"
-        />
+        <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" aria-hidden="true" />
         <div className="ml-3">
           <h3 className="text-sm font-medium text-red-800">{title}</h3>
           <ul className="mt-2 text-sm text-red-700 list-disc list-inside space-y-1">

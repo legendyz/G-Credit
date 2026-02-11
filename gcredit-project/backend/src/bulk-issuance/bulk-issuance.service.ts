@@ -122,7 +122,7 @@ export class BulkIssuanceService {
    * Generate CSV template for bulk issuance
    * Includes field documentation and clearly marked example rows that must be deleted
    */
-  generateTemplate(): string {
+  generateTemplate(templateId?: string): string {
     const headerComments = [
       '# G-Credit Bulk Badge Issuance Template',
       '# Instructions: Fill in the rows below with badge issuance data',
@@ -143,9 +143,10 @@ export class BulkIssuanceService {
     const headers =
       'badgeTemplateId,recipientEmail,evidenceUrl,narrativeJustification';
 
+    const templateIdValue = templateId || 'EXAMPLE-DELETE-THIS-ROW';
     const exampleRows = [
-      'EXAMPLE-DELETE-THIS-ROW,example-john@company.com,https://example.com/evidence1,"DELETE THIS EXAMPLE ROW BEFORE UPLOAD"',
-      'EXAMPLE-DELETE-THIS-ROW,example-jane@company.com,,"DELETE THIS EXAMPLE ROW BEFORE UPLOAD"',
+      `${templateIdValue},example-john@company.com,https://example.com/evidence1,"DELETE THIS EXAMPLE ROW BEFORE UPLOAD"`,
+      `${templateIdValue},example-jane@company.com,,"DELETE THIS EXAMPLE ROW BEFORE UPLOAD"`,
     ].join('\n');
 
     return headerComments + '\n' + headers + '\n' + exampleRows;
@@ -335,7 +336,8 @@ export class BulkIssuanceService {
       },
       {
         isolationLevel: 'ReadCommitted',
-        timeout: 10000,
+        timeout: 30000,
+        maxWait: 10000,
       },
     );
 

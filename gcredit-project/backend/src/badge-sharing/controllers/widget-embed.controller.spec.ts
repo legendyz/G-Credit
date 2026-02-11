@@ -338,7 +338,7 @@ describe('WidgetEmbedController', () => {
 
       expect(result.script).toContain('addEventListener');
       expect(result.script).toContain('click');
-      expect(result.script).toContain('console.log');
+      expect(result.script).toContain('gcredit:badge-click');
     });
   });
 });

@@ -3,7 +3,11 @@
  */
 
 export { useAdminUsers } from './useAdminUsers';
-export { useBadgeSearch, type UseBadgeSearchOptions, type UseBadgeSearchReturn } from './useBadgeSearch';
+export {
+  useBadgeSearch,
+  type UseBadgeSearchOptions,
+  type UseBadgeSearchReturn,
+} from './useBadgeSearch';
 export { useDashboard } from './useDashboard';
 export { useDebounce } from './useDebounce';
 export { useFocusTrap } from './useFocusTrap';

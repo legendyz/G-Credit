@@ -45,14 +45,11 @@ export class EmailService {
         this.config.get<string>('NODE_ENV') !== 'production';
 
       if (isDevelopment && !this.graphEmailService.isGraphEmailEnabled()) {
-        // Dev mode fallback: log email to console
-        this.logger.warn('⚠️ Graph Email disabled, logging email to console');
-        console.log('\n' + '='.repeat(80));
-        console.log('📧 [DEV MODE] Email (Graph Email not configured)');
-        console.log('='.repeat(80));
-        console.log(`To: ${options.to}`);
-        console.log(`Subject: ${options.subject}`);
-        console.log('='.repeat(80) + '\n');
+        // Dev mode fallback: log email details via Logger
+        this.logger.warn('Graph Email disabled - logging email details');
+        this.logger.log(
+          `[DEV MODE] Email to: ${options.to} | Subject: ${options.subject}`,
+        );
         return;
       }
 

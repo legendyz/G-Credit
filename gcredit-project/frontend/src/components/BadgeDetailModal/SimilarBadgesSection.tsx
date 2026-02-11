@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../../lib/apiConfig';
 
 interface SimilarBadge {
   id: string;
@@ -16,42 +17,36 @@ interface SimilarBadgesSectionProps {
   onBadgeClick?: (badgeId: string) => void;
 }
 
-const SimilarBadgesSection: React.FC<SimilarBadgesSectionProps> = ({
-  badgeId,
-  onBadgeClick,
-}) => {
+const SimilarBadgesSection: React.FC<SimilarBadgesSectionProps> = ({ badgeId, onBadgeClick }) => {
   const [similarBadges, setSimilarBadges] = useState<SimilarBadge[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchSimilarBadges();
-  }, [badgeId]);
-
-  const fetchSimilarBadges = async () => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(
-        `http://localhost:3000/api/badges/${badgeId}/similar?limit=6`,
-        {
+    const fetchSimilarBadges = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/similar?limit=6`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        },
-      );
+        });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch similar badges');
+        if (!response.ok) {
+          throw new Error('Failed to fetch similar badges');
+        }
+
+        const data = await response.json();
+        setSimilarBadges(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const data = await response.json();
-      setSimilarBadges(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchSimilarBadges();
+  }, [badgeId]);
 
   const handleCardClick = (templateId: string) => {
     if (onBadgeClick) {
@@ -69,7 +64,10 @@ const SimilarBadgesSection: React.FC<SimilarBadgesSectionProps> = ({
           <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
           <div className="flex gap-4 overflow-x-auto">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="flex-shrink-0 w-[200px] h-[240px] bg-gray-200 rounded-lg"></div>
+              <div
+                key={i}
+                className="flex-shrink-0 w-[200px] h-[240px] bg-gray-200 rounded-lg"
+              ></div>
             ))}
           </div>
         </div>
@@ -131,9 +129,7 @@ const SimilarBadgesSection: React.FC<SimilarBadgesSectionProps> = ({
             </h4>
 
             {/* AC 5.9: Issuer name */}
-            <p className="text-sm text-gray-600 text-center mb-3 truncate">
-              {badge.issuerName}
-            </p>
+            <p className="text-sm text-gray-600 text-center mb-3 truncate">{badge.issuerName}</p>
 
             {/* AC 5.9: View Details button */}
             <button
@@ -149,9 +145,7 @@ const SimilarBadgesSection: React.FC<SimilarBadgesSectionProps> = ({
 
             {/* Optional: Show badge count for context */}
             {badge.badgeCount > 0 && (
-              <p className="text-xs text-gray-500 text-center mt-2">
-                {badge.badgeCount} earned
-              </p>
+              <p className="text-xs text-gray-500 text-center mt-2">{badge.badgeCount} earned</p>
             )}
           </div>
         ))}
@@ -159,9 +153,7 @@ const SimilarBadgesSection: React.FC<SimilarBadgesSectionProps> = ({
 
       {/* AC 5.8: Scroll hint for mobile */}
       {similarBadges.length > 1 && (
-        <p className="text-xs text-gray-500 text-center mt-2">
-          ‚Ü?Scroll to see more ‚Ü?
-        </p>
+        <p className="text-xs text-gray-500 text-center mt-2">‚Üê Scroll to see more ‚Üí</p>
       )}
     </section>
   );

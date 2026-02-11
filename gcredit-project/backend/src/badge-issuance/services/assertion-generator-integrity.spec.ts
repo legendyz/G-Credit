@@ -12,14 +12,16 @@ describe('AssertionGeneratorService - Integrity (Story 6.5)', () => {
         {
           provide: ConfigService,
           useValue: {
-            get: jest.fn((key: string, defaultValue?: any) => {
-              const config: Record<string, any> = {
-                APP_URL: 'http://localhost:3000',
-                EMAIL_FROM: 'badges@gcredit.test',
-                BADGE_SALT: 'test-salt',
-              };
-              return config[key] ?? defaultValue;
-            }),
+            get: jest.fn(
+              (key: string, defaultValue?: unknown): string | undefined => {
+                const config: Record<string, string> = {
+                  APP_URL: 'http://localhost:3000',
+                  EMAIL_FROM: 'badges@gcredit.test',
+                  BADGE_SALT: 'test-salt',
+                };
+                return config[key] ?? (defaultValue as string | undefined);
+              },
+            ),
           },
         },
       ],

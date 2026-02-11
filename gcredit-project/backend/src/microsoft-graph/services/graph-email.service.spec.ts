@@ -16,7 +16,7 @@ describe('GraphEmailService', () => {
   };
 
   const mockConfigService = {
-    get: (key: string, defaultValue?: any) => {
+    get: (key: string, defaultValue?: unknown) => {
       if (key === 'ENABLE_GRAPH_EMAIL') return true;
       return defaultValue;
     },
@@ -68,7 +68,7 @@ describe('GraphEmailService', () => {
 
     it('should not initialize when ENABLE_GRAPH_EMAIL=false', async () => {
       const disabledConfigService = {
-        get: (key: string, defaultValue?: any) => {
+        get: (key: string, defaultValue?: unknown) => {
           if (key === 'ENABLE_GRAPH_EMAIL') return false;
           return defaultValue;
         },
@@ -96,7 +96,7 @@ describe('GraphEmailService', () => {
   describe('sendEmail', () => {
     it('should skip sending when disabled', async () => {
       const disabledConfigService = {
-        get: (key: string, defaultValue?: any) => {
+        get: (key: string, defaultValue?: unknown) => {
           if (key === 'ENABLE_GRAPH_EMAIL') return false;
           return defaultValue;
         },
@@ -152,7 +152,7 @@ describe('GraphEmailService', () => {
 
     it('should return false when disabled', async () => {
       const disabledConfigService = {
-        get: (key: string, defaultValue?: any) => {
+        get: (key: string, defaultValue?: unknown) => {
           if (key === 'ENABLE_GRAPH_EMAIL') return false;
           return defaultValue;
         },

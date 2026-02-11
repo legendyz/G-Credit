@@ -10,7 +10,7 @@ import { StatusBadge } from './StatusBadge';
 describe('StatusBadge', () => {
   it('should render CLAIMED status correctly', () => {
     render(<StatusBadge status="CLAIMED" />);
-    
+
     const badge = screen.getByRole('status');
     expect(badge).toHaveTextContent('Claimed');
     expect(badge).toHaveAttribute('aria-label', 'Badge status: Claimed');
@@ -19,7 +19,7 @@ describe('StatusBadge', () => {
 
   it('should render PENDING status correctly', () => {
     render(<StatusBadge status="PENDING" />);
-    
+
     const badge = screen.getByRole('status');
     expect(badge).toHaveTextContent('Pending');
     expect(badge).toHaveAttribute('aria-label', 'Badge status: Pending claim');
@@ -28,7 +28,7 @@ describe('StatusBadge', () => {
 
   it('should render REVOKED status correctly', () => {
     render(<StatusBadge status="REVOKED" />);
-    
+
     const badge = screen.getByRole('status');
     expect(badge).toHaveTextContent('Revoked');
     expect(badge).toHaveAttribute('aria-label', 'Badge status: Revoked');
@@ -37,7 +37,7 @@ describe('StatusBadge', () => {
 
   it('should render EXPIRED status correctly', () => {
     render(<StatusBadge status="EXPIRED" />);
-    
+
     const badge = screen.getByRole('status');
     expect(badge).toHaveTextContent('Expired');
     expect(badge).toHaveAttribute('aria-label', 'Badge status: Expired');
@@ -46,28 +46,28 @@ describe('StatusBadge', () => {
 
   it('should accept custom label', () => {
     render(<StatusBadge status="CLAIMED" label="Active" />);
-    
+
     const badge = screen.getByRole('status');
     expect(badge).toHaveTextContent('Active');
   });
 
   it('should apply additional className', () => {
     render(<StatusBadge status="CLAIMED" className="mt-4" />);
-    
+
     const badge = screen.getByRole('status');
     expect(badge).toHaveClass('mt-4');
   });
 
   it('should have proper WCAG structure with role=status', () => {
     render(<StatusBadge status="PENDING" />);
-    
+
     const badge = screen.getByRole('status');
     expect(badge.tagName).toBe('SPAN');
   });
 
   it('should have badge-status class for high-contrast mode', () => {
     render(<StatusBadge status="CLAIMED" />);
-    
+
     const badge = screen.getByRole('status');
     expect(badge).toHaveClass('badge-status');
   });

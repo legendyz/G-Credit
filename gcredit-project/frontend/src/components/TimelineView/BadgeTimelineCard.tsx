@@ -1,7 +1,7 @@
 /**
  * Badge Timeline Card Component
  * Sprint 8 - Story 8.3: WCAG 2.1 AA Accessibility
- * 
+ *
  * Keyboard accessible card with proper ARIA attributes.
  */
 
@@ -17,9 +17,9 @@ interface BadgeTimelineCardProps {
 
 export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
   const { openModal } = useBadgeDetailModal();
-  
+
   const isRevoked = badge.status === BadgeStatus.REVOKED;
-  
+
   const getStatusColor = (status: BadgeStatus) => {
     switch (status) {
       case BadgeStatus.CLAIMED:
@@ -34,12 +34,15 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
   };
 
   // Story 8.3: Keyboard handler for Enter/Space activation
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      openModal(badge.id);
-    }
-  }, [openModal, badge.id]);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openModal(badge.id);
+      }
+    },
+    [openModal, badge.id]
+  );
 
   return (
     <div className="relative flex items-start gap-4 pl-16">
@@ -50,53 +53,59 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
       />
 
       {/* Card Content - Story 8.3: Keyboard accessible */}
-      <div className="relative">
-        <div 
+      <div className="relative w-full">
+        <div
           role="button"
           tabIndex={0}
-          className={`flex-1 bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
+          className={`bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
             isRevoked ? 'opacity-50' : ''
           }`}
           aria-label={`${badge.template.name} badge, ${badge.status.toLowerCase()}${isRevoked && badge.revokedAt ? `, revoked on ${new Date(badge.revokedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}` : ''}`}
           onClick={() => openModal(badge.id)}
           onKeyDown={handleKeyDown}
         >
-          <div className="flex gap-4">
+          <div className="flex items-center gap-4">
             {/* Badge Image */}
             <img
               src={badge.template.imageUrl}
               alt={badge.template.name}
-              className="w-32 h-32 object-contain flex-shrink-0"
+              className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
             />
 
             {/* Badge Info */}
-            <div className="flex-1">
-              <h3 className="font-semibold text-lg mb-1">{badge.template.name}</h3>
-              <p className="text-sm text-gray-600 mb-2">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-lg mb-1 truncate">{badge.template.name}</h3>
+              <p className="text-sm text-gray-600 mb-2 truncate">
                 Issued by {badge.issuer.firstName} {badge.issuer.lastName}
               </p>
 
               {/* Status Badge - Story 8.3: WCAG AA compliant colors */}
-              <StatusBadge 
-                status={badge.status as 'CLAIMED' | 'PENDING' | 'REVOKED' | 'EXPIRED'} 
-                className="mb-2"
-              />
+              <div className="flex items-center gap-2 flex-wrap">
+                <StatusBadge
+                  status={badge.status as 'CLAIMED' | 'PENDING' | 'REVOKED' | 'EXPIRED'}
+                />
 
-              {/* Category Tag */}
-              <div className="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-700 rounded text-sm ml-2">
-                {badge.template.category}
+                {/* Category Tag */}
+                <div className="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-700 rounded text-sm">
+                  {badge.template.category}
+                </div>
               </div>
 
               {/* Story 9.3 AC1: Show revoked date if available */}
               {isRevoked && badge.revokedAt && (
                 <p className="text-sm text-red-600 mt-2">
-                  Revoked on {new Date(badge.revokedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  Revoked on{' '}
+                  {new Date(badge.revokedAt).toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
                 </p>
               )}
             </div>
 
             {/* Action Icons */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 flex-shrink-0">
               <button
                 className="p-2 hover:bg-gray-100 rounded"
                 aria-label="View badge details"

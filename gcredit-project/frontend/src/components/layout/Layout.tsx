@@ -24,14 +24,9 @@ interface LayoutProps {
   className?: string;
 }
 
-export function Layout({
-  children,
-  pageTitle,
-  showNavbar = true,
-  className = '',
-}: LayoutProps) {
+export function Layout({ children, pageTitle, showNavbar = true, className = '' }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       {/* Skip Link - First focusable element (AC5) */}
       <SkipLink targetId="main-content" />
 
@@ -52,14 +47,12 @@ export function Layout({
         id="main-content"
         role="main"
         tabIndex={-1}
-        className={`px-4 py-4 md:px-6 md:py-6 ${className}`}
+        className={`${className}`}
         aria-label={pageTitle || 'Main content'}
       >
         <div className="max-w-7xl mx-auto">
           {/* Page heading for screen readers (AC2) */}
-          {pageTitle && (
-            <h1 className="sr-only">{pageTitle}</h1>
-          )}
+          {pageTitle && <h1 className="sr-only">{pageTitle}</h1>}
           {children}
         </div>
       </main>

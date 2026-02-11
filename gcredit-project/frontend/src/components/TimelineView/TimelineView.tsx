@@ -12,19 +12,20 @@ import BadgeDetailModal from '../BadgeDetailModal/BadgeDetailModal';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useBadgeDetailModal } from '../../stores/badgeDetailModal';
 import { BadgeSearchBar } from '../search/BadgeSearchBar';
+import { PageTemplate } from '../layout/PageTemplate';
 import type { BadgeForFilter } from '../../utils/searchFilters';
 
 export type ViewMode = 'timeline' | 'grid';
 
 export function TimelineView() {
   const [viewMode, setViewMode] = useState<ViewMode>('timeline');
-  
+
   // Fetch all badges initially (status filter will be handled by search)
   const { data, isLoading, error } = useWallet({});
-  
+
   // Fetch available skills for filter dropdown
   const { data: skills = [] } = useSkills();
-  
+
   // Convert badges to BadgeForFilter format for client-side filtering
   const badgesForFilter: BadgeForFilter[] = useMemo(() => {
     if (!data?.badges) return [];
@@ -47,8 +48,8 @@ export function TimelineView() {
       claimedAt: badge.claimedAt,
       status: badge.status,
     }));
-  }, [data?.badges]);
-  
+  }, [data]);
+
   // Create skill names map for chip display
   const skillNames = useMemo(() => {
     return skills.reduce(
@@ -59,7 +60,7 @@ export function TimelineView() {
       {} as Record<string, string>
     );
   }, [skills]);
-  
+
   // Story 8.2: Badge search hook
   const {
     searchTerm,
@@ -81,12 +82,12 @@ export function TimelineView() {
     totalCount: data?.pagination?.total,
     skillNames,
   });
-  
+
   // Story 9.3 AC4: Persist status filter to sessionStorage
   useEffect(() => {
     sessionStorage.setItem('badgeWalletFilter', statusFilter || 'all');
   }, [statusFilter]);
-  
+
   // Restore status filter from sessionStorage on mount
   useEffect(() => {
     const saved = sessionStorage.getItem('badgeWalletFilter');
@@ -94,28 +95,28 @@ export function TimelineView() {
       setStatusFilter(saved);
     }
   }, [setStatusFilter]);
-  
+
   // Map filtered badges back to original badge objects for display
   const displayBadges = useMemo(() => {
     if (!data?.badges) return [];
     const filteredIds = new Set(filteredBadges.map((b) => b.id));
     return data.badges.filter((badge) => filteredIds.has(badge.id));
-  }, [data?.badges, filteredBadges]);
-  
+  }, [data, filteredBadges]);
+
   // Group badges by date for timeline display
   const dateGroups = useMemo(() => {
     if (!displayBadges.length) return [];
-    
+
     const groups: Array<{ label: string; count: number; startIndex: number }> = [];
     let currentLabel = '';
-    
+
     displayBadges.forEach((badge, index) => {
       const date = new Date(badge.issuedAt);
-      const label = date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long' 
+      const label = date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
       });
-      
+
       if (label !== currentLabel) {
         groups.push({ label, count: 1, startIndex: index });
         currentLabel = label;
@@ -123,7 +124,7 @@ export function TimelineView() {
         groups[groups.length - 1].count++;
       }
     });
-    
+
     return groups;
   }, [displayBadges]);
 
@@ -131,8 +132,8 @@ export function TimelineView() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading your badges...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mx-auto"></div>
+          <p className="mt-4 text-neutral-600">Loading your badges...</p>
         </div>
       </div>
     );
@@ -140,8 +141,8 @@ export function TimelineView() {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">Failed to load badges. Please try again.</p>
+      <div className="bg-error-light border border-red-200 rounded-lg p-4">
+        <p className="text-error">Failed to load badges. Please try again.</p>
       </div>
     );
   }
@@ -150,9 +151,10 @@ export function TimelineView() {
     // AC 6.14: Detect which empty state scenario to display
     // Calculate badge counts for scenario detection
     const totalBadges = data?.pagination?.total || 0;
-    const claimedBadges = 0; // TODO: Get from API response if available
-    const pendingBadges = 0; // TODO: Get from API response if available
-    const revokedBadges = 0; // TODO: Get from API response if available
+    const badges = data?.badges ?? [];
+    const claimedBadges = badges.filter((b) => b.status === 'CLAIMED').length;
+    const pendingBadges = badges.filter((b) => b.status === 'PENDING').length;
+    const revokedBadges = badges.filter((b) => b.status === 'REVOKED').length;
     const hasActiveFilter = hasFilters;
 
     const emptyScenario = detectEmptyStateScenario(
@@ -160,7 +162,7 @@ export function TimelineView() {
       claimedBadges,
       pendingBadges,
       revokedBadges,
-      hasActiveFilter,
+      hasActiveFilter
     );
 
     if (emptyScenario) {
@@ -170,10 +172,10 @@ export function TimelineView() {
           pendingCount={pendingBadges}
           currentFilter={hasFilters ? 'Active filters' : null}
           onExploreCatalog={() => {
-            window.location.href = '/badges/templates';
+            window.location.href = '/wallet';
           }}
           onLearnMore={() => {
-            window.location.href = '/docs/help/earning-badges';
+            window.location.href = '/wallet';
           }}
           onViewPending={() => {
             setStatusFilter('PENDING');
@@ -186,136 +188,137 @@ export function TimelineView() {
     // Fallback if no scenario matches
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500 text-lg">No badges found</p>
-        <p className="text-gray-400 mt-2">Start earning badges to see them here!</p>
+        <p className="text-neutral-500 text-lg">No badges found</p>
+        <p className="text-neutral-400 mt-2">Start earning badges to see them here!</p>
       </div>
     );
   }
-  
+
   // Story 8.2: Empty state when filters return no results
   const showNoResults = displayBadges.length === 0 && hasFilters;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
-      {/* Date Navigation Sidebar - AC 1.6 (hidden on mobile, visible on desktop) */}
-      <DateNavigationSidebar 
-        dateGroups={dateGroups}
-        className="hidden lg:block w-60 flex-shrink-0"
-      />
+    <PageTemplate title="My Badges" actions={<ViewToggle mode={viewMode} onChange={setViewMode} />}>
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+        {/* Date Navigation Sidebar - AC 1.6 (hidden on mobile, visible on desktop) */}
+        <DateNavigationSidebar
+          dateGroups={dateGroups}
+          className="hidden lg:block w-60 flex-shrink-0"
+        />
 
-      {/* Main Content */}
-      <div className="flex-1 min-w-0">
-        {/* Header with View Toggle - AC 1.5, Story 8.5: Responsive typography */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4 md:mb-6">
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">My Badge Wallet</h1>
-          <ViewToggle mode={viewMode} onChange={setViewMode} />
-        </div>
+        {/* Main Content */}
+        <div className="flex-1 min-w-0">
+          {/* Story 8.2 AC1 & AC4: Badge Search Bar with sticky positioning */}
+          <div className="sticky top-0 z-10 bg-white pb-4 -mx-4 px-4 md:-mx-6 md:px-6 pt-2 shadow-sm">
+            <BadgeSearchBar
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              onSearchClear={() => setSearchTerm('')}
+              isSearchLoading={isSearching}
+              skills={skills}
+              selectedSkills={selectedSkills}
+              onSkillsChange={setSelectedSkills}
+              dateRange={dateRange}
+              onDateRangeChange={setDateRange}
+              statusFilter={statusFilter}
+              onStatusChange={setStatusFilter}
+              filterChips={filterChips}
+              onRemoveFilter={removeFilter}
+              onClearAllFilters={clearAllFilters}
+              placeholder="Search your badges..."
+            />
+          </div>
 
-        {/* Story 8.2 AC1 & AC4: Badge Search Bar with sticky positioning */}
-        <div className="sticky top-0 z-10 bg-white pb-4 -mx-4 px-4 md:-mx-6 md:px-6 pt-2 shadow-sm">
-          <BadgeSearchBar
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            onSearchClear={() => setSearchTerm('')}
-            isSearchLoading={isSearching}
-            skills={skills}
-            selectedSkills={selectedSkills}
-            onSkillsChange={setSelectedSkills}
-            dateRange={dateRange}
-            onDateRangeChange={setDateRange}
-            statusFilter={statusFilter}
-            onStatusChange={setStatusFilter}
-            filterChips={filterChips}
-            onRemoveFilter={removeFilter}
-            onClearAllFilters={clearAllFilters}
-            placeholder="Search your badges..."
-          />
-        </div>
-        
-        {/* Search results count - Story 8.2 */}
-        {hasFilters && !showNoResults && (
-          <p className="text-sm text-gray-500 mb-4">
-            Showing {displayBadges.length} of {data.badges.length} badges
-          </p>
-        )}
-        
-        {/* No results state - Story 8.2 AC1: Include query and suggestions */}
-        {showNoResults && (
-          <div className="text-center py-12">
-            <div className="mx-auto w-16 h-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            <p className="text-gray-700 text-lg font-medium">
-              {searchTerm 
-                ? `No badges found for "${searchTerm}"`
-                : 'No badges match your filters'}
+          {/* Search results count - Story 8.2 */}
+          {hasFilters && !showNoResults && (
+            <p className="text-sm text-neutral-500 mb-4">
+              Showing {displayBadges.length} of {data.badges.length} badges
             </p>
-            <ul className="text-gray-500 mt-3 space-y-1">
-              <li>• Try different keywords</li>
-              <li>• Check your spelling</li>
-              {hasFilters && <li>• Remove some filters</li>}
-            </ul>
-            <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
-              {hasFilters && (
-                <button
-                  onClick={clearAllFilters}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
-                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          )}
+
+          {/* No results state - Story 8.2 AC1: Include query and suggestions */}
+          {showNoResults && (
+            <div className="text-center py-12">
+              <div className="mx-auto w-16 h-16 mb-4 rounded-full bg-neutral-100 flex items-center justify-center">
+                <svg
+                  className="w-8 h-8 text-neutral-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  Clear all filters
-                </button>
-              )}
-              <a
-                href="/badges/templates"
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50
-                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              >
-                Browse all badges
-              </a>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+              <p className="text-neutral-700 text-lg font-medium">
+                {searchTerm
+                  ? `No badges found for "${searchTerm}"`
+                  : 'No badges match your filters'}
+              </p>
+              <ul className="text-neutral-500 mt-3 space-y-1">
+                <li>• Try different keywords</li>
+                <li>• Check your spelling</li>
+                {hasFilters && <li>• Remove some filters</li>}
+              </ul>
+              <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+                {hasFilters && (
+                  <button
+                    onClick={clearAllFilters}
+                    className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 
+                             focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
+                  >
+                    Clear all filters
+                  </button>
+                )}
+                <a
+                  href="/wallet"
+                  className="px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50
+                           focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
+                >
+                  Browse all badges
+                </a>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Timeline View - AC 1.1-1.4 */}
-        {viewMode === 'timeline' && !showNoResults && (
-          <div className="relative">
-            <TimelineLine />
-            <div className="space-y-8">
-              {dateGroups.map((group) => {
-                const groupBadges = displayBadges.slice(
-                  group.startIndex,
-                  group.startIndex + group.count
-                );
+          {/* Timeline View - AC 1.1-1.4 */}
+          {viewMode === 'timeline' && !showNoResults && (
+            <div className="relative">
+              <TimelineLine />
+              <div className="space-y-8">
+                {dateGroups.map((group) => {
+                  const groupBadges = displayBadges.slice(
+                    group.startIndex,
+                    group.startIndex + group.count
+                  );
 
-                return (
-                  <div key={group.label} id={`group-${group.label}`}>
-                    <DateGroupHeader 
-                      label={group.label} 
-                      count={group.count} 
-                    />
-                    <div className="space-y-4 mt-4">
-                      {groupBadges.map((badge) => (
-                        <BadgeTimelineCard key={badge.id} badge={badge} />
-                      ))}
+                  return (
+                    <div key={group.label} id={`group-${group.label}`}>
+                      <DateGroupHeader label={group.label} count={group.count} />
+                      <div className="space-y-4 mt-4">
+                        {groupBadges.map((badge) => (
+                          <BadgeTimelineCard key={badge.id} badge={badge} />
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Grid View - With keyboard navigation (Story 8.3 UX-P1-005) */}
-        {viewMode === 'grid' && !showNoResults && (
-          <GridView badges={displayBadges} />
-        )}
+          {/* Grid View - With keyboard navigation (Story 8.3 UX-P1-005) */}
+          {viewMode === 'grid' && !showNoResults && <GridView badges={displayBadges} />}
+        </div>
+
+        {/* Badge Detail Modal - renders via Portal to document.body */}
+        <BadgeDetailModal />
       </div>
-      
-      {/* Badge Detail Modal - renders via Portal to document.body */}
-      <BadgeDetailModal />
-    </div>
+    </PageTemplate>
   );
 }
 
@@ -368,10 +371,13 @@ function useResponsiveColumns(): number {
 function GridView({ badges }: GridViewProps) {
   const openModal = useBadgeDetailModal((s) => s.openModal);
   const columns = useResponsiveColumns(); // Story 8.3: Dynamic column count
-  
-  const handleActivate = useCallback((badge: GridViewProps['badges'][0]) => {
-    openModal(badge.id);
-  }, [openModal]);
+
+  const handleActivate = useCallback(
+    (badge: GridViewProps['badges'][0]) => {
+      openModal(badge.id);
+    },
+    [openModal]
+  );
 
   const { focusedIndex, handleKeyDown, getItemProps } = useKeyboardNavigation({
     items: badges,
@@ -405,10 +411,10 @@ function GridView({ badges }: GridViewProps) {
               border rounded-lg p-3 md:p-4 cursor-pointer
               transition-all duration-150
               min-h-[44px]
-              hover:border-blue-400 hover:shadow-md
-              active:bg-gray-50
-              focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
-              ${focusedIndex === index ? 'border-blue-400 shadow-md' : 'border-gray-200'}
+              hover:border-brand-400 hover:shadow-md
+              active:bg-neutral-50
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2
+              ${focusedIndex === index ? 'border-brand-400 shadow-md' : 'border-neutral-200'}
             `}
           >
             <img
@@ -417,8 +423,12 @@ function GridView({ badges }: GridViewProps) {
               loading="lazy"
               className="w-24 h-24 md:w-32 md:h-32 mx-auto mb-2 md:mb-3 object-contain"
             />
-            <h3 className="font-semibold text-center text-sm md:text-base">{badge.template.name}</h3>
-            <p className="text-xs md:text-sm text-gray-500 text-center">{badge.template.category}</p>
+            <h3 className="font-semibold text-center text-sm md:text-base">
+              {badge.template.name}
+            </h3>
+            <p className="text-xs md:text-sm text-neutral-500 text-center">
+              {badge.template.category}
+            </p>
           </div>
         );
       })}

@@ -88,17 +88,9 @@ export class TeamsSharingController {
     @Body() _dto: ShareBadgeTeamsDto,
     @Request() _req: RequestWithUser,
   ): ShareBadgeTeamsResponseDto {
-    // TODO: Technical Debt - Teams Channel Sharing Not Implemented
-    //
-    // Teams channel sharing requires additional Microsoft Graph API permissions:
-    // - ChannelMessage.Send (for posting to channels)
-    //
-    // Current implementation:
-    // - Badge issuance notifications: Email (private, implemented)
-    // - Badge sharing: Email (implemented and working)
-    //
-    // Future enhancement: Implement Teams channel sharing with proper permissions
-    // See: docs/sprints/sprint-6/technical-debt.md
+    // ADR: Teams Channel Sharing deferred — requires ChannelMessage.Send Graph API
+    // permission (pending tenant admin approval). See TD-006 in Post-MVP Backlog.
+    // Current behavior: returns BadRequestException instructing user to use email sharing.
 
     throw new BadRequestException({
       message:

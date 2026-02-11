@@ -3,6 +3,7 @@ import {
   Get,
   Param,
   NotFoundException,
+  InternalServerErrorException,
   Res,
   Header,
 } from '@nestjs/common';
@@ -128,9 +129,20 @@ export class BadgeVerificationController {
     response.setHeader('X-Verification-Status', verificationStatus);
 
     // Story 6.3: Return Open Badges 2.0 assertion + verification metadata
+    if (
+      typeof badge.assertionJson !== 'object' ||
+      badge.assertionJson === null ||
+      Array.isArray(badge.assertionJson)
+    ) {
+      throw new InternalServerErrorException(
+        'Badge assertion data is missing or malformed',
+      );
+    }
+    const assertionData: Record<string, unknown> = badge.assertionJson;
+
     return {
       // Open Badges 2.0 assertion (from Story 6.1)
-      ...(badge.assertionJson as any),
+      ...assertionData,
 
       // Story 6.3: Additional verification metadata
       verificationStatus,

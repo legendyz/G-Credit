@@ -21,10 +21,7 @@ const PAGE_SIZE_OPTIONS = [10, 25, 50] as const;
 /**
  * Data table for valid preview rows with search, filter, and pagination (AC2, UX-P1-5)
  */
-export default function BulkPreviewTable({
-  rows,
-  validRows,
-}: BulkPreviewTableProps) {
+export default function BulkPreviewTable({ rows, validRows }: BulkPreviewTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [templateFilter, setTemplateFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -33,10 +30,7 @@ export default function BulkPreviewTable({
   const debouncedSearch = useDebounce(searchTerm, 300);
 
   // Only valid rows
-  const validRowsList = useMemo(
-    () => rows.filter((r) => r.isValid),
-    [rows],
-  );
+  const validRowsList = useMemo(() => rows.filter((r) => r.isValid), [rows]);
 
   // Unique template names for filter dropdown
   const templateNames = useMemo(() => {
@@ -56,14 +50,12 @@ export default function BulkPreviewTable({
       result = result.filter(
         (r) =>
           (r.recipientName ?? '').toLowerCase().includes(search) ||
-          r.recipientEmail.toLowerCase().includes(search),
+          r.recipientEmail.toLowerCase().includes(search)
       );
     }
 
     if (templateFilter) {
-      result = result.filter(
-        (r) => (r.badgeName ?? r.badgeTemplateId) === templateFilter,
-      );
+      result = result.filter((r) => (r.badgeName ?? r.badgeTemplateId) === templateFilter);
     }
 
     return result;
@@ -94,9 +86,7 @@ export default function BulkPreviewTable({
   return (
     <div className="bg-white rounded-lg shadow mb-6">
       <div className="p-4 border-b border-gray-200">
-        <h3 className="font-semibold text-gray-800 mb-3">
-          Badges to Issue ({validRows})
-        </h3>
+        <h3 className="font-semibold text-gray-800 mb-3">Badges to Issue ({validRows})</h3>
 
         {/* Search and Filter Controls */}
         <div className="flex flex-wrap gap-3">
@@ -129,9 +119,7 @@ export default function BulkPreviewTable({
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                Badge Name
-              </th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Badge Name</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
                 Recipient Name
               </th>
@@ -141,9 +129,7 @@ export default function BulkPreviewTable({
               <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
                 Evidence URL
               </th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                Status
-              </th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -155,9 +141,7 @@ export default function BulkPreviewTable({
                 <td className="px-4 py-3 text-sm text-gray-800">
                   {row.recipientName ?? row.recipientEmail}
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-600">
-                  {row.recipientEmail}
-                </td>
+                <td className="px-4 py-3 text-sm text-gray-600">{row.recipientEmail}</td>
                 <td className="px-4 py-3 text-sm text-gray-600 truncate max-w-[200px]">
                   {row.evidenceUrl ? (
                     <a
@@ -187,8 +171,8 @@ export default function BulkPreviewTable({
       <div className="p-4 border-t border-gray-200 flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <span>
-            Showing {filteredRows.length > 0 ? startIdx + 1 : 0}-{endIdx} of{' '}
-            {filteredRows.length} badges
+            Showing {filteredRows.length > 0 ? startIdx + 1 : 0}-{endIdx} of {filteredRows.length}{' '}
+            badges
           </span>
           <span className="text-gray-400">|</span>
           <label htmlFor="pageSize" className="sr-only">

@@ -25,9 +25,7 @@ describe('useFocusTrap', () => {
   });
 
   it('should return a ref object', () => {
-    const { result } = renderHook(() =>
-      useFocusTrap({ isActive: false })
-    );
+    const { result } = renderHook(() => useFocusTrap({ isActive: false }));
 
     expect(result.current).toBeDefined();
     expect(result.current.current).toBeNull();
@@ -35,9 +33,7 @@ describe('useFocusTrap', () => {
 
   it('should call onEscape when Escape key is pressed', () => {
     const onEscape = vi.fn();
-    const { result } = renderHook(() =>
-      useFocusTrap({ isActive: true, onEscape })
-    );
+    const { result } = renderHook(() => useFocusTrap({ isActive: true, onEscape }));
 
     // Assign the container to the ref
     Object.defineProperty(result.current, 'current', {
@@ -56,9 +52,7 @@ describe('useFocusTrap', () => {
 
   it('should not call onEscape when inactive', () => {
     const onEscape = vi.fn();
-    renderHook(() =>
-      useFocusTrap({ isActive: false, onEscape })
-    );
+    renderHook(() => useFocusTrap({ isActive: false, onEscape }));
 
     // Simulate Escape key
     act(() => {
@@ -74,10 +68,9 @@ describe('useFocusTrap', () => {
     btn.focus();
     expect(document.activeElement).toBe(btn);
 
-    const { rerender } = renderHook(
-      ({ isActive }) => useFocusTrap({ isActive }),
-      { initialProps: { isActive: false } }
-    );
+    const { rerender } = renderHook(({ isActive }) => useFocusTrap({ isActive }), {
+      initialProps: { isActive: false },
+    });
 
     // Activate the trap
     rerender({ isActive: true });

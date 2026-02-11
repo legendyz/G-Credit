@@ -186,7 +186,7 @@ describe('Analytics API (e2e) - Story 8.4', () => {
 
       // Login the manager
       const loginResponse = await request(ctx.app.getHttpServer() as App)
-        .post('/auth/login')
+        .post('/api/auth/login')
         .send({ email: freshManagerUser.email, password: 'TestPassword123!' })
         .expect(200);
 

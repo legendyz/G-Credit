@@ -3,16 +3,17 @@ import React from 'react';
 interface BadgeInfoProps {
   description: string;
   skills: string[];
-  criteria: any;
+  criteria: Record<string, unknown> | string | null;
 }
 
 const BadgeInfo: React.FC<BadgeInfoProps> = ({ description, skills, criteria }) => {
   // Parse criteria (assuming it's a JSON object with a 'requirements' array)
-  const criteriaList = Array.isArray(criteria?.requirements)
-    ? criteria.requirements
+  const parsedCriteria = typeof criteria === 'object' && criteria !== null ? criteria : null;
+  const criteriaList = Array.isArray(parsedCriteria?.requirements)
+    ? (parsedCriteria.requirements as string[])
     : typeof criteria === 'string'
-    ? [criteria]
-    : [];
+      ? [criteria]
+      : [];
 
   return (
     <section className="px-6 py-6 border-b">

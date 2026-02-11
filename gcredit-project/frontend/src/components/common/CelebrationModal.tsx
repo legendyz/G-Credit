@@ -1,11 +1,11 @@
 /**
  * CelebrationModal Component - Story 8.1 (UX-P1-001)
- * 
+ *
  * Animated celebration modal for milestone achievements and badge claims.
  * Provides positive feedback with confetti effects and animations.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
@@ -33,12 +33,16 @@ export interface CelebrationModalProps {
   type?: 'badge' | 'milestone' | 'achievement';
 }
 
-// Confetti particle component
-const ConfettiParticle: React.FC<{ delay: number; color: string }> = ({ delay, color }) => (
+// Confetti particle component (position passed as prop to avoid impure Math.random during render)
+const ConfettiParticle: React.FC<{ delay: number; color: string; leftPercent: number }> = ({
+  delay,
+  color,
+  leftPercent,
+}) => (
   <div
     className="absolute w-2 h-2 rounded-full animate-confetti"
     style={{
-      left: `${Math.random() * 100}%`,
+      left: `${leftPercent}%`,
       backgroundColor: color,
       animationDelay: `${delay}ms`,
     }}
@@ -78,13 +82,16 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({
 
   const confettiColors = ['#fbbf24', '#34d399', '#60a5fa', '#f472b6', '#a78bfa'];
 
+  // Pre-compute confetti positions to avoid Math.random() during render
+  const confettiPositions = useMemo(
+    () => Array.from({ length: 30 }, (_, i) => (i * 37 + 13) % 100),
+    []
+  );
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className={cn(
-          'sm:max-w-md overflow-hidden',
-          'animate-in zoom-in-95 duration-300'
-        )}
+        className={cn('sm:max-w-md overflow-hidden', 'animate-in zoom-in-95 duration-300')}
       >
         {/* Confetti container */}
         {showConfetti && (
@@ -94,6 +101,7 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({
                 key={i}
                 delay={i * 50}
                 color={confettiColors[i % confettiColors.length]}
+                leftPercent={confettiPositions[i]}
               />
             ))}
           </div>
@@ -121,28 +129,18 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({
           </div>
 
           {/* Title */}
-          <DialogTitle className="text-2xl font-bold text-foreground mb-2">
-            {title}
-          </DialogTitle>
+          <DialogTitle className="text-2xl font-bold text-foreground mb-2">{title}</DialogTitle>
 
           {/* Achievement Name */}
           {achievementName && (
-            <p className="text-lg font-semibold text-primary mb-2">
-              {achievementName}
-            </p>
+            <p className="text-lg font-semibold text-primary mb-2">{achievementName}</p>
           )}
 
           {/* Description */}
-          {description && (
-            <p className="text-muted-foreground mb-6">{description}</p>
-          )}
+          {description && <p className="text-muted-foreground mb-6">{description}</p>}
 
           {/* CTA Button */}
-          <Button
-            onClick={handleCta}
-            className="w-full sm:w-auto min-w-[120px]"
-            size="lg"
-          >
+          <Button onClick={handleCta} className="w-full sm:w-auto min-w-[120px]" size="lg">
             {ctaText}
           </Button>
         </div>

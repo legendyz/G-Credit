@@ -30,6 +30,12 @@ Following Sprint 7 Technical Review Meeting, Product Owner approved these UX dec
 - **Approved:** Disabled with tooltip explaining why
 - **Implementation:** `<button disabled className="cursor-not-allowed opacity-50" title="Revoked badges cannot be shared">`
 
+**⚠️ Decision #3b: Download Button Treatment (Updated 2026-02-11)**
+- **Original Decision (Sprint 7):** Download PNG remains enabled for revoked badges — employees can keep records
+- **Revised Decision (Sprint 10 Re-UAT):** Download PNG also disabled for revoked badges
+- **Rationale:** PO (LegendZhu) 在 Re-UAT Round 2 中指出：Share 已禁用但 Download 仍可用存在不一致，且下载的 PNG 可能被脱离验证链使用造成误导
+- **Implementation:** Download button disabled + tooltip "Revoked badges cannot be downloaded"，与 Share 按钮行为保持一致
+
 **Estimate Updated:**
 - Original: 3 hours
 - **Revised: 4 hours** (+1h for reason categorization logic)
@@ -87,7 +93,7 @@ Hiding revoked badges without notice would confuse employees. Showing them with 
 ### AC3: Download and Share Disabled - With Tooltip ⚠️ **UX DECISION**
 - [x] Share button visually disabled (opacity 50%, cursor-not-allowed)
 - [x] **Tooltip on hover:** "Revoked badges cannot be shared"
-- [x] Download button still enabled (employees can keep records)
+- [x] ~~Download button still enabled (employees can keep records)~~ → **Revised 2026-02-11:** Download button also disabled (Decision #3b)
 - [x] LinkedIn/Teams share buttons both disabled with same tooltip
 
 ### AC4: Filtering and Sorting

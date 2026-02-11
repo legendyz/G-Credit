@@ -18,6 +18,7 @@ import { PrismaService } from '../common/prisma.service';
 import { AdminUsersQueryDto } from './dto/admin-users-query.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
+import { UpdateUserDepartmentDto } from './dto/update-user-department.dto';
 import { UserRole, Prisma } from '@prisma/client';
 
 // Response types
@@ -67,6 +68,12 @@ export interface StatusUpdateResponse {
   isActive: boolean;
 }
 
+export interface DepartmentUpdateResponse {
+  id: string;
+  email: string;
+  department: string;
+}
+
 @Injectable()
 export class AdminUsersService {
   private readonly logger = new Logger(AdminUsersService.name);
@@ -82,7 +89,7 @@ export class AdminUsersService {
    *
    * Implements hybrid pagination:
    * - <1000 users: offset-based pagination
-   * - 鈮?000 users: cursor-based pagination
+   * - ≥1000 users: cursor-based pagination
    */
   async findAll(query: AdminUsersQueryDto): Promise<UserListResponse> {
     const {
@@ -342,7 +349,7 @@ export class AdminUsersService {
     });
 
     this.logger.log(
-      `Role updated for user ${result.email}: ${currentUser.role} 鈫?${dto.role} by admin ${adminId}`,
+      `Role updated for user ${result.email}: ${currentUser.role} → ${dto.role} by admin ${adminId}`,
     );
 
     return result as RoleUpdateResponse;
@@ -409,6 +416,55 @@ export class AdminUsersService {
     this.logger.log(`User ${result.email} ${action} by admin ${adminId}`);
 
     return result;
+  }
+
+  /**
+   * Update user department
+   */
+  async updateDepartment(
+    userId: string,
+    dto: UpdateUserDepartmentDto,
+    adminId: string,
+  ): Promise<DepartmentUpdateResponse> {
+    const currentUser = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, department: true },
+    });
+
+    if (!currentUser) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      const updatedUser = await tx.user.update({
+        where: { id: userId },
+        data: { department: dto.department },
+        select: { id: true, email: true, department: true },
+      });
+
+      await tx.userRoleAuditLog.create({
+        data: {
+          userId,
+          performedBy: adminId,
+          action: 'DEPARTMENT_CHANGED',
+          oldValue: currentUser.department || '(none)',
+          newValue: dto.department,
+          note: dto.auditNote,
+        },
+      });
+
+      return updatedUser;
+    });
+
+    this.logger.log(
+      `User ${result.email} department changed to "${dto.department}" by admin ${adminId}`,
+    );
+
+    return {
+      id: result.id,
+      email: result.email,
+      department: result.department!,
+    };
   }
 
   // Helper methods

@@ -8,7 +8,7 @@ describe('EmailTemplateService', () => {
 
   const mockConfigService = {
     get: (key: string, defaultValue?: string) => {
-      const config = {
+      const config: Record<string, string> = {
         PLATFORM_URL: 'https://test.g-credit.com',
         API_URL: 'https://api.test.g-credit.com',
       };

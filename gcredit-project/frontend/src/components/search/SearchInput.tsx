@@ -72,15 +72,19 @@ export function SearchInput({
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Story 8.2 AC1: Notify parent of focus state changes
-  const handleFocusChange = useCallback((focused: boolean) => {
-    setIsFocused(focused);
-    onFocusChange?.(focused);
-  }, [onFocusChange]);
-  
-  // Use controlled value if provided
-  const value = controlledValue !== undefined ? controlledValue : internalValue;
+  const handleFocusChange = useCallback(
+    (focused: boolean) => {
+      setIsFocused(focused);
+      onFocusChange?.(focused);
+    },
+    [onFocusChange]
+  );
+
+  // Always use internalValue for display to ensure immediate keystroke feedback.
+  // In controlled mode, debounce triggers onChange to parent; display stays responsive.
+  const value = internalValue;
   const debouncedValue = useDebounce(value, debounceMs);
-  
+
   // Sync internal value with controlled value
   useEffect(() => {
     if (controlledValue !== undefined) {
@@ -92,22 +96,17 @@ export function SearchInput({
   useEffect(() => {
     // Only call onChange if value meets minimum character requirement or is empty (to clear)
     if (debouncedValue.length >= minSearchLength || debouncedValue.length === 0) {
-      // Don't call onChange if using controlled mode and value hasn't changed
-      if (controlledValue === undefined || debouncedValue !== controlledValue) {
-        onChange(debouncedValue);
-      }
+      onChange(debouncedValue);
     }
-  }, [debouncedValue, minSearchLength, onChange, controlledValue]);
+  }, [debouncedValue, minSearchLength, onChange]);
 
   // Handle input change
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setInternalValue(newValue);
-    // In controlled mode, notify parent immediately (parent handles debounce)
-    if (controlledValue !== undefined) {
-      onChange(newValue);
-    }
-  }, [controlledValue, onChange]);
+    // In both modes, let debounce handle the onChange callback.
+    // Don't call onChange immediately to avoid double-fire in controlled mode.
+  }, []);
 
   // Handle clear button click
   const handleClear = useCallback(() => {
@@ -121,28 +120,28 @@ export function SearchInput({
   }, [onClear, onChange]);
 
   // Handle key events
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Escape') {
-      handleClear();
-      inputRef.current?.blur();
-    }
-  }, []);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Escape') {
+        handleClear();
+        inputRef.current?.blur();
+      }
+    },
+    [handleClear]
+  );
 
-  const stickyClasses = sticky
-    ? 'sticky top-0 z-10 bg-white dark:bg-gray-900 py-2'
-    : '';
+  const stickyClasses = sticky ? 'sticky top-0 z-10 bg-white dark:bg-gray-900 py-2' : '';
 
   // Story 8.2 AC1: Expand to full width on mobile when focused
-  const mobileExpandClasses = expandOnMobileFocus && isFocused
-    ? 'sm:w-auto w-full absolute left-0 right-0 mx-4 z-20'
-    : '';
+  const mobileExpandClasses =
+    expandOnMobileFocus && isFocused ? 'sm:w-auto w-full absolute left-0 right-0 mx-4 z-20' : '';
 
   const focusClasses = isFocused
     ? 'ring-2 ring-blue-500 border-transparent'
     : 'border-gray-300 dark:border-gray-600';
 
   return (
-    <div 
+    <div
       className={`${stickyClasses} ${mobileExpandClasses} ${className} transition-all duration-200`}
       data-testid="search-container"
     >
@@ -163,10 +162,7 @@ export function SearchInput({
       >
         {/* Search Icon - 44×44px touch target (visually smaller) */}
         <div className="flex items-center justify-center w-11 h-11 flex-shrink-0">
-          <Search 
-            className="h-5 w-5 text-gray-400" 
-            aria-hidden="true"
-          />
+          <Search className="h-5 w-5 text-gray-400" aria-hidden="true" />
         </div>
 
         {/* Input */}
@@ -197,7 +193,7 @@ export function SearchInput({
 
         {/* Clear Button or Loading Spinner - 44×44px touch target */}
         {isLoading ? (
-          <div 
+          <div
             className="flex items-center justify-center w-11 h-11 flex-shrink-0"
             data-testid="search-loading"
           >

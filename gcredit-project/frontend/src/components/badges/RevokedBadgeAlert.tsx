@@ -10,23 +10,22 @@ interface RevokedBadgeAlertProps {
   revokedBy?: { name: string; role: string } | null;
 }
 
-export function RevokedBadgeAlert({ revokedAt, reason, notes, isPublicReason, revokedBy }: RevokedBadgeAlertProps) {
+export function RevokedBadgeAlert({
+  revokedAt,
+  reason,
+  notes,
+  isPublicReason,
+  revokedBy,
+}: RevokedBadgeAlertProps) {
   const formattedDate = format(new Date(revokedAt), 'MMMM d, yyyy');
 
   return (
-    <Alert 
-      role="alert" 
-      className="bg-red-100 border-red-500 text-red-900 mb-6"
-    >
+    <Alert role="alert" className="bg-red-100 border-red-500 text-red-900 mb-6">
       <AlertTriangle className="h-5 w-5 text-red-600" />
-      <AlertTitle className="text-xl font-bold">
-        BADGE REVOKED
-      </AlertTitle>
+      <AlertTitle className="text-xl font-bold">BADGE REVOKED</AlertTitle>
       <AlertDescription className="mt-2 space-y-2">
-        <p className="font-semibold">
-          This badge was revoked on {formattedDate}
-        </p>
-        
+        <p className="font-semibold">This badge was revoked on {formattedDate}</p>
+
         {isPublicReason ? (
           <>
             <p>
@@ -44,11 +43,9 @@ export function RevokedBadgeAlert({ revokedAt, reason, notes, isPublicReason, re
             )}
           </>
         ) : (
-          <p className="italic">
-            This badge has been revoked.
-          </p>
+          <p className="italic">This badge has been revoked.</p>
         )}
-        
+
         <p className="text-sm mt-4 border-t border-red-300 pt-2">
           Original badge information is shown below for historical reference only.
         </p>

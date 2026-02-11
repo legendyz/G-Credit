@@ -6,10 +6,8 @@
 /**
  * Teams Sharing Controller Tests
  *
- * TECHNICAL DEBT: These tests may fail because Teams channel sharing
- * is currently disabled pending Graph API permissions.
- * See: docs/sprints/sprint-6/technical-debt.md
- * TODO: Re-enable when Teams permissions are configured (TD-003)
+ * ADR: Tests skipped pending ChannelMessage.Send permission approval (TD-006).
+ * See Post-MVP Backlog and SKIPPED-TESTS-TRACKER.md for resolution steps.
  *
  * Email sharing provides equivalent functionality and is fully tested.
  */
@@ -22,6 +20,8 @@ import { BadgeAnalyticsService } from '../services/badge-analytics.service';
 import { PrismaService } from '../../common/prisma.service';
 import { ShareBadgeTeamsDto } from '../dto/share-badge-teams.dto';
 import { BadRequestException } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
+import type { RequestWithUser } from '../../common/interfaces/request-with-user.interface';
 
 // SKIP: Teams channel sharing pending Graph API permissions
 describe.skip('TeamsSharingController - Story 7.4', () => {
@@ -47,10 +47,11 @@ describe.skip('TeamsSharingController - Story 7.4', () => {
     },
   };
 
-  const mockRequest = {
+  const mockRequest: RequestWithUser = {
     user: {
       userId: 'user-123',
       email: 'john.smith@example.com',
+      role: UserRole.EMPLOYEE,
     },
   };
 
@@ -114,7 +115,7 @@ describe.skip('TeamsSharingController - Story 7.4', () => {
       );
 
       expect(() =>
-        controller.shareBadgeToTeams('badge-456', shareDto, mockRequest as any),
+        controller.shareBadgeToTeams('badge-456', shareDto, mockRequest),
       ).toThrow(BadRequestException);
     });
 
@@ -122,7 +123,7 @@ describe.skip('TeamsSharingController - Story 7.4', () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(null);
 
       expect(() =>
-        controller.shareBadgeToTeams('badge-999', shareDto, mockRequest as any),
+        controller.shareBadgeToTeams('badge-999', shareDto, mockRequest),
       ).toThrow(BadRequestException);
     });
 
@@ -140,24 +141,21 @@ describe.skip('TeamsSharingController - Story 7.4', () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(differentBadge);
 
       expect(() =>
-        controller.shareBadgeToTeams('badge-456', shareDto, mockRequest as any),
+        controller.shareBadgeToTeams('badge-456', shareDto, mockRequest),
       ).toThrow(BadRequestException);
     });
 
     it('should always throw BadRequestException (not yet implemented)', () => {
-      const issuerRequest = {
+      const issuerRequest: RequestWithUser = {
         user: {
           userId: 'issuer-789',
           email: 'issuer@example.com',
+          role: UserRole.ISSUER,
         },
       };
 
       expect(() =>
-        controller.shareBadgeToTeams(
-          'badge-456',
-          shareDto,
-          issuerRequest as any,
-        ),
+        controller.shareBadgeToTeams('badge-456', shareDto, issuerRequest),
       ).toThrow(BadRequestException);
     });
 
@@ -170,7 +168,7 @@ describe.skip('TeamsSharingController - Story 7.4', () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(revokedBadge);
 
       expect(() =>
-        controller.shareBadgeToTeams('badge-456', shareDto, mockRequest as any),
+        controller.shareBadgeToTeams('badge-456', shareDto, mockRequest),
       ).toThrow(BadRequestException);
     });
 
@@ -183,7 +181,7 @@ describe.skip('TeamsSharingController - Story 7.4', () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(expiredBadge);
 
       expect(() =>
-        controller.shareBadgeToTeams('badge-456', shareDto, mockRequest as any),
+        controller.shareBadgeToTeams('badge-456', shareDto, mockRequest),
       ).toThrow(BadRequestException);
     });
 
@@ -195,7 +193,7 @@ describe.skip('TeamsSharingController - Story 7.4', () => {
 
       // Method throws synchronously before any service call
       expect(() =>
-        controller.shareBadgeToTeams('badge-456', shareDto, mockRequest as any),
+        controller.shareBadgeToTeams('badge-456', shareDto, mockRequest),
       ).toThrow(BadRequestException);
     });
   });

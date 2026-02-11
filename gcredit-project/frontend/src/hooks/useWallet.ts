@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { BadgeStatus } from '../types/badge';
+import { API_BASE_URL } from '../lib/apiConfig';
 
 export interface Badge {
   id: string;
@@ -66,14 +67,11 @@ export function useWallet(params: UseWalletParams = {}) {
       if (params.status) searchParams.set('status', params.status);
       if (params.sort) searchParams.set('sort', params.sort);
 
-      const response = await fetch(
-        `http://localhost:3000/api/badges/wallet?${searchParams}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-          },
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/badges/wallet?${searchParams}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
 
       if (!response.ok) {
         throw new Error('Failed to fetch wallet badges');

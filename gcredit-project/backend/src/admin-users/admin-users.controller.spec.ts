@@ -12,6 +12,7 @@ import { AdminUsersService } from './admin-users.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { UserRole } from '@prisma/client';
+import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
 
 describe('AdminUsersController', () => {
   let controller: AdminUsersController;
@@ -38,6 +39,8 @@ describe('AdminUsersController', () => {
     email: 'admin@example.com',
     role: UserRole.ADMIN,
   };
+
+  const mockReq: RequestWithUser = { user: mockAdmin };
 
   beforeEach(async () => {
     const mockService = {
@@ -84,9 +87,7 @@ describe('AdminUsersController', () => {
       };
       service.findAll.mockResolvedValue(mockResponse);
 
-      const result = await controller.findAll({ page: 1, limit: 25 }, {
-        user: mockAdmin,
-      } as any);
+      const result = await controller.findAll({ page: 1, limit: 25 }, mockReq);
 
       expect(result).toEqual(mockResponse);
       expect(service.findAll).toHaveBeenCalledWith({ page: 1, limit: 25 });
@@ -106,7 +107,7 @@ describe('AdminUsersController', () => {
 
       await controller.findAll(
         { page: 2, limit: 50, search: 'john', roleFilter: UserRole.ISSUER },
-        { user: mockAdmin } as any,
+        mockReq,
       );
 
       expect(service.findAll).toHaveBeenCalledWith({
@@ -122,9 +123,7 @@ describe('AdminUsersController', () => {
     it('should return single user', async () => {
       service.findOne.mockResolvedValue(mockUser);
 
-      const result = await controller.findOne('user-123', {
-        user: mockAdmin,
-      } as any);
+      const result = await controller.findOne('user-123', mockReq);
 
       expect(result).toEqual(mockUser);
       expect(service.findOne).toHaveBeenCalledWith('user-123');
@@ -147,7 +146,7 @@ describe('AdminUsersController', () => {
       const result = await controller.updateRole(
         'user-123',
         { role: UserRole.ISSUER, roleVersion: 0 },
-        { user: mockAdmin } as any,
+        mockReq,
       );
 
       expect(result.role).toBe(UserRole.ISSUER);
@@ -176,7 +175,7 @@ describe('AdminUsersController', () => {
           roleVersion: 0,
           auditNote: 'Promoted to admin',
         },
-        { user: mockAdmin } as any,
+        mockReq,
       );
 
       expect(service.updateRole).toHaveBeenCalledWith(
@@ -202,7 +201,7 @@ describe('AdminUsersController', () => {
       const result = await controller.updateStatus(
         'user-123',
         { isActive: false },
-        { user: mockAdmin } as any,
+        mockReq,
       );
 
       expect(result.isActive).toBe(false);
@@ -223,7 +222,7 @@ describe('AdminUsersController', () => {
       const result = await controller.updateStatus(
         'user-123',
         { isActive: true },
-        { user: mockAdmin } as any,
+        mockReq,
       );
 
       expect(result.isActive).toBe(true);
@@ -239,7 +238,7 @@ describe('AdminUsersController', () => {
       await controller.updateStatus(
         'user-123',
         { isActive: false, auditNote: 'User resigned' },
-        { user: mockAdmin } as any,
+        mockReq,
       );
 
       expect(service.updateStatus).toHaveBeenCalledWith(
@@ -254,7 +253,7 @@ describe('AdminUsersController', () => {
     it('should have ADMIN role requirement via decorator', () => {
       // The @Roles(UserRole.ADMIN) decorator is applied at controller level
       // This test verifies the controller class has the correct metadata
-      const roles = Reflect.getMetadata('roles', AdminUsersController);
+      const roles: unknown = Reflect.getMetadata('roles', AdminUsersController);
       expect(roles).toContain(UserRole.ADMIN);
     });
   });

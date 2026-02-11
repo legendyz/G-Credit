@@ -12,7 +12,7 @@ describe('GraphTokenProviderService', () => {
 
   const mockConfigService = {
     get: (key: string, defaultValue?: string) => {
-      const config = {
+      const config: Record<string, string> = {
         AZURE_TENANT_ID: 'test-tenant-id',
         AZURE_CLIENT_ID: 'test-client-id',
         AZURE_CLIENT_SECRET: 'test-client-secret',
@@ -117,7 +117,7 @@ describe('GraphTokenProviderService', () => {
       // Create completely fresh config for this test
       const freshConfigService = {
         get: (key: string, defaultValue?: string) => {
-          const config = {
+          const config: Record<string, string> = {
             AZURE_TENANT_ID: 'test-tenant-id',
             AZURE_CLIENT_ID: 'test-client-id',
             AZURE_CLIENT_SECRET: 'test-client-secret',
@@ -177,7 +177,7 @@ describe('GraphTokenProviderService', () => {
       // Create completely fresh config for this test
       const freshConfigService = {
         get: (key: string, defaultValue?: string) => {
-          const config = {
+          const config: Record<string, string> = {
             AZURE_TENANT_ID: 'test-tenant-id',
             AZURE_CLIENT_ID: 'test-client-id',
             AZURE_CLIENT_SECRET: 'test-client-secret',

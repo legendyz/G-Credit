@@ -27,16 +27,36 @@ import { GraphEmailService } from '../microsoft-graph/services/graph-email.servi
 import { IssueBadgeDto } from './dto/issue-badge.dto';
 import { BadgeStatus } from '@prisma/client';
 
-// SKIP: Teams integration tests - Teams channel notifications deferred pending permissions
-// See: docs/sprints/sprint-6/technical-debt.md
-// TODO: Re-enable when Teams permissions are configured (TD-003)
+// ADR: Tests skipped pending ChannelMessage.Send permission approval (TD-006).
+// See Post-MVP Backlog and SKIPPED-TESTS-TRACKER.md for resolution steps.
 describe.skip('BadgeIssuanceService - Teams Integration', () => {
   let service: BadgeIssuanceService;
   let teamsNotificationService: jest.Mocked<TeamsBadgeNotificationService>;
-  let prismaService: jest.Mocked<PrismaService>;
-  let assertionGenerator: jest.Mocked<AssertionGeneratorService>;
   let notificationService: jest.Mocked<BadgeNotificationService>;
   let milestonesService: jest.Mocked<MilestonesService>;
+
+  // Mocks at describe scope — jest.fn() preserves jest.Mock type for .mockResolvedValue()
+  const mockPrismaService = {
+    badgeTemplate: { findUnique: jest.fn() },
+    user: { findUnique: jest.fn() },
+    badge: {
+      create: jest.fn(),
+      update: jest.fn(),
+    },
+  };
+
+  const mockAssertionGenerator = {
+    generateClaimToken: jest.fn(),
+    hashEmail: jest.fn(),
+    generateAssertion: jest.fn(),
+    computeAssertionHash: jest.fn(),
+    getClaimUrl: jest.fn(),
+    getAssertionUrl: jest.fn(),
+  };
+
+  // Aliases preserve jest.Mock types
+  const prismaService = mockPrismaService;
+  const assertionGenerator = mockAssertionGenerator;
 
   const mockTemplate = {
     id: 'template-123',
@@ -103,27 +123,11 @@ describe.skip('BadgeIssuanceService - Teams Integration', () => {
   };
 
   beforeEach(async () => {
-    // Create mocks
-    const mockPrismaService = {
-      badgeTemplate: { findUnique: jest.fn() },
-      user: { findUnique: jest.fn() },
-      badge: {
-        create: jest.fn(),
-        update: jest.fn(),
-      },
-    };
+    jest.clearAllMocks();
 
+    // Create mocks for services not at describe scope
     const mockTeamsNotificationService = {
       sendBadgeIssuanceNotification: jest.fn(),
-    };
-
-    const mockAssertionGenerator = {
-      generateClaimToken: jest.fn(),
-      hashEmail: jest.fn(),
-      generateAssertion: jest.fn(),
-      computeAssertionHash: jest.fn(),
-      getClaimUrl: jest.fn(),
-      getAssertionUrl: jest.fn(),
     };
 
     const mockNotificationService = {
@@ -169,8 +173,6 @@ describe.skip('BadgeIssuanceService - Teams Integration', () => {
 
     service = module.get<BadgeIssuanceService>(BadgeIssuanceService);
     teamsNotificationService = module.get(TeamsBadgeNotificationService);
-    prismaService = module.get(PrismaService);
-    assertionGenerator = module.get(AssertionGeneratorService);
     notificationService = module.get(BadgeNotificationService);
     milestonesService = module.get(MilestonesService);
   });

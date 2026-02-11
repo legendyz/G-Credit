@@ -190,10 +190,37 @@ export class BadgeSharingService {
           { recipientEmail: dto.recipientEmail },
         );
         this.logger.log(`Recorded email share event for badge ${badge.id}`);
-      } catch (analyticsError) {
+      } catch (analyticsError: unknown) {
+        const errMsg =
+          analyticsError instanceof Error
+            ? analyticsError.message
+            : String(analyticsError);
         // Log but don't fail the request if analytics recording fails
+        this.logger.warn(`Failed to record share analytics: ${errMsg}`);
+      }
+
+      // Record in global audit log for Admin Analytics (UAT-023)
+      try {
+        await this.prisma.auditLog.create({
+          data: {
+            entityType: 'Badge',
+            entityId: badge.id,
+            action: 'SHARED',
+            actorId: userId,
+            actorEmail:
+              badge.recipientId === userId
+                ? badge.recipient.email
+                : badge.issuer.email,
+            metadata: {
+              platform: 'email',
+              recipientEmail: dto.recipientEmail,
+              templateName: badge.template.name,
+            },
+          },
+        });
+      } catch (auditError: unknown) {
         this.logger.warn(
-          `Failed to record share analytics: ${analyticsError.message}`,
+          `Failed to record share audit log: ${auditError instanceof Error ? auditError.message : String(auditError)}`,
         );
       }
 
@@ -203,12 +230,13 @@ export class BadgeSharingService {
         recipientEmail: dto.recipientEmail,
         badgeId: dto.badgeId,
       };
-    } catch (error) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       this.logger.error(
-        `Failed to send badge via email: ${error.message}`,
-        error.stack,
+        `Failed to send badge via email: ${err.message}`,
+        err.stack,
       );
-      throw new BadRequestException(`Failed to send email: ${error.message}`);
+      throw new BadRequestException(`Failed to send email: ${err.message}`);
     }
   }
 

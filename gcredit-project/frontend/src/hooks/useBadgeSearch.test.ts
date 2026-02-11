@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useBadgeSearch } from './useBadgeSearch';
 import type { BadgeForFilter } from '@/utils/searchFilters';
 
@@ -38,9 +38,7 @@ describe('useBadgeSearch', () => {
 
   describe('initialization', () => {
     it('initializes with default state', () => {
-      const { result } = renderHook(() =>
-        useBadgeSearch({ allBadges: [] })
-      );
+      const { result } = renderHook(() => useBadgeSearch({ allBadges: [] }));
 
       expect(result.current.searchTerm).toBe('');
       expect(result.current.selectedSkills).toEqual([]);
@@ -52,9 +50,7 @@ describe('useBadgeSearch', () => {
 
     it('returns all badges when no filters applied', () => {
       const mockBadges = createMockBadges(10);
-      const { result } = renderHook(() =>
-        useBadgeSearch({ allBadges: mockBadges })
-      );
+      const { result } = renderHook(() => useBadgeSearch({ allBadges: mockBadges }));
 
       expect(result.current.filteredBadges).toHaveLength(10);
     });
@@ -100,16 +96,14 @@ describe('useBadgeSearch', () => {
 
       // Should match Badge 1, Badge 10
       expect(result.current.filteredBadges.length).toBeLessThan(10);
-      expect(result.current.filteredBadges.some(b => b.template.name === 'Badge 1')).toBe(true);
+      expect(result.current.filteredBadges.some((b) => b.template.name === 'Badge 1')).toBe(true);
     });
   });
 
   describe('skill filter', () => {
     it('filters badges by selected skills', async () => {
       const mockBadges = createMockBadges(10);
-      const { result } = renderHook(() =>
-        useBadgeSearch({ allBadges: mockBadges })
-      );
+      const { result } = renderHook(() => useBadgeSearch({ allBadges: mockBadges }));
 
       act(() => {
         result.current.setSelectedSkills(['skill-1']);
@@ -124,9 +118,7 @@ describe('useBadgeSearch', () => {
 
     it('updates filter count when skills selected', () => {
       const mockBadges = createMockBadges(10);
-      const { result } = renderHook(() =>
-        useBadgeSearch({ allBadges: mockBadges })
-      );
+      const { result } = renderHook(() => useBadgeSearch({ allBadges: mockBadges }));
 
       expect(result.current.filterCount).toBe(0);
 
@@ -142,9 +134,7 @@ describe('useBadgeSearch', () => {
   describe('date range filter', () => {
     it('filters badges by date range', () => {
       const mockBadges = createMockBadges(30);
-      const { result } = renderHook(() =>
-        useBadgeSearch({ allBadges: mockBadges })
-      );
+      const { result } = renderHook(() => useBadgeSearch({ allBadges: mockBadges }));
 
       act(() => {
         result.current.setDateRange({
@@ -166,9 +156,7 @@ describe('useBadgeSearch', () => {
   describe('status filter', () => {
     it('filters badges by status', () => {
       const mockBadges = createMockBadges(10);
-      const { result } = renderHook(() =>
-        useBadgeSearch({ allBadges: mockBadges })
-      );
+      const { result } = renderHook(() => useBadgeSearch({ allBadges: mockBadges }));
 
       act(() => {
         result.current.setStatusFilter('active');
@@ -183,9 +171,7 @@ describe('useBadgeSearch', () => {
   describe('clear filters', () => {
     it('clears all filters', () => {
       const mockBadges = createMockBadges(10);
-      const { result } = renderHook(() =>
-        useBadgeSearch({ allBadges: mockBadges })
-      );
+      const { result } = renderHook(() => useBadgeSearch({ allBadges: mockBadges }));
 
       // Set multiple filters
       act(() => {
@@ -211,9 +197,7 @@ describe('useBadgeSearch', () => {
 
     it('removes individual filter by chip id', () => {
       const mockBadges = createMockBadges(10);
-      const { result } = renderHook(() =>
-        useBadgeSearch({ allBadges: mockBadges })
-      );
+      const { result } = renderHook(() => useBadgeSearch({ allBadges: mockBadges }));
 
       act(() => {
         result.current.setSelectedSkills(['skill-1']);
@@ -297,9 +281,7 @@ describe('useBadgeSearch', () => {
   describe('combined filters', () => {
     it('applies multiple filters simultaneously', async () => {
       const mockBadges = createMockBadges(30);
-      const { result } = renderHook(() =>
-        useBadgeSearch({ allBadges: mockBadges })
-      );
+      const { result } = renderHook(() => useBadgeSearch({ allBadges: mockBadges }));
 
       act(() => {
         result.current.setSelectedSkills(['skill-1']);

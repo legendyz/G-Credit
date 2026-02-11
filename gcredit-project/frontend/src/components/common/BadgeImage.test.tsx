@@ -34,9 +34,9 @@ describe('BadgeImage', () => {
     it('hides skeleton after image loads', async () => {
       render(<BadgeImage src="/badge.png" alt="Test Badge" showSkeleton />);
       const img = screen.getByRole('img', { name: /test badge/i });
-      
+
       fireEvent.load(img);
-      
+
       await waitFor(() => {
         const skeleton = document.querySelector('.animate-pulse');
         expect(skeleton).not.toBeInTheDocument();
@@ -80,9 +80,9 @@ describe('BadgeImage', () => {
     it('shows fallback image on error', async () => {
       render(<BadgeImage src="/invalid.png" alt="Test Badge" />);
       const img = screen.getByRole('img', { name: /test badge/i });
-      
+
       fireEvent.error(img);
-      
+
       await waitFor(() => {
         expect(img).toHaveAttribute('src', '/placeholder-badge.png');
       });
@@ -91,9 +91,9 @@ describe('BadgeImage', () => {
     it('shows error state icon on load failure', async () => {
       render(<BadgeImage src="/invalid.png" alt="Test Badge" />);
       const img = screen.getByRole('img', { name: /test badge/i });
-      
+
       fireEvent.error(img);
-      
+
       await waitFor(() => {
         const errorIcon = document.querySelector('svg');
         expect(errorIcon).toBeInTheDocument();
@@ -114,9 +114,9 @@ describe('BadgeImage', () => {
       const handleClick = vi.fn();
       render(<BadgeImage src="/badge.png" alt="Test Badge" onClick={handleClick} />);
       const img = screen.getByRole('img', { name: /test badge/i });
-      
+
       fireEvent.click(img);
-      
+
       expect(handleClick).toHaveBeenCalledTimes(1);
     });
 

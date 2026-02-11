@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { RecommendationsService } from './recommendations.service';
 import { PrismaService } from '../common/prisma.service';
+import { containing } from '../../test/helpers/jest-typed-matchers';
 
 describe('RecommendationsService - Story 4.5', () => {
   let service: RecommendationsService;
@@ -70,7 +71,7 @@ describe('RecommendationsService - Story 4.5', () => {
 
       expect(mockPrismaService.badgeTemplate.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({
+          where: containing({
             id: {
               notIn: ['template-1', 'template-owned-1', 'template-owned-2'],
             },
@@ -88,7 +89,7 @@ describe('RecommendationsService - Story 4.5', () => {
 
       expect(mockPrismaService.badgeTemplate.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({
+          where: containing({
             status: 'ACTIVE',
           }),
         }),

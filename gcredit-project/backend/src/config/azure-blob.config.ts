@@ -1,4 +1,7 @@
+import { Logger } from '@nestjs/common';
 import { BlobServiceClient, ContainerClient } from '@azure/storage-blob';
+
+const logger = new Logger('AzureBlobConfig');
 
 export const azureBlobConfig = {
   connectionString: process.env.AZURE_STORAGE_CONNECTION_STRING,
@@ -7,8 +10,8 @@ export const azureBlobConfig = {
 
 export const getBlobServiceClient = (): BlobServiceClient | null => {
   if (!azureBlobConfig.connectionString) {
-    console.warn(
-      '⚠️ AZURE_STORAGE_CONNECTION_STRING is not configured - blob storage operations will be mocked',
+    logger.warn(
+      'AZURE_STORAGE_CONNECTION_STRING is not configured - blob storage operations will be mocked',
     );
     return null;
   }
@@ -26,7 +29,7 @@ export const getBadgesContainerClient = (): ContainerClient | null => {
   }
 
   if (!azureBlobConfig.containerName) {
-    console.warn('⚠️ AZURE_STORAGE_CONTAINER_BADGES is not configured');
+    logger.warn('AZURE_STORAGE_CONTAINER_BADGES is not configured');
     return null;
   }
 

@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   BlobServiceClient,
@@ -10,9 +10,12 @@ import {
 
 @Injectable()
 export class StorageService implements OnModuleInit {
+  private readonly logger = new Logger(StorageService.name);
   private blobServiceClient: BlobServiceClient;
   private badgesContainer: ContainerClient;
   private evidenceContainer: ContainerClient;
+  private accountName: string;
+  private accountKey: string;
 
   constructor(private configService: ConfigService) {}
 
@@ -22,9 +25,16 @@ export class StorageService implements OnModuleInit {
     );
 
     if (!connectionString) {
-      console.warn('⚠️ Azure Storage connection string not configured');
+      this.logger.warn('Azure Storage connection string not configured');
       return;
     }
+
+    // Parse AccountName and AccountKey from connection string
+    // Format: DefaultEndpointsProtocol=https;AccountName=...;AccountKey=...;EndpointSuffix=...
+    const nameMatch = connectionString.match(/AccountName=([^;]+)/);
+    const keyMatch = connectionString.match(/AccountKey=([^;]+)/);
+    if (nameMatch) this.accountName = nameMatch[1];
+    if (keyMatch) this.accountKey = keyMatch[1];
 
     try {
       this.blobServiceClient =
@@ -45,9 +55,10 @@ export class StorageService implements OnModuleInit {
         evidenceContainerName,
       );
 
-      console.log('✅ Azure Storage connected successfully');
-    } catch (error) {
-      console.error('❌ Failed to connect to Azure Storage:', error.message);
+      this.logger.log('Azure Storage connected successfully');
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Failed to connect to Azure Storage: ${errMsg}`);
     }
   }
 
@@ -86,7 +97,7 @@ export class StorageService implements OnModuleInit {
   }
 
   getBadgeImageUrl(fileName: string): string {
-    return `https://${this.configService.get('AZURE_STORAGE_ACCOUNT_NAME')}.blob.core.windows.net/badges/${fileName}`;
+    return `https://${this.accountName}.blob.core.windows.net/badges/${fileName}`;
   }
 
   /**
@@ -94,22 +105,15 @@ export class StorageService implements OnModuleInit {
    * 5-minute expiry, read-only permission
    */
   generateEvidenceSasUrl(fileName: string): { url: string; expiresAt: Date } {
-    const accountName = this.configService.get<string>(
-      'AZURE_STORAGE_ACCOUNT_NAME',
-    );
-    const accountKey = this.configService.get<string>(
-      'AZURE_STORAGE_ACCOUNT_KEY',
-    );
-
-    if (!accountName || !accountKey) {
+    if (!this.accountName || !this.accountKey) {
       throw new Error(
         'Azure Storage credentials not configured for SAS token generation',
       );
     }
 
     const sharedKeyCredential = new StorageSharedKeyCredential(
-      accountName,
-      accountKey,
+      this.accountName,
+      this.accountKey,
     );
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 5); // 5-minute expiry
@@ -127,7 +131,7 @@ export class StorageService implements OnModuleInit {
       sharedKeyCredential,
     ).toString();
 
-    const url = `https://${accountName}.blob.core.windows.net/${this.configService.get('AZURE_STORAGE_CONTAINER_EVIDENCE', 'evidence')}/${fileName}?${sasToken}`;
+    const url = `https://${this.accountName}.blob.core.windows.net/${this.configService.get('AZURE_STORAGE_CONTAINER_EVIDENCE', 'evidence')}/${fileName}?${sasToken}`;
 
     return { url, expiresAt };
   }
@@ -163,8 +167,9 @@ export class StorageService implements OnModuleInit {
       }
 
       return Buffer.concat(chunks);
-    } catch (error) {
-      throw new Error(`Failed to download blob: ${error.message}`);
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to download blob: ${errMsg}`);
     }
   }
 }

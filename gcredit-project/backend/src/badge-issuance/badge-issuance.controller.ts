@@ -52,6 +52,15 @@ export class BadgeIssuanceController {
     private readonly recommendationsService: RecommendationsService,
   ) {}
 
+  @Get('recipients')
+  @Roles(UserRole.ADMIN, UserRole.ISSUER)
+  @ApiOperation({ summary: 'Get list of users available as badge recipients' })
+  @ApiResponse({ status: 200, description: 'Recipients list retrieved' })
+  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  async getRecipients() {
+    return this.badgeService.getRecipients();
+  }
+
   @Post()
   @Roles(UserRole.ADMIN, UserRole.ISSUER)
   @ApiOperation({ summary: 'Issue a single badge' })
@@ -67,8 +76,10 @@ export class BadgeIssuanceController {
   }
 
   @Post(':id/claim')
-  @Public() // No authentication required - anyone with token can claim
-  @ApiOperation({ summary: 'Claim a badge using claim token' })
+  @Public() // No authentication required when using claimToken; auth required when claiming by ID
+  @ApiOperation({
+    summary: 'Claim a badge using claim token or badge ID (authenticated)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Badge claimed successfully',
@@ -89,10 +100,21 @@ export class BadgeIssuanceController {
     },
   })
   @ApiResponse({ status: 400, description: 'Badge already claimed' })
-  @ApiResponse({ status: 404, description: 'Invalid claim token' })
+  @ApiResponse({
+    status: 404,
+    description: 'Invalid claim token or badge not found',
+  })
   @ApiResponse({ status: 410, description: 'Badge expired or revoked' })
-  async claimBadge(@Param('id') id: string, @Body() dto: ClaimBadgeDto) {
-    return this.badgeService.claimBadge(dto.claimToken);
+  async claimBadge(
+    @Param('id') id: string,
+    @Body() dto: ClaimBadgeDto,
+    @Request() req: RequestWithUser,
+  ) {
+    if (dto.claimToken) {
+      return this.badgeService.claimBadge(dto.claimToken);
+    }
+    // Authenticated user claiming their own badge by ID
+    return this.badgeService.claimBadgeById(id, req.user?.userId);
   }
 
   @Get('my-badges')
@@ -129,9 +151,10 @@ export class BadgeIssuanceController {
   }
 
   @Get('issued')
-  @Roles(UserRole.ADMIN, UserRole.ISSUER)
+  @Roles(UserRole.ADMIN, UserRole.ISSUER, UserRole.MANAGER)
   @ApiOperation({
-    summary: 'Get badges issued by current user (ISSUER) or all badges (ADMIN)',
+    summary:
+      'Get badges issued by current user (ISSUER), department badges (MANAGER), or all badges (ADMIN)',
   })
   @ApiResponse({ status: 200, description: 'Badges retrieved successfully' })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
@@ -176,7 +199,7 @@ export class BadgeIssuanceController {
   }
 
   @Post(':id/revoke')
-  @Roles(UserRole.ADMIN, UserRole.ISSUER) // Sprint 7: Allow ISSUER to revoke own badges
+  @Roles(UserRole.ADMIN, UserRole.ISSUER, UserRole.MANAGER) // Sprint 7: ISSUER own badges, Sprint 10: MANAGER same-department
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary:

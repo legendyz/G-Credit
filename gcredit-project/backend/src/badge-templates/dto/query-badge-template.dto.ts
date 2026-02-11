@@ -14,7 +14,7 @@ import { TemplateStatus } from '@prisma/client';
 export class QueryBadgeTemplatesDto {
   @ApiPropertyOptional({
     example: 1,
-    description: '页码（从1开始）',
+    description: 'Page number (starting from 1)',
     minimum: 1,
     default: 1,
   })
@@ -26,7 +26,7 @@ export class QueryBadgeTemplatesDto {
 
   @ApiPropertyOptional({
     example: 10,
-    description: '每页数量',
+    description: 'Items per page',
     minimum: 1,
     maximum: 100,
     default: 10,
@@ -41,7 +41,7 @@ export class QueryBadgeTemplatesDto {
   @ApiPropertyOptional({
     enum: TemplateStatus,
     example: TemplateStatus.ACTIVE,
-    description: '徽章状态筛选',
+    description: 'Filter by badge status',
   })
   @IsOptional()
   @IsEnum(TemplateStatus)
@@ -49,7 +49,7 @@ export class QueryBadgeTemplatesDto {
 
   @ApiPropertyOptional({
     example: 'skill',
-    description: '徽章类别筛选',
+    description: 'Filter by badge category',
     enum: ['achievement', 'skill', 'certification', 'participation'],
   })
   @IsOptional()
@@ -58,7 +58,7 @@ export class QueryBadgeTemplatesDto {
 
   @ApiPropertyOptional({
     example: 'uuid',
-    description: '技能ID筛选（包含该技能的徽章）',
+    description: 'Filter by skill ID (badges containing this skill)',
   })
   @IsOptional()
   @IsUUID('4')
@@ -66,7 +66,7 @@ export class QueryBadgeTemplatesDto {
 
   @ApiPropertyOptional({
     example: 'TypeScript',
-    description: '搜索关键词（匹配名称或描述）',
+    description: 'Search keyword (matches name or description)',
   })
   @IsOptional()
   @IsString()
@@ -74,7 +74,7 @@ export class QueryBadgeTemplatesDto {
 
   @ApiPropertyOptional({
     example: 'createdAt',
-    description: '排序字段',
+    description: 'Sort field',
     enum: ['createdAt', 'updatedAt', 'name'],
     default: 'createdAt',
   })
@@ -84,7 +84,7 @@ export class QueryBadgeTemplatesDto {
 
   @ApiPropertyOptional({
     example: 'desc',
-    description: '排序方向',
+    description: 'Sort order',
     enum: ['asc', 'desc'],
     default: 'desc',
   })
@@ -94,7 +94,7 @@ export class QueryBadgeTemplatesDto {
 }
 
 export class PaginatedBadgeTemplatesResponseDto {
-  @ApiPropertyOptional({ type: [Object], description: '徽章模板列表' })
+  @ApiPropertyOptional({ type: [Object], description: 'Badge template list' })
   data: any[];
 
   @ApiPropertyOptional({
@@ -106,7 +106,7 @@ export class PaginatedBadgeTemplatesResponseDto {
       hasNext: true,
       hasPrev: false,
     },
-    description: '分页元数据',
+    description: 'Pagination metadata',
   })
   meta: {
     page: number;

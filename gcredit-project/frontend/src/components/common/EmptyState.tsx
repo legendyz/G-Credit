@@ -1,6 +1,6 @@
 /**
  * EmptyState Component - Story 8.1 (UX-P1-003)
- * 
+ *
  * Consistent empty state display with optional action button.
  * Used when lists/dashboards have no data to display.
  */
@@ -34,10 +34,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 }) => {
   return (
     <div
-      className={cn(
-        'flex flex-col items-center justify-center py-12 px-4 text-center',
-        className
-      )}
+      className={cn('flex flex-col items-center justify-center py-12 px-4 text-center', className)}
       role="status"
       aria-label={title}
     >
@@ -45,9 +42,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         {icon}
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
-      {description && (
-        <p className="text-muted-foreground max-w-sm mb-6">{description}</p>
-      )}
+      {description && <p className="text-muted-foreground max-w-sm mb-6">{description}</p>}
       {actionText && onAction && (
         <Button onClick={onAction} variant="outline">
           {actionText}
@@ -65,7 +60,7 @@ export const NoBadgesState: React.FC<{ onExplore?: () => void }> = ({ onExplore 
     icon="🏅"
     title="No badges yet"
     description="Start earning badges by completing skills and achievements."
-    actionText={onExplore ? "Explore Badges" : undefined}
+    actionText={onExplore ? 'Explore Badges' : undefined}
     onAction={onExplore}
   />
 );

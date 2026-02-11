@@ -1,6 +1,6 @@
 /**
  * Dashboard Module - Story 8.1
- * 
+ *
  * Main entry point for role-based dashboards
  */
 

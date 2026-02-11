@@ -19,6 +19,7 @@ interface User {
 @Injectable()
 export class AssertionGeneratorService {
   private readonly baseUrl: string;
+  private readonly frontendUrl: string;
   private readonly issuerProfile: {
     type: string;
     id: string;
@@ -29,6 +30,10 @@ export class AssertionGeneratorService {
 
   constructor(private configService: ConfigService) {
     this.baseUrl = this.configService.get('APP_URL', 'http://localhost:3000');
+    this.frontendUrl = this.configService.get(
+      'PLATFORM_URL',
+      this.configService.get('FRONTEND_URL', 'http://localhost:5173'),
+    );
     this.issuerProfile = {
       type: 'Profile',
       id: `${this.baseUrl}/issuer`,
@@ -154,7 +159,7 @@ export class AssertionGeneratorService {
    * Get claim URL for badge
    */
   getClaimUrl(claimToken: string): string {
-    return `${this.baseUrl}/claim-badge?token=${claimToken}`;
+    return `${this.frontendUrl}/claim?token=${claimToken}`;
   }
 
   /**

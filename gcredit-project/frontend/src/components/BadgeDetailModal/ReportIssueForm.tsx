@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
+import { API_BASE_URL } from '../../lib/apiConfig';
 
 interface ReportIssueFormProps {
   badgeId: string;
@@ -13,11 +14,7 @@ const IssueTypes = {
   OTHER: 'Other',
 };
 
-const ReportIssueForm: React.FC<ReportIssueFormProps> = ({
-  badgeId,
-  userEmail,
-  onSuccess,
-}) => {
+const ReportIssueForm: React.FC<ReportIssueFormProps> = ({ badgeId, userEmail, onSuccess }) => {
   const [showForm, setShowForm] = useState(false);
   const [issueType, setIssueType] = useState(IssueTypes.INCORRECT_INFO);
   const [description, setDescription] = useState('');
@@ -27,7 +24,7 @@ const ReportIssueForm: React.FC<ReportIssueFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (description.trim().length === 0) {
       setError('Please provide a description');
       return;
@@ -38,7 +35,7 @@ const ReportIssueForm: React.FC<ReportIssueFormProps> = ({
 
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:3000/api/badges/${badgeId}/report`, {
+      const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/report`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,7 +55,7 @@ const ReportIssueForm: React.FC<ReportIssueFormProps> = ({
       const data = await response.json();
       setDescription('');
       setShowForm(false);
-      
+
       if (onSuccess) {
         onSuccess();
       }

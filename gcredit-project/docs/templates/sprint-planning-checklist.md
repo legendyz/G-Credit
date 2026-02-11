@@ -3,8 +3,8 @@
 **目的：** 确保Sprint Planning全面、准确，避免重复工作和资源浪费  
 **使用时机：** 每个Sprint开始前的Planning阶段  
 **责任人：** Product Manager + Scrum Master  
-**版本：** v1.4  
-**最后更新：** 2026-02-02（新增Section 6.6 UX/Architecture Review）
+**版本：** v1.5  
+**最后更新：** 2026-02-09（新增 Coding Standards 检查项 — Section 2 + Section 4.5 DoD）
 
 ---
 
@@ -67,6 +67,10 @@
 
 ### 2. 资源清单回顾（🚨 关键步骤）
 - [ ] **必须：** 阅读 [`docs/setup/infrastructure-inventory.md`](../setup/infrastructure-inventory.md)
+- [ ] **必须：** 阅读 `project-context.md` 的 **Coding Standards (Quick Reference)** 章节
+  - 确认 7 条关键规则已了解（English only, api/ prefix, API_BASE_URL, Zustand, NestJS Logger, Sonner toast, TODO TD-XXX）
+  - 确认双端约定差异（ESLint/Prettier/测试命名）
+  - 如有新规则需要添加，在 Planning 中讨论并更新 `docs/development/coding-standards.md`
 - [ ] 列出当前可用的Azure资源
 - [ ] 列出当前可用的Database Tables/Models
 - [ ] 检查`.env`文件中的环境变量配置
@@ -152,6 +156,8 @@ Select-String -Path "gcredit-project/docs/lessons-learned/lessons-learned.md" -P
 - [ ] ESLint 检查通过（0 errors, warnings 可接受）
 - [ ] Prettier 格式化已应用
 - [ ] 所有 TODO/FIXME 已解决或记录为技术债务
+- [ ] **遵循 Coding Standards**（详见 `project-context.md` > Coding Standards Quick Reference）
+  - 无中文字符、`console.log` 禁止、API 调用使用 `API_BASE_URL`、Controller 含 `api/` 前缀
 
 **测试要求：**
 - [ ] 单元测试覆盖率 > 80%（新代码）

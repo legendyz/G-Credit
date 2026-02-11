@@ -1,6 +1,6 @@
 /**
  * Dashboard API Types - Story 8.1
- * 
+ *
  * TypeScript types matching backend DTOs for dashboard endpoints.
  */
 

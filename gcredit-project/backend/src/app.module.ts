@@ -32,25 +32,25 @@ import { BulkIssuanceModule } from './bulk-issuance/bulk-issuance.module';
     }),
     // Rate Limiting (SEC-P1-004, Story 8.6, AC3)
     // v6.5.0 uses array format with milliseconds
-    // AC3 specifies: 10 requests per minute globally
+    // AC3 specifies: rate limiting globally; sensitive endpoints have stricter limits
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => [
         {
-          name: 'default', // AC3: Global rate limit - 10 req/min
+          name: 'default', // Global rate limit - 60 req/min (GET-heavy pages need headroom)
           ttl: config.get<number>('RATE_LIMIT_TTL', 60000), // 1 minute in ms
-          limit: config.get<number>('RATE_LIMIT_MAX', 10), // AC3: 10 requests per minute
+          limit: config.get<number>('RATE_LIMIT_MAX', 60), // 60 requests per minute
         },
         {
           name: 'medium', // Medium-term rate limit
           ttl: 600000, // 10 minutes in ms
-          limit: 50, // 50 requests per 10 minutes
+          limit: 300, // 300 requests per 10 minutes
         },
         {
           name: 'long', // Long-term rate limit (prevents sustained abuse)
           ttl: 3600000, // 1 hour in ms
-          limit: 200, // 200 requests per hour
+          limit: 1000, // 1000 requests per hour
         },
       ],
     }),

@@ -618,7 +618,7 @@ Given the team's intermediate skill level and limited cloud infrastructure exper
   - **Why skip:** Fewer moving parts during development
   - **Migration path:** Pilot phase migrates secrets to Key Vault
   
-- ❌ **Azure Application Insights** → Use console.log and basic monitoring
+- ❌ **Azure Application Insights** → Use NestJS Logger and basic monitoring
   - **Why skip:** Premature optimization, adds debugging complexity
   - **Migration path:** Pilot phase adds Application Insights for production monitoring
   
@@ -4115,7 +4115,7 @@ G-Credit/
 │   ├── postcss.config.js
 │   ├── .env.local                        # Git-ignored, for development
 │   ├── .env.example                      # Template for developers
-│   ├── .eslintrc.json
+│   ├── eslint.config.js                 # ESLint flat config (ESM)
 │   ├── .prettierrc
 │   ├── index.html
 │   ├── public/
@@ -4331,7 +4331,7 @@ G-Credit/
 │   ├── tsconfig.build.json
 │   ├── .env.local                        # Git-ignored, for development
 │   ├── .env.example                      # Template for developers
-│   ├── .eslintrc.js
+│   ├── eslint.config.mjs                # ESLint flat config (ESM)
 │   ├── .prettierrc
 │   ├── jest.config.js
 │   │

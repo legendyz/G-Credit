@@ -25,14 +25,13 @@ vi.mock('../ErrorCorrectionPanel', () => ({
 }));
 
 vi.mock('../ConfirmationModal', () => ({
-  default: (props: { isOpen: boolean; badgeCount: number; onConfirm: () => void }) => (
+  default: (props: { isOpen: boolean; badgeCount: number; onConfirm: () => void }) =>
     props.isOpen ? (
       <div data-testid="confirm-modal">
         Confirm {props.badgeCount}
         <button onClick={props.onConfirm}>Confirm and Issue</button>
       </div>
-    ) : null
-  ),
+    ) : null,
 }));
 
 vi.mock('../EmptyPreviewState', () => ({
@@ -43,15 +42,28 @@ vi.mock('../ProcessingComplete', () => ({
   default: (props: {
     success: number;
     failed: number;
-    results: Array<{ row: number; recipientEmail: string; badgeName: string; status: string; error?: string; emailError?: string }>;
+    results: Array<{
+      row: number;
+      recipientEmail: string;
+      badgeName: string;
+      status: string;
+      error?: string;
+      emailError?: string;
+    }>;
     sessionId?: string;
     onRetryFailed?: () => void;
   }) => (
     <div data-testid="processing-complete">
       Done: {props.success} success, {props.failed} failed
-      {props.results?.length > 0 && <span data-testid="has-results">results:{props.results.length}</span>}
+      {props.results?.length > 0 && (
+        <span data-testid="has-results">results:{props.results.length}</span>
+      )}
       {props.sessionId && <span data-testid="session-id">{props.sessionId}</span>}
-      {props.onRetryFailed && <button data-testid="retry-btn" onClick={props.onRetryFailed}>Retry</button>}
+      {props.onRetryFailed && (
+        <button data-testid="retry-btn" onClick={props.onRetryFailed}>
+          Retry
+        </button>
+      )}
     </div>
   ),
 }));
@@ -66,12 +78,9 @@ function renderWithRouter(sessionId: string = 'test-session-123') {
   return render(
     <MemoryRouter initialEntries={[`/admin/bulk-issuance/preview/${sessionId}`]}>
       <Routes>
-        <Route
-          path="/admin/bulk-issuance/preview/:sessionId"
-          element={<BulkPreviewPage />}
-        />
+        <Route path="/admin/bulk-issuance/preview/:sessionId" element={<BulkPreviewPage />} />
       </Routes>
-    </MemoryRouter>,
+    </MemoryRouter>
   );
 }
 
@@ -81,15 +90,23 @@ const mockPreviewData = {
   errorRows: 2,
   totalRows: 12,
   errors: [
-    { rowNumber: 3, badgeTemplateId: 'tmpl-bad', recipientEmail: 'bad@test.com', message: 'Not found' },
-    { rowNumber: 5, badgeTemplateId: 'tmpl-bad2', recipientEmail: 'fail@test.com', message: 'Invalid' },
+    {
+      rowNumber: 3,
+      badgeTemplateId: 'tmpl-bad',
+      recipientEmail: 'bad@test.com',
+      message: 'Not found',
+    },
+    {
+      rowNumber: 5,
+      badgeTemplateId: 'tmpl-bad2',
+      recipientEmail: 'fail@test.com',
+      message: 'Invalid',
+    },
   ],
   status: 'VALIDATED',
   createdAt: new Date().toISOString(),
   expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-  rows: [
-    { rowNumber: 2, badgeTemplateId: 'tmpl-1', recipientEmail: 'a@test.com', isValid: true },
-  ],
+  rows: [{ rowNumber: 2, badgeTemplateId: 'tmpl-1', recipientEmail: 'a@test.com', isValid: true }],
   summary: {
     byTemplate: [{ templateId: 'tmpl-1', templateName: 'Leadership', count: 10 }],
   },
@@ -98,9 +115,7 @@ const mockPreviewData = {
 describe('BulkPreviewPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (window.localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(
-      'test-token',
-    );
+    (window.localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue('test-token');
   });
 
   it('should render loading state', () => {
@@ -114,7 +129,7 @@ describe('BulkPreviewPage', () => {
     renderWithRouter();
     await waitFor(() => {
       expect(
-        screen.getByText('You do not have permission to access this session'),
+        screen.getByText('You do not have permission to access this session')
       ).toBeInTheDocument();
     });
   });
@@ -123,9 +138,7 @@ describe('BulkPreviewPage', () => {
     mockFetch.mockResolvedValue({ ok: false, status: 404 });
     renderWithRouter();
     await waitFor(() => {
-      expect(
-        screen.getByText('Session not found or has expired'),
-      ).toBeInTheDocument();
+      expect(screen.getByText('Session not found or has expired')).toBeInTheDocument();
     });
   });
 
@@ -169,15 +182,16 @@ describe('BulkPreviewPage', () => {
     });
   });
 
-  it('should disable confirm button when errors exist (AC4)', async () => {
+  it('should allow partial confirm when errors exist with valid rows (UX-002)', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve(mockPreviewData), // has errorRows: 2
+      json: () => Promise.resolve(mockPreviewData), // has errorRows: 2, validRows: 10
     });
     renderWithRouter();
     await waitFor(() => {
       const confirmBtn = screen.getByText(/Confirm Issuance/);
-      expect(confirmBtn).toBeDisabled();
+      expect(confirmBtn).not.toBeDisabled();
+      expect(confirmBtn.textContent).toContain('10 of 12');
     });
   });
 
@@ -216,8 +230,7 @@ describe('BulkPreviewPage', () => {
       // Second call: confirm API
       .mockResolvedValueOnce({
         ok: true,
-        json: () =>
-          Promise.resolve({ success: true, processed: 10, failed: 0, results: [] }),
+        json: () => Promise.resolve({ success: true, processed: 10, failed: 0, results: [] }),
       });
 
     renderWithRouter();
@@ -250,7 +263,13 @@ describe('BulkPreviewPage', () => {
     };
     const confirmResults = [
       { row: 2, recipientEmail: 'a@test.com', badgeName: 'Leadership', status: 'success' as const },
-      { row: 3, recipientEmail: 'b@test.com', badgeName: 'Leadership', status: 'failed' as const, error: 'User not found' },
+      {
+        row: 3,
+        recipientEmail: 'b@test.com',
+        badgeName: 'Leadership',
+        status: 'failed' as const,
+        error: 'User not found',
+      },
     ];
     mockFetch
       .mockResolvedValueOnce({

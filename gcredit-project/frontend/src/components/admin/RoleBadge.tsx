@@ -13,10 +13,7 @@ interface RoleBadgeProps {
   className?: string;
 }
 
-const roleConfig: Record<
-  UserRole,
-  { label: string; className: string }
-> = {
+const roleConfig: Record<UserRole, { label: string; className: string }> = {
   ADMIN: {
     label: 'Admin',
     className: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',

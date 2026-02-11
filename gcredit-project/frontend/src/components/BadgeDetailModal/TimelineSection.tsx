@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 interface TimelineSectionProps {
   issuedAt: string;
@@ -6,11 +6,7 @@ interface TimelineSectionProps {
   expiresAt: string | null;
 }
 
-const TimelineSection: React.FC<TimelineSectionProps> = ({
-  issuedAt,
-  claimedAt,
-  expiresAt,
-}) => {
+const TimelineSection: React.FC<TimelineSectionProps> = ({ issuedAt, claimedAt, expiresAt }) => {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'long',
@@ -19,14 +15,16 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({
     });
   };
 
-  // AC 4.5: Check if expiration is within 30 days
-  const isExpiringNearby = () => {
+  // AC 4.5: Check if expiration is within 30 days (derived once per render)
+  /* eslint-disable react-hooks/purity -- Date.now() is intentionally impure; value only needed at mount time */
+  const isExpiringNearby = useMemo(() => {
     if (!expiresAt) return false;
     const daysUntilExpiration = Math.ceil(
       (new Date(expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
     );
     return daysUntilExpiration > 0 && daysUntilExpiration <= 30;
-  };
+  }, [expiresAt]);
+  /* eslint-enable react-hooks/purity */
 
   return (
     <section className="px-6 py-6 border-b">
@@ -58,18 +56,18 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({
           <div className="flex items-center gap-3">
             <div
               className={`w-2 h-2 rounded-full ${
-                isExpiringNearby() ? 'bg-yellow-600' : 'bg-gray-400'
+                isExpiringNearby ? 'bg-yellow-600' : 'bg-gray-400'
               }`}
             ></div>
             <div>
               <p className="text-sm font-medium text-gray-900">Expires</p>
               <p
                 className={`text-sm ${
-                  isExpiringNearby() ? 'text-yellow-700 font-semibold' : 'text-gray-600'
+                  isExpiringNearby ? 'text-yellow-700 font-semibold' : 'text-gray-600'
                 }`}
               >
                 {formatDate(expiresAt)}
-                {isExpiringNearby() && ' ⚠️ Expiring soon!'}
+                {isExpiringNearby && ' ⚠️ Expiring soon!'}
               </p>
             </div>
           </div>

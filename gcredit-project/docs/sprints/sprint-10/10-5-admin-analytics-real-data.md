@@ -1,6 +1,6 @@
 # Story 10.5: Admin Analytics — Mock Data → Real Data
 
-**Status:** backlog  
+**Status:** done  
 **Priority:** 🟡 MEDIUM  
 **Estimate:** 6h  
 **Sprint:** Sprint 10  
@@ -20,51 +20,51 @@ Sprint 8 Story 8.4 built the Analytics API endpoints, and the `AdminAnalyticsPag
 
 ## Acceptance Criteria
 
-1. [ ] AdminAnalyticsPage fetches data from `/api/analytics/admin` endpoint
-2. [ ] Dashboard KPI cards show real metrics (total badges, active users, claim rate, etc.)
-3. [ ] Charts render real data (issuance trends, top templates, department distribution)
-4. [ ] Loading states display while data is being fetched
-5. [ ] Error states display gracefully if API fails
-6. [ ] Empty states display when no data is available
-7. [ ] Auto-refresh every 5 minutes (configurable)
-8. [ ] All existing tests pass + new tests for data integration
-9. [ ] PR commit message: `feat: connect admin analytics to real API data`
+1. [x] AdminAnalyticsPage fetches data from 5 `/api/analytics/*` endpoints (`system-overview`, `issuance-trends`, `top-performers`, `skills-distribution`, `recent-activity`)
+2. [x] Dashboard KPI cards show real metrics (total badges, active users, claim rate, etc.)
+3. [x] Charts render real data (issuance trends, skills distribution, top performers)
+4. [x] Loading states display while data is being fetched
+5. [x] Error states display gracefully if API fails
+6. [x] Empty states display when no data is available
+7. [x] Auto-refresh every 5 minutes (configurable via `ANALYTICS_REFRESH_MS` constant)
+8. [x] All existing tests pass + new tests for data integration (442 tests, 40 files)
+9. [x] PR commit message: `feat: connect admin analytics to real API data`
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1: Audit existing analytics API** (AC: #1)
-  - [ ] Review `/api/analytics/admin` endpoint response format
-  - [ ] Identify any missing data fields needed by frontend
-  - [ ] Document API contract
+- [x] **Task 1: Audit existing analytics API** (AC: #1)
+  - [x] Review `/api/analytics/*` endpoint response formats (5 endpoints)
+  - [x] Identify any missing data fields needed by frontend
+  - [x] Document API contract in `src/types/analytics.ts`
 
-- [ ] **Task 2: Create API service layer** (AC: #1)
-  - [ ] Create `analyticsApi.ts` in frontend API client
-  - [ ] Add TanStack Query hooks for analytics data
-  - [ ] Handle error and loading states
+- [x] **Task 2: Create API service layer** (AC: #1)
+  - [x] Create `analyticsApi.ts` in frontend API client
+  - [x] Add TanStack Query hooks for analytics data
+  - [x] Handle error and loading states
 
-- [ ] **Task 3: Connect KPI cards** (AC: #2)
-  - [ ] Replace mock data in KPI cards with real data
-  - [ ] Add trend calculations (vs previous period)
-  - [ ] Format numbers properly (%, counts, etc.)
+- [x] **Task 3: Connect KPI cards** (AC: #2)
+  - [x] Replace mock data in KPI cards with real data
+  - [x] Add trend calculations (vs previous period)
+  - [x] Format numbers properly (%, counts, etc.)
 
-- [ ] **Task 4: Connect charts** (AC: #3)
-  - [ ] Connect issuance trend chart to real data
-  - [ ] Connect top templates bar chart
-  - [ ] Connect department distribution (if data available)
+- [x] **Task 4: Connect charts** (AC: #3)
+  - [x] Connect issuance trend chart to real data (Recharts AreaChart)
+  - [x] Connect skills distribution bar chart
+  - [x] Connect top performers leaderboard table
 
-- [ ] **Task 5: UX states** (AC: #4, #5, #6)
-  - [ ] Add loading skeletons for KPI cards and charts
-  - [ ] Add error boundary with retry button
-  - [ ] Add empty state for new deployments with no data
+- [x] **Task 5: UX states** (AC: #4, #5, #6)
+  - [x] Add loading skeletons for KPI cards and charts
+  - [x] Add error boundary with retry button
+  - [x] Add empty state for new deployments with no data
 
-- [ ] **Task 6: Auto-refresh** (AC: #7)
-  - [ ] Configure TanStack Query refetch interval (5 min)
-  - [ ] Add "Last updated" timestamp display
+- [x] **Task 6: Auto-refresh** (AC: #7)
+  - [x] Configure TanStack Query refetch interval (5 min via `ANALYTICS_REFRESH_MS`)
+  - [x] Add "Last updated" timestamp display
 
-- [ ] **Task 7: Testing** (AC: #8)
-  - [ ] Unit tests for analytics API hooks
-  - [ ] Component tests for loading/error/empty states
-  - [ ] Integration test for full data flow
+- [x] **Task 7: Testing** (AC: #8)
+  - [x] Unit tests for analytics API hooks (14 tests)
+  - [x] Component tests for loading/error/empty states
+  - [x] Integration test for full data flow
 
 ## Dev Notes
 
@@ -81,10 +81,26 @@ Sprint 8 Story 8.4 built the Analytics API endpoints, and the `AdminAnalyticsPag
 ## Dev Agent Record
 
 ### Agent Model Used
-_To be filled during development_
+Claude Opus 4.6 (GitHub Copilot — Dev Agent)
 
 ### Completion Notes
-_To be filled on completion_
+Fully implemented Story 10.5: removed all mock data from AdminAnalyticsPage, connected to 5 backend analytics endpoints via TanStack Query hooks, added Recharts visualizations, loading skeletons, error/empty states, and auto-refresh. Installed `recharts` as new dependency. Code review findings (AC1 doc mismatch + hardcoded refresh interval) resolved. Final state: 442 tests pass (40 files), ESLint 0 errors.
 
 ### File List
-_To be filled on completion_
+
+**New files (11):**
+- `src/types/analytics.ts` — TypeScript interfaces for 5 backend DTOs
+- `src/lib/analyticsApi.ts` — API client (5 functions)
+- `src/hooks/useAnalytics.ts` — TanStack Query hooks (5 hooks + `ANALYTICS_REFRESH_MS` constant)
+- `src/components/analytics/IssuanceTrendChart.tsx` — Recharts AreaChart
+- `src/components/analytics/SkillsDistributionChart.tsx` — Horizontal BarChart + category breakdown
+- `src/components/analytics/TopPerformersTable.tsx` — Leaderboard table
+- `src/components/analytics/RecentActivityFeed.tsx` — Activity timeline
+- `src/components/analytics/AnalyticsSkeleton.tsx` — Loading skeletons
+- `src/lib/__tests__/analyticsApi.test.ts` — API client tests (14 tests)
+- `src/hooks/__tests__/useAnalytics.test.tsx` — Hook tests
+- `src/pages/__tests__/AdminAnalyticsPage.test.tsx` — Page integration tests
+
+**Modified files (2):**
+- `src/pages/AdminAnalyticsPage.tsx` — Complete rewrite (mock data → real API)
+- `package.json` — Added `recharts` dependency

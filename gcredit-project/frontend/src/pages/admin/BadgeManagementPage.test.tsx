@@ -1,7 +1,7 @@
 /**
  * BadgeManagementPage.test.tsx
  * Sprint 7 - Story 9.5: Badge Management Page Unit Tests
- * 
+ *
  * Tests for the admin badge management page component
  */
 
@@ -93,10 +93,33 @@ const createMockBadge = (overrides: Partial<Badge> = {}): Badge => ({
 
 const mockBadgesResponse: BadgeListResponse = {
   badges: [
-    createMockBadge({ id: 'badge-1', status: 'PENDING', recipient: { id: 'user-1', email: 'john@example.com', firstName: 'John', lastName: 'Doe' } }),
-    createMockBadge({ id: 'badge-2', status: 'CLAIMED', recipient: { id: 'user-2', email: 'jane@example.com', firstName: 'Jane', lastName: 'Smith' } }),
-    createMockBadge({ id: 'badge-3', status: 'REVOKED', revokedAt: '2026-01-20T12:00:00Z', revocationReason: 'Policy Violation', recipient: { id: 'user-3', email: 'bob@example.com', firstName: 'Bob', lastName: 'Wilson' } }),
-    createMockBadge({ id: 'badge-4', status: 'EXPIRED', recipient: { id: 'user-4', email: 'alice@example.com', firstName: 'Alice', lastName: 'Brown' } }),
+    createMockBadge({
+      id: 'badge-1',
+      status: 'PENDING',
+      recipient: { id: 'user-1', email: 'john@example.com', firstName: 'John', lastName: 'Doe' },
+    }),
+    createMockBadge({
+      id: 'badge-2',
+      status: 'CLAIMED',
+      recipient: { id: 'user-2', email: 'jane@example.com', firstName: 'Jane', lastName: 'Smith' },
+    }),
+    createMockBadge({
+      id: 'badge-3',
+      status: 'REVOKED',
+      revokedAt: '2026-01-20T12:00:00Z',
+      revocationReason: 'Policy Violation',
+      recipient: { id: 'user-3', email: 'bob@example.com', firstName: 'Bob', lastName: 'Wilson' },
+    }),
+    createMockBadge({
+      id: 'badge-4',
+      status: 'EXPIRED',
+      recipient: {
+        id: 'user-4',
+        email: 'alice@example.com',
+        firstName: 'Alice',
+        lastName: 'Brown',
+      },
+    }),
   ],
   total: 4,
   page: 1,
@@ -161,7 +184,7 @@ describe('BadgeManagementPage', () => {
       vi.mocked(badgesApi.getAllBadges).mockImplementation(
         () => new Promise(() => {}) // Never resolves
       );
-      
+
       render(<BadgeManagementPage />, { wrapper: createWrapper() });
 
       expect(screen.getByText(/Loading badges/i)).toBeInTheDocument();
@@ -194,10 +217,13 @@ describe('BadgeManagementPage', () => {
       render(<BadgeManagementPage />, { wrapper: createWrapper() });
 
       // Wait for badges to load - check for any badge first
-      await waitFor(() => {
-        expect(screen.getAllByText('John Doe').length).toBeGreaterThanOrEqual(1);
-      }, { timeout: 5000 });
-      
+      await waitFor(
+        () => {
+          expect(screen.getAllByText('John Doe').length).toBeGreaterThanOrEqual(1);
+        },
+        { timeout: 5000 }
+      );
+
       // Now check for status badges
       expect(screen.getAllByText('Pending').length).toBeGreaterThanOrEqual(1);
       expect(screen.getAllByText('Claimed').length).toBeGreaterThanOrEqual(1);
@@ -282,10 +308,9 @@ describe('BadgeManagementPage', () => {
       };
       vi.mocked(badgesApi.getIssuedBadges).mockResolvedValue(mixedIssuersResponse);
 
-      render(
-        <BadgeManagementPage userRole="ISSUER" userId="current-user-id" />,
-        { wrapper: createWrapper() }
-      );
+      render(<BadgeManagementPage userRole="ISSUER" userId="current-user-id" />, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         // Mobile + desktop = 2 revoke buttons for own badge (one per layout)
@@ -414,7 +439,9 @@ describe('BadgeManagementPage', () => {
       render(<BadgeManagementPage userRole="ADMIN" />, { wrapper: createWrapper() });
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Revoke badge Excellence Award for John Doe/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /Revoke badge Excellence Award for John Doe/i })
+        ).toBeInTheDocument();
       });
     });
   });

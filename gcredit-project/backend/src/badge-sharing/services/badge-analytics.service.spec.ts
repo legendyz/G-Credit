@@ -3,10 +3,11 @@ import { ForbiddenException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { BadgeAnalyticsService } from './badge-analytics.service';
 import { PrismaService } from '../../common/prisma.service';
+import { containing } from '../../../test/helpers/jest-typed-matchers';
 
 describe('BadgeAnalyticsService', () => {
   let service: BadgeAnalyticsService;
-  let prisma: PrismaService;
+  let _prisma: PrismaService;
 
   const mockBadge = {
     id: 'badge-123',
@@ -60,27 +61,28 @@ describe('BadgeAnalyticsService', () => {
     },
   ];
 
+  const mockPrismaService: {
+    badge: { findUnique: jest.Mock };
+    badgeShare: { create: jest.Mock; findMany: jest.Mock };
+  } = {
+    badge: { findUnique: jest.fn() },
+    badgeShare: { create: jest.fn(), findMany: jest.fn() },
+  };
+
   beforeEach(async () => {
+    jest.clearAllMocks();
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BadgeAnalyticsService,
         {
           provide: PrismaService,
-          useValue: {
-            badge: {
-              findUnique: jest.fn(),
-            },
-            badgeShare: {
-              create: jest.fn(),
-              findMany: jest.fn(),
-            },
-          },
+          useValue: mockPrismaService,
         },
       ],
     }).compile();
 
     service = module.get<BadgeAnalyticsService>(BadgeAnalyticsService);
-    prisma = module.get<PrismaService>(PrismaService);
+    _prisma = module.get<PrismaService>(PrismaService);
   });
 
   it('should be defined', () => {
@@ -89,13 +91,9 @@ describe('BadgeAnalyticsService', () => {
 
   describe('recordShare', () => {
     it('should record an email share', async () => {
-      jest
-        .spyOn(prisma.badge, 'findUnique')
-        .mockResolvedValue(mockBadge as any);
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
       const createdShare = { ...mockShares[0] };
-      jest
-        .spyOn(prisma.badgeShare, 'create')
-        .mockResolvedValue(createdShare as any);
+      mockPrismaService.badgeShare.create.mockResolvedValue(createdShare);
 
       const result = await service.recordShare(
         'badge-123',
@@ -106,9 +104,9 @@ describe('BadgeAnalyticsService', () => {
 
       expect(result.platform).toEqual('email');
       expect(result.recipientEmail).toEqual('john@example.com');
-      expect(prisma.badgeShare.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
+      expect(mockPrismaService.badgeShare.create).toHaveBeenCalledWith(
+        containing({
+          data: containing({
             badgeId: 'badge-123',
             platform: 'email',
             sharedBy: 'user-recipient',
@@ -119,13 +117,9 @@ describe('BadgeAnalyticsService', () => {
     });
 
     it('should record a Teams share with metadata', async () => {
-      jest
-        .spyOn(prisma.badge, 'findUnique')
-        .mockResolvedValue(mockBadge as any);
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
       const createdShare = { ...mockShares[1] };
-      jest
-        .spyOn(prisma.badgeShare, 'create')
-        .mockResolvedValue(createdShare as any);
+      mockPrismaService.badgeShare.create.mockResolvedValue(createdShare);
 
       const result = await service.recordShare(
         'badge-123',
@@ -144,7 +138,7 @@ describe('BadgeAnalyticsService', () => {
         channelId: 'channel-1',
         channelName: 'General',
       });
-      expect(prisma.badgeShare.create).toHaveBeenCalledWith({
+      expect(mockPrismaService.badgeShare.create).toHaveBeenCalledWith({
         data: {
           badgeId: 'badge-123',
           platform: 'teams',
@@ -160,13 +154,9 @@ describe('BadgeAnalyticsService', () => {
     });
 
     it('should record an anonymous widget embed', async () => {
-      jest
-        .spyOn(prisma.badge, 'findUnique')
-        .mockResolvedValue(mockBadge as any);
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
       const createdShare = { ...mockShares[2] };
-      jest
-        .spyOn(prisma.badgeShare, 'create')
-        .mockResolvedValue(createdShare as any);
+      mockPrismaService.badgeShare.create.mockResolvedValue(createdShare);
 
       const result = await service.recordShare(
         'badge-123',
@@ -177,7 +167,7 @@ describe('BadgeAnalyticsService', () => {
 
       expect(result.platform).toEqual('widget');
       expect(result.sharedBy).toBeNull();
-      expect(prisma.badgeShare.create).toHaveBeenCalledWith({
+      expect(mockPrismaService.badgeShare.create).toHaveBeenCalledWith({
         data: {
           badgeId: 'badge-123',
           platform: 'widget',
@@ -191,7 +181,7 @@ describe('BadgeAnalyticsService', () => {
     });
 
     it('should throw error if badge not found', async () => {
-      jest.spyOn(prisma.badge, 'findUnique').mockResolvedValue(null);
+      mockPrismaService.badge.findUnique.mockResolvedValue(null);
 
       await expect(
         service.recordShare('invalid-badge', 'email', 'user-123'),
@@ -199,10 +189,8 @@ describe('BadgeAnalyticsService', () => {
     });
 
     it('should record share without metadata', async () => {
-      jest
-        .spyOn(prisma.badge, 'findUnique')
-        .mockResolvedValue(mockBadge as any);
-      jest.spyOn(prisma.badgeShare, 'create').mockResolvedValue({
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+      mockPrismaService.badgeShare.create.mockResolvedValue({
         id: 'share-5',
         badgeId: 'badge-123',
         platform: 'email',
@@ -210,7 +198,7 @@ describe('BadgeAnalyticsService', () => {
         sharedBy: 'user-123',
         recipientEmail: null,
         metadata: null,
-      } as any);
+      });
 
       const _result = await service.recordShare(
         'badge-123',
@@ -218,7 +206,7 @@ describe('BadgeAnalyticsService', () => {
         'user-123',
       );
 
-      expect(prisma.badgeShare.create).toHaveBeenCalledWith({
+      expect(mockPrismaService.badgeShare.create).toHaveBeenCalledWith({
         data: {
           badgeId: 'badge-123',
           platform: 'email',
@@ -232,12 +220,8 @@ describe('BadgeAnalyticsService', () => {
 
   describe('getShareStats', () => {
     it('should return share statistics for badge owner', async () => {
-      jest
-        .spyOn(prisma.badge, 'findUnique')
-        .mockResolvedValue(mockBadge as any);
-      jest
-        .spyOn(prisma.badgeShare, 'findMany')
-        .mockResolvedValue(mockShares as any);
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+      mockPrismaService.badgeShare.findMany.mockResolvedValue(mockShares);
 
       const result = await service.getShareStats('badge-123', 'user-recipient');
 
@@ -253,12 +237,8 @@ describe('BadgeAnalyticsService', () => {
     });
 
     it('should return share statistics for badge issuer', async () => {
-      jest
-        .spyOn(prisma.badge, 'findUnique')
-        .mockResolvedValue(mockBadge as any);
-      jest
-        .spyOn(prisma.badgeShare, 'findMany')
-        .mockResolvedValue(mockShares as any);
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+      mockPrismaService.badgeShare.findMany.mockResolvedValue(mockShares);
 
       const result = await service.getShareStats('badge-123', 'user-issuer');
 
@@ -274,9 +254,7 @@ describe('BadgeAnalyticsService', () => {
     });
 
     it('should throw ForbiddenException for unauthorized user', async () => {
-      jest
-        .spyOn(prisma.badge, 'findUnique')
-        .mockResolvedValue(mockBadge as any);
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
 
       await expect(
         service.getShareStats('badge-123', 'unauthorized-user'),
@@ -284,10 +262,8 @@ describe('BadgeAnalyticsService', () => {
     });
 
     it('should return zero counts for badge with no shares', async () => {
-      jest
-        .spyOn(prisma.badge, 'findUnique')
-        .mockResolvedValue(mockBadge as any);
-      jest.spyOn(prisma.badgeShare, 'findMany').mockResolvedValue([]);
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+      mockPrismaService.badgeShare.findMany.mockResolvedValue([]);
 
       const result = await service.getShareStats('badge-123', 'user-recipient');
 
@@ -305,16 +281,14 @@ describe('BadgeAnalyticsService', () => {
 
   describe('getShareHistory', () => {
     it('should return recent share history for badge owner', async () => {
-      jest
-        .spyOn(prisma.badge, 'findUnique')
-        .mockResolvedValue(mockBadge as any);
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
       // Remove badgeId from shares since it's not in the select
       const sharesWithoutBadgeId = mockShares.map(
         ({ badgeId, ...rest }) => rest,
       );
-      jest
-        .spyOn(prisma.badgeShare, 'findMany')
-        .mockResolvedValue(sharesWithoutBadgeId as any);
+      mockPrismaService.badgeShare.findMany.mockResolvedValue(
+        sharesWithoutBadgeId,
+      );
 
       const result = await service.getShareHistory(
         'badge-123',
@@ -332,19 +306,15 @@ describe('BadgeAnalyticsService', () => {
     });
 
     it('should limit results to specified limit', async () => {
-      jest
-        .spyOn(prisma.badge, 'findUnique')
-        .mockResolvedValue(mockBadge as any);
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
       const limitedShares = mockShares
         .slice(0, 2)
         .map(({ badgeId, ...rest }) => rest);
-      jest
-        .spyOn(prisma.badgeShare, 'findMany')
-        .mockResolvedValue(limitedShares as any);
+      mockPrismaService.badgeShare.findMany.mockResolvedValue(limitedShares);
 
       await service.getShareHistory('badge-123', 'user-recipient', 2);
 
-      expect(prisma.badgeShare.findMany).toHaveBeenCalledWith({
+      expect(mockPrismaService.badgeShare.findMany).toHaveBeenCalledWith({
         where: { badgeId: 'badge-123' },
         orderBy: { sharedAt: 'desc' },
         take: 2,
@@ -360,25 +330,21 @@ describe('BadgeAnalyticsService', () => {
     });
 
     it('should default to 10 results if limit not specified', async () => {
-      jest
-        .spyOn(prisma.badge, 'findUnique')
-        .mockResolvedValue(mockBadge as any);
-      jest.spyOn(prisma.badgeShare, 'findMany').mockResolvedValue([]);
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+      mockPrismaService.badgeShare.findMany.mockResolvedValue([]);
 
       await service.getShareHistory('badge-123', 'user-issuer');
 
-      expect(prisma.badgeShare.findMany).toHaveBeenCalledWith({
+      expect(mockPrismaService.badgeShare.findMany).toHaveBeenCalledWith({
         where: { badgeId: 'badge-123' },
         orderBy: { sharedAt: 'desc' },
         take: 10,
-        select: expect.any(Object),
+        select: containing({}),
       });
     });
 
     it('should throw ForbiddenException for unauthorized user', async () => {
-      jest
-        .spyOn(prisma.badge, 'findUnique')
-        .mockResolvedValue(mockBadge as any);
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
 
       await expect(
         service.getShareHistory('badge-123', 'unauthorized-user'),
@@ -386,10 +352,8 @@ describe('BadgeAnalyticsService', () => {
     });
 
     it('should return empty array for badge with no shares', async () => {
-      jest
-        .spyOn(prisma.badge, 'findUnique')
-        .mockResolvedValue(mockBadge as any);
-      jest.spyOn(prisma.badgeShare, 'findMany').mockResolvedValue([]);
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+      mockPrismaService.badgeShare.findMany.mockResolvedValue([]);
 
       const result = await service.getShareHistory(
         'badge-123',
@@ -402,10 +366,8 @@ describe('BadgeAnalyticsService', () => {
 
   describe('Authorization', () => {
     it('should allow badge recipient to view analytics', async () => {
-      jest
-        .spyOn(prisma.badge, 'findUnique')
-        .mockResolvedValue(mockBadge as any);
-      jest.spyOn(prisma.badgeShare, 'findMany').mockResolvedValue([]);
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+      mockPrismaService.badgeShare.findMany.mockResolvedValue([]);
 
       await expect(
         service.getShareStats('badge-123', 'user-recipient'),
@@ -413,10 +375,8 @@ describe('BadgeAnalyticsService', () => {
     });
 
     it('should allow badge issuer to view analytics', async () => {
-      jest
-        .spyOn(prisma.badge, 'findUnique')
-        .mockResolvedValue(mockBadge as any);
-      jest.spyOn(prisma.badgeShare, 'findMany').mockResolvedValue([]);
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+      mockPrismaService.badgeShare.findMany.mockResolvedValue([]);
 
       await expect(
         service.getShareStats('badge-123', 'user-issuer'),
@@ -424,9 +384,7 @@ describe('BadgeAnalyticsService', () => {
     });
 
     it('should deny other users from viewing analytics', async () => {
-      jest
-        .spyOn(prisma.badge, 'findUnique')
-        .mockResolvedValue(mockBadge as any);
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
 
       await expect(
         service.getShareStats('badge-123', 'other-user'),
@@ -434,7 +392,7 @@ describe('BadgeAnalyticsService', () => {
     });
 
     it('should throw error if badge not found during authorization', async () => {
-      jest.spyOn(prisma.badge, 'findUnique').mockResolvedValue(null);
+      mockPrismaService.badge.findUnique.mockResolvedValue(null);
 
       await expect(
         service.getShareStats('invalid-badge', 'user-123'),

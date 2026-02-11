@@ -14,7 +14,7 @@ describe('BulkIssuanceService', () => {
   let _csvValidation: CsvValidationService;
 
   // In-memory store to simulate DB persistence between create/findUnique
-  const sessionStore: Record<string, any> = {};
+  const sessionStore: Record<string, Record<string, unknown>> = {};
 
   const mockPrismaService = {
     bulkIssuanceSession: {
@@ -91,7 +91,7 @@ describe('BulkIssuanceService', () => {
 
     // Wire up session store for DB persistence simulation (Finding #1: DB-backed sessions)
     mockPrismaService.bulkIssuanceSession.create.mockImplementation(
-      ({ data }: any) => {
+      ({ data }: { data: { id: string; [key: string]: unknown } }) => {
         sessionStore[data.id] = {
           ...data,
           createdAt: new Date(),
@@ -101,12 +101,18 @@ describe('BulkIssuanceService', () => {
       },
     );
     mockPrismaService.bulkIssuanceSession.findUnique.mockImplementation(
-      ({ where }: any) => {
+      ({ where }: { where: { id: string } }) => {
         return sessionStore[where.id] || null;
       },
     );
     mockPrismaService.bulkIssuanceSession.update.mockImplementation(
-      ({ where, data }: any) => {
+      ({
+        where,
+        data,
+      }: {
+        where: { id: string };
+        data: Record<string, unknown>;
+      }) => {
         if (sessionStore[where.id]) {
           Object.assign(sessionStore[where.id], data);
         }
@@ -114,7 +120,7 @@ describe('BulkIssuanceService', () => {
       },
     );
     mockPrismaService.bulkIssuanceSession.delete.mockImplementation(
-      ({ where }: any) => {
+      ({ where }: { where: { id: string } }) => {
         const deleted = sessionStore[where.id];
         delete sessionStore[where.id];
         return deleted;
@@ -416,7 +422,8 @@ EXAMPLE-DELETE,example@company.com`;
         expect.any(Function),
         expect.objectContaining({
           isolationLevel: 'ReadCommitted',
-          timeout: 10000,
+          timeout: 30000,
+          maxWait: 10000,
         }),
       );
     });
@@ -737,7 +744,7 @@ template-123,user3@company.com`;
   });
 
   describe('confirmBulkIssuance - real issuance', () => {
-    const createValidatedSession = async (
+    const createValidatedSession = (
       validRows: Array<{
         badgeTemplateId: string;
         recipientEmail: string;
@@ -779,7 +786,7 @@ template-123,user3@company.com`;
     });
 
     it('should issue all valid badges successfully', async () => {
-      const sessionId = await createValidatedSession([
+      const sessionId = createValidatedSession([
         {
           badgeTemplateId: 'Leadership Excellence',
           recipientEmail: 'user@company.com',
@@ -806,7 +813,7 @@ template-123,user3@company.com`;
         .mockResolvedValueOnce({ id: 'badge-1' })
         .mockRejectedValueOnce(new Error('Template inactive'));
 
-      const sessionId = await createValidatedSession([
+      const sessionId = createValidatedSession([
         {
           badgeTemplateId: 'Leadership Excellence',
           recipientEmail: 'user@company.com',
@@ -832,7 +839,7 @@ template-123,user3@company.com`;
         new Error('Service unavailable'),
       );
 
-      const sessionId = await createValidatedSession([
+      const sessionId = createValidatedSession([
         {
           badgeTemplateId: 'Leadership Excellence',
           recipientEmail: 'user@company.com',
@@ -850,7 +857,7 @@ template-123,user3@company.com`;
     });
 
     it('should resolve badge template by name', async () => {
-      const sessionId = await createValidatedSession([
+      const sessionId = createValidatedSession([
         {
           badgeTemplateId: 'Leadership Excellence',
           recipientEmail: 'user@company.com',
@@ -871,7 +878,7 @@ template-123,user3@company.com`;
     });
 
     it('should resolve badge template by UUID', async () => {
-      const sessionId = await createValidatedSession([
+      const sessionId = createValidatedSession([
         {
           badgeTemplateId: 'template-uuid-1',
           recipientEmail: 'user@company.com',
@@ -889,7 +896,7 @@ template-123,user3@company.com`;
     });
 
     it('should resolve recipient by email', async () => {
-      const sessionId = await createValidatedSession([
+      const sessionId = createValidatedSession([
         {
           badgeTemplateId: 'Leadership Excellence',
           recipientEmail: 'user@company.com',
@@ -908,7 +915,7 @@ template-123,user3@company.com`;
         badgeTemplateId: 'Leadership Excellence',
         recipientEmail: `user${i}@company.com`,
       }));
-      const sessionId = await createValidatedSession(manyRows);
+      const sessionId = createValidatedSession(manyRows);
 
       await expect(
         service.confirmBulkIssuance(sessionId, 'owner-123'),
@@ -940,7 +947,7 @@ template-123,user3@company.com`;
         .mockResolvedValueOnce({ id: 'badge-1' })
         .mockRejectedValueOnce(new Error('fail'));
 
-      const sessionId = await createValidatedSession([
+      const sessionId = createValidatedSession([
         {
           badgeTemplateId: 'Leadership Excellence',
           recipientEmail: 'user@company.com',
@@ -959,7 +966,7 @@ template-123,user3@company.com`;
     it('should fail when template not found at confirm time', async () => {
       mockPrismaService.badgeTemplate.findFirst.mockResolvedValue(null);
 
-      const sessionId = await createValidatedSession([
+      const sessionId = createValidatedSession([
         {
           badgeTemplateId: 'Nonexistent Template',
           recipientEmail: 'user@company.com',
@@ -975,7 +982,7 @@ template-123,user3@company.com`;
     it('should fail when recipient not found at confirm time', async () => {
       mockPrismaService.user.findFirst.mockResolvedValue(null);
 
-      const sessionId = await createValidatedSession([
+      const sessionId = createValidatedSession([
         {
           badgeTemplateId: 'Leadership Excellence',
           recipientEmail: 'gone@company.com',
@@ -989,7 +996,7 @@ template-123,user3@company.com`;
     });
 
     it('should pass evidenceUrl through to issueBadge', async () => {
-      const sessionId = await createValidatedSession([
+      const sessionId = createValidatedSession([
         {
           badgeTemplateId: 'Leadership Excellence',
           recipientEmail: 'user@company.com',

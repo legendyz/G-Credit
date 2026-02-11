@@ -5,8 +5,20 @@ import ProcessingComplete from '../ProcessingComplete';
 const mockResults = [
   { row: 2, recipientEmail: 'alice@test.com', badgeName: 'Leadership', status: 'success' as const },
   { row: 3, recipientEmail: 'bob@test.com', badgeName: 'Innovation', status: 'success' as const },
-  { row: 4, recipientEmail: 'charlie@test.com', badgeName: 'Teamwork', status: 'failed' as const, error: 'User not found' },
-  { row: 5, recipientEmail: 'dave@test.com', badgeName: 'Safety', status: 'failed' as const, error: 'Template inactive' },
+  {
+    row: 4,
+    recipientEmail: 'charlie@test.com',
+    badgeName: 'Teamwork',
+    status: 'failed' as const,
+    error: 'User not found',
+  },
+  {
+    row: 5,
+    recipientEmail: 'dave@test.com',
+    badgeName: 'Safety',
+    status: 'failed' as const,
+    error: 'Template inactive',
+  },
 ];
 
 describe('ProcessingComplete', () => {
@@ -42,7 +54,7 @@ describe('ProcessingComplete', () => {
         failed={0}
         results={mockResults.filter((r) => r.status === 'success')}
         onViewBadges={vi.fn()}
-      />,
+      />
     );
     expect(screen.getByText('Issuance Complete')).toBeInTheDocument();
     expect(screen.queryByText(/Partial Failure/)).not.toBeInTheDocument();
@@ -65,7 +77,7 @@ describe('ProcessingComplete', () => {
         failed={0}
         results={mockResults.filter((r) => r.status === 'success')}
         onViewBadges={vi.fn()}
-      />,
+      />
     );
     expect(screen.queryByText('Failed Badges')).not.toBeInTheDocument();
   });
@@ -82,21 +94,14 @@ describe('ProcessingComplete', () => {
         failed={2}
         results={mockResults.filter((r) => r.status === 'failed')}
         onViewBadges={vi.fn()}
-      />,
+      />
     );
     expect(screen.queryByText('Download Error Report')).not.toBeInTheDocument();
   });
 
   it('should call onViewBadges when button clicked', () => {
     const onViewBadges = vi.fn();
-    render(
-      <ProcessingComplete
-        success={5}
-        failed={0}
-        results={[]}
-        onViewBadges={onViewBadges}
-      />,
-    );
+    render(<ProcessingComplete success={5} failed={0} results={[]} onViewBadges={onViewBadges} />);
     fireEvent.click(screen.getByText('View Issued Badges'));
     expect(onViewBadges).toHaveBeenCalledOnce();
   });
@@ -119,17 +124,13 @@ describe('ProcessingComplete', () => {
 
   it('should show Retry Failed Badges button when onRetryFailed provided', () => {
     const onRetry = vi.fn();
-    render(
-      <ProcessingComplete {...defaultProps} onRetryFailed={onRetry} />,
-    );
+    render(<ProcessingComplete {...defaultProps} onRetryFailed={onRetry} />);
     expect(screen.getByText('Retry Failed Badges')).toBeInTheDocument();
   });
 
   it('should call onRetryFailed when retry button clicked', () => {
     const onRetry = vi.fn();
-    render(
-      <ProcessingComplete {...defaultProps} onRetryFailed={onRetry} />,
-    );
+    render(<ProcessingComplete {...defaultProps} onRetryFailed={onRetry} />);
     fireEvent.click(screen.getByText('Retry Failed Badges'));
     expect(onRetry).toHaveBeenCalledOnce();
   });
@@ -143,8 +144,19 @@ describe('ProcessingComplete', () => {
 
   it('should show email notification warnings when emailError present', () => {
     const resultsWithEmailError = [
-      { row: 2, recipientEmail: 'alice@test.com', badgeName: 'Leadership', status: 'success' as const, emailError: 'SMTP timeout' },
-      { row: 3, recipientEmail: 'bob@test.com', badgeName: 'Innovation', status: 'success' as const },
+      {
+        row: 2,
+        recipientEmail: 'alice@test.com',
+        badgeName: 'Leadership',
+        status: 'success' as const,
+        emailError: 'SMTP timeout',
+      },
+      {
+        row: 3,
+        recipientEmail: 'bob@test.com',
+        badgeName: 'Innovation',
+        status: 'success' as const,
+      },
     ];
     render(
       <ProcessingComplete
@@ -153,7 +165,7 @@ describe('ProcessingComplete', () => {
         results={resultsWithEmailError}
         sessionId="test-session"
         onViewBadges={vi.fn()}
-      />,
+      />
     );
     expect(screen.getByText(/Email Notification Issues/)).toBeInTheDocument();
     expect(screen.getByText(/SMTP timeout/)).toBeInTheDocument();
@@ -167,7 +179,7 @@ describe('ProcessingComplete', () => {
         failed={0}
         results={mockResults.filter((r) => r.status === 'success')}
         onViewBadges={vi.fn()}
-      />,
+      />
     );
     expect(screen.queryByText(/Email Notification Issues/)).not.toBeInTheDocument();
   });

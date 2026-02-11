@@ -6,6 +6,11 @@ import { AuthService } from './auth.service';
 import { PrismaService } from '../../common/prisma.service';
 import { EmailService } from '../../common/email.service';
 import { UserRole } from '@prisma/client';
+import {
+  anyString,
+  anyDate,
+  containing,
+} from '../../../test/helpers/jest-typed-matchers';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -53,6 +58,7 @@ describe('AuthService', () => {
       findUnique: jest.fn(),
       update: jest.fn(),
     },
+    $transaction: jest.fn(),
   };
 
   const mockJwtService = {
@@ -62,7 +68,7 @@ describe('AuthService', () => {
 
   const mockConfigService = {
     get: jest.fn((key: string) => {
-      const config = {
+      const config: Record<string, string> = {
         JWT_SECRET: 'test-jwt-secret-32-characters-long',
         JWT_REFRESH_SECRET: 'test-refresh-secret-32-chars-long',
         JWT_REFRESH_EXPIRES_IN: '7d',
@@ -146,10 +152,10 @@ describe('AuthService', () => {
 
       // Verify new token was created
       expect(mockPrismaService.refreshToken.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          token: expect.any(String),
+        data: containing({
+          token: anyString(),
           userId: 'user-123',
-          expiresAt: expect.any(Date),
+          expiresAt: anyDate(),
         }),
       });
     });
@@ -203,6 +209,83 @@ describe('AuthService', () => {
       await expect(
         service.refreshAccessToken('tampered-refresh-token'),
       ).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  // ============================================================
+  // Architecture Audit: Password Reset Transaction Safety
+  // ============================================================
+  describe('resetPassword - atomic transaction (Arch Audit)', () => {
+    const mockResetToken = {
+      id: 'token-id-123',
+      token: 'valid-reset-token',
+      userId: 'user-123',
+      used: false,
+      expiresAt: new Date(Date.now() + 3600000), // 1 hour from now
+      createdAt: new Date(),
+      user: mockUser,
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      mockPrismaService.passwordResetToken.findUnique.mockResolvedValue(
+        mockResetToken,
+      );
+      // Mock $transaction to execute the callback with tx delegate
+      mockPrismaService.$transaction.mockImplementation(
+        async (
+          callback: (tx: {
+            user: { update: jest.Mock };
+            passwordResetToken: { update: jest.Mock };
+          }) => Promise<void>,
+        ) => {
+          return callback({
+            user: { update: jest.fn().mockResolvedValue({}) },
+            passwordResetToken: { update: jest.fn().mockResolvedValue({}) },
+          });
+        },
+      );
+    });
+
+    it('should wrap password update and token invalidation in $transaction', async () => {
+      await service.resetPassword('valid-reset-token', 'NewPassword123!');
+
+      // Verify $transaction was called (atomic operation)
+      expect(mockPrismaService.$transaction).toHaveBeenCalledTimes(1);
+      expect(mockPrismaService.$transaction).toHaveBeenCalledWith(
+        expect.any(Function),
+      );
+    });
+
+    it('should update password and mark token as used atomically', async () => {
+      const txUserUpdate = jest.fn().mockResolvedValue({});
+      const txTokenUpdate = jest.fn().mockResolvedValue({});
+
+      mockPrismaService.$transaction.mockImplementation(
+        async (
+          callback: (tx: {
+            user: { update: jest.Mock };
+            passwordResetToken: { update: jest.Mock };
+          }) => Promise<void>,
+        ) => {
+          return callback({
+            user: { update: txUserUpdate },
+            passwordResetToken: { update: txTokenUpdate },
+          });
+        },
+      );
+
+      await service.resetPassword('valid-reset-token', 'NewPassword123!');
+
+      // Verify both operations happened inside transaction
+      expect(txUserUpdate).toHaveBeenCalledWith({
+        where: { id: 'user-123' },
+        data: { passwordHash: anyString() },
+      });
+      expect(txTokenUpdate).toHaveBeenCalledWith({
+        where: { id: 'token-id-123' },
+        data: { used: true },
+      });
     });
   });
 });

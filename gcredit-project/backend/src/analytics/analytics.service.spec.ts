@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ForbiddenException } from '@nestjs/common';
 import { AnalyticsService } from './analytics.service';
 import { PrismaService } from '../common/prisma.service';
+import { containing } from '../../test/helpers/jest-typed-matchers';
 
 describe('AnalyticsService', () => {
   let service: AnalyticsService;
@@ -181,7 +182,7 @@ describe('AnalyticsService', () => {
 
       expect(mockPrismaService.badge.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({
+          where: containing({
             issuerId: 'issuer-123',
           }),
         }),
@@ -201,7 +202,7 @@ describe('AnalyticsService', () => {
       // ISSUER should only see their own data, not the requested issuerId
       expect(mockPrismaService.badge.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({
+          where: containing({
             issuerId: 'my-issuer-id',
           }),
         }),
@@ -348,7 +349,7 @@ describe('AnalyticsService', () => {
 
       expect(mockPrismaService.user.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({
+          where: containing({
             department: 'Engineering',
           }),
         }),

@@ -86,10 +86,7 @@ export function SkillsFilter({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
@@ -124,9 +121,10 @@ export function SkillsFilter({
   }, [onChange]);
 
   // Get display text
-  const displayText = selectedSkills.length === 0
-    ? placeholder
-    : `${selectedSkills.length} skill${selectedSkills.length !== 1 ? 's' : ''} selected`;
+  const displayText =
+    selectedSkills.length === 0
+      ? placeholder
+      : `${selectedSkills.length} skill${selectedSkills.length !== 1 ? 's' : ''} selected`;
 
   return (
     <div className={`relative ${className}`} ref={containerRef}>
@@ -136,7 +134,7 @@ export function SkillsFilter({
           {label}
         </label>
       )}
-      
+
       {/* Container with optional external clear button */}
       <div className="flex items-center gap-2">
         {/* Trigger Button */}
@@ -157,25 +155,22 @@ export function SkillsFilter({
         `}
           aria-haspopup="listbox"
           aria-expanded={isOpen}
+          aria-controls="skills-listbox"
         >
-        <span
-          className={
-            selectedSkills.length === 0
-              ? 'text-gray-400'
-              : 'text-gray-900 dark:text-white'
-          }
-        >
-          {displayText}
-        </span>
-        <div className="flex items-center gap-1">
-          <ChevronDown
-            className={`h-4 w-4 text-gray-400 transition-transform ${
-              isOpen ? 'rotate-180' : ''
-            }`}
-          />
-        </div>
-      </button>
-        
+          <span
+            className={
+              selectedSkills.length === 0 ? 'text-gray-400' : 'text-gray-900 dark:text-white'
+            }
+          >
+            {displayText}
+          </span>
+          <div className="flex items-center gap-1">
+            <ChevronDown
+              className={`h-4 w-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+            />
+          </div>
+        </button>
+
         {/* Inline clear button - outside combobox to avoid nested button */}
         {selectedSkills.length > 0 && !disabled && !showClearButton && (
           <button
@@ -189,7 +184,7 @@ export function SkillsFilter({
             <X className="h-4 w-4" />
           </button>
         )}
-        
+
         {/* External clear button */}
         {showClearButton && selectedSkills.length > 0 && !disabled && (
           <button
@@ -216,6 +211,7 @@ export function SkillsFilter({
             max-h-72 overflow-hidden
           "
           role="listbox"
+          id="skills-listbox"
           aria-multiselectable="true"
         >
           {/* Search input - only show if searchable */}
@@ -245,13 +241,9 @@ export function SkillsFilter({
           {/* Skills list */}
           <div className="overflow-y-auto max-h-52">
             {isLoading ? (
-              <div className="p-4 text-center text-gray-500">
-                Loading skills...
-              </div>
+              <div className="p-4 text-center text-gray-500">Loading skills...</div>
             ) : filteredSkills.length === 0 ? (
-              <div className="p-4 text-center text-gray-500">
-                No skills found
-              </div>
+              <div className="p-4 text-center text-gray-500">No skills found</div>
             ) : (
               Object.entries(groupedSkills).map(([category, categorySkills]) => (
                 <div key={category}>
@@ -291,13 +283,9 @@ export function SkillsFilter({
                             }
                           `}
                         >
-                          {isSelected && (
-                            <Check className="h-3 w-3 text-white" />
-                          )}
+                          {isSelected && <Check className="h-3 w-3 text-white" />}
                         </div>
-                        <span className="text-gray-900 dark:text-white">
-                          {skill.name}
-                        </span>
+                        <span className="text-gray-900 dark:text-white">{skill.name}</span>
                       </button>
                     );
                   })}
@@ -309,9 +297,7 @@ export function SkillsFilter({
           {/* Footer with selection count */}
           {selectedSkills.length > 0 && (
             <div className="p-2 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
-              <span className="text-xs text-gray-500">
-                {selectedSkills.length} selected
-              </span>
+              <span className="text-xs text-gray-500">{selectedSkills.length} selected</span>
               <button
                 type="button"
                 onClick={clearAll}
@@ -328,5 +314,3 @@ export function SkillsFilter({
 }
 
 export default SkillsFilter;
-
-

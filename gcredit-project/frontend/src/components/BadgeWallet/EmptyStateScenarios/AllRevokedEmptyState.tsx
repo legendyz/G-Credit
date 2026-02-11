@@ -21,7 +21,7 @@ const AllRevokedEmptyState: React.FC<AllRevokedEmptyStateProps> = ({
         >
           {/* Circle */}
           <circle cx="128" cy="128" r="96" stroke="currentColor" strokeWidth="6" />
-          
+
           {/* Alert symbol */}
           <path d="M128 80 L128 144" stroke="currentColor" strokeWidth="8" strokeLinecap="round" />
           <circle cx="128" cy="172" r="6" fill="currentColor" />
@@ -35,14 +35,15 @@ const AllRevokedEmptyState: React.FC<AllRevokedEmptyStateProps> = ({
 
       {/* AC 6.8: Description - Not accusatory */}
       <p className="text-base md:text-lg text-gray-600 max-w-2xl mb-8">
-        All your badges have been revoked. If you believe this is an error, 
-        please contact support at{' '}
-        <a 
-          href="mailto:g-credit@outlook.com" 
+        All your badges have been revoked. If you believe this is an error, please contact support
+        at{' '}
+        <a
+          href="mailto:g-credit@outlook.com"
           className="text-blue-600 hover:text-blue-700 underline"
         >
           g-credit@outlook.com
-        </a>.
+        </a>
+        .
       </p>
 
       {/* AC 6.8: Primary and Secondary CTAs */}
@@ -64,9 +65,9 @@ const AllRevokedEmptyState: React.FC<AllRevokedEmptyStateProps> = ({
       {/* Supportive additional information */}
       <div className="mt-12 p-6 bg-gray-50 rounded-lg max-w-2xl border border-gray-200">
         <p className="text-sm text-gray-700">
-          <strong>What happens next?</strong> Our support team will review your inquiry and 
-          respond within 2 business days. Badge revocations follow our organization's 
-          credential management policy.
+          <strong>What happens next?</strong> Our support team will review your inquiry and respond
+          within 2 business days. Badge revocations follow our organization's credential management
+          policy.
         </p>
       </div>
     </div>

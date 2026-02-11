@@ -108,10 +108,9 @@ export class WidgetEmbedController {
     }
 
     // Record widget embed analytics (async, non-blocking)
-    this.recordWidgetEmbed(badgeId, referer).catch((error) => {
-      this.logger.warn(
-        `Failed to record widget embed analytics: ${error.message}`,
-      );
+    this.recordWidgetEmbed(badgeId, referer).catch((error: unknown) => {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Failed to record widget embed analytics: ${errMsg}`);
     });
 
     // Build verification URL
@@ -317,7 +316,7 @@ export class WidgetEmbedController {
   const widget = document.querySelector('[data-badge-id="${badge.badgeId}"]');
   if (widget) {
     widget.addEventListener('click', function() {
-      console.log('G-Credit badge clicked:', '${badge.badgeId}');
+      widget.dispatchEvent(new CustomEvent('gcredit:badge-click', { detail: { badgeId: '${badge.badgeId}' }, bubbles: true }));
     });
   }
 })();`.trim();
@@ -343,10 +342,11 @@ export class WidgetEmbedController {
         },
       );
       this.logger.log(`Recorded widget embed for badge ${badgeId}`);
-    } catch (error) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       this.logger.error(
-        `Failed to record widget embed: ${error.message}`,
-        error.stack,
+        `Failed to record widget embed: ${err.message}`,
+        err.stack,
       );
       throw error;
     }

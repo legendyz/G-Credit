@@ -1,10 +1,8 @@
 /**
  * Graph Teams Service Tests
  *
- * TECHNICAL DEBT: Tests depend on Teams channel functionality.
- * Requires ChannelMessage.Send Graph API permission (not yet approved).
- * See: docs/sprints/sprint-6/technical-debt.md
- * TODO: Re-enable when Teams permissions are configured (TD-003)
+ * ADR: Tests skipped pending ChannelMessage.Send permission approval (TD-006).
+ * See Post-MVP Backlog and SKIPPED-TESTS-TRACKER.md for resolution steps.
  */
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
@@ -25,7 +23,7 @@ describe.skip('GraphTeamsService', () => {
   };
 
   const mockConfigService = {
-    get: (key: string, defaultValue?: any) => {
+    get: (key: string, defaultValue?: unknown) => {
       // Task 7: Updated to use ENABLE_TEAMS_NOTIFICATIONS
       if (key === 'ENABLE_TEAMS_NOTIFICATIONS') return 'true';
       return defaultValue;
@@ -66,7 +64,7 @@ describe.skip('GraphTeamsService', () => {
 
     it('should not initialize when ENABLE_TEAMS_NOTIFICATIONS=false', async () => {
       const disabledConfigService = {
-        get: (key: string, defaultValue?: any) => {
+        get: (key: string, defaultValue?: unknown) => {
           if (key === 'ENABLE_TEAMS_NOTIFICATIONS') return 'false';
           return defaultValue;
         },
@@ -91,10 +89,10 @@ describe.skip('GraphTeamsService', () => {
     });
   });
 
-  describe('sendActivityNotification', () => {
+  describe('sendChannelMessage', () => {
     it('should skip sending when disabled', async () => {
       const disabledConfigService = {
-        get: (key: string, defaultValue?: any) => {
+        get: (key: string, defaultValue?: unknown) => {
           if (key === 'ENABLE_TEAMS_NOTIFICATIONS') return 'false';
           return defaultValue;
         },
@@ -117,11 +115,10 @@ describe.skip('GraphTeamsService', () => {
       const disabledService = module.get<GraphTeamsService>(GraphTeamsService);
 
       await expect(
-        disabledService.sendActivityNotification(
-          'user@example.com',
-          'badgeEarned',
+        disabledService.sendChannelMessage(
+          'team-id',
+          'channel-id',
           'You earned a badge!',
-          { badgeName: 'Test Badge' },
         ),
       ).resolves.not.toThrow();
     });
@@ -150,7 +147,7 @@ describe.skip('GraphTeamsService', () => {
 
     it('should return false when disabled', async () => {
       const disabledConfigService = {
-        get: (key: string, defaultValue?: any) => {
+        get: (key: string, defaultValue?: unknown) => {
           if (key === 'ENABLE_TEAMS_NOTIFICATIONS') return 'false';
           return defaultValue;
         },

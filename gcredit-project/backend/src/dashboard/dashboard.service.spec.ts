@@ -76,6 +76,7 @@ describe('DashboardService', () => {
       auditLog: {
         findMany: jest.fn(),
       },
+      $queryRaw: jest.fn().mockResolvedValue([1]),
     };
 
     const module: TestingModule = await Test.createTestingModule({

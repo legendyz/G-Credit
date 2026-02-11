@@ -110,10 +110,7 @@ export function BadgeSearchBar({
     : '';
 
   return (
-    <div
-      className={`space-y-3 ${containerClasses} ${className}`}
-      data-testid="badge-search-bar"
-    >
+    <div className={`space-y-3 ${containerClasses} ${className}`} data-testid="badge-search-bar">
       {/* Search & Filters Row */}
       <div className="flex flex-col sm:flex-row gap-3">
         {/* Search Input - Story 8.2 AC1: Mobile focus behavior */}
@@ -133,7 +130,9 @@ export function BadgeSearchBar({
         </div>
 
         {/* Filters - responsive layout, hidden on mobile when search focused */}
-        <div className={`flex flex-wrap gap-2 sm:flex-nowrap ${isSearchFocused ? 'hidden sm:flex' : ''}`}>
+        <div
+          className={`flex flex-wrap gap-2 sm:flex-nowrap ${isSearchFocused ? 'hidden sm:flex' : ''}`}
+        >
           {/* Skills Filter */}
           {skills.length > 0 && (
             <div className="w-full sm:w-40 md:w-48">

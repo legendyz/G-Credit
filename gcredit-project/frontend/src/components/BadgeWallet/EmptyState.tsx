@@ -4,7 +4,7 @@ import PendingBadgesEmptyState from './EmptyStateScenarios/PendingBadgesEmptySta
 import AllRevokedEmptyState from './EmptyStateScenarios/AllRevokedEmptyState';
 import FilteredEmptyState from './EmptyStateScenarios/FilteredEmptyState';
 
-export type EmptyStateScenario = 
+export type EmptyStateScenario =
   | 'new-employee'
   | 'pending-badges'
   | 'all-revoked'
@@ -30,53 +30,37 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   scenario,
   pendingCount = 0,
   currentFilter = null,
-  onExploreCatalog = () => window.location.href = '/badges/templates',
-  onLearnMore = () => window.location.href = '/docs/help/earning-badges',
-  onViewPending = () => console.log('Switch to Pending tab'),
+  onExploreCatalog = () => (window.location.href = '/badges/templates'),
+  onLearnMore = () => (window.location.href = '/docs/help/earning-badges'),
+  onViewPending = () => {},
   onContactSupport = () => {
     // AC 6.8: Pre-filled mailto with subject
     window.location.href = 'mailto:g-credit@outlook.com?subject=Badge%20Revocation%20Inquiry';
   },
-  onViewPolicy = () => window.location.href = '/policies/revocation',
-  onClearFilters = () => console.log('Clear filters'),
+  onViewPolicy = () => (window.location.href = '/policies/revocation'),
+  onClearFilters = () => {},
 }) => {
   // AC 6.14: Automatic scenario detection and rendering
   switch (scenario) {
     case 'new-employee':
       // AC 6.1-6.3: New employee with no badges
       return (
-        <NewEmployeeEmptyState
-          onExploreCatalog={onExploreCatalog}
-          onLearnMore={onLearnMore}
-        />
+        <NewEmployeeEmptyState onExploreCatalog={onExploreCatalog} onLearnMore={onLearnMore} />
       );
 
     case 'pending-badges':
       // AC 6.4-6.6: User has pending badges but 0 claimed
-      return (
-        <PendingBadgesEmptyState
-          pendingCount={pendingCount}
-          onViewPending={onViewPending}
-        />
-      );
+      return <PendingBadgesEmptyState pendingCount={pendingCount} onViewPending={onViewPending} />;
 
     case 'all-revoked':
       // AC 6.7-6.9: All badges revoked (sensitive scenario)
       return (
-        <AllRevokedEmptyState
-          onContactSupport={onContactSupport}
-          onViewPolicy={onViewPolicy}
-        />
+        <AllRevokedEmptyState onContactSupport={onContactSupport} onViewPolicy={onViewPolicy} />
       );
 
     case 'filtered-empty':
       // AC 6.10-6.12: Badges exist but filter returns 0 results
-      return (
-        <FilteredEmptyState
-          currentFilter={currentFilter}
-          onClearFilters={onClearFilters}
-        />
-      );
+      return <FilteredEmptyState currentFilter={currentFilter} onClearFilters={onClearFilters} />;
 
     default:
       return null;
@@ -87,12 +71,13 @@ const EmptyState: React.FC<EmptyStateProps> = ({
  * Helper function to determine which empty state scenario to display
  * AC 6.14: Automatic detection based on wallet API response
  */
+// eslint-disable-next-line react-refresh/only-export-components -- Exports utility alongside component
 export const detectEmptyStateScenario = (
   totalBadges: number,
   claimedBadges: number,
   pendingBadges: number,
   revokedBadges: number,
-  hasActiveFilter: boolean,
+  hasActiveFilter: boolean
 ): EmptyStateScenario | null => {
   // Scenario 4: User has badges but filter returns 0 results
   if (hasActiveFilter && totalBadges > 0) {

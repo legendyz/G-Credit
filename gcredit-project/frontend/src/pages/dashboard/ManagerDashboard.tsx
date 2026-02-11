@@ -1,6 +1,6 @@
 /**
  * ManagerDashboard Component - Story 8.1 (AC3)
- * 
+ *
  * Dashboard for Manager role showing:
  * - Team insights (member count, badges this month)
  * - Top performers list
@@ -15,12 +15,11 @@ import { PageLoader } from '../../components/common/LoadingSpinner';
 import { ErrorDisplay } from '../../components/common/ErrorDisplay';
 import { EmptyState, NoTeamMembersState } from '../../components/common/EmptyState';
 import { cn } from '../../lib/utils';
-import { useNavigate } from 'react-router-dom';
 import { RefreshCw, Award, Users } from 'lucide-react';
+import { PageTemplate } from '../../components/layout/PageTemplate';
 
 export const ManagerDashboard: React.FC = () => {
   const { data, isLoading, error, refetch, isFetching } = useManagerDashboard();
-  const navigate = useNavigate();
 
   // AC3: Manual refresh handler
   const handleRefresh = useCallback(() => {
@@ -49,18 +48,10 @@ export const ManagerDashboard: React.FC = () => {
   const { teamInsights, revocationAlerts } = data;
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 space-y-6">
-      {/* Page Header with Refresh Button */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">
-            Team Dashboard
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Monitor your team's badge performance
-          </p>
-        </div>
-        {/* Manual refresh button (desktop) */}
+    <PageTemplate
+      title="Manager Dashboard"
+      description="Monitor your team's badge performance"
+      actions={
         <Button
           variant="outline"
           size="sm"
@@ -72,10 +63,10 @@ export const ManagerDashboard: React.FC = () => {
           <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} />
           {isFetching ? 'Refreshing...' : 'Refresh'}
         </Button>
-      </div>
-
+      }
+    >
       {/* AC3: Quick Actions */}
-      <Card>
+      <Card className="shadow-elevation-1">
         <CardHeader>
           <CardTitle className="text-lg">Quick Actions</CardTitle>
         </CardHeader>
@@ -83,16 +74,18 @@ export const ManagerDashboard: React.FC = () => {
           <div className="flex flex-wrap gap-3">
             <Button
               variant="outline"
-              onClick={() => navigate('/team/nominate')}
-              className="flex items-center gap-2 min-h-[44px]"
+              disabled
+              title="Coming in Phase 2"
+              className="flex items-center gap-2 min-h-[44px] opacity-50 cursor-not-allowed"
             >
               <Award className="h-4 w-4" />
               Nominate Team Member
             </Button>
             <Button
               variant="outline"
-              onClick={() => navigate('/team/skills')}
-              className="flex items-center gap-2 min-h-[44px]"
+              disabled
+              title="Coming in Phase 2"
+              className="flex items-center gap-2 min-h-[44px] opacity-50 cursor-not-allowed"
             >
               <Users className="h-4 w-4" />
               View Team Skills
@@ -163,9 +156,7 @@ export const ManagerDashboard: React.FC = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{performer.name}</p>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {performer.email}
-                      </p>
+                      <p className="text-sm text-muted-foreground truncate">{performer.email}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-lg font-bold">{performer.badgeCount}</p>
@@ -203,17 +194,13 @@ export const ManagerDashboard: React.FC = () => {
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
                         <p className="font-medium">{alert.recipientName}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {alert.templateName}
-                        </p>
+                        <p className="text-sm text-muted-foreground">{alert.templateName}</p>
                       </div>
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
                         {new Date(alert.revokedAt).toLocaleDateString()}
                       </span>
                     </div>
-                    <p className="text-sm text-destructive mt-2">
-                      Reason: {alert.reason}
-                    </p>
+                    <p className="text-sm text-destructive mt-2">Reason: {alert.reason}</p>
                   </div>
                 ))}
               </div>
@@ -221,7 +208,7 @@ export const ManagerDashboard: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </PageTemplate>
   );
 };
 
@@ -247,9 +234,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
         <div>
           <p className="text-sm text-muted-foreground">{title}</p>
           <p className="text-3xl font-bold mt-1">{value}</p>
-          {description && (
-            <p className="text-xs text-muted-foreground mt-1">{description}</p>
-          )}
+          {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
         </div>
         <span className="text-2xl" aria-hidden="true">
           {icon}

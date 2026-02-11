@@ -1,6 +1,6 @@
 /**
  * EmployeeDashboard Component - Story 8.1 (AC1)
- * 
+ *
  * Dashboard for Employee role showing:
  * - Badge summary with total, claimed this month, pending
  * - Current milestone progress
@@ -18,6 +18,7 @@ import { BadgeEarnedCelebration } from '../../components/common/CelebrationModal
 import { cn } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { RefreshCw, Wallet, Search, CheckCircle } from 'lucide-react';
+import { PageTemplate } from '../../components/layout/PageTemplate';
 
 // Celebration tracking localStorage key (AC1 requirement)
 const CELEBRATED_BADGES_KEY = 'celebratedBadges';
@@ -80,10 +81,10 @@ export const EmployeeDashboard: React.FC = () => {
   // AC1: Celebration feedback - trigger for recently issued uncelebrated badges
   const checkAndTriggerCelebration = useCallback(() => {
     if (!data?.badgeSummary?.latestBadge) return;
-    
+
     const latestBadge = data.badgeSummary.latestBadge;
     const celebratedBadges = getCelebratedBadges();
-    
+
     // Check if badge was issued within last 5 minutes and not yet celebrated
     if (
       latestBadge.id &&
@@ -93,7 +94,7 @@ export const EmployeeDashboard: React.FC = () => {
       setCelebratingBadgeId(latestBadge.id);
       setHighlightedBadgeId(latestBadge.id);
       setShowCelebration(true);
-      
+
       // AC6: Auto-scroll to latest badge section after celebration starts
       setTimeout(() => {
         latestBadgeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -138,24 +139,16 @@ export const EmployeeDashboard: React.FC = () => {
   }
 
   if (!data) {
-    return <NoBadgesState onExplore={() => navigate('/badges')} />;
+    return <NoBadgesState onExplore={() => navigate('/wallet')} />;
   }
 
   const { badgeSummary, currentMilestone, recentBadges, recentAchievements } = data;
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 space-y-6">
-      {/* Page Header with Refresh Button */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">
-            My Dashboard
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Track your badges and achievements
-          </p>
-        </div>
-        {/* AC1: Manual refresh button (desktop) */}
+    <PageTemplate
+      title="My Dashboard"
+      description="Track your badges and achievements"
+      actions={
         <Button
           variant="outline"
           size="sm"
@@ -167,10 +160,10 @@ export const EmployeeDashboard: React.FC = () => {
           <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} />
           {isFetching ? 'Refreshing...' : 'Refresh'}
         </Button>
-      </div>
-
+      }
+    >
       {/* AC1: Quick Actions */}
-      <Card>
+      <Card className="shadow-elevation-1">
         <CardHeader>
           <CardTitle className="text-lg">Quick Actions</CardTitle>
         </CardHeader>
@@ -185,7 +178,7 @@ export const EmployeeDashboard: React.FC = () => {
             </Button>
             <Button
               variant="outline"
-              onClick={() => navigate('/catalog')}
+              onClick={() => navigate('/wallet')}
               className="flex items-center gap-2 min-h-[44px]"
             >
               <Search className="h-4 w-4" />
@@ -269,10 +262,13 @@ export const EmployeeDashboard: React.FC = () => {
       {/* AC1: Latest Badge Preview with Claim Button and Highlight */}
       {badgeSummary.latestBadge && (
         <div ref={latestBadgeRef}>
-          <Card className={cn(
-            'transition-all duration-500',
-            highlightedBadgeId === badgeSummary.latestBadge.id && 'ring-2 ring-green-500 bg-green-50 dark:bg-green-950'
-          )}>
+          <Card
+            className={cn(
+              'transition-all duration-500',
+              highlightedBadgeId === badgeSummary.latestBadge.id &&
+                'ring-2 ring-green-500 bg-green-50 dark:bg-green-950'
+            )}
+          >
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 {highlightedBadgeId === badgeSummary.latestBadge.id && (
@@ -298,10 +294,12 @@ export const EmployeeDashboard: React.FC = () => {
                     )}
                   />
                 ) : (
-                  <div className={cn(
-                    'w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center',
-                    highlightedBadgeId === badgeSummary.latestBadge.id && 'ring-2 ring-green-400'
-                  )}>
+                  <div
+                    className={cn(
+                      'w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center',
+                      highlightedBadgeId === badgeSummary.latestBadge.id && 'ring-2 ring-green-400'
+                    )}
+                  >
                     <span className="text-3xl">🏆</span>
                   </div>
                 )}
@@ -319,6 +317,10 @@ export const EmployeeDashboard: React.FC = () => {
                       >
                         Claim Badge
                       </Button>
+                    ) : badgeSummary.latestBadge.status === 'REVOKED' ? (
+                      <span className="inline-flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
+                        🚫 Revoked
+                      </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
                         <CheckCircle className="h-4 w-4" />
@@ -414,7 +416,7 @@ export const EmployeeDashboard: React.FC = () => {
           navigate('/wallet');
         }}
       />
-    </div>
+    </PageTemplate>
   );
 };
 
@@ -441,17 +443,8 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-muted-foreground">{title}</p>
-          <p
-            className={cn(
-              'font-bold mt-1',
-              isText ? 'text-lg' : 'text-3xl'
-            )}
-          >
-            {value}
-          </p>
-          {description && (
-            <p className="text-xs text-muted-foreground mt-1">{description}</p>
-          )}
+          <p className={cn('font-bold mt-1', isText ? 'text-lg' : 'text-3xl')}>{value}</p>
+          {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
         </div>
         <span className="text-2xl" aria-hidden="true">
           {icon}
@@ -484,10 +477,12 @@ const BadgeCard: React.FC<BadgeCardProps> = ({ badge, isHighlighted, onClaim }) 
   };
 
   return (
-    <div className={cn(
-      'flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-all',
-      isHighlighted && 'ring-2 ring-green-500 bg-green-50 dark:bg-green-950'
-    )}>
+    <div
+      className={cn(
+        'flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-all',
+        isHighlighted && 'ring-2 ring-green-500 bg-green-50 dark:bg-green-950'
+      )}
+    >
       {badge.imageUrl ? (
         <img
           src={badge.imageUrl}
@@ -520,12 +515,7 @@ const BadgeCard: React.FC<BadgeCardProps> = ({ badge, isHighlighted, onClaim }) 
         </div>
         {/* AC1: Claim button for pending badges */}
         {badge.status === 'PENDING' && onClaim && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={onClaim}
-            className="mt-2 h-8 text-xs"
-          >
+          <Button size="sm" variant="outline" onClick={onClaim} className="mt-2 h-8 text-xs">
             Claim
           </Button>
         )}

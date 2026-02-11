@@ -6,7 +6,7 @@
  * data collisions in parallel tests.
  */
 
-import { PrismaClient, BadgeTemplate } from '@prisma/client';
+import { PrismaClient, BadgeTemplate, Prisma } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 
 export type BadgeTemplateStatus = 'ACTIVE' | 'DRAFT' | 'ARCHIVED';
@@ -17,7 +17,7 @@ export interface CreateBadgeTemplateOptions {
   imageUrl?: string;
   status?: BadgeTemplateStatus;
   category?: string;
-  issuanceCriteria?: Record<string, unknown>;
+  issuanceCriteria?: Prisma.InputJsonValue;
   validityPeriod?: number;
   createdById: string; // Required: creator user ID
   skillIds?: string[]; // Changed from 'skills' to match Prisma schema

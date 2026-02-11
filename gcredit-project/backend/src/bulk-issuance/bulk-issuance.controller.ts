@@ -62,8 +62,12 @@ export class BulkIssuanceController {
   @Roles(UserRole.ISSUER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Download CSV template for bulk badge issuance' })
   @ApiResponse({ status: 200, description: 'CSV template file' })
-  downloadTemplate(@Request() req: RequestWithUser, @Res() res: Response) {
-    const csv = this.bulkIssuanceService.generateTemplate();
+  downloadTemplate(
+    @Request() req: RequestWithUser,
+    @Query('templateId') templateId: string,
+    @Res() res: Response,
+  ) {
+    const csv = this.bulkIssuanceService.generateTemplate(templateId);
     const dateStr = new Date().toISOString().split('T')[0];
     const BOM = '\uFEFF';
 

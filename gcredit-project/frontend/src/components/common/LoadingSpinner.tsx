@@ -1,6 +1,6 @@
 /**
  * LoadingSpinner Component - Story 8.1 (UX-P1-002)
- * 
+ *
  * Accessible loading indicator with optional text support.
  * Consistent loading experience across the application.
  */
@@ -56,9 +56,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
         aria-hidden="true"
       />
       {text ? (
-        <p className={cn('text-muted-foreground', textSizeClasses[size])}>
-          {text}
-        </p>
+        <p className={cn('text-muted-foreground', textSizeClasses[size])}>{text}</p>
       ) : (
         <span className="sr-only">Loading...</span>
       )}

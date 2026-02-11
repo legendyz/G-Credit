@@ -12,9 +12,7 @@ describe('EmptyPreviewState', () => {
   it('should render the no valid badges message', () => {
     render(<EmptyPreviewState onReupload={onReupload} />);
     expect(screen.getByText('No Valid Badges')).toBeInTheDocument();
-    expect(
-      screen.getByText(/No valid badges found in CSV file/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/No valid badges found in CSV file/)).toBeInTheDocument();
   });
 
   it('should call onReupload when re-upload button clicked', () => {

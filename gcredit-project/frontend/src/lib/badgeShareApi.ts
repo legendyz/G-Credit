@@ -3,7 +3,7 @@
  * Sprint 6 - Epic 7: Badge Sharing & Social Proof
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+import { API_BASE_URL } from './apiConfig';
 
 export interface ShareViaEmailRequest {
   recipientEmails: string[];
@@ -30,7 +30,7 @@ export interface ShareHistoryItem {
   platform: string;
   sharedAt: string;
   recipientEmail?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface WidgetEmbedData {
@@ -57,10 +57,10 @@ export async function shareBadgeViaEmail(
   data: ShareViaEmailRequest
 ): Promise<{ message: string; shareCount: number }> {
   const token = localStorage.getItem('accessToken');
-  
+
   // Backend currently only supports single recipient
   const recipientEmail = data.recipientEmails[0];
-  
+
   const response = await fetch(`${API_BASE_URL}/badges/share/email`, {
     method: 'POST',
     headers: {
@@ -90,8 +90,8 @@ export async function shareBadgeToTeams(
   data: ShareToTeamsRequest
 ): Promise<{ message: string; activityId: string }> {
   const token = localStorage.getItem('accessToken');
-  
-  const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/teams/share`, {
+
+  const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/share/teams`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ export async function shareBadgeToTeams(
  */
 export async function getBadgeShareStats(badgeId: string): Promise<ShareStats> {
   const token = localStorage.getItem('accessToken');
-  
+
   const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/analytics/shares`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -136,7 +136,7 @@ export async function getBadgeShareHistory(
   limit: number = 10
 ): Promise<ShareHistoryItem[]> {
   const token = localStorage.getItem('accessToken');
-  
+
   const response = await fetch(
     `${API_BASE_URL}/badges/${badgeId}/analytics/shares/history?limit=${limit}`,
     {

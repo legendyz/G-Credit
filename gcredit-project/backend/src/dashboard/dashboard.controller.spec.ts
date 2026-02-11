@@ -13,6 +13,8 @@ import {
   ManagerDashboardDto,
   AdminDashboardDto,
 } from './dto';
+import { UserRole } from '@prisma/client';
+import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
 
 describe('DashboardController', () => {
   let controller: DashboardController;
@@ -147,12 +149,16 @@ describe('DashboardController', () => {
       dashboardService.getEmployeeDashboard.mockResolvedValue(
         mockEmployeeDashboard,
       );
-      const req = {
-        user: { userId: 'user-1', email: 'test@example.com', role: 'EMPLOYEE' },
+      const req: RequestWithUser = {
+        user: {
+          userId: 'user-1',
+          email: 'test@example.com',
+          role: UserRole.EMPLOYEE,
+        },
       };
 
       // Act
-      const result = await controller.getEmployeeDashboard(req as any);
+      const result = await controller.getEmployeeDashboard(req);
 
       // Assert
       expect(result).toEqual(mockEmployeeDashboard);
@@ -166,16 +172,16 @@ describe('DashboardController', () => {
       dashboardService.getEmployeeDashboard.mockResolvedValue(
         mockEmployeeDashboard,
       );
-      const req = {
+      const req: RequestWithUser = {
         user: {
           userId: 'different-user',
           email: 'other@example.com',
-          role: 'EMPLOYEE',
+          role: UserRole.EMPLOYEE,
         },
       };
 
       // Act
-      await controller.getEmployeeDashboard(req as any);
+      await controller.getEmployeeDashboard(req);
 
       // Assert
       expect(dashboardService.getEmployeeDashboard).toHaveBeenCalledWith(
@@ -190,16 +196,16 @@ describe('DashboardController', () => {
       dashboardService.getIssuerDashboard.mockResolvedValue(
         mockIssuerDashboard,
       );
-      const req = {
+      const req: RequestWithUser = {
         user: {
           userId: 'issuer-1',
           email: 'issuer@example.com',
-          role: 'ISSUER',
+          role: UserRole.ISSUER,
         },
       };
 
       // Act
-      const result = await controller.getIssuerDashboard(req as any);
+      const result = await controller.getIssuerDashboard(req);
 
       // Assert
       expect(result).toEqual(mockIssuerDashboard);
@@ -213,12 +219,16 @@ describe('DashboardController', () => {
       dashboardService.getIssuerDashboard.mockResolvedValue(
         mockIssuerDashboard,
       );
-      const req = {
-        user: { userId: 'admin-1', email: 'admin@example.com', role: 'ADMIN' },
+      const req: RequestWithUser = {
+        user: {
+          userId: 'admin-1',
+          email: 'admin@example.com',
+          role: UserRole.ADMIN,
+        },
       };
 
       // Act
-      const result = await controller.getIssuerDashboard(req as any);
+      const result = await controller.getIssuerDashboard(req);
 
       // Assert
       expect(result).toEqual(mockIssuerDashboard);
@@ -234,16 +244,16 @@ describe('DashboardController', () => {
       dashboardService.getManagerDashboard.mockResolvedValue(
         mockManagerDashboard,
       );
-      const req = {
+      const req: RequestWithUser = {
         user: {
           userId: 'manager-1',
           email: 'manager@example.com',
-          role: 'MANAGER',
+          role: UserRole.MANAGER,
         },
       };
 
       // Act
-      const result = await controller.getManagerDashboard(req as any);
+      const result = await controller.getManagerDashboard(req);
 
       // Assert
       expect(result).toEqual(mockManagerDashboard);
@@ -257,12 +267,16 @@ describe('DashboardController', () => {
       dashboardService.getManagerDashboard.mockResolvedValue(
         mockManagerDashboard,
       );
-      const req = {
-        user: { userId: 'admin-1', email: 'admin@example.com', role: 'ADMIN' },
+      const req: RequestWithUser = {
+        user: {
+          userId: 'admin-1',
+          email: 'admin@example.com',
+          role: UserRole.ADMIN,
+        },
       };
 
       // Act
-      const result = await controller.getManagerDashboard(req as any);
+      const result = await controller.getManagerDashboard(req);
 
       // Assert
       expect(result).toEqual(mockManagerDashboard);

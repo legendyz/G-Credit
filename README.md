@@ -1,7 +1,7 @@
 ﻿﻿# G-Credit - Enterprise Internal Digital Credentialing System
 
-[![Status](https://img.shields.io/badge/Status-Sprint%209%20Complete%20(100%25)-brightgreen)]()
-[![Phase](https://img.shields.io/badge/Phase-MVP%20Development-blue)]()
+[![Status](https://img.shields.io/badge/Status-Sprint%2010%20In%20Progress-yellow)]()
+[![Phase](https://img.shields.io/badge/Phase-v1.0.0%20Release-blue)]()
 [![Sprint0](https://img.shields.io/badge/Sprint%200-Complete%20(100%25)-success)]()
 [![Sprint1](https://img.shields.io/badge/Sprint%201-Complete%20(100%25)-brightgreen)]()
 [![Sprint2](https://img.shields.io/badge/Sprint%202-Complete%20(100%25)-brightgreen)]()
@@ -12,8 +12,9 @@
 [![Sprint7](https://img.shields.io/badge/Sprint%207-Complete%20(100%25)-brightgreen)]()
 [![Sprint8](https://img.shields.io/badge/Sprint%208-Complete%20(100%25)-brightgreen)]()
 [![Sprint9](https://img.shields.io/badge/Sprint%209-Complete%20(100%25)-brightgreen)]()
-[![Version](https://img.shields.io/badge/Version-v0.9.0--dev-blue)]()
-[![Tests](https://img.shields.io/badge/Tests-1087%20Total%2C%201087%20Passing-success)]()
+[![Sprint10](https://img.shields.io/badge/Sprint%2010-In%20Progress%20(7%2F12)-yellow)]()
+[![Version](https://img.shields.io/badge/Version-v1.0.0--dev-blue)]()
+[![Tests](https://img.shields.io/badge/Tests-976%20Total%2C%20976%20Passing-success)]()
 
 > **G-Credit** is an enterprise-grade internal digital badging platform designed to securely recognize, verify, and analyze employee skills and achievements. Compliant with Open Badges 2.0 standards, it aims to replace fragmented certificate management and reduce dependency on external platforms.
 
@@ -24,7 +25,7 @@
 **Project Name:** G-Credit  
 **Project Type:** Enterprise Internal Platform (Greenfield Development)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
-**Current Status:** ✅ Sprint 9 Complete (100% - Epic 8: Bulk Badge Issuance + TD Cleanup)  
+**Current Status:** 🔄 Sprint 10 In Progress (v1.0.0 Release Sprint — 7/12 stories, Phase 1+2 complete, entering UAT)  
 **Sprint 0:** ✅ Complete (100%, actual 9.5h / estimated 10h, 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, actual 21h / estimated 21h, 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, actual 29h / estimated 32h, 2026-01-26)  
@@ -35,9 +36,9 @@
 **Sprint 7:** ✅ Complete (100%, 10/10 stories, actual 38.5h / estimated 41-47h, 2026-02-02, v0.7.0)  
 **Sprint 8:** ✅ Complete (100%, 12/12 items, actual 80h / estimated 76h, 2026-02-05, v0.8.0)  
 **Sprint 9:** ✅ Complete (100%, 5/5 stories, actual 37h / estimated 51h, 2026-02-08, v0.9.0-dev)  
-**Version:** v0.9.0-dev (Sprint 9 complete, 1087 tests, 100% passing)  
-**Last Updated:** 2026-02-08
-
+**Sprint 10:** 🔄 In Progress (7/12 stories, 33h/69h, v1.0.0 target, 2026-02-09 to 2026-02-22)
+**Version:** v1.0.0-dev (Sprint 10 in progress, 976 tests, 100% passing)
+**Last Updated:** 2026-02-09
 ### 🎯 Core Objectives
 
 1. ✅ Create a culture of recognition & continuous learning
@@ -529,7 +530,7 @@ This project uses the **BMAD (Business Model Agent Development) Framework** v6.0
 | → Sprint 7 | 2 days | Badge Revocation & Complete Lifecycle (Epic 9) | ✅ Complete (2026-02-02, 10/10 stories, 38.5h/41-47h, v0.7.0) |
 | → Sprint 8 | 10 days | Production-Ready MVP (Epic 10) | ✅ Complete (2026-02-05, 12/12 items, 80h/76h, v0.8.0) |
 | → Sprint 9 | 3 days | Bulk Badge Issuance + TD Cleanup (Epic 8) | ✅ Complete (2026-02-08, 5/5 stories, 37h/51h, v0.9.0-dev) |
-| → Sprint 10+ | TBD | TD Cleanup & Enterprise Features | ⏳ Planned |
+| → Sprint 10 | 2 weeks | v1.0.0 Release: TD Cleanup + UAT + Release Tag | 🔄 In Progress (7/12 stories, 33h done, 2026-02-09 to 2026-02-22) |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ Pending |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
@@ -632,9 +633,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Last Updated:** 2026-02-08  
-**Status:** Sprint 9 Complete ✅ | v0.9.0-dev  
-**Version:** v0.9.0-dev (Sprint 9 complete, 2026-02-08)  
+**Last Updated:** 2026-02-09
+**Status:** Sprint 10 In Progress 🔄 | v1.0.0-dev
+**Version:** v1.0.0-dev (Sprint 10 in progress, 2026-02-09)
 **Sprint 0:** ✅ Complete (actual 9.5h / estimated 10h, 95%) - [Retrospective](./_bmad-output/implementation-artifacts/sprint-0-retrospective.md)  
 **Sprint 1:** ✅ Complete (actual 21h / estimated 21h, 100%) - [Retrospective](./_bmad-output/implementation-artifacts/sprint-1-retrospective.md)  
 **Sprint 2:** ✅ Complete (actual 29h / estimated 32h, 110%) - [Final Report](./gcredit-project/backend/docs/sprints/sprint-2/final-report.md) | [Retrospective](./gcredit-project/backend/docs/sprints/sprint-2/retrospective.md)  
@@ -645,4 +646,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Sprint 7:** ✅ Complete (100%, 10/10 stories, actual 38.5h / estimated 41-47h, v0.7.0) - [Completion Report](./gcredit-project/docs/sprints/sprint-7/sprint-7-completion-report.md) | [Retrospective](./gcredit-project/docs/sprints/sprint-7/sprint-7-retrospective.md)  
 **Sprint 8:** ✅ Complete (100%, 12/12 items, actual 80h / estimated 76h, v0.8.0) - [Summary](./gcredit-project/docs/sprints/sprint-8/summary.md) | [Retrospective](./gcredit-project/docs/sprints/sprint-8/retrospective.md)  
 **Sprint 9:** ✅ Complete (100%, 5/5 stories, actual 37h / estimated 51h, v0.9.0-dev) - [Sprint Status](./gcredit-project/docs/sprints/sprint-9/sprint-status.yaml) | [Backlog](./gcredit-project/docs/sprints/sprint-9/backlog.md)  
-**Next:** Sprint 9 Demo & Retrospective (2026-02-20), Sprint 10 Planning
+**Sprint 10:** 🔄 In Progress (7/12 stories, 33h/69h, v1.0.0 target) - [Sprint Status](./gcredit-project/docs/sprints/sprint-10/sprint-status.yaml) | [Backlog](./gcredit-project/docs/sprints/sprint-10/backlog.md)
+**Next:** Sprint 10 UAT (Phase 3) + v1.0.0 Release (target 2026-02-22)

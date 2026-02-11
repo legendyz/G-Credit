@@ -72,7 +72,20 @@ export interface UpdateStatusResponse {
   isActive: boolean;
 }
 
-const API_BASE = '/api/admin/users';
+export interface UpdateDepartmentRequest {
+  department: string;
+  auditNote?: string;
+}
+
+export interface UpdateDepartmentResponse {
+  id: string;
+  email: string;
+  department: string;
+}
+
+import { API_BASE_URL } from './apiConfig';
+
+const API_BASE = `${API_BASE_URL}/admin/users`;
 
 /**
  * Helper to get auth headers
@@ -92,12 +105,13 @@ export async function getAdminUsers(
   params: AdminUsersQueryParams = {}
 ): Promise<AdminUsersResponse> {
   const searchParams = new URLSearchParams();
-  
+
   if (params.page) searchParams.set('page', params.page.toString());
   if (params.limit) searchParams.set('limit', params.limit.toString());
   if (params.search) searchParams.set('search', params.search);
   if (params.roleFilter) searchParams.set('roleFilter', params.roleFilter);
-  if (params.statusFilter !== undefined) searchParams.set('statusFilter', params.statusFilter.toString());
+  if (params.statusFilter !== undefined)
+    searchParams.set('statusFilter', params.statusFilter.toString());
   if (params.sortBy) searchParams.set('sortBy', params.sortBy);
   if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder);
   if (params.cursor) searchParams.set('cursor', params.cursor);
@@ -186,6 +200,30 @@ export async function updateUserStatus(
       throw new Error('User not found');
     }
     throw new Error('Failed to update user status');
+  }
+
+  return response.json();
+}
+
+/**
+ * Update user department
+ */
+export async function updateUserDepartment(
+  userId: string,
+  data: UpdateDepartmentRequest
+): Promise<UpdateDepartmentResponse> {
+  const response = await fetch(`${API_BASE}/${userId}/department`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error('User not found');
+    }
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'Failed to update department');
   }
 
   return response.json();

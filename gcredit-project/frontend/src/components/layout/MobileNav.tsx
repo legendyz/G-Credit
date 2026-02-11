@@ -98,19 +98,21 @@ export function MobileNav({ className = '' }: MobileNavProps) {
   if (!isAuthenticated) return null;
 
   const navLinks = [
-    { to: '/', label: 'My Wallet', roles: ['ADMIN', 'ISSUER', 'MANAGER', 'EMPLOYEE'] },
-    { to: '/admin/badges', label: 'Badge Management', roles: ['ADMIN', 'ISSUER'] },
+    { to: '/', label: 'Dashboard', roles: ['ADMIN', 'ISSUER', 'MANAGER', 'EMPLOYEE'] },
+    { to: '/wallet', label: 'My Wallet', roles: ['ADMIN', 'ISSUER', 'MANAGER', 'EMPLOYEE'] },
+    { to: '/admin/templates', label: 'Badge Templates', roles: ['ADMIN', 'ISSUER'] },
+    { to: '/admin/badges', label: 'Badge Management', roles: ['ADMIN', 'ISSUER', 'MANAGER'] },
     { to: '/admin/bulk-issuance', label: 'Bulk Issuance', roles: ['ADMIN', 'ISSUER'] },
     { to: '/admin/analytics', label: 'Analytics', roles: ['ADMIN', 'ISSUER'] },
+    { to: '/admin/users', label: 'User Management', roles: ['ADMIN'] },
+    { to: '/profile', label: 'Profile', roles: ['ADMIN', 'ISSUER', 'MANAGER', 'EMPLOYEE'] },
   ];
 
-  const accessibleLinks = navLinks.filter(
-    (link) => user?.role && link.roles.includes(user.role)
-  );
+  const accessibleLinks = navLinks.filter((link) => user?.role && link.roles.includes(user.role));
 
   return (
     <nav
-      className={`bg-white shadow-sm border-b border-gray-200 md:hidden ${className}`}
+      className={`bg-white shadow-elevation-1 border-b border-neutral-200 md:hidden ${className}`}
       aria-label="Mobile navigation"
     >
       <div className="flex justify-between items-center h-14 px-4">
@@ -120,16 +122,16 @@ export function MobileNav({ className = '' }: MobileNavProps) {
           className="flex items-center min-h-[44px] min-w-[44px]"
           aria-label="G-Credit Home"
         >
-          <span className="text-lg font-bold text-blue-600">G-Credit</span>
+          <span className="text-lg font-bold text-brand-600">G-Credit</span>
         </Link>
 
         {/* Hamburger Menu Button - 44×44px touch target */}
         <button
           ref={menuButtonRef}
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center justify-center w-11 h-11 text-gray-700 
-                     hover:bg-gray-100 active:bg-gray-200 rounded-lg
-                     focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="flex items-center justify-center w-11 h-11 text-neutral-700 
+                     hover:bg-neutral-100 active:bg-neutral-200 rounded-lg
+                     focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
           aria-expanded={isOpen}
           aria-controls="mobile-nav-drawer"
           aria-label={isOpen ? 'Close menu' : 'Open menu'}
@@ -195,16 +197,16 @@ export function MobileNav({ className = '' }: MobileNavProps) {
         `}
       >
         {/* Drawer Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <span className="text-lg font-semibold text-gray-900">Menu</span>
+        <div className="flex items-center justify-between p-4 border-b border-neutral-200">
+          <span className="text-lg font-semibold text-neutral-900">Menu</span>
           <button
             onClick={() => {
               setIsOpen(false);
               menuButtonRef.current?.focus();
             }}
-            className="flex items-center justify-center w-11 h-11 text-gray-500
-                       hover:bg-gray-100 active:bg-gray-200 rounded-lg
-                       focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="flex items-center justify-center w-11 h-11 text-neutral-500
+                       hover:bg-neutral-100 active:bg-neutral-200 rounded-lg
+                       focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
             aria-label="Close menu"
           >
             <svg
@@ -225,24 +227,22 @@ export function MobileNav({ className = '' }: MobileNavProps) {
         </div>
 
         {/* User Info */}
-        <div className="p-4 border-b border-gray-200 bg-gray-50">
+        <div className="p-4 border-b border-neutral-200 bg-neutral-50">
           <div className="flex items-center space-x-3">
             <div
-              className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0"
+              className="w-10 h-10 bg-brand-50 rounded-full flex items-center justify-center flex-shrink-0"
               aria-hidden="true"
             >
-              <span className="text-blue-600 text-sm font-medium">
+              <span className="text-brand-600 text-sm font-medium">
                 {user?.firstName?.[0]}
                 {user?.lastName?.[0]}
               </span>
             </div>
             <div className="min-w-0">
-              <p className="font-medium text-gray-900 truncate">
+              <p className="font-medium text-neutral-900 truncate">
                 {user?.firstName} {user?.lastName}
               </p>
-              <p className="text-sm text-gray-500 capitalize">
-                {user?.role?.toLowerCase()}
-              </p>
+              <p className="text-sm text-neutral-500 capitalize">{user?.role?.toLowerCase()}</p>
             </div>
           </div>
         </div>
@@ -260,11 +260,11 @@ export function MobileNav({ className = '' }: MobileNavProps) {
                     className={`
                       flex items-center min-h-[44px] px-4 py-3
                       text-base font-medium transition-colors
-                      focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500
+                      focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500
                       ${
                         isActive
-                          ? 'text-blue-600 bg-blue-50'
-                          : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200'
+                          ? 'text-brand-600 bg-brand-50'
+                          : 'text-neutral-700 hover:bg-neutral-100 active:bg-neutral-200'
                       }
                     `}
                     aria-current={isActive ? 'page' : undefined}
@@ -278,11 +278,11 @@ export function MobileNav({ className = '' }: MobileNavProps) {
         </nav>
 
         {/* Logout Button - at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-white">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-neutral-200 bg-white">
           <button
             onClick={handleLogout}
             className="flex items-center justify-center w-full min-h-[44px] px-4 py-3
-                       text-base font-medium text-red-600 bg-red-50
+                       text-base font-medium text-error bg-error-light
                        hover:bg-red-100 active:bg-red-200 rounded-lg
                        focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           >

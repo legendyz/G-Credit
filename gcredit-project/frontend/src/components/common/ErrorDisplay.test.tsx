@@ -13,17 +13,13 @@ describe('ErrorDisplay', () => {
   });
 
   it('renders with custom title', () => {
-    render(
-      <ErrorDisplay title="Custom Error" message="Error message" />
-    );
+    render(<ErrorDisplay title="Custom Error" message="Error message" />);
     expect(screen.getByText('Custom Error')).toBeInTheDocument();
   });
 
   it('renders retry button when onRetry is provided', () => {
     const handleRetry = vi.fn();
-    render(
-      <ErrorDisplay message="Error" onRetry={handleRetry} />
-    );
+    render(<ErrorDisplay message="Error" onRetry={handleRetry} />);
 
     const button = screen.getByRole('button', { name: 'Try again' });
     fireEvent.click(button);
@@ -31,13 +27,7 @@ describe('ErrorDisplay', () => {
   });
 
   it('renders with custom retry text', () => {
-    render(
-      <ErrorDisplay
-        message="Error"
-        onRetry={() => {}}
-        retryText="Reload"
-      />
-    );
+    render(<ErrorDisplay message="Error" onRetry={() => {}} retryText="Reload" />);
     expect(screen.getByRole('button', { name: 'Reload' })).toBeInTheDocument();
   });
 
@@ -48,9 +38,7 @@ describe('ErrorDisplay', () => {
   });
 
   it('renders card variant', () => {
-    const { container } = render(
-      <ErrorDisplay message="Error" variant="card" />
-    );
+    const { container } = render(<ErrorDisplay message="Error" variant="card" />);
     expect(container.querySelector('.rounded-lg')).toBeInTheDocument();
   });
 

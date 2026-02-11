@@ -5,7 +5,7 @@ export const BadgeStatus = {
   REVOKED: 'REVOKED',
 } as const;
 
-export type BadgeStatus = typeof BadgeStatus[keyof typeof BadgeStatus];
+export type BadgeStatus = (typeof BadgeStatus)[keyof typeof BadgeStatus];
 
 export interface BadgeDetail {
   id: string;
@@ -14,6 +14,7 @@ export interface BadgeDetail {
   claimedAt: string | null;
   expiresAt: string | null;
   issuerMessage: string | null;
+  verificationId: string;
   // Story 9.3: Revocation fields (only present when status = REVOKED)
   revokedAt?: string;
   revocationReason?: string;
@@ -29,7 +30,7 @@ export interface BadgeDetail {
     imageUrl: string | null;
     category: string;
     skillIds: string[];
-    issuanceCriteria: any;
+    issuanceCriteria: Record<string, unknown> | string | null;
   };
   recipient: {
     firstName: string;
@@ -40,7 +41,6 @@ export interface BadgeDetail {
     firstName: string;
     lastName: string;
   };
-  assertionUrl: string;
 }
 
 // Sprint 5 Story 6.2 + Sprint 7 Story 9.2: Public verification response type
@@ -82,6 +82,5 @@ export interface VerificationResponse {
     blobUrl: string;
     uploadedAt: string;
   }>;
-  assertionJson: any; // Open Badges 2.0 JSON-LD
+  assertionJson: Record<string, unknown>; // Open Badges 2.0 JSON-LD
 }
-

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import BulkPreviewHeader from './BulkPreviewHeader';
 import BulkPreviewTable from './BulkPreviewTable';
 import ErrorCorrectionPanel from './ErrorCorrectionPanel';
@@ -7,6 +8,7 @@ import ConfirmationModal from './ConfirmationModal';
 import EmptyPreviewState from './EmptyPreviewState';
 import ProcessingComplete from './ProcessingComplete';
 import ProcessingModal from './ProcessingModal';
+import { API_BASE_URL } from '../../lib/apiConfig';
 
 interface PreviewRow {
   rowNumber: number;
@@ -82,9 +84,39 @@ export default function BulkPreviewPage() {
   const [sessionExpired, setSessionExpired] = useState(false);
 
   useEffect(() => {
-    if (sessionId) {
-      fetchPreviewData();
-    }
+    if (!sessionId) return;
+
+    const fetchPreviewData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch(`${API_BASE_URL}/bulk-issuance/preview/${sessionId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        });
+
+        if (!response.ok) {
+          if (response.status === 403) {
+            throw new Error('You do not have permission to access this session');
+          }
+          if (response.status === 404) {
+            throw new Error('Session not found or has expired');
+          }
+          throw new Error('Failed to load preview data');
+        }
+
+        const data: EnrichedPreviewData = await response.json();
+        setPreviewData(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPreviewData();
   }, [sessionId]);
 
   // Auto-redirect after session expires (AC5)
@@ -96,49 +128,13 @@ export default function BulkPreviewPage() {
     return () => clearTimeout(timer);
   }, [sessionExpired, navigate]);
 
-  const fetchPreviewData = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const response = await fetch(
-        `/api/bulk-issuance/preview/${sessionId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-          },
-        },
-      );
-
-      if (!response.ok) {
-        if (response.status === 403) {
-          throw new Error('You do not have permission to access this session');
-        }
-        if (response.status === 404) {
-          throw new Error('Session not found or has expired');
-        }
-        throw new Error('Failed to load preview data');
-      }
-
-      const data: EnrichedPreviewData = await response.json();
-      setPreviewData(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleDownloadErrorReport = async () => {
     try {
-      const response = await fetch(
-        `/api/bulk-issuance/error-report/${sessionId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-          },
+      const response = await fetch(`${API_BASE_URL}/bulk-issuance/error-report/${sessionId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
-      );
+      });
 
       if (!response.ok) {
         throw new Error('Failed to download error report');
@@ -154,17 +150,12 @@ export default function BulkPreviewPage() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Download failed');
+      toast.error(err instanceof Error ? err.message : 'Download failed');
     }
   };
 
   const handleConfirmClick = () => {
-    if (
-      !previewData ||
-      previewData.validRows === 0 ||
-      previewData.errorRows > 0
-    )
-      return;
+    if (!previewData || previewData.validRows === 0) return;
     setShowConfirmModal(true);
   };
 
@@ -176,17 +167,14 @@ export default function BulkPreviewPage() {
     const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     try {
-      const response = await fetch(
-        `/api/bulk-issuance/confirm/${sessionId}`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-            'Content-Type': 'application/json',
-          },
-          signal: controller.signal,
+      const response = await fetch(`${API_BASE_URL}/bulk-issuance/confirm/${sessionId}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          'Content-Type': 'application/json',
         },
-      );
+        signal: controller.signal,
+      });
 
       clearTimeout(timeoutId);
 
@@ -214,13 +202,9 @@ export default function BulkPreviewPage() {
     } catch (err) {
       clearTimeout(timeoutId);
       if (err instanceof DOMException && err.name === 'AbortError') {
-        setError(
-          'Processing timed out after 30 seconds. Please check your badges and try again.',
-        );
+        setError('Processing timed out after 30 seconds. Please check your badges and try again.');
       } else {
-        setError(
-          err instanceof Error ? err.message : 'Issuance failed unexpectedly',
-        );
+        setError(err instanceof Error ? err.message : 'Issuance failed unexpectedly');
       }
     } finally {
       setIsProcessing(false);
@@ -274,9 +258,7 @@ export default function BulkPreviewPage() {
         sessionId={sessionId}
         onViewBadges={() => navigate('/admin/badges')}
         onRetryFailed={
-          processingResults.failed > 0
-            ? () => navigate('/admin/bulk-issuance')
-            : undefined
+          processingResults.failed > 0 ? () => navigate('/admin/bulk-issuance') : undefined
         }
       />
     );
@@ -292,12 +274,10 @@ export default function BulkPreviewPage() {
       <div className="max-w-2xl mx-auto p-6">
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
           <div className="text-4xl mb-4">⏰</div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">
-            Session Expired
-          </h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Session Expired</h2>
           <p className="text-gray-600 mb-4">
-            Your preview session has expired. Please upload your CSV file again.
-            You will be redirected automatically in a few seconds.
+            Your preview session has expired. Please upload your CSV file again. You will be
+            redirected automatically in a few seconds.
           </p>
           <button
             onClick={handleReupload}
@@ -318,10 +298,12 @@ export default function BulkPreviewPage() {
           totalRows={previewData.totalRows}
           validRows={previewData.validRows}
           errorRows={previewData.errorRows}
-          templateBreakdown={previewData.summary?.byTemplate?.map((t) => ({
-            templateName: t.templateName,
-            count: t.count,
-          })) ?? []}
+          templateBreakdown={
+            previewData.summary?.byTemplate?.map((t) => ({
+              templateName: t.templateName,
+              count: t.count,
+            })) ?? []
+          }
           expiresAt={previewData.expiresAt}
           onExpired={handleSessionExpired}
         />
@@ -349,10 +331,12 @@ export default function BulkPreviewPage() {
         totalRows={previewData.totalRows}
         validRows={previewData.validRows}
         errorRows={previewData.errorRows}
-        templateBreakdown={previewData.summary?.byTemplate?.map((t) => ({
-          templateName: t.templateName,
-          count: t.count,
-        })) ?? []}
+        templateBreakdown={
+          previewData.summary?.byTemplate?.map((t) => ({
+            templateName: t.templateName,
+            count: t.count,
+          })) ?? []
+        }
         expiresAt={previewData.expiresAt}
         onExpired={handleSessionExpired}
       />
@@ -369,10 +353,7 @@ export default function BulkPreviewPage() {
       )}
 
       {/* Data Table with search/filter/pagination */}
-      <BulkPreviewTable
-        rows={previewData.rows}
-        validRows={previewData.validRows}
-      />
+      <BulkPreviewTable rows={previewData.rows} validRows={previewData.validRows} />
 
       {/* Action Buttons */}
       <div className="flex justify-between items-center">
@@ -385,16 +366,16 @@ export default function BulkPreviewPage() {
 
         <button
           onClick={handleConfirmClick}
-          disabled={
-            previewData.validRows === 0 || previewData.errorRows > 0
-          }
+          disabled={previewData.validRows === 0}
           className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-            previewData.validRows > 0 && previewData.errorRows === 0
+            previewData.validRows > 0
               ? 'bg-green-600 text-white hover:bg-green-700'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >
-          Confirm Issuance ({previewData.validRows} badges) →
+          {previewData.errorRows > 0
+            ? `Confirm Issuance (${previewData.validRows} of ${previewData.totalRows} badges) →`
+            : `Confirm Issuance (${previewData.validRows} badges) →`}
         </button>
       </div>
 

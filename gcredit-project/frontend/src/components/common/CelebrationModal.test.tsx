@@ -2,7 +2,7 @@
  * CelebrationModal Component Tests - Story 8.1 (UX-P1-001)
  */
 
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   CelebrationModal,
@@ -37,22 +37,12 @@ describe('CelebrationModal', () => {
   });
 
   it('renders with description', () => {
-    render(
-      <CelebrationModal
-        {...defaultProps}
-        description="You did something amazing!"
-      />
-    );
+    render(<CelebrationModal {...defaultProps} description="You did something amazing!" />);
     expect(screen.getByText('You did something amazing!')).toBeInTheDocument();
   });
 
   it('renders with achievement name', () => {
-    render(
-      <CelebrationModal
-        {...defaultProps}
-        achievementName="Top Performer"
-      />
-    );
+    render(<CelebrationModal {...defaultProps} achievementName="Top Performer" />);
     expect(screen.getByText('Top Performer')).toBeInTheDocument();
   });
 
@@ -105,20 +95,20 @@ describe('CelebrationModal', () => {
   });
 
   it('shows confetti when modal opens', () => {
-    const { container } = render(<CelebrationModal {...defaultProps} />);
+    render(<CelebrationModal {...defaultProps} />);
     // Modal renders with animation effect - check for dialog presence
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
   it('clears confetti effect timer on unmount', async () => {
     const { unmount } = render(<CelebrationModal {...defaultProps} />);
-    
+
     // Verify component rendered
     expect(screen.getByText('Congratulations!')).toBeInTheDocument();
-    
+
     // Unmount should not throw errors (timer cleanup)
     unmount();
-    
+
     vi.advanceTimersByTime(3000);
     // No assertions needed - just verify no errors on cleanup
   });
@@ -139,25 +129,14 @@ describe('BadgeEarnedCelebration', () => {
 
   it('renders with badge image', () => {
     render(
-      <BadgeEarnedCelebration
-        {...defaultProps}
-        badgeImageUrl="https://example.com/badge.png"
-      />
+      <BadgeEarnedCelebration {...defaultProps} badgeImageUrl="https://example.com/badge.png" />
     );
-    expect(screen.getByRole('img')).toHaveAttribute(
-      'src',
-      'https://example.com/badge.png'
-    );
+    expect(screen.getByRole('img')).toHaveAttribute('src', 'https://example.com/badge.png');
   });
 
   it('calls onViewBadge when provided', () => {
     const onViewBadge = vi.fn();
-    render(
-      <BadgeEarnedCelebration
-        {...defaultProps}
-        onViewBadge={onViewBadge}
-      />
-    );
+    render(<BadgeEarnedCelebration {...defaultProps} onViewBadge={onViewBadge} />);
 
     fireEvent.click(screen.getByRole('button', { name: 'View Badge' }));
     expect(onViewBadge).toHaveBeenCalled();
@@ -179,10 +158,7 @@ describe('MilestoneReachedCelebration', () => {
 
   it('renders with custom description', () => {
     render(
-      <MilestoneReachedCelebration
-        {...defaultProps}
-        description="You've collected 10 badges!"
-      />
+      <MilestoneReachedCelebration {...defaultProps} description="You've collected 10 badges!" />
     );
     expect(screen.getByText("You've collected 10 badges!")).toBeInTheDocument();
   });

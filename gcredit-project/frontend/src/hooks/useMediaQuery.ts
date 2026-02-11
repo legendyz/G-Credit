@@ -64,9 +64,7 @@ export function useIsMobile(): boolean {
  * Hook to detect if screen is tablet (768px - 1023px)
  */
 export function useIsTablet(): boolean {
-  return useMediaQuery(
-    `(min-width: ${BREAKPOINTS.md}px) and (max-width: ${BREAKPOINTS.lg - 1}px)`
-  );
+  return useMediaQuery(`(min-width: ${BREAKPOINTS.md}px) and (max-width: ${BREAKPOINTS.lg - 1}px)`);
 }
 
 /**

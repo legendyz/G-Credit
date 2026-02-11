@@ -65,7 +65,7 @@ describe('EvidenceService - Story 4.3', () => {
       mimetype: 'application/pdf',
       size: 5 * 1024 * 1024, // 5MB
       buffer: Buffer.from('test'),
-      stream: null as any,
+      stream: null!,
       destination: '',
       filename: '',
       path: '',

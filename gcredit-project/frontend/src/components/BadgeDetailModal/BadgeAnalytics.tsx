@@ -20,29 +20,29 @@ const BadgeAnalytics: React.FC<BadgeAnalyticsProps> = ({ badgeId, isOwner }) => 
   const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
-    if (isOwner) {
-      fetchAnalytics();
-    }
+    if (!isOwner) return;
+
+    const fetchAnalytics = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const [statsData, historyData] = await Promise.all([
+          getBadgeShareStats(badgeId),
+          getBadgeShareHistory(badgeId, 10),
+        ]);
+
+        setStats(statsData);
+        setHistory(historyData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load analytics');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnalytics();
   }, [badgeId, isOwner]);
-
-  const fetchAnalytics = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const [statsData, historyData] = await Promise.all([
-        getBadgeShareStats(badgeId),
-        getBadgeShareHistory(badgeId, 10),
-      ]);
-
-      setStats(statsData);
-      setHistory(historyData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load analytics');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (!isOwner) {
     return null; // Don't show analytics to non-owners
@@ -52,8 +52,18 @@ const BadgeAnalytics: React.FC<BadgeAnalyticsProps> = ({ badgeId, isOwner }) => 
     <section className="border-b last:border-b-0">
       <div className="px-6 py-4">
         <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-          <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          <svg
+            className="w-5 h-5 mr-2 text-blue-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+            />
           </svg>
           Share Analytics
         </h2>
@@ -101,15 +111,35 @@ const BadgeAnalytics: React.FC<BadgeAnalyticsProps> = ({ badgeId, isOwner }) => 
                 >
                   {showHistory ? (
                     <>
-                      <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                      <svg
+                        className="w-4 h-4 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 15l7-7 7 7"
+                        />
                       </svg>
                       Hide Share History
                     </>
                   ) : (
                     <>
-                      <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      <svg
+                        className="w-4 h-4 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                       View Share History ({history.length})
                     </>
@@ -154,13 +184,21 @@ const BadgeAnalytics: React.FC<BadgeAnalyticsProps> = ({ badgeId, isOwner }) => 
             {stats.total === 0 && (
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
                 <div className="text-gray-400 mb-2">
-                  <svg className="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                  <svg
+                    className="w-12 h-12 mx-auto"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                    />
                   </svg>
                 </div>
-                <p className="text-sm text-gray-600">
-                  This badge hasn't been shared yet.
-                </p>
+                <p className="text-sm text-gray-600">This badge hasn't been shared yet.</p>
                 <p className="text-xs text-gray-500 mt-1">
                   Click the "Share" button below to start sharing!
                 </p>

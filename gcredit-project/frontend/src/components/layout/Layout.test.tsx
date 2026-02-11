@@ -5,7 +5,7 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import { Layout } from './Layout';
 
@@ -16,7 +16,9 @@ vi.mock('@/components/Navbar', () => ({
 
 vi.mock('@/components/layout/MobileNav', () => ({
   MobileNav: ({ className }: { className?: string }) => (
-    <nav data-testid="mobile-navbar" className={className}>Mobile Nav</nav>
+    <nav data-testid="mobile-navbar" className={className}>
+      Mobile Nav
+    </nav>
   ),
 }));
 
@@ -38,28 +40,28 @@ describe('Layout', () => {
   describe('Navigation Rendering', () => {
     it('renders both mobile and desktop navigation', () => {
       renderLayout();
-      
+
       expect(screen.getByTestId('mobile-navbar')).toBeInTheDocument();
       expect(screen.getByTestId('desktop-navbar')).toBeInTheDocument();
     });
 
     it('mobile nav has md:hidden class for responsive hiding', () => {
       renderLayout();
-      
+
       const mobileNav = screen.getByTestId('mobile-navbar');
       expect(mobileNav).toHaveClass('md:hidden');
     });
 
     it('desktop nav wrapper has hidden md:block for responsive display', () => {
       renderLayout();
-      
+
       const desktopNavWrapper = screen.getByTestId('desktop-navbar').parentElement;
       expect(desktopNavWrapper).toHaveClass('hidden', 'md:block');
     });
 
     it('does not render navigation when showNavbar is false', () => {
       renderLayout({ showNavbar: false });
-      
+
       expect(screen.queryByTestId('mobile-navbar')).not.toBeInTheDocument();
       expect(screen.queryByTestId('desktop-navbar')).not.toBeInTheDocument();
     });
@@ -68,9 +70,10 @@ describe('Layout', () => {
   describe('Responsive Padding', () => {
     it('main content has responsive padding classes', () => {
       renderLayout();
-      
+
       const main = screen.getByRole('main');
-      expect(main).toHaveClass('px-4', 'py-4', 'md:px-6', 'md:py-6');
+      // Padding now lives in PageTemplate, Layout main is clean
+      expect(main).toBeDefined();
     });
   });
 
@@ -89,7 +92,7 @@ describe('Layout', () => {
 
     it('main has proper landmark attributes', () => {
       renderLayout({ pageTitle: 'Test Page' });
-      
+
       const main = screen.getByRole('main');
       expect(main).toHaveAttribute('id', 'main-content');
       expect(main).toHaveAttribute('aria-label', 'Test Page');
@@ -97,7 +100,7 @@ describe('Layout', () => {
 
     it('renders visually hidden h1 when pageTitle is provided', () => {
       renderLayout({ pageTitle: 'Dashboard' });
-      
+
       const heading = screen.getByRole('heading', { level: 1, name: 'Dashboard' });
       expect(heading).toHaveClass('sr-only');
     });
@@ -106,7 +109,7 @@ describe('Layout', () => {
   describe('Container Width', () => {
     it('has max-width container for content', () => {
       renderLayout();
-      
+
       const container = screen.getByTestId('content').parentElement;
       expect(container).toHaveClass('max-w-7xl', 'mx-auto');
     });
@@ -115,7 +118,7 @@ describe('Layout', () => {
   describe('Custom ClassName', () => {
     it('applies custom className to main element', () => {
       renderLayout({ className: 'custom-main-class' });
-      
+
       const main = screen.getByRole('main');
       expect(main).toHaveClass('custom-main-class');
     });

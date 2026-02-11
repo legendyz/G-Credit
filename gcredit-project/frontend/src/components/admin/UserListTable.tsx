@@ -15,13 +15,26 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { formatDistanceToNow, format } from 'date-fns';
-import { ArrowUpDown, ArrowUp, ArrowDown, Pencil, UserX, UserCheck, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Pencil,
+  UserX,
+  UserCheck,
+  ChevronDown,
+  ChevronUp,
+  Check,
+  X as XIcon,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { RoleBadge } from './RoleBadge';
 import { StatusBadge } from './StatusBadge';
 import { EditRoleDialog } from './EditRoleDialog';
 import { DeactivateUserDialog } from './DeactivateUserDialog';
 import { useIsMobile, useIsTablet } from '@/hooks/useMediaQuery';
+import { useUpdateUserDepartment } from '@/hooks/useAdminUsers';
 import type { AdminUser } from '@/lib/adminUsersApi';
 
 interface UserListTableProps {
@@ -33,6 +46,45 @@ interface UserListTableProps {
 }
 
 type SortField = 'name' | 'email' | 'role' | 'lastLogin' | 'createdAt';
+
+/** Sort header component (extracted to avoid creating components during render) */
+function SortHeader({
+  field,
+  children,
+  className = '',
+  sortBy,
+  sortOrder,
+  onSort,
+}: {
+  field: SortField;
+  children: React.ReactNode;
+  className?: string;
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
+  onSort: (field: SortField) => void;
+}) {
+  const isActive = sortBy === field;
+  return (
+    <th className={`px-4 py-3 text-left ${className}`}>
+      <button
+        onClick={() => onSort(field)}
+        className="inline-flex items-center gap-1 font-medium text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-200"
+        aria-label={`Sort by ${field}`}
+      >
+        {children}
+        {isActive ? (
+          sortOrder === 'asc' ? (
+            <ArrowUp className="h-4 w-4" />
+          ) : (
+            <ArrowDown className="h-4 w-4" />
+          )
+        ) : (
+          <ArrowUpDown className="h-4 w-4 opacity-50" />
+        )}
+      </button>
+    </th>
+  );
+}
 
 export function UserListTable({
   users,
@@ -46,7 +98,11 @@ export function UserListTable({
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [dialogType, setDialogType] = useState<'role' | 'status' | null>(null);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+  const [editingDeptUserId, setEditingDeptUserId] = useState<string | null>(null);
+  const [editingDeptValue, setEditingDeptValue] = useState('');
   const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const deptInputRef = useRef<HTMLInputElement | null>(null);
+  const updateDeptMutation = useUpdateUserDepartment();
 
   // Toggle card expansion (mobile only)
   const toggleCardExpand = useCallback((userId: string) => {
@@ -84,61 +140,54 @@ export function UserListTable({
     [onSort]
   );
 
-  // Sort header component
-  const SortHeader = ({
-    field,
-    children,
-    className = '',
-  }: {
-    field: SortField;
-    children: React.ReactNode;
-    className?: string;
-  }) => {
-    const isActive = sortBy === field;
-    return (
-      <th className={`px-4 py-3 text-left ${className}`}>
-        <button
-          onClick={() => handleSort(field)}
-          className="inline-flex items-center gap-1 font-medium text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-200"
-          aria-label={`Sort by ${field}`}
-        >
-          {children}
-          {isActive ? (
-            sortOrder === 'asc' ? (
-              <ArrowUp className="h-4 w-4" />
-            ) : (
-              <ArrowDown className="h-4 w-4" />
-            )
-          ) : (
-            <ArrowUpDown className="h-4 w-4 opacity-50" />
-          )}
-        </button>
-      </th>
-    );
-  };
-
   // Open dialog handlers
-  const openRoleDialog = useCallback(
-    (user: AdminUser, buttonRef: HTMLButtonElement) => {
-      setSelectedUser(user);
-      setDialogType('role');
-      triggerRef.current = buttonRef;
-    },
-    []
-  );
+  const openRoleDialog = useCallback((user: AdminUser, buttonRef: HTMLButtonElement) => {
+    setSelectedUser(user);
+    setDialogType('role');
+    triggerRef.current = buttonRef;
+  }, []);
 
-  const openStatusDialog = useCallback(
-    (user: AdminUser, buttonRef: HTMLButtonElement) => {
-      setSelectedUser(user);
-      setDialogType('status');
-      triggerRef.current = buttonRef;
-    },
-    []
-  );
+  const openStatusDialog = useCallback((user: AdminUser, buttonRef: HTMLButtonElement) => {
+    setSelectedUser(user);
+    setDialogType('status');
+    triggerRef.current = buttonRef;
+  }, []);
 
   const closeDialog = useCallback(() => {
     setSelectedUser(null);
     setDialogType(null);
+  }, []);
+
+  // Inline department editing
+  const startEditDept = useCallback((user: AdminUser) => {
+    setEditingDeptUserId(user.id);
+    setEditingDeptValue(user.department || '');
+    setTimeout(() => deptInputRef.current?.focus(), 50);
+  }, []);
+
+  const saveDept = useCallback(
+    async (userId: string) => {
+      const trimmed = editingDeptValue.trim();
+      if (!trimmed) {
+        setEditingDeptUserId(null);
+        return;
+      }
+      try {
+        await updateDeptMutation.mutateAsync({
+          userId,
+          data: { department: trimmed },
+        });
+        toast.success('Department updated');
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Failed to update department');
+      }
+      setEditingDeptUserId(null);
+    },
+    [editingDeptValue, updateDeptMutation]
+  );
+
+  const cancelEditDept = useCallback(() => {
+    setEditingDeptUserId(null);
   }, []);
 
   // Mobile card view with tap-to-expand (AC1)
@@ -211,7 +260,9 @@ export function UserListTable({
                         variant="outline"
                         size="sm"
                         className={`min-h-[44px] min-w-[44px] flex-1 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                          user.isActive ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'
+                          user.isActive
+                            ? 'text-red-600 hover:text-red-700'
+                            : 'text-green-600 hover:text-green-700'
                         }`}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -268,14 +319,37 @@ export function UserListTable({
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-800">
             <tr>
-              <SortHeader field="name">Name</SortHeader>
-              <SortHeader field="email" className={isTablet ? 'hidden md:table-cell' : ''}>
+              <SortHeader field="name" sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort}>
+                Name
+              </SortHeader>
+              <SortHeader
+                field="email"
+                className={isTablet ? 'hidden md:table-cell' : ''}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={handleSort}
+              >
                 Email
               </SortHeader>
-              <SortHeader field="role">Role</SortHeader>
-              {!isTablet && <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Department</th>}
-              <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Status</th>
-              <SortHeader field="lastLogin">Last Login</SortHeader>
+              <SortHeader field="role" sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort}>
+                Role
+              </SortHeader>
+              {!isTablet && (
+                <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                  Department
+                </th>
+              )}
+              <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                Status
+              </th>
+              <SortHeader
+                field="lastLogin"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={handleSort}
+              >
+                Last Login
+              </SortHeader>
               {/* Pinned Actions column with sticky positioning */}
               <th className="sticky right-0 bg-gray-50 px-4 py-3 text-right font-medium text-gray-500 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)] dark:bg-gray-800 dark:text-gray-400">
                 Actions
@@ -293,11 +367,11 @@ export function UserListTable({
                   onKeyDown={(e) => {
                     if (e.key === 'ArrowDown') {
                       e.preventDefault();
-                      const nextRow = (e.currentTarget.nextElementSibling as HTMLElement);
+                      const nextRow = e.currentTarget.nextElementSibling as HTMLElement;
                       nextRow?.focus();
                     } else if (e.key === 'ArrowUp') {
                       e.preventDefault();
-                      const prevRow = (e.currentTarget.previousElementSibling as HTMLElement);
+                      const prevRow = e.currentTarget.previousElementSibling as HTMLElement;
                       prevRow?.focus();
                     }
                   }}
@@ -322,7 +396,43 @@ export function UserListTable({
                   </td>
                   {!isTablet && (
                     <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
-                      {user.department || '—'}
+                      {editingDeptUserId === user.id ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            ref={deptInputRef}
+                            type="text"
+                            value={editingDeptValue}
+                            onChange={(e) => setEditingDeptValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') saveDept(user.id);
+                              if (e.key === 'Escape') cancelEditDept();
+                            }}
+                            className="w-28 rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
+                          />
+                          <button
+                            onClick={() => saveDept(user.id)}
+                            className="p-1 text-green-600 hover:text-green-700"
+                            title="Save"
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={cancelEditDept}
+                            className="p-1 text-gray-400 hover:text-gray-600"
+                            title="Cancel"
+                          >
+                            <XIcon className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <span
+                          className="cursor-pointer hover:text-blue-600 hover:underline"
+                          onClick={() => startEditDept(user)}
+                          title="Click to edit department"
+                        >
+                          {user.department || '—'}
+                        </span>
+                      )}
                     </td>
                   )}
                   <td className="whitespace-nowrap px-4 py-3">

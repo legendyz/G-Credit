@@ -18,6 +18,8 @@
 | [005](005-open-badges-integration.md) | 2026-01-28 | Open Badges 2.0 Integration Architecture | ✅ Accepted | Architect |
 | [006](006-public-api-security.md) | 2026-01-28 | Public API Security Model | ✅ Accepted | Architect |
 | [007](007-baked-badge-storage.md) | 2026-01-28 | Baked Badge Storage Strategy | ✅ Accepted | Architect |
+| [008](ADR-008-microsoft-graph-integration.md) | 2026-01-29 | Microsoft Graph Integration Strategy | ✅ Accepted | Architect |
+| [009](ADR-009-tailwind-v4-css-first-config.md) | 2026-02-09 | Tailwind CSS v4 CSS-First Configuration | ✅ Accepted | SM / Project Lead |
 
 ---
 

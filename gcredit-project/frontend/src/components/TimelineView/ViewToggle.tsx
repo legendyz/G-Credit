@@ -12,9 +12,7 @@ export function ViewToggle({ mode, onChange }: ViewToggleProps) {
       <button
         onClick={() => onChange('timeline')}
         className={`px-3 py-2 rounded flex items-center gap-2 transition-colors ${
-          mode === 'timeline'
-            ? 'bg-blue-600 text-white'
-            : 'text-gray-700 hover:bg-gray-100'
+          mode === 'timeline' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'
         }`}
         aria-label="Timeline view"
       >
@@ -24,9 +22,7 @@ export function ViewToggle({ mode, onChange }: ViewToggleProps) {
       <button
         onClick={() => onChange('grid')}
         className={`px-3 py-2 rounded flex items-center gap-2 transition-colors ${
-          mode === 'grid'
-            ? 'bg-blue-600 text-white'
-            : 'text-gray-700 hover:bg-gray-100'
+          mode === 'grid' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'
         }`}
         aria-label="Grid view"
       >

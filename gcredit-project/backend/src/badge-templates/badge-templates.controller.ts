@@ -44,7 +44,7 @@ import { UserRole } from '@prisma/client';
 import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
 
 @ApiTags('Badge Templates')
-@Controller('badge-templates')
+@Controller('api/badge-templates')
 export class BadgeTemplatesController {
   constructor(private readonly badgeTemplatesService: BadgeTemplatesService) {}
 
@@ -162,8 +162,11 @@ export class BadgeTemplatesController {
     schema: {
       type: 'object',
       properties: {
-        name: { type: 'string', example: 'TypeScript高级认证' },
-        description: { type: 'string', example: '完成TypeScript高级课程' },
+        name: { type: 'string', example: 'TypeScript Advanced Certification' },
+        description: {
+          type: 'string',
+          example: 'Complete the advanced TypeScript course',
+        },
         category: {
           type: 'string',
           enum: ['achievement', 'skill', 'certification', 'participation'],
@@ -184,7 +187,7 @@ export class BadgeTemplatesController {
           description: 'Badge template image (PNG/JPG, max 2MB)',
         },
       },
-      required: ['name', 'category', 'skillIds', 'issuanceCriteria'],
+      required: ['name', 'category'],
     },
   })
   @ApiResponse({

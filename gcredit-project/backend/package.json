@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "",
   "author": "",
   "private": true,
@@ -12,18 +12,21 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/src/main",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix --max-warnings=423",
-    "lint:strict": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --max-warnings=0",
+    "lint:fix": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix --max-warnings=0",
+    "type-check": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed": "ts-node prisma/seed.ts",
+    "seed:uat": "ts-node prisma/seed-uat.ts",
+    "seed:reset": "npx prisma migrate reset --force --skip-seed && ts-node prisma/seed-uat.ts",
     "sync:m365": "ts-node scripts/sync-m365.ts"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/seed-uat.ts"
   },
   "dependencies": {
     "@azure/identity": "^4.13.0",

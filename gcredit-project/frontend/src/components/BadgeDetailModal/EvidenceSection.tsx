@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { API_BASE_URL } from '../../lib/apiConfig';
 
 interface EvidenceFile {
   id: string;
@@ -20,30 +21,30 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const fetchEvidence = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/evidence`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch evidence files');
+        }
+
+        const data = await response.json();
+        setEvidenceFiles(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchEvidence();
   }, [badgeId]);
-
-  const fetchEvidence = async () => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:3000/api/badges/${badgeId}/evidence`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch evidence files');
-      }
-
-      const data = await response.json();
-      setEvidenceFiles(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getFileIcon = (mimeType: string) => {
     if (mimeType.startsWith('image/')) return '📷';
@@ -61,22 +62,24 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
   const handleDownload = async (fileId: string) => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:3000/api/evidence/${badgeId}/${fileId}/download`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/badges/${badgeId}/evidence/${fileId}/download`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error('Failed to generate download link');
       }
 
-      const { sasUrl } = await response.json();
-      
+      const { url } = await response.json();
+
       // Open in new tab to trigger download
-      window.open(sasUrl, '_blank');
-    } catch (err) {
-      console.error('Download error:', err);
+      window.open(url, '_blank');
+    } catch {
       toast.error('Download failed', {
         description: 'Unable to download file. Please try again.',
       });
@@ -94,9 +97,9 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
 
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:3000/api/evidence/${badgeId}/${fileId}/preview`, {
+      const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/evidence/${fileId}/preview`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -104,12 +107,11 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
         throw new Error('Failed to generate preview link');
       }
 
-      const { sasUrl } = await response.json();
-      
+      const { url } = await response.json();
+
       // Open in new tab for preview
-      window.open(sasUrl, '_blank');
-    } catch (err) {
-      console.error('Preview error:', err);
+      window.open(url, '_blank');
+    } catch {
       toast.error('Preview failed', {
         description: 'Unable to preview file. Please try again.',
       });
@@ -141,11 +143,11 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
   }
 
   return (
-    <div className="py-6 border-t">
+    <section className="px-6 py-6 border-b">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
         Evidence Files ({evidenceFiles.length})
       </h3>
-      
+
       <div className="space-y-3">
         {evidenceFiles.map((file) => (
           <div
@@ -153,16 +155,12 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
             className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <div className="flex items-center space-x-3 flex-1 min-w-0">
-              <span className="text-2xl flex-shrink-0">
-                {getFileIcon(file.mimeType)}
-              </span>
-              
+              <span className="text-2xl flex-shrink-0">{getFileIcon(file.mimeType)}</span>
+
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {file.originalName}
-                </p>
+                <p className="text-sm font-medium text-gray-900 truncate">{file.originalName}</p>
                 <p className="text-xs text-gray-500">
-                  {formatFileSize(file.fileSize)} �?{new Date(file.uploadedAt).toLocaleDateString()}
+                  {formatFileSize(file.fileSize)} · {new Date(file.uploadedAt).toLocaleDateString()}
                 </p>
               </div>
             </div>
@@ -172,7 +170,7 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
               {(file.mimeType.startsWith('image/') || file.mimeType.includes('pdf')) && (
                 <button
                   onClick={() => handlePreview(file.id, file.mimeType)}
-                  className="px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors"
+                  className="px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors cursor-pointer"
                   aria-label={`Preview ${file.originalName}`}
                 >
                   Preview
@@ -182,7 +180,7 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
               {/* AC 3.9: Download with SAS token */}
               <button
                 onClick={() => handleDownload(file.id)}
-                className="px-3 py-1.5 text-xs font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-200 rounded transition-colors"
+                className="px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors cursor-pointer"
                 aria-label={`Download ${file.originalName}`}
               >
                 Download
@@ -194,11 +192,9 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
 
       {/* AC 3.1: Note about 5 file limit */}
       {evidenceFiles.length >= 5 && (
-        <p className="mt-3 text-xs text-gray-500 italic">
-          Maximum of 5 evidence files reached
-        </p>
+        <p className="mt-3 text-xs text-gray-500 italic">Maximum of 5 evidence files reached</p>
       )}
-    </div>
+    </section>
   );
 };
 

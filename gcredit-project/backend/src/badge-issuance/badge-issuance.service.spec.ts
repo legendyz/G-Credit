@@ -15,13 +15,31 @@ import {
   GoneException,
 } from '@nestjs/common';
 import { BadgeStatus } from '@prisma/client';
+import {
+  anyDate,
+  containing,
+  strContaining,
+} from '../../test/helpers/jest-typed-matchers';
 
 describe('BadgeIssuanceService', () => {
   let service: BadgeIssuanceService;
   let _prismaService: PrismaService;
   let _assertionGenerator: AssertionGeneratorService;
 
-  const mockPrismaService = {
+  // Explicit type annotation breaks circular reference (TS7022/TS7024)
+  const mockPrismaService: {
+    badgeTemplate: { findUnique: jest.Mock };
+    user: { findUnique: jest.Mock };
+    badge: {
+      create: jest.Mock;
+      update: jest.Mock;
+      findUnique: jest.Mock;
+      count?: jest.Mock;
+      findMany?: jest.Mock;
+    };
+    auditLog: { create: jest.Mock };
+    $transaction: jest.Mock;
+  } = {
     badgeTemplate: {
       findUnique: jest.fn(),
     },
@@ -38,8 +56,8 @@ describe('BadgeIssuanceService', () => {
     },
     // Interactive transaction: execute callback with tx proxy that delegates to badge mocks
     $transaction: jest.fn(
-      async (callback: (tx: unknown) => Promise<unknown>) => {
-        const tx = {
+      async (callback: (tx: unknown) => Promise<unknown>): Promise<unknown> => {
+        const tx: { badge: { create: jest.Mock; update: jest.Mock } } = {
           badge: {
             create: mockPrismaService.badge.create,
             update: mockPrismaService.badge.update,
@@ -73,6 +91,7 @@ describe('BadgeIssuanceService', () => {
 
   const mockMilestonesService = {
     checkMilestones: jest.fn().mockResolvedValue(undefined),
+    getUserAchievements: jest.fn().mockResolvedValue([]),
   };
 
   const mockStorageService = {
@@ -90,8 +109,8 @@ describe('BadgeIssuanceService', () => {
   };
 
   const mockConfigService = {
-    get: jest.fn((key: string, defaultValue?: any) => {
-      const config = {
+    get: jest.fn((key: string, defaultValue?: unknown) => {
+      const config: Record<string, string> = {
         GRAPH_EMAIL_FROM: 'test@test.com',
       };
       return config[key] || defaultValue;
@@ -507,7 +526,7 @@ describe('BadgeIssuanceService', () => {
         where: { id: mockPendingBadge.id },
         data: {
           status: BadgeStatus.CLAIMED,
-          claimedAt: expect.any(Date),
+          claimedAt: anyDate(),
           claimToken: null,
         },
         include: {
@@ -653,21 +672,23 @@ describe('BadgeIssuanceService', () => {
         // Arrange
         mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
         mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
-        mockPrismaService.$transaction.mockImplementation((callback) => {
-          return callback({
-            badge: {
-              update: jest.fn().mockResolvedValue({
-                ...mockBadge,
-                status: BadgeStatus.REVOKED,
-                revokedBy: mockAdminUser.id,
-                revokedAt: new Date(),
-              }),
-            },
-            auditLog: {
-              create: jest.fn().mockResolvedValue({}),
-            },
-          });
-        });
+        mockPrismaService.$transaction.mockImplementation(
+          (callback: (tx: unknown) => unknown) => {
+            return callback({
+              badge: {
+                update: jest.fn().mockResolvedValue({
+                  ...mockBadge,
+                  status: BadgeStatus.REVOKED,
+                  revokedBy: mockAdminUser.id,
+                  revokedAt: new Date(),
+                }),
+              },
+              auditLog: {
+                create: jest.fn().mockResolvedValue({}),
+              },
+            });
+          },
+        );
 
         // Act
         const result = await service.revokeBadge(mockBadgeId, {
@@ -688,19 +709,21 @@ describe('BadgeIssuanceService', () => {
         };
         mockPrismaService.badge.findUnique.mockResolvedValue(ownBadge);
         mockPrismaService.user.findUnique.mockResolvedValue(mockIssuerUser);
-        mockPrismaService.$transaction.mockImplementation((callback) => {
-          return callback({
-            badge: {
-              update: jest.fn().mockResolvedValue({
-                ...ownBadge,
-                status: BadgeStatus.REVOKED,
-              }),
-            },
-            auditLog: {
-              create: jest.fn().mockResolvedValue({}),
-            },
-          });
-        });
+        mockPrismaService.$transaction.mockImplementation(
+          (callback: (tx: unknown) => unknown) => {
+            return callback({
+              badge: {
+                update: jest.fn().mockResolvedValue({
+                  ...ownBadge,
+                  status: BadgeStatus.REVOKED,
+                }),
+              },
+              auditLog: {
+                create: jest.fn().mockResolvedValue({}),
+              },
+            });
+          },
+        );
 
         // Act
         const result = await service.revokeBadge(mockBadgeId, {
@@ -765,7 +788,7 @@ describe('BadgeIssuanceService', () => {
 
         // Assert
         expect(result.status).toBe(BadgeStatus.REVOKED);
-        expect(result.alreadyRevoked).toBe(true);
+        expect(result).toHaveProperty('alreadyRevoked', true);
         expect(mockPrismaService.$transaction).not.toHaveBeenCalled();
       });
 
@@ -792,23 +815,25 @@ describe('BadgeIssuanceService', () => {
         mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
         mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
         const mockTimestamp = new Date();
-        mockPrismaService.$transaction.mockImplementation((callback) => {
-          return callback({
-            badge: {
-              update: jest.fn().mockResolvedValue({
-                ...mockBadge,
-                status: BadgeStatus.REVOKED,
-                revokedAt: mockTimestamp,
-                revokedBy: mockAdminUser.id,
-                revocationReason: 'EXPIRED',
-                revocationNotes: 'Badge validity period ended',
-              }),
-            },
-            auditLog: {
-              create: jest.fn().mockResolvedValue({}),
-            },
-          });
-        });
+        mockPrismaService.$transaction.mockImplementation(
+          (callback: (tx: unknown) => unknown) => {
+            return callback({
+              badge: {
+                update: jest.fn().mockResolvedValue({
+                  ...mockBadge,
+                  status: BadgeStatus.REVOKED,
+                  revokedAt: mockTimestamp,
+                  revokedBy: mockAdminUser.id,
+                  revocationReason: 'EXPIRED',
+                  revocationNotes: 'Badge validity period ended',
+                }),
+              },
+              auditLog: {
+                create: jest.fn().mockResolvedValue({}),
+              },
+            });
+          },
+        );
 
         // Act
         const result = await service.revokeBadge(mockBadgeId, {
@@ -829,19 +854,21 @@ describe('BadgeIssuanceService', () => {
         mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
         mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
         const mockAuditLogCreate = jest.fn().mockResolvedValue({});
-        mockPrismaService.$transaction.mockImplementation((callback) => {
-          return callback({
-            badge: {
-              update: jest.fn().mockResolvedValue({
-                ...mockBadge,
-                status: BadgeStatus.REVOKED,
-              }),
-            },
-            auditLog: {
-              create: mockAuditLogCreate,
-            },
-          });
-        });
+        mockPrismaService.$transaction.mockImplementation(
+          (callback: (tx: unknown) => unknown) => {
+            return callback({
+              badge: {
+                update: jest.fn().mockResolvedValue({
+                  ...mockBadge,
+                  status: BadgeStatus.REVOKED,
+                }),
+              },
+              auditLog: {
+                create: mockAuditLogCreate,
+              },
+            });
+          },
+        );
 
         // Act
         await service.revokeBadge(mockBadgeId, {
@@ -851,7 +878,7 @@ describe('BadgeIssuanceService', () => {
 
         // Assert
         expect(mockAuditLogCreate).toHaveBeenCalledWith({
-          data: expect.objectContaining({
+          data: containing({
             entityType: 'Badge',
             entityId: mockBadgeId,
             action: 'REVOKED',
@@ -901,23 +928,25 @@ describe('BadgeIssuanceService', () => {
           mockBadgeWithRecipient,
         );
         mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
-        mockPrismaService.$transaction.mockImplementation((callback) => {
-          return callback({
-            badge: {
-              update: jest.fn().mockResolvedValue({
-                ...mockBadgeWithRecipient,
-                status: BadgeStatus.REVOKED,
-                revokedAt: new Date(),
-                revokedBy: mockAdminUser.id,
-                revocationReason: 'Policy Violation',
-                revocationNotes: 'Test notes',
-              }),
-            },
-            auditLog: {
-              create: jest.fn().mockResolvedValue({}),
-            },
-          });
-        });
+        mockPrismaService.$transaction.mockImplementation(
+          (callback: (tx: unknown) => unknown) => {
+            return callback({
+              badge: {
+                update: jest.fn().mockResolvedValue({
+                  ...mockBadgeWithRecipient,
+                  status: BadgeStatus.REVOKED,
+                  revokedAt: new Date(),
+                  revokedBy: mockAdminUser.id,
+                  revocationReason: 'Policy Violation',
+                  revocationNotes: 'Test notes',
+                }),
+              },
+              auditLog: {
+                create: jest.fn().mockResolvedValue({}),
+              },
+            });
+          },
+        );
 
         // Act
         await service.revokeBadge(mockBadgeId, {
@@ -933,14 +962,14 @@ describe('BadgeIssuanceService', () => {
         expect(
           mockNotificationService.sendBadgeRevocationNotification,
         ).toHaveBeenCalledWith(
-          expect.objectContaining({
+          containing({
             recipientEmail: 'recipient@test.com',
             recipientName: 'Jane Doe',
             badgeName: 'Advanced React Development',
             revocationReason: 'Policy Violation',
-            revocationDate: expect.any(Date),
+            revocationDate: anyDate(),
             revocationNotes: 'Test notes',
-            walletUrl: expect.stringContaining('/wallet'),
+            walletUrl: strContaining('/wallet'),
           }),
         );
       });
@@ -965,19 +994,21 @@ describe('BadgeIssuanceService', () => {
           mockBadgeWithRecipient,
         );
         mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
-        mockPrismaService.$transaction.mockImplementation((callback) => {
-          return callback({
-            badge: {
-              update: jest.fn().mockResolvedValue({
-                ...mockBadgeWithRecipient,
-                status: BadgeStatus.REVOKED,
-              }),
-            },
-            auditLog: {
-              create: jest.fn().mockResolvedValue({}),
-            },
-          });
-        });
+        mockPrismaService.$transaction.mockImplementation(
+          (callback: (tx: unknown) => unknown) => {
+            return callback({
+              badge: {
+                update: jest.fn().mockResolvedValue({
+                  ...mockBadgeWithRecipient,
+                  status: BadgeStatus.REVOKED,
+                }),
+              },
+              auditLog: {
+                create: jest.fn().mockResolvedValue({}),
+              },
+            });
+          },
+        );
 
         // Act
         await service.revokeBadge(mockBadgeId, {
@@ -989,12 +1020,12 @@ describe('BadgeIssuanceService', () => {
         expect(
           mockNotificationService.sendBadgeRevocationNotification,
         ).toHaveBeenCalledWith(
-          expect.objectContaining({
+          containing({
             recipientEmail: 'john@test.com',
             recipientName: 'John Smith',
             badgeName: 'Security Awareness',
             revocationReason: 'Expired',
-            revocationDate: expect.any(Date),
+            revocationDate: anyDate(),
             revocationNotes: undefined,
           }),
         );
@@ -1038,19 +1069,21 @@ describe('BadgeIssuanceService', () => {
           mockBadgeWithRecipient,
         );
         mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
-        mockPrismaService.$transaction.mockImplementation((callback) => {
-          return callback({
-            badge: {
-              update: jest.fn().mockResolvedValue({
-                ...mockBadgeWithRecipient,
-                status: BadgeStatus.REVOKED,
-              }),
-            },
-            auditLog: {
-              create: jest.fn().mockResolvedValue({}),
-            },
-          });
-        });
+        mockPrismaService.$transaction.mockImplementation(
+          (callback: (tx: unknown) => unknown) => {
+            return callback({
+              badge: {
+                update: jest.fn().mockResolvedValue({
+                  ...mockBadgeWithRecipient,
+                  status: BadgeStatus.REVOKED,
+                }),
+              },
+              auditLog: {
+                create: jest.fn().mockResolvedValue({}),
+              },
+            });
+          },
+        );
 
         // Simulate email service failure
         mockNotificationService.sendBadgeRevocationNotification.mockRejectedValue(
@@ -1087,20 +1120,22 @@ describe('BadgeIssuanceService', () => {
           mockBadgeWithRecipient,
         );
         mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
-        mockPrismaService.$transaction.mockImplementation((callback) => {
-          return callback({
-            badge: {
-              update: jest.fn().mockResolvedValue({
-                ...mockBadgeWithRecipient,
-                status: BadgeStatus.REVOKED,
-                revokedAt: new Date(),
-              }),
-            },
-            auditLog: {
-              create: jest.fn().mockResolvedValue({}),
-            },
-          });
-        });
+        mockPrismaService.$transaction.mockImplementation(
+          (callback: (tx: unknown) => unknown) => {
+            return callback({
+              badge: {
+                update: jest.fn().mockResolvedValue({
+                  ...mockBadgeWithRecipient,
+                  status: BadgeStatus.REVOKED,
+                  revokedAt: new Date(),
+                }),
+              },
+              auditLog: {
+                create: jest.fn().mockResolvedValue({}),
+              },
+            });
+          },
+        );
 
         // Mock notification result for audit
         mockNotificationService.sendBadgeRevocationNotification.mockResolvedValue(
@@ -1122,11 +1157,11 @@ describe('BadgeIssuanceService', () => {
 
         // Assert - Audit log should be created for notification
         expect(mockPrismaService.auditLog.create).toHaveBeenCalledWith({
-          data: expect.objectContaining({
+          data: containing({
             entityType: 'BadgeNotification',
             entityId: mockBadgeId,
             action: 'NOTIFICATION_SENT',
-            metadata: expect.objectContaining({
+            metadata: containing({
               notificationType: 'REVOCATION',
               recipientEmail: 'audit-test@test.com',
               success: true,
@@ -1155,20 +1190,22 @@ describe('BadgeIssuanceService', () => {
           mockBadgeWithRecipient,
         );
         mockPrismaService.user.findUnique.mockResolvedValue(mockAdminUser);
-        mockPrismaService.$transaction.mockImplementation((callback) => {
-          return callback({
-            badge: {
-              update: jest.fn().mockResolvedValue({
-                ...mockBadgeWithRecipient,
-                status: BadgeStatus.REVOKED,
-                revokedAt: revokedAt,
-              }),
-            },
-            auditLog: {
-              create: jest.fn().mockResolvedValue({}),
-            },
-          });
-        });
+        mockPrismaService.$transaction.mockImplementation(
+          (callback: (tx: unknown) => unknown) => {
+            return callback({
+              badge: {
+                update: jest.fn().mockResolvedValue({
+                  ...mockBadgeWithRecipient,
+                  status: BadgeStatus.REVOKED,
+                  revokedAt: revokedAt,
+                }),
+              },
+              auditLog: {
+                create: jest.fn().mockResolvedValue({}),
+              },
+            });
+          },
+        );
 
         // Act
         await service.revokeBadge(mockBadgeId, {
@@ -1180,7 +1217,7 @@ describe('BadgeIssuanceService', () => {
         expect(
           mockNotificationService.sendBadgeRevocationNotification,
         ).toHaveBeenCalledWith(
-          expect.objectContaining({
+          containing({
             revocationDate: revokedAt,
           }),
         );
@@ -1240,12 +1277,17 @@ describe('BadgeIssuanceService', () => {
 
         // Assert - Revocation fields should be present
         expect(result.badges).toHaveLength(1);
-        const badge = result.badges[0];
-        expect(badge.status).toBe(BadgeStatus.REVOKED);
-        expect(badge.revokedAt).toBeDefined();
-        expect(badge.revocationReason).toBe('Policy Violation');
-        expect(badge.revocationNotes).toBe('Violated company code of conduct');
-        expect(badge.revokedBy).toBeDefined();
+        expect(result.badges[0]).toHaveProperty('status', BadgeStatus.REVOKED);
+        expect(result.badges[0]).toHaveProperty('revokedAt');
+        expect(result.badges[0]).toHaveProperty(
+          'revocationReason',
+          'Policy Violation',
+        );
+        expect(result.badges[0]).toHaveProperty(
+          'revocationNotes',
+          'Violated company code of conduct',
+        );
+        expect(result.badges[0]).toHaveProperty('revokedBy');
       });
 
       it('should NOT include revocation fields when badge is CLAIMED', async () => {
@@ -1288,11 +1330,10 @@ describe('BadgeIssuanceService', () => {
 
         // Assert - Revocation fields should NOT be present
         expect(result.badges).toHaveLength(1);
-        const badge = result.badges[0];
-        expect(badge.status).toBe(BadgeStatus.CLAIMED);
-        expect(badge.revokedAt).toBeUndefined();
-        expect(badge.revocationReason).toBeUndefined();
-        expect(badge.revocationNotes).toBeUndefined();
+        expect(result.badges[0]).toHaveProperty('status', BadgeStatus.CLAIMED);
+        expect(result.badges[0]).not.toHaveProperty('revokedAt');
+        expect(result.badges[0]).not.toHaveProperty('revocationReason');
+        expect(result.badges[0]).not.toHaveProperty('revocationNotes');
       });
 
       it('should support status filter for REVOKED badges', async () => {
@@ -1340,7 +1381,7 @@ describe('BadgeIssuanceService', () => {
           },
         });
         expect(result.badges).toHaveLength(1);
-        expect(result.badges[0].status).toBe(BadgeStatus.REVOKED);
+        expect(result.badges[0]).toHaveProperty('status', BadgeStatus.REVOKED);
       });
     });
   });

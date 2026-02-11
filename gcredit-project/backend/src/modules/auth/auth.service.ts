@@ -53,8 +53,8 @@ export class AuthService {
       },
     });
 
-    // 4. TODO: Add audit logging (Task 2.2.8)
-    console.log(`[AUDIT] User registered: ${user.email} (${user.id})`);
+    // Audit logging via NestJS Logger — full audit trail system deferred to Phase 2
+    this.logger.log(`[AUDIT] User registered: ${user.email} (${user.id})`);
 
     // 5. Return user without password hash
     const { passwordHash: _hash, ...result } = user;
@@ -83,7 +83,7 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
-      // TODO: Log failed attempt for rate limiting (Task 2.3.9)
+      // Rate limiting deferred to Phase 2 — failed attempts logged for monitoring
       this.logger.warn(
         `Failed login attempt for user: ${dto.email}`,
         'LoginAttempt',
@@ -179,10 +179,10 @@ export class AuthService {
     // 5. Send reset email
     try {
       await this.emailService.sendPasswordReset(user.email, token);
-      console.log(`[AUDIT] Password reset requested: ${user.email}`);
+      this.logger.log(`[AUDIT] Password reset requested: ${user.email}`);
     } catch (error: unknown) {
-      console.error(
-        `[ERROR] Failed to send reset email: ${(error as Error).message}`,
+      this.logger.error(
+        `Failed to send reset email: ${(error as Error).message}`,
       );
       // Don't throw error - still return success to prevent email enumeration
     }
@@ -221,20 +221,24 @@ export class AuthService {
     // 2. Hash new password
     const passwordHash = await bcrypt.hash(newPassword, 10);
 
-    // 3. Update user password
-    await this.prisma.user.update({
-      where: { id: resetToken.userId },
-      data: { passwordHash },
-    });
+    // 3-4. Update password and mark token as used atomically
+    // Architecture Audit: Prevents token reuse on crash between password update and token invalidation
+    await this.prisma.$transaction(async (tx) => {
+      // Update user password
+      await tx.user.update({
+        where: { id: resetToken.userId },
+        data: { passwordHash },
+      });
 
-    // 4. Mark token as used
-    await this.prisma.passwordResetToken.update({
-      where: { id: resetToken.id },
-      data: { used: true },
+      // Mark token as used (atomic with password update)
+      await tx.passwordResetToken.update({
+        where: { id: resetToken.id },
+        data: { used: true },
+      });
     });
 
     // 5. Log password reset
-    console.log(
+    this.logger.log(
       `[AUDIT] Password reset completed: ${resetToken.user.email} (${resetToken.userId})`,
     );
 
@@ -350,7 +354,7 @@ export class AuthService {
         data: { isRevoked: true },
       });
 
-      console.log(`[AUDIT] User logged out: ${tokenRecord.user.email}`);
+      this.logger.log(`[AUDIT] User logged out: ${tokenRecord.user.email}`);
     }
 
     // Always return success (even if token not found - already logged out)
@@ -371,6 +375,7 @@ export class AuthService {
         firstName: true,
         lastName: true,
         role: true,
+        department: true,
         isActive: true,
         emailVerified: true,
         lastLoginAt: true,
@@ -422,7 +427,7 @@ export class AuthService {
       },
     });
 
-    console.log(`[AUDIT] Profile updated: ${user.email} (${userId})`);
+    this.logger.log(`[AUDIT] Profile updated: ${user.email} (${userId})`);
 
     return updatedUser;
   }
@@ -473,7 +478,7 @@ export class AuthService {
       data: { passwordHash: newPasswordHash },
     });
 
-    console.log(`[AUDIT] Password changed: ${user.email} (${userId})`);
+    this.logger.log(`[AUDIT] Password changed: ${user.email} (${userId})`);
 
     return { message: 'Password changed successfully' };
   }

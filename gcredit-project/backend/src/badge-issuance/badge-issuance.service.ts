@@ -45,6 +45,23 @@ export class BadgeIssuanceService {
   ) {}
 
   /**
+   * Get list of active users available as badge recipients
+   */
+  async getRecipients() {
+    return this.prisma.user.findMany({
+      where: { isActive: true },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        department: true,
+      },
+      orderBy: { lastName: 'asc' },
+    });
+  }
+
+  /**
    * Issue a single badge
    */
   async issueBadge(dto: IssueBadgeDto, issuerId: string) {
@@ -208,6 +225,34 @@ export class BadgeIssuanceService {
   /**
    * Claim a badge using claim token
    */
+  /**
+   * Claim a badge by ID — authenticated user must be the recipient
+   */
+  async claimBadgeById(badgeId: string, userId?: string) {
+    if (!userId) {
+      throw new BadRequestException(
+        'Authentication required to claim badge by ID',
+      );
+    }
+
+    const badge = await this.prisma.badge.findUnique({
+      where: { id: badgeId },
+      include: { template: true, recipient: true },
+    });
+
+    if (!badge) {
+      throw new NotFoundException('Badge not found');
+    }
+
+    if (badge.recipientId !== userId) {
+      throw new BadRequestException(
+        'You can only claim badges assigned to you',
+      );
+    }
+
+    return this.processClaimBadge(badge);
+  }
+
   async claimBadge(claimToken: string) {
     // 1. Find badge by claim token
     const badge = await this.prisma.badge.findUnique({
@@ -218,6 +263,29 @@ export class BadgeIssuanceService {
       },
     });
 
+    if (!badge) {
+      throw new NotFoundException('Invalid claim token');
+    }
+
+    return this.processClaimBadge(badge);
+  }
+
+  /**
+   * Shared claim logic for both token-based and ID-based claiming
+   */
+  private async processClaimBadge(badge: {
+    id: string;
+    status: string;
+    expiresAt: Date | null;
+    issuedAt: Date;
+    recipientId: string;
+    template: {
+      name: string;
+      description: string | null;
+      imageUrl: string | null;
+    };
+    recipient: { id: string; email: string };
+  }) {
     if (!badge) {
       throw new NotFoundException('Invalid claim token');
     }
@@ -318,9 +386,17 @@ export class BadgeIssuanceService {
     }
 
     // Step 2: Authorization check (must happen before idempotency to prevent info leak)
-    const canRevoke =
+    let canRevoke =
       actor.role === UserRole.ADMIN ||
       (actor.role === UserRole.ISSUER && badge.issuerId === actorId);
+
+    // BUG-006: MANAGER can revoke badges for recipients in their own department
+    if (actor.role === UserRole.MANAGER) {
+      canRevoke =
+        !!actor.department &&
+        !!badge.recipient?.department &&
+        actor.department === badge.recipient.department;
+    }
 
     if (!canRevoke) {
       throw new ForbiddenException(
@@ -582,6 +658,19 @@ export class BadgeIssuanceService {
     // ISSUER can only see badges they issued
     if (userRole === UserRole.ISSUER) {
       where.issuerId = userId;
+    }
+    // MANAGER can only see badges for recipients in their department (BUG-006)
+    else if (userRole === UserRole.MANAGER) {
+      const manager = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { department: true },
+      });
+      if (manager?.department) {
+        where.recipient = { department: manager.department };
+      } else {
+        // Manager without department sees nothing
+        where.id = 'none';
+      }
     }
     // ADMIN can see all badges (no filter) - but Story 8.2 allows issuer filter
     else if (query.issuerId) {

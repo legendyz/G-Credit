@@ -12,14 +12,9 @@ interface SessionExpiryTimerProps {
  * - Visible with countdown when <=5 min remaining
  * - Calls onExpired when time reaches 0
  */
-export default function SessionExpiryTimer({
-  expiresAt,
-  onExpired,
-}: SessionExpiryTimerProps) {
+export default function SessionExpiryTimer({ expiresAt, onExpired }: SessionExpiryTimerProps) {
   const [remainingSeconds, setRemainingSeconds] = useState<number>(() => {
-    const diff = Math.floor(
-      (new Date(expiresAt).getTime() - Date.now()) / 1000,
-    );
+    const diff = Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000);
     return Math.max(0, diff);
   });
 
@@ -29,9 +24,7 @@ export default function SessionExpiryTimer({
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const diff = Math.floor(
-        (new Date(expiresAt).getTime() - Date.now()) / 1000,
-      );
+      const diff = Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000);
       const newRemaining = Math.max(0, diff);
       setRemainingSeconds(newRemaining);
 
@@ -62,9 +55,7 @@ export default function SessionExpiryTimer({
       aria-live="polite"
     >
       <span>⏱️</span>
-      <span>
-        Preview expires in {timeStr}. Please confirm soon.
-      </span>
+      <span>Preview expires in {timeStr}. Please confirm soon.</span>
     </div>
   );
 }

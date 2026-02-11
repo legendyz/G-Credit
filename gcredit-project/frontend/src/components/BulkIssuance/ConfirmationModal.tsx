@@ -33,8 +33,8 @@ export default function ConfirmationModal({
             <span>Confirm Bulk Issuance</span>
           </DialogTitle>
           <DialogDescription>
-            You are about to issue <strong>{badgeCount}</strong> badges. This
-            action cannot be undone.
+            You are about to issue <strong>{badgeCount}</strong> badges. This action cannot be
+            undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:gap-0">

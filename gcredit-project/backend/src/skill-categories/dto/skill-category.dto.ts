@@ -9,14 +9,17 @@ import {
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateSkillCategoryDto {
-  @ApiProperty({ example: '前端开发', description: '技能分类名称（中文）' })
+  @ApiProperty({
+    example: 'Frontend Development',
+    description: 'Skill category name',
+  })
   @IsString()
   @MaxLength(100)
   name: string;
 
   @ApiPropertyOptional({
     example: 'Frontend Development',
-    description: '英文名称',
+    description: 'English name',
   })
   @IsOptional()
   @IsString()
@@ -24,8 +27,8 @@ export class CreateSkillCategoryDto {
   nameEn?: string;
 
   @ApiPropertyOptional({
-    example: 'React、Vue、Angular等现代前端框架',
-    description: '分类描述',
+    example: 'Modern frontend frameworks like React, Vue, Angular',
+    description: 'Category description',
   })
   @IsOptional()
   @IsString()
@@ -33,12 +36,17 @@ export class CreateSkillCategoryDto {
 
   @ApiProperty({
     example: 'da721a77-18c0-40e7-a7aa-269efe8e26bb',
-    description: '父分类ID（必须，不允许创建顶层分类）',
+    description:
+      'Parent category ID (required, top-level creation not allowed)',
   })
   @IsUUID()
   parentId: string;
 
-  @ApiPropertyOptional({ example: 10, description: '显示顺序', default: 0 })
+  @ApiPropertyOptional({
+    example: 10,
+    description: 'Display order',
+    default: 0,
+  })
   @IsOptional()
   @IsInt()
   @Min(0)
@@ -47,8 +55,8 @@ export class CreateSkillCategoryDto {
 
 export class UpdateSkillCategoryDto {
   @ApiPropertyOptional({
-    example: '前端开发',
-    description: '技能分类名称（中文）',
+    example: 'Frontend Development',
+    description: 'Skill category name',
   })
   @IsOptional()
   @IsString()
@@ -57,7 +65,7 @@ export class UpdateSkillCategoryDto {
 
   @ApiPropertyOptional({
     example: 'Frontend Development',
-    description: '英文名称',
+    description: 'English name',
   })
   @IsOptional()
   @IsString()
@@ -65,14 +73,14 @@ export class UpdateSkillCategoryDto {
   nameEn?: string;
 
   @ApiPropertyOptional({
-    example: 'React、Vue、Angular等现代前端框架',
-    description: '分类描述',
+    example: 'Modern frontend frameworks like React, Vue, Angular',
+    description: 'Category description',
   })
   @IsOptional()
   @IsString()
   description?: string;
 
-  @ApiPropertyOptional({ example: 10, description: '显示顺序' })
+  @ApiPropertyOptional({ example: 10, description: 'Display order' })
   @IsOptional()
   @IsInt()
   @Min(0)
@@ -83,34 +91,36 @@ export class SkillCategoryResponseDto {
   @ApiProperty({ example: 'uuid' })
   id: string;
 
-  @ApiProperty({ example: '前端开发' })
+  @ApiProperty({ example: 'Frontend Development' })
   name: string;
 
   @ApiPropertyOptional({ example: 'Frontend Development' })
   nameEn: string | null;
 
-  @ApiPropertyOptional({ example: 'React、Vue、Angular等现代前端框架' })
+  @ApiPropertyOptional({
+    example: 'Modern frontend frameworks like React, Vue, Angular',
+  })
   description: string | null;
 
   @ApiProperty({ example: 'parent-uuid' })
   parentId: string | null;
 
-  @ApiProperty({ example: 2, description: '层级：1=顶层，2=二级，3=三级' })
+  @ApiProperty({ example: 2, description: 'Level: 1=top, 2=second, 3=third' })
   level: number;
 
-  @ApiProperty({ example: false, description: '是否系统预设' })
+  @ApiProperty({ example: false, description: 'System predefined' })
   isSystemDefined: boolean;
 
-  @ApiProperty({ example: true, description: '是否可编辑' })
+  @ApiProperty({ example: true, description: 'Editable' })
   isEditable: boolean;
 
   @ApiProperty({ example: 10 })
   displayOrder: number;
 
-  @ApiProperty({ type: [Object], description: '子分类' })
+  @ApiProperty({ type: [Object], description: 'Subcategories' })
   children?: SkillCategoryResponseDto[];
 
-  @ApiProperty({ type: [Object], description: '关联技能' })
+  @ApiProperty({ type: [Object], description: 'Associated skills' })
   skills?: any[];
 
   @ApiProperty()

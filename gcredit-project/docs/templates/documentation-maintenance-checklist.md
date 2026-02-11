@@ -314,9 +314,12 @@ Ready to proceed: ✅ All data verified, cross-validation complete
 
 ### ✅ Step 4: Update API Documentation (If New Endpoints Added)
 
-**File Location:** `{project-root}/gcredit-project/backend/docs/API-GUIDE.md`  
 **Priority:** 🔴 CRITICAL (if sprint added/modified API endpoints)  
 **Trigger:** Sprint completed stories that added or modified API endpoints
+
+#### A. `backend/docs/API-GUIDE.md` (Full API Usage Guide)
+
+**File Location:** `{project-root}/gcredit-project/backend/docs/API-GUIDE.md`
 
 **Check and Update:**
 - [ ] **Top Metadata (Lines 1-6):**
@@ -356,6 +359,45 @@ Ready to proceed: ✅ All data verified, cross-validation complete
 - ❌ Not updating Table of Contents when adding new chapters
 - ❌ Copying old date/version from previous section
 - ❌ Missing authorization rules (who can call this endpoint)
+
+#### B. `backend/docs/api/README.md` (API Module Index & Quick Reference)
+
+**File Location:** `{project-root}/gcredit-project/backend/docs/api/README.md`  
+**Priority:** 🟡 HIGH (if sprint added new modules/controllers or changed route prefixes)
+
+**Check and Update:**
+- [ ] **Top Metadata:**
+  - [ ] `Version:` matches sprint version
+  - [ ] `Last Updated:` is TODAY
+  - [ ] `API Prefix:` description is accurate
+
+- [ ] **Module Listing:**
+  - [ ] All controllers in `backend/src/` have a corresponding module entry
+  - [ ] Route prefixes match actual `@Controller()` decorators
+  - [ ] Route counts per module are accurate
+  - [ ] New modules added during sprint are listed
+
+- [ ] **Quick Reference Table:**
+  - [ ] All modules appear in the summary table
+  - [ ] Auth requirements (Public/Mixed/Yes/Admin) are correct
+  - [ ] Total route count updated
+
+- [ ] **Cross-References:**
+  - [ ] Links to API-GUIDE.md are valid
+  - [ ] Links to individual API doc files (authentication.md, etc.) are valid
+  - [ ] No dead links to non-existent files (e.g., skills.md, skill-categories.md)
+
+**How to Verify Module Coverage:**
+```bash
+# List all controllers and their route prefixes
+grep -r "@Controller(" backend/src/ --include="*.controller.ts" | sort
+```
+
+**Common Mistakes to Avoid:**
+- ❌ Adding a new controller without updating the module index
+- ❌ Changing route prefixes (e.g., `/auth` → `/api/auth`) without updating docs
+- ❌ Linking to API doc files that don't exist
+- ❌ Forgetting to update the total route count in Quick Reference
 
 ---
 

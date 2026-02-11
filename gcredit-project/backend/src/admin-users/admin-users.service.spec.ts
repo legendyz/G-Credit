@@ -16,10 +16,30 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
+import {
+  containing,
+  arrayContaining,
+} from '../../test/helpers/jest-typed-matchers';
 
 describe('AdminUsersService', () => {
   let service: AdminUsersService;
-  let prisma: jest.Mocked<PrismaService>;
+
+  // Mock PrismaService at describe scope — jest.fn() gives us jest.Mock type
+  const mockPrismaService = {
+    user: {
+      count: jest.fn(),
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+      updateMany: jest.fn(),
+    },
+    userRoleAuditLog: {
+      create: jest.fn(),
+    },
+    $transaction: jest.fn(),
+  };
+  // Alias preserves jest.Mock types so .mockResolvedValue() is available
+  const prisma = mockPrismaService;
 
   // Mock user data
   const mockUser = {
@@ -45,19 +65,7 @@ describe('AdminUsersService', () => {
   };
 
   beforeEach(async () => {
-    const mockPrismaService = {
-      user: {
-        count: jest.fn(),
-        findMany: jest.fn(),
-        findUnique: jest.fn(),
-        update: jest.fn(),
-        updateMany: jest.fn(),
-      },
-      userRoleAuditLog: {
-        create: jest.fn(),
-      },
-      $transaction: jest.fn(),
-    };
+    jest.clearAllMocks();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -70,7 +78,6 @@ describe('AdminUsersService', () => {
     }).compile();
 
     service = module.get<AdminUsersService>(AdminUsersService);
-    prisma = module.get(PrismaService);
   });
 
   afterEach(() => {
@@ -99,8 +106,8 @@ describe('AdminUsersService', () => {
 
       expect(prisma.user.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({
-            OR: expect.arrayContaining([
+          where: containing({
+            OR: arrayContaining([
               { firstName: { contains: 'john', mode: 'insensitive' } },
               { lastName: { contains: 'john', mode: 'insensitive' } },
               { email: { contains: 'john', mode: 'insensitive' } },
@@ -118,7 +125,7 @@ describe('AdminUsersService', () => {
 
       expect(prisma.user.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({
+          where: containing({
             role: UserRole.ADMIN,
           }),
         }),
@@ -133,7 +140,7 @@ describe('AdminUsersService', () => {
 
       expect(prisma.user.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({
+          where: containing({
             isActive: true,
           }),
         }),
@@ -215,17 +222,19 @@ describe('AdminUsersService', () => {
       };
 
       prisma.user.findUnique.mockResolvedValue(mockUser);
-      prisma.$transaction.mockImplementation((callback: any) => {
-        return callback({
-          user: {
-            updateMany: jest.fn().mockResolvedValue({ count: 1 }),
-            findUnique: jest.fn().mockResolvedValue(updatedUser),
-          },
-          userRoleAuditLog: {
-            create: jest.fn().mockResolvedValue({}),
-          },
-        });
-      });
+      prisma.$transaction.mockImplementation(
+        (callback: (tx: unknown) => unknown) => {
+          return callback({
+            user: {
+              updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+              findUnique: jest.fn().mockResolvedValue(updatedUser),
+            },
+            userRoleAuditLog: {
+              create: jest.fn().mockResolvedValue({}),
+            },
+          });
+        },
+      );
 
       const result = await service.updateRole(
         'user-123',
@@ -275,17 +284,19 @@ describe('AdminUsersService', () => {
 
     it('should throw ConflictException when concurrent update detected', async () => {
       prisma.user.findUnique.mockResolvedValue(mockUser);
-      prisma.$transaction.mockImplementation((callback: any) => {
-        return callback({
-          user: {
-            updateMany: jest.fn().mockResolvedValue({ count: 0 }), // No rows updated
-            findUnique: jest.fn(),
-          },
-          userRoleAuditLog: {
-            create: jest.fn(),
-          },
-        });
-      });
+      prisma.$transaction.mockImplementation(
+        (callback: (tx: unknown) => unknown) => {
+          return callback({
+            user: {
+              updateMany: jest.fn().mockResolvedValue({ count: 0 }), // No rows updated
+              findUnique: jest.fn(),
+            },
+            userRoleAuditLog: {
+              create: jest.fn(),
+            },
+          });
+        },
+      );
 
       await expect(
         service.updateRole(
@@ -299,19 +310,21 @@ describe('AdminUsersService', () => {
     it('should create audit log entry on role change', async () => {
       const mockAuditCreate = jest.fn().mockResolvedValue({});
       prisma.user.findUnique.mockResolvedValue(mockUser);
-      prisma.$transaction.mockImplementation((callback: any) => {
-        return callback({
-          user: {
-            updateMany: jest.fn().mockResolvedValue({ count: 1 }),
-            findUnique: jest
-              .fn()
-              .mockResolvedValue({ ...mockUser, role: UserRole.ISSUER }),
-          },
-          userRoleAuditLog: {
-            create: mockAuditCreate,
-          },
-        });
-      });
+      prisma.$transaction.mockImplementation(
+        (callback: (tx: unknown) => unknown) => {
+          return callback({
+            user: {
+              updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+              findUnique: jest
+                .fn()
+                .mockResolvedValue({ ...mockUser, role: UserRole.ISSUER }),
+            },
+            userRoleAuditLog: {
+              create: mockAuditCreate,
+            },
+          });
+        },
+      );
 
       await service.updateRole(
         'user-123',
@@ -324,7 +337,7 @@ describe('AdminUsersService', () => {
       );
 
       expect(mockAuditCreate).toHaveBeenCalledWith({
-        data: expect.objectContaining({
+        data: containing({
           userId: 'user-123',
           performedBy: mockAdmin.id,
           action: 'ROLE_CHANGED',
@@ -340,16 +353,18 @@ describe('AdminUsersService', () => {
     it('should deactivate user successfully', async () => {
       const deactivatedUser = { ...mockUser, isActive: false };
       prisma.user.findUnique.mockResolvedValue(mockUser);
-      prisma.$transaction.mockImplementation((callback: any) => {
-        return callback({
-          user: {
-            update: jest.fn().mockResolvedValue(deactivatedUser),
-          },
-          userRoleAuditLog: {
-            create: jest.fn().mockResolvedValue({}),
-          },
-        });
-      });
+      prisma.$transaction.mockImplementation(
+        (callback: (tx: unknown) => unknown) => {
+          return callback({
+            user: {
+              update: jest.fn().mockResolvedValue(deactivatedUser),
+            },
+            userRoleAuditLog: {
+              create: jest.fn().mockResolvedValue({}),
+            },
+          });
+        },
+      );
 
       const result = await service.updateStatus(
         'user-123',
@@ -364,16 +379,18 @@ describe('AdminUsersService', () => {
       const inactiveUser = { ...mockUser, isActive: false };
       const activatedUser = { ...mockUser, isActive: true };
       prisma.user.findUnique.mockResolvedValue(inactiveUser);
-      prisma.$transaction.mockImplementation((callback: any) => {
-        return callback({
-          user: {
-            update: jest.fn().mockResolvedValue(activatedUser),
-          },
-          userRoleAuditLog: {
-            create: jest.fn().mockResolvedValue({}),
-          },
-        });
-      });
+      prisma.$transaction.mockImplementation(
+        (callback: (tx: unknown) => unknown) => {
+          return callback({
+            user: {
+              update: jest.fn().mockResolvedValue(activatedUser),
+            },
+            userRoleAuditLog: {
+              create: jest.fn().mockResolvedValue({}),
+            },
+          });
+        },
+      );
 
       const result = await service.updateStatus(
         'user-123',
@@ -401,18 +418,20 @@ describe('AdminUsersService', () => {
     it('should create audit log entry on status change', async () => {
       const mockAuditCreate = jest.fn().mockResolvedValue({});
       prisma.user.findUnique.mockResolvedValue(mockUser);
-      prisma.$transaction.mockImplementation((callback: any) => {
-        return callback({
-          user: {
-            update: jest
-              .fn()
-              .mockResolvedValue({ ...mockUser, isActive: false }),
-          },
-          userRoleAuditLog: {
-            create: mockAuditCreate,
-          },
-        });
-      });
+      prisma.$transaction.mockImplementation(
+        (callback: (tx: unknown) => unknown) => {
+          return callback({
+            user: {
+              update: jest
+                .fn()
+                .mockResolvedValue({ ...mockUser, isActive: false }),
+            },
+            userRoleAuditLog: {
+              create: mockAuditCreate,
+            },
+          });
+        },
+      );
 
       await service.updateStatus(
         'user-123',
@@ -421,7 +440,7 @@ describe('AdminUsersService', () => {
       );
 
       expect(mockAuditCreate).toHaveBeenCalledWith({
-        data: expect.objectContaining({
+        data: containing({
           userId: 'user-123',
           performedBy: mockAdmin.id,
           action: 'STATUS_CHANGED',

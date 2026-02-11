@@ -20,20 +20,29 @@ const PendingBadgesEmptyState: React.FC<PendingBadgesEmptyStateProps> = ({
           xmlns="http://www.w3.org/2000/svg"
         >
           {/* Gift box */}
-          <rect x="64" y="96" width="128" height="96" rx="4" fill="#FCD34D" stroke="#F59E0B" strokeWidth="3" />
+          <rect
+            x="64"
+            y="96"
+            width="128"
+            height="96"
+            rx="4"
+            fill="#FCD34D"
+            stroke="#F59E0B"
+            strokeWidth="3"
+          />
           <rect x="64" y="96" width="128" height="24" fill="#F59E0B" />
-          
+
           {/* Ribbon vertical */}
           <rect x="118" y="96" width="20" height="96" fill="#EF4444" />
-          
+
           {/* Ribbon horizontal */}
           <rect x="64" y="106" width="128" height="12" fill="#DC2626" />
-          
+
           {/* Bow top */}
           <ellipse cx="108" cy="90" rx="14" ry="20" fill="#EF4444" />
           <ellipse cx="148" cy="90" rx="14" ry="20" fill="#EF4444" />
           <circle cx="128" cy="96" r="10" fill="#DC2626" />
-          
+
           {/* Sparkles */}
           <circle cx="48" cy="72" r="4" fill="#FCD34D" className="animate-pulse" />
           <circle cx="208" cy="128" r="4" fill="#FCD34D" className="animate-pulse" />
@@ -48,8 +57,8 @@ const PendingBadgesEmptyState: React.FC<PendingBadgesEmptyStateProps> = ({
 
       {/* AC 6.5: Description with dynamic count */}
       <p className="text-base md:text-lg text-gray-600 max-w-2xl mb-8">
-        You've been awarded <strong className="text-yellow-600">{pendingCount}</strong> badge{pendingCount > 1 ? 's' : ''}. 
-        Review and claim them to add to your profile.
+        You've been awarded <strong className="text-yellow-600">{pendingCount}</strong> badge
+        {pendingCount > 1 ? 's' : ''}. Review and claim them to add to your profile.
       </p>
 
       {/* AC 6.5: Primary CTA with badge count indicator */}
@@ -69,8 +78,8 @@ const PendingBadgesEmptyState: React.FC<PendingBadgesEmptyStateProps> = ({
       {/* Urgency indicator */}
       <div className="mt-12 p-6 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg max-w-2xl">
         <p className="text-sm text-yellow-800">
-          <strong>⏰ Don't forget:</strong> Some badges may have claim deadlines. 
-          Review your pending badges soon to ensure you don't miss out!
+          <strong>⏰ Don't forget:</strong> Some badges may have claim deadlines. Review your
+          pending badges soon to ensure you don't miss out!
         </p>
       </div>
     </div>

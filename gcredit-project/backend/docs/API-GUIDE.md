@@ -1,8 +1,8 @@
 # API Usage Guide
 
 **G-Credit Badge Platform REST API**  
-**Version:** 0.9.0 (Sprint 9 - Bulk Badge Issuance + TD Cleanup)  
-**Last Updated:** 2026-02-08
+**Version:** 1.0.0-dev (Sprint 10 - v1.0.0 Release Sprint)  
+**Last Updated:** 2026-02-09
 
 ---
 
@@ -26,12 +26,12 @@
 
 ## Authentication
 
-All API endpoints except `/auth/login` and `/auth/register` require JWT authentication.
+All API endpoints except `/api/auth/login` and `/api/auth/register` require JWT authentication.
 
 ### Register New User
 
 ```bash
-curl -X POST http://localhost:3000/auth/register \
+curl -X POST http://localhost:3000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "john.doe@example.com",
@@ -55,7 +55,7 @@ curl -X POST http://localhost:3000/auth/register \
 ### Login
 
 ```bash
-curl -X POST http://localhost:3000/auth/login \
+curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "admin@gcredit.test",
@@ -89,11 +89,11 @@ TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
 ```bash
 # PowerShell
-curl -X GET http://localhost:3000/auth/profile `
+curl -X GET http://localhost:3000/api/auth/profile `
   -H "Authorization: Bearer $token"
 
 # Bash
-curl -X GET http://localhost:3000/auth/profile \
+curl -X GET http://localhost:3000/api/auth/profile \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -309,20 +309,20 @@ curl -X GET "http://localhost:3000/api/badge-templates/badg-1234-5678-9abc-def01
 
 ### Update Badge Template
 
-**Endpoint:** `PUT /api/badge-templates/:id`  
+**Endpoint:** `PATCH /api/badge-templates/:id`  
 **Authentication:** Required (ADMIN/ISSUER)  
 **Content-Type:** `multipart/form-data`
 
 ```bash
 # PowerShell - Update without changing image
-curl -X PUT "http://localhost:3000/api/badge-templates/badg-1234-5678-9abc-def012345678" `
+curl -X PATCH "http://localhost:3000/api/badge-templates/badg-1234-5678-9abc-def012345678" `
   -H "Authorization: Bearer $token" `
   -F "name=Senior Python Expert" `
   -F "description=Advanced mastery of Python programming" `
   -F "status=ACTIVE"
 
 # PowerShell - Update with new image (old image auto-deleted)
-curl -X PUT "http://localhost:3000/api/badge-templates/badg-1234-5678-9abc-def012345678" `
+curl -X PATCH "http://localhost:3000/api/badge-templates/badg-1234-5678-9abc-def012345678" `
   -H "Authorization: Bearer $token" `
   -F "name=Senior Python Expert" `
   -F "image=@C:\path\to\new-python-badge.png"
@@ -391,7 +391,7 @@ curl "http://localhost:3000/api/badge-templates/search?query=programming&categor
 
 ```bash
 # PowerShell
-curl -X POST http://localhost:3000/api/badge-templates/skills `
+curl -X POST http://localhost:3000/api/skills `
   -H "Authorization: Bearer $token" `
   -H "Content-Type: application/json" `
   -d '{
@@ -425,7 +425,7 @@ curl -X POST http://localhost:3000/api/badge-templates/skills `
 ### List All Skills
 
 ```bash
-curl http://localhost:3000/api/badge-templates/skills
+curl http://localhost:3000/api/skills
 ```
 
 **Response (200 OK):**
@@ -449,7 +449,7 @@ curl http://localhost:3000/api/badge-templates/skills
 ### Get Skill by ID
 
 ```bash
-curl http://localhost:3000/api/badge-templates/skills/skill-1234-5678-9abc-def012345678
+curl http://localhost:3000/api/skills/skill-1234-5678-9abc-def012345678
 ```
 
 **Response (200 OK):** Same structure as list item.
@@ -458,7 +458,7 @@ curl http://localhost:3000/api/badge-templates/skills/skill-1234-5678-9abc-def01
 
 ```bash
 # PowerShell
-curl -X PUT "http://localhost:3000/api/badge-templates/skills/skill-1234-5678-9abc-def012345678" `
+curl -X PATCH "http://localhost:3000/api/skills/skill-1234-5678-9abc-def012345678" `
   -H "Authorization: Bearer $token" `
   -H "Content-Type: application/json" `
   -d '{
@@ -473,7 +473,7 @@ curl -X PUT "http://localhost:3000/api/badge-templates/skills/skill-1234-5678-9a
 
 ```bash
 # PowerShell
-curl -X DELETE "http://localhost:3000/api/badge-templates/skills/skill-1234-5678-9abc-def012345678" `
+curl -X DELETE "http://localhost:3000/api/skills/skill-1234-5678-9abc-def012345678" `
   -H "Authorization: Bearer $token"
 ```
 
@@ -490,12 +490,12 @@ curl -X DELETE "http://localhost:3000/api/badge-templates/skills/skill-1234-5678
 
 ### List All Categories (Hierarchical)
 
-**Endpoint:** `GET /api/badge-templates/categories`  
+**Endpoint:** `GET /api/skill-categories`  
 **Authentication:** Not Required  
 **Structure:** Returns tree with parent/child relationships
 
 ```bash
-curl http://localhost:3000/api/badge-templates/categories
+curl http://localhost:3000/api/skill-categories
 ```
 
 **Response (200 OK):**
@@ -539,7 +539,7 @@ curl http://localhost:3000/api/badge-templates/categories
 
 ```bash
 # PowerShell - Create root category
-curl -X POST http://localhost:3000/api/badge-templates/categories `
+curl -X POST http://localhost:3000/api/skill-categories `
   -H "Authorization: Bearer $token" `
   -H "Content-Type: application/json" `
   -d '{
@@ -548,7 +548,7 @@ curl -X POST http://localhost:3000/api/badge-templates/categories `
   }'
 
 # PowerShell - Create child category
-curl -X POST http://localhost:3000/api/badge-templates/categories `
+curl -X POST http://localhost:3000/api/skill-categories `
   -H "Authorization: Bearer $token" `
   -H "Content-Type: application/json" `
   -d '{
@@ -578,7 +578,7 @@ curl -X POST http://localhost:3000/api/badge-templates/categories `
 ### Get Category by ID
 
 ```bash
-curl http://localhost:3000/api/badge-templates/categories/cat-tech-001
+curl http://localhost:3000/api/skill-categories/cat-tech-001
 ```
 
 **Response (200 OK):**
@@ -609,7 +609,7 @@ curl http://localhost:3000/api/badge-templates/categories/cat-tech-001
 
 ```bash
 # PowerShell
-curl -X PUT "http://localhost:3000/api/badge-templates/categories/cat-soft-001" `
+curl -X PATCH "http://localhost:3000/api/skill-categories/cat-soft-001" `
   -H "Authorization: Bearer $token" `
   -H "Content-Type: application/json" `
   -d '{
@@ -624,7 +624,7 @@ curl -X PUT "http://localhost:3000/api/badge-templates/categories/cat-soft-001" 
 
 ```bash
 # PowerShell
-curl -X DELETE "http://localhost:3000/api/badge-templates/categories/cat-soft-001" `
+curl -X DELETE "http://localhost:3000/api/skill-categories/cat-soft-001" `
   -H "Authorization: Bearer $token"
 ```
 
@@ -2042,13 +2042,13 @@ curl -X GET "http://localhost:3000/api/analytics/recent-activity?limit=20&offset
 
 ## Rate Limiting
 
-**Current Configuration:** Global rate limiting implemented (Sprint 8)
+**Implementation:** Global `ThrottlerGuard` via NestJS (Sprint 8)
 
-**Recommended Limits for Production:**
-- Authentication endpoints: 5 requests per minute per IP
-- Public endpoints: 100 requests per minute per IP
-- Authenticated endpoints: 200 requests per minute per user
-- File upload endpoints: 10 requests per minute per user
+**Current Limits:**
+- **Default:** 100 requests per 60 seconds per IP
+- **Bulk Upload:** 10 requests per 5 minutes per user
+- Custom limits per endpoint as needed
+- Throttle responses return `429 Too Many Requests`
 
 ---
 
@@ -2081,18 +2081,19 @@ Import this collection into Postman for quick API testing:
 
 ## Need Help?
 
-- **Swagger UI:** http://localhost:3000/api-docs (Interactive API explorer)
+- **Swagger UI:** http://localhost:3000/api (Interactive API explorer)
 - **Testing Guide:** See [TESTING.md](./TESTING.md) for test examples
 - **Deployment Guide:** See [DEPLOYMENT.md](./DEPLOYMENT.md) for production setup
 - **Issues:** Check [Common Issues](../README.md#common-issues--solutions) in main README
 
 ---
 
-**Last Updated:** 2026-02-04  
-**API Version:** 0.8.0 (Sprint 8 - Production Ready MVP)  
+**Last Updated:** 2026-02-09  
+**API Version:** 1.0.0-dev (Sprint 10 - v1.0.0 Release Sprint)  
 **Author:** G-Credit Development Team  
-**Coverage:** Sprint 0-8 (Authentication, Templates, Issuance, Verification, Sharing, Revocation, Analytics, Admin User Management)  
+**Coverage:** Sprint 0-10 (Authentication, Templates, Issuance, Verification, Sharing, Revocation, Analytics, Admin Users, M365 Sync, Bulk Issuance, Dashboard, Evidence, Milestones, Teams)  
+**Total Routes:** ~77 across 16 modules  
 
-**Detailed API Documentation:**
-- [Badge Issuance API](./api/badge-issuance.md) - Complete badge lifecycle documentation
-- Swagger UI: http://localhost:3000/api-docs (Interactive API explorer)
+**See Also:**
+- [API Module Index](./api/README.md) - Quick reference table
+- Swagger UI: http://localhost:3000/api (Interactive API explorer)

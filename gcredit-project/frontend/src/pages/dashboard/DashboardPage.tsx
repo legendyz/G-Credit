@@ -1,6 +1,6 @@
 /**
  * DashboardPage Component - Story 8.1
- * 
+ *
  * Main dashboard page that renders the appropriate dashboard
  * based on the current user's role.
  * AC5: All dashboards wrapped in ErrorBoundary for error handling.

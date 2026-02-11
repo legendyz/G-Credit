@@ -1,6 +1,6 @@
 /**
  * IssuerDashboard Component - Story 8.1 (AC2)
- * 
+ *
  * Dashboard for Issuer role showing:
  * - Issuance summary (issued this month, pending, total recipients)
  * - Claim rate percentage
@@ -17,6 +17,7 @@ import { EmptyState, NoActivityState } from '../../components/common/EmptyState'
 import { cn } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { RefreshCw, PlusCircle, List } from 'lucide-react';
+import { PageTemplate } from '../../components/layout/PageTemplate';
 
 export const IssuerDashboard: React.FC = () => {
   const { data, isLoading, error, refetch, isFetching } = useIssuerDashboard();
@@ -49,18 +50,10 @@ export const IssuerDashboard: React.FC = () => {
   const { issuanceSummary, recentActivity } = data;
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 space-y-6">
-      {/* Page Header with Refresh Button */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">
-            Issuer Dashboard
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Track your badge issuance activity
-          </p>
-        </div>
-        {/* Manual refresh button (desktop) */}
+    <PageTemplate
+      title="Issuer Dashboard"
+      description="Track your badge issuance activity"
+      actions={
         <Button
           variant="outline"
           size="sm"
@@ -72,25 +65,25 @@ export const IssuerDashboard: React.FC = () => {
           <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} />
           {isFetching ? 'Refreshing...' : 'Refresh'}
         </Button>
-      </div>
-
+      }
+    >
       {/* AC2: Quick Actions */}
-      <Card>
+      <Card className="shadow-elevation-1">
         <CardHeader>
           <CardTitle className="text-lg">Quick Actions</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-3">
             <Button
-              onClick={() => navigate('/badges/issue')}
-              className="flex items-center gap-2 min-h-[44px]"
+              onClick={() => navigate('/admin/badges/issue')}
+              className="flex items-center gap-2 min-h-[44px] bg-brand-600 hover:bg-brand-700 text-white"
             >
               <PlusCircle className="h-4 w-4" />
               Issue New Badge
             </Button>
             <Button
               variant="outline"
-              onClick={() => navigate('/badges/manage')}
+              onClick={() => navigate('/admin/badges')}
               className="flex items-center gap-2 min-h-[44px]"
             >
               <List className="h-4 w-4" />
@@ -125,7 +118,7 @@ export const IssuerDashboard: React.FC = () => {
       </div>
 
       {/* Recent Issuance Activity */}
-      <Card>
+      <Card className="shadow-elevation-1">
         <CardHeader>
           <CardTitle className="text-lg">Recent Issuance Activity</CardTitle>
         </CardHeader>
@@ -184,16 +177,11 @@ export const IssuerDashboard: React.FC = () => {
               {/* Mobile Cards */}
               <div className="md:hidden space-y-3">
                 {recentActivity.map((activity) => (
-                  <div
-                    key={activity.badgeId}
-                    className="p-4 rounded-lg border bg-card"
-                  >
+                  <div key={activity.badgeId} className="p-4 rounded-lg border bg-card">
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <p className="font-medium">{activity.recipientName}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {activity.recipientEmail}
-                        </p>
+                        <p className="text-sm text-muted-foreground">{activity.recipientEmail}</p>
                       </div>
                       <StatusBadge status={activity.status} />
                     </div>
@@ -208,7 +196,7 @@ export const IssuerDashboard: React.FC = () => {
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageTemplate>
   );
 };
 
@@ -234,9 +222,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
         <div>
           <p className="text-sm text-muted-foreground">{title}</p>
           <p className="text-3xl font-bold mt-1">{value}</p>
-          {description && (
-            <p className="text-xs text-muted-foreground mt-1">{description}</p>
-          )}
+          {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
         </div>
         <span className="text-2xl" aria-hidden="true">
           {icon}
@@ -250,11 +236,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
 const ClaimRateCard: React.FC<{ claimRate: number }> = ({ claimRate }) => {
   const percentage = Math.round(claimRate * 100);
   const color =
-    percentage >= 80
-      ? 'text-green-600'
-      : percentage >= 50
-        ? 'text-yellow-600'
-        : 'text-red-600';
+    percentage >= 80 ? 'text-green-600' : percentage >= 50 ? 'text-yellow-600' : 'text-red-600';
 
   return (
     <Card>
@@ -275,11 +257,7 @@ const ClaimRateCard: React.FC<{ claimRate: number }> = ({ claimRate }) => {
           <div
             className={cn(
               'h-full rounded-full transition-all duration-500',
-              percentage >= 80
-                ? 'bg-green-500'
-                : percentage >= 50
-                  ? 'bg-yellow-500'
-                  : 'bg-red-500'
+              percentage >= 80 ? 'bg-green-500' : percentage >= 50 ? 'bg-yellow-500' : 'bg-red-500'
             )}
             style={{ width: `${percentage}%` }}
             role="progressbar"

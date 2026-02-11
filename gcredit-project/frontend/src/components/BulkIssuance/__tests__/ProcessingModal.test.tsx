@@ -17,9 +17,7 @@ describe('ProcessingModal', () => {
   });
 
   it('should not render when isProcessing is false', () => {
-    const { container } = render(
-      <ProcessingModal totalBadges={10} isProcessing={false} />,
-    );
+    const { container } = render(<ProcessingModal totalBadges={10} isProcessing={false} />);
     expect(container.firstChild).toBeNull();
   });
 
@@ -86,9 +84,7 @@ describe('ProcessingModal', () => {
       { badgeName: 'Leadership', recipientName: 'John Doe' },
       { badgeName: 'Teamwork', recipientName: 'Jane Smith' },
     ];
-    render(
-      <ProcessingModal totalBadges={2} isProcessing={true} badgeRows={badgeRows} />,
-    );
+    render(<ProcessingModal totalBadges={2} isProcessing={true} badgeRows={badgeRows} />);
     expect(screen.getByText(/Leadership → John Doe/)).toBeInTheDocument();
 
     act(() => {
@@ -98,9 +94,7 @@ describe('ProcessingModal', () => {
   });
 
   it('should reset progress when processing stops', () => {
-    const { rerender } = render(
-      <ProcessingModal totalBadges={10} isProcessing={true} />,
-    );
+    const { rerender } = render(<ProcessingModal totalBadges={10} isProcessing={true} />);
 
     act(() => {
       vi.advanceTimersByTime(5000);

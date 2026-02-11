@@ -85,11 +85,9 @@ export function FilterChips({
         >
           {/* Category prefix if provided */}
           {chip.category && (
-            <span className="text-blue-600 dark:text-blue-400">
-              {chip.category}:
-            </span>
+            <span className="text-blue-600 dark:text-blue-400">{chip.category}:</span>
           )}
-          
+
           {/* Filter label */}
           <span>{chip.label}</span>
 

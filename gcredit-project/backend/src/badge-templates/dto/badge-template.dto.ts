@@ -17,8 +17,8 @@ import { IssuanceCriteriaDto } from './issuance-criteria.dto';
 
 export class CreateBadgeTemplateDto {
   @ApiProperty({
-    example: 'TypeScript高级认证',
-    description: '徽章模板名称',
+    example: 'TypeScript Advanced Certification',
+    description: 'Badge template name',
     minLength: 3,
     maxLength: 100,
   })
@@ -27,8 +27,9 @@ export class CreateBadgeTemplateDto {
   name: string;
 
   @ApiPropertyOptional({
-    example: '完成TypeScript高级课程并通过考试后获得',
-    description: '徽章描述',
+    example:
+      'Awarded upon completing the advanced TypeScript course and passing the exam',
+    description: 'Badge description',
     maxLength: 1000,
   })
   @IsOptional()
@@ -38,7 +39,7 @@ export class CreateBadgeTemplateDto {
 
   @ApiProperty({
     example: 'skill',
-    description: '徽章类别',
+    description: 'Badge category',
     enum: ['achievement', 'skill', 'certification', 'participation'],
   })
   @IsString()
@@ -48,14 +49,16 @@ export class CreateBadgeTemplateDto {
   })
   category: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: ['uuid-1', 'uuid-2'],
-    description: '关联的技能ID数组',
+    description: 'Associated skill IDs (optional, defaults to empty array)',
     type: [String],
+    default: [],
   })
+  @IsOptional()
   @IsArray()
   @IsUUID('4', { each: true })
-  skillIds: string[];
+  skillIds: string[] = [];
 
   @ApiProperty({
     example: {
@@ -67,7 +70,7 @@ export class CreateBadgeTemplateDto {
       logicOperator: 'all',
       description: 'Complete TypeScript exam with 90%+ score',
     },
-    description: '颁发标准（结构化）',
+    description: 'Issuance criteria (structured)',
     type: IssuanceCriteriaDto,
   })
   @ValidateNested()
@@ -76,7 +79,7 @@ export class CreateBadgeTemplateDto {
 
   @ApiPropertyOptional({
     example: 365,
-    description: '有效期（天数），null表示永久有效',
+    description: 'Validity period (days), null means permanent',
     minimum: 1,
   })
   @IsOptional()
@@ -87,8 +90,8 @@ export class CreateBadgeTemplateDto {
 
 export class UpdateBadgeTemplateDto {
   @ApiPropertyOptional({
-    example: 'TypeScript高级认证',
-    description: '徽章模板名称',
+    example: 'TypeScript Advanced Certification',
+    description: 'Badge template name',
   })
   @IsOptional()
   @IsString()
@@ -96,8 +99,9 @@ export class UpdateBadgeTemplateDto {
   name?: string;
 
   @ApiPropertyOptional({
-    example: '完成TypeScript高级课程并通过考试后获得',
-    description: '徽章描述',
+    example:
+      'Awarded upon completing the advanced TypeScript course and passing the exam',
+    description: 'Badge description',
   })
   @IsOptional()
   @IsString()
@@ -106,7 +110,7 @@ export class UpdateBadgeTemplateDto {
 
   @ApiPropertyOptional({
     example: 'skill',
-    description: '徽章类别',
+    description: 'Badge category',
   })
   @IsOptional()
   @IsString()
@@ -115,7 +119,7 @@ export class UpdateBadgeTemplateDto {
 
   @ApiPropertyOptional({
     example: ['uuid-1', 'uuid-2'],
-    description: '关联的技能ID数组',
+    description: 'Associated skill IDs',
   })
   @IsOptional()
   @IsArray()
@@ -131,7 +135,7 @@ export class UpdateBadgeTemplateDto {
       ],
       logicOperator: 'all',
     },
-    description: '颁发标准（结构化）',
+    description: 'Issuance criteria (structured)',
     type: IssuanceCriteriaDto,
   })
   @IsOptional()
@@ -141,7 +145,7 @@ export class UpdateBadgeTemplateDto {
 
   @ApiPropertyOptional({
     example: 365,
-    description: '有效期（天数）',
+    description: 'Validity period (days)',
   })
   @IsOptional()
   @IsInt()
@@ -151,7 +155,7 @@ export class UpdateBadgeTemplateDto {
   @ApiPropertyOptional({
     enum: TemplateStatus,
     example: TemplateStatus.ACTIVE,
-    description: '徽章状态',
+    description: 'Badge status',
   })
   @IsOptional()
   @IsEnum(TemplateStatus)
@@ -162,10 +166,13 @@ export class BadgeTemplateResponseDto {
   @ApiProperty({ example: 'uuid' })
   id: string;
 
-  @ApiProperty({ example: 'TypeScript高级认证' })
+  @ApiProperty({ example: 'TypeScript Advanced Certification' })
   name: string;
 
-  @ApiPropertyOptional({ example: '完成TypeScript高级课程并通过考试后获得' })
+  @ApiPropertyOptional({
+    example:
+      'Awarded upon completing the advanced TypeScript course and passing the exam',
+  })
   description: string | null;
 
   @ApiPropertyOptional({
@@ -197,6 +204,6 @@ export class BadgeTemplateResponseDto {
   @ApiProperty()
   updatedAt: Date;
 
-  @ApiPropertyOptional({ type: Object, description: '创建者信息' })
+  @ApiPropertyOptional({ type: Object, description: 'Creator information' })
   creator?: any;
 }
