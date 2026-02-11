@@ -307,8 +307,9 @@ stories:
     title: "Release Documentation & CHANGELOG"
     priority: MEDIUM
     estimate: 4h
-    actual: null
-    status: backlog
+    actual: 3h
+    status: accepted
+    accepted_date: "2026-02-11"
     phase: 4-release
     file: "10-9-release-documentation.md"
     dependencies: ["10-7"]

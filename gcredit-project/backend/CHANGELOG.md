@@ -7,6 +7,95 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.0] - 2026-02-11 (Sprint 10 — v1.0.0 Release)
+
+### Sprint 10 Summary — v1.0.0 Release Sprint
+
+**Branch:** `sprint-10/v1-release`  
+**UAT:** ✅ PASSED — 33/33 test cases (Round 2, 2026-02-11)  
+**Tests:** 534 backend unit/integration + 527 frontend = 1,061 total (100% pass)
+
+#### Features
+
+- **Badge Template Management UI Support** (Story 10.8 / BUG-003)
+  - Full CRUD API support for template lifecycle (DRAFT → ACTIVE → ARCHIVED)
+  - `GET /api/badges/recipients` endpoint for badge issuance recipient dropdown
+
+- **Admin Analytics — Real Data** (Story 10.5)
+  - Replace mock analytics data with real database aggregations
+  - Badge issuance trends, category breakdowns, user activity metrics
+  - Record badge share events in AuditLog for analytics tracking
+
+- **Profile & Password Change API** (Story 10.8 / BUG-007)
+  - `GET /api/auth/profile` — includes department field
+  - `PATCH /api/auth/profile` — update name
+  - `POST /api/auth/change-password` — password change with verification
+
+- **Manager Badge Revocation** (Story 10.8 / BUG-006)
+  - MANAGER role added to revoke endpoint guards
+  - Department-based access control (same-department only)
+  - MANAGER added to `GET /api/badges/issued` with department-filtered query
+
+- **Department Editing** (Re-UAT Round 2)
+  - `PATCH /api/admin/users/:id` — Admin can edit user department
+
+- **Email Badge Claiming** (Re-UAT Round 2)
+  - Support dual claim paths: token-based (from email link) and ID-based (from wallet)
+  - Populate `req.user` on `@Public()` routes with Bearer token
+
+- **Session Validation on Startup**
+  - Token expiry check on application load (frontend auth store)
+
+#### Bug Fixes
+
+- **BUG-002:** Navbar "My Wallet" link → `/` instead of `/wallet` (9 UAT cases affected)
+- **BUG-003:** No Badge Template Management UI (5 UAT cases — new pages built)
+- **BUG-004:** Issue Badge recipient dropdown not loading users (4 UAT cases)
+- **BUG-005:** BadgeSearchBar input doesn't accept typing (2 UAT cases)
+- **BUG-006:** Manager role has no revocation UI entry point (3 UAT cases)
+- **BUG-007:** No Profile / password change page (1 UAT case)
+- **BUG-008:** Prisma P2028 transaction timeout on first bulk issuance (intermittent)
+- Fix verify page data mapping from `_meta` field
+- Fix garbled Unicode separator in evidence file metadata
+- Parse Azure credentials from connection string (eliminate redundant env vars)
+- Convert UAT seed IDs to valid UUID v4 format
+- Fix `canActivate` return type mismatch (TS2416)
+- Increase global rate limit from 10 to 60 req/min
+- Base64-encode `originalName` metadata to prevent Azure HMAC auth failure
+- Eliminate duplicate PrismaService/StorageService instances
+- BlobStorageService uses ConfigService DI instead of static env read
+
+#### Technical Debt Resolved
+
+- **TD-017:** Fix 114 tsc test type errors → 0 errors (Story 10.1)
+- **TD-018:** TODO/FIXME cleanup — 14 markers removed (Story 10.3)
+- **TD-019:** Frontend ESLint cleanup + CI gate (Story 10.3b)
+- **TD-020:** CI E2E job missing frontend dependency (Story 10.4)
+- **TD-021:** `react-hooks/set-state-in-effect` → project-level off (Story 10.4)
+- **TD-022:** API path mismatches — 5 critical route fixes (Story 10.3c)
+- **ESLint Regression:** Backend warnings 423 → 0 + CI zero-tolerance gate (Story 10.2)
+- **UX-001:** CSV template pre-fills selected templateId + copy-to-clipboard
+- **UX-002:** Partial-valid CSV allows confirm for valid rows (X of Y count)
+- **UX-003:** All dashboard summary cards clickable with navigation
+
+#### Security
+
+- JWT dual-token authentication (15min access + 7d refresh with rotation)
+- RBAC with 4 roles (ADMIN, ISSUER, MANAGER, EMPLOYEE)
+- Helmet CSP headers
+- Rate limiting (60 req/min global, configurable per-endpoint)
+- IDOR protection on all resource endpoints
+- Prisma transaction isolation for bulk operations
+
+#### Testing
+
+- Backend: 534 tests (35 suites), 100% pass
+- Frontend: 527 tests (45 files), 100% pass
+- 74 new regression tests added in Sprint 10 (Story 10.8)
+- E2E: Schema-based isolation, 100% reliability
+
+---
+
 ## [0.9.0] - Sprint 9 Complete (2026-02-08)
 
 ### Sprint 9 Summary - Epic 8: Bulk Badge Issuance + TD Cleanup

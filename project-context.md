@@ -5,7 +5,7 @@
 **Project Type:** Enterprise Internal Platform (Greenfield)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
 **License:** MIT License (Open Source)  
-**Status:** � Sprint 10 IN PROGRESS - v1.0.0 Release Sprint (Phase 1+2 complete, 7/12 stories, entering UAT)  
+**Status:** ✅ v1.0.0 Released — MVP Complete (10 Epics, 1061 tests, UAT PASSED)  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, committed 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, committed 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, committed 2026-01-26)  
@@ -16,8 +16,8 @@
 **Sprint 7:** ✅ Complete (100%, actual 38.5h / estimated 41-47h, committed 2026-02-02, branch: sprint-7/epic-9-revocation-lifecycle-uat, 302 tests, 100% UAT pass, v0.7.0)  
 **Sprint 8:** ✅ Complete (12/12 items, 100%, 80h/76h, branch: sprint-8/epic-10-production-ready-mvp, tagged v0.8.0, 876 tests)  
 **Sprint 9:** ✅ Complete (5/5 stories, 37h/51h, branch: sprint-9/epic-8-bulk-issuance-td-cleanup, 1087 tests, v0.9.0-dev)  
-**Sprint 10:** 🟢 In Progress (7/12 stories, 33h/69h, branch: sprint-10/v1-release, goal: v1.0.0 Release)
-**Last Updated:** 2026-02-09 (Sprint 10 Day 1 — Phase 1 TD + Phase 2 Feature complete, entering Phase 3 UAT)
+**Sprint 10:** ✅ Complete (12/12 stories, branch: sprint-10/v1-release, 1061 tests, UAT 33/33 PASS, v1.0.0)
+**Last Updated:** 2026-02-11 (Sprint 10 Complete — v1.0.0 Released)
 
 ---
 
@@ -159,7 +159,7 @@ gcredit-project/docs/
 │   ├── sprint-7/         # Badge revocation & lifecycle UAT
 │   ├── sprint-8/         # Production-ready MVP
 │   ├── sprint-9/         # ✅ COMPLETE - Bulk badge issuance + TD cleanup
-│   └── sprint-10/        # 🔄 IN PROGRESS - v1.0.0 Release Sprint (12 stories)
+│   └── sprint-10/        # ✅ COMPLETE - v1.0.0 Release Sprint (12 stories, UAT PASSED)
 │       ├── backlog.md    # Sprint 6 backlog (1,317 lines)
 │       ├── version-manifest.md  # ✅ CREATED 2026-01-29 (dependency versions)
 │       ├── kickoff-readiness.md # Preparation tasks checklist
@@ -351,12 +351,12 @@ _bmad-output/
 | → Sprint 7 | 2 days | Badge Revocation & Lifecycle UAT (Epic 9) | ✅ COMPLETE (2026-02-02, 38.5h/41-47h, 302 tests, v0.7.0) |
 | → Sprint 8 | 10 days | Production-Ready MVP (Epic 10) | ✅ COMPLETE (2026-02-05, 80h/76h, 876 tests, v0.8.0) |
 | → Sprint 9 | 3 days | Bulk Badge Issuance + TD Cleanup (Epic 8) | ✅ COMPLETE (2026-02-08, 37h/51h, 1087 tests, v0.9.0-dev) |
-| → Sprint 10 | 2 weeks | v1.0.0 Release (TD + UAT + Release) | 🟡 PLANNED (2026-02-09→02-22, 57h/80h, 10 stories) |
+| → Sprint 10 | 2 weeks | v1.0.0 Release (TD + UAT + Release) | ✅ COMPLETE (2026-02-09→02-11, 12 stories, 1061 tests, UAT 33/33 PASS, v1.0.0) |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ Pending |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
 
-**Current Status:** 🟡 Sprint 10 Planned (v1.0.0 Release Sprint — TD Cleanup + Full UAT + Release Tag, 10 stories, 57h/80h capacity) → 🟢 Ready for Kickoff 2026-02-09
+**Current Status:** ✅ v1.0.0 Released (Sprint 10 Complete — 12 stories, UAT PASSED 33/33, tagged v1.0.0, 2026-02-11)
 
 ---
 
@@ -1383,43 +1383,48 @@ Sprint 0-2 established this pattern:
    - TD Resolved: TD-013 (bundle), TD-014 (email), TD-015 (ESLint)
    - New TD: ESLint regression (423 warnings), TD-017 (114 tsc test errors)
 
-18. � **Sprint 10 - v1.0.0 Release Sprint (PLANNED - Kickoff 2026-02-09)**
+18. ✅ **Sprint 10 - v1.0.0 Release Sprint (COMPLETE - 2026-02-11)**
    - **Branch:** `sprint-10/v1-release`
-   - **Duration:** 2026-02-09 to 2026-02-22 (2 weeks)
+   - **Duration:** 2026-02-09 to 2026-02-11 (3 days)
    - **Sprint Goal:** v1.0.0 Release: TD Cleanup + Full UAT + Release Tag
-   - **Capacity:** 80h, 10 stories, 57h estimated
+   - **Capacity:** 80h, 12 stories
    - **4 Phases:**
-     - Phase 1 (Day 1-3): TD Cleanup — Stories 10.1-10.4 (17h)
-     - Phase 2 (Day 4-5): Feature Enhancement — Story 10.5 (6h)
-     - Phase 3 (Day 6-11): UAT — Stories 10.6-10.8 (28h)
-     - Phase 4 (Day 12-13): Release — Stories 10.9-10.10 (6h)
+     - Phase 1 (Day 1): TD Cleanup — Stories 10.1-10.4 (17h) ✅
+     - Phase 2 (Day 1): Feature Enhancement — Story 10.5 (6h) ✅
+     - Phase 3 (Day 2-3): UAT — Stories 10.6-10.8 (28h) ✅
+     - Phase 4 (Day 3): Release — Stories 10.9-10.10 (6h) ✅
    
-   **Stories (12 total):**
-   - ✅ 10.1: TD-017 Fix 114 tsc Test Type Errors (7.5h, HIGH)
-   - ✅ 10.2: ESLint Regression 423→0 + CI Gate (8h, HIGH)
-   - ✅ 10.3: TD-018 TODO/FIXME Cleanup (4h, HIGH)
-   - ✅ 10.3b: TD-019 Frontend ESLint Cleanup + CI Gate (3.5h, HIGH) — discovered mid-sprint
-   - ✅ 10.3c: TD-022 API Path Audit Fixes (1.5h, CRITICAL) — discovered mid-sprint
-   - ✅ 10.4: i18n Chinese String Scan + UX Quick Wins (2.5h, MEDIUM) + Patch 10.4a
-   - ✅ 10.5: Admin Analytics Real Data (6h, MEDIUM)
-   - ⬜ 10.6: UAT Test Plan & Seed Data (8h, HIGH)
-   - ⬜ 10.7: Full UAT Execution (12h, HIGH)
-   - ⬜ 10.8: UAT Bug Fix Buffer (8h, MEDIUM)
-   - ⬜ 10.9: Release Documentation (4h, MEDIUM)
-   - ⬜ 10.10: Merge Main + Tag v1.0.0 (2h, HIGH)
+   **Stories (12 total — all complete):**
+   - ✅ 10.1: TD-017 Fix 114 tsc Test Type Errors (7.5h)
+   - ✅ 10.2: ESLint Regression 423→0 + CI Gate (8h)
+   - ✅ 10.3: TD-018 TODO/FIXME Cleanup (4h)
+   - ✅ 10.3b: TD-019 Frontend ESLint Cleanup + CI Gate (3.5h)
+   - ✅ 10.3c: TD-022 API Path Audit Fixes (1.5h)
+   - ✅ 10.4: i18n Chinese String Scan + UX Quick Wins (2.5h)
+   - ✅ 10.5: Admin Analytics Real Data (6h)
+   - ✅ 10.6: UAT Test Plan & Seed Data (8h)
+   - ✅ 10.7: Full UAT Execution — Round 1: 2/35 PASS → Round 2: 33/33 PASS
+   - ✅ 10.8: UAT Bug Fixes — 7 bugs (4 P0 + 3 P1) all fixed + 12 additional fixes
+   - ✅ 10.9: Release Documentation & CHANGELOG
+   - ✅ 10.10: Merge Main + Tag v1.0.0
    
-   **Planning Artifacts:**
-   - `docs/sprints/sprint-10/backlog.md`
-   - `docs/sprints/sprint-10/sprint-status.yaml`
-   - `docs/sprints/sprint-10/version-manifest.md`
-   - `docs/sprints/sprint-10/kickoff-readiness.md`
-   - `docs/sprints/sprint-10/10-*.md` (10 story files)
+   **Key Achievements:**
+   - UAT: 33/33 PASS, 0 FAIL, 2 SKIP (optional)
+   - Tests: Backend 534 + Frontend 527 = 1,061 (100% pass rate)
+   - ESLint: 0 errors, 0 warnings (zero-tolerance CI gate)
+   - TypeScript: 0 errors (tsc --noEmit clean)
+   - Bundle: 235 KB main chunk (10 lazy-loaded routes)
+   - Version: v1.0.0 (backend + frontend package.json)
+   
+   **Release Notes:** `docs/sprints/sprint-10/v1.0.0-release-notes.md`
 
-19. 🔜 **Next Actions**
-   - Sprint 10 Kickoff (2026-02-09)
-   - Create branch `sprint-10/v1-release` from main
-   - Execute Phase 1: TD Cleanup (Stories 10.1-10.4)
-   - Post-v1.0.0: Phase 4 Pilot planning (Epics 11-14 driven by pilot feedback)
+19. 🔜 **Next Actions (Post-MVP)**
+   - Phase 4 Pilot planning (L&D program pilot)
+   - FEAT-008: User Management enhancements (manual add, M365 sync UI) — P1
+   - FEAT-007: Session management (idle timeout, centralized HTTP client) — P2
+   - FEAT-004: Role model refactor (Issuer as permission flag) — P2
+   - TD-006: Teams Channel Permissions (requires tenant admin approval) — External
+   - TD-016: Async Bulk Processing (Redis + Bull Queue for >20 badges) — P3
 
 ---
 
