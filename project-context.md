@@ -5,7 +5,7 @@
 **Project Type:** Enterprise Internal Platform (Greenfield)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
 **License:** MIT License (Open Source)  
-**Status:** ✅ v1.0.0 Released — MVP Complete (10 Epics, 1061 tests, UAT PASSED)  
+**Status:** 🔄 Post-MVP Hardening — Sprint 11 Planning Complete (v1.0.0 released, 6 audits done)  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, committed 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, committed 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, committed 2026-01-26)  
@@ -16,8 +16,9 @@
 **Sprint 7:** ✅ Complete (100%, actual 38.5h / estimated 41-47h, committed 2026-02-02, branch: sprint-7/epic-9-revocation-lifecycle-uat, 302 tests, 100% UAT pass, v0.7.0)  
 **Sprint 8:** ✅ Complete (12/12 items, 100%, 80h/76h, branch: sprint-8/epic-10-production-ready-mvp, tagged v0.8.0, 876 tests)  
 **Sprint 9:** ✅ Complete (5/5 stories, 37h/51h, branch: sprint-9/epic-8-bulk-issuance-td-cleanup, 1087 tests, v0.9.0-dev)  
-**Sprint 10:** ✅ Complete (12/12 stories, branch: sprint-10/v1-release, 1061 tests, UAT 33/33 PASS, v1.0.0)
-**Last Updated:** 2026-02-11 (Sprint 10 Complete — v1.0.0 Released)
+**Sprint 10:** ✅ Complete (12/12 stories, branch: sprint-10/v1-release, 1061 tests, UAT 33/33 PASS, v1.0.0)  
+**Sprint 11:** 🔄 Planning Complete (23 stories, 60h target, Security + Quality + Feature Polish)  
+**Last Updated:** 2026-02-12 (Post-MVP Audits Complete, Sprint 11 Planning Done)
 
 ---
 
@@ -125,6 +126,19 @@ Build an internal digital credentialing (badging) platform to securely recognize
 - **Sprint 3 Retrospective:** `gcredit-project/docs/sprints/sprint-3/retrospective.md` ✅ COMPLETE (46 tests, Open Badges 2.0 compliance, v0.3.0)
 - **Sprint 4 Backlog:** `gcredit-project/docs/sprints/sprint-4/backlog.md` ✅ COMPLETE (7 stories, 48h, Epic 5 delivered)
 - **Sprint 4 Retrospective:** `gcredit-project/docs/sprints/sprint-4/retrospective.md` ✅ COMPLETE (58 tests, Timeline View + Badge Detail Modal)
+- **Sprint 10 Retrospective:** `gcredit-project/docs/sprints/sprint-10/retrospective.md` ✅ COMPLETE (v1.0.0 Release, UAT 33/33, Lesson 39)
+- **Sprint 10 Release Notes:** `gcredit-project/docs/sprints/sprint-10/v1.0.0-release-notes.md` ✅ COMPLETE (498 commits, 10 Epics)
+
+**Post-MVP Audit Documents (2026-02-11):**
+- **Audit Master Plan:** `gcredit-project/docs/planning/post-mvp-audit-plan.md` — 6 audit dimensions, agent assignments, priorities (394 lines)
+- **Audit #1: PRD Compliance** — Covered within Feature Completeness Audit (#6)
+- **Audit #2: Architecture Compliance:** `gcredit-project/docs/architecture/architecture-compliance-audit-2026-02.md` — 91% compliance, no P0 blockers (296 lines)
+- **Audit #3: Architecture Quality:** `gcredit-project/docs/architecture/architecture-quality-assessment-2026-02.md` — 78% readiness, scalability 70%, modularity 85% (305 lines)
+- **Audit #4: Code Quality:** `gcredit-project/docs/development/code-quality-audit-2026-02.md` — Overall grade B+, static analysis A, test quality B- (269 lines)
+- **Audit #5: Security:** `gcredit-project/docs/security/security-audit-2026-02.md` — OWASP Top 10, 2 HIGH (localStorage JWT, no lockout), 3 MEDIUM, 4 LOW (234 lines)
+- **Audit #6: Feature & UX:** `gcredit-project/docs/planning/feature-completeness-audit-2026-02.md` — 19/22 screens (86%), 35/37 endpoints (95%), 2 P0, 8 P1 (238 lines)
+- **Sprint 11 Candidate List:** `gcredit-project/docs/planning/sprint-11-candidate-list.md` — Consolidated audit findings → actionable tickets (166 lines)
+- **Sprint 11 Backlog:** `gcredit-project/docs/sprints/sprint-11/backlog.md` ✅ COMPLETE (23 stories, 5 Waves, 60h)
 
 ---
 
@@ -279,13 +293,19 @@ _bmad-output/
 
 ## Key Features Summary
 
-### Phase 1 - MVP (Target: Q1 2026)
+### Phase 1 - MVP (Target: Q1 2026) ✅ COMPLETE (v1.0.0, 2026-02-11)
 - Badge template creation & catalog
 - Manual badge issuance (single + bulk CSV)
 - Employee badge wallet/profile
 - Public verification pages
 - Azure AD SSO
 - Email notifications
+
+### Phase 1.5 - Post-MVP Hardening (Sprint 11, 2026-02) 🔄 IN PROGRESS
+- Security hardening (account lockout, JWT httpOnly, magic-byte validation, PII sanitization)
+- Code quality improvement (3 service test suites, pagination standardization, Logger cleanup)
+- Feature polish (badge visibility, LinkedIn share, CSV export, 403 page)
+- DX improvements (husky pre-commit, CI quality gates)
 
 ### Phase 2 - Automation (Target: Q2 2026)
 - LMS integration (auto-issuance on course completion)
@@ -352,11 +372,13 @@ _bmad-output/
 | → Sprint 8 | 10 days | Production-Ready MVP (Epic 10) | ✅ COMPLETE (2026-02-05, 80h/76h, 876 tests, v0.8.0) |
 | → Sprint 9 | 3 days | Bulk Badge Issuance + TD Cleanup (Epic 8) | ✅ COMPLETE (2026-02-08, 37h/51h, 1087 tests, v0.9.0-dev) |
 | → Sprint 10 | 2 weeks | v1.0.0 Release (TD + UAT + Release) | ✅ COMPLETE (2026-02-09→02-11, 12 stories, 1061 tests, UAT 33/33 PASS, v1.0.0) |
+| Post-MVP Audit | 1 day | 6 comprehensive audits (PRD, Arch, Security, CQ, UX) | ✅ COMPLETE (2026-02-11, 6 reports, ~2,000 lines) |
+| → Sprint 11 | TBD | Security Hardening + Code Quality + Feature Polish | 🔄 PLANNING COMPLETE (23 stories, 60h, branch: sprint-11/security-quality-hardening) |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ Pending |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
 
-**Current Status:** ✅ v1.0.0 Released (Sprint 10 Complete — 12 stories, UAT PASSED 33/33, tagged v1.0.0, 2026-02-11)
+**Current Status:** 🔄 Sprint 11 Planning Complete — Post-MVP hardening sprint (Security + Quality + Features, 23 stories, target v1.1.0)
 
 ---
 
@@ -393,11 +415,11 @@ _bmad-output/
 | **TD-017: tsc Test-Only Errors** | Low | ✅ Sprint 10 Done | **Resolved:** 114 tsc errors in test files fixed. Completed in Story 10.1 (2026-02-09). |
 | **ESLint Warning Regression** | Medium | ✅ Sprint 10 Done | **Resolved:** ESLint 423 warnings → 0 errors + 0 warnings (backend + frontend). CI `--max-warnings=0` gate on both. Completed in Stories 10.2 + 10.3b (2026-02-09). |
 | **TD-016: Async Bulk Processing** | Low | 📋 Deferred (P3) | **Issue:** Bulk issuance limited to 20 badges synchronously. **Plan:** Add Redis + Bull Queue for >20 badge async processing. **Effort:** 8h. **Trigger:** When user feedback validates need for >20 badges per batch. |
-| **TD-023: CI Chinese Character Gate** | Low | 📋 Post-v1.0 | **Issue:** No automated CI check for Chinese characters in source code. Currently relies on manual review + coding standards doc. **Plan:** Add `grep [\u4E00-\u9FFF]` scan step to CI workflow, fail on match. **Effort:** 1h. |
-| **TD-024: CI console.log Gate** | Low | 📋 Post-v1.0 | **Issue:** No automated CI check for `console.log/error/warn` in production code. Currently relies on coding standards doc + code review. **Plan:** Add scan step to CI workflow excluding test/spec files, fail on match. **Effort:** 1h. |
-| **TD-025: Husky Pre-commit Hooks** | Low | 📋 Post-v1.0 | **Issue:** No local pre-commit validation. CI is the only quality gate, meaning bad code gets committed before being caught. **Plan:** Install husky + lint-staged, run ESLint + Prettier + related tests on staged files. **Trigger:** When multiple human developers join the project. **Effort:** 2h. |
-| **TD-026: SM Audit Triage Workflow** | Medium | 📋 Post-v1.0 | **Issue:** UX/Architecture audit recommendations are not systematically converted to stories (Lesson 39: Sprint 6 audit findings ignored for 3 sprints). **Plan:** Add `[AT] Audit Triage` menu item to SM agent. Workflow loads most recent audit docs, lists unresolved findings, and for each: creates a story, defers to tech debt, or marks as accepted risk. Sprint Planning checklist Section 2.5 should auto-trigger this. **Effort:** 1h. |
-| **TD-027: Playwright Visual Regression in CI** | Low | 📋 Post-v1.0 | **Issue:** No automated visual regression testing. UI drift goes undetected between sprints (Lesson 39: 10 sprints without visual verification). **Plan:** Add Playwright screenshot comparison to CI. Capture baseline screenshots after Story 10.6d (Design System), compare on each push. Fail CI if pixel diff exceeds threshold. Requires screenshot baseline + CI job. **Effort:** 4h. |
+| **TD-023: CI Chinese Character Gate** | Low | 📋 Sprint 11 (Story 11.21) | **Scheduled:** ESLint custom rule + CI scan for Chinese characters. Combined with TD-024 into Story 11.21 (CI Quality Gates). **Effort:** 1.5h. |
+| **TD-024: CI console.log Gate** | Low | 📋 Sprint 11 (Story 11.21) | **Scheduled:** ESLint `no-console: error` + CI enforcement. Combined with TD-023 into Story 11.21 (CI Quality Gates). **Effort:** 1.5h. |
+| **TD-025: Husky Pre-commit Hooks** | Low | 📋 Sprint 11 (Story 11.22) | **Scheduled:** husky + lint-staged for pre-commit ESLint/Prettier. Sprint 11 Story 11.22. **Effort:** 1.5h. |
+| **TD-026: SM Audit Triage Workflow** | Medium | 📋 Post-Sprint 11 | **Issue:** Audit recommendations not systematically converted to stories. **Plan:** SM agent `[AT]` menu item. **Effort:** 1h. |
+| **TD-027: Playwright Visual Regression in CI** | Low | 📋 Post-Sprint 11 | **Issue:** No automated visual regression testing. **Plan:** Playwright screenshot comparison in CI. **Effort:** 4h. |
 | **TD-018: Code TODO Cleanup** | Low | ✅ Sprint 10 Done | **Resolved:** 14 TODO/FIXME markers resolved (6 backend, 5 frontend, 3 test). Hardcoded localhost URLs centralized to apiConfig.ts. Dead nav links fixed. 404 catch-all added. Completed in Story 10.3 (2026-02-08). |
 | **TD-019: Frontend ESLint Cleanup** | High | ✅ Sprint 10 Done | **Resolved:** Frontend ESLint 49 errors + 21,363 warnings → 0 errors + 0 warnings. Added `.gitattributes` (LF normalization), fixed 49 errors (react-hooks, typescript, a11y), 13 eslint-disable with justifications. CI `npm run lint --max-warnings=0` gate added to frontend-tests job. 135 files changed. Completed in Story 10.3b (2026-02-09, commit `80b693e`). |
 | **TD-020: CI E2E Job Missing Frontend Dependency** | Medium | ✅ Resolved (Story 10.4, `0ba885e`) | **Resolved:** `e2e-tests` job now has `needs: [lint-and-unit, frontend-tests]`. Frontend lint/test failures correctly block E2E execution. Completed in Story 10.4 (2026-02-09). |
@@ -1418,13 +1440,48 @@ Sprint 0-2 established this pattern:
    
    **Release Notes:** `docs/sprints/sprint-10/v1.0.0-release-notes.md`
 
-19. 🔜 **Next Actions (Post-MVP)**
+19. ✅ **Post-MVP Comprehensive Audit (COMPLETE - 2026-02-11)**
+   - **Scope:** 6 audit dimensions covering PRD compliance, architecture, security, code quality, feature/UX
+   - **Key Findings:**
+     - Architecture: 91% compliance, 78% Phase 2/3 readiness, no P0 blockers
+     - Security: 2 HIGH (localStorage JWT tokens, no account lockout), 3 MEDIUM, 4 LOW
+     - Code Quality: Grade B+, 3 critical services with 0% test coverage
+     - Feature/UX: 86% screen coverage, 95% endpoint coverage, 2 P0 issues
+   - **Output:** 6 audit reports (~2,000 lines total):
+     - `gcredit-project/docs/planning/post-mvp-audit-plan.md` (Master Plan)
+     - `gcredit-project/docs/architecture/architecture-compliance-audit-2026-02.md` (#2)
+     - `gcredit-project/docs/architecture/architecture-quality-assessment-2026-02.md` (#3)
+     - `gcredit-project/docs/development/code-quality-audit-2026-02.md` (#4)
+     - `gcredit-project/docs/security/security-audit-2026-02.md` (#5)
+     - `gcredit-project/docs/planning/feature-completeness-audit-2026-02.md` (#6)
+     - `gcredit-project/docs/planning/sprint-11-candidate-list.md` (Consolidated → Sprint 11)
+   - **Action:** All P0/P1 findings triaged into Sprint 11 backlog
+
+20. 🔄 **Sprint 11 — Security Hardening + Code Quality + Feature Polish (PLANNING COMPLETE - 2026-02-12)**
+   - **Branch:** `sprint-11/security-quality-hardening`
+   - **Capacity:** 60h target (51.5-65.5h estimated)
+   - **Stories:** 23 stories organized in 5 Waves
+     - Wave 1: Quick Wins (11.3, 11.14, 11.23, 11.7) — 4h
+     - Wave 2: Core Security (11.1, 11.2, 11.9) — 8-11h
+     - Wave 3: Complex Security + Cross-cutting (11.6, 11.8, 11.16) — 14-19h
+     - Wave 4: Tests + Features (11.10-13, 11.4, 11.5) — 17-22h
+     - Wave 5: Polish + DX (11.15, 11.17-22) — 9-12h
+   - **P0 Security (5):** Account lockout, magic-byte validation, npm audit, Swagger prod-gate, JWT httpOnly
+   - **P1 Security (4):** Email masking, PII log sanitization, HTML sanitization pipe
+   - **P1 Code Quality (7):** 3 service test suites, NestJS Logger, remove unused deps, design consistency, pagination standardization
+   - **P1 Features (4):** Badge visibility toggle, LinkedIn share tab, CSV export, skill UUID→name
+   - **P1 Tech Debt (3):** CI quality gates, husky pre-commit, nav fix
+   - **Target Version:** v1.1.0
+   - **Planning Artifacts:** backlog.md, 23 story files, version-manifest.md, kickoff-readiness.md, sprint-status.yaml
+
+21. 🔜 **Next Actions (Post-Sprint 11)**
    - Phase 4 Pilot planning (L&D program pilot)
    - FEAT-008: User Management enhancements (manual add, M365 sync UI) — P1
    - FEAT-007: Session management (idle timeout, centralized HTTP client) — P2
    - FEAT-004: Role model refactor (Issuer as permission flag) — P2
    - TD-006: Teams Channel Permissions (requires tenant admin approval) — External
    - TD-016: Async Bulk Processing (Redis + Bull Queue for >20 badges) — P3
+   - TD-027: Playwright Visual Regression in CI — P3
 
 ---
 
