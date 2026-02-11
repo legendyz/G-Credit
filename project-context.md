@@ -1485,6 +1485,11 @@ Sprint 0-2 established this pattern:
    - TD-006: Teams Channel Permissions (requires tenant admin approval) — External
    - TD-016: Async Bulk Processing (Redis + Bull Queue for >20 badges) — P3
    - TD-027: Playwright Visual Regression in CI — P3
+   - **Sprint 12 待决策 (PO):**
+     - DEC-001: 登录页 UX 方案（双入口/SSO优先/统一SSO/智能路由）
+     - DEC-002: 是否保留密码登录（pilot 兜底 vs GA 下线）
+     - DEC-003: 手工创建用户的长期定位（迁移关闭 vs 长期并存）
+     - DEC-004: FEAT-008 与 FR27 执行顺序（详见 Sprint 11 backlog 待决策清单）
 
 ---
 
