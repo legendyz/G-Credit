@@ -178,6 +178,8 @@
 
 | Role | Name | Date | Signature |
 |------|------|------|-----------|
+| Tester / PO | LegendZhu | 2026-02-11 | ✅ PASSED (Round 2) |
+| Scrum Master | Bob (SM Agent) | 2026-02-11 | ✅ PASSED |
 | Tester | | | |
 | Scrum Master | | | |
 | Product Owner | | | |

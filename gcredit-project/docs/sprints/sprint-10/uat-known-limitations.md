@@ -15,10 +15,10 @@
 - **Workaround:** UAT 期间使用 seed-uat.ts 预创建的 4 个测试用户
 - **Future Plan:** FEAT-002 (Post-MVP) 邀请式发放，支持向任意邮箱发放
 
-### LIM-003: Navbar 链接标签错误 (BUG-001)
-- **Impact:** Navbar "My Wallet" 链接实际导航到 Dashboard (`/`)，无链接指向 `/wallet`
-- **Workaround:** 直接在浏览器输入 `/wallet` 或通过 Dashboard Quick Actions 导航
-- **Status:** 记录在 Story 10.8 pre-UAT known bugs，将在 UAT Bug Fix 阶段修复
+### LIM-003: ~~Navbar 链接标签错误 (BUG-001)~~ — ✅ RESOLVED
+- **Impact:** ~~Navbar "My Wallet" 链接实际导航到 Dashboard (`/`)，无链接指向 `/wallet`~~
+- **Status:** ✅ Fixed in Story 10.8 (BUG-002). Nav now has separate Dashboard + My Wallet links.
+- **Resolution Date:** 2026-02-10
 
 ### LIM-004: 批量发放同步处理限制 (TD-016)
 - **Impact:** 每批最多 20 个 badge，超出需分多批处理

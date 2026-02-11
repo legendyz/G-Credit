@@ -255,6 +255,8 @@ If the 4 P0 bugs are fixed, the expected re-test results:
 
 | Role | Name | Date | Result |
 |------|------|------|--------|
-| Tester | LegendZhu | 2026-02-10 | ❌ NOT PASSED |
+| Tester | LegendZhu | 2026-02-10 | ❌ NOT PASSED (Round 1) |
 | Scrum Master | Bob (SM Agent) | 2026-02-10 | Bugs logged → Story 10.8 |
-| Product Owner | | | |
+| Product Owner | LegendZhu | — | Deferred to Round 2 |
+
+> **📌 Round 2 结果:** 所有 7 个 Bug 已修复，Round 2 全部 33/33 PASS。详见 [`uat-retest-results.md`](uat-retest-results.md)。

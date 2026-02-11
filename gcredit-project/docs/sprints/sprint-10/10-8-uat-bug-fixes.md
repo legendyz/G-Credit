@@ -175,3 +175,30 @@ All 7 UAT bugs (BUG-002 through BUG-008) implemented and verified:
 | SKIP | 1 (2.9%) | 2 (5.7%) — UAT-035 (mobile), UAT-024 (embed) |
 
 **Note:** UAT-025, 027, 031 remain PARTIAL due to UX improvement items (UX-001, UX-002, UX-003) — these are post-MVP enhancements, not bugs. UAT-024 (embeddable widget) may need live server verification.
+
+---
+
+## Re-UAT Round 2 — Additional Fixes (2026-02-11)
+
+During the Re-UAT Round 2 manual testing session, **12 additional fixes** were implemented in real time to achieve full PASS:
+
+| # | Fix Description | Commit | UAT Case |
+|---|-----------------|--------|----------|
+| 1 | Verify page data mapping from `_meta` | `c1bd598` | UAT-015 |
+| 2 | VerificationSection uses `verificationId` for verify URL | `3b7a3a3` | UAT-015 |
+| 3 | Evidence files UI — padding, cursor, download URL | `c7650ca` | UAT-018 |
+| 4 | Azure credentials parse from connection string | `b2119ea` | UAT-018 |
+| 5 | Fix garbled Unicode separator in evidence metadata | `c60ed78` | UAT-018 |
+| 6 | Unify Download PNG button to blue style | `8eb53c9` | UI polish |
+| 7 | Convert UAT seed IDs to valid UUID v4 | `34b6be7` | Seed data |
+| 8 | Increase global rate limit 10→60 req/min | `7cb6830` | Throttle |
+| 9 | Record badge share events in AuditLog | `7b68912` | UAT-023 |
+| 10 | Analytics refresh button + category nameEn | `1f2fa07` | Analytics |
+| 11 | Add `/claim` page for email badge claiming | `2c62c77` | UAT-014 |
+| 12 | Add department editing for users | `a442030` | UAT-028 |
+
+**Session commits:**
+- `3d60511` — Re-UAT Round 2: UI fixes + session validation on startup (11 files, 193+/54-)
+- `f27d0b1` — Add User Management nav link for Admin role (Navbar + MobileNav)
+
+**Round 2 Result:** 33/33 PASS, 0 FAIL, 2 SKIP (optional). See [`uat-retest-results.md`](uat-retest-results.md) for full report.
