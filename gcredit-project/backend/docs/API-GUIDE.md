@@ -1,8 +1,8 @@
 # API Usage Guide
 
 **G-Credit Badge Platform REST API**  
-**Version:** 1.0.0-dev (Sprint 10 - v1.0.0 Release Sprint)  
-**Last Updated:** 2026-02-09
+**Version:** 1.0.0 (Sprint 10 - v1.0.0 Released)  
+**Last Updated:** 2026-02-11
 
 ---
 

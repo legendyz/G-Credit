@@ -96,6 +96,6 @@ Each ADR should contain:
 
 ---
 
-**Last Updated:** 2026-01-28  
+**Last Updated:** 2026-02-11  
 **Maintained By:** Tech Lead / Architecture Team  
 **Review Frequency:** Monthly or as decisions are made

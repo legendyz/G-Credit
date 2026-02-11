@@ -1,9 +1,9 @@
 # GCredit API Documentation
 
-**Version:** 1.0.0-dev (Sprint 10 In Progress)  
+**Version:** 1.0.0 (v1.0.0 Released)  
 **Base URL:** `http://localhost:3000`  
 **API Prefix:** `/api` (all endpoints, including `/api/auth`)  
-**Last Updated:** 2026-02-09
+**Last Updated:** 2026-02-11
 
 ## Overview
 
