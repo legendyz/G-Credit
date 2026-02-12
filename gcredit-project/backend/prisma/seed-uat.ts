@@ -75,6 +75,7 @@ const IDS = {
   skillPublicSpeaking: 'a0a00004-0004-4004-a004-000000000004',
   skillTeamLeadership: 'a0a00005-0005-4005-a005-000000000005',
   skillProjectMgmt: 'a0a00006-0006-4006-a006-000000000006',
+  skillAI: 'a0a00007-0007-4007-a007-000000000007',
 };
 
 const UAT_SALT = 'gcredit-uat-salt';
@@ -226,7 +227,11 @@ async function main() {
     where: {
       id: {
         in: [
-          IDS.tmpl1, IDS.tmpl2, IDS.tmpl3, IDS.tmpl4, IDS.tmpl5,
+          IDS.tmpl1,
+          IDS.tmpl2,
+          IDS.tmpl3,
+          IDS.tmpl4,
+          IDS.tmpl5,
           // Old format IDs for migration cleanup
           'uat-tmpl-0001-0001-0001-000000000001',
           'uat-tmpl-0001-0001-0001-000000000002',
@@ -239,14 +244,18 @@ async function main() {
   });
   // Clean skill data (skills before categories due to FK)
   await prisma.skill.deleteMany({
-    where: { id: { in: Object.values(IDS).filter((id) => id.startsWith('a0a0000')) } },
+    where: {
+      id: { in: Object.values(IDS).filter((id) => id.startsWith('a0a0000')) },
+    },
   });
   // Skill categories: by new IDs and old uat-scat-* IDs
   await prisma.skillCategory.deleteMany({
     where: {
       id: {
         in: [
-          ...Object.values(IDS).filter((id) => id.startsWith('00000000-0000-4000-a000-0006')),
+          ...Object.values(IDS).filter((id) =>
+            id.startsWith('00000000-0000-4000-a000-0006'),
+          ),
           // Old format IDs for migration cleanup
           'uat-scat-0001-0001-0001-000000000001',
           'uat-scat-0001-0001-0001-000000000002',
@@ -261,7 +270,9 @@ async function main() {
       },
     },
   });
-  console.log('🧹 Cleaned existing UAT data (evidence → badges → templates → skills → categories)');
+  console.log(
+    '🧹 Cleaned existing UAT data (evidence → badges → templates → skills → categories)',
+  );
 
   // ========================================
   // 2. SKILL CATEGORIES + SKILLS (Story 10.8b)
@@ -330,7 +341,9 @@ async function main() {
       },
     }),
   ]);
-  console.log(`✅ ${skillCategories.length} top-level skill categories created`);
+  console.log(
+    `✅ ${skillCategories.length} top-level skill categories created`,
+  );
 
   // 2b. Create 4 sub-categories (level 2)
   const subCategories = await Promise.all([
@@ -391,7 +404,8 @@ async function main() {
       data: {
         id: IDS.skillTypescript,
         name: 'TypeScript',
-        description: 'Static typing for JavaScript, used in enterprise web development',
+        description:
+          'Static typing for JavaScript, used in enterprise web development',
         categoryId: IDS.scatProgramming,
         level: SkillLevel.INTERMEDIATE,
       },
@@ -409,7 +423,8 @@ async function main() {
       data: {
         id: IDS.skillDocker,
         name: 'Docker',
-        description: 'Container technology for application packaging and deployment',
+        description:
+          'Container technology for application packaging and deployment',
         categoryId: IDS.scatCloud,
         level: SkillLevel.INTERMEDIATE,
       },
@@ -441,6 +456,16 @@ async function main() {
         level: SkillLevel.ADVANCED,
       },
     }),
+    prisma.skill.create({
+      data: {
+        id: IDS.skillAI,
+        name: 'AI',
+        description:
+          'Artificial intelligence, machine learning, and generative AI technologies',
+        categoryId: IDS.scatProgramming,
+        level: SkillLevel.INTERMEDIATE,
+      },
+    }),
   ]);
   console.log(`✅ ${skills.length} skills created`);
 
@@ -457,7 +482,12 @@ async function main() {
           'Awarded for demonstrating advanced cloud computing skills including architecture, deployment, and security best practices.',
         imageUrl: 'https://picsum.photos/400/400?random=1',
         category: 'Technical',
-        skillIds: [IDS.skillTypescript, IDS.skillAzure, IDS.skillDocker],
+        skillIds: [
+          IDS.skillTypescript,
+          IDS.skillAzure,
+          IDS.skillDocker,
+          IDS.skillAI,
+        ],
         issuanceCriteria: {
           requirements: [
             'Complete cloud architecture certification',
@@ -582,7 +612,10 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-001',
       verificationId: IDS.verify1,
-      metadataHash: crypto.createHash('sha256').update('badge1-meta').digest('hex'),
+      metadataHash: crypto
+        .createHash('sha256')
+        .update('badge1-meta')
+        .digest('hex'),
       recipientHash: hashEmail('M365DevAdmin@2wjh85.onmicrosoft.com'),
       assertionJson: makeAssertion(IDS.verify1),
       issuedAt: twoMonthsAgo,
@@ -601,7 +634,10 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-002',
       verificationId: IDS.verify2,
-      metadataHash: crypto.createHash('sha256').update('badge2-meta').digest('hex'),
+      metadataHash: crypto
+        .createHash('sha256')
+        .update('badge2-meta')
+        .digest('hex'),
       recipientHash: hashEmail('M365DevAdmin@2wjh85.onmicrosoft.com'),
       assertionJson: makeAssertion(IDS.verify2),
       issuedAt: oneMonthAgo,
@@ -620,7 +656,10 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-003',
       verificationId: IDS.verify3,
-      metadataHash: crypto.createHash('sha256').update('badge3-meta').digest('hex'),
+      metadataHash: crypto
+        .createHash('sha256')
+        .update('badge3-meta')
+        .digest('hex'),
       recipientHash: hashEmail('M365DevAdmin@2wjh85.onmicrosoft.com'),
       assertionJson: makeAssertion(IDS.verify3),
       issuedAt: oneWeekAgo,
@@ -639,7 +678,10 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-004',
       verificationId: IDS.verify4,
-      metadataHash: crypto.createHash('sha256').update('badge4-meta').digest('hex'),
+      metadataHash: crypto
+        .createHash('sha256')
+        .update('badge4-meta')
+        .digest('hex'),
       recipientHash: hashEmail('M365DevAdmin@2wjh85.onmicrosoft.com'),
       assertionJson: makeAssertion(IDS.verify4),
       issuedAt: threeDaysAgo,
@@ -658,7 +700,10 @@ async function main() {
       status: BadgeStatus.PENDING,
       claimToken: 'uat-claim-token-005-pending',
       verificationId: IDS.verify5,
-      metadataHash: crypto.createHash('sha256').update('badge5-meta').digest('hex'),
+      metadataHash: crypto
+        .createHash('sha256')
+        .update('badge5-meta')
+        .digest('hex'),
       recipientHash: hashEmail('M365DevAdmin@2wjh85.onmicrosoft.com'),
       assertionJson: makeAssertion(IDS.verify5),
       issuedAt: now,
@@ -677,7 +722,10 @@ async function main() {
       status: BadgeStatus.REVOKED,
       claimToken: 'uat-claim-token-006',
       verificationId: IDS.verify6,
-      metadataHash: crypto.createHash('sha256').update('badge6-meta').digest('hex'),
+      metadataHash: crypto
+        .createHash('sha256')
+        .update('badge6-meta')
+        .digest('hex'),
       recipientHash: hashEmail('M365DevAdmin@2wjh85.onmicrosoft.com'),
       assertionJson: makeAssertion(IDS.verify6),
       issuedAt: twoMonthsAgo,
@@ -685,8 +733,10 @@ async function main() {
       expiresAt: oneYearLater,
       revokedAt: oneWeekAgo,
       revokedBy: manager.id,
-      revocationReason: 'Certification expired - employee did not renew within grace period',
-      revocationNotes: 'UAT test data: revoked badge for verification page testing',
+      revocationReason:
+        'Certification expired - employee did not renew within grace period',
+      revocationNotes:
+        'UAT test data: revoked badge for verification page testing',
     },
   });
 
@@ -702,7 +752,10 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-007',
       verificationId: IDS.verify7,
-      metadataHash: crypto.createHash('sha256').update('badge7-meta').digest('hex'),
+      metadataHash: crypto
+        .createHash('sha256')
+        .update('badge7-meta')
+        .digest('hex'),
       recipientHash: hashEmail('manager@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify7),
       issuedAt: oneMonthAgo,
@@ -721,7 +774,10 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-008',
       verificationId: IDS.verify8,
-      metadataHash: crypto.createHash('sha256').update('badge8-meta').digest('hex'),
+      metadataHash: crypto
+        .createHash('sha256')
+        .update('badge8-meta')
+        .digest('hex'),
       recipientHash: hashEmail('manager@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify8),
       issuedAt: twoMonthsAgo,
@@ -740,7 +796,10 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-009',
       verificationId: IDS.verify9,
-      metadataHash: crypto.createHash('sha256').update('badge9-meta').digest('hex'),
+      metadataHash: crypto
+        .createHash('sha256')
+        .update('badge9-meta')
+        .digest('hex'),
       recipientHash: hashEmail('manager@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify9),
       issuedAt: twoMonthsAgo,
@@ -761,7 +820,10 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-010',
       verificationId: IDS.verify10,
-      metadataHash: crypto.createHash('sha256').update('badge10-meta').digest('hex'),
+      metadataHash: crypto
+        .createHash('sha256')
+        .update('badge10-meta')
+        .digest('hex'),
       recipientHash: hashEmail('admin@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify10),
       issuedAt: oneWeekAgo,
@@ -780,7 +842,10 @@ async function main() {
       status: BadgeStatus.PENDING,
       claimToken: 'uat-claim-token-011-pending',
       verificationId: IDS.verify11,
-      metadataHash: crypto.createHash('sha256').update('badge11-meta').digest('hex'),
+      metadataHash: crypto
+        .createHash('sha256')
+        .update('badge11-meta')
+        .digest('hex'),
       recipientHash: hashEmail('admin@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify11),
       issuedAt: now,
@@ -789,7 +854,9 @@ async function main() {
     },
   });
 
-  console.log('✅ 11 badges created (7 CLAIMED, 2 PENDING, 1 REVOKED, 1 expired)');
+  console.log(
+    '✅ 11 badges created (7 CLAIMED, 2 PENDING, 1 REVOKED, 1 expired)',
+  );
 
   // ========================================
   // 4. EVIDENCE FILES (2 records)
@@ -803,7 +870,8 @@ async function main() {
       originalName: 'cloud-certification-exam-results.pdf',
       fileSize: 245760,
       mimeType: 'application/pdf',
-      blobUrl: 'https://placeholder.blob.core.windows.net/evidence/cloud-cert-2026.pdf',
+      blobUrl:
+        'https://placeholder.blob.core.windows.net/evidence/cloud-cert-2026.pdf',
       uploadedBy: employee.id,
     },
   });
@@ -816,7 +884,8 @@ async function main() {
       originalName: 'innovation-proposal-q1-2026.pdf',
       fileSize: 512000,
       mimeType: 'application/pdf',
-      blobUrl: 'https://placeholder.blob.core.windows.net/evidence/innovation-proposal-q1.pdf',
+      blobUrl:
+        'https://placeholder.blob.core.windows.net/evidence/innovation-proposal-q1.pdf',
       uploadedBy: employee.id,
     },
   });
@@ -831,7 +900,8 @@ async function main() {
     where: {
       id: {
         in: [
-          IDS.milestone1, IDS.milestone2,
+          IDS.milestone1,
+          IDS.milestone2,
           // Old format IDs for migration cleanup
           'uat-mile-0001-0001-0001-000000000001',
           'uat-mile-0001-0001-0001-000000000002',
@@ -845,7 +915,8 @@ async function main() {
       id: IDS.milestone1,
       type: MilestoneType.BADGE_COUNT,
       title: 'First Badge',
-      description: 'Earned your very first badge! Welcome to the G-Credit community.',
+      description:
+        'Earned your very first badge! Welcome to the G-Credit community.',
       trigger: { type: 'BADGE_COUNT', threshold: 1 },
       icon: '🏆',
       isActive: true,
@@ -905,7 +976,8 @@ async function main() {
         metadata: {
           oldStatus: 'CLAIMED',
           newStatus: 'REVOKED',
-          reason: 'Certification expired - employee did not renew within grace period',
+          reason:
+            'Certification expired - employee did not renew within grace period',
           notes: 'UAT test data: revoked badge for verification page testing',
         },
       },
