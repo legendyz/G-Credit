@@ -182,8 +182,6 @@ async function main() {
     },
   });
 
-  console.log('✅ 4 users created/updated');
-
   const employee2 = await prisma.user.upsert({
     where: { email: 'employee@gcredit.com' },
     update: {
@@ -204,7 +202,7 @@ async function main() {
     },
   });
 
-  console.log('✅ 5th user (Demo Employee) created/updated');
+  console.log('✅ 5 users created/updated');
 
   // ========================================
   // CLEANUP: Delete existing UAT data in FK-safe order
@@ -924,9 +922,10 @@ async function main() {
   console.log('   Admin:    admin@gcredit.com / password123');
   console.log('   Issuer:   issuer@gcredit.com / password123');
   console.log('   Manager:  manager@gcredit.com / password123');
+  console.log('   Employee: employee@gcredit.com / password123');
   console.log('   Employee: M365DevAdmin@2wjh85.onmicrosoft.com / password123');
   console.log('\n📊 Data Summary:');
-  console.log('   4 users, 5 templates, 11 badges, 2 evidence files');
+  console.log('   5 users, 5 templates, 11 badges, 2 evidence files');
   console.log('   2 milestone configs, 3 audit logs');
   console.log('\n🔗 Verification URLs:');
   console.log(`   CLAIMED:  http://localhost:5173/verify/${IDS.verify1}`);
