@@ -8,6 +8,7 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Badge as BadgeType, BadgeQueryParams } from '@/lib/badgesApi';
 import { BadgeStatus, getAllBadges, getIssuedBadges } from '@/lib/badgesApi';
@@ -23,6 +24,7 @@ import {
   CheckCircle2,
   Clock,
   XCircle,
+  PlusCircle,
 } from 'lucide-react';
 import { useSkills } from '@/hooks/useSkills';
 import { useBadgeSearch } from '@/hooks/useBadgeSearch';
@@ -106,6 +108,7 @@ export function BadgeManagementPage({
   userId: userIdProp,
 }: BadgeManagementPageProps) {
   const currentUser = useCurrentUser();
+  const navigate = useNavigate();
   const userRole = userRoleProp || (currentUser?.role as 'ADMIN' | 'ISSUER' | 'MANAGER') || 'ADMIN';
   const userId = userIdProp || currentUser?.id || 'unknown';
   const queryClient = useQueryClient();
@@ -288,6 +291,17 @@ export function BadgeManagementPage({
               : userRole === 'MANAGER'
                 ? 'Manage badges for your department'
                 : 'Manage badges you have issued'
+          }
+          actions={
+            (userRole === 'ADMIN' || userRole === 'ISSUER') && (
+              <Button
+                onClick={() => navigate('/admin/badges/issue')}
+                className="flex items-center gap-2 min-h-[44px] bg-brand-600 hover:bg-brand-700 text-white"
+              >
+                <PlusCircle className="h-4 w-4" />
+                Issue New Badge
+              </Button>
+            )
           }
         >
           {/* Story 8.2 AC2: Enhanced Search & Filter Controls */}

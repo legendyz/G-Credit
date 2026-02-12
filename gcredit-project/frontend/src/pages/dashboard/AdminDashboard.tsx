@@ -23,7 +23,7 @@ import {
   LayoutTemplate,
   FileText,
   BarChart3,
-  Settings,
+  PlusCircle,
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
@@ -146,11 +146,9 @@ export const AdminDashboard: React.FC = () => {
               onClick={() => navigate('/admin/analytics')}
             />
             <QuickActionButton
-              icon={<Settings className="h-6 w-6 text-neutral-400" />}
-              label="Settings"
-              disabled
-              title="Coming in Phase 2"
-              className="opacity-50 cursor-not-allowed"
+              icon={<PlusCircle className="h-6 w-6 text-brand-600" />}
+              label="Issue Badge"
+              onClick={() => navigate('/admin/badges/issue')}
             />
           </div>
         </CardContent>
