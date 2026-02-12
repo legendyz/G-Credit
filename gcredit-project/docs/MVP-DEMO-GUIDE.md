@@ -61,7 +61,8 @@ VITE v7.x.x  ready in xxx ms
 | **Admin** | `admin@gcredit.com` | `password123` | Dashboard, My Wallet, Badge Templates, Badge Management, Bulk Issuance, Analytics, Users |
 | **Issuer** | `issuer@gcredit.com` | `password123` | Dashboard, My Wallet, Badge Templates, Badge Management, Bulk Issuance, Analytics |
 | **Manager** | `manager@gcredit.com` | `password123` | Dashboard, My Wallet, Badge Management |
-| **Employee** | `M365DevAdmin@2wjh85.onmicrosoft.com` | `password123` | Dashboard, My Wallet |
+| **Employee** | `employee@gcredit.com` | `password123` | Dashboard, My Wallet |
+| **Employee (M365)** | `M365DevAdmin@2wjh85.onmicrosoft.com` | `password123` | Dashboard, My Wallet |
 
 ---
 

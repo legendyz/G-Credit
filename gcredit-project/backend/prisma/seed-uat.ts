@@ -184,6 +184,28 @@ async function main() {
 
   console.log('✅ 4 users created/updated');
 
+  const employee2 = await prisma.user.upsert({
+    where: { email: 'employee@gcredit.com' },
+    update: {
+      passwordHash,
+      role: UserRole.EMPLOYEE,
+      isActive: true,
+      emailVerified: true,
+    },
+    create: {
+      email: 'employee@gcredit.com',
+      passwordHash,
+      firstName: 'Demo',
+      lastName: 'Employee',
+      role: UserRole.EMPLOYEE,
+      department: 'Engineering',
+      isActive: true,
+      emailVerified: true,
+    },
+  });
+
+  console.log('✅ 5th user (Demo Employee) created/updated');
+
   // ========================================
   // CLEANUP: Delete existing UAT data in FK-safe order
   // Handles both old (uat-*) and new (00000000-*) ID formats
