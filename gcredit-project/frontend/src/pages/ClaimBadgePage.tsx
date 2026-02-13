@@ -5,7 +5,7 @@
  * Flow:
  *  1. User clicks "Claim Your Badge" in email → lands here
  *  2. If not logged in → ProtectedRoute redirects to /login, then back here after login
- *  3. Reads ?token= from URL, calls POST /api/badges/claim-by-token
+ *  3. Reads ?token= from URL, calls POST /api/badges/claim
  *  4. On success → redirects to /wallet with success toast
  *  5. On error → shows inline error with retry / go-to-wallet options
  */
