@@ -90,6 +90,7 @@ describe('BadgeVerificationService - Story 6.3', () => {
       expect(result?.badge.name).toBe('Excellence Badge');
       expect(result?.recipient.name).toBe('John Doe');
       expect(result?.recipient.email).toMatch(/^j\*\*\*@/); // Masked email
+      expect(result?.issuer.email).toMatch(/^a\*\*\*@/); // Issuer email also masked
       expect(mockPrismaService.badge.findUnique).toHaveBeenCalledWith({
         where: { verificationId: mockVerificationId },
         include: anyObject(),
@@ -197,6 +198,50 @@ describe('BadgeVerificationService - Story 6.3', () => {
       // Assert
       expect(result?.recipient.email).not.toBe('test.user@example.com');
       expect(result?.recipient.email).toMatch(/^t\*\*\*@example\.com$/);
+    });
+
+    it('should mask issuer email for privacy', async () => {
+      // Arrange
+      const mockBadge = {
+        id: 'badge-uuid',
+        verificationId: mockVerificationId,
+        status: BadgeStatus.CLAIMED,
+        issuedAt: new Date(),
+        expiresAt: null,
+        claimedAt: new Date(),
+        assertionJson: {},
+        template: {
+          id: 'template-uuid',
+          name: 'Badge',
+          description: 'Test badge',
+          imageUrl: 'https://example.com/badge.png',
+          issuanceCriteria: {},
+          category: 'test',
+          skillIds: [],
+        },
+        recipient: {
+          id: 'recipient-uuid',
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test.user@example.com',
+        },
+        issuer: {
+          id: 'issuer-uuid',
+          firstName: 'Admin',
+          lastName: 'User',
+          email: 'admin@gcredit.com',
+        },
+        evidenceFiles: [],
+      };
+
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+
+      // Act
+      const result = await service.verifyBadge(mockVerificationId);
+
+      // Assert
+      expect(result?.issuer.email).not.toBe('admin@gcredit.com');
+      expect(result?.issuer.email).toMatch(/^a\*\*\*@gcredit\.com$/);
     });
   });
 

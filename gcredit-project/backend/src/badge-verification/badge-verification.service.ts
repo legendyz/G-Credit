@@ -140,7 +140,7 @@ export class BadgeVerificationService {
 
       issuer: {
         name: `${badge.issuer.firstName} ${badge.issuer.lastName}`,
-        email: badge.issuer.email,
+        email: this.maskEmail(badge.issuer.email),
       },
 
       issuedAt: badge.issuedAt,
