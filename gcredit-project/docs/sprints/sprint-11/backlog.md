@@ -43,12 +43,12 @@ Harden security posture, improve code quality and test coverage, and complete co
 |----------|-------------|-------|
 | **P0 Security** | 5-6.5h | SEC-001, SEC-005, SEC-007+DEP-001 |
 | **P0 Features** | 7-10h | FR19 (Badge Visibility), LinkedIn Share Tab |
-| **P1 Security** | 9-11.5h | JWT httpOnly, Email脱敏, PII清理, HTML清洗 |
+| **P1 Security** | 11-13.5h | JWT httpOnly (6-8h↑), Email脱敏, PII清理, HTML清洗 |
 | **P1 Code Quality** | 19-26h | 3 service tests, Logger, Dependencies, Design, Pagination |
 | **P1 Features** | 7h | CSV Export, Skill UUID fix, 403 Page, ClaimPage fix |
 | **P1 Tech Debt** | 4h | CI Chinese gate, CI console.log gate, Husky hooks |
 | **P1 Nav Fix** | 0.5h | FEAT-008-P0 User Management nav |
-| **TOTAL** | **51.5-65.5h** | Target: 60h |
+| **TOTAL** | **53.5-67.5h** | Target: 62h |
 
 ### Velocity Reference
 | Sprint | Estimated | Actual | Accuracy | Type |
@@ -146,12 +146,14 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 **Quick Summary:** As an employee, I want to control whether each of my badges is publicly visible or private, so that I have ownership over my professional credential visibility.
 
 **Key Deliverables:**
-- [ ] Add `visibility` field to Badge model (PUBLIC/PRIVATE, default: PUBLIC)
-- [ ] Database migration for new field
+- [ ] Add `visibility` Prisma enum (`BadgeVisibility: PUBLIC | PRIVATE`) + `@default(PUBLIC)` — 与 `BadgeStatus` enum 风格一致 (Arch Review)
+- [ ] Database migration + composite index `@@index([visibility, status])` + `@@index([recipientId, visibility])` (Arch Review)
 - [ ] PATCH /api/badges/:id/visibility endpoint
-- [ ] Update badge wallet UI with toggle switch per badge
-- [ ] Public verification page respects visibility setting (404 for private)
-- [ ] Employee profile page filters private badges from public view
+- [ ] Wallet 卡片 toggle（Lucide `Globe`/`Lock` 图标，toast 反馈）+ Badge Detail Modal toggle — 双入口设计 (UX Review)
+- [ ] Public verification page: PRIVATE badge 返回 404 ("Badge Not Available" 措辞)
+- [ ] OB Assertion 端点不检查 visibility — PRIVATE badge 的 assertion URL 仍可访问（UUID 不可枚举，OB 2.0 合规要求）(Arch Review 方案B)
+- [ ] Public profile: PRIVATE badges 不显示，但显示 "X badges hidden by the owner" 提示 (UX Review)
+- [ ] ClaimSuccessModal 添加提示 "Your badge is publicly visible. You can change this anytime from your wallet." (UX Review)
 - [ ] Unit + E2E tests for visibility logic
 - [ ] Update API documentation
 
@@ -168,11 +170,13 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 **Quick Summary:** As an employee, I want a LinkedIn sharing tab in the badge share modal, so that I can share my credentials on LinkedIn for professional visibility and viral platform growth.
 
 **Key Deliverables:**
-- [ ] Add "LinkedIn" tab to BadgeShareModal
-- [ ] Generate LinkedIn share URL with pre-filled title/description/verification link
-- [ ] One-click share button opening LinkedIn share dialog
-- [ ] Preview of how the share will appear
-- [ ] Track share events in analytics
+- [ ] Add "LinkedIn" tab to BadgeShareModal — Tab 顺序: Email → LinkedIn → Teams → Widget (UX Review)
+- [ ] 使用 LinkedIn Share URL API (`linkedin.com/sharing/share-offsite/?url=`)，`window.open()` 弹窗 (UX Review)
+- [ ] 分享文案模板: 标题+描述+验证链接+hashtags，textarea 可编辑 (UX Review)
+- [ ] 验证页需注入 Open Graph meta tags (`og:title`, `og:description`, `og:image`, `og:url`) 以确保 LinkedIn 预览正确 (UX Review)
+- [ ] 点击后按钮变"✓ LinkedIn opened"(disabled 5秒)，不关闭 Modal (UX Review)
+- [ ] Track share events: `POST /api/analytics/track { type: 'SHARE', channel: 'LINKEDIN', badgeId }` (UX Review)
+- [ ] LinkedIn 图标使用品牌色 `#0A66C2` SVG（其他 tab 保持 emoji，11.15 统一）(UX Review)
 - [ ] Unit tests for URL generation logic
 
 ---
@@ -181,7 +185,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 
 ### Story 11.6: SEC-002 — JWT Migration to httpOnly Cookies
 **Priority:** 🟡 HIGH  
-**Estimate:** 4-6h  
+**Estimate:** 6-8h ↑ (Arch Review: +`apiFetch()` wrapper for 51 fetch calls + ADR-010)  
 **Status:** 🔴 Not Started  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** Security Audit HIGH  
@@ -190,15 +194,15 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 **Quick Summary:** As a security engineer, I want JWT tokens stored in httpOnly cookies instead of localStorage, so that XSS attacks cannot steal authentication tokens.
 
 **Key Deliverables:**
-- [ ] Set access token in httpOnly cookie on login/refresh
-- [ ] Set refresh token in httpOnly cookie (separate, stricter path)
-- [ ] Configure SameSite=Strict and Secure flags
-- [ ] Update frontend to remove localStorage token handling
-- [ ] Update API calls to use credentials: 'include' (cookies sent automatically)
-- [ ] Update CORS configuration for cookie-based auth
+- [ ] **Sub-1 (1h):** Create `lib/apiFetch.ts` wrapper (`credentials: 'include'` + Content-Type) + batch replace 51 `fetch()` calls (Arch Review — CQ-008 minimal viable)
+- [ ] **Sub-2 (2h):** Backend: Set-Cookie on login/refresh + JwtAuthGuard reads cookie first, Authorization header fallback (双写过渡期) (Arch Review)
+- [ ] **Sub-3 (1h):** Frontend: remove localStorage token write + Vite proxy `cookieDomainRewrite: 'localhost'` (Arch Review)
+- [ ] **Sub-4 (1h):** Access Token cookie path: `/api`, Refresh Token cookie path: `/api/auth` (Arch Review)
+- [ ] Configure `SameSite=Lax` (NOT Strict — 邮件链接场景需要) + `Secure` flag (Arch Review)
+- [ ] Update CORS configuration (already `credentials: true`, verify `Access-Control-Allow-Origin` not `*`)
 - [ ] Update logout to clear cookies server-side
-- [ ] Comprehensive auth flow E2E tests
-- [ ] Update auth documentation + ADR
+- [ ] **Sub-5 (1h):** Comprehensive auth flow E2E tests (双写期间 E2E 测试可暂不修改)
+- [ ] **Sub-6 (1h):** Write ADR-010: JWT Token Transport Migration + update auth documentation (Arch Review 必须)
 
 ---
 
@@ -214,7 +218,8 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 
 **Key Deliverables:**
 - [ ] Apply existing `maskEmail()` utility to issuer email on verification response
-- [ ] Verify public verification page shows masked email (e.g., j***@company.com)
+- [ ] Verify public verification page shows masked email (e.g., j***@company.com) — 保留完整域名 (UX Review)
+- [ ] Add privacy trust statement to VerifyBadgePage footer: "Personal information is partially hidden to protect privacy. Badge authenticity is verified by G-Credit's cryptographic signature." (UX Review)
 - [ ] Unit test for email masking in verification context
 
 ---
@@ -249,10 +254,11 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 **Quick Summary:** As a security engineer, I want all user-submitted text fields globally sanitized for HTML/script injection, so that stored XSS attacks are prevented at the input layer.
 
 **Key Deliverables:**
-- [ ] Install DOMPurify (or similar) for server-side HTML sanitization
-- [ ] Create NestJS global validation pipe for string sanitization
-- [ ] Apply to all DTO string fields (badge names, descriptions, criteria text)
-- [ ] Preserve legitimate formatting (if any markdown fields exist)
+- [ ] Create `@SanitizeHtml()` class-transformer decorator using `sanitize-html` library (`allowedTags: []`) (Arch Review 方案A)
+- [ ] Apply `@SanitizeHtml()` to all write-operation DTO string fields (badge names, descriptions, criteria text) (Arch Review)
+- [ ] 仅对写操作 (POST/PUT/PATCH) 的 `@Body()` DTO 生效，GET `@Query()` 不加 (Arch Review)
+- [ ] 用 `sanitize-html`（已在项目中），不用 DOMPurify（需 jsdom）(Arch Review)
+- [ ] Create DTO checklist 确保所有写入 DTO 的 string 字段都覆盖 (Arch Review R-5)
 - [ ] Unit tests for XSS payload rejection
 - [ ] E2E test confirming sanitized output
 
@@ -386,15 +392,16 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 **Quick Summary:** As a frontend developer, I want all paginated API endpoints to return a consistent `PaginatedResponse<T>` format, so that pagination handling is uniform across the application.
 
 **Key Deliverables:**
-- [ ] Define `PaginatedResponse<T>` interface: `{ data: T[], meta: { total, page, limit, totalPages } }`
-- [ ] Create shared pagination utility (backend)
+- [ ] Define `PaginatedResponse<T>` interface: `{ data: T[], meta: { total, page, limit, totalPages, hasNextPage, hasPreviousPage } }` (Arch Review)
+- [ ] Create shared `createPaginatedResponse<T>()` utility (backend)
 - [ ] Migrate 5 controllers to standardized format:
   - [ ] badge-templates.controller
   - [ ] badges.controller
-  - [ ] users.controller
+  - [ ] users.controller (`users` → `data` key 名变更)
   - [ ] skills.controller
   - [ ] analytics.controller
-- [ ] Update frontend API clients to consume new format
+- [ ] ⚠️ 前后端必须同一 PR 原子化修改，不可拆分部署 (Arch Review 条件)
+- [ ] Update frontend API clients to consume new format (约5-8处)
 - [ ] Update existing E2E tests for new response shape
 - [ ] Document pagination contract in API docs
 
@@ -417,7 +424,9 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 - [ ] Generate CSV with headers: Date, Metric, Value, Category
 - [ ] Include badge issuance, claiming, verification, and sharing metrics
 - [ ] Set proper Content-Type and Content-Disposition headers
-- [ ] Add "Export CSV" button to Analytics Dashboard
+- [ ] Add "Export CSV" button to Analytics Dashboard — 使用 PageTemplate `actions` slot，`variant="outline"` + Lucide `Download` 图标 (UX Review)
+- [ ] 文件名格式: `gcredit-analytics-{YYYY-MM-DD}.csv` (UX Review)
+- [ ] 下载交互: button loading 状态 → 浏览器直接下载 → toast.success (UX Review)
 - [ ] Unit test for CSV generation logic
 
 ---
@@ -450,11 +459,12 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 **Quick Summary:** As a user, I want a clear "Access Denied" page when I lack permissions, so that I understand why I can't access a page and know what to do next.
 
 **Key Deliverables:**
-- [ ] Create `AccessDeniedPage.tsx` component with Shadcn UI styling
-- [ ] Display user's current role and required role
-- [ ] Provide "Go Back" and "Contact Admin" actions
+- [ ] Create `AccessDeniedPage.tsx` — 复用 NotFoundPage 布局模式 (`min-h-[60vh]`, `text-neutral-*`, `bg-brand-600`) (UX Review)
+- [ ] Display user's current role only，不显示所需角色（OWASP 安全建议）(UX Review)
+- [ ] 图标使用 Lucide `ShieldAlert`，双按钮: "Go Back" (outline, `navigate(-1)`) + "Contact Admin" (primary, mailto) (UX Review)
+- [ ] 移动端按钮纵向堆叠: `flex-col sm:flex-row gap-3` (UX Review)
 - [ ] Route guard redirects to /403 instead of generic error
-- [ ] Visual consistency with existing 404 page
+- [ ] 401 (未登录) 仍走现有 redirect 到 `/login`，403 (无权限) 走新页面 (UX Review)
 
 ---
 
@@ -526,8 +536,8 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 **Quick Summary:** As an admin, I want the User Management page accessible from both desktop sidebar and mobile navigation, so that I can manage users without manually entering the URL.
 
 **Key Deliverables:**
-- [ ] Add "User Management" link to desktop sidebar navigation (ADMIN role only)
-- [ ] Add "User Management" link to mobile hamburger menu (ADMIN role only)
+- [ ] 统一导航标签为 "Users"：MobileNav "User Management" → "Users" (UX Review — 简洁且与其他 nav 项命名风格一致)
+- [ ] Desktop Navbar 保持现有 "Users" 不变 (UX Review)
 - [ ] Verify routing works correctly
 - [ ] Visual consistency with other navigation items
 
@@ -542,7 +552,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 | 3 | 11.3 | SEC-007+DEP-001: npm audit + Swagger | 🔴 | 30min | Security Audit | 🔴 |
 | 4 | 11.4 | FR19: Badge Visibility Toggle | 🔴 | 4-6h | PRD+Feature Audit | 🔴 |
 | 5 | 11.5 | LinkedIn Share Tab | 🔴 | 3-4h | Feature Audit | 🔴 |
-| 6 | 11.6 | SEC-002: JWT httpOnly Cookies | 🟡 | 4-6h | Security Audit | 🔴 |
+| 6 | 11.6 | SEC-002: JWT httpOnly Cookies | 🟡 | 6-8h | Security Audit | 🔴 |
 | 7 | 11.7 | SEC-003: Issuer Email Masking | 🟡 | 30min | Security Audit | 🔴 |
 | 8 | 11.8 | SEC-004: Log PII Sanitization | 🟡 | 2h | Security Audit | 🔴 |
 | 9 | 11.9 | SEC-006: HTML Sanitization Pipe | 🟡 | 2-3h | Security Audit | 🔴 |
@@ -560,7 +570,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 | 21 | 11.21 | CI Quality Gates (Chinese+console) | 🟡 | 2h | project-context.md | 🔴 |
 | 22 | 11.22 | Husky Pre-commit Hooks | 🟡 | 2h | project-context.md | 🔴 |
 | 23 | 11.23 | User Management Nav Fix | 🟡 | 30min | Backlog+Feature Audit | 🔴 |
-| | **TOTAL** | **23 stories** | | **51.5-65.5h** | | |
+| | **TOTAL** | **23 stories** | | **53.5-67.5h** | | |
 
 ---
 
@@ -622,6 +632,40 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 - [ ] **Code merged to main + Git tag** (v1.1.0)
 - [ ] **All tests passing** (target: 1100+ tests, 0 regressions)
 - [ ] **npm audit:** 0 HIGH/CRITICAL vulnerabilities
+
+---
+
+## ✅ Architect & UX Review Conditions (2026-02-13)
+
+**Architect Review:** APPROVED WITH CONDITIONS ([arch-review-result.md](arch-review-result.md))  
+**UX Review:** APPROVED WITH CONDITIONS ([ux-review-result.md](ux-review-result.md))
+
+### 必须满足的条件（已整合到上方 Story Deliverables 中）
+
+| # | 条件 | 来源 | 相关 Story |
+|---|------|------|-----------|
+| C-1 | Story 11.6 估时调至 6-8h，包含 `apiFetch()` 包装器子任务 | Architect | 11.6 ✅ |
+| C-2 | Story 11.6 完成时提交 ADR-010 (JWT Token Transport Migration) | Architect | 11.6 ✅ |
+| C-3 | Story 11.4 明确 PRIVATE badge OB assertion 可访问（方案B） | Architect | 11.4 ✅ |
+| C-4 | Story 11.16 前后端同一 PR 原子化修改 | Architect | 11.16 ✅ |
+| C-5 | Story 11.4 双入口 toggle（Wallet 卡片 + Detail Modal），默认 PUBLIC | UX | 11.4 ✅ |
+| C-6 | Story 11.5 验证页需 OG meta tags 以支持 LinkedIn 预览 | UX | 11.5 ✅ |
+| C-7 | Story 11.7 验证页添加隐私信任声明 | UX | 11.7 ✅ |
+
+### 新发现的风险
+
+| # | 风险 | 影响 | 缓解 |
+|---|------|------|------|
+| R-1 | Story 11.6 与 CQ-008 (51 fetch calls) 隐藏耦合 | 估时不足 | 在 11.6 中创建 `apiFetch()` 包装器 ✅ |
+| R-2 | Story 11.9 DTO 装饰器可能遗漏字段 | 未受保护 | 创建 DTO checklist ✅ |
+| R-3 | Vite proxy 需要 cookie 配置调整 (11.6) | Dev 环境 cookie 不生效 | 11.6 story doc 中明确 ✅ |
+
+### 需要新增的 ADR
+
+| ADR | 标题 | 关联 Story | 必要性 |
+|-----|------|-----------|--------|
+| ADR-010 | JWT Token Transport: localStorage → httpOnly Cookie | 11.6 | 🔴 必须 |
+| ADR-011 | Global Input Sanitization Strategy | 11.9 | 🟡 推荐 |
 
 ---
 
@@ -736,6 +780,6 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 
 ---
 
-**Last Updated:** 2026-02-12  
-**Status:** Planning Complete — Ready for Story Creation  
+**Last Updated:** 2026-02-13 (Architect & UX Review integrated)  
+**Status:** Planning Complete — Reviewed & Ready for Development  
 **Created By:** SM Agent (Bob)
