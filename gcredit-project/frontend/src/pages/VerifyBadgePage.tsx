@@ -336,8 +336,8 @@ export function VerifyBadgePage() {
 
           {/* Story 11.7: Privacy trust statement */}
           <p className="mt-6 text-xs text-neutral-400 text-center max-w-md mx-auto">
-            Personal information is partially hidden to protect privacy.
-            Badge authenticity is verified by G-Credit's cryptographic signature.
+            Personal information is partially hidden to protect privacy. Badge authenticity is
+            verified by G-Credit's cryptographic signature.
           </p>
         </CardContent>
       </Card>

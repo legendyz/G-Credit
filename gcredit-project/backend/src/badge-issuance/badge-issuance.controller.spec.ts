@@ -64,9 +64,9 @@ describe('BadgeIssuanceController', () => {
     });
 
     it('should throw BadRequestException when claimToken is missing', async () => {
-      await expect(
-        controller.claimBadgeByToken({} as any),
-      ).rejects.toThrow(BadRequestException);
+      await expect(controller.claimBadgeByToken({} as any)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 });

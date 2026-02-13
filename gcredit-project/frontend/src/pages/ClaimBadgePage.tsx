@@ -36,17 +36,14 @@ export default function ClaimBadgePage() {
     const claimBadge = async () => {
       setState('claiming');
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/badges/claim`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-            },
-            body: JSON.stringify({ claimToken: token }),
-          }
-        );
+        const response = await fetch(`${API_BASE_URL}/badges/claim`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+          },
+          body: JSON.stringify({ claimToken: token }),
+        });
 
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
