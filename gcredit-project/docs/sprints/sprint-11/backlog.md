@@ -17,17 +17,17 @@ Harden security posture, improve code quality and test coverage, and complete co
 **Success Criteria:**
 - [ ] Account lockout mechanism implemented (防暴力破解)
 - [ ] File upload magic-byte validation (防MIME欺骗)
-- [ ] npm audit 0 HIGH vulnerabilities + Swagger production-hidden
+- [x] npm audit 0 HIGH vulnerabilities + Swagger production-hidden ✅ Wave 1
 - [ ] Badge visibility toggle (public/private) fully functional
 - [ ] LinkedIn share tab integrated into BadgeShareModal
 - [ ] JWT migrated to httpOnly cookies (防XSS token theft)
-- [ ] Issuer email masked on public verification pages
+- [x] Issuer email masked on public verification pages ✅ Wave 1
 - [ ] Log PII sanitized (GDPR compliance)
 - [ ] Global HTML sanitization pipe active
 - [ ] 3 core services have unit test coverage (badge-templates, issuance-criteria-validator, blob-storage)
 - [ ] NestJS Logger added to all 22 services/controllers
 - [ ] Paginated response format standardized (`PaginatedResponse<T>`)
-- [ ] User Management navigation entry accessible
+- [x] User Management navigation entry accessible ✅ Wave 1
 - [ ] All 1061+ tests passing (0 regressions)
 
 ---
@@ -669,7 +669,25 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 
 ---
 
-## 🚧 Sprint Risks
+## � Sprint Progress
+
+### Wave 1 — Quick Wins + Security Foundation ✅ (2026-02-14)
+**Stories:** 11.3, 11.14, 11.23, 11.7, 11.20 (5/23 complete)  
+**Commits:** `da97c2b..86f85df` (9 commits)  
+**Code Review:** APPROVED ([wave-1-code-review.md](wave-1-code-review.md))  
+**Tests:** BE 537 (+3) | FE 527 (0 regressions) = **1064 total**
+
+| Story | Title | Result |
+|-------|-------|--------|
+| 11.3 | npm audit + Swagger conditional | ✅ 0 HIGH vulns, Swagger prod-hidden |
+| 11.14 | Remove keyv, framer-motion | ✅ Removed, tailwindcss-animate kept |
+| 11.23 | Nav label → "Users" | ✅ MobileNav unified |
+| 11.7 | Issuer email masking | ✅ + privacy trust statement added |
+| 11.20 | ClaimPage UUID fix | ✅ POST /badges/claim route added |
+
+---
+
+## �🚧 Sprint Risks
 
 | Risk | Probability | Impact | Mitigation |
 |------|------------|---------|------------|
@@ -780,6 +798,6 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 
 ---
 
-**Last Updated:** 2026-02-13 (Architect & UX Review integrated)  
-**Status:** Planning Complete — Reviewed & Ready for Development  
+**Last Updated:** 2026-02-14 (Wave 1 Done — 5/23 stories completed, code review APPROVED)  
+**Status:** In Progress — Wave 1 Complete, Wave 2 Next  
 **Created By:** SM Agent (Bob)
