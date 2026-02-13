@@ -75,6 +75,22 @@ export class BadgeIssuanceController {
     return this.badgeService.issueBadge(dto, req.user.userId);
   }
 
+  @Post('claim')
+  @Public()
+  @ApiOperation({
+    summary: 'Claim a badge using claim token (no badge ID required)',
+  })
+  @ApiResponse({ status: 200, description: 'Badge claimed successfully' })
+  @ApiResponse({ status: 400, description: 'claimToken is required' })
+  @ApiResponse({ status: 404, description: 'Invalid claim token' })
+  @ApiResponse({ status: 410, description: 'Badge expired or revoked' })
+  async claimBadgeByToken(@Body() dto: ClaimBadgeDto) {
+    if (!dto.claimToken) {
+      throw new BadRequestException('claimToken is required');
+    }
+    return this.badgeService.claimBadge(dto.claimToken);
+  }
+
   @Post(':id/claim')
   @Public() // No authentication required when using claimToken; auth required when claiming by ID
   @ApiOperation({

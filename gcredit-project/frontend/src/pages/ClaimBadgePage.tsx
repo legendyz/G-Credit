@@ -36,9 +36,8 @@ export default function ClaimBadgePage() {
     const claimBadge = async () => {
       setState('claiming');
       try {
-        // Use a placeholder UUID; the backend ignores :id when claimToken is provided
         const response = await fetch(
-          `${API_BASE_URL}/badges/00000000-0000-0000-0000-000000000000/claim`,
+          `${API_BASE_URL}/badges/claim`,
           {
             method: 'POST',
             headers: {
