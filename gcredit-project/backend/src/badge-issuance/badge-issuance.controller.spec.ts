@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { BadgeIssuanceController } from './badge-issuance.controller';
 import { BadgeIssuanceService } from './badge-issuance.service';
+import { ClaimBadgeDto } from './dto/claim-badge.dto';
 import { RecommendationsService } from '../badge-templates/recommendations.service';
 
 describe('BadgeIssuanceController', () => {
@@ -64,7 +65,8 @@ describe('BadgeIssuanceController', () => {
     });
 
     it('should throw BadRequestException when claimToken is missing', async () => {
-      await expect(controller.claimBadgeByToken({} as any)).rejects.toThrow(
+      const dto = new ClaimBadgeDto();
+      await expect(controller.claimBadgeByToken(dto)).rejects.toThrow(
         BadRequestException,
       );
     });
