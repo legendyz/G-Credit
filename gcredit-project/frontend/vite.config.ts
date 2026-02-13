@@ -31,7 +31,6 @@ export default defineConfig({
             '@radix-ui/react-slot',
           ],
           'query-vendor': ['@tanstack/react-query'],
-          'animation-vendor': ['framer-motion'],
           'utils-vendor': ['date-fns', 'clsx', 'tailwind-merge', 'class-variance-authority'],
         },
       },
