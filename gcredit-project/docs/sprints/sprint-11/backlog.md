@@ -121,7 +121,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.3: SEC-007 + DEP-001 — npm Audit Fix + Swagger Conditional Loading
 **Priority:** 🔴 CRITICAL  
 **Estimate:** 30min  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** Security Audit  
 **Dependencies:** None
@@ -209,7 +209,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.7: SEC-003 — Issuer Email Masking on Public Verification Pages
 **Priority:** 🟡 MEDIUM  
 **Estimate:** 30min  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** Security Audit MEDIUM  
 **Dependencies:** None
@@ -347,7 +347,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.14: CQ-005 — Remove Unused Dependencies
 **Priority:** 🟢 LOW  
 **Estimate:** 15min  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** Code Quality Audit  
 **Dependencies:** None
@@ -471,7 +471,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.20: FEATURE-P1-8 — ClaimPage Hardcoded UUID Fix
 **Priority:** 🟡 MEDIUM  
 **Estimate:** 1h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** Feature Audit  
 **Dependencies:** None
@@ -528,7 +528,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.23: FEAT-008-P0 — User Management Navigation Entry Fix
 **Priority:** 🟡 HIGH  
 **Estimate:** 30min  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** sprint-10/backlog.md + Feature Audit  
 **Dependencies:** None
@@ -549,27 +549,27 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 |---|----------|-------|----------|------|--------|--------|
 | 1 | 11.1 | SEC-001: Account Lockout | 🔴 | 2-3h | Security Audit | 🔴 |
 | 2 | 11.2 | SEC-005: File Upload Magic-Byte | 🔴 | 2-3h | Security Audit | 🔴 |
-| 3 | 11.3 | SEC-007+DEP-001: npm audit + Swagger | 🔴 | 30min | Security Audit | 🔴 |
+| 3 | 11.3 | SEC-007+DEP-001: npm audit + Swagger | 🔴 | 30min | Security Audit | ✅ |
 | 4 | 11.4 | FR19: Badge Visibility Toggle | 🔴 | 4-6h | PRD+Feature Audit | 🔴 |
 | 5 | 11.5 | LinkedIn Share Tab | 🔴 | 3-4h | Feature Audit | 🔴 |
 | 6 | 11.6 | SEC-002: JWT httpOnly Cookies | 🟡 | 6-8h | Security Audit | 🔴 |
-| 7 | 11.7 | SEC-003: Issuer Email Masking | 🟡 | 30min | Security Audit | 🔴 |
+| 7 | 11.7 | SEC-003: Issuer Email Masking | 🟡 | 30min | Security Audit | ✅ |
 | 8 | 11.8 | SEC-004: Log PII Sanitization | 🟡 | 2h | Security Audit | 🔴 |
 | 9 | 11.9 | SEC-006: HTML Sanitization Pipe | 🟡 | 2-3h | Security Audit | 🔴 |
 | 10 | 11.10 | CQ-001: badge-templates.service Tests | 🟡 | 4-6h | Code Quality Audit | 🔴 |
 | 11 | 11.11 | CQ-002: issuance-criteria-validator Tests | 🟡 | 3-4h | Code Quality Audit | 🔴 |
 | 12 | 11.12 | CQ-003: blob-storage.service Tests | 🟡 | 3-4h | Code Quality Audit | 🔴 |
 | 13 | 11.13 | CQ-004: NestJS Logger Integration | 🟡 | 2-3h | Code Quality Audit | 🔴 |
-| 14 | 11.14 | CQ-005: Remove Unused Dependencies | 🟢 | 15min | Code Quality Audit | 🔴 |
+| 14 | 11.14 | CQ-005: Remove Unused Dependencies | 🟢 | 15min | Code Quality Audit | ✅ |
 | 15 | 11.15 | CQ-006: Design System Consistency | 🟡 | 2-3h | Code Quality+Feature | 🔴 |
 | 16 | 11.16 | CQ-007: Pagination Standardization | 🟡 | 4-6h | Code Quality Audit | 🔴 |
 | 17 | 11.17 | FR26: Analytics CSV Export | 🟡 | 3h | PRD+Feature Audit | 🔴 |
 | 18 | 11.18 | Verification Skill UUID→Name | 🟡 | 1h | Feature Audit | 🔴 |
 | 19 | 11.19 | 403 Access Denied Page | 🟡 | 2h | Feature Audit | 🔴 |
-| 20 | 11.20 | ClaimPage Hardcoded UUID Fix | 🟡 | 1h | Feature Audit | 🔴 |
+| 20 | 11.20 | ClaimPage Hardcoded UUID Fix | 🟡 | 1h | Feature Audit | ✅ |
 | 21 | 11.21 | CI Quality Gates (Chinese+console) | 🟡 | 2h | project-context.md | 🔴 |
 | 22 | 11.22 | Husky Pre-commit Hooks | 🟡 | 2h | project-context.md | 🔴 |
-| 23 | 11.23 | User Management Nav Fix | 🟡 | 30min | Backlog+Feature Audit | 🔴 |
+| 23 | 11.23 | User Management Nav Fix | 🟡 | 30min | Backlog+Feature Audit | ✅ |
 | | **TOTAL** | **23 stories** | | **53.5-67.5h** | | |
 
 ---
