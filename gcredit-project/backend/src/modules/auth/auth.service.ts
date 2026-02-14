@@ -21,6 +21,9 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
+  private readonly MAX_LOGIN_ATTEMPTS = 5;
+  private readonly LOCKOUT_DURATION_MINUTES = 30;
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
@@ -76,6 +79,15 @@ export class AuthService {
       throw new UnauthorizedException('Account is inactive');
     }
 
+    // 2.5. Check if account is locked
+    if (user.lockedUntil) {
+      if (user.lockedUntil > new Date()) {
+        // Still locked — don't reveal remaining time
+        throw new UnauthorizedException('Invalid credentials');
+      }
+      // Lock expired — will be fully reset on successful login below
+    }
+
     // 3. Verify password
     const isPasswordValid = await bcrypt.compare(
       dto.password,
@@ -83,11 +95,31 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
-      // Rate limiting deferred to Phase 2 — failed attempts logged for monitoring
-      this.logger.warn(
-        `Failed login attempt for user: ${dto.email}`,
-        'LoginAttempt',
-      );
+      const attempts = user.failedLoginAttempts + 1;
+      const updateData: { failedLoginAttempts: number; lockedUntil?: Date } = {
+        failedLoginAttempts: attempts,
+      };
+
+      if (attempts >= this.MAX_LOGIN_ATTEMPTS) {
+        updateData.lockedUntil = new Date(
+          Date.now() + this.LOCKOUT_DURATION_MINUTES * 60 * 1000,
+        );
+        this.logger.warn(
+          `[SECURITY] Account locked after ${attempts} failed attempts: user ${user.id}`,
+          'AccountLockout',
+        );
+      } else {
+        this.logger.warn(
+          `Failed login attempt ${attempts}/${this.MAX_LOGIN_ATTEMPTS} for user ${user.id}`,
+          'LoginAttempt',
+        );
+      }
+
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: updateData,
+      });
+
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -118,10 +150,14 @@ export class AuthService {
       },
     });
 
-    // 7. Update lastLoginAt timestamp
+    // 7. Update lastLoginAt + reset lockout counters
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { lastLoginAt: new Date() },
+      data: {
+        lastLoginAt: new Date(),
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+      },
     });
 
     // 8. Log successful login
