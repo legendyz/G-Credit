@@ -82,7 +82,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.1: SEC-001 — Account Lockout (Failed Login Counter + Lock)
 **Priority:** 🔴 CRITICAL  
 **Estimate:** 2-3h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** Security Audit  
 **Dependencies:** None
@@ -102,7 +102,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.2: SEC-005 — File Upload Magic-Byte Validation
 **Priority:** 🔴 CRITICAL  
 **Estimate:** 2-3h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** Security Audit  
 **Dependencies:** None
@@ -186,7 +186,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.6: SEC-002 — JWT Migration to httpOnly Cookies
 **Priority:** 🟡 HIGH  
 **Estimate:** 6-8h ↑ (Arch Review: +`apiFetch()` wrapper for 51 fetch calls + ADR-010)  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** Security Audit HIGH  
 **Dependencies:** None
@@ -227,7 +227,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.8: SEC-004 — Log PII Sanitization (14+ Cleartext Emails)
 **Priority:** 🟡 LOW  
 **Estimate:** 2h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** Security Audit LOW  
 **Dependencies:** None
@@ -246,7 +246,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.9: SEC-006 — Global HTML Sanitization Pipe
 **Priority:** 🟡 MEDIUM  
 **Estimate:** 2-3h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** Security Audit MEDIUM  
 **Dependencies:** None
@@ -547,15 +547,15 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 
 | # | Story ID | Title | Priority | Est. | Source | Status |
 |---|----------|-------|----------|------|--------|--------|
-| 1 | 11.1 | SEC-001: Account Lockout | 🔴 | 2-3h | Security Audit | 🔴 |
-| 2 | 11.2 | SEC-005: File Upload Magic-Byte | 🔴 | 2-3h | Security Audit | 🔴 |
+| 1 | 11.1 | SEC-001: Account Lockout | 🔴 | 2-3h | Security Audit | ✅ |
+| 2 | 11.2 | SEC-005: File Upload Magic-Byte | 🔴 | 2-3h | Security Audit | ✅ |
 | 3 | 11.3 | SEC-007+DEP-001: npm audit + Swagger | 🔴 | 30min | Security Audit | ✅ |
 | 4 | 11.4 | FR19: Badge Visibility Toggle | 🔴 | 4-6h | PRD+Feature Audit | 🔴 |
 | 5 | 11.5 | LinkedIn Share Tab | 🔴 | 3-4h | Feature Audit | 🔴 |
-| 6 | 11.6 | SEC-002: JWT httpOnly Cookies | 🟡 | 6-8h | Security Audit | 🔴 |
+| 6 | 11.6 | SEC-002: JWT httpOnly Cookies | 🟡 | 6-8h | Security Audit | ✅ |
 | 7 | 11.7 | SEC-003: Issuer Email Masking | 🟡 | 30min | Security Audit | ✅ |
-| 8 | 11.8 | SEC-004: Log PII Sanitization | 🟡 | 2h | Security Audit | 🔴 |
-| 9 | 11.9 | SEC-006: HTML Sanitization Pipe | 🟡 | 2-3h | Security Audit | 🔴 |
+| 8 | 11.8 | SEC-004: Log PII Sanitization | 🟡 | 2h | Security Audit | ✅ |
+| 9 | 11.9 | SEC-006: HTML Sanitization Pipe | 🟡 | 2-3h | Security Audit | ✅ |
 | 10 | 11.10 | CQ-001: badge-templates.service Tests | 🟡 | 4-6h | Code Quality Audit | 🔴 |
 | 11 | 11.11 | CQ-002: issuance-criteria-validator Tests | 🟡 | 3-4h | Code Quality Audit | 🔴 |
 | 12 | 11.12 | CQ-003: blob-storage.service Tests | 🟡 | 3-4h | Code Quality Audit | 🔴 |
