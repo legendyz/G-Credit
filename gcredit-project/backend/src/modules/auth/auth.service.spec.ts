@@ -12,6 +12,14 @@ import {
   containing,
 } from '../../../test/helpers/jest-typed-matchers';
 
+jest.mock('bcrypt', () => ({
+  hash: jest.fn().mockResolvedValue('$2b$10$hashedpassword'),
+  compare: jest.fn().mockResolvedValue(true),
+}));
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const bcrypt = require('bcrypt') as { hash: jest.Mock; compare: jest.Mock };
+
 describe('AuthService', () => {
   let service: AuthService;
   let _prismaService: PrismaService;
@@ -295,8 +303,6 @@ describe('AuthService', () => {
   // Story 11.1: Account Lockout Tests
   // ============================================================
   describe('login - Account Lockout (SEC-001)', () => {
-    const bcrypt = require('bcrypt');
-
     beforeEach(() => {
       jest.clearAllMocks();
     });
@@ -304,7 +310,7 @@ describe('AuthService', () => {
     it('should reset failedLoginAttempts on successful login', async () => {
       const userWithAttempts = { ...mockUser, failedLoginAttempts: 3 };
       mockPrismaService.user.findUnique.mockResolvedValue(userWithAttempts);
-      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
+      bcrypt.compare.mockResolvedValue(true);
       mockJwtService.sign.mockReturnValue('test-token');
       mockPrismaService.refreshToken.create.mockResolvedValue({});
       mockPrismaService.user.update.mockResolvedValue(userWithAttempts);
@@ -316,13 +322,13 @@ describe('AuthService', () => {
         data: expect.objectContaining({
           failedLoginAttempts: 0,
           lockedUntil: null,
-        }),
+        }) as unknown,
       });
     });
 
     it('should increment failedLoginAttempts on wrong password', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue({ ...mockUser });
-      jest.spyOn(bcrypt, 'compare').mockResolvedValue(false);
+      bcrypt.compare.mockResolvedValue(false);
       mockPrismaService.user.update.mockResolvedValue({});
 
       await expect(
@@ -331,14 +337,14 @@ describe('AuthService', () => {
 
       expect(mockPrismaService.user.update).toHaveBeenCalledWith({
         where: { id: 'user-123' },
-        data: expect.objectContaining({ failedLoginAttempts: 1 }),
+        data: expect.objectContaining({ failedLoginAttempts: 1 }) as unknown,
       });
     });
 
     it('should lock account after 5 failed attempts', async () => {
       const userWith4Failures = { ...mockUser, failedLoginAttempts: 4 };
       mockPrismaService.user.findUnique.mockResolvedValue(userWith4Failures);
-      jest.spyOn(bcrypt, 'compare').mockResolvedValue(false);
+      bcrypt.compare.mockResolvedValue(false);
       mockPrismaService.user.update.mockResolvedValue({});
 
       await expect(
@@ -349,8 +355,8 @@ describe('AuthService', () => {
         where: { id: 'user-123' },
         data: expect.objectContaining({
           failedLoginAttempts: 5,
-          lockedUntil: expect.any(Date),
-        }),
+          lockedUntil: expect.any(Date) as unknown,
+        }) as unknown,
       });
     });
 
@@ -376,7 +382,7 @@ describe('AuthService', () => {
         lockedUntil: new Date(Date.now() - 1000), // Lock expired 1 second ago
       };
       mockPrismaService.user.findUnique.mockResolvedValue(expiredLockUser);
-      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
+      bcrypt.compare.mockResolvedValue(true);
       mockJwtService.sign.mockReturnValue('test-token');
       mockPrismaService.refreshToken.create.mockResolvedValue({});
       mockPrismaService.user.update.mockResolvedValue(expiredLockUser);
@@ -392,7 +398,7 @@ describe('AuthService', () => {
         data: expect.objectContaining({
           failedLoginAttempts: 0,
           lockedUntil: null,
-        }),
+        }) as unknown,
       });
     });
 

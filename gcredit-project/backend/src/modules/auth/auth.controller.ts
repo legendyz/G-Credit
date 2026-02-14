@@ -84,7 +84,8 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     // Dual-read: prefer cookie, fallback to body (transition period)
-    const refreshToken = req.cookies?.refresh_token || bodyRefreshToken;
+    const refreshToken: string =
+      (req.cookies?.refresh_token as string) || bodyRefreshToken;
     const result = await this.authService.refreshAccessToken(refreshToken);
     this.setAuthCookies(res, result.accessToken, result.refreshToken);
     return result;
@@ -99,7 +100,8 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     // Dual-read: prefer cookie, fallback to body
-    const refreshToken = req.cookies?.refresh_token || bodyRefreshToken;
+    const refreshToken: string =
+      (req.cookies?.refresh_token as string) || bodyRefreshToken;
     // Clear httpOnly cookies
     res.clearCookie('access_token', { path: '/api' });
     res.clearCookie('refresh_token', { path: '/api/auth' });

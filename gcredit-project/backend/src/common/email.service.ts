@@ -49,7 +49,7 @@ export class EmailService {
         // Dev mode fallback: log email details via Logger
         this.logger.warn('Graph Email disabled - logging email details');
         this.logger.log(
-          `[DEV MODE] Email to: ${maskEmailForLog(options.to as string)} | Subject: ${options.subject}`,
+          `[DEV MODE] Email to: ${maskEmailForLog(options.to)} | Subject: ${options.subject}`,
         );
         return;
       }
@@ -62,11 +62,11 @@ export class EmailService {
         options.text,
       );
       this.logger.log(
-        `✅ Email sent to ${maskEmailForLog(options.to as string)}: ${options.subject}`,
+        `✅ Email sent to ${maskEmailForLog(options.to)}: ${options.subject}`,
       );
     } catch (error: unknown) {
       this.logger.error(
-        `❌ Failed to send email to ${maskEmailForLog(options.to as string)}:`,
+        `❌ Failed to send email to ${maskEmailForLog(options.to)}:`,
         (error as Error).message,
       );
       // Don't throw - email failure shouldn't block operations

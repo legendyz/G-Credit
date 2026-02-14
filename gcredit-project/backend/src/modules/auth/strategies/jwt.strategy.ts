@@ -42,7 +42,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         // 1. Prefer httpOnly cookie (Story 11.6 - SEC-002)
-        (req: Request) => req?.cookies?.access_token || null,
+        (req: Request) => (req?.cookies?.access_token as string) || null,
         // 2. Fallback to Authorization header (dual-write transition period)
         ExtractJwt.fromAuthHeaderAsBearerToken(),
       ]),

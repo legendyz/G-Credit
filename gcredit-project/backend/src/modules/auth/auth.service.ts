@@ -60,9 +60,38 @@ export class AuthService {
     // Audit logging via NestJS Logger — full audit trail system deferred to Phase 2
     this.logger.log(`[AUDIT] User registered: user:${user.id}`);
 
-    // 5. Return user without password hash
-    const { passwordHash: _hash, ...result } = user;
-    return result;
+    // 4. Generate JWT tokens (auto-login after registration)
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    };
+
+    const accessToken = this.jwtService.sign(payload);
+
+    const refreshExpiresIn =
+      this.config.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
+    const refreshToken = this.jwtService.sign({ sub: user.id }, {
+      secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+      expiresIn: refreshExpiresIn,
+    } as JwtSignOptions);
+
+    const expiresAt = this.calculateExpiryDate(refreshExpiresIn);
+    await this.prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: user.id,
+        expiresAt,
+      },
+    });
+
+    // 5. Return tokens and user profile (without password hash)
+    const { passwordHash: _hash, ...userProfile } = user;
+    return {
+      accessToken,
+      refreshToken,
+      user: userProfile,
+    };
   }
 
   async login(dto: LoginDto) {

@@ -15,10 +15,12 @@ import sanitizeHtml from 'sanitize-html';
  */
 export function SanitizeHtml(): PropertyDecorator {
   return Transform(({ value }) => {
-    if (typeof value !== 'string') return value;
-    return sanitizeHtml(value, {
-      allowedTags: [],
-      allowedAttributes: {},
-    }).trim();
+    if (typeof value !== 'string') return value as unknown;
+    return String(
+      sanitizeHtml(value, {
+        allowedTags: [],
+        allowedAttributes: {},
+      }),
+    ).trim();
   });
 }
