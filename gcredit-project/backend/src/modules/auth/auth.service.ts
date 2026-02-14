@@ -71,10 +71,13 @@ export class AuthService {
 
     const refreshExpiresIn =
       this.config.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
-    const refreshToken = this.jwtService.sign({ sub: user.id }, {
-      secret: this.config.get<string>('JWT_REFRESH_SECRET'),
-      expiresIn: refreshExpiresIn,
-    } as JwtSignOptions);
+    const refreshToken = this.jwtService.sign(
+      { sub: user.id, jti: randomBytes(16).toString('hex') },
+      {
+        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+        expiresIn: refreshExpiresIn,
+      } as JwtSignOptions,
+    );
 
     const expiresAt = this.calculateExpiryDate(refreshExpiresIn);
     await this.prisma.refreshToken.create({
@@ -165,10 +168,13 @@ export class AuthService {
     // 5. Generate refresh token with longer expiry
     const refreshExpiresIn =
       this.config.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
-    const refreshToken = this.jwtService.sign({ sub: user.id }, {
-      secret: this.config.get<string>('JWT_REFRESH_SECRET'),
-      expiresIn: refreshExpiresIn,
-    } as JwtSignOptions);
+    const refreshToken = this.jwtService.sign(
+      { sub: user.id, jti: randomBytes(16).toString('hex') },
+      {
+        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+        expiresIn: refreshExpiresIn,
+      } as JwtSignOptions,
+    );
 
     // 6. Store refresh token in database (use same expiry as JWT)
     const expiresAt = this.calculateExpiryDate(refreshExpiresIn);
@@ -375,10 +381,13 @@ export class AuthService {
     // 6. ARCH-P1-001: Generate and store new refresh token
     const refreshExpiresIn =
       this.config.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
-    const newRefreshToken = this.jwtService.sign({ sub: tokenRecord.user.id }, {
-      secret: this.config.get<string>('JWT_REFRESH_SECRET'),
-      expiresIn: refreshExpiresIn,
-    } as JwtSignOptions);
+    const newRefreshToken = this.jwtService.sign(
+      { sub: tokenRecord.user.id, jti: randomBytes(16).toString('hex') },
+      {
+        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+        expiresIn: refreshExpiresIn,
+      } as JwtSignOptions,
+    );
 
     const expiresAt = this.calculateExpiryDate(refreshExpiresIn);
     await this.prisma.refreshToken.create({
