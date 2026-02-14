@@ -52,7 +52,7 @@ describe('BadgeTimelineCard - Visibility Toggle', () => {
 
     const toggleBtn = screen.getByTitle('Set to Private');
     expect(toggleBtn).toBeInTheDocument();
-    expect(screen.getByText('🌐')).toBeInTheDocument();
+    expect(toggleBtn).toHaveAttribute('aria-label', 'Badge visibility: public');
   });
 
   it('renders lock icon for PRIVATE badge', () => {
@@ -60,7 +60,7 @@ describe('BadgeTimelineCard - Visibility Toggle', () => {
 
     const toggleBtn = screen.getByTitle('Set to Public');
     expect(toggleBtn).toBeInTheDocument();
-    expect(screen.getByText('🔒')).toBeInTheDocument();
+    expect(toggleBtn).toHaveAttribute('aria-label', 'Badge visibility: private');
   });
 
   it('renders globe icon when visibility is undefined (defaults PUBLIC)', () => {

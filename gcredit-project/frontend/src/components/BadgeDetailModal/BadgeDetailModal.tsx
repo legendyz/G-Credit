@@ -15,6 +15,7 @@ import BadgeAnalytics from './BadgeAnalytics';
 import BadgeShareModal from '../BadgeShareModal';
 import RevocationSection from './RevocationSection';
 import ClaimSuccessModal from '../ClaimSuccessModal';
+import { Globe, Lock, Loader2 } from 'lucide-react';
 import { apiFetch } from '../../lib/apiFetch';
 import { useCurrentUser } from '../../stores/authStore';
 
@@ -434,7 +435,17 @@ const BadgeDetailModal: React.FC = () => {
                 title={localVisibility === 'PUBLIC' ? 'Set to Private' : 'Set to Public'}
                 aria-label={`Badge visibility: ${localVisibility.toLowerCase()}`}
               >
-                {isToggling ? '⏳' : localVisibility === 'PUBLIC' ? '🌐 Public' : '🔒 Private'}
+                {isToggling ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                ) : localVisibility === 'PUBLIC' ? (
+                  <>
+                    <Globe className="h-4 w-4" aria-hidden="true" /> Public
+                  </>
+                ) : (
+                  <>
+                    <Lock className="h-4 w-4" aria-hidden="true" /> Private
+                  </>
+                )}
               </button>
             </div>
 
@@ -598,6 +609,7 @@ const BadgeDetailModal: React.FC = () => {
           onClose={() => setShareModalOpen(false)}
           badgeId={badge.id}
           badgeName={badge.template.name}
+          verificationId={badge.verificationId}
         />
       )}
 

@@ -26,7 +26,13 @@ describe('BadgeShareModal - LinkedIn Tab', () => {
 
   it('renders LinkedIn tab in tab list', () => {
     render(
-      <BadgeShareModal isOpen={true} onClose={vi.fn()} badgeId="badge-1" badgeName="Test Badge" />
+      <BadgeShareModal
+        isOpen={true}
+        onClose={vi.fn()}
+        badgeId="badge-1"
+        badgeName="Test Badge"
+        verificationId="ver-1"
+      />
     );
 
     expect(screen.getByRole('tab', { name: /linkedin/i })).toBeInTheDocument();
@@ -34,7 +40,13 @@ describe('BadgeShareModal - LinkedIn Tab', () => {
 
   it('shows tab order: Email → LinkedIn → Teams → Widget', () => {
     render(
-      <BadgeShareModal isOpen={true} onClose={vi.fn()} badgeId="badge-1" badgeName="Test Badge" />
+      <BadgeShareModal
+        isOpen={true}
+        onClose={vi.fn()}
+        badgeId="badge-1"
+        badgeName="Test Badge"
+        verificationId="ver-1"
+      />
     );
 
     const tabs = screen.getAllByRole('tab');
@@ -48,7 +60,13 @@ describe('BadgeShareModal - LinkedIn Tab', () => {
   it('shows LinkedIn share panel when tab is clicked', async () => {
     const user = userEvent.setup();
     render(
-      <BadgeShareModal isOpen={true} onClose={vi.fn()} badgeId="badge-1" badgeName="Test Badge" />
+      <BadgeShareModal
+        isOpen={true}
+        onClose={vi.fn()}
+        badgeId="badge-1"
+        badgeName="Test Badge"
+        verificationId="ver-1"
+      />
     );
 
     const linkedInTab = screen.getByRole('tab', { name: /linkedin/i });
@@ -60,7 +78,13 @@ describe('BadgeShareModal - LinkedIn Tab', () => {
 
   it('does not render when closed', () => {
     render(
-      <BadgeShareModal isOpen={false} onClose={vi.fn()} badgeId="badge-1" badgeName="Test Badge" />
+      <BadgeShareModal
+        isOpen={false}
+        onClose={vi.fn()}
+        badgeId="badge-1"
+        badgeName="Test Badge"
+        verificationId="ver-1"
+      />
     );
 
     expect(screen.queryByRole('tab')).not.toBeInTheDocument();

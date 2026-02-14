@@ -17,6 +17,7 @@ interface BadgeShareModalProps {
   onClose: () => void;
   badgeId: string;
   badgeName: string;
+  verificationId?: string;
 }
 
 type ShareTab = 'email' | 'linkedin' | 'teams' | 'widget';
@@ -28,6 +29,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
   onClose,
   badgeId,
   badgeName,
+  verificationId,
 }) => {
   const [activeTab, setActiveTab] = useState<ShareTab>('email');
   const [loading, setLoading] = useState(false);
@@ -85,7 +87,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
   const [linkedInMessage, setLinkedInMessage] = useState('');
   const [linkedInShared, setLinkedInShared] = useState(false);
 
-  const verificationUrl = `${window.location.origin}/verify/${badgeId}`;
+  const verificationUrl = `${window.location.origin}/verify/${verificationId ?? badgeId}`;
 
   // LinkedIn default message
   useEffect(() => {
