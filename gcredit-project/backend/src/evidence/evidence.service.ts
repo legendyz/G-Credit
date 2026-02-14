@@ -11,6 +11,7 @@ import {
   EvidenceSasResponse,
 } from './dto/upload-evidence.dto';
 import { randomUUID } from 'crypto';
+import { validateMagicBytes } from '../common/utils/magic-byte-validator';
 
 @Injectable()
 export class EvidenceService {
@@ -68,6 +69,20 @@ export class EvidenceService {
       throw new BadRequestException(
         `File type ${file.mimetype} not allowed. Allowed types: ${this.ALLOWED_MIME_TYPES.join(', ')}`,
       );
+    }
+
+    // SEC-005: Magic-byte validation (skip for legacy .doc — complex OLE format)
+    if (file.buffer && file.mimetype !== 'application/msword') {
+      const { detected, isValid } = validateMagicBytes(
+        file.buffer,
+        file.mimetype,
+        this.ALLOWED_MIME_TYPES,
+      );
+      if (!isValid) {
+        throw new BadRequestException(
+          `File content does not match declared type. Detected: ${detected || 'unknown'}`,
+        );
+      }
     }
 
     // AC 3.4: Generate filename: {badgeId}/{fileId}-{sanitized-filename}

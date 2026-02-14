@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { BlobServiceClient, ContainerClient } from '@azure/storage-blob';
 import { v4 as uuidv4 } from 'uuid';
 import sharp from 'sharp';
+import { validateMagicBytes } from '../utils/magic-byte-validator';
 
 export interface ImageMetadata {
   width: number;
@@ -227,6 +228,20 @@ export class BlobStorageService implements OnModuleInit {
       throw new BadRequestException(
         'Image size exceeds 2MB limit. Please upload a smaller image.',
       );
+    }
+
+    // Magic-byte validation (SEC-005)
+    if (file.buffer) {
+      const { detected, isValid } = validateMagicBytes(
+        file.buffer,
+        file.mimetype,
+        allowedTypes,
+      );
+      if (!isValid) {
+        throw new BadRequestException(
+          `File content does not match declared type. Detected: ${detected || 'unknown'}`,
+        );
+      }
     }
   }
 
