@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-02-14 (Sprint 11 — Security & Quality Hardening)
+
+### Sprint 11 Summary — Post-MVP Hardening
+
+**Branch:** `sprint-11/security-quality-hardening`  
+**Stories:** 23/23 complete (5 waves, all code reviews APPROVED)  
+**Tests:** 722 tests (47 suites), 100% pass rate (+188 from v1.0.0)
+
+#### Security — 8 Stories
+
+- **Account Lockout (11.1):** 5 failed login attempts → 15min lockout with progressive delay, `failedLoginAttempts` + `lockedUntil` fields
+- **Magic-Byte File Validation (11.2):** JPEG/PNG/GIF/WebP/PDF magic-byte validation on upload, dual validation (extension + magic bytes)
+- **npm Audit + Swagger Gate (11.3):** 0 HIGH/CRITICAL vulnerabilities, Swagger disabled when `NODE_ENV=production`
+- **JWT httpOnly Cookies (11.6):** Migrated from `localStorage` JWT to `httpOnly` cookies with `SameSite=Lax`, dual-read strategy for backward compatibility, `Set-Cookie` headers on login/refresh
+- **Issuer Email Masking (11.7):** `a***n@example.com` format in 6 public-facing endpoints
+- **PII Log Sanitization (11.8):** `LogSanitizer` utility redacts email addresses, JWT tokens, and passwords from logs
+- **HTML Sanitization Pipe (11.9):** `SanitizeHtmlPipe` strips XSS vectors from all text input fields
+- **Remove Unused Dependencies (11.14):** 5 unused packages removed (class-validator dupes, winston, etc.)
+
+#### Code Quality — 5 Stories
+
+- **Badge Templates Service Tests (11.10):** 96%+ coverage, 15 test cases for CRUD + status transitions
+- **Issuance Criteria Validator Tests (11.11):** 90%+ coverage, edge case validation
+- **Blob Storage Service Tests (11.12):** Azure mock tests for upload/download/delete operations
+- **NestJS Logger Integration (11.13):** Replaced `console.log` with NestJS `Logger` in all 22 services/controllers
+- **Pagination Standardization (11.16):** `PaginatedResponse<T>` interface + `createPaginatedResponse()` utility, 5 endpoints migrated
+
+#### Features — 5 Stories
+
+- **Badge Visibility Toggle (11.4):** `isPublic` field on badge assertions, owner-only toggle, verification respects visibility
+- **Analytics CSV Export (11.17):** `GET /api/analytics/export` endpoint, 4-section RFC 4180 CSV with BOM
+- **Verification Skill UUID→Name (11.18):** Display `nameEn` instead of raw UUID in verification responses
+- **403 Access Denied Page (11.19):** Backend returns proper 403 for role-based access violations
+- **ClaimPage Hardcoded UUID Fix (11.20):** Dynamic UUID from URL params instead of hardcoded value
+
+#### Developer Experience — 2 Stories
+
+- **CI Quality Gates (11.21):** ESLint `no-console: 'error'` rule, CI Chinese character detection in both BE/FE jobs, `scripts/check-chinese.sh`
+- **Husky Pre-commit Hooks (11.22):** Root `package.json` with Husky v9 + lint-staged, pre-push mirrors full CI pipeline
+
+---
+
 ## [1.0.0] - 2026-02-11 (Sprint 10 — v1.0.0 Release)
 
 ### Sprint 10 Summary — v1.0.0 Release Sprint

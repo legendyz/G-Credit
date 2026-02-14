@@ -26,6 +26,10 @@
 
 ## Authentication
 
+> **⚠️ Sprint 11 Change (v1.1.0):** Authentication migrated from `Authorization: Bearer` header to **httpOnly cookies**. After login, the server sets a `Set-Cookie` header with the JWT token. Subsequent requests automatically include the cookie. For `curl` testing, use `-c` (save cookies) and `-b` (send cookies) flags. Frontend uses `credentials: 'include'` via the `apiFetch` wrapper.
+>
+> The `Authorization: Bearer` header is still supported (dual-read strategy) for backward compatibility, but httpOnly cookies are the primary method.
+
 All API endpoints except `/api/auth/login` and `/api/auth/register` require JWT authentication.
 
 ### Register New User
@@ -64,6 +68,13 @@ curl -X POST http://localhost:3000/api/auth/login \
 ```
 
 **Response (200 OK):**
+
+**Headers:**
+```
+Set-Cookie: access_token=eyJhbGciOi...; HttpOnly; SameSite=Lax; Path=/; Max-Age=900
+```
+
+**Body:**
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -76,13 +87,20 @@ curl -X POST http://localhost:3000/api/auth/login \
 }
 ```
 
-**Save Token for Subsequent Requests:**
-```bash
-# PowerShell
-$token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+> **Note:** The response body still includes `access_token` for backward compatibility, but the primary auth mechanism is now the httpOnly cookie set via `Set-Cookie` header.
 
-# Bash
-TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+**Account Lockout (Sprint 11):** After 5 consecutive failed login attempts, the account is locked for 15 minutes. Returns `423 Locked` with `lockedUntil` timestamp.
+
+**Save Token for Subsequent Requests (curl):**
+```bash
+# Using cookies (recommended since v1.1.0)
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "admin@gcredit.test", "password": "Admin123!"}' \
+  -c cookies.txt
+
+# Subsequent requests with cookie
+curl -X GET http://localhost:3000/api/analytics/system-overview -b cookies.txt
 ```
 
 ### Get Current User Profile
@@ -2040,6 +2058,62 @@ curl -X GET "http://localhost:3000/api/analytics/recent-activity?limit=20&offset
 
 ---
 
+### Export Analytics Data (Sprint 11)
+
+**GET** `/api/analytics/export`
+
+**Description:** Export all analytics data as a CSV file. Includes 4 sections: System Overview, Issuance Trends, Top Performers, Skills Distribution.
+
+**Authorization:** ADMIN only
+
+```bash
+# Using cookies (recommended)
+curl -X GET http://localhost:3000/api/analytics/export \
+  -b cookies.txt -o analytics.csv
+
+# Using Bearer token
+curl -X GET http://localhost:3000/api/analytics/export \
+  -H "Authorization: Bearer $TOKEN" -o analytics.csv
+```
+
+**Response Headers:**
+```
+Content-Type: text/csv; charset=utf-8
+Content-Disposition: attachment; filename=gcredit-analytics-2026-02-14.csv
+```
+
+**CSV Format (RFC 4180 with UTF-8 BOM):**
+```csv
+=== System Overview ===
+Metric,Value
+Total Badges,1234
+Active Templates,56
+...
+
+=== Issuance Trends ===
+Month,Count
+2026-01,45
+2026-02,67
+...
+
+=== Top Performers ===
+Rank,Name,Badges
+1,John Doe,12
+...
+
+=== Skills Distribution ===
+Skill,Count
+Project Management,34
+...
+```
+
+**Error Responses:**
+- `401 Unauthorized` — Not authenticated
+- `403 Forbidden` — Non-admin user
+- `429 Too Many Requests` — Rate limit exceeded
+
+---
+
 ## Rate Limiting
 
 **Implementation:** Global `ThrottlerGuard` via NestJS (Sprint 8)
@@ -2088,11 +2162,12 @@ Import this collection into Postman for quick API testing:
 
 ---
 
-**Last Updated:** 2026-02-09  
-**API Version:** 1.0.0-dev (Sprint 10 - v1.0.0 Release Sprint)  
+**Last Updated:** 2026-02-14  
+**API Version:** 1.1.0-dev (Sprint 11 — Security & Quality Hardening)  
 **Author:** G-Credit Development Team  
-**Coverage:** Sprint 0-10 (Authentication, Templates, Issuance, Verification, Sharing, Revocation, Analytics, Admin Users, M365 Sync, Bulk Issuance, Dashboard, Evidence, Milestones, Teams)  
-**Total Routes:** ~77 across 16 modules  
+**Coverage:** Sprint 0-11 (Authentication, Templates, Issuance, Verification, Sharing, Revocation, Analytics, Admin Users, M365 Sync, Bulk Issuance, Dashboard, Evidence, Milestones, Teams, CSV Export)  
+**Total Routes:** ~78 across 16 modules  
+**Sprint 11 Changes:** httpOnly cookie auth, account lockout, analytics CSV export, PaginatedResponse<T>
 
 **See Also:**
 - [API Module Index](./api/README.md) - Quick reference table

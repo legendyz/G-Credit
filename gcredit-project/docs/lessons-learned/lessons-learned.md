@@ -2,10 +2,10 @@
 
 **Project:** G-Credit Digital Credentialing System  
 **Purpose:** Capture key learnings and establish best practices for efficient development  
-**Last Updated:** 2026-02-14 (Sprint 11 Wave 4 — Lesson 35 Enhanced)  
+**Last Updated:** 2026-02-14 (Sprint 11 Complete — Lessons 35, 40, 41, 42)  
 **Status:** Living document - update after each Sprint Retrospective  
-**Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 → Sprint 6 → Sprint 7 → Sprint 8 → Sprint 9 → Sprint 10 (Complete) + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
-**Total Lessons:** 36 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 8, Sprint 7: 3, Sprint 8: 3, Sprint 9: 3, Sprint 10: 3)
+**Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 → Sprint 6 → Sprint 7 → Sprint 8 → Sprint 9 → Sprint 10 → Sprint 11 (Complete) + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
+**Total Lessons:** 38 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 8, Sprint 7: 3, Sprint 8: 3, Sprint 9: 3, Sprint 10: 3, Sprint 11: 4)
 
 ---
 
@@ -23,10 +23,11 @@
 | Sprint 8 | 12/12 (100%) | 76h | 80h | 95% | ~6.7h/item |
 | Sprint 9 | 5/5 (100%) | 51h | 37h | 73% | ~7.4h/story |
 | Sprint 10 | 12/12 (100%) | 95h | 109h | 87% | ~9.1h/story | ⭐
+| Sprint 11 | 23/23 (100%) | 51.5-65.5h | ~60h | ~92-100% | ~2.6h/story | ⭐
 
 ### Quality Metrics
-- **Test Pass Rate:** 100% (1,061/1,061 tests Sprint 10) ⭐
-- **UAT Pass Rate:** 100% (33/33 tests Sprint 10, 2 rounds) ⭐
+- **Test Pass Rate:** 100% (1,263/1,263 tests Sprint 11) ⭐
+- **UAT Pass Rate:** 100% (33/33 tests Sprint 10, pending Sprint 11 UAT)
 - **Documentation Accuracy:** 95%+ (comprehensive guides created)
 - **Technical Debt:** 56 items tracked (17 P1 resolved Sprint 8, 7 TD resolved Sprint 10) ⭐
 - **Zero Production Bugs:** All issues caught in development/UAT
@@ -4996,9 +4997,73 @@ Created `docs/setup/external-services-setup-guide.md`:
 
 ---
 
-**Last Major Update:** Sprint 11 Wave 2 (2026-02-14) - Local vs CI Check Gap (Lesson 40)  
-**Next Review:** Sprint 11 Retrospective  
+**Last Major Update:** Sprint 11 Complete (2026-02-14) - Lessons 35, 40, 41, 42  
+**Next Review:** Sprint 12 Retrospective  
 **Owner:** PM (John) + Dev Team
+
+---
+
+## Sprint 11: Lesson 41 — Wave-Based Execution Handles Large Sprints Well
+
+**Date:** 2026-02-14  
+**Sprint:** 11 (Security & Quality Hardening)  
+**Severity:** Positive — enabled 23 stories in 3 days with zero confusion
+
+### What Happened
+
+23 stories spanning security, code quality, features, and DX were organized into 5 thematic waves:
+- Wave 1: Quick Wins (trivial fixes, confidence builder)
+- Wave 2: Core Security (highest risk, needed careful review)
+- Wave 3: Complex Cross-cutting Features
+- Wave 4: Test Suites + Infrastructure (highest test count growth)
+- Wave 5: Polish + CI Tooling
+
+Each wave followed: dev prompt → implementation → code review → acceptance.
+
+### Root Cause (of Success)
+
+Thematic grouping reduced context switching. Code reviews per wave caught issues early. Acceptance per wave provided clear progress visibility.
+
+### Action Items
+
+1. **[SM] Sprint Planning:** For sprints with >10 stories, always organize into waves
+2. **[SM] Wave sizing:** Aim for 4-5 stories per wave with similar complexity
+3. **[SM] Wave ordering:** Start with quick wins for momentum, end with tooling/DX
+
+### Key Takeaway
+
+> **Wave-based execution = thematic batching + incremental quality gates. It turns a chaotic 23-story sprint into 5 manageable mini-sprints.**
+
+---
+
+## Sprint 11: Lesson 42 — Service Test Suites Are High-Value Technical Debt Items
+
+**Date:** 2026-02-14  
+**Sprint:** 11 (Security & Quality Hardening), Wave 4  
+**Severity:** Positive — 3 services went from 0% to 90%+ coverage
+
+### What Happened
+
+Stories 11.10-11.12 added test suites for 3 critical services that had 0% coverage:
+- `badge-templates.service` (96%+ coverage, 15 test cases)
+- `issuance-criteria-validator.service` (90%+ coverage)
+- `blob-storage.service` (Azure mock tests)
+
+These tests caught edge cases and provided regression safety for business-critical code paths.
+
+### Root Cause
+
+These services were initially built without tests (Sprint 2-3) because velocity was prioritized. The code quality audit in Sprint 11 planning correctly identified them as the highest-value test investment.
+
+### Action Items
+
+1. **[Dev] New services:** Always create test suite alongside service implementation
+2. **[SM] Sprint Planning:** When auditing test coverage, prioritize services with business logic over simple CRUD
+3. **[SM] Estimation:** Service test suites typically take 2-3h each — they’re straightforward but high-value
+
+### Key Takeaway
+
+> **A service test suite at 90%+ coverage takes ~3h to write but provides ongoing regression safety for the life of the project. Always worth the investment.**
 
 ---
 

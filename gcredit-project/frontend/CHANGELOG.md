@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-02-14 (Sprint 11 — Security & Quality Hardening)
+
+### Sprint 11 Summary — Post-MVP Hardening
+
+**Branch:** `sprint-11/security-quality-hardening`  
+**Stories:** 23/23 complete (5 waves, all code reviews APPROVED)  
+**Tests:** 541 tests (49 suites), 100% pass rate (+14 from v1.0.0)
+
+#### Security
+
+- **JWT httpOnly Cookie Migration (11.6):** `apiFetch` wrapper replaces raw `fetch` calls, `credentials: 'include'` for cookie-based auth, removed all `localStorage` JWT token handling
+- **Issuer Email Masking (11.7):** Frontend displays masked emails from API responses
+
+#### Features
+
+- **Badge Visibility Toggle (11.4):** Toggle switch in badge detail for owner to set `isPublic`/private
+- **LinkedIn Share Tab (11.5):** New tab in ShareDialog with LinkedIn URL builder and `window.open`
+- **Analytics CSV Export (11.17):** Export CSV button in AdminAnalyticsPage PageTemplate actions with Download icon, loading spinner, and toast notification
+- **403 Access Denied Page (11.19):** Dedicated `/403` route with role-based messaging and navigation links
+- **ClaimPage UUID Fix (11.20):** Dynamic UUID from URL params
+- **User Management Nav Fix (11.23):** Admin-only navigation entry restored
+
+#### UI/UX Improvements
+
+- **Design System Consistency (11.15):** Migrated 74 inline styles to Tailwind CSS classes (86→12 remaining, all dynamic/Recharts), deleted `App.css` (Vite scaffold remnant)
+- **Verification Skill Display (11.18):** Shows `nameEn` instead of raw UUID
+- **Pagination Standardization (11.16):** All list pages consume `PaginatedResponse<T>` format consistently
+
+#### Developer Experience
+
+- **ESLint no-console (11.21):** `no-console: 'error'` with test overrides, `ErrorBoundary` eslint-disable exception
+- **Chinese Character Fix (11.21):** `方案B` → `Option B` in badge-verification-service
+- **Husky Hooks (11.22):** Pre-commit runs lint-staged + Chinese character check, pre-push mirrors full CI
+
+---
+
 ## [1.0.0] - 2026-02-11 (Sprint 10 — v1.0.0 Release)
 
 ### Sprint 10 Summary — v1.0.0 Release Sprint

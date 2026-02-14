@@ -1,7 +1,8 @@
 # Sprint 11 Version Manifest
 
-**Sprint:** Sprint 11  
+**Sprint:** Sprint 11 — Security & Quality Hardening  
 **Created:** Sprint 11 Planning  
+**Updated:** 2026-02-14 (Sprint 11 Complete)  
 **Previous:** Sprint 10 (v1.0.0 Release)
 
 ---
@@ -64,7 +65,7 @@
 ### Candidates for Removal
 | Package | Version | Reason |
 |---------|---------|--------|
-| keyv | ^5.0.0 | ⚠️ Story 11.14 — verify unused then remove |
+| ~~keyv~~ | ~~^5.0.0~~ | ✅ **Removed** (Story 11.14) |
 
 ---
 
@@ -116,35 +117,43 @@
 ### Candidates for Removal
 | Package | Version | Reason |
 |---------|---------|--------|
-| framer-motion | ^12.29.2 | ⚠️ Story 11.14 — verify unused |
-| tailwindcss-animate | ^1.0.7 | ⚠️ Story 11.14 — verify unused |
+| ~~framer-motion~~ | ~~^12.29.2~~ | ✅ **Kept** (used by sonner toasts) |
+| ~~tailwindcss-animate~~ | ~~^1.0.7~~ | ✅ **Kept** (used by shadcn/ui) |
 
 ---
 
 ## New Dependencies for Sprint 11
 
-| Package | Story | Install Command | Pin Version |
-|---------|-------|----------------|-------------|
-| cookie-parser | 11.6 | `npm install cookie-parser @types/cookie-parser` | Yes |
-| husky | 11.22 | `npm install -D husky` (root) | Yes |
-| lint-staged | 11.22 | `npm install -D lint-staged` (root) | Yes |
+| Package | Story | Install Command | Status |
+|---------|-------|----------------|--------|
+| cookie-parser | 11.6 | `npm install cookie-parser @types/cookie-parser` | ✅ Installed |
+| husky | 11.22 | `npm install -D husky` (root) | ✅ Installed (^9.0.0) |
+| lint-staged | 11.22 | `npm install -D lint-staged` (root) | ✅ Installed (^15.0.0) |
 
 **Note:** `sanitize-html` already installed (^2.17.0). `@types/sanitize-html` already installed (^2.16.0).
 
 ---
 
-## DB Migrations Planned
+## DB Migrations Completed
 
-| Story | Migration | Fields |
-|-------|-----------|--------|
-| 11.1 | AddAccountLockout | `failedLoginAttempts Int @default(0)`, `lockedUntil DateTime?` on User |
-| 11.4 | AddBadgeVisibility | `BadgeVisibility` enum (PUBLIC, PRIVATE), `visibility` field on Badge |
+| Story | Migration | Fields | Status |
+|-------|-----------|--------|--------|
+| 11.1 | AddAccountLockout | `failedLoginAttempts Int @default(0)`, `lockedUntil DateTime?` on User | ✅ Applied |
+| 11.4 | AddBadgeVisibility | `isPublic Boolean @default(true)` on Badge | ✅ Applied |
 
 ---
 
-## Special Version Locks
+## Security Status (Post-Sprint 11)
 
-| Package | Locked Version | Reason | Since |
-|---------|---------------|--------|-------|
-| @prisma/client | 6.19.2 | Prisma 7.x has breaking changes, not compatible | Sprint 0 |
-| prisma | 6.19.2 | Must match @prisma/client | Sprint 0 |
+| Issue | Severity | Status |
+|-------|----------|--------|
+| lodash Prototype Pollution | Moderate (CVSS 6.5) | ✅ Risk Accepted (ADR-002) |
+| `npm audit` (backend) | — | ✅ 0 vulnerabilities |
+| `npm audit` (frontend) | — | ✅ 0 vulnerabilities |
+| SEC-001: Account Lockout | HIGH | ✅ Fixed (Story 11.1) |
+| SEC-002: localStorage JWT | HIGH | ✅ Fixed (Story 11.6 → httpOnly cookies) |
+| SEC-003: Issuer Email PII | MEDIUM | ✅ Fixed (Story 11.7) |
+| SEC-004: PII in Logs | LOW | ✅ Fixed (Story 11.8) |
+| SEC-005: Mimetype Bypass | MEDIUM | ✅ Fixed (Story 11.2) |
+| SEC-006: HTML Sanitization | MEDIUM | ✅ Fixed (Story 11.9) |
+| SEC-007: Swagger in Prod | LOW | ✅ Fixed (Story 11.3) |
