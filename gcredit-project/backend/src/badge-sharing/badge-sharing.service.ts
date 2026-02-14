@@ -36,9 +36,7 @@ export class BadgeSharingService {
     dto: ShareBadgeEmailDto,
     userId: string,
   ): Promise<ShareBadgeEmailResponseDto> {
-    this.logger.log(
-      `Sharing badge ${dto.badgeId} via email to ${dto.recipientEmail}`,
-    );
+    this.logger.log(`Sharing badge ${dto.badgeId} via email to [masked]`);
 
     // Validate badge exists and user has access
     const badge = await this.prisma.badge.findUnique({

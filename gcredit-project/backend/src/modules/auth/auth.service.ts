@@ -109,7 +109,7 @@ export class AuthService {
 
     // 2. Check if account is active
     if (!user.isActive) {
-      throw new UnauthorizedException('Account is inactive');
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     // 2.5. Check if account is locked
