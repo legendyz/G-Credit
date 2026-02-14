@@ -56,9 +56,7 @@ const EvidenceSection: React.FC<EvidenceSectionProps> = ({ badgeId }) => {
 
   const handleDownload = async (fileId: string) => {
     try {
-      const response = await apiFetch(
-        `/badges/${badgeId}/evidence/${fileId}/download`,
-      );
+      const response = await apiFetch(`/badges/${badgeId}/evidence/${fileId}/download`);
 
       if (!response.ok) {
         throw new Error('Failed to generate download link');

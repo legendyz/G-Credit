@@ -12,10 +12,7 @@ export function maskEmailForLog(email: string): string {
  * Mask user identifier for logging
  * Prefer user ID (UUID), fallback to masked email
  */
-export function safeUserRef(user: {
-  id?: string;
-  email?: string;
-}): string {
+export function safeUserRef(user: { id?: string; email?: string }): string {
   if (user.id) return `user:${user.id}`;
   if (user.email) return maskEmailForLog(user.email);
   return 'unknown-user';

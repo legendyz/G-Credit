@@ -29,12 +29,7 @@ interface AuthState {
 
   // Actions
   login: (email: string, password: string) => Promise<void>;
-  register: (
-    email: string,
-    password: string,
-    firstName: string,
-    lastName: string,
-  ) => Promise<void>;
+  register: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
   setLoading: (loading: boolean) => void;
@@ -88,12 +83,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       // Register action — cookies set by server via Set-Cookie header
-      register: async (
-        email: string,
-        password: string,
-        firstName: string,
-        lastName: string,
-      ) => {
+      register: async (email: string, password: string, firstName: string, lastName: string) => {
         set({ isLoading: true, error: null });
 
         try {
@@ -203,12 +193,11 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
-    },
-  ),
+    }
+  )
 );
 
 // Selector hooks for common patterns
-export const useIsAuthenticated = () =>
-  useAuthStore((state) => state.isAuthenticated);
+export const useIsAuthenticated = () => useAuthStore((state) => state.isAuthenticated);
 export const useCurrentUser = () => useAuthStore((state) => state.user);
 export const useUserRole = () => useAuthStore((state) => state.user?.role);

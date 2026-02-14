@@ -123,7 +123,9 @@ export class GraphEmailService implements OnModuleInit {
     };
 
     try {
-      this.logger.log(`📧 Sending email: ${subject} → ${toEmails.map((e) => e.replace(/^(.).*@/, '$1***@')).join(', ')}`);
+      this.logger.log(
+        `📧 Sending email: ${subject} → ${toEmails.map((e) => e.replace(/^(.).*@/, '$1***@')).join(', ')}`,
+      );
 
       await this.graphClient.api(`/users/${fromEmail}/sendMail`).post(sendMail);
 

@@ -6,10 +6,7 @@ import { API_BASE_URL } from './apiConfig';
  *
  * @see ADR-010: JWT Token Transport Migration
  */
-export async function apiFetch(
-  path: string,
-  options: RequestInit = {},
-): Promise<Response> {
+export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
 
   const { headers: customHeaders, ...rest } = options;
@@ -33,10 +30,7 @@ export async function apiFetch(
 /**
  * Convenience: apiFetch + JSON parse with error handling
  */
-export async function apiFetchJson<T>(
-  path: string,
-  options: RequestInit = {},
-): Promise<T> {
+export async function apiFetchJson<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await apiFetch(path, options);
   if (!res.ok) {
     const error = await res.json().catch(() => ({ message: res.statusText }));

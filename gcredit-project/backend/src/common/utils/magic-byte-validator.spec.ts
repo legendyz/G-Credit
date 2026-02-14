@@ -11,9 +11,7 @@ describe('magic-byte-validator', () => {
     });
 
     it('should detect PNG', () => {
-      const buf = Buffer.from([
-        0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
-      ]);
+      const buf = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
       expect(detectMimeFromBuffer(buf)).toBe('image/png');
     });
 
@@ -77,9 +75,7 @@ describe('magic-byte-validator', () => {
     });
 
     it('should validate matching PNG', () => {
-      const buf = Buffer.from([
-        0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
-      ]);
+      const buf = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
       const result = validateMagicBytes(buf, 'image/png', [
         'image/jpeg',
         'image/png',

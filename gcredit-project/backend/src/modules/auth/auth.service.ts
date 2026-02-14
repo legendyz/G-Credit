@@ -216,7 +216,9 @@ export class AuthService {
     // 5. Send reset email
     try {
       await this.emailService.sendPasswordReset(user.email, token);
-      this.logger.log(`[AUDIT] Password reset requested: ${maskEmailForLog(user.email)}`);
+      this.logger.log(
+        `[AUDIT] Password reset requested: ${maskEmailForLog(user.email)}`,
+      );
     } catch (error: unknown) {
       this.logger.error(
         `Failed to send reset email: ${(error as Error).message}`,

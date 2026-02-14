@@ -398,9 +398,7 @@ export class M365SyncService {
           if (result.action === 'created') createdCount++;
           if (result.action === 'updated') updatedCount++;
         } else if (result.error) {
-          errors.push(
-            `user:${azureUser.id || 'unknown'}: ${result.error}`,
-          );
+          errors.push(`user:${azureUser.id || 'unknown'}: ${result.error}`);
         }
       }
 

@@ -61,7 +61,9 @@ export class EmailService {
         options.html,
         options.text,
       );
-      this.logger.log(`✅ Email sent to ${maskEmailForLog(options.to as string)}: ${options.subject}`);
+      this.logger.log(
+        `✅ Email sent to ${maskEmailForLog(options.to as string)}: ${options.subject}`,
+      );
     } catch (error: unknown) {
       this.logger.error(
         `❌ Failed to send email to ${maskEmailForLog(options.to as string)}:`,

@@ -117,9 +117,7 @@ export async function getBadgeShareHistory(
   badgeId: string,
   limit: number = 10
 ): Promise<ShareHistoryItem[]> {
-  const response = await apiFetch(
-    `/badges/${badgeId}/analytics/shares/history?limit=${limit}`,
-  );
+  const response = await apiFetch(`/badges/${badgeId}/analytics/shares/history?limit=${limit}`);
 
   if (!response.ok) {
     const error = await response.json();
