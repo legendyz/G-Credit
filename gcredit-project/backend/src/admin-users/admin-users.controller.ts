@@ -150,7 +150,7 @@ export class AdminUsersController {
     @Param('id', ParseUUIDPipe) id: string,
     @Request() req: RequestWithUser,
   ): Promise<UserListItem> {
-    this.logger.log(`Admin ${req.user.email} retrieving user ${id}`);
+    this.logger.log(`Admin user:${req.user.userId} retrieving user ${id}`);
     return this.adminUsersService.findOne(id);
   }
 
@@ -213,7 +213,7 @@ export class AdminUsersController {
     @Request() req: RequestWithUser,
   ): Promise<StatusUpdateResponse> {
     const action = dto.isActive ? 'activating' : 'deactivating';
-    this.logger.log(`Admin ${req.user.email} ${action} user ${id}`);
+    this.logger.log(`Admin user:${req.user.userId} ${action} user ${id}`);
     return this.adminUsersService.updateStatus(id, dto, req.user.userId);
   }
 

@@ -163,7 +163,7 @@ export class BadgeSharingService {
 
       if (isMockMode) {
         this.logger.log('MOCK MODE: Skipping actual email send');
-        this.logger.log(`Would send to: ${dto.recipientEmail}`);
+        this.logger.log(`Would send to: [masked]`);
         this.logger.log(
           `Subject: 🎉 ${sender.firstName} ${sender.lastName} shared a badge with you: "${badge.template.name}"`,
         );
@@ -178,7 +178,7 @@ export class BadgeSharingService {
       }
 
       this.logger.log(
-        `Successfully sent badge ${dto.badgeId} via email to ${dto.recipientEmail}`,
+        `Successfully sent badge ${dto.badgeId} via email to [masked]`,
       );
 
       // Record share event in analytics (Story 7.5)

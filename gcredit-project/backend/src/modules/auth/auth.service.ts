@@ -13,6 +13,7 @@ import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../common/prisma.service';
 import { EmailService } from '../../common/email.service';
+import { maskEmailForLog } from '../../common/utils/log-sanitizer';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -57,7 +58,7 @@ export class AuthService {
     });
 
     // Audit logging via NestJS Logger — full audit trail system deferred to Phase 2
-    this.logger.log(`[AUDIT] User registered: ${user.email} (${user.id})`);
+    this.logger.log(`[AUDIT] User registered: user:${user.id}`);
 
     // 5. Return user without password hash
     const { passwordHash: _hash, ...result } = user;
@@ -162,7 +163,7 @@ export class AuthService {
 
     // 8. Log successful login
     this.logger.log(
-      `Successful login: ${user.email} (${user.id}, role: ${user.role})`,
+      `Successful login: user:${user.id} (role: ${user.role})`,
       'LoginSuccess',
     );
 
@@ -215,7 +216,7 @@ export class AuthService {
     // 5. Send reset email
     try {
       await this.emailService.sendPasswordReset(user.email, token);
-      this.logger.log(`[AUDIT] Password reset requested: ${user.email}`);
+      this.logger.log(`[AUDIT] Password reset requested: ${maskEmailForLog(user.email)}`);
     } catch (error: unknown) {
       this.logger.error(
         `Failed to send reset email: ${(error as Error).message}`,
@@ -390,7 +391,7 @@ export class AuthService {
         data: { isRevoked: true },
       });
 
-      this.logger.log(`[AUDIT] User logged out: ${tokenRecord.user.email}`);
+      this.logger.log(`[AUDIT] User logged out: user:${tokenRecord.user.id}`);
     }
 
     // Always return success (even if token not found - already logged out)
@@ -463,7 +464,7 @@ export class AuthService {
       },
     });
 
-    this.logger.log(`[AUDIT] Profile updated: ${user.email} (${userId})`);
+    this.logger.log(`[AUDIT] Profile updated: user:${userId}`);
 
     return updatedUser;
   }
@@ -514,7 +515,7 @@ export class AuthService {
       data: { passwordHash: newPasswordHash },
     });
 
-    this.logger.log(`[AUDIT] Password changed: ${user.email} (${userId})`);
+    this.logger.log(`[AUDIT] Password changed: user:${userId}`);
 
     return { message: 'Password changed successfully' };
   }

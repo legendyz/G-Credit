@@ -413,7 +413,7 @@ export class AdminUsersService {
     });
 
     const action = dto.isActive ? 'activated' : 'deactivated';
-    this.logger.log(`User ${result.email} ${action} by admin ${adminId}`);
+    this.logger.log(`User ${result.id} ${action} by admin ${adminId}`);
 
     return result;
   }
