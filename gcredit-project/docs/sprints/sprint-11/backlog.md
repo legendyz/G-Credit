@@ -15,15 +15,15 @@
 Harden security posture, improve code quality and test coverage, and complete core features required for pilot deployment — making v1.0 truly production-ready for the first L&D program pilot.
 
 **Success Criteria:**
-- [ ] Account lockout mechanism implemented (防暴力破解)
-- [ ] File upload magic-byte validation (防MIME欺骗)
+- [x] Account lockout mechanism implemented (防暴力破解) ✅ Wave 2
+- [x] File upload magic-byte validation (防MIME欺骗) ✅ Wave 2
 - [x] npm audit 0 HIGH vulnerabilities + Swagger production-hidden ✅ Wave 1
 - [ ] Badge visibility toggle (public/private) fully functional
 - [ ] LinkedIn share tab integrated into BadgeShareModal
-- [ ] JWT migrated to httpOnly cookies (防XSS token theft)
+- [x] JWT migrated to httpOnly cookies (防XSS token theft) ✅ Wave 2
 - [x] Issuer email masked on public verification pages ✅ Wave 1
-- [ ] Log PII sanitized (GDPR compliance)
-- [ ] Global HTML sanitization pipe active
+- [x] Log PII sanitized (GDPR compliance) ✅ Wave 2
+- [x] Global HTML sanitization pipe active ✅ Wave 2
 - [ ] 3 core services have unit test coverage (badge-templates, issuance-criteria-validator, blob-storage)
 - [ ] NestJS Logger added to all 22 services/controllers
 - [ ] Paginated response format standardized (`PaginatedResponse<T>`)
@@ -684,14 +684,27 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 | 11.23 | Nav label → "Users" | ✅ MobileNav unified |
 | 11.7 | Issuer email masking | ✅ + privacy trust statement added |
 | 11.20 | ClaimPage UUID fix | ✅ POST /badges/claim route added |
+### Wave 2 — Security Hardening ✅ (2026-02-14)
+**Stories:** 11.1, 11.2, 11.8, 11.9, 11.6 (10/23 complete)
+**Commits:** `553a03c..59d6938` (13 commits: 5 feature + 4 CI fixes + style + docs + review fix + lesson)
+**Code Review:** APPROVED ([wave-2-code-review.md](wave-2-code-review.md))
+**Tests:** BE 580 (+43) | FE 526 (-1, auth migration) = **1106 total**
+**Note:** 4 CI failures before green (Lesson 40 — local checks must mirror CI)
 
+| Story | Title | Result |
+|-------|-------|--------|
+| 11.1 | Account Lockout | ✅ 5 failures → 30min lock, unified error msg |
+| 11.2 | File Upload Magic-Byte | ✅ Custom validator, JPEG/PNG/WebP/PDF/DOCX |
+| 11.8 | Log PII Sanitization | ✅ 25+ emails → maskEmailForLog/user.id |
+| 11.9 | @SanitizeHtml Decorator | ✅ 10+ DTOs, sanitize-html allowedTags:[] |
+| 11.6 | JWT httpOnly Cookies | ✅ apiFetch wrapper, Set-Cookie, dual-read, ADR-010 |
 ---
 
 ## �🚧 Sprint Risks
 
 | Risk | Probability | Impact | Mitigation |
 |------|------------|---------|------------|
-| JWT httpOnly migration breaks existing auth flows | Medium | High | Thorough E2E testing, keep localStorage fallback initially |
+| ~~JWT httpOnly migration breaks existing auth flows~~ | ~~Medium~~ | ~~High~~ | ✅ Resolved Wave 2 — dual-read strategy, E2E passing |
 | Pagination standardization breaks frontend consumers | Medium | Medium | Update frontend clients in same story, test each endpoint |
 | Badge visibility migration affects existing data | Low | Medium | Default all existing badges to PUBLIC (non-breaking) |
 | Context switching overhead (23 stories, diverse topics) | Medium | Medium | Wave-based execution, batch related stories |
@@ -798,6 +811,6 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 
 ---
 
-**Last Updated:** 2026-02-14 (Wave 1 Done — 5/23 stories completed, code review APPROVED)  
-**Status:** In Progress — Wave 1 Complete, Wave 2 Next  
+**Last Updated:** 2026-02-14 (Wave 2 Done — 10/23 stories completed, all security stories done)  
+**Status:** In Progress — Wave 2 Complete, Wave 3 Next  
 **Created By:** SM Agent (Bob)
