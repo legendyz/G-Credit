@@ -24,11 +24,11 @@ Harden security posture, improve code quality and test coverage, and complete co
 - [x] Issuer email masked on public verification pages ✅ Wave 1
 - [x] Log PII sanitized (GDPR compliance) ✅ Wave 2
 - [x] Global HTML sanitization pipe active ✅ Wave 2
-- [ ] 3 core services have unit test coverage (badge-templates, issuance-criteria-validator, blob-storage)
-- [ ] NestJS Logger added to all 22 services/controllers
-- [ ] Paginated response format standardized (`PaginatedResponse<T>`)
+- [x] 3 core services have unit test coverage (badge-templates, issuance-criteria-validator, blob-storage) ✅ Wave 4
+- [x] NestJS Logger added to all 22 services/controllers ✅ Wave 4
+- [x] Paginated response format standardized (`PaginatedResponse<T>`) ✅ Wave 4
 - [x] User Management navigation entry accessible ✅ Wave 1
-- [ ] All 1061+ tests passing (0 regressions)
+- [x] All 1263 tests passing (0 regressions) ✅ Wave 5 — BE 722 + FE 541
 
 ---
 
@@ -366,7 +366,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.15: CQ-006 — Frontend Design System Consistency (Inline → Tailwind)
 **Priority:** 🟡 MEDIUM  
 **Estimate:** 2-3h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** Code Quality Audit + Feature Audit P1-1  
 **Dependencies:** None
@@ -412,7 +412,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.17: FR26 — Analytics CSV Export
 **Priority:** 🟡 MEDIUM  
 **Estimate:** 3h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** PRD Audit + Feature Audit P1-5  
 **Dependencies:** None
@@ -490,7 +490,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.21: TD-023 + TD-024 — CI Quality Gates (Chinese Characters + console.log)
 **Priority:** 🟡 MEDIUM  
 **Estimate:** 2h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** project-context.md  
 **Dependencies:** Story 11.13 (CQ-004 — Logger migration should complete first, so console.log scan doesn't trigger on remaining legitimate uses)
@@ -509,7 +509,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.22: TD-025 — Husky Pre-commit Hooks
 **Priority:** 🟡 MEDIUM  
 **Estimate:** 2h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** project-context.md  
 **Dependencies:** None
@@ -561,14 +561,14 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 | 12 | 11.12 | CQ-003: blob-storage.service Tests | 🟡 | 3-4h | Code Quality Audit | ✅ |
 | 13 | 11.13 | CQ-004: NestJS Logger Integration | 🟡 | 2-3h | Code Quality Audit | ✅ |
 | 14 | 11.14 | CQ-005: Remove Unused Dependencies | 🟢 | 15min | Code Quality Audit | ✅ |
-| 15 | 11.15 | CQ-006: Design System Consistency | 🟡 | 2-3h | Code Quality+Feature | 🔴 |
+| 15 | 11.15 | CQ-006: Design System Consistency | 🟡 | 2-3h | Code Quality+Feature | ✅ |
 | 16 | 11.16 | CQ-007: Pagination Standardization | 🟡 | 4-6h | Code Quality Audit | ✅ |
-| 17 | 11.17 | FR26: Analytics CSV Export | 🟡 | 3h | PRD+Feature Audit | 🔴 |
+| 17 | 11.17 | FR26: Analytics CSV Export | 🟡 | 3h | PRD+Feature Audit | ✅ |
 | 18 | 11.18 | Verification Skill UUID→Name | 🟡 | 1h | Feature Audit | ✅ |
 | 19 | 11.19 | 403 Access Denied Page | 🟡 | 2h | Feature Audit | ✅ |
 | 20 | 11.20 | ClaimPage Hardcoded UUID Fix | 🟡 | 1h | Feature Audit | ✅ |
-| 21 | 11.21 | CI Quality Gates (Chinese+console) | 🟡 | 2h | project-context.md | 🔴 |
-| 22 | 11.22 | Husky Pre-commit Hooks | 🟡 | 2h | project-context.md | 🔴 |
+| 21 | 11.21 | CI Quality Gates (Chinese+console) | 🟡 | 2h | project-context.md | ✅ |
+| 22 | 11.22 | Husky Pre-commit Hooks | 🟡 | 2h | project-context.md | ✅ |
 | 23 | 11.23 | User Management Nav Fix | 🟡 | 30min | Backlog+Feature Audit | ✅ |
 | | **TOTAL** | **23 stories** | | **53.5-67.5h** | | |
 
@@ -725,6 +725,20 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 | 11.11 | issuance-criteria-validator Tests | ✅ 672-line spec, ~55 test cases, all validation rules + templates covered, pure logic (no mocks) |
 | 11.12 | blob-storage.service Tests | ✅ 453-line spec, ~30 test cases, Azure SDK/sharp/magic-bytes fully mocked |
 | 11.16 | Pagination Standardization | ✅ PaginatedResponse<T> + createPaginatedResponse(), 5 endpoints migrated, all FE consumers + tests updated, C-4 atomic |
+
+### Wave 5 — Polish & CI ✅ (2026-02-14)
+**Stories:** 11.15, 11.17, 11.21, 11.22 (23/23 complete — **Sprint 11 DONE**)
+**Commits:** `4d0fc84..2d452e5` (4 commits: 1 design system + 1 CSV export + 1 CI gates + 1 Husky)
+**Code Review:** APPROVED ([wave-5-code-review.md](wave-5-code-review.md))
+**Tests:** BE 722 (+4) | FE 541 (0 regressions) = **1263 total**
+
+| Story | Title | Result |
+|-------|-------|--------|
+| 11.15 | Design System Consistency | ✅ 86→12 inline styles (remaining: dynamic/Recharts only), App.css deleted, 3 major components migrated to Tailwind |
+| 11.17 | Analytics CSV Export | ✅ GET /api/analytics/export, 4-section RFC 4180 CSV, BOM, PageTemplate actions Export button, toast UX, 4 new tests |
+| 11.21 | CI Quality Gates | ✅ ESLint no-console (BE+FE), CI Chinese char grep (both jobs), 1 Chinese fix (方案B→Option B), ErrorBoundary eslint-disable |
+| 11.22 | Husky Pre-commit Hooks | ✅ Root package.json (husky+lint-staged), pre-commit (lint-staged+Chinese check), pre-push (full CI mirror per Lesson 40), README docs |
+
 ---
 
 ## �🚧 Sprint Risks
@@ -734,7 +748,7 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 | ~~JWT httpOnly migration breaks existing auth flows~~ | ~~Medium~~ | ~~High~~ | ✅ Resolved Wave 2 — dual-read strategy, E2E passing |
 | ~~Pagination standardization breaks frontend consumers~~ | ~~Medium~~ | ~~Medium~~ | ✅ Resolved Wave 4 — 5 endpoints + all FE consumers migrated atomically (C-4) |
 | ~~Badge visibility migration affects existing data~~ | ~~Low~~ | ~~Medium~~ | ✅ Resolved Wave 3 — @default(PUBLIC), all existing badges auto-PUBLIC |
-| Context switching overhead (23 stories, diverse topics) | Medium | Medium | Wave-based execution, batch related stories |
+| ~~Context switching overhead (23 stories, diverse topics)~~ | ~~Medium~~ | ~~Medium~~ | ✅ Resolved — Wave-based execution completed all 23 stories across 5 waves |
 
 ---
 
@@ -838,6 +852,6 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 
 ---
 
-**Last Updated:** 2026-02-14 (Wave 4 Done — 19/23 stories completed, all security + core feature + code quality stories done)  
-**Status:** In Progress — Wave 4 Complete, Wave 5 Next  
+**Last Updated:** 2026-02-14 (Sprint 11 COMPLETE — 23/23 stories delivered across 5 waves)  
+**Status:** ✅ COMPLETE — All 23 stories delivered, Sprint DoD pending (project-context.md, retrospective, CHANGELOG, merge, tag)  
 **Created By:** SM Agent (Bob)
