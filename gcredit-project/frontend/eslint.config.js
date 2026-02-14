@@ -44,6 +44,15 @@ export default defineConfig([
       'jsx-a11y/role-has-required-aria-props': 'error', // Required ARIA props
       'jsx-a11y/label-has-associated-control': 'error', // Forms: labels must link to inputs
       'jsx-a11y/no-autofocus': 'warn', // Autofocus can disrupt screen readers (warn only for MVP)
+      // TD-024: Prevent console.log in production code
+      'no-console': 'error',
+    },
+  },
+  // TD-024: Allow console in test files
+  {
+    files: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}', '**/__tests__/**'],
+    rules: {
+      'no-console': 'off',
     },
   },
 ]);

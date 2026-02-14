@@ -83,7 +83,7 @@ export class BadgeVerificationService {
       return null;
     }
 
-    // Story 11.4: PRIVATE badges return 404 on verification page (C-3 方案B)
+    // Story 11.4: PRIVATE badges return 404 on verification page (C-3 Option B)
     if (badge.visibility === 'PRIVATE') {
       this.logger.log({
         action: 'BADGE_VERIFICATION_BLOCKED',

@@ -48,6 +48,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check for Chinese characters in source code
+        run: |
+          echo "Checking for Chinese characters in backend source..."
+          if grep -rn '[\x{4E00}-\x{9FFF}]' src/ --include="*.ts" | grep -v '\.spec\.ts' | grep -v '\.test\.ts' | grep -v 'node_modules'; then
+            echo "::error::Chinese characters found in production source code!"
+            exit 1
+          fi
+          echo "✓ No Chinese characters found"
+
       - name: Run ESLint
         run: npm run lint
 
@@ -89,6 +98,15 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Check for Chinese characters in source code
+        run: |
+          echo "Checking for Chinese characters in frontend source..."
+          if grep -rn '[\x{4E00}-\x{9FFF}]' src/ --include="*.ts" --include="*.tsx" | grep -v '\.spec\.' | grep -v '\.test\.' | grep -v '__tests__' | grep -v 'node_modules'; then
+            echo "::error::Chinese characters found in production source code!"
+            exit 1
+          fi
+          echo "✓ No Chinese characters found"
 
       - name: Lint frontend
         run: npm run lint

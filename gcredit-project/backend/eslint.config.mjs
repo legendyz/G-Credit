@@ -42,13 +42,16 @@ export default tseslint.config(
       '@typescript-eslint/unbound-method': 'warn',
       '@typescript-eslint/require-await': 'warn',
       "prettier/prettier": ["error", { endOfLine: "auto" }],
+      'no-console': 'error',
     },
   },
   // TD-015: Disable unbound-method in test files — expect(service.method) is a known false positive
+  // TD-023: Allow console in test files (jest mock patterns)
   {
     files: ['**/*.spec.ts', '**/test/**/*.ts'],
     rules: {
       '@typescript-eslint/unbound-method': 'off',
+      'no-console': 'off',
     },
   },
 );
