@@ -4955,8 +4955,59 @@ Created `docs/setup/external-services-setup-guide.md`:
 
 ---
 
-**Last Major Update:** Sprint 10 Story 10.6a (2026-02-09) - UX Spec-to-Implementation Gap (Lesson 39)  
-**Next Review:** Sprint 10 Retrospective  
+**Last Major Update:** Sprint 11 Wave 2 (2026-02-14) - Local vs CI Check Gap (Lesson 40)  
+**Next Review:** Sprint 11 Retrospective  
 **Owner:** PM (John) + Dev Team
+
+---
+
+## Sprint 11: Lesson 40 — Local Pre-Push Checks Must Mirror CI Pipeline
+
+**Date:** 2026-02-14  
+**Sprint:** 11 (Security & Quality Hardening), Wave 2  
+**Severity:** Medium — caused 4 consecutive CI failures on a single push  
+
+### What Happened
+
+Wave 2 完成 5 个安全 Story 后，本地只跑了部分检查就 push，导致 CI 连续失败 4 次：
+
+| CI 轮次 | 失败原因 | 本地遗漏的检查步骤 |
+|---------|---------|-------------------|
+| 1 | ESLint: `require()` import + unsafe-any warnings | 只跑了单文件 `npx eslint file.ts`，没用 `npm run lint`（含 `--max-warnings=0`） |
+| 2 | TypeScript TS1272: `import type` required | 没跑 `npx tsc --noEmit` |
+| 3 | E2E: register 返回格式变了，断言不匹配 | 没跑 E2E 测试 |
+| 4 | E2E: refresh token 唯一约束冲突 | 同上 |
+
+### Root Cause
+
+CI 执行 4 个步骤，本地每次只跑了 1-2 个：
+```
+CI Pipeline:
+1. npm run lint              (ESLint --max-warnings=0)
+2. npx tsc --noEmit          (TypeScript 类型检查)
+3. npm test                  (单元测试)
+4. jest --config e2e         (E2E 测试)
+```
+
+### Action Items
+
+1. **[Dev] 立即生效：** Push 前必须执行完整检查链：
+   ```powershell
+   # Backend
+   cd gcredit-project/backend
+   npm run lint && npx tsc --noEmit && npm test && npx jest --config test/jest-e2e.json
+
+   # Frontend
+   cd gcredit-project/frontend
+   npx prettier --check "src/**/*.{ts,tsx}" && npm test
+   ```
+
+2. **[Scrum Master] 建议：** 将上述检查链写入 `project-context.md` 的开发标准
+
+3. **[Dev] Story 11.22：** 实现 Husky pre-push hook 自动化执行，彻底消除人为遗漏
+
+### Key Takeaway
+
+> **本地检查必须 100% 覆盖 CI 的每个步骤。部分检查 = 假信心。**
 
 *This is a living document - keep it updated, keep it useful!*
