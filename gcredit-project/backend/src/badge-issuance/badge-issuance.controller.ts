@@ -16,6 +16,7 @@ import {
   UploadedFile,
   BadRequestException,
   Res,
+  Logger,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -49,6 +50,7 @@ import type { RequestWithUser } from '../common/interfaces/request-with-user.int
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class BadgeIssuanceController {
+  private readonly logger = new Logger(BadgeIssuanceController.name);
   constructor(
     private readonly badgeService: BadgeIssuanceService,
     private readonly recommendationsService: RecommendationsService,

@@ -6,6 +6,7 @@ import {
   InternalServerErrorException,
   Res,
   Header,
+  Logger,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import type { Response } from 'express';
@@ -16,6 +17,7 @@ import { BadgeStatus } from '@prisma/client';
 @ApiTags('Badge Verification (Public)')
 @Controller('api/verify')
 export class BadgeVerificationController {
+  private readonly logger = new Logger(BadgeVerificationController.name);
   constructor(private readonly verificationService: BadgeVerificationService) {}
 
   /**

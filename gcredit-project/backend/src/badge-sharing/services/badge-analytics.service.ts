@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import { Injectable, ForbiddenException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
 import { Prisma } from '@prisma/client';
 
@@ -23,6 +23,7 @@ export interface ShareHistoryDto {
 
 @Injectable()
 export class BadgeAnalyticsService {
+  private readonly logger = new Logger(BadgeAnalyticsService.name);
   constructor(private readonly prisma: PrismaService) {}
 
   /**

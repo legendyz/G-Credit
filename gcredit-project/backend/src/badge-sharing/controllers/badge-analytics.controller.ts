@@ -15,6 +15,7 @@ import {
   Request,
   ParseIntPipe,
   DefaultValuePipe,
+  Logger,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -37,6 +38,7 @@ import type { RequestWithUser } from '../../common/interfaces/request-with-user.
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class BadgeAnalyticsController {
+  private readonly logger = new Logger(BadgeAnalyticsController.name);
   constructor(private readonly badgeAnalyticsService: BadgeAnalyticsService) {}
 
   /**

@@ -4,6 +4,7 @@ import {
   Query,
   UseInterceptors,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 import {
@@ -35,6 +36,7 @@ const CACHE_TTL_15_MIN = 900000;
 @Controller('api/analytics')
 @UseInterceptors(CacheInterceptor)
 export class AnalyticsController {
+  private readonly logger = new Logger(AnalyticsController.name);
   constructor(private readonly analyticsService: AnalyticsService) {}
 
   /**

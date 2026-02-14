@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 
@@ -18,6 +18,7 @@ interface User {
 
 @Injectable()
 export class AssertionGeneratorService {
+  private readonly logger = new Logger(AssertionGeneratorService.name);
   private readonly baseUrl: string;
   private readonly frontendUrl: string;
   private readonly issuerProfile: {

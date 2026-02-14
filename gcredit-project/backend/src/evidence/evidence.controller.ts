@@ -8,6 +8,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -30,6 +31,7 @@ import type { RequestWithUser } from '../common/interfaces/request-with-user.int
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class EvidenceController {
+  private readonly logger = new Logger(EvidenceController.name);
   constructor(private readonly evidenceService: EvidenceService) {}
 
   @Post()

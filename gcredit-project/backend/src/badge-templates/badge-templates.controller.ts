@@ -15,6 +15,7 @@ import {
   Request,
   BadRequestException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -46,6 +47,7 @@ import type { RequestWithUser } from '../common/interfaces/request-with-user.int
 @ApiTags('Badge Templates')
 @Controller('api/badge-templates')
 export class BadgeTemplatesController {
+  private readonly logger = new Logger(BadgeTemplatesController.name);
   constructor(private readonly badgeTemplatesService: BadgeTemplatesService) {}
 
   @Get()

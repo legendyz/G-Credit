@@ -17,6 +17,7 @@ import {
   ForbiddenException,
   BadRequestException,
   UseGuards,
+  Logger,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -43,6 +44,7 @@ type BadgeWithRelations = Badge & {
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class TeamsActionController {
+  private readonly logger = new Logger(TeamsActionController.name);
   constructor(private readonly prisma: PrismaService) {}
 
   /**

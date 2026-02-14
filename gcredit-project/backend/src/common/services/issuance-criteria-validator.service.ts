@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import {
   IssuanceCriteriaDto,
   IssuanceCriteriaType,
@@ -12,6 +12,7 @@ import {
  */
 @Injectable()
 export class IssuanceCriteriaValidatorService {
+  private readonly logger = new Logger(IssuanceCriteriaValidatorService.name);
   /**
    * Validate issuance criteria structure
    * @param criteria - The criteria to validate

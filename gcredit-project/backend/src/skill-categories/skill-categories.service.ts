@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import {
@@ -12,6 +13,7 @@ import {
 
 @Injectable()
 export class SkillCategoriesService {
+  private readonly logger = new Logger(SkillCategoriesService.name);
   constructor(private prisma: PrismaService) {}
 
   /**

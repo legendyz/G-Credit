@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import type { BadgeTemplate } from '@prisma/client';
 
@@ -15,6 +15,7 @@ export interface SimilarBadgeResponse {
 
 @Injectable()
 export class RecommendationsService {
+  private readonly logger = new Logger(RecommendationsService.name);
   constructor(private prisma: PrismaService) {}
 
   /**

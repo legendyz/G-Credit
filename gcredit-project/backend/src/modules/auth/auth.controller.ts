@@ -8,6 +8,7 @@ import {
   Patch,
   Req,
   Res,
+  Logger,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
@@ -24,6 +25,7 @@ import type { AuthenticatedUser } from '../../common/interfaces/request-with-use
 
 @Controller('api/auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
   constructor(private authService: AuthService) {}
 
   // Rate limit: 3 registrations per hour per IP (Story 8.6 - SEC-P1-004)

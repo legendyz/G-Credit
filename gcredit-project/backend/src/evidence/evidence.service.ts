@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { StorageService } from '../common/storage.service';
@@ -15,6 +16,7 @@ import { validateMagicBytes } from '../common/utils/magic-byte-validator';
 
 @Injectable()
 export class EvidenceService {
+  private readonly logger = new Logger(EvidenceService.name);
   // AC 3.7: Allowed MIME types
   private readonly ALLOWED_MIME_TYPES = [
     'application/pdf',
