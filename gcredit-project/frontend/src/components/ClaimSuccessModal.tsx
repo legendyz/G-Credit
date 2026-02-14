@@ -43,12 +43,14 @@ export function ClaimSuccessModal({
     >
       <div
         className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center"
+        // inline style retained: CSS @keyframes animation not expressible in Tailwind
         style={{ animation: 'fadeInScale 0.3s ease-out' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Animated Checkmark */}
         <div
           className="w-20 h-20 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center"
+          // inline style retained: CSS @keyframes animation not expressible in Tailwind
           style={{ animation: 'bounceIn 0.5s ease-out' }}
         >
           <svg
