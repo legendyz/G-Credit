@@ -21,17 +21,17 @@ export interface AdminUser {
 }
 
 export interface PaginationInfo {
-  total: number;
   page: number;
   limit: number;
+  total: number;
   totalPages: number;
-  nextCursor?: string;
-  hasMore: boolean;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
 }
 
 export interface AdminUsersResponse {
-  users: AdminUser[];
-  pagination: PaginationInfo;
+  data: AdminUser[];
+  meta: PaginationInfo;
 }
 
 export interface AdminUsersQueryParams {

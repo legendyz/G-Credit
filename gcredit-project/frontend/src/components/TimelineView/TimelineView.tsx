@@ -28,8 +28,8 @@ export function TimelineView() {
 
   // Convert badges to BadgeForFilter format for client-side filtering
   const badgesForFilter: BadgeForFilter[] = useMemo(() => {
-    if (!data?.badges) return [];
-    return data.badges.map((badge) => ({
+    if (!data?.data) return [];
+    return data.data.map((badge) => ({
       id: badge.id,
       template: {
         id: badge.template.id,
@@ -79,7 +79,7 @@ export function TimelineView() {
     isSearching,
   } = useBadgeSearch({
     allBadges: badgesForFilter,
-    totalCount: data?.pagination?.total,
+    totalCount: data?.meta?.total,
     skillNames,
   });
 
@@ -98,9 +98,9 @@ export function TimelineView() {
 
   // Map filtered badges back to original badge objects for display
   const displayBadges = useMemo(() => {
-    if (!data?.badges) return [];
+    if (!data?.data) return [];
     const filteredIds = new Set(filteredBadges.map((b) => b.id));
-    return data.badges.filter((badge) => filteredIds.has(badge.id));
+    return data.data.filter((badge) => filteredIds.has(badge.id));
   }, [data, filteredBadges]);
 
   // Group badges by date for timeline display
@@ -147,11 +147,11 @@ export function TimelineView() {
     );
   }
 
-  if (!data || data.badges.length === 0) {
+  if (!data || data.data.length === 0) {
     // AC 6.14: Detect which empty state scenario to display
     // Calculate badge counts for scenario detection
-    const totalBadges = data?.pagination?.total || 0;
-    const badges = data?.badges ?? [];
+    const totalBadges = data?.meta?.total || 0;
+    const badges = data?.data ?? [];
     const claimedBadges = badges.filter((b) => b.status === 'CLAIMED').length;
     const pendingBadges = badges.filter((b) => b.status === 'PENDING').length;
     const revokedBadges = badges.filter((b) => b.status === 'REVOKED').length;
@@ -232,7 +232,7 @@ export function TimelineView() {
           {/* Search results count - Story 8.2 */}
           {hasFilters && !showNoResults && (
             <p className="text-sm text-neutral-500 mb-4">
-              Showing {displayBadges.length} of {data.badges.length} badges
+              Showing {displayBadges.length} of {data.data.length} badges
             </p>
           )}
 

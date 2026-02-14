@@ -80,11 +80,15 @@ export interface Badge {
 }
 
 export interface BadgeListResponse {
-  badges: Badge[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+  data: Badge[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
 }
 
 export interface RevokeBadgeDto {

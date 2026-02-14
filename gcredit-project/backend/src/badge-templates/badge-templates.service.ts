@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../common/prisma.service';
 import { BlobStorageService } from '../common/services/blob-storage.service';
 import { IssuanceCriteriaValidatorService } from '../common/services/issuance-criteria-validator.service';
+import { createPaginatedResponse } from '../common/utils/pagination.util';
 import {
   CreateBadgeTemplateDto,
   UpdateBadgeTemplateDto,
@@ -161,20 +162,7 @@ export class BadgeTemplatesService {
       this.prisma.badgeTemplate.count({ where }),
     ]);
 
-    // Calculate pagination metadata
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      data,
-      meta: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1,
-      },
-    };
+    return createPaginatedResponse(data, total, page, limit);
   }
 
   /**

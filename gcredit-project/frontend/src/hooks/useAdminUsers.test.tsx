@@ -34,7 +34,7 @@ describe('useAdminUsers', () => {
   });
 
   const mockUsersResponse = {
-    users: [
+    data: [
       {
         id: 'user-1',
         email: 'john@example.com',
@@ -51,12 +51,13 @@ describe('useAdminUsers', () => {
         createdAt: '2026-01-01T00:00:00Z',
       },
     ],
-    pagination: {
+    meta: {
       total: 1,
       page: 1,
       limit: 25,
       totalPages: 1,
-      hasMore: false,
+      hasNextPage: false,
+      hasPreviousPage: false,
     },
   };
 

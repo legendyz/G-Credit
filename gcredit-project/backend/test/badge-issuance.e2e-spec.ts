@@ -303,14 +303,14 @@ describe('Badge Issuance (e2e)', () => {
           template: { name: string };
           issuer: { name: string };
         }>;
-        pagination: { page: number; limit: number; totalCount: number };
+        meta: { page: number; limit: number; total: number };
       };
       expect(body.data).toBeInstanceOf(Array);
       expect(body.data.length).toBeGreaterThanOrEqual(2);
-      expect(body.pagination).toBeDefined();
-      expect(body.pagination.page).toBe(1);
-      expect(body.pagination.limit).toBe(10);
-      expect(body.pagination.totalCount).toBeGreaterThanOrEqual(2);
+      expect(body.meta).toBeDefined();
+      expect(body.meta.page).toBe(1);
+      expect(body.meta.limit).toBe(10);
+      expect(body.meta.total).toBeGreaterThanOrEqual(2);
 
       // Check badge structure
       const badge = body.data[0];
@@ -353,19 +353,19 @@ describe('Badge Issuance (e2e)', () => {
         .expect(200);
 
       const body = response.body as {
-        badges: Array<{
+        data: Array<{
           id: string;
           status: string;
           recipient: { email: string };
         }>;
-        total: number;
+        meta: { total: number };
       };
-      expect(body.badges).toBeInstanceOf(Array);
-      expect(body.badges.length).toBeGreaterThanOrEqual(1);
-      expect(body).toHaveProperty('total');
+      expect(body.data).toBeInstanceOf(Array);
+      expect(body.data.length).toBeGreaterThanOrEqual(1);
+      expect(body.meta).toHaveProperty('total');
 
       // Check badge structure includes recipient
-      const badge = body.badges[0];
+      const badge = body.data[0];
       expect(badge).toHaveProperty('id');
       expect(badge).toHaveProperty('status');
       expect(badge).toHaveProperty('recipient');

@@ -274,19 +274,21 @@ describe('Badge Issuance (e2e) - Isolated', () => {
         .expect(200);
 
       const body = response.body as {
-        badges: Array<{ id: string; status: string }>;
-        total: number;
-        page: number;
-        limit: number;
-        totalPages: number;
+        data: Array<{ id: string; status: string }>;
+        meta: {
+          total: number;
+          page: number;
+          limit: number;
+          totalPages: number;
+        };
       };
-      // getIssuedBadges returns: { badges: [], total, page, limit, totalPages }
-      expect(Array.isArray(body.badges)).toBe(true);
-      expect(body.badges.length).toBeGreaterThan(0);
-      expect(body).toHaveProperty('total');
-      expect(body).toHaveProperty('page');
-      expect(body).toHaveProperty('limit');
-      expect(body).toHaveProperty('totalPages');
+      // findAllAdmin now returns: { data: [], meta: { total, page, limit, totalPages, ... } }
+      expect(Array.isArray(body.data)).toBe(true);
+      expect(body.data.length).toBeGreaterThan(0);
+      expect(body.meta).toHaveProperty('total');
+      expect(body.meta).toHaveProperty('page');
+      expect(body.meta).toHaveProperty('limit');
+      expect(body.meta).toHaveProperty('totalPages');
     });
 
     it('should return 403 for EMPLOYEE listing all badges', async () => {

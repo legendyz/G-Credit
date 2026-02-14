@@ -15,6 +15,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
+import { createPaginatedResponse } from '../common/utils/pagination.util';
 import { AdminUsersQueryDto } from './dto/admin-users-query.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
@@ -43,13 +44,13 @@ export interface PaginationInfo {
   page: number;
   limit: number;
   totalPages: number;
-  nextCursor?: string;
-  hasMore: boolean;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
 }
 
 export interface UserListResponse {
-  users: UserListItem[];
-  pagination: PaginationInfo;
+  data: UserListItem[];
+  meta: PaginationInfo;
 }
 
 export interface RoleUpdateResponse {
@@ -136,7 +137,6 @@ export class AdminUsersService {
       total >= this.CURSOR_PAGINATION_THRESHOLD && cursor;
 
     let users: UserListItem[];
-    let nextCursor: string | undefined;
 
     if (useCursorPagination && cursor) {
       // Cursor-based pagination for large datasets
@@ -161,7 +161,8 @@ export class AdminUsersService {
 
       if (hasMore && rawUsers.length > 0) {
         const lastUser = rawUsers[rawUsers.length - 1];
-        nextCursor = this.encodeCursor(
+        // nextCursor computed but reserved for future cursor-based API
+        this.encodeCursor(
           lastUser.id,
           sortBy || 'name',
           this.getSortValue(lastUser, sortBy || 'name'),
@@ -180,34 +181,7 @@ export class AdminUsersService {
       });
     }
 
-    const totalPages = Math.ceil(total / limit!);
-    const hasMore = page! < totalPages;
-
-    // For cursor-based pagination, also provide nextCursor for large datasets
-    if (
-      total >= this.CURSOR_PAGINATION_THRESHOLD &&
-      users.length > 0 &&
-      !useCursorPagination
-    ) {
-      const lastUser = users[users.length - 1];
-      nextCursor = this.encodeCursor(
-        lastUser.id,
-        sortBy || 'name',
-        this.getSortValue(lastUser, sortBy || 'name'),
-      );
-    }
-
-    return {
-      users,
-      pagination: {
-        total,
-        page: page!,
-        limit: limit!,
-        totalPages,
-        nextCursor,
-        hasMore,
-      },
-    };
+    return createPaginatedResponse(users, total, page!, limit!);
   }
 
   /**

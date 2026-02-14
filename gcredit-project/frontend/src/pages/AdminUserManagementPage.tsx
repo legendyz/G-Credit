@@ -169,7 +169,7 @@ export function AdminUserManagementPage() {
   }, [setSearchParams]);
 
   // Empty state
-  const isEmpty = data && data.users.length === 0;
+  const isEmpty = data && data.data.length === 0;
   const hasFilters = debouncedSearch || roleFilter !== 'ALL' || statusFilter !== 'all';
 
   return (
@@ -179,7 +179,7 @@ export function AdminUserManagementPage() {
       actions={
         data ? (
           <p className="text-sm text-neutral-500">
-            {data.pagination.total} user{data.pagination.total !== 1 ? 's' : ''}
+            {data.meta.total} user{data.meta.total !== 1 ? 's' : ''}
           </p>
         ) : undefined
       }
@@ -268,10 +268,10 @@ export function AdminUserManagementPage() {
       )}
 
       {/* User Table */}
-      {data && data.users.length > 0 && (
+      {data && data.data.length > 0 && (
         <>
           <UserListTable
-            users={data.users}
+            users={data.data}
             currentUserId={currentUser?.id || ''}
             sortBy={sortBy || 'name'}
             sortOrder={sortOrder}
@@ -279,11 +279,11 @@ export function AdminUserManagementPage() {
           />
 
           {/* Pagination */}
-          {data.pagination.totalPages > 1 && (
+          {data.meta.totalPages > 1 && (
             <div className="flex items-center justify-between border-t border-neutral-200 pt-4">
               <p className="text-sm text-neutral-500">
                 Showing {(page - 1) * PAGE_SIZE + 1} to{' '}
-                {Math.min(page * PAGE_SIZE, data.pagination.total)} of {data.pagination.total} users
+                {Math.min(page * PAGE_SIZE, data.meta.total)} of {data.meta.total} users
               </p>
               <div className="flex gap-2">
                 <Button
@@ -299,7 +299,7 @@ export function AdminUserManagementPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => handlePageChange(page + 1)}
-                  disabled={!data.pagination.hasMore}
+                  disabled={!data.meta.hasNextPage}
                   className="min-h-[44px] min-w-[44px] focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
                 >
                   Next

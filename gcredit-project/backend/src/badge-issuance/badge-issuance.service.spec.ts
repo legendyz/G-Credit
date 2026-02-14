@@ -1276,18 +1276,18 @@ describe('BadgeIssuanceService', () => {
         const result = await service.getWalletBadges(mockUserId, {});
 
         // Assert - Revocation fields should be present
-        expect(result.badges).toHaveLength(1);
-        expect(result.badges[0]).toHaveProperty('status', BadgeStatus.REVOKED);
-        expect(result.badges[0]).toHaveProperty('revokedAt');
-        expect(result.badges[0]).toHaveProperty(
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0]).toHaveProperty('status', BadgeStatus.REVOKED);
+        expect(result.data[0]).toHaveProperty('revokedAt');
+        expect(result.data[0]).toHaveProperty(
           'revocationReason',
           'Policy Violation',
         );
-        expect(result.badges[0]).toHaveProperty(
+        expect(result.data[0]).toHaveProperty(
           'revocationNotes',
           'Violated company code of conduct',
         );
-        expect(result.badges[0]).toHaveProperty('revokedBy');
+        expect(result.data[0]).toHaveProperty('revokedBy');
       });
 
       it('should NOT include revocation fields when badge is CLAIMED', async () => {
@@ -1329,11 +1329,11 @@ describe('BadgeIssuanceService', () => {
         const result = await service.getWalletBadges(mockUserId, {});
 
         // Assert - Revocation fields should NOT be present
-        expect(result.badges).toHaveLength(1);
-        expect(result.badges[0]).toHaveProperty('status', BadgeStatus.CLAIMED);
-        expect(result.badges[0]).not.toHaveProperty('revokedAt');
-        expect(result.badges[0]).not.toHaveProperty('revocationReason');
-        expect(result.badges[0]).not.toHaveProperty('revocationNotes');
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0]).toHaveProperty('status', BadgeStatus.CLAIMED);
+        expect(result.data[0]).not.toHaveProperty('revokedAt');
+        expect(result.data[0]).not.toHaveProperty('revocationReason');
+        expect(result.data[0]).not.toHaveProperty('revocationNotes');
       });
 
       it('should support status filter for REVOKED badges', async () => {
@@ -1380,8 +1380,8 @@ describe('BadgeIssuanceService', () => {
             status: BadgeStatus.REVOKED,
           },
         });
-        expect(result.badges).toHaveLength(1);
-        expect(result.badges[0]).toHaveProperty('status', BadgeStatus.REVOKED);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0]).toHaveProperty('status', BadgeStatus.REVOKED);
       });
     });
   });

@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { StorageService } from '../common/storage.service';
+import { createPaginatedResponse } from '../common/utils/pagination.util';
 import { AssertionGeneratorService } from './services/assertion-generator.service';
 import { BadgeNotificationService } from './services/badge-notification.service';
 import { CSVParserService } from './services/csv-parser.service';
@@ -614,8 +615,8 @@ export class BadgeIssuanceService {
     });
 
     // Format response
-    return {
-      data: badges.map((badge) => ({
+    return createPaginatedResponse(
+      badges.map((badge) => ({
         id: badge.id,
         status: badge.status,
         visibility: badge.visibility,
@@ -633,14 +634,10 @@ export class BadgeIssuanceService {
               : badge.issuer.email,
         },
       })),
-      pagination: {
-        page: query.page,
-        limit: query.limit,
-        totalCount,
-        totalPages: Math.ceil(totalCount / query.limit),
-        hasMore: skip + take < totalCount,
-      },
-    };
+      totalCount,
+      query.page,
+      query.limit,
+    );
   }
 
   /**
@@ -791,8 +788,8 @@ export class BadgeIssuanceService {
     });
 
     // Format response - include all fields for Admin UI (Story 9.5)
-    return {
-      badges: badges.map((badge) => ({
+    return createPaginatedResponse(
+      badges.map((badge) => ({
         id: badge.id,
         templateId: badge.templateId,
         recipientId: badge.recipientId,
@@ -829,11 +826,10 @@ export class BadgeIssuanceService {
             }
           : undefined,
       })),
-      total: totalCount,
-      page: query.page,
-      limit: query.limit,
-      totalPages: Math.ceil(totalCount / query.limit),
-    };
+      totalCount,
+      query.page,
+      query.limit,
+    );
   }
 
   /**
@@ -1064,7 +1060,6 @@ export class BadgeIssuanceService {
 
     // Calculate total items for pagination
     const totalItems = totalBadges + totalMilestones;
-    const totalPages = Math.ceil(totalItems / limit);
 
     // For now, fetch ALL badges and milestones to properly merge and paginate
     // (Future optimization: Fetch only needed range after calculating positions)
@@ -1175,13 +1170,7 @@ export class BadgeIssuanceService {
     );
 
     return {
-      badges: timelineItems, // Contains both badges and milestone objects
-      pagination: {
-        page,
-        limit,
-        total: totalItems,
-        totalPages,
-      },
+      ...createPaginatedResponse(timelineItems, totalItems, page, limit),
       dateGroups,
     };
   }

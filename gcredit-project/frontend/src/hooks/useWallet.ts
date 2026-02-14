@@ -41,12 +41,14 @@ export interface DateGroup {
 }
 
 export interface WalletResponse {
-  badges: Badge[];
-  pagination: {
+  data: Badge[];
+  meta: {
     page: number;
     limit: number;
     total: number;
     totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
   };
   dateGroups: DateGroup[];
 }

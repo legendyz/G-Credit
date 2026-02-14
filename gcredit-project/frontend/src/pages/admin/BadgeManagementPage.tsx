@@ -150,8 +150,8 @@ export function BadgeManagementPage({
 
   // Convert badges to BadgeForFilter format for client-side filtering
   const badgesForFilter: BadgeForFilter[] = useMemo(() => {
-    if (!data?.badges) return [];
-    return data.badges.map((badge) => ({
+    if (!data?.data) return [];
+    return data.data.map((badge) => ({
       id: badge.id,
       template: {
         id: badge.template.id,
@@ -198,15 +198,15 @@ export function BadgeManagementPage({
     isSearching,
   } = useBadgeSearch({
     allBadges: badgesForFilter,
-    totalCount: data?.total,
+    totalCount: data?.meta?.total,
     skillNames,
   });
 
   // Story 8.2 AC2: Derive unique issuers from badge data for filter dropdown
   const issuers = useMemo(() => {
-    if (!data?.badges) return [];
+    if (!data?.data) return [];
     const issuerMap = new Map<string, string>();
-    data.badges.forEach((badge) => {
+    data.data.forEach((badge) => {
       if (badge.issuer && !issuerMap.has(badge.issuer.id)) {
         const name =
           badge.issuer.firstName && badge.issuer.lastName
@@ -220,9 +220,9 @@ export function BadgeManagementPage({
 
   // Map filtered badges back to original badge objects for display
   const displayBadges = useMemo(() => {
-    if (!data?.badges) return [];
+    if (!data?.data) return [];
     const filteredIds = new Set(filteredBadges.map((b) => b.id));
-    return data.badges.filter((badge) => filteredIds.has(badge.id));
+    return data.data.filter((badge) => filteredIds.has(badge.id));
   }, [data, filteredBadges]);
 
   // Check if user can revoke a specific badge
@@ -330,7 +330,7 @@ export function BadgeManagementPage({
             {/* Results count */}
             {hasFilters && displayBadges.length > 0 && (
               <p className="mt-3 text-sm text-neutral-500">
-                Showing {displayBadges.length} of {data?.badges?.length || 0} badges
+                Showing {displayBadges.length} of {data?.data?.length || 0} badges
               </p>
             )}
           </Card>

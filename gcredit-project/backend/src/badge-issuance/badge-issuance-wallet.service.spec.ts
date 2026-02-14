@@ -169,12 +169,14 @@ describe('BadgeIssuanceService - Wallet (Story 4.1)', () => {
       const result = await service.getWalletBadges(userId, query);
 
       expect(result).toBeDefined();
-      expect(result.badges).toHaveLength(2);
-      expect(result.pagination).toEqual({
+      expect(result.data).toHaveLength(2);
+      expect(result.meta).toEqual({
         page: 1,
         limit: 50,
         total: 2,
         totalPages: 1,
+        hasNextPage: false,
+        hasPreviousPage: false,
       });
       expect(result.dateGroups).toBeDefined();
       expect(result.dateGroups.length).toBeGreaterThan(0);
@@ -251,11 +253,13 @@ describe('BadgeIssuanceService - Wallet (Story 4.1)', () => {
 
       const result = await service.getWalletBadges(userId, query);
 
-      expect(result.pagination).toEqual({
+      expect(result.meta).toEqual({
         page: 2,
         limit: 10,
         total: 25,
         totalPages: 3,
+        hasNextPage: true,
+        hasPreviousPage: true,
       });
 
       // AC 2.12: No longer uses skip/take (fetches all for milestone merging)
@@ -309,8 +313,8 @@ describe('BadgeIssuanceService - Wallet (Story 4.1)', () => {
 
       const result = await service.getWalletBadges(userId, query);
 
-      expect(result.badges).toHaveLength(0);
-      expect(result.pagination.total).toBe(0);
+      expect(result.data).toHaveLength(0);
+      expect(result.meta.total).toBe(0);
       expect(result.dateGroups).toHaveLength(0);
     });
   });
