@@ -58,6 +58,25 @@ git clone https://github.com/legendyz/G-Credit.git
 cd G-Credit/gcredit-project
 ```
 
+### Pre-commit Hooks
+
+This project uses [Husky](https://typicode.github.io/husky/) for Git hooks:
+
+- **Pre-commit:** ESLint + Prettier on staged files, Chinese character detection
+- **Pre-push:** Full CI mirror (lint + type-check + tests for both BE and FE)
+
+After cloning, run from the project root:
+```bash
+cd ..  # Go to Git root (G-Credit/)
+npm install  # Installs Husky + lint-staged
+```
+
+To bypass hooks temporarily (not recommended):
+```bash
+git commit --no-verify
+git push --no-verify
+```
+
 ### 2. Setup Frontend
 
 ```bash
