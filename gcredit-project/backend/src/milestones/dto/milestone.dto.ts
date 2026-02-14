@@ -10,6 +10,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { SanitizeHtml } from '../../common/decorators/sanitize-html.decorator';
 
 export enum MilestoneTriggerType {
   BADGE_COUNT = 'badge_count',
@@ -68,6 +69,7 @@ export class CreateMilestoneDto {
     example: 'badge-collector',
   })
   @IsString()
+  @SanitizeHtml()
   type: string;
 
   @ApiProperty({
@@ -75,6 +77,7 @@ export class CreateMilestoneDto {
     example: '🎉 10 Badges Earned!',
   })
   @IsString()
+  @SanitizeHtml()
   title: string;
 
   @ApiProperty({
@@ -82,6 +85,7 @@ export class CreateMilestoneDto {
     example: "You've earned 10 badges! Keep up the great work!",
   })
   @IsString()
+  @SanitizeHtml()
   description: string;
 
   @ApiProperty({
@@ -97,6 +101,7 @@ export class CreateMilestoneDto {
     example: '🎉',
   })
   @IsString()
+  @SanitizeHtml()
   icon: string;
 
   @ApiPropertyOptional({
@@ -114,6 +119,7 @@ export class UpdateMilestoneDto {
   })
   @IsOptional()
   @IsString()
+  @SanitizeHtml()
   title?: string;
 
   @ApiPropertyOptional({
@@ -121,6 +127,7 @@ export class UpdateMilestoneDto {
   })
   @IsOptional()
   @IsString()
+  @SanitizeHtml()
   description?: string;
 
   @ApiPropertyOptional({
@@ -137,6 +144,7 @@ export class UpdateMilestoneDto {
   })
   @IsOptional()
   @IsString()
+  @SanitizeHtml()
   icon?: string;
 
   @ApiPropertyOptional({

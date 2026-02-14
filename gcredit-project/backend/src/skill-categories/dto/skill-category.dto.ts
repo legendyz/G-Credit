@@ -7,6 +7,7 @@ import {
   Min,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { SanitizeHtml } from '../../common/decorators/sanitize-html.decorator';
 
 export class CreateSkillCategoryDto {
   @ApiProperty({
@@ -14,6 +15,7 @@ export class CreateSkillCategoryDto {
     description: 'Skill category name',
   })
   @IsString()
+  @SanitizeHtml()
   @MaxLength(100)
   name: string;
 
@@ -23,6 +25,7 @@ export class CreateSkillCategoryDto {
   })
   @IsOptional()
   @IsString()
+  @SanitizeHtml()
   @MaxLength(100)
   nameEn?: string;
 
@@ -32,6 +35,7 @@ export class CreateSkillCategoryDto {
   })
   @IsOptional()
   @IsString()
+  @SanitizeHtml()
   description?: string;
 
   @ApiProperty({
@@ -60,6 +64,7 @@ export class UpdateSkillCategoryDto {
   })
   @IsOptional()
   @IsString()
+  @SanitizeHtml()
   @MaxLength(100)
   name?: string;
 
@@ -69,6 +74,7 @@ export class UpdateSkillCategoryDto {
   })
   @IsOptional()
   @IsString()
+  @SanitizeHtml()
   @MaxLength(100)
   nameEn?: string;
 
@@ -78,6 +84,7 @@ export class UpdateSkillCategoryDto {
   })
   @IsOptional()
   @IsString()
+  @SanitizeHtml()
   description?: string;
 
   @ApiPropertyOptional({ example: 10, description: 'Display order' })

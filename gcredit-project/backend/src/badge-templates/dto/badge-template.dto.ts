@@ -12,6 +12,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { SanitizeHtml } from '../../common/decorators/sanitize-html.decorator';
 import { TemplateStatus } from '@prisma/client';
 import { IssuanceCriteriaDto } from './issuance-criteria.dto';
 
@@ -23,6 +24,7 @@ export class CreateBadgeTemplateDto {
     maxLength: 100,
   })
   @IsString()
+  @SanitizeHtml()
   @Length(3, 100)
   name: string;
 
@@ -34,6 +36,7 @@ export class CreateBadgeTemplateDto {
   })
   @IsOptional()
   @IsString()
+  @SanitizeHtml()
   @MaxLength(1000)
   description?: string;
 
@@ -95,6 +98,7 @@ export class UpdateBadgeTemplateDto {
   })
   @IsOptional()
   @IsString()
+  @SanitizeHtml()
   @Length(3, 100)
   name?: string;
 
@@ -105,6 +109,7 @@ export class UpdateBadgeTemplateDto {
   })
   @IsOptional()
   @IsString()
+  @SanitizeHtml()
   @MaxLength(1000)
   description?: string;
 

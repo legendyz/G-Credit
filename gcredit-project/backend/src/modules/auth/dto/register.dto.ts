@@ -1,4 +1,5 @@
 import { IsEmail, IsString, MinLength, Matches } from 'class-validator';
+import { SanitizeHtml } from '../../../common/decorators/sanitize-html.decorator';
 
 /**
  * Registration DTO
@@ -21,10 +22,12 @@ export class RegisterDto {
   password: string;
 
   @IsString()
+  @SanitizeHtml()
   @MinLength(1, { message: 'First name is required' })
   firstName: string;
 
   @IsString()
+  @SanitizeHtml()
   @MinLength(1, { message: 'Last name is required' })
   lastName: string;
 }

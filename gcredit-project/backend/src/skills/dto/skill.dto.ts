@@ -6,6 +6,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { SanitizeHtml } from '../../common/decorators/sanitize-html.decorator';
 
 export enum SkillLevel {
   BEGINNER = 'BEGINNER',
@@ -17,6 +18,7 @@ export enum SkillLevel {
 export class CreateSkillDto {
   @ApiProperty({ example: 'React.js', description: 'Skill name' })
   @IsString()
+  @SanitizeHtml()
   @MaxLength(100)
   name: string;
 
@@ -26,6 +28,7 @@ export class CreateSkillDto {
   })
   @IsOptional()
   @IsString()
+  @SanitizeHtml()
   description?: string;
 
   @ApiProperty({
@@ -49,6 +52,7 @@ export class UpdateSkillDto {
   @ApiPropertyOptional({ example: 'React.js', description: 'Skill name' })
   @IsOptional()
   @IsString()
+  @SanitizeHtml()
   @MaxLength(100)
   name?: string;
 
@@ -58,6 +62,7 @@ export class UpdateSkillDto {
   })
   @IsOptional()
   @IsString()
+  @SanitizeHtml()
   description?: string;
 
   @ApiPropertyOptional({

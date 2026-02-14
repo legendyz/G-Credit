@@ -6,6 +6,7 @@
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString, MaxLength } from 'class-validator';
+import { SanitizeHtml } from '../../common/decorators/sanitize-html.decorator';
 
 export class UpdateUserDepartmentDto {
   @ApiProperty({
@@ -14,6 +15,7 @@ export class UpdateUserDepartmentDto {
     example: 'Engineering',
   })
   @IsString()
+  @SanitizeHtml()
   @MaxLength(100)
   department: string;
 
@@ -24,6 +26,7 @@ export class UpdateUserDepartmentDto {
   })
   @IsOptional()
   @IsString()
+  @SanitizeHtml()
   @MaxLength(200)
   auditNote?: string;
 }

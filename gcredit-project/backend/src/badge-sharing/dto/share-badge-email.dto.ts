@@ -6,6 +6,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { SanitizeHtml } from '../../common/decorators/sanitize-html.decorator';
 
 export class ShareBadgeEmailDto {
   @ApiProperty({
@@ -29,6 +30,7 @@ export class ShareBadgeEmailDto {
   })
   @IsOptional()
   @IsString()
+  @SanitizeHtml()
   @MaxLength(500)
   personalMessage?: string;
 }

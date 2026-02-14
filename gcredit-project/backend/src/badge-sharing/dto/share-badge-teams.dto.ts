@@ -5,6 +5,7 @@
 
 import { IsString, IsOptional, IsNotEmpty } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { SanitizeHtml } from '../../common/decorators/sanitize-html.decorator';
 
 export class ShareBadgeTeamsDto {
   @ApiProperty({
@@ -29,6 +30,7 @@ export class ShareBadgeTeamsDto {
     example: 'I just earned this badge! Check it out!',
   })
   @IsString()
+  @SanitizeHtml()
   @IsOptional()
   personalMessage?: string;
 }

@@ -8,6 +8,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { SanitizeHtml } from '../../common/decorators/sanitize-html.decorator';
 
 /**
  * Supported issuance criteria types
@@ -45,6 +46,7 @@ export class IssuanceConditionDto {
     description: 'Field name to check (e.g., taskId, score, hours)',
   })
   @IsString()
+  @SanitizeHtml()
   field: string;
 
   @ApiProperty({
@@ -103,6 +105,7 @@ export class IssuanceCriteriaDto {
   })
   @IsOptional()
   @IsString()
+  @SanitizeHtml()
   description?: string;
 }
 
