@@ -203,3 +203,100 @@ const skillNames = await this.prisma.skill.findMany({
 - [ ] 公开验证页面同样显示技能名称
 - [ ] 技能名称不存在时优雅降级（显示 "Unknown Skill" 或隐藏）
 - [ ] 现有测试不 break
+
+---
+
+## TD-018: LinkedIn 分享缺少动态 OG Meta Tags
+
+**Priority:** P2  
+**Category:** Feature Gap / SEO  
+**Source:** UAT 讨论 (2026-02-15)  
+**Effort Estimate:** 4-6h  
+**Suggested Sprint:** Sprint 12
+
+### Problem Statement
+
+当用户通过 LinkedIn 分享验证链接 `https://<domain>/verify/<verificationId>` 时，LinkedIn 爬虫（LinkedInBot）获取到的是**静态通用 OG meta tags**，而非该徽章的具体信息。所有分享链接在 LinkedIn 上显示完全相同的预览卡片：
+
+- **标题:** "G-Credit — Verified Digital Badge"（固定）
+- **描述:** 通用产品描述（固定）
+- **图片:** 通用 logo `/gcredit-og-image.png`（固定）
+
+用户期望看到的是对应徽章的名称、描述和图片。
+
+### Root Cause
+
+**前端架构限制** — G-Credit 是纯 SPA（React + Vite），`index.html` 中的 OG tags 在构建时写死：
+
+```html
+<!-- frontend/index.html L12-17 -->
+<meta property="og:title" content="G-Credit — Verified Digital Badge" />
+<meta property="og:description" content="This digital badge was issued and verified through G-Credit..." />
+<meta property="og:image" content="/gcredit-og-image.png" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://gcredit.example.com" />
+<meta property="og:site_name" content="G-Credit" />
+```
+
+LinkedIn 爬虫不执行 JavaScript，因此无法获取 SPA 动态渲染的内容。后端也没有为 `/verify/:id` 提供服务端 HTML 的逻辑。
+
+### Proposed Solutions
+
+#### Option A: NestJS OG 代理路由（推荐，4-6h）
+
+在 NestJS 后端添加一个 middleware/controller，拦截 `/verify/:id` 请求：
+- 检测 User-Agent（`LinkedInBot`, `facebookexternalhit`, `Twitterbot` 等）
+- 爬虫请求 → 返回注入动态 OG tags 的最小 HTML
+- 普通用户请求 → 301 重定向到 SPA 或返回 SPA 的 `index.html`
+
+```typescript
+// 伪代码
+@Get('verify/:verificationId')
+async verifyPage(@Param('verificationId') id: string, @Req() req, @Res() res) {
+  const isCrawler = /LinkedInBot|facebookexternalhit|Twitterbot/i.test(req.headers['user-agent']);
+  
+  if (isCrawler) {
+    const badge = await this.verificationService.getBadgeForOG(id);
+    return res.send(`
+      <html><head>
+        <meta property="og:title" content="${badge.name} — Verified Badge" />
+        <meta property="og:description" content="Issued to ${badge.recipientName} by ${badge.issuerName}" />
+        <meta property="og:image" content="${badge.imageUrl}" />
+        <meta property="og:url" content="https://gcredit.com/verify/${id}" />
+      </head><body>Redirecting...</body></html>
+    `);
+  }
+  
+  // Serve SPA index.html or redirect
+  return res.sendFile('index.html');
+}
+```
+
+#### Option B: Prerender 服务（2h 配置 + 月费 $$）
+
+使用 Prerender.io 或 Rendertron 等服务，在反向代理层为爬虫提供预渲染的 HTML 快照。
+
+#### Option C: Edge Function（2-3h，依赖部署架构）
+
+在 CDN 层（Cloudflare Workers / Vercel Edge / Azure Functions）拦截爬虫请求并注入动态 meta tags。
+
+### Affected Files
+
+| File | Role |
+|------|------|
+| `frontend/index.html` | 当前静态 OG tags |
+| `backend/src/badge-verification/` | 验证逻辑（需新增 OG 代理路由） |
+| 部署配置 (nginx / Azure) | 路由规则可能需调整 |
+
+### Dependencies
+
+- 需要生产域名确定后才能设置正确的 `og:url`
+- Badge 模板图片需通过公网可访问的 URL 提供（Azure Blob public access 或 CDN）
+
+### Acceptance Criteria
+
+- [ ] LinkedIn 分享验证链接后，预览卡片显示该徽章的名称
+- [ ] 预览卡片显示该徽章的描述或核心信息
+- [ ] 预览卡片显示该徽章的图片（非通用 logo）
+- [ ] 普通用户访问验证链接仍正常渲染 SPA 验证页面
+- [ ] PRIVATE visibility 的徽章不生成动态 OG（显示通用卡片或 404）

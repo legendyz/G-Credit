@@ -547,7 +547,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 
 ---
 
-## � Phase 6: UAT — Data Contract Fixes (8-10h)
+## 🔴 Phase 6: UAT — Data Contract + Auth Hardening (12-15h)
 
 ### Story 11.24: Data Contract Alignment — API-to-UI Integration Fixes
 **Priority:** 🔴 CRITICAL  
@@ -570,7 +570,26 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 - [ ] L-6/10/11/12/14: 类型修正 + 展示美化
 
 **7 Tasks:** Backend formatting (2h) + Criteria parser (30min) + Wallet type discriminator (2h) + Verification fields (1h) + Null safety (1.5h) + Dead code cleanup (30min) + Display polish (30min)
+### Story 11.25: Cookie Auth Hardening — httpOnly Cookie 迁移收尾
+**Priority:** 🔴 CRITICAL  
+**Estimate:** 4-5h  
+**Status:** 🔲 Ready  
+**Story Doc:** 📄 [11-25-cookie-auth-hardening.md](11-25-cookie-auth-hardening.md)  
+**Source:** UAT 安全审计 (2026-02-15) — httpOnly cookie 迁移完整性排查  
+**Related:** Story 11.6 (SEC-002)  
+**Dependencies:** None
 
+**Quick Summary:** As a platform operator, I want the httpOnly cookie auth migration to be fully complete and consistent, so that no auth failures, cookie leaks, or silent degradations exist.
+
+**Key Deliverables:**
+- [ ] C-1: JwtAuthGuard `@Public()` 路由增加 cookie 检查
+- [ ] C-2: Teams Action Controller 认证方案调整
+- [ ] M-3: clearCookie 参数与 setCookie 一致
+- [ ] M-4: 登录响应体移除 token（消除泄露风险）
+- [ ] M-5: VerifyBadgePage 迁移到 apiFetch
+- [ ] L-6/7/8: 测试清理 + Swagger 文档更新
+
+**6 Tasks:** Guard fix (30min) + clearCookie (15min) + Remove body tokens (30min) + VerifyPage migration (20min) + Teams auth (1.5-2h) + Test cleanup (30min)
 ---
 
 ## �📊 Stories Summary
@@ -601,7 +620,8 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 | 22 | 11.22 | Husky Pre-commit Hooks | 🟡 | 2h | project-context.md | ✅ |
 | 23 | 11.23 | User Management Nav Fix | 🟡 | 30min | Backlog+Feature Audit | ✅ |
 | 24 | 11.24 | Data Contract Alignment | 🔴 | 8-10h | UAT 全面排查 | 🔲 Ready |
-| | **TOTAL** | **24 stories** | | **61.5-77.5h** | | |
+| 25 | 11.25 | Cookie Auth Hardening | 🔴 | 4-5h | UAT 安全审计 | 🔲 Ready |
+| | **TOTAL** | **25 stories** | | **65.5-82.5h** | | |
 
 ---
 
@@ -883,6 +903,6 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 
 ---
 
-**Last Updated:** 2026-02-14 (Sprint 11: 23/24 stories complete, Story 11.24 added from UAT findings)  
-**Status:** 🔄 IN PROGRESS — 23 stories delivered across 5 waves; Story 11.24 (Data Contract Alignment) added from UAT, ready for Wave 6  
+**Last Updated:** 2026-02-15 (Sprint 11: 23/25 stories complete, Stories 11.24-11.25 added from UAT)  
+**Status:** 🔄 IN PROGRESS — 23 stories delivered across 5 waves; Stories 11.24 (Data Contract) + 11.25 (Cookie Auth) added from UAT, ready for Wave 6  
 **Created By:** SM Agent (Bob)
