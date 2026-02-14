@@ -259,6 +259,7 @@ const ClaimRateCard: React.FC<{ claimRate: number }> = ({ claimRate }) => {
               'h-full rounded-full transition-all duration-500',
               percentage >= 80 ? 'bg-green-500' : percentage >= 50 ? 'bg-yellow-500' : 'bg-red-500'
             )}
+            // inline style retained: dynamic value computed from props
             style={{ width: `${percentage}%` }}
             role="progressbar"
             aria-valuenow={percentage}

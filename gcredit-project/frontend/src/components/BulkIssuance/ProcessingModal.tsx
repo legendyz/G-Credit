@@ -84,6 +84,7 @@ export default function ProcessingModal({
           <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
             <div
               className="bg-blue-600 h-4 rounded-full transition-all duration-300 ease-out"
+              // inline style retained: dynamic value computed from props
               style={{ width: `${percentComplete}%` }}
             />
           </div>
@@ -130,6 +131,7 @@ export default function ProcessingModal({
               <div
                 key={i}
                 className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"
+                // inline style retained: dynamic value computed from props
                 style={{ animationDelay: `${i * 0.15}s` }}
               />
             ))}

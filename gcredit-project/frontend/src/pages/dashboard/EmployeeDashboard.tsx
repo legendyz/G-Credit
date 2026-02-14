@@ -241,6 +241,7 @@ export const EmployeeDashboard: React.FC = () => {
                     'h-full rounded-full transition-all duration-500',
                     getProgressBarColor(currentMilestone.percentage)
                   )}
+                  // inline style retained: dynamic value computed from props
                   style={{ width: `${currentMilestone.percentage}%` }}
                   role="progressbar"
                   aria-valuenow={currentMilestone.percentage}

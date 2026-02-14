@@ -35,57 +35,24 @@ export function ClaimSuccessModal({
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        zIndex: 10001,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1rem',
-      }}
+      className="fixed inset-0 bg-black/60 z-[10001] flex items-center justify-center p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
       role="dialog"
       aria-modal="true"
       aria-labelledby="claim-success-title"
     >
       <div
-        style={{
-          backgroundColor: 'white',
-          borderRadius: '1rem',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-          width: '100%',
-          maxWidth: '24rem',
-          padding: '2rem',
-          textAlign: 'center',
-          animation: 'fadeInScale 0.3s ease-out',
-        }}
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center"
+        style={{ animation: 'fadeInScale 0.3s ease-out' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Animated Checkmark */}
         <div
-          style={{
-            width: '5rem',
-            height: '5rem',
-            margin: '0 auto 1.5rem',
-            backgroundColor: '#dcfce7',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            animation: 'bounceIn 0.5s ease-out',
-          }}
+          className="w-20 h-20 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center"
+          style={{ animation: 'bounceIn 0.5s ease-out' }}
         >
           <svg
-            style={{
-              width: '3rem',
-              height: '3rem',
-              color: '#16a34a',
-            }}
+            className="w-12 h-12 text-green-600"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -96,6 +63,7 @@ export function ClaimSuccessModal({
               strokeLinejoin="round"
               strokeWidth={3}
               d="M5 13l4 4L19 7"
+              /* inline style retained: CSS animation computed values (strokeDasharray/offset) */
               style={{
                 strokeDasharray: 24,
                 strokeDashoffset: 24,
@@ -106,105 +74,38 @@ export function ClaimSuccessModal({
         </div>
 
         {/* Congratulations Message */}
-        <h2
-          id="claim-success-title"
-          style={{
-            fontSize: '1.5rem',
-            fontWeight: 700,
-            color: '#111827',
-            marginBottom: '0.5rem',
-          }}
-        >
+        <h2 id="claim-success-title" className="text-2xl font-bold text-gray-900 mb-2">
           🎉 Congratulations!
         </h2>
 
-        <p
-          style={{
-            fontSize: '1rem',
-            color: '#4b5563',
-            marginBottom: '1rem',
-          }}
-        >
-          You've earned the <strong style={{ color: '#111827' }}>{badgeName}</strong> badge!
+        <p className="text-base text-gray-600 mb-4">
+          You've earned the <strong className="text-gray-900">{badgeName}</strong> badge!
         </p>
 
         {/* Issuer Message (if provided) */}
         {issuerMessage && (
-          <div
-            style={{
-              backgroundColor: '#f3f4f6',
-              borderRadius: '0.5rem',
-              padding: '1rem',
-              marginBottom: '1.5rem',
-            }}
-          >
-            <p
-              style={{
-                fontSize: '0.875rem',
-                color: '#6b7280',
-                fontStyle: 'italic',
-              }}
-            >
-              "{issuerMessage}"
-            </p>
+          <div className="bg-gray-100 rounded-lg p-4 mb-6">
+            <p className="text-sm text-gray-500 italic">"{issuerMessage}"</p>
           </div>
         )}
 
         {/* Story 11.4: Visibility hint */}
-        <p
-          style={{
-            fontSize: '0.875rem',
-            color: '#6b7280',
-            marginBottom: '1rem',
-          }}
-        >
+        <p className="text-sm text-gray-500 mb-4">
           Your badge is publicly visible. You can change this anytime from your wallet.
         </p>
 
         {/* Action Buttons */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div className="flex flex-col gap-3">
           <button
             onClick={handleViewInWallet}
-            style={{
-              width: '100%',
-              padding: '0.75rem 1rem',
-              backgroundColor: '#2563eb',
-              color: 'white',
-              fontWeight: 600,
-              borderRadius: '0.5rem',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              transition: 'background-color 0.2s',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1d4ed8')}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
+            className="w-full px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg border-none cursor-pointer text-sm transition-colors hover:bg-blue-700"
           >
             View in Wallet
           </button>
 
           <button
             onClick={onClose}
-            style={{
-              width: '100%',
-              padding: '0.75rem 1rem',
-              backgroundColor: 'transparent',
-              color: '#6b7280',
-              fontWeight: 500,
-              borderRadius: '0.5rem',
-              border: '1px solid #e5e7eb',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#f9fafb';
-              e.currentTarget.style.borderColor = '#d1d5db';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.borderColor = '#e5e7eb';
-            }}
+            className="w-full px-4 py-3 bg-transparent text-gray-500 font-medium rounded-lg border border-gray-200 cursor-pointer text-sm transition-all hover:bg-gray-50 hover:border-gray-300"
           >
             Continue Browsing
           </button>

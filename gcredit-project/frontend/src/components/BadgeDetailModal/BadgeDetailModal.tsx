@@ -319,47 +319,14 @@ const BadgeDetailModal: React.FC = () => {
           </div>
 
           {/* AC 4.8: Action Footer (Share/Download/Claim buttons) | Story 9.3 AC3: Disable for revoked badges */}
-          <footer
-            style={{
-              padding: '1rem 1.5rem',
-              borderTop: '1px solid #e5e7eb',
-              backgroundColor: '#f9fafb',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '0.5rem',
-            }}
-          >
+          <footer className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-between items-center flex-wrap gap-2">
             {/* UX-P0-004: Claim Button for PENDING badges */}
             {badge?.status === BadgeStatus.PENDING && (
               <button
                 onClick={handleClaimBadge}
                 disabled={claiming}
                 title={claiming ? 'Claiming...' : 'Claim this badge'}
-                style={{
-                  padding: '0.625rem 1.5rem',
-                  fontSize: '0.875rem',
-                  fontWeight: 600,
-                  color: 'white',
-                  backgroundColor: claiming ? '#9ca3af' : '#16a34a',
-                  borderRadius: '0.5rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  cursor: claiming ? 'not-allowed' : 'pointer',
-                  border: 'none',
-                  transition: 'background-color 0.2s',
-                }}
-                onMouseEnter={(e) => {
-                  if (!claiming) {
-                    e.currentTarget.style.backgroundColor = '#15803d';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!claiming) {
-                    e.currentTarget.style.backgroundColor = '#16a34a';
-                  }
-                }}
+                className="px-6 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-lg flex items-center border-none transition-colors hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 {claiming ? (
                   <>
@@ -388,7 +355,7 @@ const BadgeDetailModal: React.FC = () => {
                 ) : (
                   <>
                     <svg
-                      style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }}
+                      className="w-4 h-4 mr-2"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -407,31 +374,12 @@ const BadgeDetailModal: React.FC = () => {
             )}
 
             {/* Story 11.4: Visibility toggle */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                fontSize: '0.875rem',
-                color: '#525252',
-              }}
-            >
+            <div className="flex items-center gap-2 text-sm text-neutral-600">
               <span>Visibility:</span>
               <button
                 onClick={handleToggleVisibility}
                 disabled={isToggling}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.25rem',
-                  padding: '0.25rem 0.75rem',
-                  borderRadius: '9999px',
-                  border: '1px solid #e5e7eb',
-                  backgroundColor: 'transparent',
-                  cursor: isToggling ? 'not-allowed' : 'pointer',
-                  transition: 'background-color 0.2s',
-                  fontSize: '0.875rem',
-                }}
+                className="flex items-center gap-1 px-3 py-1 rounded-full border border-gray-200 bg-transparent text-sm transition-colors hover:bg-gray-50 disabled:cursor-not-allowed"
                 title={localVisibility === 'PUBLIC' ? 'Set to Private' : 'Set to Public'}
                 aria-label={`Badge visibility: ${localVisibility.toLowerCase()}`}
               >
@@ -462,52 +410,9 @@ const BadgeDetailModal: React.FC = () => {
                     ? 'Claim this badge before sharing'
                     : 'Share this badge'
               }
-              style={{
-                padding: '0.625rem 1.5rem',
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                color: 'white',
-                backgroundColor:
-                  badge?.status === BadgeStatus.REVOKED || badge?.status === BadgeStatus.PENDING
-                    ? '#9ca3af'
-                    : '#2563eb',
-                borderRadius: '0.5rem',
-                display: 'flex',
-                alignItems: 'center',
-                cursor:
-                  badge?.status === BadgeStatus.REVOKED || badge?.status === BadgeStatus.PENDING
-                    ? 'not-allowed'
-                    : 'pointer',
-                border: 'none',
-                opacity:
-                  badge?.status === BadgeStatus.REVOKED || badge?.status === BadgeStatus.PENDING
-                    ? 0.5
-                    : 1,
-                transition: 'background-color 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                if (
-                  badge?.status !== BadgeStatus.REVOKED &&
-                  badge?.status !== BadgeStatus.PENDING
-                ) {
-                  e.currentTarget.style.backgroundColor = '#1d4ed8';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (
-                  badge?.status !== BadgeStatus.REVOKED &&
-                  badge?.status !== BadgeStatus.PENDING
-                ) {
-                  e.currentTarget.style.backgroundColor = '#2563eb';
-                }
-              }}
+              className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg flex items-center border-none transition-colors hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <svg
-                style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -528,32 +433,7 @@ const BadgeDetailModal: React.FC = () => {
                     ? 'Downloading...'
                     : 'Download badge as PNG'
               }
-              style={{
-                padding: '0.625rem 1.5rem',
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                color: 'white',
-                backgroundColor:
-                  downloading || badge?.status === BadgeStatus.REVOKED ? '#9ca3af' : '#2563eb',
-                border: 'none',
-                borderRadius: '0.5rem',
-                display: 'flex',
-                alignItems: 'center',
-                cursor:
-                  downloading || badge?.status === BadgeStatus.REVOKED ? 'not-allowed' : 'pointer',
-                opacity: downloading || badge?.status === BadgeStatus.REVOKED ? 0.5 : 1,
-                transition: 'background-color 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                if (!downloading && badge?.status !== BadgeStatus.REVOKED) {
-                  e.currentTarget.style.backgroundColor = '#1d4ed8';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!downloading && badge?.status !== BadgeStatus.REVOKED) {
-                  e.currentTarget.style.backgroundColor = '#2563eb';
-                }
-              }}
+              className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg flex items-center border-none transition-colors hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {downloading ? (
                 <>
