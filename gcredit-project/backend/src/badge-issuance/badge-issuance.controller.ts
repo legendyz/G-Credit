@@ -154,8 +154,15 @@ export class BadgeIssuanceController {
     description: 'Wallet badges retrieved with date groups',
     schema: {
       example: {
-        badges: [],
-        pagination: { page: 1, limit: 50, total: 100, totalPages: 2 },
+        data: [],
+        meta: {
+          page: 1,
+          limit: 50,
+          total: 100,
+          totalPages: 2,
+          hasNextPage: true,
+          hasPreviousPage: false,
+        },
         dateGroups: [
           { label: 'January 2026', count: 12, startIndex: 0 },
           { label: 'December 2025', count: 15, startIndex: 12 },
