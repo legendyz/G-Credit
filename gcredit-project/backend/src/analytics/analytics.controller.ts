@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Query,
+  Res,
   UseInterceptors,
   ForbiddenException,
   Logger,
@@ -14,6 +15,7 @@ import {
   ApiBearerAuth,
   ApiQuery,
 } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { AnalyticsService } from './analytics.service';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -213,5 +215,41 @@ export class AnalyticsController {
     @Query() query: RecentActivityQueryDto,
   ): Promise<RecentActivityDto> {
     return this.analyticsService.getRecentActivity(query.limit, query.offset);
+  }
+
+  /**
+   * Export analytics data as CSV file
+   * Admin only
+   */
+  @Get('export')
+  @Roles('ADMIN')
+  @ApiOperation({
+    summary: 'Export analytics data as CSV',
+    description:
+      'Exports system overview, issuance trends, top performers, and skills distribution as a CSV file. Admin only.',
+  })
+  @ApiQuery({
+    name: 'format',
+    required: false,
+    enum: ['csv'],
+    description: 'Export format (currently only csv)',
+  })
+  @ApiResponse({ status: 200, description: 'CSV file download' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
+  async exportAnalytics(
+    @Query('format') _format: string = 'csv',
+    @Res() res: Response,
+    @CurrentUser() user: { userId: string; role: string },
+  ): Promise<void> {
+    const csv = await this.analyticsService.generateCsvExport(user.userId);
+    const dateStr = new Date().toISOString().split('T')[0];
+    const BOM = '\uFEFF';
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="gcredit-analytics-${dateStr}.csv"`,
+    );
+    res.send(BOM + csv);
   }
 }

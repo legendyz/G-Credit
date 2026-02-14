@@ -78,3 +78,16 @@ export async function getRecentActivity(
   const response = await apiFetch(`/analytics/recent-activity?${params}`);
   return handleResponse<RecentActivityDto>(response);
 }
+
+/**
+ * Export analytics data as CSV file
+ * GET /api/analytics/export?format=csv
+ */
+export async function exportAnalyticsCsv(): Promise<Blob> {
+  const response = await apiFetch('/analytics/export?format=csv');
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Export failed' }));
+    throw new Error(error.message || `HTTP ${response.status}`);
+  }
+  return response.blob();
+}

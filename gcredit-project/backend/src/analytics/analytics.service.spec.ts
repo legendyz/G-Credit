@@ -607,4 +607,159 @@ describe('AnalyticsService', () => {
       expect(result.activities[0].actor.name).toBe('unknown@test.com'); // Falls back to email
     });
   });
+
+  describe('generateCsvExport', () => {
+    const mockOverview = {
+      users: {
+        total: 450,
+        activeThisMonth: 320,
+        newThisMonth: 25,
+        byRole: { ADMIN: 5, ISSUER: 20, MANAGER: 45, EMPLOYEE: 380 },
+      },
+      badges: {
+        totalIssued: 1234,
+        claimedCount: 1015,
+        pendingCount: 189,
+        revokedCount: 30,
+        claimRate: 0.82,
+      },
+      badgeTemplates: { total: 23, active: 18, draft: 3, archived: 2 },
+      systemHealth: {
+        status: 'healthy' as const,
+        lastSync: new Date().toISOString(),
+        apiResponseTime: '120ms',
+      },
+    };
+
+    const mockTrends = {
+      period: 'last30days',
+      startDate: '2026-01-15',
+      endDate: '2026-02-14',
+      dataPoints: [
+        { date: '2026-01-15', issued: 5, claimed: 3, revoked: 0 },
+        { date: '2026-01-16', issued: 8, claimed: 6, revoked: 1 },
+      ],
+      totals: { issued: 13, claimed: 9, revoked: 1, claimRate: 0.69 },
+    };
+
+    const mockPerformers = {
+      teamId: undefined,
+      teamName: undefined,
+      period: 'allTime',
+      topPerformers: [
+        { userId: 'u1', name: 'Alice Wang', badgeCount: 12 },
+        { userId: 'u2', name: 'Bob, Jr.', badgeCount: 8 },
+      ],
+    };
+
+    const mockSkills = {
+      totalSkills: 10,
+      topSkills: [
+        {
+          skillId: 's1',
+          skillName: 'TypeScript',
+          badgeCount: 50,
+          employeeCount: 30,
+        },
+        {
+          skillId: 's2',
+          skillName: 'Project "Management"',
+          badgeCount: 35,
+          employeeCount: 20,
+        },
+      ],
+      skillsByCategory: { Technical: 50, Leadership: 35 },
+    };
+
+    beforeEach(() => {
+      jest.spyOn(service, 'getSystemOverview').mockResolvedValue(mockOverview);
+      jest.spyOn(service, 'getIssuanceTrends').mockResolvedValue(mockTrends);
+      jest.spyOn(service, 'getTopPerformers').mockResolvedValue(mockPerformers);
+      jest
+        .spyOn(service, 'getSkillsDistribution')
+        .mockResolvedValue(mockSkills);
+    });
+
+    it('should generate valid CSV with all four sections', async () => {
+      const csv = await service.generateCsvExport('admin-user-id');
+
+      // Section headers
+      expect(csv).toContain('Section,Metric,Value');
+      expect(csv).toContain('Date,Issued,Claimed,Revoked');
+      expect(csv).toContain('Rank,Employee,Badge Count');
+      expect(csv).toContain('Skill,Badge Count,Employee Count');
+
+      // System Overview values
+      expect(csv).toContain('System Overview,Total Users,450');
+      expect(csv).toContain('System Overview,Active Users This Month,320');
+      expect(csv).toContain('System Overview,Badges Issued,1234');
+      expect(csv).toContain('System Overview,Active Templates,18');
+
+      // Trends data
+      expect(csv).toContain('2026-01-15,5,3,0');
+      expect(csv).toContain('2026-01-16,8,6,1');
+
+      // Performers
+      expect(csv).toContain('1,"Alice Wang",12');
+
+      // Skills
+      expect(csv).toContain('"TypeScript",50,30');
+    });
+
+    it('should escape commas and quotes in CSV values (RFC 4180)', async () => {
+      const csv = await service.generateCsvExport('admin-user-id');
+
+      // Name with comma should be double-quoted
+      expect(csv).toContain('"Bob, Jr."');
+
+      // Name with embedded quotes should be escaped with ""
+      expect(csv).toContain('"Project ""Management"""');
+    });
+
+    it('should call service methods with correct parameters', async () => {
+      await service.generateCsvExport('test-user-id');
+
+      expect(service.getSystemOverview).toHaveBeenCalled();
+      expect(service.getIssuanceTrends).toHaveBeenCalledWith(
+        30,
+        undefined,
+        'test-user-id',
+        'ADMIN',
+      );
+      expect(service.getTopPerformers).toHaveBeenCalledWith(
+        undefined,
+        50,
+        'test-user-id',
+        'ADMIN',
+      );
+      expect(service.getSkillsDistribution).toHaveBeenCalled();
+    });
+
+    it('should handle empty data gracefully', async () => {
+      jest.spyOn(service, 'getIssuanceTrends').mockResolvedValue({
+        period: 'last30days',
+        startDate: '2026-01-15',
+        endDate: '2026-02-14',
+        dataPoints: [],
+        totals: { issued: 0, claimed: 0, revoked: 0, claimRate: 0 },
+      });
+      jest.spyOn(service, 'getTopPerformers').mockResolvedValue({
+        period: 'allTime',
+        topPerformers: [],
+      });
+      jest.spyOn(service, 'getSkillsDistribution').mockResolvedValue({
+        totalSkills: 0,
+        topSkills: [],
+        skillsByCategory: {},
+      });
+
+      const csv = await service.generateCsvExport('admin-user-id');
+
+      // Should still have section headers
+      expect(csv).toContain('Section,Metric,Value');
+      expect(csv).toContain('Date,Issued,Claimed,Revoked');
+      expect(csv).toContain('Rank,Employee,Badge Count');
+      expect(csv).toContain('Skill,Badge Count,Employee Count');
+    });
+  });
 });

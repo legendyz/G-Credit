@@ -494,4 +494,66 @@ export class AnalyticsService {
       },
     };
   }
+
+  /**
+   * Generate CSV export of analytics data
+   * Combines system overview, issuance trends, top performers, and skills distribution
+   * @param userId - Current user ID for RBAC filtering
+   */
+  async generateCsvExport(userId: string): Promise<string> {
+    const [overview, trends, performers, skills] = await Promise.all([
+      this.getSystemOverview(),
+      this.getIssuanceTrends(30, undefined, userId, 'ADMIN'),
+      this.getTopPerformers(undefined, 50, userId, 'ADMIN'),
+      this.getSkillsDistribution(),
+    ]);
+
+    const lines: string[] = [];
+
+    // Section 1: System Overview
+    lines.push('Section,Metric,Value');
+    lines.push(`System Overview,Total Users,${overview.users.total}`);
+    lines.push(
+      `System Overview,Active Users This Month,${overview.users.activeThisMonth}`,
+    );
+    lines.push(
+      `System Overview,New Users This Month,${overview.users.newThisMonth}`,
+    );
+    lines.push(`System Overview,Badges Issued,${overview.badges.totalIssued}`);
+    lines.push(
+      `System Overview,Badges Claimed,${overview.badges.claimedCount}`,
+    );
+    lines.push(`System Overview,Claim Rate,${overview.badges.claimRate}%`);
+    lines.push(
+      `System Overview,Active Templates,${overview.badgeTemplates.active}`,
+    );
+    lines.push('');
+
+    // Section 2: Issuance Trends (last 30 days)
+    lines.push('Date,Issued,Claimed,Revoked');
+    for (const point of trends.dataPoints) {
+      lines.push(
+        `${point.date},${point.issued},${point.claimed},${point.revoked}`,
+      );
+    }
+    lines.push('');
+
+    // Section 3: Top Performers
+    lines.push('Rank,Employee,Badge Count');
+    performers.topPerformers.forEach((p, i) => {
+      // RFC 4180: double-quote fields that may contain commas; escape quotes with ""
+      const name = `"${(p.name || '').replace(/"/g, '""')}"`;
+      lines.push(`${i + 1},${name},${p.badgeCount}`);
+    });
+    lines.push('');
+
+    // Section 4: Skills Distribution
+    lines.push('Skill,Badge Count,Employee Count');
+    for (const skill of skills.topSkills) {
+      const skillName = `"${(skill.skillName || '').replace(/"/g, '""')}"`;
+      lines.push(`${skillName},${skill.badgeCount},${skill.employeeCount}`);
+    }
+
+    return lines.join('\n');
+  }
 }

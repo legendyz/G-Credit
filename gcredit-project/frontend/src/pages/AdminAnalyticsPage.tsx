@@ -7,6 +7,8 @@
 
 import React, { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { Download } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   useSystemOverview,
   useIssuanceTrends,
@@ -26,6 +28,7 @@ import {
 } from '../components/analytics/AnalyticsSkeleton';
 import { PageTemplate } from '../components/layout/PageTemplate';
 import { useUserRole } from '../stores/authStore';
+import { exportAnalyticsCsv } from '../lib/analyticsApi';
 
 // ─── Period selector config ────────────────────────────────────────────
 const PERIOD_OPTIONS = [
@@ -74,6 +77,7 @@ const AdminAnalyticsPage: React.FC = () => {
   const queryClient = useQueryClient();
   const [trendPeriod, setTrendPeriod] = useState(30);
   const [refreshing, setRefreshing] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   // Independent hooks — each section loads/errors separately
   const overview = useSystemOverview();
@@ -87,6 +91,24 @@ const AdminAnalyticsPage: React.FC = () => {
     await queryClient.invalidateQueries({ queryKey: ['analytics'] });
     setRefreshing(false);
   }, [queryClient]);
+
+  const handleExportCsv = useCallback(async () => {
+    setExporting(true);
+    try {
+      const blob = await exportAnalyticsCsv();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `gcredit-analytics-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('Analytics exported successfully');
+    } catch {
+      toast.error('Failed to export analytics');
+    } finally {
+      setExporting(false);
+    }
+  }, []);
 
   // Derive last-updated from the most recent dataUpdatedAt
   const lastUpdated = [
@@ -104,6 +126,16 @@ const AdminAnalyticsPage: React.FC = () => {
     <PageTemplate
       title={role === 'ISSUER' ? 'Issuer Analytics' : 'Admin Analytics'}
       description="System-wide overview of users, badges, skills, and activity"
+      actions={
+        <button
+          onClick={handleExportCsv}
+          disabled={exporting}
+          className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-50"
+        >
+          <Download className="h-4 w-4" />
+          {exporting ? 'Exporting...' : 'Export CSV'}
+        </button>
+      }
     >
       {/* ─── Section A: KPI Overview Cards ────────────────────── */}
       {overview.isLoading ? (
