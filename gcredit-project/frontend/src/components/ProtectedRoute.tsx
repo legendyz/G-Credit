@@ -45,8 +45,8 @@ export function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps)
   // Check role authorization if required
   if (requiredRoles && requiredRoles.length > 0 && user) {
     if (!requiredRoles.includes(user.role)) {
-      // User doesn't have required role - redirect to home
-      return <Navigate to="/" replace />;
+      // User doesn't have required role - redirect to 403 page
+      return <Navigate to="/access-denied" replace />;
     }
   }
 

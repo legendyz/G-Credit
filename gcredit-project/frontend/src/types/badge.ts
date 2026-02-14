@@ -10,6 +10,7 @@ export type BadgeStatus = (typeof BadgeStatus)[keyof typeof BadgeStatus];
 export interface BadgeDetail {
   id: string;
   status: BadgeStatus;
+  visibility: 'PUBLIC' | 'PRIVATE';
   issuedAt: string;
   claimedAt: string | null;
   expiresAt: string | null;
@@ -54,7 +55,7 @@ export interface VerificationResponse {
     imageUrl: string | null;
     criteria: string;
     category: string;
-    skills: string[];
+    skills: Array<{ id: string; name: string }>;
   };
   recipient: {
     name: string;

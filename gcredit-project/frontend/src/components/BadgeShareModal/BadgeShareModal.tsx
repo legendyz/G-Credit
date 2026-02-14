@@ -4,8 +4,12 @@
  * Sprint 8 - Story 8.3 (UX-P1-006): Tab keyboard navigation
  */
 
-import React, { useState, useCallback } from 'react';
-import { shareBadgeViaEmail, shareBadgeToTeams } from '../../lib/badgeShareApi';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  shareBadgeViaEmail,
+  shareBadgeToTeams,
+  recordLinkedInShare,
+} from '../../lib/badgeShareApi';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 interface BadgeShareModalProps {
@@ -15,9 +19,9 @@ interface BadgeShareModalProps {
   badgeName: string;
 }
 
-type ShareTab = 'email' | 'teams' | 'widget';
+type ShareTab = 'email' | 'linkedin' | 'teams' | 'widget';
 
-const TABS: ShareTab[] = ['email', 'teams', 'widget'];
+const TABS: ShareTab[] = ['email', 'linkedin', 'teams', 'widget'];
 
 const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
   isOpen,
@@ -76,6 +80,39 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
   const [teamsTeamId, setTeamsTeamId] = useState('');
   const [teamsChannelId, setTeamsChannelId] = useState('');
   const [teamsMessage, setTeamsMessage] = useState('');
+
+  // LinkedIn sharing state
+  const [linkedInMessage, setLinkedInMessage] = useState('');
+  const [linkedInShared, setLinkedInShared] = useState(false);
+
+  const verificationUrl = `${window.location.origin}/verify/${badgeId}`;
+
+  // LinkedIn default message
+  useEffect(() => {
+    if (activeTab === 'linkedin' && !linkedInMessage) {
+      setLinkedInMessage(
+        `I'm proud to have earned the ${badgeName} badge via G-Credit. ` +
+          `This credential validates my professional skills. ` +
+          `Verify my badge: ${verificationUrl} ` +
+          `#DigitalCredentials #ProfessionalDevelopment #GCredit`
+      );
+    }
+  }, [activeTab, badgeName, linkedInMessage, verificationUrl]);
+
+  const handleLinkedInShare = async () => {
+    const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(verificationUrl)}`;
+    window.open(shareUrl, '_blank', 'width=600,height=600');
+
+    // Record analytics (non-blocking)
+    try {
+      await recordLinkedInShare(badgeId);
+    } catch {
+      // Non-blocking — don't fail the share if analytics fails
+    }
+
+    setLinkedInShared(true);
+    setTimeout(() => setLinkedInShared(false), 5000);
+  };
 
   const handleShareViaEmail = async () => {
     if (!emailRecipients.trim()) {
@@ -231,6 +268,32 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                        }`}
           >
             📧 Email
+          </button>
+          <button
+            role="tab"
+            data-tab="linkedin"
+            id="share-tab-linkedin"
+            aria-selected={activeTab === 'linkedin'}
+            aria-controls="share-panel-linkedin"
+            tabIndex={activeTab === 'linkedin' ? 0 : -1}
+            onClick={() => setActiveTab('linkedin')}
+            onKeyDown={(e) => handleTabKeyDown(e, 'linkedin')}
+            className={`flex-1 min-h-[44px] px-3 py-2.5 text-sm font-medium transition-all
+                       ${
+                         activeTab === 'linkedin'
+                           ? 'text-blue-600 bg-white border-b-2 border-blue-600'
+                           : 'text-gray-600 hover:text-gray-900 active:bg-gray-100'
+                       }`}
+          >
+            <svg
+              className="inline h-4 w-4 mr-1"
+              viewBox="0 0 24 24"
+              fill="#0A66C2"
+              aria-hidden="true"
+            >
+              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+            </svg>
+            LinkedIn
           </button>
           <button
             role="tab"
@@ -448,6 +511,126 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                   '📧 Send via Email'
                 )}
               </button>
+            </div>
+          )}
+
+          {/* LinkedIn Tab Panel */}
+          {activeTab === 'linkedin' && (
+            <div
+              role="tabpanel"
+              id="share-panel-linkedin"
+              aria-labelledby="share-tab-linkedin"
+              style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+            >
+              {/* Share Preview */}
+              <div>
+                <span
+                  style={{
+                    display: 'block',
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    color: '#374151',
+                    marginBottom: '0.5rem',
+                  }}
+                >
+                  Share Preview
+                </span>
+                <div
+                  style={{
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '0.5rem',
+                    padding: '1rem',
+                    backgroundColor: '#f9fafb',
+                    fontSize: '0.875rem',
+                    color: '#374151',
+                  }}
+                >
+                  <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>
+                    🏆 I earned the "{badgeName}" digital badge!
+                  </p>
+                  <p style={{ color: '#6b7280', marginBottom: '0.5rem' }}>
+                    Issued via G-Credit. Verify:{' '}
+                    <span style={{ color: '#2563eb', textDecoration: 'underline' }}>
+                      {verificationUrl}
+                    </span>
+                  </p>
+                  <p style={{ color: '#9ca3af', fontSize: '0.75rem' }}>
+                    #DigitalCredentials #ProfessionalDevelopment #GCredit
+                  </p>
+                </div>
+              </div>
+
+              {/* Editable Message */}
+              <div>
+                <label
+                  htmlFor="linkedin-message"
+                  style={{
+                    display: 'block',
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    color: '#374151',
+                    marginBottom: '0.25rem',
+                  }}
+                >
+                  Customize Message (optional)
+                </label>
+                <textarea
+                  id="linkedin-message"
+                  rows={3}
+                  value={linkedInMessage}
+                  onChange={(e) => setLinkedInMessage(e.target.value)}
+                  style={{
+                    width: '100%',
+                    borderRadius: '0.375rem',
+                    border: '1px solid #d1d5db',
+                    padding: '0.75rem',
+                    fontSize: '0.875rem',
+                  }}
+                  placeholder="Add a personal message to your LinkedIn post..."
+                />
+              </div>
+
+              {/* Share Button */}
+              <button
+                onClick={handleLinkedInShare}
+                disabled={linkedInShared}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  minHeight: '44px',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  border: 'none',
+                  cursor: linkedInShared ? 'not-allowed' : 'pointer',
+                  backgroundColor: linkedInShared ? '#dcfce7' : '#0A66C2',
+                  color: linkedInShared ? '#15803d' : 'white',
+                  transition: 'background-color 0.2s',
+                }}
+              >
+                {linkedInShared ? (
+                  <>✓ LinkedIn opened — share from there</>
+                ) : (
+                  <>
+                    <svg
+                      className="h-4 w-4"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                    Share on LinkedIn
+                  </>
+                )}
+              </button>
+
+              <p style={{ fontSize: '0.75rem', color: '#9ca3af', textAlign: 'center' }}>
+                Opens LinkedIn in a new window
+              </p>
             </div>
           )}
 

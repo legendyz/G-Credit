@@ -28,6 +28,8 @@ const BadgeDetailModal: React.FC = () => {
   const [downloading, setDownloading] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [claimSuccessOpen, setClaimSuccessOpen] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
+  const [localVisibility, setLocalVisibility] = useState<'PUBLIC' | 'PRIVATE'>('PUBLIC');
 
   useEffect(() => {
     if (!isOpen || !badgeId) return;
@@ -45,6 +47,7 @@ const BadgeDetailModal: React.FC = () => {
 
         const data = await response.json();
         setBadge(data);
+        setLocalVisibility(data.visibility ?? 'PUBLIC');
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
@@ -101,6 +104,26 @@ const BadgeDetailModal: React.FC = () => {
       });
     } finally {
       setDownloading(false);
+    }
+  };
+
+  // Story 11.4: Toggle badge visibility (PUBLIC/PRIVATE)
+  const handleToggleVisibility = async () => {
+    if (!badge) return;
+    setIsToggling(true);
+    try {
+      const newVisibility = localVisibility === 'PUBLIC' ? 'PRIVATE' : 'PUBLIC';
+      const res = await apiFetch(`/badges/${badge.id}/visibility`, {
+        method: 'PATCH',
+        body: JSON.stringify({ visibility: newVisibility }),
+      });
+      if (!res.ok) throw new Error();
+      setLocalVisibility(newVisibility);
+      toast.success(`Badge set to ${newVisibility === 'PUBLIC' ? 'Public' : 'Private'}`);
+    } catch {
+      toast.error('Failed to update visibility. Please try again.');
+    } finally {
+      setIsToggling(false);
     }
   };
 
@@ -381,6 +404,39 @@ const BadgeDetailModal: React.FC = () => {
                 )}
               </button>
             )}
+
+            {/* Story 11.4: Visibility toggle */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: '0.875rem',
+                color: '#525252',
+              }}
+            >
+              <span>Visibility:</span>
+              <button
+                onClick={handleToggleVisibility}
+                disabled={isToggling}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  padding: '0.25rem 0.75rem',
+                  borderRadius: '9999px',
+                  border: '1px solid #e5e7eb',
+                  backgroundColor: 'transparent',
+                  cursor: isToggling ? 'not-allowed' : 'pointer',
+                  transition: 'background-color 0.2s',
+                  fontSize: '0.875rem',
+                }}
+                title={localVisibility === 'PUBLIC' ? 'Set to Private' : 'Set to Public'}
+                aria-label={`Badge visibility: ${localVisibility.toLowerCase()}`}
+              >
+                {isToggling ? '⏳' : localVisibility === 'PUBLIC' ? '🌐 Public' : '🔒 Private'}
+              </button>
+            </div>
 
             {/* Story 9.3 AC3: Disable Share button for revoked badges */}
             <button

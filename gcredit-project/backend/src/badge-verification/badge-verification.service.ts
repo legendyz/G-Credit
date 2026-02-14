@@ -83,6 +83,16 @@ export class BadgeVerificationService {
       return null;
     }
 
+    // Story 11.4: PRIVATE badges return 404 on verification page (C-3 方案B)
+    if (badge.visibility === 'PRIVATE') {
+      this.logger.log({
+        action: 'BADGE_VERIFICATION_BLOCKED',
+        verificationId,
+        reason: 'PRIVATE_VISIBILITY',
+      });
+      return null;
+    }
+
     // Log successful verification
     this.logger.log({
       action: 'BADGE_VERIFICATION_SUCCESS',
@@ -116,6 +126,15 @@ export class BadgeVerificationService {
     }
 
     // Format response for frontend
+
+    // Story 11.18: Resolve skill UUIDs to display names
+    const skills = badge.template.skillIds?.length
+      ? await this.prisma.skill.findMany({
+          where: { id: { in: badge.template.skillIds } },
+          select: { id: true, name: true },
+        })
+      : [];
+
     return {
       id: badge.id,
       verificationId: badge.verificationId,
@@ -129,7 +148,7 @@ export class BadgeVerificationService {
           ((badge.template.issuanceCriteria as Record<string, unknown>)
             ?.description as string) || 'No criteria specified',
         category: badge.template.category,
-        skills: badge.template.skillIds || [],
+        skills: skills.map((s) => ({ id: s.id, name: s.name })),
       },
 
       recipient: {

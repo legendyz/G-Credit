@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Patch,
   Body,
   UseGuards,
   Request,
@@ -38,6 +39,7 @@ import { QueryBadgeDto } from './dto/query-badge.dto';
 import { RevokeBadgeDto } from './dto/revoke-badge.dto';
 import { WalletQueryDto } from './dto/wallet-query.dto';
 import { ReportBadgeIssueDto } from './dto/report-badge-issue.dto';
+import { UpdateBadgeVisibilityDto } from './dto/update-badge-visibility.dto';
 import { SimilarBadgesQueryDto } from '../badge-templates/dto/similar-badges-query.dto';
 import { RecommendationsService } from '../badge-templates/recommendations.service';
 import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
@@ -212,6 +214,28 @@ export class BadgeIssuanceController {
     }
 
     return badge;
+  }
+
+  @Patch(':id/visibility')
+  @ApiOperation({
+    summary: 'Toggle badge visibility (PUBLIC/PRIVATE) — owner only',
+  })
+  @ApiResponse({ status: 200, description: 'Visibility updated' })
+  @ApiResponse({
+    status: 403,
+    description: 'Only the badge recipient can change visibility',
+  })
+  @ApiResponse({ status: 404, description: 'Badge not found' })
+  async updateVisibility(
+    @Param('id') id: string,
+    @Body() dto: UpdateBadgeVisibilityDto,
+    @Request() req: RequestWithUser,
+  ) {
+    return this.badgeService.updateVisibility(
+      id,
+      dto.visibility,
+      req.user.userId,
+    );
   }
 
   @Post(':id/revoke')

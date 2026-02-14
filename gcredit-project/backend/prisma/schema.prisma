@@ -111,6 +111,11 @@ enum BadgeStatus {
   REVOKED   // Revoked by admin
 }
 
+enum BadgeVisibility {
+  PUBLIC
+  PRIVATE
+}
+
 model BadgeTemplate {
   id               String         @id @default(uuid())
   name             String         @db.VarChar(100)
@@ -189,6 +194,7 @@ model Badge {
   issuedAt         DateTime      @default(now())
   expiresAt        DateTime?     // Calculated from expiresIn
   status           BadgeStatus   @default(PENDING)
+  visibility       BadgeVisibility @default(PUBLIC)
   claimToken       String?       @unique // 32-char token
   claimedAt        DateTime?
   
@@ -220,6 +226,8 @@ model Badge {
   @@index([verificationId]) // Sprint 5: Fast public verification lookup
   @@index([recipientId, status, issuedAt(sort: Desc)], name: "idx_badges_timeline") // Timeline view optimization
   @@index([revokedAt]) // Sprint 7: Admin reporting queries
+  @@index([visibility, status])       // Sprint 11: Verification page query optimization
+  @@index([recipientId, visibility])  // Sprint 11: Profile visibility filtering
   @@map("badges")
 }
 

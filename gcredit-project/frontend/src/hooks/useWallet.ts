@@ -7,6 +7,7 @@ export interface Badge {
   recipientId: string;
   issuedAt: string;
   status: BadgeStatus;
+  visibility?: 'PUBLIC' | 'PRIVATE';
   claimedAt?: string;
   // Story 9.3: Revocation fields (only present when status = REVOKED)
   revokedAt?: string;

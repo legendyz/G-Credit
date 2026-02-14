@@ -23,7 +23,7 @@ import {
   DateGroup,
 } from './dto/wallet-query.dto';
 import { ReportBadgeIssueDto } from './dto/report-badge-issue.dto';
-import { BadgeStatus, Prisma, UserRole } from '@prisma/client';
+import { BadgeStatus, Prisma, UserRole, BadgeVisibility } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { MilestonesService } from '../milestones/milestones.service';
 import sharp from 'sharp';
@@ -618,6 +618,7 @@ export class BadgeIssuanceService {
       data: badges.map((badge) => ({
         id: badge.id,
         status: badge.status,
+        visibility: badge.visibility,
         issuedAt: badge.issuedAt,
         claimedAt: badge.claimedAt,
         expiresAt: badge.expiresAt,
@@ -838,6 +839,34 @@ export class BadgeIssuanceService {
   /**
    * Find badge by ID (helper method)
    */
+  /**
+   * Story 11.4: Update badge visibility (PUBLIC/PRIVATE) — owner only
+   */
+  async updateVisibility(
+    badgeId: string,
+    visibility: BadgeVisibility,
+    userId: string,
+  ) {
+    const badge = await this.prisma.badge.findUnique({
+      where: { id: badgeId },
+    });
+
+    if (!badge) {
+      throw new NotFoundException('Badge not found');
+    }
+
+    if (badge.recipientId !== userId) {
+      throw new ForbiddenException(
+        'Only the badge recipient can change visibility',
+      );
+    }
+
+    return this.prisma.badge.update({
+      where: { id: badgeId },
+      data: { visibility },
+    });
+  }
+
   async findOne(id: string) {
     const badge = await this.prisma.badge.findUnique({
       where: { id },
@@ -1084,6 +1113,7 @@ export class BadgeIssuanceService {
         id: b.id,
         recipientId: b.recipientId,
         status: b.status,
+        visibility: b.visibility,
         issuedAt: b.issuedAt,
         claimedAt: b.claimedAt,
         template: b.template,

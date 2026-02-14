@@ -150,6 +150,17 @@ export function ClaimSuccessModal({
           </div>
         )}
 
+        {/* Story 11.4: Visibility hint */}
+        <p
+          style={{
+            fontSize: '0.875rem',
+            color: '#6b7280',
+            marginBottom: '1rem',
+          }}
+        >
+          Your badge is publicly visible. You can change this anytime from your wallet.
+        </p>
+
         {/* Action Buttons */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <button

@@ -168,3 +168,12 @@ export async function getWidgetHtml(
 
   return response.json();
 }
+
+/**
+ * Story 11.5: Record LinkedIn share analytics (non-blocking)
+ */
+export async function recordLinkedInShare(badgeId: string): Promise<void> {
+  await apiFetch(`/badges/${badgeId}/share/linkedin`, {
+    method: 'POST',
+  });
+}

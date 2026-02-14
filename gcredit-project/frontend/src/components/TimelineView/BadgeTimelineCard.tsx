@@ -5,11 +5,13 @@
  * Keyboard accessible card with proper ARIA attributes.
  */
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
 import type { Badge } from '../../hooks/useWallet';
 import { BadgeStatus } from '../../types/badge';
 import { useBadgeDetailModal } from '../../stores/badgeDetailModal';
 import { StatusBadge } from '../ui/StatusBadge';
+import { apiFetch } from '../../lib/apiFetch';
 
 interface BadgeTimelineCardProps {
   badge: Badge;
@@ -17,8 +19,29 @@ interface BadgeTimelineCardProps {
 
 export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
   const { openModal } = useBadgeDetailModal();
+  const [isToggling, setIsToggling] = useState(false);
+  const [localVisibility, setLocalVisibility] = useState(badge.visibility ?? 'PUBLIC');
 
   const isRevoked = badge.status === BadgeStatus.REVOKED;
+
+  const handleToggleVisibility = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsToggling(true);
+    try {
+      const newVisibility = localVisibility === 'PUBLIC' ? 'PRIVATE' : 'PUBLIC';
+      const res = await apiFetch(`/badges/${badge.id}/visibility`, {
+        method: 'PATCH',
+        body: JSON.stringify({ visibility: newVisibility }),
+      });
+      if (!res.ok) throw new Error();
+      setLocalVisibility(newVisibility);
+      toast.success(`Badge set to ${newVisibility === 'PUBLIC' ? 'Public' : 'Private'}`);
+    } catch {
+      toast.error('Failed to update visibility. Please try again.');
+    } finally {
+      setIsToggling(false);
+    }
+  };
 
   const getStatusColor = (status: BadgeStatus) => {
     switch (status) {
@@ -124,6 +147,44 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
                 onClick={(e) => e.stopPropagation()}
               >
                 ⬇️
+              </button>
+              <button
+                className="p-2 hover:bg-gray-100 rounded min-w-[44px] min-h-[44px] flex items-center justify-center"
+                aria-label={`Badge visibility: ${localVisibility.toLowerCase()}`}
+                title={localVisibility === 'PUBLIC' ? 'Set to Private' : 'Set to Public'}
+                onClick={handleToggleVisibility}
+                disabled={isToggling}
+              >
+                {isToggling ? (
+                  <svg
+                    className="h-4 w-4 animate-spin text-gray-400"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                ) : localVisibility === 'PUBLIC' ? (
+                  <span title="Public" role="img" aria-label="Public">
+                    🌐
+                  </span>
+                ) : (
+                  <span title="Private" role="img" aria-label="Private">
+                    🔒
+                  </span>
+                )}
               </button>
             </div>
           </div>

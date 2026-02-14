@@ -281,12 +281,12 @@ export function VerifyBadgePage() {
                 Skills & Competencies
               </div>
               <div className="flex flex-wrap gap-2">
-                {badge.badge.skills.map((skillId: string) => (
+                {badge.badge.skills.map((skill: { id: string; name: string }) => (
                   <span
-                    key={skillId}
+                    key={skill.id}
                     className="px-3 py-1 bg-brand-100 text-brand-800 rounded-full text-sm"
                   >
-                    {skillId}
+                    {skill.name}
                   </span>
                 ))}
               </div>

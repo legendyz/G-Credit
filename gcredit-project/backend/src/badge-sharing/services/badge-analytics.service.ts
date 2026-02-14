@@ -28,14 +28,14 @@ export class BadgeAnalyticsService {
   /**
    * Record a badge share event
    * @param badgeId Badge ID that was shared
-   * @param platform Platform where badge was shared ('email', 'teams', 'widget')
+   * @param platform Platform where badge was shared ('email', 'teams', 'widget', 'linkedin')
    * @param userId User ID who initiated the share (nullable for anonymous widget embeds)
    * @param metadata Platform-specific metadata (e.g., team/channel IDs, referrer URL, recipient email)
    * @returns Created BadgeShare record
    */
   async recordShare(
     badgeId: string,
-    platform: 'email' | 'teams' | 'widget',
+    platform: 'email' | 'teams' | 'widget' | 'linkedin',
     userId: string | null,
     metadata?: {
       recipientEmail?: string;
