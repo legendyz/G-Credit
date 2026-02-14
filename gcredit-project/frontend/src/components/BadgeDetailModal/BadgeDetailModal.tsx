@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 import { useBadgeDetailModal } from '../../stores/badgeDetailModal';
 import type { BadgeDetail } from '../../types/badge';
 import { BadgeStatus } from '../../types/badge';
@@ -18,10 +19,12 @@ import ClaimSuccessModal from '../ClaimSuccessModal';
 import { Globe, Lock, Loader2 } from 'lucide-react';
 import { apiFetch } from '../../lib/apiFetch';
 import { useCurrentUser } from '../../stores/authStore';
+import { useSkillNamesMap } from '../../hooks/useSkills';
 
 const BadgeDetailModal: React.FC = () => {
   const { isOpen, badgeId, closeModal } = useBadgeDetailModal();
   const currentUser = useCurrentUser();
+  const queryClient = useQueryClient();
   const [badge, setBadge] = useState<BadgeDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +34,10 @@ const BadgeDetailModal: React.FC = () => {
   const [claimSuccessOpen, setClaimSuccessOpen] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
   const [localVisibility, setLocalVisibility] = useState<'PUBLIC' | 'PRIVATE'>('PUBLIC');
+
+  // Resolve skill UUIDs to human-readable names
+  const skillNamesMap = useSkillNamesMap(badge?.template?.skillIds);
+  const resolvedSkillNames = (badge?.template?.skillIds || []).map((id) => skillNamesMap[id] || id);
 
   useEffect(() => {
     if (!isOpen || !badgeId) return;
@@ -120,6 +127,8 @@ const BadgeDetailModal: React.FC = () => {
       });
       if (!res.ok) throw new Error();
       setLocalVisibility(newVisibility);
+      // Invalidate wallet queries so the list reflects the new visibility
+      queryClient.invalidateQueries({ queryKey: ['wallet'] });
       toast.success(`Badge set to ${newVisibility === 'PUBLIC' ? 'Public' : 'Private'}`);
     } catch {
       toast.error('Failed to update visibility. Please try again.');
@@ -248,6 +257,7 @@ const BadgeDetailModal: React.FC = () => {
                   status={badge.status}
                   issuedAt={badge.issuedAt}
                   category={badge.template.category}
+                  visibility={localVisibility}
                 />
 
                 {/* AC 4.3: Issuer Message (conditional) */}
@@ -261,7 +271,7 @@ const BadgeDetailModal: React.FC = () => {
                 {/* AC 4.4: Badge Info */}
                 <BadgeInfo
                   description={badge.template.description}
-                  skills={badge.template.skillIds}
+                  skills={resolvedSkillNames}
                   criteria={badge.template.issuanceCriteria}
                 />
 

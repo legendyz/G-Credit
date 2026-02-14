@@ -96,9 +96,8 @@ export class BadgeIssuanceController {
   }
 
   @Post(':id/claim')
-  @Public() // No authentication required when using claimToken; auth required when claiming by ID
   @ApiOperation({
-    summary: 'Claim a badge using claim token or badge ID (authenticated)',
+    summary: 'Claim a badge by ID (authenticated user must be the recipient)',
   })
   @ApiResponse({
     status: 200,
@@ -134,7 +133,7 @@ export class BadgeIssuanceController {
       return this.badgeService.claimBadge(dto.claimToken);
     }
     // Authenticated user claiming their own badge by ID
-    return this.badgeService.claimBadgeById(id, req.user?.userId);
+    return this.badgeService.claimBadgeById(id, req.user.userId);
   }
 
   @Get('my-badges')

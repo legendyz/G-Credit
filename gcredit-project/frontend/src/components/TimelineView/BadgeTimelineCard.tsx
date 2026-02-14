@@ -5,9 +5,10 @@
  * Keyboard accessible card with proper ARIA attributes.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Globe, Lock, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 import type { Badge } from '../../hooks/useWallet';
 import { BadgeStatus } from '../../types/badge';
 import { useBadgeDetailModal } from '../../stores/badgeDetailModal';
@@ -20,8 +21,14 @@ interface BadgeTimelineCardProps {
 
 export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
   const { openModal } = useBadgeDetailModal();
+  const queryClient = useQueryClient();
   const [isToggling, setIsToggling] = useState(false);
   const [localVisibility, setLocalVisibility] = useState(badge.visibility ?? 'PUBLIC');
+
+  // Sync local state when wallet data refreshes (e.g. after modal toggle)
+  useEffect(() => {
+    setLocalVisibility(badge.visibility ?? 'PUBLIC');
+  }, [badge.visibility]);
 
   const isRevoked = badge.status === BadgeStatus.REVOKED;
 
@@ -36,6 +43,7 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
       });
       if (!res.ok) throw new Error();
       setLocalVisibility(newVisibility);
+      queryClient.invalidateQueries({ queryKey: ['wallet'] });
       toast.success(`Badge set to ${newVisibility === 'PUBLIC' ? 'Public' : 'Private'}`);
     } catch {
       toast.error('Failed to update visibility. Please try again.');

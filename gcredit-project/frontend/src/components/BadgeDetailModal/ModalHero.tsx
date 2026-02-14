@@ -7,6 +7,7 @@ interface ModalHeroProps {
   status: BadgeStatus;
   issuedAt: string;
   category: string;
+  visibility?: 'PUBLIC' | 'PRIVATE';
 }
 
 const ModalHero: React.FC<ModalHeroProps> = ({
@@ -15,6 +16,7 @@ const ModalHero: React.FC<ModalHeroProps> = ({
   status,
   issuedAt,
   category,
+  visibility = 'PUBLIC',
 }) => {
   const getStatusConfig = (status: BadgeStatus) => {
     switch (status) {
@@ -66,9 +68,15 @@ const ModalHero: React.FC<ModalHeroProps> = ({
               {statusConfig.label}
             </span>
 
-            {/* Privacy indicator (assume Public for MVP) */}
-            <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-              🌐 Public
+            {/* Story 11.4: Privacy indicator — reflects actual visibility */}
+            <span
+              className={`px-3 py-1 rounded-full text-sm font-medium ${
+                visibility === 'PUBLIC'
+                  ? 'bg-blue-100 text-blue-800'
+                  : 'bg-gray-100 text-gray-700'
+              }`}
+            >
+              {visibility === 'PUBLIC' ? '🌐 Public' : '🔒 Private'}
             </span>
           </div>
 

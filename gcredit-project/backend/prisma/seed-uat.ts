@@ -27,6 +27,10 @@ const IDS = {
   tmpl3: '00000000-0000-4000-a000-000100000003',
   tmpl4: '00000000-0000-4000-a000-000100000004',
   tmpl5: '00000000-0000-4000-a000-000100000005',
+  tmpl6: '00000000-0000-4000-a000-000100000006',
+  tmpl7: '00000000-0000-4000-a000-000100000007',
+  tmpl8: '00000000-0000-4000-a000-000100000008',
+  tmpl9: '00000000-0000-4000-a000-000100000009',
   // Badges (type=0002)
   badge1: '00000000-0000-4000-a000-000200000001',
   badge2: '00000000-0000-4000-a000-000200000002',
@@ -586,10 +590,103 @@ async function main() {
     }),
   ]);
 
-  console.log(`✅ ${templates.length} badge templates created`);
+  // ========================================
+  // 3b. EXTRA TEMPLATES (for Similar Badges recommendations)
+  //     Employee does NOT have badges for these templates,
+  //     so they appear as recommendations in Badge Detail.
+  // ========================================
+
+  const extraTemplates = await Promise.all([
+    prisma.badgeTemplate.create({
+      data: {
+        id: IDS.tmpl6,
+        name: 'DevOps Engineer Certification',
+        description:
+          'Validates proficiency in CI/CD pipelines, infrastructure as code, container orchestration, and monitoring.',
+        imageUrl: 'https://picsum.photos/400/400?random=6',
+        category: 'Technical',
+        skillIds: [IDS.skillAzure, IDS.skillDocker, IDS.skillTypescript],
+        issuanceCriteria: {
+          requirements: [
+            'Implement CI/CD pipeline for a production service',
+            'Manage Kubernetes clusters',
+            'Achieve 99.9% uptime SLA',
+          ],
+        },
+        validityPeriod: 365,
+        status: TemplateStatus.ACTIVE,
+        createdBy: issuer.id,
+      },
+    }),
+    prisma.badgeTemplate.create({
+      data: {
+        id: IDS.tmpl7,
+        name: 'AI & Machine Learning Pioneer',
+        description:
+          'Recognizes hands-on expertise in building, training, and deploying machine learning models in production.',
+        imageUrl: 'https://picsum.photos/400/400?random=7',
+        category: 'Technical',
+        skillIds: [IDS.skillAI, IDS.skillTypescript],
+        issuanceCriteria: {
+          requirements: [
+            'Train and deploy an ML model to production',
+            'Complete internal AI ethics course',
+            'Author a technical blog post on applied ML',
+          ],
+        },
+        validityPeriod: 365,
+        status: TemplateStatus.ACTIVE,
+        createdBy: admin.id,
+      },
+    }),
+    prisma.badgeTemplate.create({
+      data: {
+        id: IDS.tmpl8,
+        name: 'Mentor of the Year',
+        description:
+          'Awarded for exceptional mentorship, knowledge sharing, and fostering growth in junior team members.',
+        imageUrl: 'https://picsum.photos/400/400?random=8',
+        category: 'Leadership',
+        skillIds: [IDS.skillTeamLeadership, IDS.skillPublicSpeaking, IDS.skillProjectMgmt],
+        issuanceCriteria: {
+          requirements: [
+            'Mentor 3+ colleagues for at least 6 months',
+            'Conduct 2+ internal workshops',
+            'Receive outstanding mentor feedback',
+          ],
+        },
+        validityPeriod: null,
+        status: TemplateStatus.ACTIVE,
+        createdBy: issuer.id,
+      },
+    }),
+    prisma.badgeTemplate.create({
+      data: {
+        id: IDS.tmpl9,
+        name: 'Customer Success Champion',
+        description:
+          'Recognizes outstanding contributions to customer satisfaction, support excellence, and relationship management.',
+        imageUrl: 'https://picsum.photos/400/400?random=9',
+        category: 'Teamwork',
+        skillIds: [IDS.skillPublicSpeaking, IDS.skillProjectMgmt],
+        issuanceCriteria: {
+          requirements: [
+            'Achieve 95%+ customer satisfaction score',
+            'Resolve 50+ customer escalations',
+            'Document 3+ customer success case studies',
+          ],
+        },
+        validityPeriod: 365,
+        status: TemplateStatus.ACTIVE,
+        createdBy: admin.id,
+      },
+    }),
+  ]);
+
+  console.log(`✅ ${templates.length + extraTemplates.length} badge templates created (${templates.length} core + ${extraTemplates.length} for recommendations)`);
 
   // ========================================
-  // 3. BADGES (11 total, various states)
+  // 4. BADGES (11 total, various states)
   // ========================================
 
   const now = new Date();

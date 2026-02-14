@@ -123,8 +123,8 @@ export class BadgeVerificationController {
       response.setHeader('Pragma', 'no-cache');
       response.setHeader('Expires', '0');
     } else {
-      // Valid badges can be cached for 1 hour
-      response.setHeader('Cache-Control', 'public, max-age=3600');
+      // Valid badges: short cache to respect visibility changes promptly
+      response.setHeader('Cache-Control', 'public, max-age=60');
     }
 
     // Story 6.3: Custom verification status header

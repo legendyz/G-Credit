@@ -86,6 +86,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
   // LinkedIn sharing state
   const [linkedInMessage, setLinkedInMessage] = useState('');
   const [linkedInShared, setLinkedInShared] = useState(false);
+  const [copiedLinkedIn, setCopiedLinkedIn] = useState(false);
 
   const verificationUrl = `${window.location.origin}/verify/${verificationId ?? badgeId}`;
 
@@ -469,7 +470,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                   htmlFor="linkedin-message"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Customize Message (optional)
+                  Your Message
                 </label>
                 <textarea
                   id="linkedin-message"
@@ -479,6 +480,29 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                   className="w-full rounded-md border border-gray-300 p-3 text-sm"
                   placeholder="Add a personal message to your LinkedIn post..."
                 />
+                <button
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(linkedInMessage);
+                      setCopiedLinkedIn(true);
+                      setTimeout(() => setCopiedLinkedIn(false), 2000);
+                    } catch {
+                      // Fallback for older browsers
+                      const textarea = document.createElement('textarea');
+                      textarea.value = linkedInMessage;
+                      document.body.appendChild(textarea);
+                      textarea.select();
+                      document.execCommand('copy');
+                      document.body.removeChild(textarea);
+                      setCopiedLinkedIn(true);
+                      setTimeout(() => setCopiedLinkedIn(false), 2000);
+                    }
+                  }}
+                  className="mt-2 w-full flex items-center justify-center gap-1.5 min-h-[36px] rounded-md text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                  aria-label="Copy message to clipboard"
+                >
+                  {copiedLinkedIn ? <>✓ Copied to clipboard</> : <>📋 Copy message first</>}
+                </button>
               </div>
 
               {/* Share Button */}
@@ -492,7 +516,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                 }`}
               >
                 {linkedInShared ? (
-                  <>✓ LinkedIn opened — share from there</>
+                  <>✓ LinkedIn opened — paste your message there</>
                 ) : (
                   <>
                     <svg
@@ -503,12 +527,14 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                     >
                       <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                     </svg>
-                    Share on LinkedIn
+                    Open LinkedIn to post
                   </>
                 )}
               </button>
 
-              <p className="text-xs text-gray-400 text-center">Opens LinkedIn in a new window</p>
+              <p className="text-xs text-gray-500 text-center">
+                💡 Copy the message above, then paste it into the LinkedIn post editor
+              </p>
             </div>
           )}
 

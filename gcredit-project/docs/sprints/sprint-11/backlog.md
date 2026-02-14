@@ -526,6 +526,10 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ---
 
 ### Story 11.23: FEAT-008-P0 — User Management Navigation Entry Fix
+**Priority:** 🟡 P1  
+**Estimate:** 30min  
+**Status:** ✅ Done  
+**Story Doc:** 📄 [11-23-user-management-nav-fix.md](11-23-user-management-nav-fix.md)  
 **Priority:** 🟡 HIGH  
 **Estimate:** 30min  
 **Status:** ✅ Done  
@@ -543,7 +547,33 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 
 ---
 
-## 📊 Stories Summary
+## � Phase 6: UAT — Data Contract Fixes (8-10h)
+
+### Story 11.24: Data Contract Alignment — API-to-UI Integration Fixes
+**Priority:** 🔴 CRITICAL  
+**Estimate:** 8-10h  
+**Status:** 🔲 Ready  
+**Story Doc:** 📄 [11-24-data-contract-alignment.md](11-24-data-contract-alignment.md)  
+**Source:** UAT 全面排查 (2026-02-14) — 发现 14 个数据契约断裂问题  
+**Supersedes:** TD-016 (JSON 活动日志), TD-017 (Skills UUID)  
+**Dependencies:** None (all Sprint 11 stories complete)
+
+**Quick Summary:** As a user, I want all UI pages to correctly display human-readable information from the API, so that I see meaningful content instead of raw UUIDs, JSON strings, broken images, or runtime crashes.
+
+**Key Deliverables:**
+- [ ] C-1: Admin Dashboard Recent Activity 格式化为人类可读描述
+- [ ] C-2: BadgeInfo 支持 `{ description }` 和 `{ requirements }` 两种 criteria 格式
+- [ ] C-3: Wallet API 区分 badge/milestone 类型，避免运行时崩溃
+- [ ] M-4/5: 验证页 expiresAt/claimedAt 字段修正
+- [ ] M-7: issuerMessage 死代码清理
+- [ ] M-8/9/13: Null safety + fallback 加固（revokedBy, imageUrl, skill names）
+- [ ] L-6/10/11/12/14: 类型修正 + 展示美化
+
+**7 Tasks:** Backend formatting (2h) + Criteria parser (30min) + Wallet type discriminator (2h) + Verification fields (1h) + Null safety (1.5h) + Dead code cleanup (30min) + Display polish (30min)
+
+---
+
+## �📊 Stories Summary
 
 | # | Story ID | Title | Priority | Est. | Source | Status |
 |---|----------|-------|----------|------|--------|--------|
@@ -570,7 +600,8 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 | 21 | 11.21 | CI Quality Gates (Chinese+console) | 🟡 | 2h | project-context.md | ✅ |
 | 22 | 11.22 | Husky Pre-commit Hooks | 🟡 | 2h | project-context.md | ✅ |
 | 23 | 11.23 | User Management Nav Fix | 🟡 | 30min | Backlog+Feature Audit | ✅ |
-| | **TOTAL** | **23 stories** | | **53.5-67.5h** | | |
+| 24 | 11.24 | Data Contract Alignment | 🔴 | 8-10h | UAT 全面排查 | 🔲 Ready |
+| | **TOTAL** | **24 stories** | | **61.5-77.5h** | | |
 
 ---
 
@@ -852,6 +883,6 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 
 ---
 
-**Last Updated:** 2026-02-14 (Sprint 11 COMPLETE — 23/23 stories delivered across 5 waves)  
-**Status:** ✅ COMPLETE — All 23 stories delivered, Sprint DoD pending (project-context.md, retrospective, CHANGELOG, merge, tag)  
+**Last Updated:** 2026-02-14 (Sprint 11: 23/24 stories complete, Story 11.24 added from UAT findings)  
+**Status:** 🔄 IN PROGRESS — 23 stories delivered across 5 waves; Story 11.24 (Data Contract Alignment) added from UAT, ready for Wave 6  
 **Created By:** SM Agent (Bob)
