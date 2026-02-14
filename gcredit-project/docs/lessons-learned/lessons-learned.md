@@ -2,7 +2,7 @@
 
 **Project:** G-Credit Digital Credentialing System  
 **Purpose:** Capture key learnings and establish best practices for efficient development  
-**Last Updated:** 2026-02-11 (Sprint 10 Complete — v1.0.0 Released)  
+**Last Updated:** 2026-02-14 (Sprint 11 Wave 4 — Lesson 35 Enhanced)  
 **Status:** Living document - update after each Sprint Retrospective  
 **Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 → Sprint 6 → Sprint 7 → Sprint 8 → Sprint 9 → Sprint 10 (Complete) + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
 **Total Lessons:** 36 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 8, Sprint 7: 3, Sprint 8: 3, Sprint 9: 3, Sprint 10: 3)
@@ -74,7 +74,7 @@
   - Lesson 30: Technical Debt Registry as SSOT
 - [Sprint 9 Lessons](#sprint-9-lessons-february-2026) - ESLint Cleanup & TypeScript Gaps (3 lessons) 🆕
   - Lesson 34: `eslint --fix` Strips `as` Type Assertions
-  - Lesson 35: Three TypeScript Compilation Layers in CI
+  - Lesson 35: Local CI Parity — TypeScript, ESLint, and Prettier Each Check Different Things
   - Lesson 36: Replacing `any` Cascades into Test Mocks
 - [Sprint 8 Lessons](#sprint-8-lessons-february-2026) - Production-Ready MVP (3 lessons)
   - Lesson 31: Code Review as DoD Gate
@@ -1705,11 +1705,12 @@ const rows: CsvRow[] = parse(csvContent);
 
 ---
 
-### 🎯 Lesson 35: Three TypeScript Compilation Layers in CI — Each Has Different Strictness
+### 🎯 Lesson 35: Local CI Parity — TypeScript, ESLint, and Prettier Each Check Different Things
 
 **Category:** 🏗️ Architecture, 🧪 Testing, 📋 Process  
-**Impact:** CRITICAL (129 type errors accumulated undetected across 8 sprints)  
+**Impact:** CRITICAL (129 type errors accumulated undetected across 8 sprints; recurred Sprint 11 with 11 lint/prettier errors on new files)  
 **Sprint Discovered:** Sprint 9, TD-015 SM Acceptance Review  
+**Recurrence:** Sprint 11, Wave 4 (Stories 11.10, 11.11, 11.12) — 2026-02-14  
 **Discovery Date:** 2026-02-07  
 **Related Story:** [TD-017](../../sprints/sprint-9/td-017-tsc-type-errors.md)
 
@@ -1761,15 +1762,51 @@ Total: 138 errors (129 pre-existing + 9 from TD-015)
 2. Source file errors fixed immediately via CI pipeline repair (commits `5deace0`, `769a151`)
 3. Plan: Add `"type-check": "tsc --noEmit"` script to package.json and gate in CI (Sprint 11)
 
+#### Sprint 11 Recurrence (2026-02-14)
+
+**What happened again:** Wave 4 created 3 new spec files (Stories 11.10-11.12) and modified a frontend test file. Local verification ran:
+- `npx jest --forceExit` ✅ (718 tests passed)
+- `npx vitest run` ✅ (541 tests passed)
+- `npx tsc --noEmit` ✅ (0 errors)
+- `npx eslint` on **source files only** ✅
+
+But CI failed with **11 errors and 17 warnings**: `prettier/prettier` formatting violations, `@typescript-eslint/no-require-imports` error — all in the **new spec files** that were never linted locally.
+
+**Why it recurred:** The fix for the original lesson added `tsc --noEmit` to the checklist but the local ESLint check was only run on modified source (non-test) files. Newly created `.spec.ts` files bypassed lint entirely. The verification was **selective** (cherry-picked files) instead of **exhaustive** (all changed files).
+
+**Additional gap identified:**
+
+| Check | Ran locally? | Ran in CI? | Scope |
+|-------|-------------|-----------|-------|
+| `tsc --noEmit` | ✅ | ✅ | All files |
+| `eslint` | ⚠️ Partial | ✅ All files | Only ran on 2 source files, skipped 3 new spec files |
+| `prettier` | ❌ Never | ✅ (via eslint) | Never ran standalone |
+| `jest` | ✅ | ✅ | All test files |
+
 #### Prevention for Future
 
 - **Sprint 0 Rule:** Add `tsc --noEmit` to CI pipeline from day one
 - **Dev Prompt:** Include `npx tsc --noEmit` as verification step in all dev prompts
 - **SM Acceptance:** Always run `npx tsc --noEmit` during story acceptance
 - **New Projects:** Add to project setup checklist: "CI must include tsc --noEmit"
+- **🆕 Pre-commit: Lint ALL changed files, not cherry-picked ones:**
+  ```powershell
+  # Backend: lint all changed/new .ts files (including spec files)
+  cd gcredit-project/backend
+  npx eslint src/ --max-warnings=0    # Full scope, not selective
+  npx prettier --check "src/**/*.ts"  # Explicit prettier check
+  npx tsc --noEmit
+  
+  # Frontend: same pattern
+  cd gcredit-project/frontend
+  npx eslint src/ --max-warnings=0
+  npx prettier --check "src/**/*.{ts,tsx}"
+  npx tsc --noEmit
+  ```
+- **🆕 Rule: New files need MORE scrutiny, not less.** Hand-written code (vs. modified existing code) is most likely to have formatting issues since it wasn't formatted by an editor on save.
 
 #### Key Takeaway
-> A NestJS/TypeScript project has at least 3 TypeScript compilation layers (build, lint, test), each with different strictness. Only `tsc --noEmit` provides full type checking. If it's not in CI, type errors WILL accumulate silently. Add it from Sprint 0.
+> A NestJS/TypeScript project has at least 4 verification layers (build, lint, prettier, tsc), each checking different things. Tests passing gives false confidence — `jest`/`vitest` don't check formatting or lint rules. **Always run `eslint` and `prettier --check` on the FULL `src/` directory before commit, not just on selected files.** New/hand-written files are the most likely to fail formatting checks.
 
 ---
 
@@ -3931,13 +3968,17 @@ Spec Written (Sprint 0) → Assumption: "It'll get done" → 10 sprints pass
 ### ✅ Before Committing Code
 
 ```markdown
-[ ] Run tests (npm test)
-[ ] Check for TypeScript errors (npm run build)
+[ ] Run tests: backend `npx jest --forceExit` + frontend `npx vitest run`
+[ ] TypeScript check: `npx tsc --noEmit` (both backend and frontend)
+[ ] ESLint full scope: `npx eslint src/` (NOT selective files — catches new file issues)
+[ ] Prettier check: `npx prettier --check "src/**/*.ts"` (especially for new/hand-written files)
 [ ] Verify imports use correct paths (no red squiggles in IDE)
 [ ] Update IMPORT-PATHS.md if new pattern introduced
 [ ] Check if documentation needs update
 [ ] Write meaningful commit message
 ```
+
+> ⚠️ **Lesson 35 (Sprint 9 + Sprint 11):** Never lint only selected files. New files are the most likely to fail formatting. Always lint the full `src/` directory.
 
 ### ✅ Sprint Retrospective (Must-Do Items)
 

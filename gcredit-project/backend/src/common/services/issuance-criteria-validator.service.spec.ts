@@ -7,6 +7,9 @@ import {
   ISSUANCE_CRITERIA_TEMPLATES,
 } from '../../badge-templates/dto/issuance-criteria.dto';
 
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
+// Test data intentionally uses partial/invalid objects — safe in test context
+
 describe('IssuanceCriteriaValidatorService', () => {
   let service: IssuanceCriteriaValidatorService;
 

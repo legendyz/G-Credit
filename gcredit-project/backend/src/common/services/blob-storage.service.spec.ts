@@ -2,6 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { BadRequestException } from '@nestjs/common';
 
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
+// Jest mock return values are inherently `any` — safe in test context
+
 // ── Mock setup (jest.mock is hoisted, use require-style refs) ───
 
 // Azure SDK mock objects — populated before each test

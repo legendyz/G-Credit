@@ -5,6 +5,14 @@ import { BlobStorageService } from '../common/services/blob-storage.service';
 import { IssuanceCriteriaValidatorService } from '../common/services/issuance-criteria-validator.service';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { TemplateStatus } from '@prisma/client';
+import { CreateBadgeTemplateDto } from './dto/badge-template.dto';
+import {
+  IssuanceCriteriaType,
+  IssuanceCriteriaDto,
+} from './dto/issuance-criteria.dto';
+
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+// Jest mock return values are inherently `any` — safe in test context
 
 // Mock external dependencies required by BlobStorageService
 jest.mock('@azure/storage-blob', () => ({
@@ -111,13 +119,13 @@ describe('BadgeTemplatesService', () => {
 
   // ==================== create ====================
   describe('create', () => {
-    const createDto = {
+    const createDto: CreateBadgeTemplateDto = {
       name: 'New Badge',
       description: 'Test badge template',
       category: 'technical',
       skillIds: ['skill-1'],
-      issuanceCriteria: undefined as any,
-      validityPeriod: undefined as any,
+      issuanceCriteria: undefined as unknown as IssuanceCriteriaDto,
+      validityPeriod: undefined,
     };
 
     it('should create a template without image', async () => {
@@ -207,26 +215,31 @@ describe('BadgeTemplatesService', () => {
     });
 
     it('should validate issuanceCriteria when provided', async () => {
-      const dtoWithCriteria = {
+      const dtoWithCriteria: CreateBadgeTemplateDto = {
         ...createDto,
-        issuanceCriteria: { type: 'manual', conditions: [] },
-      } as any;
+        issuanceCriteria: {
+          type: IssuanceCriteriaType.MANUAL,
+          conditions: [],
+        },
+      };
       prisma.skill.findMany.mockResolvedValue([{ id: 'skill-1' }]);
       prisma.badgeTemplate.create.mockResolvedValue(mockTemplate);
 
       await service.create(dtoWithCriteria, 'user-1');
 
       expect(criteriaValidator.validate).toHaveBeenCalledWith({
-        type: 'manual',
+        type: IssuanceCriteriaType.MANUAL,
         conditions: [],
       });
     });
 
     it('should propagate criteriaValidator errors', async () => {
-      const dtoWithCriteria = {
+      const dtoWithCriteria: CreateBadgeTemplateDto = {
         ...createDto,
-        issuanceCriteria: { type: 'invalid' },
-      } as any;
+        issuanceCriteria: {
+          type: 'invalid' as IssuanceCriteriaType,
+        },
+      };
       prisma.skill.findMany.mockResolvedValue([{ id: 'skill-1' }]);
       criteriaValidator.validate.mockImplementation(() => {
         throw new BadRequestException('Invalid criteria type');
@@ -607,11 +620,14 @@ describe('BadgeTemplatesService', () => {
       prisma.badgeTemplate.update.mockResolvedValue(mockTemplate);
 
       await service.update('tmpl-1', {
-        issuanceCriteria: { type: 'manual', conditions: [] },
-      } as any);
+        issuanceCriteria: {
+          type: IssuanceCriteriaType.MANUAL,
+          conditions: [],
+        },
+      });
 
       expect(criteriaValidator.validate).toHaveBeenCalledWith({
-        type: 'manual',
+        type: IssuanceCriteriaType.MANUAL,
         conditions: [],
       });
     });
@@ -727,8 +743,8 @@ describe('BadgeTemplatesService', () => {
             description: 'Test',
             category: 'technical',
             skillIds: ['skill-1', 'skill-2'],
-            issuanceCriteria: undefined as any,
-            validityPeriod: undefined as any,
+            issuanceCriteria: undefined as unknown as IssuanceCriteriaDto,
+            validityPeriod: undefined,
           },
           'user-1',
         ),
@@ -745,8 +761,8 @@ describe('BadgeTemplatesService', () => {
             description: 'Test',
             category: 'technical',
             skillIds: ['skill-1', 'skill-missing'],
-            issuanceCriteria: undefined as any,
-            validityPeriod: undefined as any,
+            issuanceCriteria: undefined as unknown as IssuanceCriteriaDto,
+            validityPeriod: undefined,
           },
           'user-1',
         ),
