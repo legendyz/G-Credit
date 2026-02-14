@@ -51,9 +51,13 @@ describe('Auth E2E (Simple)', () => {
       })
       .expect(201);
 
-    const registerBody = registerResponse.body as { email: string };
+    const registerBody = registerResponse.body as {
+      accessToken: string;
+      user: { email: string };
+    };
     console.log('Register response:', registerResponse.body);
-    expect(registerBody.email).toBe(uniqueEmail);
+    expect(registerBody.accessToken).toBeDefined();
+    expect(registerBody.user.email).toBe(uniqueEmail);
 
     // Login
     const loginResponse = await request(app.getHttpServer() as App)
