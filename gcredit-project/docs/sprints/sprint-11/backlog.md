@@ -269,7 +269,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.10: CQ-001 — badge-templates.service.ts Unit Tests
 **Priority:** 🟡 HIGH  
 **Estimate:** 4-6h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** Code Quality Audit  
 **Dependencies:** None
@@ -289,7 +289,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.11: CQ-002 — issuance-criteria-validator.service.ts Unit Tests
 **Priority:** 🟡 HIGH  
 **Estimate:** 3-4h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** Code Quality Audit  
 **Dependencies:** None
@@ -308,7 +308,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.12: CQ-003 — blob-storage.service.ts Unit Tests
 **Priority:** 🟡 HIGH  
 **Estimate:** 3-4h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** Code Quality Audit  
 **Dependencies:** None
@@ -328,7 +328,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.13: CQ-004 — NestJS Logger Integration (22 Services/Controllers)
 **Priority:** 🟡 MEDIUM  
 **Estimate:** 2-3h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** Code Quality Audit  
 **Dependencies:** Story 11.8 (SEC-004, PII sanitization — Logger should use sanitized output)
@@ -384,7 +384,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.16: CQ-007 — Paginated Response Format Standardization
 **Priority:** 🟡 HIGH  
 **Estimate:** 4-6h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** Code Quality Audit  
 **Dependencies:** None
@@ -556,13 +556,13 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 | 7 | 11.7 | SEC-003: Issuer Email Masking | 🟡 | 30min | Security Audit | ✅ |
 | 8 | 11.8 | SEC-004: Log PII Sanitization | 🟡 | 2h | Security Audit | ✅ |
 | 9 | 11.9 | SEC-006: HTML Sanitization Pipe | 🟡 | 2-3h | Security Audit | ✅ |
-| 10 | 11.10 | CQ-001: badge-templates.service Tests | 🟡 | 4-6h | Code Quality Audit | 🔴 |
-| 11 | 11.11 | CQ-002: issuance-criteria-validator Tests | 🟡 | 3-4h | Code Quality Audit | 🔴 |
-| 12 | 11.12 | CQ-003: blob-storage.service Tests | 🟡 | 3-4h | Code Quality Audit | 🔴 |
-| 13 | 11.13 | CQ-004: NestJS Logger Integration | 🟡 | 2-3h | Code Quality Audit | 🔴 |
+| 10 | 11.10 | CQ-001: badge-templates.service Tests | 🟡 | 4-6h | Code Quality Audit | ✅ |
+| 11 | 11.11 | CQ-002: issuance-criteria-validator Tests | 🟡 | 3-4h | Code Quality Audit | ✅ |
+| 12 | 11.12 | CQ-003: blob-storage.service Tests | 🟡 | 3-4h | Code Quality Audit | ✅ |
+| 13 | 11.13 | CQ-004: NestJS Logger Integration | 🟡 | 2-3h | Code Quality Audit | ✅ |
 | 14 | 11.14 | CQ-005: Remove Unused Dependencies | 🟢 | 15min | Code Quality Audit | ✅ |
 | 15 | 11.15 | CQ-006: Design System Consistency | 🟡 | 2-3h | Code Quality+Feature | 🔴 |
-| 16 | 11.16 | CQ-007: Pagination Standardization | 🟡 | 4-6h | Code Quality Audit | 🔴 |
+| 16 | 11.16 | CQ-007: Pagination Standardization | 🟡 | 4-6h | Code Quality Audit | ✅ |
 | 17 | 11.17 | FR26: Analytics CSV Export | 🟡 | 3h | PRD+Feature Audit | 🔴 |
 | 18 | 11.18 | Verification Skill UUID→Name | 🟡 | 1h | Feature Audit | ✅ |
 | 19 | 11.19 | 403 Access Denied Page | 🟡 | 2h | Feature Audit | ✅ |
@@ -711,7 +711,20 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 | 11.5 | LinkedIn Share Tab | ✅ 4th tab (Email→LinkedIn→Teams→Widget), SVG #0A66C2, share analytics, OG meta tags, "✓ opened" 5s state |
 | 11.18 | Skill UUID→Name | ✅ Backend skill.findMany resolution, frontend {id,name} rendering |
 | 11.19 | 403 Access Denied Page | ✅ AccessDeniedPage + /access-denied route, ProtectedRoute redirect, ShieldAlert icon, dual button |
+### Wave 4 — Code Quality ✅ (2026-02-14)
+**Stories:** 11.13, 11.10, 11.11, 11.12, 11.16 (19/23 complete)
+**Commits:** `a541e60..0419d68` (7 commits: 1 logger + 3 test suites + 1 pagination + 2 lint fixes)
+**Code Review:** APPROVED ([wave-4-code-review.md](wave-4-code-review.md))
+**Tests:** BE 718 (+132) | FE 541 (0 regressions) = **1259 total**
+**Note:** Lesson 35 recurrence — new spec files bypassed lint (fixed in commits ad50a9b/0419d68)
 
+| Story | Title | Result |
+|-------|-------|--------|
+| 11.13 | NestJS Logger Integration | ✅ 22 files (13 controllers + 9 services) all have Logger, 0 console.log in production code |
+| 11.10 | badge-templates.service Tests | ✅ 773-line spec, ~40 test cases, all 8 public methods + validateSkillIds covered |
+| 11.11 | issuance-criteria-validator Tests | ✅ 672-line spec, ~55 test cases, all validation rules + templates covered, pure logic (no mocks) |
+| 11.12 | blob-storage.service Tests | ✅ 453-line spec, ~30 test cases, Azure SDK/sharp/magic-bytes fully mocked |
+| 11.16 | Pagination Standardization | ✅ PaginatedResponse<T> + createPaginatedResponse(), 5 endpoints migrated, all FE consumers + tests updated, C-4 atomic |
 ---
 
 ## �🚧 Sprint Risks
@@ -719,7 +732,7 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 | Risk | Probability | Impact | Mitigation |
 |------|------------|---------|------------|
 | ~~JWT httpOnly migration breaks existing auth flows~~ | ~~Medium~~ | ~~High~~ | ✅ Resolved Wave 2 — dual-read strategy, E2E passing |
-| Pagination standardization breaks frontend consumers | Medium | Medium | Update frontend clients in same story, test each endpoint |
+| ~~Pagination standardization breaks frontend consumers~~ | ~~Medium~~ | ~~Medium~~ | ✅ Resolved Wave 4 — 5 endpoints + all FE consumers migrated atomically (C-4) |
 | ~~Badge visibility migration affects existing data~~ | ~~Low~~ | ~~Medium~~ | ✅ Resolved Wave 3 — @default(PUBLIC), all existing badges auto-PUBLIC |
 | Context switching overhead (23 stories, diverse topics) | Medium | Medium | Wave-based execution, batch related stories |
 
@@ -825,6 +838,6 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 
 ---
 
-**Last Updated:** 2026-02-14 (Wave 3 Done — 14/23 stories completed, all security + core feature stories done)  
-**Status:** In Progress — Wave 3 Complete, Wave 4 Next  
+**Last Updated:** 2026-02-14 (Wave 4 Done — 19/23 stories completed, all security + core feature + code quality stories done)  
+**Status:** In Progress — Wave 4 Complete, Wave 5 Next  
 **Created By:** SM Agent (Bob)

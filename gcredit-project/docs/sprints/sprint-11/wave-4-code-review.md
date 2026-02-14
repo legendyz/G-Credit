@@ -1,4 +1,4 @@
-## Review 结果: APPROVED WITH COMMENTS
+## Review 结果: APPROVED
 
 ### 各 Story 状态
 | Story | 状态 | 备注 |
@@ -7,7 +7,7 @@
 | 11.10 | ✅ | `badge-templates.service.spec.ts` 已创建（773 行），覆盖 `create/findAll/findOne/findOneRaw/update/remove/getCriteriaTemplates/getCriteriaTemplate` 与 `validateSkillIds` 间接路径；`it()` 用例约 40。 |
 | 11.11 | ✅ | `issuance-criteria-validator.service.spec.ts` 已创建（672 行），覆盖基础输入校验、condition/value/type-specific 规则、logicOperator、template 方法与多条 happy path；`it()` 用例约 55。 |
 | 11.12 | ✅ | `blob-storage.service.spec.ts` 已创建（453 行），覆盖 `onModuleInit/uploadImage/deleteImage/imageExists`，包含 Azure SDK / sharp / magic-bytes mocks；`it()` 用例约 30。 |
-| 11.16 | ⚠️ | 分页基础设施与 5 个端点迁移、前端消费者与相关测试均已适配 `data/meta`；但 `GET /badges/wallet` 的 Swagger `@ApiResponse` 示例仍为旧结构（`badges/pagination`），建议更新为 `data/meta/dateGroups`。 |
+| 11.16 | ✅ | 分页基础设施与 5 个端点迁移、前端消费者与相关测试均已适配 `data/meta`；`GET /badges/wallet` 的 Swagger `@ApiResponse` 示例也已同步为 `data/meta/dateGroups`。 |
 
 ### 架构条件满足状况
 | # | 条件 | 状态 | 备注 |
@@ -27,8 +27,5 @@
 | tsc --noEmit 通过 | ✅ | 当前记录显示 TypeScript 编译检查通过。 |
 | 新建 spec 文件已 lint | ✅ | 三个新建 spec 已完成 lint/prettier 修复并合入。 |
 
-### 发现的问题（如有）
-1. [SUGGESTION] `backend/src/badge-issuance/badge-issuance.controller.ts` 中 `getWallet` 的 Swagger `@ApiResponse.schema.example` 仍使用旧字段：`badges` + `pagination`。建议改为新标准：`data` + `meta` + `dateGroups`，避免接口文档与真实返回不一致。
-
 ### 总结
-Wave 4 主要目标已完成：Logger 标准化、三组高质量单测、分页响应统一与前后端同步迁移均达到验收预期。当前仅有一项文档级一致性建议（Swagger 示例字段未同步），不影响运行时行为与 CI 结果，建议在下一次小修中一并修正。
+Wave 4 主要目标已全部完成：Logger 标准化、三组高质量单测、分页响应统一与前后端同步迁移均达到验收预期。此前唯一文档一致性建议（wallet Swagger 示例字段）已修复并复核通过。
