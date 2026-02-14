@@ -271,7 +271,14 @@ describe('BadgeManagementPage', () => {
     it('should NOT show Revoke button for REVOKED badges', async () => {
       const revokedOnlyResponse = {
         data: [createMockBadge({ id: 'badge-1', status: 'REVOKED' })],
-        meta: { total: 1, page: 1, limit: 10, totalPages: 1, hasNextPage: false, hasPreviousPage: false },
+        meta: {
+          total: 1,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
       };
       vi.mocked(badgesApi.getAllBadges).mockResolvedValue(revokedOnlyResponse);
 
@@ -285,7 +292,14 @@ describe('BadgeManagementPage', () => {
     it('should NOT show Revoke button for EXPIRED badges', async () => {
       const expiredOnlyResponse = {
         data: [createMockBadge({ id: 'badge-1', status: 'EXPIRED' })],
-        meta: { total: 1, page: 1, limit: 10, totalPages: 1, hasNextPage: false, hasPreviousPage: false },
+        meta: {
+          total: 1,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
       };
       vi.mocked(badgesApi.getAllBadges).mockResolvedValue(expiredOnlyResponse);
 
@@ -302,7 +316,14 @@ describe('BadgeManagementPage', () => {
           createMockBadge({ id: 'badge-1', issuerId: 'current-user-id', status: 'PENDING' }), // Own badge
           createMockBadge({ id: 'badge-2', issuerId: 'other-issuer', status: 'PENDING' }), // Not own badge
         ],
-        meta: { total: 2, page: 1, limit: 10, totalPages: 1, hasNextPage: false, hasPreviousPage: false },
+        meta: {
+          total: 2,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
       };
       vi.mocked(badgesApi.getIssuedBadges).mockResolvedValue(mixedIssuersResponse);
 
@@ -365,7 +386,14 @@ describe('BadgeManagementPage', () => {
     it('should show empty state when no badges', async () => {
       vi.mocked(badgesApi.getAllBadges).mockResolvedValue({
         data: [],
-        meta: { total: 0, page: 1, limit: 10, totalPages: 0, hasNextPage: false, hasPreviousPage: false },
+        meta: {
+          total: 0,
+          page: 1,
+          limit: 10,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
       });
 
       render(<BadgeManagementPage />, { wrapper: createWrapper() });
@@ -381,7 +409,14 @@ describe('BadgeManagementPage', () => {
       const user = userEvent.setup();
       const pendingOnlyResponse = {
         data: [createMockBadge({ id: 'badge-1', status: 'PENDING' })],
-        meta: { total: 1, page: 1, limit: 10, totalPages: 1, hasNextPage: false, hasPreviousPage: false },
+        meta: {
+          total: 1,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
       };
       vi.mocked(badgesApi.getAllBadges).mockResolvedValue(pendingOnlyResponse);
 
@@ -421,7 +456,14 @@ describe('BadgeManagementPage', () => {
     it('should have accessible revoke buttons with badge context', async () => {
       const pendingOnlyResponse = {
         data: [createMockBadge({ id: 'badge-1', status: 'PENDING' })],
-        meta: { total: 1, page: 1, limit: 10, totalPages: 1, hasNextPage: false, hasPreviousPage: false },
+        meta: {
+          total: 1,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
       };
       vi.mocked(badgesApi.getAllBadges).mockResolvedValue(pendingOnlyResponse);
 

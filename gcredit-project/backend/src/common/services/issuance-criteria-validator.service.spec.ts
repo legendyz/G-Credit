@@ -56,12 +56,12 @@ describe('IssuanceCriteriaValidatorService', () => {
       });
 
       it('should throw for invalid type', () => {
-        expect(() =>
-          service.validate({ type: 'invalid_type' } as any),
-        ).toThrow(BadRequestException);
-        expect(() =>
-          service.validate({ type: 'invalid_type' } as any),
-        ).toThrow(/Invalid issuance criteria type/);
+        expect(() => service.validate({ type: 'invalid_type' } as any)).toThrow(
+          BadRequestException,
+        );
+        expect(() => service.validate({ type: 'invalid_type' } as any)).toThrow(
+          /Invalid issuance criteria type/,
+        );
       });
     });
 
@@ -185,10 +185,14 @@ describe('IssuanceCriteriaValidatorService', () => {
       it('should throw when IN operator has non-array value', () => {
         expect(() =>
           service.validate(
-            criteria(IssuanceCriteriaType.COMBINED, [
-              condition('field1', ConditionOperator.IN, 'not-array' as any),
-              condition('field2', ConditionOperator.EQUALS, 'val'),
-            ], 'all'),
+            criteria(
+              IssuanceCriteriaType.COMBINED,
+              [
+                condition('field1', ConditionOperator.IN, 'not-array' as any),
+                condition('field2', ConditionOperator.EQUALS, 'val'),
+              ],
+              'all',
+            ),
           ),
         ).toThrow(/requires value to be an array/);
       });
@@ -196,10 +200,14 @@ describe('IssuanceCriteriaValidatorService', () => {
       it('should throw when NOT_IN operator has non-array value', () => {
         expect(() =>
           service.validate(
-            criteria(IssuanceCriteriaType.COMBINED, [
-              condition('field1', ConditionOperator.NOT_IN, 123 as any),
-              condition('field2', ConditionOperator.EQUALS, 'val'),
-            ], 'all'),
+            criteria(
+              IssuanceCriteriaType.COMBINED,
+              [
+                condition('field1', ConditionOperator.NOT_IN, 123 as any),
+                condition('field2', ConditionOperator.EQUALS, 'val'),
+              ],
+              'all',
+            ),
           ),
         ).toThrow(/requires value to be an array/);
       });
@@ -207,10 +215,14 @@ describe('IssuanceCriteriaValidatorService', () => {
       it('should throw when IN operator has empty array', () => {
         expect(() =>
           service.validate(
-            criteria(IssuanceCriteriaType.COMBINED, [
-              condition('field1', ConditionOperator.IN, [] as any),
-              condition('field2', ConditionOperator.EQUALS, 'val'),
-            ], 'all'),
+            criteria(
+              IssuanceCriteriaType.COMBINED,
+              [
+                condition('field1', ConditionOperator.IN, [] as any),
+                condition('field2', ConditionOperator.EQUALS, 'val'),
+              ],
+              'all',
+            ),
           ),
         ).toThrow(/requires non-empty array/);
       });
@@ -218,10 +230,18 @@ describe('IssuanceCriteriaValidatorService', () => {
       it('should throw when > operator has non-number value', () => {
         expect(() =>
           service.validate(
-            criteria(IssuanceCriteriaType.AUTO_TASK, [
-              condition('taskId', ConditionOperator.EQUALS, 'task-1'),
-              condition('score', ConditionOperator.GREATER_THAN, 'not-a-number' as any),
-            ], 'all'),
+            criteria(
+              IssuanceCriteriaType.AUTO_TASK,
+              [
+                condition('taskId', ConditionOperator.EQUALS, 'task-1'),
+                condition(
+                  'score',
+                  ConditionOperator.GREATER_THAN,
+                  'not-a-number' as any,
+                ),
+              ],
+              'all',
+            ),
           ),
         ).toThrow(/typically requires a number value/);
       });
@@ -229,10 +249,18 @@ describe('IssuanceCriteriaValidatorService', () => {
       it('should throw when >= operator has non-number value', () => {
         expect(() =>
           service.validate(
-            criteria(IssuanceCriteriaType.AUTO_TASK, [
-              condition('taskId', ConditionOperator.EQUALS, 'task-1'),
-              condition('count', ConditionOperator.GREATER_THAN_OR_EQUAL, 'x' as any),
-            ], 'all'),
+            criteria(
+              IssuanceCriteriaType.AUTO_TASK,
+              [
+                condition('taskId', ConditionOperator.EQUALS, 'task-1'),
+                condition(
+                  'count',
+                  ConditionOperator.GREATER_THAN_OR_EQUAL,
+                  'x' as any,
+                ),
+              ],
+              'all',
+            ),
           ),
         ).toThrow(/typically requires a number value/);
       });
@@ -240,10 +268,14 @@ describe('IssuanceCriteriaValidatorService', () => {
       it('should throw when < operator has non-number value', () => {
         expect(() =>
           service.validate(
-            criteria(IssuanceCriteriaType.AUTO_TASK, [
-              condition('taskId', ConditionOperator.EQUALS, 'task-1'),
-              condition('count', ConditionOperator.LESS_THAN, true as any),
-            ], 'all'),
+            criteria(
+              IssuanceCriteriaType.AUTO_TASK,
+              [
+                condition('taskId', ConditionOperator.EQUALS, 'task-1'),
+                condition('count', ConditionOperator.LESS_THAN, true as any),
+              ],
+              'all',
+            ),
           ),
         ).toThrow(/typically requires a number value/);
       });
@@ -251,10 +283,18 @@ describe('IssuanceCriteriaValidatorService', () => {
       it('should throw when <= operator has non-number value', () => {
         expect(() =>
           service.validate(
-            criteria(IssuanceCriteriaType.AUTO_TASK, [
-              condition('taskId', ConditionOperator.EQUALS, 'task-1'),
-              condition('count', ConditionOperator.LESS_THAN_OR_EQUAL, [] as any),
-            ], 'all'),
+            criteria(
+              IssuanceCriteriaType.AUTO_TASK,
+              [
+                condition('taskId', ConditionOperator.EQUALS, 'task-1'),
+                condition(
+                  'count',
+                  ConditionOperator.LESS_THAN_OR_EQUAL,
+                  [] as any,
+                ),
+              ],
+              'all',
+            ),
           ),
         ).toThrow(/typically requires a number value/);
       });
@@ -262,10 +302,14 @@ describe('IssuanceCriteriaValidatorService', () => {
       it('should throw when CONTAINS operator has non-string value', () => {
         expect(() =>
           service.validate(
-            criteria(IssuanceCriteriaType.COMBINED, [
-              condition('name', ConditionOperator.CONTAINS, 123 as any),
-              condition('field2', ConditionOperator.EQUALS, 'val'),
-            ], 'all'),
+            criteria(
+              IssuanceCriteriaType.COMBINED,
+              [
+                condition('name', ConditionOperator.CONTAINS, 123 as any),
+                condition('field2', ConditionOperator.EQUALS, 'val'),
+              ],
+              'all',
+            ),
           ),
         ).toThrow(/requires string value/);
       });
@@ -477,7 +521,10 @@ describe('IssuanceCriteriaValidatorService', () => {
               IssuanceCriteriaType.AUTO_SKILL_LEVEL,
               [
                 condition('skillId', ConditionOperator.EQUALS, 'skill-1'),
-                condition('level', ConditionOperator.IN, ['ADVANCED', 'EXPERT']),
+                condition('level', ConditionOperator.IN, [
+                  'ADVANCED',
+                  'EXPERT',
+                ]),
               ],
               'all',
             ),
@@ -526,7 +573,11 @@ describe('IssuanceCriteriaValidatorService', () => {
               [
                 condition('courseId', ConditionOperator.EQUALS, 'course-1'),
                 condition('hours', ConditionOperator.GREATER_THAN_OR_EQUAL, 20),
-                condition('examScore', ConditionOperator.GREATER_THAN_OR_EQUAL, 85),
+                condition(
+                  'examScore',
+                  ConditionOperator.GREATER_THAN_OR_EQUAL,
+                  85,
+                ),
               ],
               'any',
             ),

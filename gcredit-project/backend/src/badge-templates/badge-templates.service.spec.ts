@@ -232,9 +232,9 @@ describe('BadgeTemplatesService', () => {
         throw new BadRequestException('Invalid criteria type');
       });
 
-      await expect(
-        service.create(dtoWithCriteria, 'user-1'),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.create(dtoWithCriteria, 'user-1')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should skip skillIds validation for empty array', async () => {
@@ -436,9 +436,9 @@ describe('BadgeTemplatesService', () => {
         status: TemplateStatus.DRAFT,
       });
 
-      await expect(
-        service.findOne('tmpl-1', 'EMPLOYEE'),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('tmpl-1', 'EMPLOYEE')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should allow ADMIN to see DRAFT template', async () => {
@@ -619,9 +619,9 @@ describe('BadgeTemplatesService', () => {
     it('should throw NotFoundException when template not found', async () => {
       prisma.badgeTemplate.findUnique.mockResolvedValue(null);
 
-      await expect(
-        service.update('nonexistent', updateDto),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.update('nonexistent', updateDto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 

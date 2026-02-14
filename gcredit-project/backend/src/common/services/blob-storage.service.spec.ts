@@ -11,7 +11,9 @@ const mockContainerClient: Record<string, jest.Mock> = {};
 jest.mock('@azure/storage-blob', () => ({
   BlobServiceClient: {
     fromConnectionString: jest.fn().mockImplementation(() => ({
-      getContainerClient: jest.fn().mockImplementation(() => mockContainerClient),
+      getContainerClient: jest
+        .fn()
+        .mockImplementation(() => mockContainerClient),
     })),
   },
   ContainerClient: jest.fn(),
@@ -102,7 +104,8 @@ describe('BlobStorageService', () => {
       get: jest.fn((key: string, defaultVal?: string) => {
         if (key === 'AZURE_STORAGE_CONNECTION_STRING')
           return 'DefaultEndpointsProtocol=https;AccountName=test;AccountKey=key;EndpointSuffix=core.windows.net';
-        if (key === 'AZURE_STORAGE_CONTAINER_BADGES') return defaultVal ?? 'badges';
+        if (key === 'AZURE_STORAGE_CONTAINER_BADGES')
+          return defaultVal ?? 'badges';
         return defaultVal;
       }),
     };
@@ -133,6 +136,7 @@ describe('BlobStorageService', () => {
     });
 
     it('should set isAvailable=false when connection fails', () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { BlobServiceClient } = require('@azure/storage-blob');
       BlobServiceClient.fromConnectionString.mockImplementationOnce(() => {
         throw new Error('invalid connection');
@@ -433,7 +437,9 @@ describe('BlobStorageService', () => {
     });
 
     it('should return false on error', async () => {
-      (mockBlockBlobClient.exists as jest.Mock).mockRejectedValue(new Error('network error'));
+      (mockBlockBlobClient.exists as jest.Mock).mockRejectedValue(
+        new Error('network error'),
+      );
       const result = await service.imageExists(
         'https://mockaccount.blob.core.windows.net/badges/templates/img.png',
       );
