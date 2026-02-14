@@ -18,8 +18,8 @@ Harden security posture, improve code quality and test coverage, and complete co
 - [x] Account lockout mechanism implemented (防暴力破解) ✅ Wave 2
 - [x] File upload magic-byte validation (防MIME欺骗) ✅ Wave 2
 - [x] npm audit 0 HIGH vulnerabilities + Swagger production-hidden ✅ Wave 1
-- [ ] Badge visibility toggle (public/private) fully functional
-- [ ] LinkedIn share tab integrated into BadgeShareModal
+- [x] Badge visibility toggle (public/private) fully functional ✅ Wave 3
+- [x] LinkedIn share tab integrated into BadgeShareModal ✅ Wave 3
 - [x] JWT migrated to httpOnly cookies (防XSS token theft) ✅ Wave 2
 - [x] Issuer email masked on public verification pages ✅ Wave 1
 - [x] Log PII sanitized (GDPR compliance) ✅ Wave 2
@@ -138,7 +138,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.4: FR19 — Badge Visibility Toggle (Public/Private Control)
 **Priority:** 🔴 CRITICAL  
 **Estimate:** 4-6h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** PRD Audit + Feature Audit P0-1  
 **Dependencies:** None
@@ -162,7 +162,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.5: FEATURE-P0-2 — LinkedIn Share Tab in BadgeShareModal
 **Priority:** 🔴 CRITICAL  
 **Estimate:** 3-4h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** Feature Audit P0-2 + PRD ("viral growth engine")  
 **Dependencies:** None
@@ -434,7 +434,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.18: FEATURE-P1-6 — Verification Page: Skill UUID → Display Name
 **Priority:** 🟡 MEDIUM  
 **Estimate:** 1h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** Feature Audit  
 **Dependencies:** None
@@ -451,7 +451,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.19: FEATURE-P1-4 — 403 Access Denied Page
 **Priority:** 🟡 MEDIUM  
 **Estimate:** 2h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [Pending creation]  
 **Source:** Feature Audit  
 **Dependencies:** None
@@ -550,8 +550,8 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 | 1 | 11.1 | SEC-001: Account Lockout | 🔴 | 2-3h | Security Audit | ✅ |
 | 2 | 11.2 | SEC-005: File Upload Magic-Byte | 🔴 | 2-3h | Security Audit | ✅ |
 | 3 | 11.3 | SEC-007+DEP-001: npm audit + Swagger | 🔴 | 30min | Security Audit | ✅ |
-| 4 | 11.4 | FR19: Badge Visibility Toggle | 🔴 | 4-6h | PRD+Feature Audit | 🔴 |
-| 5 | 11.5 | LinkedIn Share Tab | 🔴 | 3-4h | Feature Audit | 🔴 |
+| 4 | 11.4 | FR19: Badge Visibility Toggle | 🔴 | 4-6h | PRD+Feature Audit | ✅ |
+| 5 | 11.5 | LinkedIn Share Tab | 🔴 | 3-4h | Feature Audit | ✅ |
 | 6 | 11.6 | SEC-002: JWT httpOnly Cookies | 🟡 | 6-8h | Security Audit | ✅ |
 | 7 | 11.7 | SEC-003: Issuer Email Masking | 🟡 | 30min | Security Audit | ✅ |
 | 8 | 11.8 | SEC-004: Log PII Sanitization | 🟡 | 2h | Security Audit | ✅ |
@@ -564,8 +564,8 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 | 15 | 11.15 | CQ-006: Design System Consistency | 🟡 | 2-3h | Code Quality+Feature | 🔴 |
 | 16 | 11.16 | CQ-007: Pagination Standardization | 🟡 | 4-6h | Code Quality Audit | 🔴 |
 | 17 | 11.17 | FR26: Analytics CSV Export | 🟡 | 3h | PRD+Feature Audit | 🔴 |
-| 18 | 11.18 | Verification Skill UUID→Name | 🟡 | 1h | Feature Audit | 🔴 |
-| 19 | 11.19 | 403 Access Denied Page | 🟡 | 2h | Feature Audit | 🔴 |
+| 18 | 11.18 | Verification Skill UUID→Name | 🟡 | 1h | Feature Audit | ✅ |
+| 19 | 11.19 | 403 Access Denied Page | 🟡 | 2h | Feature Audit | ✅ |
 | 20 | 11.20 | ClaimPage Hardcoded UUID Fix | 🟡 | 1h | Feature Audit | ✅ |
 | 21 | 11.21 | CI Quality Gates (Chinese+console) | 🟡 | 2h | project-context.md | 🔴 |
 | 22 | 11.22 | Husky Pre-commit Hooks | 🟡 | 2h | project-context.md | 🔴 |
@@ -698,6 +698,20 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 | 11.8 | Log PII Sanitization | ✅ 25+ emails → maskEmailForLog/user.id |
 | 11.9 | @SanitizeHtml Decorator | ✅ 10+ DTOs, sanitize-html allowedTags:[] |
 | 11.6 | JWT httpOnly Cookies | ✅ apiFetch wrapper, Set-Cookie, dual-read, ADR-010 |
+
+### Wave 3 — Core Features ✅ (2026-02-14)
+**Stories:** 11.4, 11.5, 11.18, 11.19 (14/23 complete)
+**Commits:** `784d92c..a4b81df` (2 commits: 1 feature + 1 fix)
+**Code Review:** APPROVED ([wave-3-code-review.md](wave-3-code-review.md))
+**Tests:** BE 586 (+6) | FE 541 (+15) = **1127 total**
+
+| Story | Title | Result |
+|-------|-------|--------|
+| 11.4 | Badge Visibility Toggle | ✅ Prisma enum, PATCH API, dual-entry toggle (Wallet+Modal), ClaimSuccessModal hint, PRIVATE→404 on verify, OB assertion unaffected (C-3) |
+| 11.5 | LinkedIn Share Tab | ✅ 4th tab (Email→LinkedIn→Teams→Widget), SVG #0A66C2, share analytics, OG meta tags, "✓ opened" 5s state |
+| 11.18 | Skill UUID→Name | ✅ Backend skill.findMany resolution, frontend {id,name} rendering |
+| 11.19 | 403 Access Denied Page | ✅ AccessDeniedPage + /access-denied route, ProtectedRoute redirect, ShieldAlert icon, dual button |
+
 ---
 
 ## �🚧 Sprint Risks
@@ -706,7 +720,7 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 |------|------------|---------|------------|
 | ~~JWT httpOnly migration breaks existing auth flows~~ | ~~Medium~~ | ~~High~~ | ✅ Resolved Wave 2 — dual-read strategy, E2E passing |
 | Pagination standardization breaks frontend consumers | Medium | Medium | Update frontend clients in same story, test each endpoint |
-| Badge visibility migration affects existing data | Low | Medium | Default all existing badges to PUBLIC (non-breaking) |
+| ~~Badge visibility migration affects existing data~~ | ~~Low~~ | ~~Medium~~ | ✅ Resolved Wave 3 — @default(PUBLIC), all existing badges auto-PUBLIC |
 | Context switching overhead (23 stories, diverse topics) | Medium | Medium | Wave-based execution, batch related stories |
 
 ---
@@ -811,6 +825,6 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 
 ---
 
-**Last Updated:** 2026-02-14 (Wave 2 Done — 10/23 stories completed, all security stories done)  
-**Status:** In Progress — Wave 2 Complete, Wave 3 Next  
+**Last Updated:** 2026-02-14 (Wave 3 Done — 14/23 stories completed, all security + core feature stories done)  
+**Status:** In Progress — Wave 3 Complete, Wave 4 Next  
 **Created By:** SM Agent (Bob)
