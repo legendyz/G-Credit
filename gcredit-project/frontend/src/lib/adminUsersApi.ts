@@ -83,20 +83,7 @@ export interface UpdateDepartmentResponse {
   department: string;
 }
 
-import { API_BASE_URL } from './apiConfig';
-
-const API_BASE = `${API_BASE_URL}/admin/users`;
-
-/**
- * Helper to get auth headers
- */
-function getAuthHeaders(): HeadersInit {
-  const token = localStorage.getItem('accessToken');
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
+import { apiFetch } from './apiFetch';
 
 /**
  * Get list of users with pagination, filtering, and sorting
@@ -116,9 +103,7 @@ export async function getAdminUsers(
   if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder);
   if (params.cursor) searchParams.set('cursor', params.cursor);
 
-  const response = await fetch(`${API_BASE}?${searchParams.toString()}`, {
-    headers: getAuthHeaders(),
-  });
+  const response = await apiFetch(`/admin/users?${searchParams.toString()}`);
 
   if (!response.ok) {
     if (response.status === 403) {
@@ -134,9 +119,7 @@ export async function getAdminUsers(
  * Get single user by ID
  */
 export async function getAdminUser(userId: string): Promise<AdminUser> {
-  const response = await fetch(`${API_BASE}/${userId}`, {
-    headers: getAuthHeaders(),
-  });
+  const response = await apiFetch(`/admin/users/${userId}`);
 
   if (!response.ok) {
     if (response.status === 404) {
@@ -155,9 +138,8 @@ export async function updateUserRole(
   userId: string,
   data: UpdateRoleRequest
 ): Promise<UpdateRoleResponse> {
-  const response = await fetch(`${API_BASE}/${userId}/role`, {
+  const response = await apiFetch(`/admin/users/${userId}/role`, {
     method: 'PATCH',
-    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
 
@@ -185,9 +167,8 @@ export async function updateUserStatus(
   userId: string,
   data: UpdateStatusRequest
 ): Promise<UpdateStatusResponse> {
-  const response = await fetch(`${API_BASE}/${userId}/status`, {
+  const response = await apiFetch(`/admin/users/${userId}/status`, {
     method: 'PATCH',
-    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
 
@@ -212,9 +193,8 @@ export async function updateUserDepartment(
   userId: string,
   data: UpdateDepartmentRequest
 ): Promise<UpdateDepartmentResponse> {
-  const response = await fetch(`${API_BASE}/${userId}/department`, {
+  const response = await apiFetch(`/admin/users/${userId}/department`, {
     method: 'PATCH',
-    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
 

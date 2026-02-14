@@ -2,26 +2,15 @@
  * Auth Store - Story 0.2a: Login & Navigation System
  *
  * Zustand store for authentication state management.
- * Handles login, logout, and token persistence.
+ * Tokens are stored in httpOnly cookies (Story 11.6 - SEC-002).
+ * Frontend only tracks user info and authentication status.
+ *
+ * @see ADR-010: JWT Token Transport Migration
  */
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { API_BASE_URL } from '../lib/apiConfig';
-
-/**
- * Decode JWT and check if it's expired.
- * Uses a 30-second buffer to avoid edge cases.
- */
-function isTokenExpired(token: string | null): boolean {
-  if (!token) return true;
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.exp * 1000 < Date.now() + 30_000;
-  } catch {
-    return true;
-  }
-}
+import { apiFetch } from '../lib/apiFetch';
 
 export interface User {
   id: string;
@@ -34,23 +23,23 @@ export interface User {
 interface AuthState {
   // State
   user: User | null;
-  accessToken: string | null;
-  refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
 
   // Actions
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  register: (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+  ) => Promise<void>;
+  logout: () => Promise<void>;
   clearError: () => void;
   setLoading: (loading: boolean) => void;
 
-  // Token management
-  setTokens: (accessToken: string, refreshToken: string) => void;
-  getAccessToken: () => string | null;
-
-  // Session validation (checks token expiry on app startup)
+  // Session validation (verifies cookie validity on app startup)
   sessionValidated: boolean;
   validateSession: () => Promise<boolean>;
 }
@@ -60,23 +49,18 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       // Initial state
       user: null,
-      accessToken: null,
-      refreshToken: null,
       isAuthenticated: false,
       isLoading: false,
       error: null,
       sessionValidated: false,
 
-      // Login action
+      // Login action — cookies set by server via Set-Cookie header
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
 
         try {
-          const response = await fetch(`${API_BASE_URL}/auth/login`, {
+          const response = await apiFetch('/auth/login', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
             body: JSON.stringify({ email, password }),
           });
 
@@ -87,16 +71,8 @@ export const useAuthStore = create<AuthState>()(
 
           const data = await response.json();
 
-          // Store tokens
-          localStorage.setItem('accessToken', data.accessToken);
-          if (data.refreshToken) {
-            localStorage.setItem('refreshToken', data.refreshToken);
-          }
-
           set({
             user: data.user,
-            accessToken: data.accessToken,
-            refreshToken: data.refreshToken || null,
             isAuthenticated: true,
             isLoading: false,
             error: null,
@@ -111,15 +87,58 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // Logout action
-      logout: () => {
+      // Register action — cookies set by server via Set-Cookie header
+      register: async (
+        email: string,
+        password: string,
+        firstName: string,
+        lastName: string,
+      ) => {
+        set({ isLoading: true, error: null });
+
+        try {
+          const response = await apiFetch('/auth/register', {
+            method: 'POST',
+            body: JSON.stringify({ email, password, firstName, lastName }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Registration failed');
+          }
+
+          const data = await response.json();
+
+          set({
+            user: data.user,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+        } catch (err) {
+          set({
+            isLoading: false,
+            error: err instanceof Error ? err.message : 'Registration failed',
+            isAuthenticated: false,
+          });
+          throw err;
+        }
+      },
+
+      // Logout — server clears httpOnly cookies
+      logout: async () => {
+        try {
+          await apiFetch('/auth/logout', { method: 'POST' });
+        } catch {
+          // Best-effort: clear local state even if server call fails
+        }
+
+        // Clean up any legacy localStorage tokens (migration cleanup)
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
 
         set({
           user: null,
-          accessToken: null,
-          refreshToken: null,
           isAuthenticated: false,
           sessionValidated: false,
           error: null,
@@ -132,21 +151,8 @@ export const useAuthStore = create<AuthState>()(
       // Set loading state
       setLoading: (loading: boolean) => set({ isLoading: loading }),
 
-      // Set tokens (for refresh)
-      setTokens: (accessToken: string, refreshToken: string) => {
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
-        set({ accessToken, refreshToken });
-      },
-
-      // Get access token
-      getAccessToken: () => {
-        const state = get();
-        return state.accessToken || localStorage.getItem('accessToken');
-      },
-
       // Validate session on app startup
-      // Checks access token expiry → tries refresh → logs out if both expired
+      // Tries /auth/profile (cookie sent automatically) → refresh if expired → logout
       validateSession: async () => {
         const state = get();
         if (!state.isAuthenticated) {
@@ -154,43 +160,37 @@ export const useAuthStore = create<AuthState>()(
           return false;
         }
 
-        const accessToken = state.accessToken || localStorage.getItem('accessToken');
-
-        // Access token still valid → session OK
-        if (!isTokenExpired(accessToken)) {
-          set({ sessionValidated: true });
-          return true;
-        }
-
-        // Access token expired → try refresh
-        const refreshTk = state.refreshToken || localStorage.getItem('refreshToken');
-
-        if (!refreshTk || isTokenExpired(refreshTk)) {
-          // Refresh token also expired → force logout
-          get().logout();
-          set({ sessionValidated: true });
-          return false;
-        }
-
         try {
-          const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ refreshToken: refreshTk }),
-          });
+          // Verify session via profile endpoint (cookie auth)
+          const profileRes = await apiFetch('/auth/profile');
 
-          if (!response.ok) {
-            get().logout();
-            set({ sessionValidated: true });
-            return false;
+          if (profileRes.ok) {
+            const data = await profileRes.json();
+            set({ user: data.user || data, sessionValidated: true });
+            return true;
           }
 
-          const data = await response.json();
-          get().setTokens(data.accessToken, data.refreshToken);
+          // Access token expired → try refresh (refresh cookie sent automatically)
+          const refreshRes = await apiFetch('/auth/refresh', {
+            method: 'POST',
+          });
+
+          if (refreshRes.ok) {
+            // Retry profile with refreshed cookie
+            const retryRes = await apiFetch('/auth/profile');
+            if (retryRes.ok) {
+              const data = await retryRes.json();
+              set({ user: data.user || data, sessionValidated: true });
+              return true;
+            }
+          }
+
+          // Both failed → force logout
+          await get().logout();
           set({ sessionValidated: true });
-          return true;
+          return false;
         } catch {
-          get().logout();
+          await get().logout();
           set({ sessionValidated: true });
           return false;
         }
@@ -198,16 +198,17 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      // Only persist non-sensitive data
+      // Only persist non-sensitive data (tokens are in httpOnly cookies)
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
-    }
-  )
+    },
+  ),
 );
 
 // Selector hooks for common patterns
-export const useIsAuthenticated = () => useAuthStore((state) => state.isAuthenticated);
+export const useIsAuthenticated = () =>
+  useAuthStore((state) => state.isAuthenticated);
 export const useCurrentUser = () => useAuthStore((state) => state.user);
 export const useUserRole = () => useAuthStore((state) => state.user?.role);

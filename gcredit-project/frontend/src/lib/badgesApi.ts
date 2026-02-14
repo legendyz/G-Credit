@@ -3,7 +3,7 @@
  * Sprint 7 - Epic 9: Badge Revocation Admin UI
  */
 
-import { API_BASE_URL } from './apiConfig';
+import { apiFetch } from './apiFetch';
 
 // Badge status constants matching backend Prisma enum
 export const BadgeStatus = {
@@ -109,17 +109,6 @@ export interface BadgeQueryParams {
 }
 
 /**
- * Get authorization header
- */
-function getAuthHeader(): HeadersInit {
-  const token = localStorage.getItem('accessToken');
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
-
-/**
  * Handle API response errors
  */
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -145,10 +134,7 @@ export async function getAllBadges(params: BadgeQueryParams = {}): Promise<Badge
   if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder);
   if (params.activeOnly) searchParams.set('activeOnly', 'true');
 
-  const response = await fetch(`${API_BASE_URL}/badges/issued?${searchParams}`, {
-    method: 'GET',
-    headers: getAuthHeader(),
-  });
+  const response = await apiFetch(`/badges/issued?${searchParams}`);
 
   return handleResponse<BadgeListResponse>(response);
 }
@@ -174,9 +160,8 @@ export async function revokeBadge(
   badgeId: string,
   dto: RevokeBadgeDto
 ): Promise<RevokeBadgeResponse> {
-  const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/revoke`, {
+  const response = await apiFetch(`/badges/${badgeId}/revoke`, {
     method: 'POST',
-    headers: getAuthHeader(),
     body: JSON.stringify(dto),
   });
 
@@ -188,10 +173,7 @@ export async function revokeBadge(
  * GET /api/badges/:id
  */
 export async function getBadgeById(badgeId: string): Promise<Badge> {
-  const response = await fetch(`${API_BASE_URL}/badges/${badgeId}`, {
-    method: 'GET',
-    headers: getAuthHeader(),
-  });
+  const response = await apiFetch(`/badges/${badgeId}`);
 
   return handleResponse<Badge>(response);
 }
@@ -206,9 +188,8 @@ export interface IssueBadgeRequest {
 }
 
 export async function issueBadge(dto: IssueBadgeRequest): Promise<Badge> {
-  const response = await fetch(`${API_BASE_URL}/badges`, {
+  const response = await apiFetch('/badges', {
     method: 'POST',
-    headers: getAuthHeader(),
     body: JSON.stringify(dto),
   });
   return handleResponse<Badge>(response);

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
+import { Request } from 'express';
 
 export interface JwtPayload {
   sub: string; // user ID
@@ -39,7 +40,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const jwtSecret = getJwtSecret(config);
 
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        // 1. Prefer httpOnly cookie (Story 11.6 - SEC-002)
+        (req: Request) => req?.cookies?.access_token || null,
+        // 2. Fallback to Authorization header (dual-write transition period)
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ]),
       ignoreExpiration: false,
       secretOrKey: jwtSecret,
     });

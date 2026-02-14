@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
-import { API_BASE_URL } from '../../lib/apiConfig';
+import { apiFetch } from '../../lib/apiFetch';
 
 interface BadgeTemplate {
   id: string;
@@ -22,13 +22,6 @@ interface TemplateSelectorProps {
   onSelect: (templateId: string | null) => void;
   /** Whether the selector is disabled */
   disabled?: boolean;
-}
-
-function getAuthHeaders(): HeadersInit {
-  const token = localStorage.getItem('accessToken');
-  return {
-    Authorization: `Bearer ${token}`,
-  };
 }
 
 export function TemplateSelector({ onSelect, disabled = false }: TemplateSelectorProps) {
@@ -44,9 +37,7 @@ export function TemplateSelector({ onSelect, disabled = false }: TemplateSelecto
     const fetchTemplates = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/badge-templates?status=ACTIVE`, {
-          headers: getAuthHeaders(),
-        });
+        const response = await apiFetch('/badge-templates?status=ACTIVE');
         if (response.ok) {
           const data = await response.json();
           // Handle both array response and paginated response

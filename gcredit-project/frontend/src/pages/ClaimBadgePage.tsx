@@ -13,8 +13,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { API_BASE_URL } from '../lib/apiConfig';
-import { useAuthStore } from '../stores/authStore';
+import { apiFetch } from '../lib/apiFetch';
 
 type ClaimState = 'claiming' | 'success' | 'error' | 'no-token';
 
@@ -22,7 +21,6 @@ export default function ClaimBadgePage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
-  const { accessToken } = useAuthStore();
 
   const [state, setState] = useState<ClaimState>(token ? 'claiming' : 'no-token');
   const [errorMessage, setErrorMessage] = useState('');
@@ -36,12 +34,8 @@ export default function ClaimBadgePage() {
     const claimBadge = async () => {
       setState('claiming');
       try {
-        const response = await fetch(`${API_BASE_URL}/badges/claim`, {
+        const response = await apiFetch('/badges/claim', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-          },
           body: JSON.stringify({ claimToken: token }),
         });
 
@@ -69,7 +63,7 @@ export default function ClaimBadgePage() {
     };
 
     claimBadge();
-  }, [token, accessToken, navigate]);
+  }, [token, navigate]);
 
   const handleRetry = () => {
     claimAttempted.current = false;

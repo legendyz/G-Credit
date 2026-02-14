@@ -13,18 +13,11 @@ import { useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { TemplateSelector } from '../components/BulkIssuance/TemplateSelector';
-import { API_BASE_URL } from '../lib/apiConfig';
+import { apiFetch } from '../lib/apiFetch';
 import { PageTemplate } from '../components/layout/PageTemplate';
 
 /** Max file size: 100KB */
 const MAX_FILE_SIZE = 102_400;
-
-function getAuthHeaders(): HeadersInit {
-  const token = localStorage.getItem('accessToken');
-  return {
-    Authorization: `Bearer ${token}`,
-  };
-}
 
 export function BulkIssuancePage() {
   const navigate = useNavigate();
@@ -49,11 +42,9 @@ export function BulkIssuancePage() {
     setIsDownloading(true);
     try {
       const templateUrl = selectedTemplateId
-        ? `${API_BASE_URL}/bulk-issuance/template?templateId=${encodeURIComponent(selectedTemplateId)}`
-        : `${API_BASE_URL}/bulk-issuance/template`;
-      const response = await fetch(templateUrl, {
-        headers: getAuthHeaders(),
-      });
+        ? `/bulk-issuance/template?templateId=${encodeURIComponent(selectedTemplateId)}`
+        : '/bulk-issuance/template';
+      const response = await apiFetch(templateUrl);
 
       if (!response.ok) {
         throw new Error(`Download failed: ${response.statusText}`);
@@ -113,9 +104,8 @@ export function BulkIssuancePage() {
         const formData = new FormData();
         formData.append('file', file);
 
-        const response = await fetch(`${API_BASE_URL}/bulk-issuance/upload`, {
+        const response = await apiFetch('/bulk-issuance/upload', {
           method: 'POST',
-          headers: getAuthHeaders(),
           body: formData,
         });
 

@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { issueBadge } from '@/lib/badgesApi';
-import { API_BASE_URL } from '@/lib/apiConfig';
+import { apiFetch } from '@/lib/apiFetch';
 import { Award, Send, Loader2 } from 'lucide-react';
 
 interface BadgeTemplate {
@@ -60,10 +60,7 @@ export function IssueBadgePage() {
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        const token = localStorage.getItem('accessToken');
-        const response = await fetch(`${API_BASE_URL}/badge-templates?status=ACTIVE`, {
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        });
+        const response = await apiFetch('/badge-templates?status=ACTIVE');
         if (!response.ok) throw new Error('Failed to load templates');
         const data = await response.json();
         const list = Array.isArray(data) ? data : data.data || data.items || [];
@@ -81,10 +78,7 @@ export function IssueBadgePage() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const token = localStorage.getItem('accessToken');
-        const response = await fetch(`${API_BASE_URL}/badges/recipients`, {
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        });
+        const response = await apiFetch('/badges/recipients');
         if (!response.ok) throw new Error('Failed to load recipients');
         const data = await response.json();
         setUsers(Array.isArray(data) ? data : []);

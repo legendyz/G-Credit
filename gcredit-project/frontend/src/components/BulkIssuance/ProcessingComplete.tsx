@@ -1,5 +1,5 @@
 import { toast } from 'sonner';
-import { API_BASE_URL } from '../../lib/apiConfig';
+import { apiFetch } from '../../lib/apiFetch';
 
 interface BadgeResult {
   row: number;
@@ -37,11 +37,7 @@ export default function ProcessingComplete({
   const handleDownloadErrorReport = async () => {
     if (!sessionId) return;
     try {
-      const response = await fetch(`${API_BASE_URL}/bulk-issuance/error-report/${sessionId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-        },
-      });
+      const response = await apiFetch(`/bulk-issuance/error-report/${sessionId}`);
 
       if (!response.ok) {
         throw new Error('Failed to download error report');

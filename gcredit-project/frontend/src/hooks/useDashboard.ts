@@ -11,28 +11,7 @@ import type {
   ManagerDashboard,
   AdminDashboard,
 } from '../types/dashboard';
-import { API_BASE_URL } from '../lib/apiConfig';
-
-/**
- * Fetch helper with auth
- */
-async function fetchWithAuth<T>(endpoint: string): Promise<T> {
-  const token = localStorage.getItem('accessToken');
-
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Request failed' }));
-    throw new Error(error.message || `HTTP ${response.status}`);
-  }
-
-  return response.json();
-}
+import { apiFetchJson } from '../lib/apiFetch';
 
 /**
  * AC1: Employee Dashboard Hook
@@ -42,7 +21,7 @@ async function fetchWithAuth<T>(endpoint: string): Promise<T> {
 export function useEmployeeDashboard() {
   return useQuery({
     queryKey: ['dashboard', 'employee'],
-    queryFn: () => fetchWithAuth<EmployeeDashboard>('/dashboard/employee'),
+    queryFn: () => apiFetchJson<EmployeeDashboard>('/dashboard/employee'),
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchInterval: 60 * 1000, // 60 seconds auto-refresh (AC1 requirement)
     refetchIntervalInBackground: false, // Only when tab is active
@@ -58,7 +37,7 @@ export function useEmployeeDashboard() {
 export function useIssuerDashboard() {
   return useQuery({
     queryKey: ['dashboard', 'issuer'],
-    queryFn: () => fetchWithAuth<IssuerDashboard>('/dashboard/issuer'),
+    queryFn: () => apiFetchJson<IssuerDashboard>('/dashboard/issuer'),
     staleTime: 5 * 60 * 1000,
     refetchInterval: 60 * 1000, // 60 seconds auto-refresh
     refetchIntervalInBackground: false,
@@ -74,7 +53,7 @@ export function useIssuerDashboard() {
 export function useManagerDashboard() {
   return useQuery({
     queryKey: ['dashboard', 'manager'],
-    queryFn: () => fetchWithAuth<ManagerDashboard>('/dashboard/manager'),
+    queryFn: () => apiFetchJson<ManagerDashboard>('/dashboard/manager'),
     staleTime: 5 * 60 * 1000,
     refetchInterval: 60 * 1000, // 60 seconds auto-refresh
     refetchIntervalInBackground: false,
@@ -90,7 +69,7 @@ export function useManagerDashboard() {
 export function useAdminDashboard() {
   return useQuery({
     queryKey: ['dashboard', 'admin'],
-    queryFn: () => fetchWithAuth<AdminDashboard>('/dashboard/admin'),
+    queryFn: () => apiFetchJson<AdminDashboard>('/dashboard/admin'),
     staleTime: 5 * 60 * 1000,
     refetchInterval: 60 * 1000, // 60 seconds auto-refresh
     refetchIntervalInBackground: false,

@@ -15,7 +15,7 @@ import BadgeAnalytics from './BadgeAnalytics';
 import BadgeShareModal from '../BadgeShareModal';
 import RevocationSection from './RevocationSection';
 import ClaimSuccessModal from '../ClaimSuccessModal';
-import { API_BASE_URL } from '../../lib/apiConfig';
+import { apiFetch } from '../../lib/apiFetch';
 import { useCurrentUser } from '../../stores/authStore';
 
 const BadgeDetailModal: React.FC = () => {
@@ -37,12 +37,7 @@ const BadgeDetailModal: React.FC = () => {
       setError(null);
 
       try {
-        const token = localStorage.getItem('accessToken');
-        const response = await fetch(`${API_BASE_URL}/badges/${badgeId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await apiFetch(`/badges/${badgeId}`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch badge details');
@@ -85,12 +80,7 @@ const BadgeDetailModal: React.FC = () => {
 
     setDownloading(true);
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`${API_BASE_URL}/badges/${badge.id}/download/png`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await apiFetch(`/badges/${badge.id}/download/png`);
 
       if (!response.ok) {
         throw new Error('Failed to download badge');
@@ -120,13 +110,8 @@ const BadgeDetailModal: React.FC = () => {
 
     setClaiming(true);
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`${API_BASE_URL}/badges/${badge.id}/claim`, {
+      const response = await apiFetch(`/badges/${badge.id}/claim`, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
       });
 
       if (!response.ok) {

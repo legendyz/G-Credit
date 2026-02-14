@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import type { Request, Response, NextFunction } from 'express';
 import { AppModule } from './app.module';
 
@@ -182,6 +183,9 @@ async function bootstrap() {
     next();
   });
   logger.log('✅ Helmet security headers configured (AC1 compliant)');
+
+  // Cookie parser middleware — required for httpOnly JWT cookies (Story 11.6)
+  app.use(cookieParser());
 
   // CORS Configuration (SEC-P1-003, AC2)
   const rawOrigins = process.env.ALLOWED_ORIGINS

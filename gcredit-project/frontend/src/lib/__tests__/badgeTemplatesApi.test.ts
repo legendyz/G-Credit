@@ -20,15 +20,6 @@ import {
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-// Mock localStorage
-const mockLocalStorage = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-};
-Object.defineProperty(window, 'localStorage', { value: mockLocalStorage });
-
 const MOCK_TEMPLATE: BadgeTemplate = {
   id: 'tpl-1',
   name: 'Cloud Expert',
@@ -46,7 +37,6 @@ const MOCK_TEMPLATE: BadgeTemplate = {
 describe('badgeTemplatesApi', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockLocalStorage.getItem.mockReturnValue('test-token');
   });
 
   afterEach(() => {
@@ -65,8 +55,8 @@ describe('badgeTemplatesApi', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('/badge-templates/all'),
         expect.objectContaining({
+          credentials: 'include',
           headers: expect.objectContaining({
-            Authorization: 'Bearer test-token',
             'Content-Type': 'application/json',
           }),
         })
@@ -126,9 +116,7 @@ describe('badgeTemplatesApi', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('/badge-templates/tpl-1'),
         expect.objectContaining({
-          headers: expect.objectContaining({
-            Authorization: 'Bearer test-token',
-          }),
+          credentials: 'include',
         })
       );
     });
@@ -187,7 +175,7 @@ describe('badgeTemplatesApi', () => {
       expect(formData.get('validityPeriod')).toBe('365');
     });
 
-    it('sends auth header without Content-Type (FormData sets it)', async () => {
+    it('sends credentials: include without Content-Type (FormData sets it)', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve(MOCK_TEMPLATE),
@@ -195,9 +183,9 @@ describe('badgeTemplatesApi', () => {
 
       await createTemplate({ name: 'Test', category: 'skill' });
 
-      const headers = mockFetch.mock.calls[0][1].headers;
-      expect(headers).toHaveProperty('Authorization', 'Bearer test-token');
-      expect(headers).not.toHaveProperty('Content-Type');
+      const callOptions = mockFetch.mock.calls[0][1];
+      expect(callOptions.credentials).toBe('include');
+      expect(callOptions.headers).not.toHaveProperty('Content-Type');
     });
 
     it('appends image file when provided', async () => {
@@ -262,7 +250,7 @@ describe('badgeTemplatesApi', () => {
   });
 
   describe('deleteTemplate', () => {
-    it('sends DELETE to correct URL with auth headers', async () => {
+    it('sends DELETE to correct URL with credentials', async () => {
       mockFetch.mockResolvedValueOnce({ ok: true });
 
       await deleteTemplate('tpl-1');
@@ -271,8 +259,8 @@ describe('badgeTemplatesApi', () => {
         expect.stringContaining('/badge-templates/tpl-1'),
         expect.objectContaining({
           method: 'DELETE',
+          credentials: 'include',
           headers: expect.objectContaining({
-            Authorization: 'Bearer test-token',
             'Content-Type': 'application/json',
           }),
         })
@@ -296,9 +284,8 @@ describe('badgeTemplatesApi', () => {
     });
   });
 
-  describe('auth headers', () => {
-    it('sends request without Authorization when no token', async () => {
-      mockLocalStorage.getItem.mockReturnValue(null);
+  describe('auth credentials', () => {
+    it('sends request with credentials: include (cookie-based auth)', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve([]),
@@ -306,6 +293,12 @@ describe('badgeTemplatesApi', () => {
 
       await getAllTemplates();
 
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          credentials: 'include',
+        })
+      );
       const headers = mockFetch.mock.calls[0][1].headers;
       expect(headers).not.toHaveProperty('Authorization');
     });
