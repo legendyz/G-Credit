@@ -10,6 +10,7 @@ import { TeamsBadgeNotificationService } from '../microsoft-graph/teams/teams-ba
 import { GraphEmailService } from '../microsoft-graph/services/graph-email.service';
 import { ConfigService } from '@nestjs/config';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
+import { BadgeVisibility } from '@prisma/client';
 
 describe('BadgeIssuanceService - updateVisibility', () => {
   let service: BadgeIssuanceService;
@@ -94,7 +95,7 @@ describe('BadgeIssuanceService - updateVisibility', () => {
 
     const result = await service.updateVisibility(
       'badge-1',
-      'PRIVATE' as any,
+      BadgeVisibility.PRIVATE,
       'user-1',
     );
 
@@ -120,7 +121,7 @@ describe('BadgeIssuanceService - updateVisibility', () => {
 
     const result = await service.updateVisibility(
       'badge-1',
-      'PUBLIC' as any,
+      BadgeVisibility.PUBLIC,
       'user-1',
     );
 
@@ -131,7 +132,11 @@ describe('BadgeIssuanceService - updateVisibility', () => {
     mockPrismaService.badge.findUnique.mockResolvedValue(null);
 
     await expect(
-      service.updateVisibility('nonexistent', 'PRIVATE' as any, 'user-1'),
+      service.updateVisibility(
+        'nonexistent',
+        BadgeVisibility.PRIVATE,
+        'user-1',
+      ),
     ).rejects.toThrow(NotFoundException);
   });
 
@@ -145,7 +150,11 @@ describe('BadgeIssuanceService - updateVisibility', () => {
     mockPrismaService.badge.findUnique.mockResolvedValue(badge);
 
     await expect(
-      service.updateVisibility('badge-1', 'PRIVATE' as any, 'user-other'),
+      service.updateVisibility(
+        'badge-1',
+        BadgeVisibility.PRIVATE,
+        'user-other',
+      ),
     ).rejects.toThrow(ForbiddenException);
   });
 });
