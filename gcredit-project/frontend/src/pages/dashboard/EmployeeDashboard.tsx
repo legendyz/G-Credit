@@ -17,7 +17,7 @@ import { EmptyState, NoBadgesState } from '../../components/common/EmptyState';
 import { BadgeEarnedCelebration } from '../../components/common/CelebrationModal';
 import { cn } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
-import { RefreshCw, Wallet, Search, CheckCircle } from 'lucide-react';
+import { RefreshCw, Wallet, CheckCircle } from 'lucide-react';
 import { PageTemplate } from '../../components/layout/PageTemplate';
 
 // Celebration tracking localStorage key (AC1 requirement)
@@ -176,14 +176,7 @@ export const EmployeeDashboard: React.FC = () => {
               <Wallet className="h-4 w-4" />
               View All My Badges
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate('/wallet')}
-              className="flex items-center gap-2 min-h-[44px]"
-            >
-              <Search className="h-4 w-4" />
-              Browse Badge Catalog
-            </Button>
+            {/* Badge Catalog button deferred to v1.2.0 — no /catalog route yet */}
           </div>
         </CardContent>
       </Card>
