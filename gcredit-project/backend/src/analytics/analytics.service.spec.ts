@@ -144,23 +144,31 @@ describe('AnalyticsService', () => {
 
   describe('getIssuanceTrends (AC2)', () => {
     it('should return badge issuance trends for given period', async () => {
+      // Use relative dates so the test doesn't become stale over time
+      const today = new Date();
+      const daysAgo = (n: number) => {
+        const d = new Date(today);
+        d.setDate(d.getDate() - n);
+        return d;
+      };
+
       const mockBadges = [
         {
-          issuedAt: new Date('2026-01-15'),
+          issuedAt: daysAgo(5),
           status: 'CLAIMED',
-          claimedAt: new Date('2026-01-16'),
+          claimedAt: daysAgo(4),
           revokedAt: null,
         },
         {
-          issuedAt: new Date('2026-01-15'),
+          issuedAt: daysAgo(5),
           status: 'PENDING',
           claimedAt: null,
           revokedAt: null,
         },
         {
-          issuedAt: new Date('2026-01-16'),
+          issuedAt: daysAgo(3),
           status: 'CLAIMED',
-          claimedAt: new Date('2026-01-17'),
+          claimedAt: daysAgo(2),
           revokedAt: null,
         },
       ];

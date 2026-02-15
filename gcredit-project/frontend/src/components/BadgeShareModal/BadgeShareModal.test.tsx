@@ -72,8 +72,8 @@ describe('BadgeShareModal - LinkedIn Tab', () => {
     const linkedInTab = screen.getByRole('tab', { name: /linkedin/i });
     await user.click(linkedInTab);
 
-    expect(screen.getByText(/Share on LinkedIn/i)).toBeInTheDocument();
-    expect(screen.getByText(/Opens LinkedIn in a new window/i)).toBeInTheDocument();
+    expect(screen.getByText(/Open LinkedIn to post/i)).toBeInTheDocument();
+    expect(screen.getByText(/Copy the message above/i)).toBeInTheDocument();
   });
 
   it('does not render when closed', () => {
