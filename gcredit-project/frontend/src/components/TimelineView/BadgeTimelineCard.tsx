@@ -97,12 +97,30 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
           onKeyDown={handleKeyDown}
         >
           <div className="flex items-center gap-4">
-            {/* Badge Image */}
-            <img
-              src={badge.template.imageUrl}
-              alt={badge.template.name}
-              className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
-            />
+            {/* Badge Image — Story 11.24 AC-M9: fallback for null imageUrl */}
+            {badge.template.imageUrl ? (
+              <img
+                src={badge.template.imageUrl}
+                alt={badge.template.name}
+                className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+              />
+            ) : (
+              <div className="w-20 h-20 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                <svg
+                  className="w-10 h-10 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                  />
+                </svg>
+              </div>
+            )}
 
             {/* Badge Info */}
             <div className="flex-1 min-w-0">
@@ -117,9 +135,10 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
                   status={badge.status as 'CLAIMED' | 'PENDING' | 'REVOKED' | 'EXPIRED'}
                 />
 
-                {/* Category Tag */}
+                {/* Category Tag — Story 11.24 AC-L14: title case */}
                 <div className="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-700 rounded text-sm">
-                  {badge.template.category}
+                  {badge.template.category.charAt(0).toUpperCase() +
+                    badge.template.category.slice(1).toLowerCase()}
                 </div>
               </div>
 

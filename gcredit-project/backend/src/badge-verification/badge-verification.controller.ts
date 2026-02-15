@@ -146,6 +146,11 @@ export class BadgeVerificationController {
       // Open Badges 2.0 assertion (from Story 6.1)
       ...assertionData,
 
+      // Story 11.24 AC-M4/M5/L6: Explicit fields for frontend mapping
+      expiresAt: badge.expiresAt,
+      claimedAt: badge.claimedAt,
+      badgeId: badge.id,
+
       // Story 6.3: Additional verification metadata
       verificationStatus,
       verifiedAt: now.toISOString(),

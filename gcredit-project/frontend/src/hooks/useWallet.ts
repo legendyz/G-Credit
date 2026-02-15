@@ -9,6 +9,8 @@ export interface Badge {
   status: BadgeStatus;
   visibility?: 'PUBLIC' | 'PRIVATE';
   claimedAt?: string;
+  // Story 11.24 AC-C3: type discriminator for wallet items
+  type?: 'badge';
   // Story 9.3: Revocation fields (only present when status = REVOKED)
   revokedAt?: string;
   revocationReason?: string;
@@ -20,8 +22,8 @@ export interface Badge {
   template: {
     id: string;
     name: string;
-    description: string;
-    imageUrl: string;
+    description: string | null;
+    imageUrl: string | null;
     category: string;
     // Story 8.2: Skill IDs for filtering
     skillIds?: string[];
@@ -34,6 +36,17 @@ export interface Badge {
   };
 }
 
+// Story 11.24 AC-C3: Milestone type for wallet timeline
+export interface Milestone {
+  type: 'milestone';
+  milestoneId: string;
+  title: string;
+  description: string;
+  achievedAt: string;
+}
+
+export type WalletItem = (Badge & { type: 'badge' }) | Milestone;
+
 export interface DateGroup {
   label: string;
   count: number;
@@ -41,7 +54,7 @@ export interface DateGroup {
 }
 
 export interface WalletResponse {
-  data: Badge[];
+  data: (Badge | WalletItem)[];
   meta: {
     page: number;
     limit: number;

@@ -4,6 +4,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BadgeTimelineCard } from './BadgeTimelineCard';
 import type { Badge } from '../../hooks/useWallet';
 
@@ -19,6 +20,11 @@ vi.mock('../../lib/apiFetch', () => ({
 vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
+
+const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+);
 
 const makeBadge = (overrides: Partial<Badge> = {}): Badge => ({
   id: 'badge-1',
@@ -48,7 +54,7 @@ describe('BadgeTimelineCard - Visibility Toggle', () => {
   });
 
   it('renders visibility toggle button for PUBLIC badge', () => {
-    render(<BadgeTimelineCard badge={makeBadge({ visibility: 'PUBLIC' })} />);
+    render(<BadgeTimelineCard badge={makeBadge({ visibility: 'PUBLIC' })} />, { wrapper });
 
     const toggleBtn = screen.getByTitle('Set to Private');
     expect(toggleBtn).toBeInTheDocument();
@@ -56,7 +62,7 @@ describe('BadgeTimelineCard - Visibility Toggle', () => {
   });
 
   it('renders lock icon for PRIVATE badge', () => {
-    render(<BadgeTimelineCard badge={makeBadge({ visibility: 'PRIVATE' })} />);
+    render(<BadgeTimelineCard badge={makeBadge({ visibility: 'PRIVATE' })} />, { wrapper });
 
     const toggleBtn = screen.getByTitle('Set to Public');
     expect(toggleBtn).toBeInTheDocument();
@@ -64,9 +70,30 @@ describe('BadgeTimelineCard - Visibility Toggle', () => {
   });
 
   it('renders globe icon when visibility is undefined (defaults PUBLIC)', () => {
-    render(<BadgeTimelineCard badge={makeBadge({ visibility: undefined })} />);
+    render(<BadgeTimelineCard badge={makeBadge({ visibility: undefined })} />, { wrapper });
 
     const toggleBtn = screen.getByTitle('Set to Private');
     expect(toggleBtn).toBeInTheDocument();
+  });
+
+  // Story 11.24 AC-M9: Image null fallback
+  it('renders placeholder when imageUrl is null', () => {
+    render(
+      <BadgeTimelineCard
+        badge={makeBadge({
+          template: {
+            id: 'template-1',
+            name: 'No Image Badge',
+            description: 'A badge without an image',
+            imageUrl: null as unknown as string,
+            category: 'achievement',
+          },
+        })}
+      />,
+      { wrapper }
+    );
+    expect(screen.getByText('No Image Badge')).toBeInTheDocument();
+    // Should not have an img element
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
   });
 });

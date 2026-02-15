@@ -166,7 +166,9 @@ export function TemplateSelector({ onSelect, disabled = false }: TemplateSelecto
               aria-selected={selectedTemplate?.id === template.id}
             >
               <div className="text-sm font-medium text-gray-900">{template.name}</div>
-              <div className="text-xs text-gray-500 mt-0.5">{template.id}</div>
+              <div className="text-xs text-gray-500 mt-0.5" title={template.id}>
+                {template.id.substring(0, 8)}...
+              </div>
             </li>
           ))}
         </ul>

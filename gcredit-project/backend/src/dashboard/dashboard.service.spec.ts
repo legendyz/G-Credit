@@ -370,4 +370,74 @@ describe('DashboardService', () => {
       expect(result.systemOverview.newUsersThisMonth).toBe(15);
     });
   });
+
+  // Story 11.24 AC-C1: formatActivityDescription tests
+  describe('formatActivityDescription', () => {
+    it('should format ISSUED action with badge name and recipient', () => {
+      const result = DashboardService.formatActivityDescription('ISSUED', {
+        badgeName: 'Cloud Expert',
+        recipientEmail: 'user@test.com',
+      });
+      expect(result).toBe('Badge "Cloud Expert" issued to user@test.com');
+    });
+
+    it('should format CLAIMED action with status change', () => {
+      const result = DashboardService.formatActivityDescription('CLAIMED', {
+        oldStatus: 'ISSUED',
+        newStatus: 'CLAIMED',
+      });
+      expect(result).toBe('Badge status changed: ISSUED → CLAIMED');
+    });
+
+    it('should format REVOKED action with reason', () => {
+      const result = DashboardService.formatActivityDescription('REVOKED', {
+        badgeName: 'Cloud Expert',
+        reason: 'Employee left',
+      });
+      expect(result).toBe('Revoked "Cloud Expert" — Employee left');
+    });
+
+    it('should format NOTIFICATION_SENT action', () => {
+      const result = DashboardService.formatActivityDescription(
+        'NOTIFICATION_SENT',
+        {
+          notificationType: 'Email',
+          recipientEmail: 'user@test.com',
+        },
+      );
+      expect(result).toBe('Email notification sent to user@test.com');
+    });
+
+    it('should format CREATED action with template name', () => {
+      const result = DashboardService.formatActivityDescription('CREATED', {
+        templateName: 'New Template',
+      });
+      expect(result).toBe('Template "New Template" created');
+    });
+
+    it('should format UPDATED action with template name', () => {
+      const result = DashboardService.formatActivityDescription('UPDATED', {
+        templateName: 'Updated Template',
+      });
+      expect(result).toBe('Template "Updated Template" updated');
+    });
+
+    it('should return action string for unknown action types', () => {
+      const result = DashboardService.formatActivityDescription(
+        'CUSTOM_ACTION',
+        { foo: 'bar' },
+      );
+      expect(result).toBe('CUSTOM_ACTION');
+    });
+
+    it('should return action string when metadata is null', () => {
+      const result = DashboardService.formatActivityDescription('ISSUED', null);
+      expect(result).toBe('ISSUED');
+    });
+
+    it('should handle missing metadata fields gracefully', () => {
+      const result = DashboardService.formatActivityDescription('ISSUED', {});
+      expect(result).toBe('Badge "" issued to ');
+    });
+  });
 });

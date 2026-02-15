@@ -71,9 +71,7 @@ const ModalHero: React.FC<ModalHeroProps> = ({
             {/* Story 11.4: Privacy indicator — reflects actual visibility */}
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium ${
-                visibility === 'PUBLIC'
-                  ? 'bg-blue-100 text-blue-800'
-                  : 'bg-gray-100 text-gray-700'
+                visibility === 'PUBLIC' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'
               }`}
             >
               {visibility === 'PUBLIC' ? '🌐 Public' : '🔒 Private'}

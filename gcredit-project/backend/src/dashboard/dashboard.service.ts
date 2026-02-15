@@ -23,6 +23,39 @@ import {
 export class DashboardService {
   private readonly logger = new Logger(DashboardService.name);
 
+  /**
+   * Convert audit log action + metadata into human-readable description.
+   * Story 11.24 AC-C1: Admin Dashboard shows readable activity descriptions.
+   */
+  static formatActivityDescription(
+    action: string,
+    metadata: Record<string, unknown> | null,
+  ): string {
+    if (!metadata) return action;
+
+    const s = (key: string): string => {
+      const val = metadata[key];
+      return typeof val === 'string' ? val : '';
+    };
+
+    switch (action) {
+      case 'ISSUED':
+        return `Badge "${s('badgeName')}" issued to ${s('recipientEmail')}`;
+      case 'CLAIMED':
+        return `Badge status changed: ${s('oldStatus')} → ${s('newStatus')}`;
+      case 'REVOKED':
+        return `Revoked "${s('badgeName')}" — ${s('reason')}`;
+      case 'NOTIFICATION_SENT':
+        return `${s('notificationType')} notification sent to ${s('recipientEmail')}`;
+      case 'CREATED':
+        return `Template "${s('templateName')}" created`;
+      case 'UPDATED':
+        return `Template "${s('templateName')}" updated`;
+      default:
+        return action;
+    }
+  }
+
   constructor(private readonly prisma: PrismaService) {}
 
   /**
@@ -398,7 +431,10 @@ export class DashboardService {
     const recentActivity: AdminActivityDto[] = recentActivityRaw.map((log) => ({
       id: log.id,
       type: log.action,
-      description: log.metadata ? JSON.stringify(log.metadata) : log.action,
+      description: DashboardService.formatActivityDescription(
+        log.action,
+        log.metadata as Record<string, unknown>,
+      ),
       actorName: actorMap.get(log.actorId) || 'System',
       timestamp: log.timestamp,
     }));

@@ -4,6 +4,7 @@ import { useSkills } from '../../hooks/useSkills';
 import { useBadgeSearch } from '../../hooks/useBadgeSearch';
 import { TimelineLine } from './TimelineLine';
 import { BadgeTimelineCard } from './BadgeTimelineCard';
+import { MilestoneTimelineCard } from './MilestoneTimelineCard';
 import { DateGroupHeader } from './DateGroupHeader';
 import { DateNavigationSidebar } from './DateNavigationSidebar';
 import { ViewToggle } from './ViewToggle';
@@ -27,27 +28,30 @@ export function TimelineView() {
   const { data: skills = [] } = useSkills();
 
   // Convert badges to BadgeForFilter format for client-side filtering
+  // Story 11.24 AC-C3: Filter out milestones — only badges support search/filter
   const badgesForFilter: BadgeForFilter[] = useMemo(() => {
     if (!data?.data) return [];
-    return data.data.map((badge) => ({
-      id: badge.id,
-      template: {
-        id: badge.template.id,
-        name: badge.template.name,
-        // Story 8.2: Use actual skillIds from API
-        skillIds: badge.template.skillIds || [],
-        category: badge.template.category,
-      },
-      issuer: {
-        id: badge.issuer.id,
-        firstName: badge.issuer.firstName,
-        lastName: badge.issuer.lastName,
-        email: badge.issuer.email,
-      },
-      issuedAt: badge.issuedAt,
-      claimedAt: badge.claimedAt,
-      status: badge.status,
-    }));
+    return data.data
+      .filter((item) => !('type' in item && item.type === 'milestone'))
+      .map((badge) => ({
+        id: badge.id,
+        template: {
+          id: badge.template.id,
+          name: badge.template.name,
+          // Story 8.2: Use actual skillIds from API
+          skillIds: badge.template.skillIds || [],
+          category: badge.template.category,
+        },
+        issuer: {
+          id: badge.issuer.id,
+          firstName: badge.issuer.firstName,
+          lastName: badge.issuer.lastName,
+          email: badge.issuer.email,
+        },
+        issuedAt: badge.issuedAt,
+        claimedAt: badge.claimedAt,
+        status: badge.status,
+      }));
   }, [data]);
 
   // Create skill names map for chip display
@@ -300,9 +304,23 @@ export function TimelineView() {
                     <div key={group.label} id={`group-${group.label}`}>
                       <DateGroupHeader label={group.label} count={group.count} />
                       <div className="space-y-4 mt-4">
-                        {groupBadges.map((badge) => (
-                          <BadgeTimelineCard key={badge.id} badge={badge} />
-                        ))}
+                        {groupBadges.map((badge) =>
+                          'type' in badge && badge.type === 'milestone' ? (
+                            <MilestoneTimelineCard
+                              key={`milestone-${(badge as { milestoneId: string }).milestoneId}`}
+                              milestone={
+                                badge as {
+                                  milestoneId: string;
+                                  title: string;
+                                  description: string;
+                                  achievedAt: string;
+                                }
+                              }
+                            />
+                          ) : (
+                            <BadgeTimelineCard key={badge.id} badge={badge} />
+                          )
+                        )}
                       </div>
                     </div>
                   );

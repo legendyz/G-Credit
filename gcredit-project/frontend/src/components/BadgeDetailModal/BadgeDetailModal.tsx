@@ -5,7 +5,6 @@ import { useBadgeDetailModal } from '../../stores/badgeDetailModal';
 import type { BadgeDetail } from '../../types/badge';
 import { BadgeStatus } from '../../types/badge';
 import ModalHero from './ModalHero';
-import IssuerMessage from './IssuerMessage';
 import BadgeInfo from './BadgeInfo';
 import TimelineSection from './TimelineSection';
 import VerificationSection from './VerificationSection';
@@ -37,7 +36,10 @@ const BadgeDetailModal: React.FC = () => {
 
   // Resolve skill UUIDs to human-readable names
   const skillNamesMap = useSkillNamesMap(badge?.template?.skillIds);
-  const resolvedSkillNames = (badge?.template?.skillIds || []).map((id) => skillNamesMap[id] || id);
+  // Story 11.24 AC-M13: Fallback to 'Unknown Skill' instead of raw UUID
+  const resolvedSkillNames = (badge?.template?.skillIds || []).map(
+    (id) => skillNamesMap[id] || 'Unknown Skill'
+  );
 
   useEffect(() => {
     if (!isOpen || !badgeId) return;
@@ -259,14 +261,6 @@ const BadgeDetailModal: React.FC = () => {
                   category={badge.template.category}
                   visibility={localVisibility}
                 />
-
-                {/* AC 4.3: Issuer Message (conditional) */}
-                {badge.issuerMessage && (
-                  <IssuerMessage
-                    issuerName={`${badge.issuer.firstName} ${badge.issuer.lastName}`}
-                    message={badge.issuerMessage}
-                  />
-                )}
 
                 {/* AC 4.4: Badge Info */}
                 <BadgeInfo
@@ -512,7 +506,6 @@ const BadgeDetailModal: React.FC = () => {
             closeModal();
           }}
           badgeName={badge.template.name}
-          issuerMessage={badge.issuerMessage}
         />
       )}
     </>

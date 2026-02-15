@@ -45,7 +45,8 @@ export function VerifyBadgePage() {
         const apiData = response.data;
         const meta = apiData._meta || {};
         const transformedData: VerificationResponse = {
-          id: apiData.id,
+          // Story 11.24 AC-L6: Use badgeId (actual UUID) instead of OB assertion URL
+          id: apiData.badgeId || apiData.id,
           verificationId: verificationId!,
           status:
             apiData.verificationStatus === 'revoked'

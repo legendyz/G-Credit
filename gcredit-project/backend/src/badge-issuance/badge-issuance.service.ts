@@ -896,6 +896,9 @@ export class BadgeIssuanceService {
           name: `${badge.revoker.firstName} ${badge.revoker.lastName}`,
           role: badge.revoker.role,
         };
+      } else {
+        // Story 11.24 AC-M8: Fallback when revoker (admin) has been deleted
+        response.revokedBy = { name: 'Unknown User', email: '', role: 'N/A' };
       }
     }
 
@@ -1158,8 +1161,11 @@ export class BadgeIssuanceService {
     const skip = (page - 1) * limit;
     const paginatedItems = allItems.slice(skip, skip + limit);
 
-    // Extract final timeline items
-    const timelineItems = paginatedItems.map((item) => item.data);
+    // Extract final timeline items — preserve type field for frontend discrimination (Story 11.24 AC-C3)
+    const timelineItems = paginatedItems.map((item) => ({
+      ...item.data,
+      type: item.type,
+    }));
 
     // Generate date groups from paginated items
     const dateGroups = this.generateDateGroups(

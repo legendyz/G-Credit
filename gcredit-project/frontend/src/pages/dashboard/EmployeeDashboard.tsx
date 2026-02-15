@@ -142,7 +142,7 @@ export const EmployeeDashboard: React.FC = () => {
     return <NoBadgesState onExplore={() => navigate('/wallet')} />;
   }
 
-  const { badgeSummary, currentMilestone, recentBadges, recentAchievements } = data;
+  const { badgeSummary, currentMilestone, recentBadges } = data;
 
   return (
     <PageTemplate
@@ -336,35 +336,7 @@ export const EmployeeDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* AC1: Recent Achievements Unlocked */}
-      {recentAchievements && recentAchievements.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              🎯 Recent Achievements Unlocked
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {recentAchievements.map((achievement) => (
-                <div
-                  key={achievement.id}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950 dark:to-yellow-950 border border-amber-200 dark:border-amber-800"
-                >
-                  <span className="text-2xl">{achievement.icon || '🏆'}</span>
-                  <div className="flex-1">
-                    <p className="font-medium">{achievement.title}</p>
-                    <p className="text-sm text-muted-foreground">{achievement.description}</p>
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(achievement.unlockedAt).toLocaleDateString()}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Story 11.24 AC-L11: recentAchievements removed — backend does not provide this data */}
 
       {/* Recent Badges */}
       <Card>

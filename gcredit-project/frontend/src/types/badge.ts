@@ -14,7 +14,6 @@ export interface BadgeDetail {
   issuedAt: string;
   claimedAt: string | null;
   expiresAt: string | null;
-  issuerMessage: string | null;
   verificationId: string;
   // Story 9.3: Revocation fields (only present when status = REVOKED)
   revokedAt?: string;
