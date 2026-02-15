@@ -36,6 +36,7 @@ import {
   FileText,
   Lock,
   User as UserIcon,
+  Eye,
 } from 'lucide-react';
 
 type StatusFilter = 'ALL' | TemplateStatus;
@@ -386,12 +387,13 @@ export function BadgeTemplateListPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        disabled
-                        title="You can only edit templates you created"
-                        className="min-h-[44px] flex-1 cursor-not-allowed"
+                        onClick={() =>
+                          navigate(`/admin/templates/${template.id}/edit?readonly=true`)
+                        }
+                        className="min-h-[44px] flex-1"
                       >
-                        <Lock className="h-3.5 w-3.5 mr-1.5" />
-                        Edit
+                        <Eye className="h-3.5 w-3.5 mr-1.5" />
+                        View
                       </Button>
                     )}
 

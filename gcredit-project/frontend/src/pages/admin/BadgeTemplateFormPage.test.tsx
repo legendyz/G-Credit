@@ -449,4 +449,60 @@ describe('BadgeTemplateFormPage', () => {
       expect(screen.getByText('Not found')).toBeInTheDocument();
     });
   });
+
+  describe('Read-only mode', () => {
+    function renderReadonlyMode(templateId = 'tpl-1') {
+      return render(
+        <MemoryRouter initialEntries={[`/admin/templates/${templateId}/edit?readonly=true`]}>
+          <Routes>
+            <Route path="/admin/templates/:id/edit" element={<BadgeTemplateFormPage />} />
+          </Routes>
+        </MemoryRouter>
+      );
+    }
+
+    beforeEach(() => {
+      mockGetTemplateById.mockResolvedValue(MOCK_TEMPLATE);
+    });
+
+    it('shows "View Template" title', async () => {
+      renderReadonlyMode();
+
+      await waitFor(() => {
+        expect(screen.getByText('View Template')).toBeInTheDocument();
+      });
+      expect(screen.getByText('Viewing badge template details (read-only)')).toBeInTheDocument();
+    });
+
+    it('disables name input', async () => {
+      renderReadonlyMode();
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('Cloud Expert')).toBeInTheDocument();
+      });
+
+      expect(screen.getByDisplayValue('Cloud Expert')).toBeDisabled();
+    });
+
+    it('does not show Save Changes button', async () => {
+      renderReadonlyMode();
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('Cloud Expert')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByRole('button', { name: /save changes/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /cancel/i })).not.toBeInTheDocument();
+    });
+
+    it('shows Back to Templates button', async () => {
+      renderReadonlyMode();
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('Cloud Expert')).toBeInTheDocument();
+      });
+
+      expect(screen.getByRole('button', { name: /back to templates/i })).toBeInTheDocument();
+    });
+  });
 });

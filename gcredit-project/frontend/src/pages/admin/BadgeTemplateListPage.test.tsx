@@ -410,17 +410,23 @@ describe('BadgeTemplateListPage', () => {
       expect(screen.getByText('Read-only')).toBeInTheDocument();
     });
 
-    it('disables Edit button for non-owned templates', async () => {
+    it('shows View button (not Edit) for non-owned templates', async () => {
+      const user = userEvent.setup();
       renderWithProviders(<BadgeTemplateListPage />);
 
       await waitFor(() => {
         expect(screen.getByText('Other Template')).toBeInTheDocument();
       });
 
-      const editButtons = screen.getAllByRole('button', { name: /edit/i });
-      // First Edit (owned) should be enabled, second (non-owned) disabled
-      expect(editButtons[0]).not.toBeDisabled();
-      expect(editButtons[1]).toBeDisabled();
+      // Owned template has Edit, non-owned has View
+      expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument();
+      const viewButton = screen.getByRole('button', { name: /view/i });
+      expect(viewButton).toBeInTheDocument();
+      expect(viewButton).not.toBeDisabled();
+
+      // View navigates with ?readonly=true
+      await user.click(viewButton);
+      expect(mockNavigate).toHaveBeenCalledWith('/admin/templates/tpl-other/edit?readonly=true');
     });
 
     it('disables Archive button for non-owned templates', async () => {
