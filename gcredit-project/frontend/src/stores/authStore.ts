@@ -115,24 +115,25 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // Logout — server clears httpOnly cookies
+      // Logout — clear local state immediately, then server clears httpOnly cookies
       logout: async () => {
-        try {
-          await apiFetch('/auth/logout', { method: 'POST' });
-        } catch {
-          // Best-effort: clear local state even if server call fails
-        }
-
-        // Clean up any legacy localStorage tokens (migration cleanup)
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-
+        // Clear auth state first to prevent route-guard race conditions
         set({
           user: null,
           isAuthenticated: false,
           sessionValidated: false,
           error: null,
         });
+
+        // Clean up any legacy localStorage tokens (migration cleanup)
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+
+        try {
+          await apiFetch('/auth/logout', { method: 'POST' });
+        } catch {
+          // Best-effort: server cookie will expire naturally if call fails
+        }
       },
 
       // Clear error

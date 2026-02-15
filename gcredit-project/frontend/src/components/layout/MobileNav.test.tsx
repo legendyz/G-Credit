@@ -23,7 +23,7 @@ vi.mock('sonner', () => ({
   },
 }));
 
-const mockLogout = vi.fn();
+const mockLogout = vi.fn().mockResolvedValue(undefined);
 
 const mockUser = {
   id: '1',

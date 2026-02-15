@@ -83,8 +83,8 @@ export function MobileNav({ className = '' }: MobileNavProps) {
     return () => drawer.removeEventListener('keydown', handleTabKey);
   }, [isOpen]);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     toast.success('Logged out successfully');
     navigate('/login');
     setIsOpen(false);
