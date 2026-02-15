@@ -10,6 +10,7 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useCurrentUser } from '@/stores/authStore';
 import { PageTemplate } from '@/components/layout/PageTemplate';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,8 @@ import {
   Archive,
   CheckCircle2,
   FileText,
+  Lock,
+  User as UserIcon,
 } from 'lucide-react';
 
 type StatusFilter = 'ALL' | TemplateStatus;
@@ -87,6 +90,8 @@ function CategoryBadge({ category }: { category: string }) {
 export function BadgeTemplateListPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const currentUser = useCurrentUser();
+  const isIssuer = currentUser?.role === 'ISSUER';
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -291,131 +296,168 @@ export function BadgeTemplateListPage() {
       ) : (
         /* Template Cards Grid */
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredTemplates.map((template) => (
-            <Card
-              key={template.id}
-              className="shadow-elevation-1 hover:shadow-elevation-2 transition-shadow group flex flex-col"
-            >
-              {/* Image */}
-              {template.imageUrl ? (
-                <div className="h-40 overflow-hidden rounded-t-xl bg-neutral-100 flex-shrink-0">
-                  <img
-                    src={template.imageUrl}
-                    alt={template.name}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="h-40 rounded-t-xl bg-gradient-to-br from-brand-50 to-brand-100 flex items-center justify-center flex-shrink-0">
-                  <LayoutGrid className="h-12 w-12 text-brand-300" />
-                </div>
-              )}
+          {filteredTemplates.map((template) => {
+            const isOwner = !isIssuer || template.createdBy === currentUser?.id;
+            const canModify = !isIssuer || isOwner;
+            return (
+              <Card
+                key={template.id}
+                className={`shadow-elevation-1 hover:shadow-elevation-2 transition-shadow group flex flex-col ${!canModify ? 'opacity-80' : ''}`}
+              >
+                {/* Image */}
+                {template.imageUrl ? (
+                  <div className="h-40 overflow-hidden rounded-t-xl bg-neutral-100 flex-shrink-0">
+                    <img
+                      src={template.imageUrl}
+                      alt={template.name}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="h-40 rounded-t-xl bg-gradient-to-br from-brand-50 to-brand-100 flex items-center justify-center flex-shrink-0">
+                    <LayoutGrid className="h-12 w-12 text-brand-300" />
+                  </div>
+                )}
 
-              <CardContent className="p-4 flex flex-col flex-1">
-                {/* Header: name + status */}
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="text-h4 font-semibold text-neutral-900 line-clamp-1">
-                    {template.name}
-                  </h3>
-                  <TemplateStatusBadge status={template.status} />
-                </div>
+                <CardContent className="p-4 flex flex-col flex-1">
+                  {/* Header: name + status */}
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-h4 font-semibold text-neutral-900 line-clamp-1">
+                      {template.name}
+                    </h3>
+                    <TemplateStatusBadge status={template.status} />
+                  </div>
 
-                {/* Category + date */}
-                <div className="flex items-center gap-2 flex-wrap mt-3">
-                  <CategoryBadge category={template.category} />
-                  <span className="text-xs text-neutral-500">{formatDate(template.createdAt)}</span>
-                </div>
-
-                {/* Description */}
-                <p className="text-body-sm text-neutral-600 line-clamp-2 mt-3 min-h-[2.5rem]">
-                  {template.description || '\u00A0'}
-                </p>
-
-                {/* Validity */}
-                <p className="text-xs text-neutral-500 mt-2 min-h-[1rem]">
-                  {template.validityPeriod ? `Valid for ${template.validityPeriod} days` : '\u00A0'}
-                </p>
-
-                {/* Actions - always at bottom */}
-                <div className="flex items-center gap-2 pt-2 mt-auto border-t border-neutral-100">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(`/admin/templates/${template.id}/edit`)}
-                    className="min-h-[44px] flex-1"
-                  >
-                    <Pencil className="h-3.5 w-3.5 mr-1.5" />
-                    Edit
-                  </Button>
-
-                  {/* Status change button */}
-                  {template.status === 'DRAFT' && (
-                    <Button
-                      size="sm"
-                      onClick={() => handleStatusChange(template, 'ACTIVE')}
-                      disabled={actionLoading === template.id}
-                      className="bg-success hover:bg-success-bright text-white min-h-[44px] flex-1"
-                    >
-                      {actionLoading === template.id ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  {/* Category + date + ownership */}
+                  <div className="flex items-center gap-2 flex-wrap mt-3">
+                    <CategoryBadge category={template.category} />
+                    <span className="text-xs text-neutral-500">
+                      {formatDate(template.createdAt)}
+                    </span>
+                    {isIssuer &&
+                      (isOwner ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 text-brand-600 px-2 py-0.5 text-xs font-medium">
+                          <UserIcon className="h-3 w-3" />
+                          Mine
+                        </span>
                       ) : (
-                        <>
-                          <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
-                          Activate
-                        </>
-                      )}
-                    </Button>
-                  )}
-                  {template.status === 'ACTIVE' && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 text-neutral-500 px-2 py-0.5 text-xs font-medium">
+                          <Lock className="h-3 w-3" />
+                          Read-only
+                        </span>
+                      ))}
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-body-sm text-neutral-600 line-clamp-2 mt-3 min-h-[2.5rem]">
+                    {template.description || '\u00A0'}
+                  </p>
+
+                  {/* Validity */}
+                  <p className="text-xs text-neutral-500 mt-2 min-h-[1rem]">
+                    {template.validityPeriod
+                      ? `Valid for ${template.validityPeriod} days`
+                      : '\u00A0'}
+                  </p>
+
+                  {/* Actions - always at bottom */}
+                  <div className="flex items-center gap-2 pt-2 mt-auto border-t border-neutral-100">
+                    {canModify ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/admin/templates/${template.id}/edit`)}
+                        className="min-h-[44px] flex-1"
+                      >
+                        <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                        Edit
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled
+                        title="You can only edit templates you created"
+                        className="min-h-[44px] flex-1 cursor-not-allowed"
+                      >
+                        <Lock className="h-3.5 w-3.5 mr-1.5" />
+                        Edit
+                      </Button>
+                    )}
+
+                    {/* Status change button */}
+                    {template.status === 'DRAFT' && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleStatusChange(template, 'ACTIVE')}
+                        disabled={!canModify || actionLoading === template.id}
+                        title={!canModify ? 'You can only modify templates you created' : undefined}
+                        className="bg-success hover:bg-success-bright text-white min-h-[44px] flex-1"
+                      >
+                        {actionLoading === template.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <>
+                            <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
+                            Activate
+                          </>
+                        )}
+                      </Button>
+                    )}
+                    {template.status === 'ACTIVE' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleStatusChange(template, 'ARCHIVED')}
+                        disabled={!canModify || actionLoading === template.id}
+                        title={!canModify ? 'You can only modify templates you created' : undefined}
+                        className="min-h-[44px] flex-1"
+                      >
+                        {actionLoading === template.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <>
+                            <Archive className="h-3.5 w-3.5 mr-1.5" />
+                            Archive
+                          </>
+                        )}
+                      </Button>
+                    )}
+                    {template.status === 'ARCHIVED' && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleStatusChange(template, 'ACTIVE')}
+                        disabled={!canModify || actionLoading === template.id}
+                        title={!canModify ? 'You can only modify templates you created' : undefined}
+                        className="min-h-[44px] flex-1 bg-brand-600 hover:bg-brand-700 text-white"
+                      >
+                        {actionLoading === template.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <>
+                            <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
+                            Reactivate
+                          </>
+                        )}
+                      </Button>
+                    )}
+
+                    {/* Delete */}
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleStatusChange(template, 'ARCHIVED')}
-                      disabled={actionLoading === template.id}
-                      className="min-h-[44px] flex-1"
+                      onClick={() => handleDelete(template)}
+                      disabled={!canModify || actionLoading === template.id}
+                      title={!canModify ? 'You can only delete templates you created' : undefined}
+                      className="min-h-[44px] text-error hover:bg-error-light"
                     >
-                      {actionLoading === template.id ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <>
-                          <Archive className="h-3.5 w-3.5 mr-1.5" />
-                          Archive
-                        </>
-                      )}
+                      <Trash2 className="h-3.5 w-3.5" />
                     </Button>
-                  )}
-                  {template.status === 'ARCHIVED' && (
-                    <Button
-                      size="sm"
-                      onClick={() => handleStatusChange(template, 'ACTIVE')}
-                      disabled={actionLoading === template.id}
-                      className="min-h-[44px] flex-1 bg-brand-600 hover:bg-brand-700 text-white"
-                    >
-                      {actionLoading === template.id ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <>
-                          <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
-                          Reactivate
-                        </>
-                      )}
-                    </Button>
-                  )}
-
-                  {/* Delete */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(template)}
-                    disabled={actionLoading === template.id}
-                    className="min-h-[44px] text-error hover:bg-error-light"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </PageTemplate>
