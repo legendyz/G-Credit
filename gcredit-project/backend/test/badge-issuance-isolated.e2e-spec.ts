@@ -139,7 +139,7 @@ describe('Badge Issuance (e2e) - Isolated', () => {
     });
   });
 
-  describe('POST /api/badges/:id/claim', () => {
+  describe('POST /api/badges/claim', () => {
     let validBadgeId: string;
     let validClaimToken: string;
 
@@ -156,7 +156,7 @@ describe('Badge Issuance (e2e) - Isolated', () => {
 
     it('should claim badge with valid token (PUBLIC endpoint - no auth required)', async () => {
       const response = await request(ctx.app.getHttpServer() as App)
-        .post(`/api/badges/${validBadgeId}/claim`)
+        .post('/api/badges/claim')
         .send({
           claimToken: validClaimToken,
         })
@@ -176,7 +176,7 @@ describe('Badge Issuance (e2e) - Isolated', () => {
 
     it('should return 400 for invalid claim token', async () => {
       const response = await request(ctx.app.getHttpServer() as App)
-        .post(`/api/badges/${validBadgeId}/claim`)
+        .post('/api/badges/claim')
         .send({
           claimToken: 'invalid-token-' + 'x'.repeat(19), // 32 chars total
         })
@@ -189,13 +189,13 @@ describe('Badge Issuance (e2e) - Isolated', () => {
     it('should return 404 when badge claim token already used (one-time use)', async () => {
       // First claim
       await request(ctx.app.getHttpServer() as App)
-        .post(`/api/badges/${validBadgeId}/claim`)
+        .post('/api/badges/claim')
         .send({ claimToken: validClaimToken })
         .expect(201);
 
       // Second claim attempt - token has been cleared
       const response = await request(ctx.app.getHttpServer() as App)
-        .post(`/api/badges/${validBadgeId}/claim`)
+        .post('/api/badges/claim')
         .send({ claimToken: validClaimToken })
         .expect(404); // Token no longer exists in DB
 

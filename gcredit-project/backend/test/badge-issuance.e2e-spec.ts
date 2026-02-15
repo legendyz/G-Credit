@@ -146,7 +146,7 @@ describe('Badge Issuance (e2e)', () => {
     });
   });
 
-  describe('POST /api/badges/:id/claim', () => {
+  describe('POST /api/badges/claim', () => {
     let validBadgeId: string;
     let validClaimToken: string;
 
@@ -172,7 +172,7 @@ describe('Badge Issuance (e2e)', () => {
 
     it('should claim badge with valid token (PUBLIC endpoint - no auth required)', async () => {
       const response = await request(ctx.app.getHttpServer() as App)
-        .post(`/api/badges/${validBadgeId}/claim`)
+        .post('/api/badges/claim')
         .send({
           claimToken: validClaimToken,
         })
@@ -194,7 +194,7 @@ describe('Badge Issuance (e2e)', () => {
 
     it('should return 400 for invalid claim token', () => {
       return request(ctx.app.getHttpServer() as App)
-        .post(`/api/badges/${validBadgeId}/claim`)
+        .post('/api/badges/claim')
         .send({
           claimToken: 'invalid-token-' + 'x'.repeat(19), // 32 chars total
         })
@@ -208,7 +208,7 @@ describe('Badge Issuance (e2e)', () => {
     it('should return 404 when trying to use already-claimed token (one-time use)', async () => {
       // Claim once
       await request(ctx.app.getHttpServer() as App)
-        .post(`/api/badges/${validBadgeId}/claim`)
+        .post('/api/badges/claim')
         .send({
           claimToken: validClaimToken,
         })
@@ -216,7 +216,7 @@ describe('Badge Issuance (e2e)', () => {
 
       // Try to claim again with same token (should fail - token is cleared after claim)
       return request(ctx.app.getHttpServer() as App)
-        .post(`/api/badges/${validBadgeId}/claim`)
+        .post('/api/badges/claim')
         .send({
           claimToken: validClaimToken,
         })
@@ -238,7 +238,7 @@ describe('Badge Issuance (e2e)', () => {
       });
 
       return request(ctx.app.getHttpServer() as App)
-        .post(`/api/badges/${validBadgeId}/claim`)
+        .post('/api/badges/claim')
         .send({
           claimToken: validClaimToken,
         })
@@ -251,8 +251,6 @@ describe('Badge Issuance (e2e)', () => {
   });
 
   describe('GET /api/badges/my-badges', () => {
-    let badge1Id: string;
-
     beforeAll(async () => {
       // Issue 2 badges to recipient
       const issueResponse1 = await request(ctx.app.getHttpServer() as App)
@@ -268,7 +266,6 @@ describe('Badge Issuance (e2e)', () => {
         id: string;
         claimToken: string;
       };
-      badge1Id = issue1Body.id;
 
       await request(ctx.app.getHttpServer() as App)
         .post('/api/badges')
@@ -280,9 +277,9 @@ describe('Badge Issuance (e2e)', () => {
           expiresIn: 365,
         });
 
-      // Claim one badge
+      // Claim one badge (using public claim endpoint)
       await request(ctx.app.getHttpServer() as App)
-        .post(`/api/badges/${badge1Id}/claim`)
+        .post('/api/badges/claim')
         .send({
           claimToken: issue1Body.claimToken,
         })

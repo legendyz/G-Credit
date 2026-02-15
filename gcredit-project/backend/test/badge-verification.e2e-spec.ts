@@ -221,7 +221,7 @@ describe('Badge Verification E2E (Isolated)', () => {
         .expect(200);
 
       expect(response.headers['cache-control']).toBeDefined();
-      expect(response.headers['cache-control']).toMatch(/public.*max-age=3600/);
+      expect(response.headers['cache-control']).toMatch(/public.*max-age=60/);
     });
 
     it('should set no-cache headers for revoked badges', async () => {
