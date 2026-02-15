@@ -4,7 +4,6 @@ import { useSkills } from '../../hooks/useSkills';
 import { useBadgeSearch } from '../../hooks/useBadgeSearch';
 import { TimelineLine } from './TimelineLine';
 import { BadgeTimelineCard } from './BadgeTimelineCard';
-import { MilestoneTimelineCard } from './MilestoneTimelineCard';
 import { DateGroupHeader } from './DateGroupHeader';
 import { DateNavigationSidebar } from './DateNavigationSidebar';
 import { ViewToggle } from './ViewToggle';
@@ -15,8 +14,14 @@ import { useBadgeDetailModal } from '../../stores/badgeDetailModal';
 import { BadgeSearchBar } from '../search/BadgeSearchBar';
 import { PageTemplate } from '../layout/PageTemplate';
 import type { BadgeForFilter } from '../../utils/searchFilters';
+import type { Badge } from '../../hooks/useWallet';
 
 export type ViewMode = 'timeline' | 'grid';
+
+/** Type guard: distinguish Badge from Milestone in wallet items */
+function isBadge(item: { type?: string }): item is Badge {
+  return !('type' in item) || item.type !== 'milestone';
+}
 
 export function TimelineView() {
   const [viewMode, setViewMode] = useState<ViewMode>('timeline');
@@ -31,27 +36,25 @@ export function TimelineView() {
   // Story 11.24 AC-C3: Filter out milestones — only badges support search/filter
   const badgesForFilter: BadgeForFilter[] = useMemo(() => {
     if (!data?.data) return [];
-    return data.data
-      .filter((item) => !('type' in item && item.type === 'milestone'))
-      .map((badge) => ({
-        id: badge.id,
-        template: {
-          id: badge.template.id,
-          name: badge.template.name,
-          // Story 8.2: Use actual skillIds from API
-          skillIds: badge.template.skillIds || [],
-          category: badge.template.category,
-        },
-        issuer: {
-          id: badge.issuer.id,
-          firstName: badge.issuer.firstName,
-          lastName: badge.issuer.lastName,
-          email: badge.issuer.email,
-        },
-        issuedAt: badge.issuedAt,
-        claimedAt: badge.claimedAt,
-        status: badge.status,
-      }));
+    return data.data.filter(isBadge).map((badge) => ({
+      id: badge.id,
+      template: {
+        id: badge.template.id,
+        name: badge.template.name,
+        // Story 8.2: Use actual skillIds from API
+        skillIds: badge.template.skillIds || [],
+        category: badge.template.category,
+      },
+      issuer: {
+        id: badge.issuer.id,
+        firstName: badge.issuer.firstName,
+        lastName: badge.issuer.lastName,
+        email: badge.issuer.email,
+      },
+      issuedAt: badge.issuedAt,
+      claimedAt: badge.claimedAt,
+      status: badge.status,
+    }));
   }, [data]);
 
   // Create skill names map for chip display
@@ -101,10 +104,10 @@ export function TimelineView() {
   }, [setStatusFilter]);
 
   // Map filtered badges back to original badge objects for display
-  const displayBadges = useMemo(() => {
+  const displayBadges: Badge[] = useMemo(() => {
     if (!data?.data) return [];
     const filteredIds = new Set(filteredBadges.map((b) => b.id));
-    return data.data.filter((badge) => filteredIds.has(badge.id));
+    return data.data.filter(isBadge).filter((badge) => filteredIds.has(badge.id));
   }, [data, filteredBadges]);
 
   // Group badges by date for timeline display
@@ -155,7 +158,7 @@ export function TimelineView() {
     // AC 6.14: Detect which empty state scenario to display
     // Calculate badge counts for scenario detection
     const totalBadges = data?.meta?.total || 0;
-    const badges = data?.data ?? [];
+    const badges = (data?.data ?? []).filter(isBadge);
     const claimedBadges = badges.filter((b) => b.status === 'CLAIMED').length;
     const pendingBadges = badges.filter((b) => b.status === 'PENDING').length;
     const revokedBadges = badges.filter((b) => b.status === 'REVOKED').length;
@@ -304,23 +307,9 @@ export function TimelineView() {
                     <div key={group.label} id={`group-${group.label}`}>
                       <DateGroupHeader label={group.label} count={group.count} />
                       <div className="space-y-4 mt-4">
-                        {groupBadges.map((badge) =>
-                          'type' in badge && badge.type === 'milestone' ? (
-                            <MilestoneTimelineCard
-                              key={`milestone-${(badge as { milestoneId: string }).milestoneId}`}
-                              milestone={
-                                badge as {
-                                  milestoneId: string;
-                                  title: string;
-                                  description: string;
-                                  achievedAt: string;
-                                }
-                              }
-                            />
-                          ) : (
-                            <BadgeTimelineCard key={badge.id} badge={badge} />
-                          )
-                        )}
+                        {groupBadges.map((badge) => (
+                          <BadgeTimelineCard key={badge.id} badge={badge} />
+                        ))}
                       </div>
                     </div>
                   );
@@ -349,7 +338,7 @@ interface GridViewProps {
   badges: Array<{
     id: string;
     template: {
-      imageUrl?: string;
+      imageUrl?: string | null;
       name: string;
       category: string;
     };

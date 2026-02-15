@@ -22,7 +22,7 @@ cd ../..
 echo "=== Frontend ==="
 cd gcredit-project/frontend
 npx eslint src/ --max-warnings=0
-npx tsc --noEmit
+npx tsc -p tsconfig.app.json --noEmit
 npx vitest run
 cd ../..
 
