@@ -619,7 +619,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 | 21 | 11.21 | CI Quality Gates (Chinese+console) | 🟡 | 2h | project-context.md | ✅ |
 | 22 | 11.22 | Husky Pre-commit Hooks | 🟡 | 2h | project-context.md | ✅ |
 | 23 | 11.23 | User Management Nav Fix | 🟡 | 30min | Backlog+Feature Audit | ✅ |
-| 24 | 11.24 | Data Contract Alignment | 🔴 | 8-10h | UAT 全面排查 | 🔲 Ready |
+| 24 | 11.24 | Data Contract Alignment | 🔴 | 8-10h | UAT 全面排查 | ✅ |
 | 25 | 11.25 | Cookie Auth Hardening | 🔴 | 4-5h | UAT 安全审计 | 🔲 Ready |
 | | **TOTAL** | **25 stories** | | **65.5-82.5h** | | |
 
@@ -903,6 +903,6 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 
 ---
 
-**Last Updated:** 2026-02-15 (Sprint 11: 23/25 stories complete, Stories 11.24-11.25 added from UAT)  
-**Status:** 🔄 IN PROGRESS — 23 stories delivered across 5 waves; Stories 11.24 (Data Contract) + 11.25 (Cookie Auth) added from UAT, ready for Wave 6  
+**Last Updated:** 2026-02-15 (Sprint 11: 24/25 stories complete, Story 11.24 done, Story 11.25 ready)  
+**Status:** 🔄 IN PROGRESS — 24 stories delivered across 6 waves; Story 11.25 (Cookie Auth) ready for implementation  
 **Created By:** SM Agent (Bob)

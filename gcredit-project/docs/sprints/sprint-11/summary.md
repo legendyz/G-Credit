@@ -3,9 +3,9 @@
 **Sprint:** Sprint 11  
 **Epic:** Post-MVP Hardening (Security + Code Quality + Feature Polish + DX)  
 **Branch:** `sprint-11/security-quality-hardening`  
-**Duration:** 2026-02-12 to 2026-02-14 (3 days)  
+**Duration:** 2026-02-12 to 2026-02-15 (4 days)  
 **Target Version:** v1.1.0  
-**Status:** ✅ COMPLETE — 23/23 stories delivered across 5 waves
+**Status:** 🔄 IN PROGRESS — 24/25 stories delivered across 6 waves (Story 11.25 pending)
 
 ---
 
@@ -80,6 +80,12 @@ Harden the post-MVP codebase by addressing all P0/P1 findings from the 6 compreh
 | 11.21 | CI Quality Gates | ESLint `no-console`, CI Chinese char detection, 1 fix (方案B→Option B) |
 | 11.22 | Husky Pre-commit Hooks | pre-commit (lint-staged + Chinese check), pre-push (full CI mirror) |
 
+### Wave 6 — UAT Data Contract Fixes ✅ (2026-02-15)
+
+| Story | Title | Highlights |
+|-------|-------|------------|
+| 11.24 | Data Contract Alignment | 14 API-to-UI contract issues fixed: `formatActivityDescription()`, multi-format criteria parsing, wallet badge/milestone type discrimination, verification page fields, null safety (revoker, imageUrl, skills), dead code removal (`issuerMessage`, `recentAchievements`), display polish (UUID truncation, title case). 9 commits, 27+ files, code review APPROVED. |
+
 ---
 
 ## Security Improvements
@@ -101,7 +107,7 @@ Harden the post-MVP codebase by addressing all P0/P1 findings from the 6 compreh
 
 | Area | Before | After |
 |------|--------|-------|
-| Tests | 1,061 | 1,263 (+202, +19%) |
+| Tests | 1,061 | 1,301 (+240, +23%) |
 | Service test coverage | 3 critical services at 0% | 90%+ coverage |
 | Logging | Mixed console.log | NestJS `Logger` in all 22 services |
 | Pagination | Ad-hoc per endpoint | `PaginatedResponse<T>` standard |
@@ -121,8 +127,9 @@ Wave 2:            1,106 (BE 565 + FE 541) → +42
 Wave 3:            1,127 (BE 586 + FE 541) → +21
 Wave 4:            1,259 (BE 718 + FE 541) → +132
 Wave 5:            1,263 (BE 722 + FE 541) → +4
+Wave 6 (UAT):      1,301 (BE 750 + FE 551) → +38
                    ───────────────────────────
-Total added:       +202 tests (0 regressions)
+Total added:       +240 tests (0 regressions)
 ```
 
 ---
@@ -140,8 +147,10 @@ Total added:       +202 tests (0 regressions)
 - **Code Reviews:** [wave-1](wave-1-code-review.md) | [wave-2](wave-2-code-review.md) | [wave-3](wave-3-code-review.md) | [wave-4](wave-4-code-review.md) | [wave-5](wave-5-code-review.md)
 - **Dev Prompts:** [wave-1](wave-1-dev-prompt.md) | [wave-2](wave-2-dev-prompt.md) | [wave-3](wave-3-dev-prompt.md) | [wave-4](wave-4-dev-prompt.md) | [wave-5](wave-5-dev-prompt.md)
 - **23 Story Files:** `11-1-*.md` through `11-23-*.md`
+- **Story 11.24:** [11-24-data-contract-alignment.md](11-24-data-contract-alignment.md) | [dev-prompt](11-24-dev-prompt.md) | [code-review](11-24-code-review.md)
 
 ---
 
 **Created:** 2026-02-14  
+**Updated:** 2026-02-15 (Wave 6 / Story 11.24 added)  
 **Author:** SM Agent (Bob)

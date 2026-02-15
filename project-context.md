@@ -5,7 +5,7 @@
 **Project Type:** Enterprise Internal Platform (Greenfield)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
 **License:** MIT License (Open Source)  
-**Status:** ✅ Sprint 11 Complete — Post-MVP Hardening Done (v1.1.0 pending UAT + merge)  
+**Status:** 🔄 Sprint 11 UAT — Story 11.24 done, Story 11.25 ready (v1.1.0 pending UAT completion + merge)  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, committed 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, committed 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, committed 2026-01-26)  
@@ -17,8 +17,8 @@
 **Sprint 8:** ✅ Complete (12/12 items, 100%, 80h/76h, branch: sprint-8/epic-10-production-ready-mvp, tagged v0.8.0, 876 tests)  
 **Sprint 9:** ✅ Complete (5/5 stories, 37h/51h, branch: sprint-9/epic-8-bulk-issuance-td-cleanup, 1087 tests, v0.9.0-dev)  
 **Sprint 10:** ✅ Complete (12/12 stories, branch: sprint-10/v1-release, 1061 tests, UAT 33/33 PASS, v1.0.0)  
-**Sprint 11:** ✅ Complete (23/23 stories, 5 waves, branch: sprint-11/security-quality-hardening, 1263 tests, pending UAT + merge)  
-**Last Updated:** 2026-02-14 (Sprint 11 Complete — 23/23 stories, pending UAT before merge to main)
+**Sprint 11:** 🔄 In Progress (24/25 stories, 6 phases, branch: sprint-11/security-quality-hardening, 1263+ tests, UAT ongoing)  
+**Last Updated:** 2026-02-15 (Story 11.24 complete, Story 11.25 ready, UAT ongoing)
 
 ---
 
@@ -138,9 +138,13 @@ Build an internal digital credentialing (badging) platform to securely recognize
 - **Audit #5: Security:** `gcredit-project/docs/security/security-audit-2026-02.md` — OWASP Top 10, 2 HIGH (localStorage JWT, no lockout), 3 MEDIUM, 4 LOW (234 lines)
 - **Audit #6: Feature & UX:** `gcredit-project/docs/planning/feature-completeness-audit-2026-02.md` — 19/22 screens (86%), 35/37 endpoints (95%), 2 P0, 8 P1 (238 lines)
 - **Sprint 11 Candidate List:** `gcredit-project/docs/planning/sprint-11-candidate-list.md` — Consolidated audit findings → actionable tickets (166 lines)
-- **Sprint 11 Backlog:** `gcredit-project/docs/sprints/sprint-11/backlog.md` ✅ COMPLETE (23 stories, 5 Waves, 60h)
-- **Sprint 11 Summary:** `gcredit-project/docs/sprints/sprint-11/summary.md` ✅ COMPLETE (23/23 stories, 1,263 tests)
+- **Sprint 11 Backlog:** `gcredit-project/docs/sprints/sprint-11/backlog.md` 🔄 UPDATED (25 stories, 6 Phases, 65-82h)
+- **Sprint 11 Summary:** `gcredit-project/docs/sprints/sprint-11/summary.md` 🔄 UPDATED (24/25 stories, 1,301 tests — Story 11.25 pending)
 - **Sprint 11 Retrospective:** `gcredit-project/docs/sprints/sprint-11/retrospective.md` ✅ COMPLETE (Lessons 35-42, 5 action items)
+- **Story 11.24 Dev Prompt:** `gcredit-project/docs/sprints/sprint-11/11-24-dev-prompt.md` — Dev agent execution prompt
+- **Story 11.25:** `gcredit-project/docs/sprints/sprint-11/11-25-cookie-auth-hardening.md` — Cookie auth migration fixes
+- **UAT Test Plan:** `gcredit-project/docs/testing/uat-sprint-11-test-plan.md` — 25 UAT scenarios
+- **Technical Debt:** `gcredit-project/docs/sprints/sprint-11/technical-debt.md` — TD-016/017/018
 
 ---
 
@@ -308,8 +312,10 @@ _bmad-output/
 - ✅ Code quality improvement (3 service test suites at 90%+, pagination standardization, NestJS Logger in all 22 services, 5 unused deps removed)
 - ✅ Feature polish (badge visibility toggle, LinkedIn share tab, CSV export, 403 page, skill UUID→name, nav fix)
 - ✅ DX improvements (Husky v9 pre-commit + pre-push CI mirror, CI Chinese char detection, ESLint no-console)
-- **Tests:** 1,061 → 1,263 (+202, +19%), 0 regressions
+- ✅ Data contract alignment (14 API-to-UI issues fixed in Story 11.24: formatActivityDescription, multi-format criteria, wallet type discrimination, null safety, dead code cleanup)
+- **Tests:** 1,061 → 1,263+ (+202+, +19%+), 0 regressions
 - **Security:** 2 HIGH → 0 HIGH findings resolved
+- **Pre-push hook:** Fully aligned with CI pipeline — `npm run lint` (not bare eslint), `npm run build` for both BE/FE, Jest `--forceExit` exit code tolerance
 
 ### Phase 2 - Automation (Target: Q2 2026)
 - LMS integration (auto-issuance on course completion)
@@ -421,9 +427,12 @@ _bmad-output/
 | **TD-016: Async Bulk Processing** | Low | 📋 Deferred (P3) | **Issue:** Bulk issuance limited to 20 badges synchronously. **Plan:** Add Redis + Bull Queue for >20 badge async processing. **Effort:** 8h. **Trigger:** When user feedback validates need for >20 badges per batch. |
 | **TD-023: CI Chinese Character Gate** | Low | ✅ Sprint 11 Done | **Resolved:** CI workflow grep for Chinese chars in both BE/FE jobs. `scripts/check-chinese.sh` created. 1 fix (方案B→Option B). Completed in Story 11.21 (2026-02-14). |
 | **TD-024: CI console.log Gate** | Low | ✅ Sprint 11 Done | **Resolved:** ESLint `no-console: 'error'` in both BE/FE configs with test overrides. ErrorBoundary eslint-disable. Completed in Story 11.21 (2026-02-14). |
-| **TD-025: Husky Pre-commit Hooks** | Low | ✅ Sprint 11 Done | **Resolved:** Husky v9 + lint-staged pre-commit (ESLint + Chinese check). Pre-push mirrors full CI pipeline (Lesson 40). Root package.json created. Completed in Story 11.22 (2026-02-14). |
+| **TD-025: Husky Pre-commit Hooks** | Low | ✅ Sprint 11 Done | **Resolved:** Husky v9 + lint-staged pre-commit (ESLint + Chinese check). Pre-push mirrors full CI pipeline (Lesson 40). Root package.json created. Completed in Story 11.22 (2026-02-14). **Updated (11.24):** Pre-push further aligned — uses `npm run lint` (covers src+test), adds `npm run build` for BE/FE, tolerates Jest `--forceExit` exit code via grep-based pass/fail parsing. |
+| **TD-028: Data Contract Alignment** | Critical | ✅ Sprint 11 Done | **Resolved:** 14 API-to-UI data contract issues fixed in Story 11.24 (2026-02-15). (1) Admin Dashboard `formatActivityDescription()` replaces raw JSON. (2) BadgeInfo multi-format criteria parsing. (3) Wallet badge/milestone type discrimination with `MilestoneTimelineCard`. (4) Verification page `expiresAt`/`claimedAt` fields. (5) Null safety: revoker, imageUrl, skill names. (6) Dead code: `issuerMessage`, `recentAchievements`. (7) Display polish: UUID truncation, title case. |
+| **TD-029: Decorator Metadata Guard Tests** | Low | ✅ Sprint 11 Done | **Resolved:** Added `Reflect.getMetadata()` unit tests verifying `@Public()` and `@Roles()` decorators on security-critical endpoints. Catches accidental decorator removal during refactoring. Runs locally without database. Badge Issuance: 11 tests, Badge Verification: 3 tests. Added in Story 11.24 (2026-02-15). |
 | **TD-026: SM Audit Triage Workflow** | Medium | 📋 Post-Sprint 11 | **Issue:** Audit recommendations not systematically converted to stories. **Plan:** SM agent `[AT]` menu item. **Effort:** 1h. |
 | **TD-027: Playwright Visual Regression in CI** | Low | 📋 Post-Sprint 11 | **Issue:** No automated visual regression testing. **Plan:** Playwright screenshot comparison in CI. **Effort:** 4h. |
+| **TD-030: LinkedIn Dynamic OG Meta Tags** | P2 | 📋 Deferred Sprint 12 | **Issue:** LinkedIn crawler gets static generic OG meta tags for all `/verify/:id` share links — all previews show identical card. **Root Cause:** SPA with no SSR; LinkedIn bot doesn't execute JS. **Plan:** Backend middleware detecting crawler User-Agent and returning pre-rendered HTML with dynamic `og:title`, `og:description`, `og:image`. **Effort:** 4-6h. Documented as sprint-11/technical-debt.md TD-018. |
 | **TD-018: Code TODO Cleanup** | Low | ✅ Sprint 10 Done | **Resolved:** 14 TODO/FIXME markers resolved (6 backend, 5 frontend, 3 test). Hardcoded localhost URLs centralized to apiConfig.ts. Dead nav links fixed. 404 catch-all added. Completed in Story 10.3 (2026-02-08). |
 | **TD-019: Frontend ESLint Cleanup** | High | ✅ Sprint 10 Done | **Resolved:** Frontend ESLint 49 errors + 21,363 warnings → 0 errors + 0 warnings. Added `.gitattributes` (LF normalization), fixed 49 errors (react-hooks, typescript, a11y), 13 eslint-disable with justifications. CI `npm run lint --max-warnings=0` gate added to frontend-tests job. 135 files changed. Completed in Story 10.3b (2026-02-09, commit `80b693e`). |
 | **TD-020: CI E2E Job Missing Frontend Dependency** | Medium | ✅ Resolved (Story 10.4, `0ba885e`) | **Resolved:** `e2e-tests` job now has `needs: [lint-and-unit, frontend-tests]`. Frontend lint/test failures correctly block E2E execution. Completed in Story 10.4 (2026-02-09). |
@@ -996,16 +1005,22 @@ _bmad-output/
 | Test file suffix | `.spec.ts` | `.test.ts` / `.test.tsx` |
 | E2E test suffix | `.e2e-spec.ts` | — |
 
-### Pre-commit Checklist
+### Pre-commit / Pre-push Checklist
 
-- [ ] `npm run lint` passes (0 errors)
-- [ ] `npm test` passes (all tests)
-- [ ] `npx tsc --noEmit` passes (type check)
+**Automated by Husky (`.husky/pre-commit` + `.husky/pre-push`):**
+- [x] `lint-staged` runs ESLint + Chinese char check on staged files (pre-commit)
+- [x] `npm run lint` in BE + FE (pre-push, mirrors CI)
+- [x] `npx tsc --noEmit` in BE + FE (pre-push, FE uses `tsconfig.app.json`)
+- [x] `npx jest --forceExit` in BE + FE (pre-push, grep-based pass/fail — tolerates exit code 1)
+- [x] `npm run build` in BE + FE (pre-push, catches build-only errors)
+
+**Manual checks:**
 - [ ] No Chinese characters in source code
 - [ ] No `console.log` in production code
 - [ ] All API calls use `API_BASE_URL`
 - [ ] Controller `@Controller()` includes `api/`
 - [ ] DTOs have class-validator decorators + Swagger docs
+- [ ] Security-critical endpoints have `@Public()` / `@Roles()` decorator metadata tests
 
 ---
 
@@ -1474,14 +1489,22 @@ Sprint 0-2 established this pattern:
    
    **Key Achievements:**
    - Security: 2 HIGH → 0 HIGH (httpOnly cookies, account lockout, magic-byte, PII sanitization, HTML sanitization, email masking)
-   - Tests: 1,061 → 1,263 (+202, +19%), 0 regressions
+   - Tests: 1,061 → 1,263+ (+202+, +19%+), 0 regressions
    - Code Quality: NestJS Logger in 22 services, PaginatedResponse<T>, 5 unused deps removed
    - DX: Husky v9 pre-commit + pre-push (CI mirror), CI Chinese char detection
    - Features: Badge visibility, LinkedIn share, CSV export, 403 page, skill UUID→name
    
-   **Pending:** UAT execution before merge to main + tag v1.1.0
+   **UAT Phase (2026-02-14/15):**
+   - Story 11.24: Data Contract Alignment — 14 API-to-UI issues fixed (✅ done, code review APPROVED)
+   - Story 11.25: Cookie Auth Hardening — 6 httpOnly migration issues documented (🔲 ready)
+   - Pre-push hook aligned with CI (npm run lint/build, Jest exit code tolerance)
+   - Decorator metadata guard tests added (Reflect.getMetadata for @Public/@Roles)
+   - E2E tests synced with UAT fixes (claim endpoint auth, cache-control)
+   - Pre-existing test failures resolved (analytics date window, BadgeShareModal text)
    
-   **Sprint Docs:** summary.md, retrospective.md, backlog.md, 23 story files, 5 wave code reviews
+   **Pending:** Story 11.25 implementation + remaining UAT + code reviews + merge to main + tag v1.1.0
+   
+   **Sprint Docs:** summary.md, retrospective.md, backlog.md, 25 story files, 5 wave code reviews, UAT test plan
 
 21. 🔜 **Next Actions (Post-Sprint 11 — Current)**
    - Phase 4 Pilot planning (L&D program pilot)
