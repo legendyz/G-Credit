@@ -54,7 +54,7 @@ export class BadgeTemplatesController {
   @ApiOperation({
     summary: 'Get all badge templates with filters and pagination',
     description:
-      'Public endpoint for listing badge templates. Returns only ACTIVE templates by default.',
+      'Lists badge templates (auth required via global guard). Returns only ACTIVE templates by default.',
   })
   @ApiResponse({
     status: 200,
@@ -62,7 +62,7 @@ export class BadgeTemplatesController {
     type: PaginatedBadgeTemplatesResponseDto,
   })
   async findAll(@Query() query: QueryBadgeTemplatesDto) {
-    // Public endpoint: only show ACTIVE templates
+    // Auth-required (global JwtAuthGuard): only show ACTIVE templates
     return this.badgeTemplatesService.findAll(query, true);
   }
 

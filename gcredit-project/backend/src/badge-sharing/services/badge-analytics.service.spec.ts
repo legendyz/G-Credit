@@ -195,7 +195,7 @@ describe('BadgeAnalyticsService', () => {
         badgeId: 'badge-123',
         platform: 'email',
         sharedAt: new Date(),
-        sharedBy: 'user-123',
+        sharedBy: 'user-recipient',
         recipientEmail: null,
         metadata: null,
       });
@@ -203,18 +203,26 @@ describe('BadgeAnalyticsService', () => {
       const _result = await service.recordShare(
         'badge-123',
         'email',
-        'user-123',
+        'user-recipient',
       );
 
       expect(mockPrismaService.badgeShare.create).toHaveBeenCalledWith({
         data: {
           badgeId: 'badge-123',
           platform: 'email',
-          sharedBy: 'user-123',
+          sharedBy: 'user-recipient',
           recipientEmail: null,
           metadata: Prisma.JsonNull,
         },
       });
+    });
+
+    it('should throw ForbiddenException when user is not badge owner or issuer', async () => {
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+
+      await expect(
+        service.recordShare('badge-123', 'linkedin', 'unauthorized-user'),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 

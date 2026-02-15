@@ -46,13 +46,21 @@ export class BadgeAnalyticsService {
       referrerUrl?: string;
     },
   ) {
-    // Verify badge exists
+    // Verify badge exists and fetch ownership info
     const badge = await this.prisma.badge.findUnique({
       where: { id: badgeId },
+      select: { id: true, recipientId: true, issuerId: true },
     });
 
     if (!badge) {
       throw new Error(`Badge with ID ${badgeId} not found`);
+    }
+
+    // F-NEW-1: Verify ownership — authenticated users can only share their own badges
+    if (userId && badge.recipientId !== userId && badge.issuerId !== userId) {
+      throw new ForbiddenException(
+        'You are not authorized to share this badge',
+      );
     }
 
     // Create share record
