@@ -11,11 +11,11 @@
   },
   "lint-staged": {
     "gcredit-project/backend/src/**/*.ts": [
-      "npx --prefix gcredit-project/backend eslint --fix --max-warnings=0",
+      "npx --prefix gcredit-project/backend eslint --config gcredit-project/backend/eslint.config.mjs --fix --max-warnings=0",
       "npx --prefix gcredit-project/backend prettier --write"
     ],
     "gcredit-project/frontend/src/**/*.{ts,tsx}": [
-      "npx --prefix gcredit-project/frontend eslint --fix --max-warnings=0",
+      "npx --prefix gcredit-project/frontend eslint --config gcredit-project/frontend/eslint.config.js --fix --max-warnings=0",
       "npx --prefix gcredit-project/frontend prettier --write"
     ]
   }

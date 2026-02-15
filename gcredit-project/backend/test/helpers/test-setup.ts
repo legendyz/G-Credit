@@ -127,6 +127,9 @@ export async function createAndLoginUser(
 
 /**
  * Helper to make authenticated requests
+ *
+ * TODO: Migrate to cookie-based auth when Bearer fallback is removed (Story 11.25 L-7)
+ * Currently uses Authorization header; JwtStrategy has Bearer fallback so E2E tests work.
  */
 export function authRequest(
   app: INestApplication,

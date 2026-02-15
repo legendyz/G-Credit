@@ -14,19 +14,11 @@ import {
   HttpCode,
   HttpStatus,
   NotFoundException,
-  ForbiddenException,
   BadRequestException,
-  UseGuards,
   Logger,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Public } from '../../common/decorators/public.decorator';
 import { PrismaService } from '../../common/prisma.service';
 import { ClaimBadgeActionDto } from './dto/claim-badge-action.dto';
 import { BadgeStatus } from '@prisma/client';
@@ -41,8 +33,6 @@ type BadgeWithRelations = Badge & {
 
 @ApiTags('Teams Actions')
 @Controller('api/teams/actions')
-@UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
 export class TeamsActionController {
   private readonly logger = new Logger(TeamsActionController.name);
   constructor(private readonly prisma: PrismaService) {}
@@ -50,18 +40,20 @@ export class TeamsActionController {
   /**
    * Handle Claim Badge action from Teams Adaptive Card
    *
-   * When user clicks "Claim Badge" button in Teams notification,
-   * this endpoint updates badge status from PENDING to CLAIMED.
+   * Story 11.25 AC-C2: Switched from JWT auth to @Public() + claimToken validation.
+   * Teams server-to-server callbacks don't carry browser cookies or user JWTs.
+   * The one-time claimToken (embedded in the Adaptive Card) provides authorization.
    *
-   * @param dto - Contains badgeId and userId
+   * @param dto - Contains claimToken (one-time use, validates the claim)
    * @returns Updated Adaptive Card JSON showing claimed status
    */
+  @Public()
   @Post('claim-badge')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Claim badge from Teams notification',
+    summary: 'Claim badge from Teams notification (public, token-validated)',
     description:
-      'Updates badge status to CLAIMED when user clicks action button in Teams',
+      'Updates badge status to CLAIMED using one-time claim token. No JWT required.',
   })
   @ApiResponse({
     status: 200,
@@ -88,17 +80,13 @@ export class TeamsActionController {
   })
   @ApiResponse({ status: 400, description: 'Badge already claimed or revoked' })
   @ApiResponse({
-    status: 403,
-    description: 'User not authorized to claim this badge',
+    status: 404,
+    description: 'Invalid claim token or badge not found',
   })
-  @ApiResponse({ status: 404, description: 'Badge not found' })
-  async claimBadge(
-    @Body() dto: ClaimBadgeActionDto,
-    @CurrentUser() user: { userId: string; email: string; role: string },
-  ) {
-    // 1. Validate badge exists
+  async claimBadge(@Body() dto: ClaimBadgeActionDto) {
+    // 1. Find badge by claimToken (this IS the authorization)
     const badge = await this.prisma.badge.findUnique({
-      where: { id: dto.badgeId },
+      where: { claimToken: dto.claimToken },
       include: {
         template: true,
         recipient: true,
@@ -107,18 +95,10 @@ export class TeamsActionController {
     });
 
     if (!badge) {
-      throw new NotFoundException(`Badge ${dto.badgeId} not found`);
+      throw new NotFoundException('Invalid claim token');
     }
 
-    // 2. Validate user is the recipient (SEC-P0-001: Use JWT user.userId, not dto.userId)
-    // This prevents IDOR attacks where attackers could claim badges for other users
-    if (badge.recipientId !== user.userId) {
-      throw new ForbiddenException(
-        'Only the badge recipient can claim this badge',
-      );
-    }
-
-    // 3. Check badge status
+    // 2. Check badge status
     if (badge.status === BadgeStatus.CLAIMED) {
       throw new BadRequestException('Badge has already been claimed');
     }
@@ -135,12 +115,13 @@ export class TeamsActionController {
       );
     }
 
-    // 4. Update badge status to CLAIMED
+    // 4. Update badge status to CLAIMED and clear token (one-time use)
     const updatedBadge = await this.prisma.badge.update({
-      where: { id: dto.badgeId },
+      where: { id: badge.id },
       data: {
         status: BadgeStatus.CLAIMED,
         claimedAt: new Date(),
+        claimToken: null, // One-time use: clear after claim
       },
       include: {
         template: true,

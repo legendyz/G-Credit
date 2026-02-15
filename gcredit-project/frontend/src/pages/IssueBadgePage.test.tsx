@@ -145,9 +145,6 @@ describe('IssueBadgePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Mock localStorage
-    vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('test-token');
-
     // Mock fetch for both templates (first call) and recipients (second call)
     mockFetch
       .mockResolvedValueOnce({

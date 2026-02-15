@@ -30,7 +30,6 @@ describe('useAdminUsers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     global.fetch = mockFetch;
-    vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('test-token');
   });
 
   const mockUsersResponse = {
@@ -139,7 +138,6 @@ describe('useUpdateUserRole', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     global.fetch = mockFetch;
-    vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('test-token');
   });
 
   const mockUpdateResponse = {
@@ -226,7 +224,6 @@ describe('useUpdateUserStatus', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     global.fetch = mockFetch;
-    vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('test-token');
   });
 
   const mockStatusResponse = {

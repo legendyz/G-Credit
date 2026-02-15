@@ -39,7 +39,8 @@ export class AuthController {
   ) {
     const result = await this.authService.register(dto);
     this.setAuthCookies(res, result.accessToken, result.refreshToken);
-    return result;
+    // Story 11.25 AC-M4: Only return user profile — tokens are in httpOnly cookies only
+    return { user: result.user };
   }
 
   // Rate limit: 5 login attempts per minute per IP (Story 8.6 - SEC-P1-004)
@@ -53,8 +54,8 @@ export class AuthController {
   ) {
     const result = await this.authService.login(dto);
     this.setAuthCookies(res, result.accessToken, result.refreshToken);
-    // Dual-write: body still returns tokens (transition period)
-    return result;
+    // Story 11.25 AC-M4: Only return user profile — tokens are in httpOnly cookies only
+    return { user: result.user };
   }
 
   // Rate limit: 3 password reset requests per 5 minutes (Story 8.6 - SEC-P1-004)
@@ -90,7 +91,8 @@ export class AuthController {
       (req.cookies?.refresh_token as string) || bodyRefreshToken;
     const result = await this.authService.refreshAccessToken(refreshToken);
     this.setAuthCookies(res, result.accessToken, result.refreshToken);
-    return result;
+    // Story 11.25 AC-M4: Tokens only in httpOnly cookies
+    return { message: 'Token refreshed' };
   }
 
   @Public()
@@ -104,9 +106,9 @@ export class AuthController {
     // Dual-read: prefer cookie, fallback to body
     const refreshToken: string =
       (req.cookies?.refresh_token as string) || bodyRefreshToken;
-    // Clear httpOnly cookies
-    res.clearCookie('access_token', { path: '/api' });
-    res.clearCookie('refresh_token', { path: '/api/auth' });
+    // Clear httpOnly cookies (Story 11.25 AC-M3: match setCookie attributes exactly)
+    res.clearCookie('access_token', this.getCookieOptions('/api'));
+    res.clearCookie('refresh_token', this.getCookieOptions('/api/auth'));
     return this.authService.logout(refreshToken);
   }
 
@@ -139,6 +141,21 @@ export class AuthController {
   }
 
   /**
+   * Story 11.25 AC-M3: Shared cookie options to ensure setCookie and clearCookie
+   * use identical attributes (httpOnly, secure, sameSite, path).
+   * Browsers require exact attribute match to clear cookies.
+   */
+  private getCookieOptions(path: string) {
+    const isProduction = process.env.NODE_ENV === 'production';
+    return {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax' as const,
+      path,
+    };
+  }
+
+  /**
    * Set httpOnly cookies for JWT tokens (Story 11.6 - SEC-002)
    * Access token: path=/api (all API requests)
    * Refresh token: path=/api/auth (auth endpoints only)
@@ -148,21 +165,13 @@ export class AuthController {
     accessToken: string,
     refreshToken: string,
   ) {
-    const isProduction = process.env.NODE_ENV === 'production';
-
     res.cookie('access_token', accessToken, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: 'lax',
-      path: '/api',
+      ...this.getCookieOptions('/api'),
       maxAge: 15 * 60 * 1000, // 15 min (match JWT expiry)
     });
 
     res.cookie('refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: 'lax',
-      path: '/api/auth',
+      ...this.getCookieOptions('/api/auth'),
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
   }

@@ -278,6 +278,13 @@ async function bootstrap() {
         },
         'JWT-auth',
       )
+      .addCookieAuth('access_token', {
+        type: 'apiKey',
+        in: 'cookie',
+        name: 'access_token',
+        description:
+          'httpOnly JWT cookie (set automatically by login/register)',
+      })
       .build();
 
     const document = SwaggerModule.createDocument(app, config);

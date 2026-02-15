@@ -17,8 +17,7 @@ import {
   Award,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import axios from 'axios';
-import { API_BASE_URL } from '../lib/apiConfig';
+import { apiFetch } from '../lib/apiFetch';
 import { RevokedBadgeAlert } from '../components/badges/RevokedBadgeAlert';
 
 export function VerifyBadgePage() {
@@ -39,14 +38,34 @@ export function VerifyBadgePage() {
       try {
         setIsLoading(true);
         setError(null);
-        const response = await axios.get(`${API_BASE_URL}/verify/${verificationId}`);
+        // Story 11.25 AC-M5: Use apiFetch instead of axios (credentials: 'include')
+        const response = await apiFetch(`/verify/${verificationId}`);
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            setError('Badge not found. The verification link may be invalid.');
+            return;
+          }
+          if (response.status === 410) {
+            // Badge revoked - try to show revocation details
+            const errorData = (await response.json().catch(() => null)) as {
+              badge?: VerificationResponse;
+            } | null;
+            setBadge(errorData?.badge ?? null);
+            setError(null);
+            return;
+          }
+          throw new Error(`Verification failed: ${response.status}`);
+        }
 
         // Transform API response to match frontend type
-        const apiData = response.data;
-        const meta = apiData._meta || {};
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        const apiData = (await response.json()) as any;
+        const meta = (apiData._meta || {}) as any;
+        /* eslint-enable @typescript-eslint/no-explicit-any */
         const transformedData: VerificationResponse = {
           // Story 11.24 AC-L6: Use badgeId (actual UUID) instead of OB assertion URL
-          id: apiData.badgeId || apiData.id,
+          id: (apiData.badgeId || apiData.id) as string,
           verificationId: verificationId!,
           status:
             apiData.verificationStatus === 'revoked'
@@ -57,33 +76,23 @@ export function VerifyBadgePage() {
           badge: meta.badge || {},
           recipient: meta.recipient || {},
           issuer: meta.issuer || {},
-          issuedAt: apiData.issuedOn || new Date().toISOString(),
-          expiresAt: apiData.expiresAt || null,
-          claimedAt: apiData.claimedAt || null,
-          isValid: apiData.isValid !== undefined ? apiData.isValid : true,
-          revokedAt: apiData.revokedAt || undefined,
-          revocationReason: apiData.revocationReason || undefined,
-          revocationNotes: apiData.revocationNotes || undefined,
-          isPublicReason: apiData.isPublicReason || false,
+          issuedAt: (apiData.issuedOn as string) || new Date().toISOString(),
+          expiresAt: (apiData.expiresAt as string) || null,
+          claimedAt: (apiData.claimedAt as string) || null,
+          isValid: apiData.isValid !== undefined ? (apiData.isValid as boolean) : true,
+          revokedAt: (apiData.revokedAt as string) || undefined,
+          revocationReason: (apiData.revocationReason as string) || undefined,
+          revocationNotes: (apiData.revocationNotes as string) || undefined,
+          isPublicReason: (apiData.isPublicReason as boolean) || false,
           revokedBy: apiData.revokedBy || undefined,
           evidenceFiles: meta.evidenceFiles || [],
           assertionJson: apiData,
         };
 
         setBadge(transformedData);
-      } catch (err: unknown) {
-        const axiosErr = err as {
-          response?: { status?: number; data?: { badge?: VerificationResponse } };
-        };
-        if (axiosErr.response?.status === 404) {
-          setError('Badge not found. The verification link may be invalid.');
-        } else if (axiosErr.response?.status === 410) {
-          // Badge revoked - show revocation details
-          setBadge(axiosErr.response.data?.badge ?? null);
-          setError(null);
-        } else {
-          setError('Failed to verify badge. Please try again later.');
-        }
+      } catch {
+        // Only set generic error if not already handled above (404/410)
+        setError((prev) => prev ?? 'Failed to verify badge. Please try again later.');
       } finally {
         setIsLoading(false);
       }

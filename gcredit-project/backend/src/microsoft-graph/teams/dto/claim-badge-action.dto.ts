@@ -1,25 +1,20 @@
 /**
  * Claim Badge Action DTO
  *
- * Story 7.4 Task 5
- * Request body for Teams Adaptive Card "Claim Badge" action
+ * Story 7.4 Task 5 / Story 11.25 AC-C2
+ * Request body for Teams Adaptive Card "Claim Badge" action.
+ * Uses one-time claimToken for authorization (no JWT required).
  */
 
-import { IsUUID } from 'class-validator';
+import { IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ClaimBadgeActionDto {
   @ApiProperty({
-    description: 'Badge ID to claim',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    description:
+      'One-time claim token embedded in the Teams Adaptive Card. Validates and authorizes the claim.',
+    example: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6',
   })
-  @IsUUID()
-  badgeId: string;
-
-  @ApiProperty({
-    description: 'User ID of the person claiming (must be badge recipient)',
-    example: '123e4567-e89b-12d3-a456-426614174001',
-  })
-  @IsUUID()
-  userId: string;
+  @IsString()
+  claimToken: string;
 }

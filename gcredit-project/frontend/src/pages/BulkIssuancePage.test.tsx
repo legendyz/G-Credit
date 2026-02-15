@@ -49,7 +49,6 @@ vi.mock('react-router-dom', async () => {
 describe('BulkIssuancePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (window.localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue('test-token');
   });
 
   const renderPage = () => {
