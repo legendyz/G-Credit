@@ -5,7 +5,7 @@
 **Branch:** `sprint-11/security-quality-hardening`  
 **Duration:** 2026-02-12 to 2026-02-15 (4 days)  
 **Target Version:** v1.1.0  
-**Status:** 🔄 IN PROGRESS — 24/25 stories delivered across 6 waves (Story 11.25 pending)
+**Status:** ✅ COMPLETE — 25/25 stories delivered across 7 waves
 
 ---
 
@@ -19,14 +19,14 @@ Harden the post-MVP codebase by addressing all P0/P1 findings from the 6 compreh
 
 | Metric | Value |
 |--------|-------|
-| Stories Completed | 23/23 (100%) |
-| Waves | 5 (all APPROVED via code review) |
-| Tests | BE 722 + FE 541 = **1,263 total** (+202 from Sprint 10's 1,061) |
-| Test Pass Rate | 100% (0 regressions across all 5 waves) |
+| Stories Completed | 25/25 (100%) |
+| Waves | 7 (all APPROVED via code review) |
+| Tests | BE 756 + FE 551 = **1,307 total** (+246 from Sprint 10's 1,061) |
+| Test Pass Rate | 100% (0 regressions across all 7 waves) |
 | ESLint | 0 errors, 0 warnings (both BE + FE) |
 | TypeScript | 0 `tsc --noEmit` errors |
-| Code Reviews | 5/5 APPROVED |
-| Estimated Effort | 51.5-65.5h |
+| Code Reviews | 7/7 APPROVED |
+| Estimated Effort | 64-80h |
 
 ---
 
@@ -86,6 +86,12 @@ Harden the post-MVP codebase by addressing all P0/P1 findings from the 6 compreh
 |-------|-------|------------|
 | 11.24 | Data Contract Alignment | 14 API-to-UI contract issues fixed: `formatActivityDescription()`, multi-format criteria parsing, wallet badge/milestone type discrimination, verification page fields, null safety (revoker, imageUrl, skills), dead code removal (`issuerMessage`, `recentAchievements`), display polish (UUID truncation, title case). 9 commits, 27+ files, code review APPROVED. |
 
+### Wave 7 — Cookie Auth Hardening ✅ (2026-02-15)
+
+| Story | Title | Highlights |
+|-------|-------|------------|
+| 11.25 | Cookie Auth Hardening | 8 httpOnly migration issues fixed: JwtAuthGuard `@Public()` cookie support (C-1), Teams Action Controller claimToken auth (C-2), clearCookie parameter parity (M-3), token leak elimination from response bodies (M-4), VerifyBadgePage axios→apiFetch (M-5), localStorage mock cleanup (L-6), E2E cookie migration TODO (L-7), Swagger addCookieAuth (L-8). 2 commits, 16 files, code review APPROVED. |
+
 ---
 
 ## Security Improvements
@@ -107,7 +113,7 @@ Harden the post-MVP codebase by addressing all P0/P1 findings from the 6 compreh
 
 | Area | Before | After |
 |------|--------|-------|
-| Tests | 1,061 | 1,301 (+240, +23%) |
+| Tests | 1,061 | 1,307 (+246, +23%) |
 | Service test coverage | 3 critical services at 0% | 90%+ coverage |
 | Logging | Mixed console.log | NestJS `Logger` in all 22 services |
 | Pagination | Ad-hoc per endpoint | `PaginatedResponse<T>` standard |
@@ -128,8 +134,9 @@ Wave 3:            1,127 (BE 586 + FE 541) → +21
 Wave 4:            1,259 (BE 718 + FE 541) → +132
 Wave 5:            1,263 (BE 722 + FE 541) → +4
 Wave 6 (UAT):      1,301 (BE 750 + FE 551) → +38
+Wave 7 (Auth):     1,307 (BE 756 + FE 551) → +6
                    ───────────────────────────
-Total added:       +240 tests (0 regressions)
+Total added:       +246 tests (0 regressions)
 ```
 
 ---
@@ -138,6 +145,7 @@ Total added:       +240 tests (0 regressions)
 
 - **Lesson 35:** ESLint must lint full `src/` directory, not just changed files
 - **Lesson 40:** Local pre-push checks must 100% mirror CI pipeline steps
+- **Lesson 43:** API response contract changes require E2E impact assessment (grep for affected fields)
 
 ---
 
@@ -148,9 +156,10 @@ Total added:       +240 tests (0 regressions)
 - **Dev Prompts:** [wave-1](wave-1-dev-prompt.md) | [wave-2](wave-2-dev-prompt.md) | [wave-3](wave-3-dev-prompt.md) | [wave-4](wave-4-dev-prompt.md) | [wave-5](wave-5-dev-prompt.md)
 - **23 Story Files:** `11-1-*.md` through `11-23-*.md`
 - **Story 11.24:** [11-24-data-contract-alignment.md](11-24-data-contract-alignment.md) | [dev-prompt](11-24-dev-prompt.md) | [code-review](11-24-code-review.md)
+- **Story 11.25:** [11-25-cookie-auth-hardening.md](11-25-cookie-auth-hardening.md) | [dev-prompt](11-25-dev-prompt.md) | [code-review](11-25-code-review.md)
 
 ---
 
 **Created:** 2026-02-14  
-**Updated:** 2026-02-15 (Wave 6 / Story 11.24 added)  
+**Updated:** 2026-02-15 (Wave 7 / Story 11.25 added — Sprint COMPLETE)  
 **Author:** SM Agent (Bob)

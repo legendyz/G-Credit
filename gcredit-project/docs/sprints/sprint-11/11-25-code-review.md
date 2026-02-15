@@ -1,4 +1,4 @@
-## Review Result: APPROVED WITH COMMENTS
+## Review Result: APPROVED (Re-reviewed)
 
 ### Overview
 | Dimension | Status | Notes |
@@ -18,7 +18,7 @@
 - **L-6/L-7/L-8**: Legacy localStorage token mocks were removed from listed frontend tests; E2E helper adds `extractCookieToken()` and keeps Bearer helper with explicit migration TODO; Swagger has `.addCookieAuth('access_token', ...)` while retaining existing Bearer docs.
 
 ### Issues Requiring Attention
-1. [SUGGESTION] Teams callback authorization currently relies on possession of a one-time `claimToken`. This is acceptable for current scope, but a future hardening item should add request-origin authenticity (e.g., signed callback/Webhook verification) to further reduce token forwarding/replay risk in transit or logs.
+1. [RESOLVED-AS-TRACKED] The prior suggestion on Teams callback origin authenticity is now tracked as TD-017 in the technical debt registry for future hardening.
 
 ### Lesson 43 Compliance
 | # | Condition | Status | Notes |
@@ -29,5 +29,10 @@
 - Ran targeted backend unit tests: `npm test -- jwt-auth.guard.spec.ts teams-action.controller.spec.ts --runInBand` → **2/2 suites passed, 13/13 tests passed**.
 - Reviewed changed file scope from `76f4f2a..0aab578` (non-markdown) and verified each prompt-listed file.
 
+### Re-review Closure (Post-review Handling)
+- Reviewed follow-up commit `1556201` and confirmed it is documentation-only (no new runtime code changes).
+- Confirmed TD closure path: `TD-017` added/updated in technical debt registry (`docs/sprints/sprint-7/technical-debt-from-reviews.md`) to track callback-origin verification as a planned hardening item.
+- Since the only outstanding item was a forward-looking suggestion (not blocker/major/minor), and it is now explicitly tracked, the review status is upgraded to **APPROVED**.
+
 ### Summary
-Story 11.25 implementation is functionally and security-wise aligned with its hardening goals and acceptance criteria. No blocker or major defects were found in the reviewed range. Approval is recommended with one forward-looking hardening suggestion on Teams callback authenticity.
+Story 11.25 implementation is functionally and security-wise aligned with its hardening goals and acceptance criteria. No blocker/major/minor defects remain. The previous suggestion has been accepted and tracked as TD-017, so this re-review is **APPROVED**.

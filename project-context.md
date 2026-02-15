@@ -5,7 +5,7 @@
 **Project Type:** Enterprise Internal Platform (Greenfield)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
 **License:** MIT License (Open Source)  
-**Status:** 🔄 Sprint 11 UAT — Story 11.24 done, Story 11.25 ready (v1.1.0 pending UAT completion + merge)  
+**Status:** ✅ Sprint 11 COMPLETE — 25/25 stories (v1.1.0 pending merge to main + tag)  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, committed 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, committed 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, committed 2026-01-26)  
@@ -18,7 +18,7 @@
 **Sprint 9:** ✅ Complete (5/5 stories, 37h/51h, branch: sprint-9/epic-8-bulk-issuance-td-cleanup, 1087 tests, v0.9.0-dev)  
 **Sprint 10:** ✅ Complete (12/12 stories, branch: sprint-10/v1-release, 1061 tests, UAT 33/33 PASS, v1.0.0)  
 **Sprint 11:** 🔄 In Progress (24/25 stories, 6 phases, branch: sprint-11/security-quality-hardening, 1263+ tests, UAT ongoing)  
-**Last Updated:** 2026-02-15 (Story 11.24 complete, Story 11.25 ready, UAT ongoing)
+**Last Updated:** 2026-02-15 (Sprint 11 COMPLETE — 25/25 stories, Story 11.25 ACCEPTED)
 
 ---
 
@@ -139,7 +139,7 @@ Build an internal digital credentialing (badging) platform to securely recognize
 - **Audit #6: Feature & UX:** `gcredit-project/docs/planning/feature-completeness-audit-2026-02.md` — 19/22 screens (86%), 35/37 endpoints (95%), 2 P0, 8 P1 (238 lines)
 - **Sprint 11 Candidate List:** `gcredit-project/docs/planning/sprint-11-candidate-list.md` — Consolidated audit findings → actionable tickets (166 lines)
 - **Sprint 11 Backlog:** `gcredit-project/docs/sprints/sprint-11/backlog.md` 🔄 UPDATED (25 stories, 6 Phases, 65-82h)
-- **Sprint 11 Summary:** `gcredit-project/docs/sprints/sprint-11/summary.md` 🔄 UPDATED (24/25 stories, 1,301 tests — Story 11.25 pending)
+- **Sprint 11 Summary:** `gcredit-project/docs/sprints/sprint-11/summary.md` ✅ COMPLETE (25/25 stories, 1,307 tests)
 - **Sprint 11 Retrospective:** `gcredit-project/docs/sprints/sprint-11/retrospective.md` 🔄 UPDATED (Lessons 35-43, 6 action items — Lesson 43 added from Story 11.25)
 - **Story 11.24 Dev Prompt:** `gcredit-project/docs/sprints/sprint-11/11-24-dev-prompt.md` — Dev agent execution prompt
 - **Story 11.25 Dev Prompt:** `gcredit-project/docs/sprints/sprint-11/11-25-dev-prompt.md` — Dev agent execution prompt
@@ -1497,13 +1497,13 @@ Sprint 0-2 established this pattern:
    
    **UAT Phase (2026-02-14/15):**
    - Story 11.24: Data Contract Alignment — 14 API-to-UI issues fixed (✅ done, code review APPROVED)
-   - Story 11.25: Cookie Auth Hardening — 6 httpOnly migration issues documented (🔲 ready)
+   - Story 11.25: Cookie Auth Hardening — 8 httpOnly migration issues fixed (✅ done, code review APPROVED)
    - Pre-push hook aligned with CI (npm run lint/build, Jest exit code tolerance)
    - Decorator metadata guard tests added (Reflect.getMetadata for @Public/@Roles)
    - E2E tests synced with UAT fixes (claim endpoint auth, cache-control)
    - Pre-existing test failures resolved (analytics date window, BadgeShareModal text)
    
-   **Pending:** Story 11.25 implementation + remaining UAT + code reviews + merge to main + tag v1.1.0
+   **Pending:** Merge to main + tag v1.1.0
    
    **Sprint Docs:** summary.md, retrospective.md, backlog.md, 25 story files, 5 wave code reviews, UAT test plan
 

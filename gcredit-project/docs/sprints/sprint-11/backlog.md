@@ -573,7 +573,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 ### Story 11.25: Cookie Auth Hardening — httpOnly Cookie 迁移收尾
 **Priority:** 🔴 CRITICAL  
 **Estimate:** 4-5h  
-**Status:** 🔲 Ready  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [11-25-cookie-auth-hardening.md](11-25-cookie-auth-hardening.md)  
 **Source:** UAT 安全审计 (2026-02-15) — httpOnly cookie 迁移完整性排查  
 **Related:** Story 11.6 (SEC-002)  
@@ -582,12 +582,12 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 **Quick Summary:** As a platform operator, I want the httpOnly cookie auth migration to be fully complete and consistent, so that no auth failures, cookie leaks, or silent degradations exist.
 
 **Key Deliverables:**
-- [ ] C-1: JwtAuthGuard `@Public()` 路由增加 cookie 检查
-- [ ] C-2: Teams Action Controller 认证方案调整
-- [ ] M-3: clearCookie 参数与 setCookie 一致
-- [ ] M-4: 登录响应体移除 token（消除泄露风险）
-- [ ] M-5: VerifyBadgePage 迁移到 apiFetch
-- [ ] L-6/7/8: 测试清理 + Swagger 文档更新
+- [x] C-1: JwtAuthGuard `@Public()` 路由增加 cookie 检查 ✅
+- [x] C-2: Teams Action Controller 认证方案调整 ✅
+- [x] M-3: clearCookie 参数与 setCookie 一致 ✅
+- [x] M-4: 登录响应体移除 token（消除泄露风险） ✅
+- [x] M-5: VerifyBadgePage 迁移到 apiFetch ✅
+- [x] L-6/7/8: 测试清理 + Swagger 文档更新 ✅
 
 **6 Tasks:** Guard fix (30min) + clearCookie (15min) + Remove body tokens (30min) + VerifyPage migration (20min) + Teams auth (1.5-2h) + Test cleanup (30min)
 ---
@@ -620,7 +620,7 @@ This sprint's tasks come from multiple Post-MVP sources (no traditional epic str
 | 22 | 11.22 | Husky Pre-commit Hooks | 🟡 | 2h | project-context.md | ✅ |
 | 23 | 11.23 | User Management Nav Fix | 🟡 | 30min | Backlog+Feature Audit | ✅ |
 | 24 | 11.24 | Data Contract Alignment | 🔴 | 8-10h | UAT 全面排查 | ✅ |
-| 25 | 11.25 | Cookie Auth Hardening | 🔴 | 4-5h | UAT 安全审计 | 🔲 Ready |
+| 25 | 11.25 | Cookie Auth Hardening | 🔴 | 4-5h | UAT 安全审计 | ✅ |
 | | **TOTAL** | **25 stories** | | **65.5-82.5h** | | |
 
 ---
@@ -903,6 +903,6 @@ Reference: [sprint-completion-checklist-template.md](../templates/sprint-complet
 
 ---
 
-**Last Updated:** 2026-02-15 (Sprint 11: 24/25 stories complete, Story 11.24 done, Story 11.25 ready)  
-**Status:** 🔄 IN PROGRESS — 24 stories delivered across 6 waves; Story 11.25 (Cookie Auth) ready for implementation  
+**Last Updated:** 2026-02-15 (Sprint 11: 25/25 stories complete, Story 11.25 ACCEPTED)  
+**Status:** ✅ COMPLETE — 25 stories delivered across 7 waves (Wave 7: Cookie Auth Hardening)  
 **Created By:** SM Agent (Bob)

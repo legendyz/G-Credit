@@ -1,6 +1,6 @@
 # Story 11.25: Cookie Auth Hardening — httpOnly Cookie 迁移收尾
 
-**Status:** ready  
+**Status:** ✅ done  
 **Priority:** 🔴 CRITICAL  
 **Estimate:** 4-5h  
 **Source:** UAT 安全审计 — httpOnly cookie 迁移完整性排查 (2026-02-15)  
