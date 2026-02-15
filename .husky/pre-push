@@ -2,28 +2,54 @@ echo "Running pre-push checks (mirroring CI pipeline)..."
 
 set -e
 
-# Backend checks
+# ===========================================
+# Backend checks (mirrors CI: lint-and-unit + build)
+# ===========================================
 echo "=== Backend ==="
 cd gcredit-project/backend
-npx eslint src/ --max-warnings=0
+
+# 1. ESLint — match CI: npm run lint (covers src + test)
+npm run lint
+
+# 2. TypeScript — same as CI
 npx tsc --noEmit
+
+# 3. Unit Tests — match CI flags
 # Jest --forceExit returns exit code 1 even when all tests pass (open handles).
-# Parse the summary line to determine actual pass/fail status.
-TEST_OUTPUT=$(npm test -- --forceExit 2>&1) || true
+# CI uses --passWithNoTests --coverage, we skip coverage locally for speed.
+TEST_OUTPUT=$(npm test -- --passWithNoTests --forceExit 2>&1) || true
 echo "$TEST_OUTPUT" | tail -20
 if echo "$TEST_OUTPUT" | grep -q "Test Suites:.*failed"; then
   echo "❌ Backend tests failed"
   exit 1
 fi
 echo "✓ Backend tests passed"
+
+# 4. Build — match CI: nest build
+npm run build
+echo "✓ Backend build passed"
+
 cd ../..
 
-# Frontend checks
+# ===========================================
+# Frontend checks (mirrors CI: frontend-tests + frontend-build)
+# ===========================================
 echo "=== Frontend ==="
 cd gcredit-project/frontend
-npx eslint src/ --max-warnings=0
-npx tsc -p tsconfig.app.json --noEmit
+
+# 1. ESLint — match CI: npm run lint (covers all files)
+npm run lint
+
+# 2. Frontend Tests
 npx vitest run
+
+# 3. Build (tsc -b + vite build) — match CI: npm run build
+npm run build
+echo "✓ Frontend build passed"
+
 cd ../..
+
+# Note: Chinese character check and E2E tests are CI-only
+# (E2E requires Postgres container, chinese check is supplementary)
 
 echo "✓ All pre-push checks passed!"
