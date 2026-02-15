@@ -123,8 +123,18 @@ export function BadgeTemplateListPage() {
       );
     }
 
+    // ISSUER: own templates first, then others (stable sort preserves original order within groups)
+    if (isIssuer && currentUser) {
+      const uid = currentUser.id;
+      result = [...result].sort((a, b) => {
+        const aOwn = a.createdBy === uid ? 0 : 1;
+        const bOwn = b.createdBy === uid ? 0 : 1;
+        return aOwn - bOwn;
+      });
+    }
+
     return result;
-  }, [templates, statusFilter, searchTerm]);
+  }, [templates, statusFilter, searchTerm, isIssuer, currentUser]);
 
   const handleStatusChange = async (template: BadgeTemplate, newStatus: TemplateStatus) => {
     setActionLoading(template.id);
