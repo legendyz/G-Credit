@@ -1,6 +1,6 @@
 # Story 11.24: Data Contract Alignment — API-to-UI Integration Fixes
 
-**Status:** ready  
+**Status:** done  
 **Priority:** 🔴 CRITICAL  
 **Estimate:** 8-10h  
 **Source:** UAT 全面排查发现 14 个数据契约断裂问题 (2026-02-14)  
