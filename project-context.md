@@ -140,8 +140,9 @@ Build an internal digital credentialing (badging) platform to securely recognize
 - **Sprint 11 Candidate List:** `gcredit-project/docs/planning/sprint-11-candidate-list.md` — Consolidated audit findings → actionable tickets (166 lines)
 - **Sprint 11 Backlog:** `gcredit-project/docs/sprints/sprint-11/backlog.md` 🔄 UPDATED (25 stories, 6 Phases, 65-82h)
 - **Sprint 11 Summary:** `gcredit-project/docs/sprints/sprint-11/summary.md` 🔄 UPDATED (24/25 stories, 1,301 tests — Story 11.25 pending)
-- **Sprint 11 Retrospective:** `gcredit-project/docs/sprints/sprint-11/retrospective.md` ✅ COMPLETE (Lessons 35-42, 5 action items)
+- **Sprint 11 Retrospective:** `gcredit-project/docs/sprints/sprint-11/retrospective.md` 🔄 UPDATED (Lessons 35-43, 6 action items — Lesson 43 added from Story 11.25)
 - **Story 11.24 Dev Prompt:** `gcredit-project/docs/sprints/sprint-11/11-24-dev-prompt.md` — Dev agent execution prompt
+- **Story 11.25 Dev Prompt:** `gcredit-project/docs/sprints/sprint-11/11-25-dev-prompt.md` — Dev agent execution prompt
 - **Story 11.25:** `gcredit-project/docs/sprints/sprint-11/11-25-cookie-auth-hardening.md` — Cookie auth migration fixes
 - **UAT Test Plan:** `gcredit-project/docs/testing/uat-sprint-11-test-plan.md` — 25 UAT scenarios
 - **Technical Debt:** `gcredit-project/docs/sprints/sprint-11/technical-debt.md` — TD-016/017/018

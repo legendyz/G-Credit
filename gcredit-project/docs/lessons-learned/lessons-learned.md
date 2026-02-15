@@ -2,10 +2,10 @@
 
 **Project:** G-Credit Digital Credentialing System  
 **Purpose:** Capture key learnings and establish best practices for efficient development  
-**Last Updated:** 2026-02-14 (Sprint 11 Complete — Lessons 35, 40, 41, 42)  
+**Last Updated:** 2026-02-15 (Sprint 11 — Lesson 43: API Contract Changes Need E2E Impact Check)  
 **Status:** Living document - update after each Sprint Retrospective  
 **Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 → Sprint 6 → Sprint 7 → Sprint 8 → Sprint 9 → Sprint 10 → Sprint 11 (Complete) + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
-**Total Lessons:** 38 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 8, Sprint 7: 3, Sprint 8: 3, Sprint 9: 3, Sprint 10: 3, Sprint 11: 4)
+**Total Lessons:** 39 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 8, Sprint 7: 3, Sprint 8: 3, Sprint 9: 3, Sprint 10: 3, Sprint 11: 5)
 
 ---
 
@@ -85,6 +85,11 @@
   - Lesson 37: Jest Asymmetric Matchers Return `any` — Centralized Typed Wrappers
   - Lesson 38: Centralize `eslint-disable` in Utility Files, Not Scattered Across Codebase
   - Lesson 39: UX Spec ≠ Implementation — Design System Foundation Must Be a Sprint 0 Story 🔴
+- [Sprint 11 Lessons](#sprint-11-lessons-february-2026) - Wave Execution, CI/E2E Gaps (5 lessons)
+  - Lesson 40: Local Pre-Push Checks Must Mirror CI Pipeline
+  - Lesson 41: Wave-Based Execution Handles Large Sprints Well
+  - Lesson 42: Service Test Suites Are High-Value Technical Debt Items
+  - Lesson 43: API Response Contract Changes Require E2E Impact Check 🔴
 - [Cross-Sprint Patterns](#cross-sprint-patterns) - 13 patterns
 - [Development Checklists](#development-checklists)
 - [Common Pitfalls](#common-pitfalls-to-avoid)
@@ -5115,5 +5120,100 @@ CI Pipeline:
 ### Key Takeaway
 
 > **本地检查必须 100% 覆盖 CI 的每个步骤。部分检查 = 假信心。**
+
+---
+
+## Sprint 11: Lesson 43 — API Response Contract Changes Require E2E Impact Check 🔴
+
+**Date:** 2026-02-15  
+**Sprint:** 11 (Security & Quality Hardening), Story 11.25 Cookie Auth Hardening  
+**Severity:** High — 121/158 E2E tests failed in CI, all local checks (lint, tsc, 756 unit tests, 551 FE tests, build) passed  
+**Commit:** `c5ce6ab` (broke CI) → `0aab578` (fixed)
+
+### What Happened
+
+Story 11.25 Task 3 removed `accessToken` and `refreshToken` from the `login()`/`register()`/`refresh()` response bodies (tokens moved to httpOnly cookies only). All local pre-push checks passed — lint ✅, TypeScript ✅, 756 backend unit tests ✅, 551 frontend tests ✅, both builds ✅. But CI's E2E test job failed with **121 of 158 tests red**.
+
+### Root Cause
+
+Two layers of the testing pyramid have fundamentally different visibility:
+
+| Test Layer | Knows about `response.body` change? | Runs locally? |
+|-----------|--------------------------------------|---------------|
+| Unit tests (756) | ❌ No — all mock `AuthService`, never call real HTTP | ✅ Yes (pre-push) |
+| E2E tests (158) | ✅ Yes — `createAndLoginUser()` reads `response.body.accessToken` | ❌ No (CI-only, needs Postgres container) |
+
+The E2E test helper `createAndLoginUser()` in `test/helpers/test-setup.ts` extracted the JWT from `response.body.accessToken`. After Task 3, that field disappeared — token was `undefined` — so every authenticated E2E request failed with 401.
+
+```
+// BEFORE (worked): login returns { accessToken, refreshToken, user }
+const body = response.body as { accessToken: string };
+return { token: body.accessToken };  // ✅ "eyJhbG..."
+
+// AFTER (broken): login returns { user } — tokens only in Set-Cookie
+const body = response.body as { accessToken: string };
+return { token: body.accessToken };  // ❌ undefined
+```
+
+### Why Local Checks Didn't Catch It
+
+1. **Pre-push excludes E2E by design** — E2E tests require a live PostgreSQL container (`test/jest-e2e.json`), not available on developer machines
+2. **Unit tests mock the boundary** — controller unit tests mock `AuthService.login()` and never invoke the real controller method, so they don't see the response shape change
+3. **No contract test existed** — no test verified "login response body must contain field X" at unit level
+
+### Fix Applied
+
+Created `extractCookieToken()` helper to parse JWT from `Set-Cookie` header instead of response body:
+
+```typescript
+export function extractCookieToken(response: request.Response, cookieName: string): string {
+  const raw = response.headers['set-cookie'];
+  const cookies: string[] = Array.isArray(raw) ? raw : typeof raw === 'string' ? [raw] : [];
+  const match = cookies.find((c) => c.startsWith(`${cookieName}=`));
+  return match ? match.split(';')[0].replace(`${cookieName}=`, '') : '';
+}
+```
+
+Updated 3 files: `test-setup.ts`, `analytics.e2e-spec.ts`, `auth-simple.e2e-spec.ts`.
+
+### Action Items
+
+1. **[Dev] 立即生效 — API 响应变更检查清单：**  
+   修改任何 controller 的返回值时，**必须** grep E2E 测试目录中的消费端：
+   ```bash
+   grep -r "body\.accessToken\|body\.refreshToken\|body\.token" test/
+   grep -r "response\.body" test/ | grep -i "<changed-field>"
+   ```
+   在 dev-prompt 中加入 "E2E Impact" 检查项。
+
+2. **[Dev] 短期改进 — Auth contract test：**  
+   为 auth 响应格式写一个 unit 级别的 controller integration test，确保 `Set-Cookie` header 结构符合约定（可在 pre-push 运行，不需要 DB）。
+
+3. **[SM] 流程改进 — dev-prompt 模板更新：**  
+   对涉及 API 响应格式变更的 task，模板中增加必填字段：
+   ```
+   ## E2E Impact Assessment
+   - [ ] Searched `test/` for consumers of changed response fields
+   - [ ] Updated E2E helpers if response contract changed
+   - [ ] If E2E can't run locally: documented which E2E tests are affected
+   ```
+
+4. **[SM/Dev] 中期改进 — 冒烟 E2E 可选步骤：**  
+   考虑将 `auth-simple.e2e-spec.ts`（耗时 ~6s、验证核心 auth 流程）加入 pre-push 的可选步骤（检测到本地 DB 时运行，否则跳过）。
+
+### Classification
+
+| Aspect | Value |
+|--------|-------|
+| **Category** | Testing gap — test pyramid blind spot |
+| **Pattern** | "Green unit tests, red integration tests" — classic mock boundary problem |
+| **Related Lessons** | Lesson 40 (CI parity), Lesson 32 (E2E test isolation) |
+| **Preventable?** | Yes — a simple `grep` of E2E test files would have revealed the dependency |
+| **Cost** | ~1.5h diagnosis + fix + re-push |
+| **Risk of recurrence** | Medium — will happen again whenever API response contracts change without E2E grep |
+
+### Key Takeaway
+
+> **单元测试覆盖率 100% ≠ 安全。当你修改 API 响应契约时，单元测试用 mock 跳过了真实 HTTP 层，只有 E2E 测试才能验证端到端数据流。修改 controller 返回值前，永远先 `grep test/` 找消费端。**
 
 *This is a living document - keep it updated, keep it useful!*

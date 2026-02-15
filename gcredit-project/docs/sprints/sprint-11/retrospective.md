@@ -3,7 +3,7 @@
 **Sprint:** Sprint 11  
 **Date:** 2026-02-14  
 **Facilitator:** SM Agent (Bob)  
-**Result:** ✅ 23/23 stories delivered across 5 waves, 1,263 tests, 0 regressions
+**Result:** ✅ 24/25 stories delivered across 6 waves, 1,301 tests, 0 regressions (Story 11.25 pending acceptance)
 
 ---
 
@@ -101,6 +101,18 @@
 - These tests caught edge cases that manual testing would miss
 - **ROI:** Each test suite took ~3h but provides ongoing regression safety for critical business logic
 
+### Lesson 43: API Response Contract Changes Require E2E Impact Check
+- Story 11.25 removed `accessToken`/`refreshToken` from login response body (tokens → httpOnly cookies only)
+- All local checks passed (756 unit + 551 FE tests + lint + tsc + build), but **121/158 E2E tests failed in CI**
+- Root cause: Unit tests mock the service layer, so they never see controller response shape changes. E2E tests can't run locally (need Postgres container)
+- **Fix:** Updated E2E helper `createAndLoginUser()` to extract JWT from `Set-Cookie` header instead of `response.body`
+- **Key takeaway:** When modifying controller return values, always `grep test/` for consumers of changed fields before committing
+- **Action items:**
+  1. [SM] Dev prompts involving API response changes must include an "E2E Impact Assessment" checklist (grep `test/` for field consumers)
+  2. [Dev] Consider adding auth contract smoke test runnable without DB (decorator metadata pattern)
+  3. [SM/Dev] Evaluate adding optional E2E smoke test to pre-push (run if local DB detected, skip otherwise)
+- **Full analysis:** `gcredit-project/docs/lessons-learned/lessons-learned.md` (Lesson 43)
+
 ---
 
 ## 📊 Sprint Metrics
@@ -129,5 +141,6 @@
 ---
 
 **Created:** 2026-02-14  
+**Updated:** 2026-02-15 (Lesson 43 added from Story 11.25 E2E incident)  
 **Author:** SM Agent (Bob)  
 **Next Review:** Sprint 12 Planning
