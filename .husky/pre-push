@@ -19,6 +19,13 @@ npx tsc --noEmit
 # CI uses --passWithNoTests --coverage, we skip coverage locally for speed.
 TEST_OUTPUT=$(npm test -- --passWithNoTests --forceExit 2>&1) || true
 echo "$TEST_OUTPUT" | tail -20
+
+# Defensive check: require a summary line to exist (guards against Jest crash/hang
+# producing no output, which would silently pass the grep-based check below).
+if ! echo "$TEST_OUTPUT" | grep -q "Test Suites:"; then
+  echo "❌ Backend tests: no summary line found (Jest may have crashed)"
+  exit 1
+fi
 if echo "$TEST_OUTPUT" | grep -q "Test Suites:.*failed"; then
   echo "❌ Backend tests failed"
   exit 1

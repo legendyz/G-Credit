@@ -18,7 +18,17 @@ import type { Badge } from '../../hooks/useWallet';
 
 export type ViewMode = 'timeline' | 'grid';
 
-/** Type guard: distinguish Badge from Milestone in wallet items */
+/**
+ * Type guard: distinguish Badge from Milestone in wallet items.
+ *
+ * Design decision (Story 11.24 / Code Review #1): Milestones are intentionally
+ * filtered out of the TimelineView rendering path. MilestoneTimelineCard exists
+ * as a component but is not wired in because:
+ *  - Milestones lack search/filter support (no template, no issuer)
+ *  - The wallet API returns them inline with badges, but the UI treats them
+ *    as a future feature (render when milestone display is spec'd)
+ *  - Keeping the component allows easy activation without re-implementation
+ */
 function isBadge(item: { type?: string }): item is Badge {
   return !('type' in item) || item.type !== 'milestone';
 }

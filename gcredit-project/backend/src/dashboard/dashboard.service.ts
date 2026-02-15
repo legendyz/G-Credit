@@ -38,19 +38,35 @@ export class DashboardService {
       return typeof val === 'string' ? val : '';
     };
 
+    // Build the description; fall back to raw action if critical fields are empty
+    // (Code Review #3: avoid emitting strings like 'Badge "" issued to ')
     switch (action) {
-      case 'ISSUED':
-        return `Badge "${s('badgeName')}" issued to ${s('recipientEmail')}`;
+      case 'ISSUED': {
+        const name = s('badgeName');
+        const email = s('recipientEmail');
+        return name && email ? `Badge "${name}" issued to ${email}` : action;
+      }
       case 'CLAIMED':
-        return `Badge status changed: ${s('oldStatus')} → ${s('newStatus')}`;
-      case 'REVOKED':
-        return `Revoked "${s('badgeName')}" — ${s('reason')}`;
-      case 'NOTIFICATION_SENT':
-        return `${s('notificationType')} notification sent to ${s('recipientEmail')}`;
-      case 'CREATED':
-        return `Template "${s('templateName')}" created`;
-      case 'UPDATED':
-        return `Template "${s('templateName')}" updated`;
+        return `Badge status changed: ${s('oldStatus') || '?'} → ${s('newStatus') || '?'}`;
+      case 'REVOKED': {
+        const name = s('badgeName');
+        return name
+          ? `Revoked "${name}" — ${s('reason') || 'no reason given'}`
+          : action;
+      }
+      case 'NOTIFICATION_SENT': {
+        const type = s('notificationType');
+        const email = s('recipientEmail');
+        return type && email ? `${type} notification sent to ${email}` : action;
+      }
+      case 'CREATED': {
+        const name = s('templateName');
+        return name ? `Template "${name}" created` : action;
+      }
+      case 'UPDATED': {
+        const name = s('templateName');
+        return name ? `Template "${name}" updated` : action;
+      }
       default:
         return action;
     }

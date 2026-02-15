@@ -435,9 +435,35 @@ describe('DashboardService', () => {
       expect(result).toBe('ISSUED');
     });
 
-    it('should handle missing metadata fields gracefully', () => {
+    it('should fall back to raw action when critical metadata fields are empty', () => {
       const result = DashboardService.formatActivityDescription('ISSUED', {});
-      expect(result).toBe('Badge "" issued to ');
+      expect(result).toBe('ISSUED');
+    });
+
+    it('should fall back to raw action when only some ISSUED fields present', () => {
+      const result = DashboardService.formatActivityDescription('ISSUED', {
+        badgeName: 'Cloud Expert',
+      });
+      expect(result).toBe('ISSUED');
+    });
+
+    it('should fall back to raw action when REVOKED has no badgeName', () => {
+      const result = DashboardService.formatActivityDescription('REVOKED', {
+        reason: 'Policy violation',
+      });
+      expect(result).toBe('REVOKED');
+    });
+
+    it('should show placeholder for missing CLAIMED statuses', () => {
+      const result = DashboardService.formatActivityDescription('CLAIMED', {});
+      expect(result).toBe('Badge status changed: ? → ?');
+    });
+
+    it('should show fallback reason when REVOKED has name but no reason', () => {
+      const result = DashboardService.formatActivityDescription('REVOKED', {
+        badgeName: 'Cloud Expert',
+      });
+      expect(result).toBe('Revoked "Cloud Expert" — no reason given');
     });
   });
 });
