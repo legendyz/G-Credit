@@ -104,8 +104,10 @@ export async function updateTemplate(
   if (data.name !== undefined) formData.append('name', data.name);
   if (data.description !== undefined) formData.append('description', data.description);
   if (data.category !== undefined) formData.append('category', data.category);
-  // Always send skillIds as JSON string for MultipartJsonInterceptor
-  formData.append('skillIds', JSON.stringify(data.skillIds || []));
+  // Only send skillIds when explicitly provided (avoid clearing on status-only updates)
+  if (data.skillIds !== undefined) {
+    formData.append('skillIds', JSON.stringify(data.skillIds));
+  }
   if (data.issuanceCriteria !== undefined) {
     formData.append('issuanceCriteria', JSON.stringify(data.issuanceCriteria));
   }

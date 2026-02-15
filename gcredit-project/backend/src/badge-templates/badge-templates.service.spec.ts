@@ -615,6 +615,20 @@ describe('BadgeTemplatesService', () => {
       });
     });
 
+    it('should not modify skillIds on status-only update', async () => {
+      prisma.badgeTemplate.findUnique.mockResolvedValue(mockTemplate);
+      prisma.badgeTemplate.update.mockResolvedValue({
+        ...mockTemplate,
+        status: 'ARCHIVED',
+      });
+
+      await service.update('tmpl-1', { status: 'ARCHIVED' as TemplateStatus });
+
+      const updateCall = prisma.badgeTemplate.update.mock.calls[0][0];
+      expect(updateCall.data).not.toHaveProperty('skillIds');
+      expect(updateCall.data.status).toBe('ARCHIVED');
+    });
+
     it('should validate issuanceCriteria on update', async () => {
       prisma.badgeTemplate.findUnique.mockResolvedValue(mockTemplate);
       prisma.badgeTemplate.update.mockResolvedValue(mockTemplate);

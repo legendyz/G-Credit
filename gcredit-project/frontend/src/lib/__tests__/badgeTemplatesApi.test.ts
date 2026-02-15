@@ -247,6 +247,43 @@ describe('badgeTemplatesApi', () => {
       const formData = mockFetch.mock.calls[0][1].body as FormData;
       expect(formData.get('validityPeriod')).toBe('');
     });
+
+    it('does not send skillIds when not provided (status-only update)', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(MOCK_TEMPLATE),
+      });
+
+      await updateTemplate('tpl-1', { status: 'ARCHIVED' });
+
+      const formData = mockFetch.mock.calls[0][1].body as FormData;
+      expect(formData.has('skillIds')).toBe(false);
+      expect(formData.get('status')).toBe('ARCHIVED');
+    });
+
+    it('sends skillIds when explicitly provided', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(MOCK_TEMPLATE),
+      });
+
+      await updateTemplate('tpl-1', { skillIds: ['skill-1', 'skill-2'] });
+
+      const formData = mockFetch.mock.calls[0][1].body as FormData;
+      expect(formData.get('skillIds')).toBe('["skill-1","skill-2"]');
+    });
+
+    it('sends empty skillIds array when explicitly clearing skills', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(MOCK_TEMPLATE),
+      });
+
+      await updateTemplate('tpl-1', { skillIds: [] });
+
+      const formData = mockFetch.mock.calls[0][1].body as FormData;
+      expect(formData.get('skillIds')).toBe('[]');
+    });
   });
 
   describe('deleteTemplate', () => {
