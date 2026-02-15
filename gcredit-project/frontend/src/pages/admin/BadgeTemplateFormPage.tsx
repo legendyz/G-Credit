@@ -158,11 +158,22 @@ export function BadgeTemplateFormPage() {
       return;
     }
 
-    // Build issuance criteria – preserve existing type/conditions on edit
-    const issuanceCriteria =
-      isEditMode && originalCriteria
-        ? { ...originalCriteria, description: criteriaText.trim() || undefined }
-        : { type: 'manual' as const, description: criteriaText.trim() || undefined };
+    // Build issuance criteria – ensure valid DTO structure
+    // Legacy seed data may have { requirements: [...] } without type — always normalize
+    const issuanceCriteria = (() => {
+      if (isEditMode && originalCriteria) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { requirements, ...cleanCriteria } = originalCriteria as Record<string, unknown> & {
+          requirements?: unknown;
+        };
+        return {
+          type: 'manual' as const,
+          ...cleanCriteria,
+          description: criteriaText.trim() || undefined,
+        };
+      }
+      return { type: 'manual' as const, description: criteriaText.trim() || undefined };
+    })();
 
     setIsSubmitting(true);
     try {

@@ -86,6 +86,7 @@ export class CreateBadgeTemplateDto {
     minimum: 1,
   })
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   @Min(1)
   validityPeriod?: number;
@@ -153,6 +154,7 @@ export class UpdateBadgeTemplateDto {
     description: 'Validity period (days)',
   })
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   @Min(1)
   validityPeriod?: number;

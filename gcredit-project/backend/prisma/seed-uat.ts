@@ -485,7 +485,7 @@ async function main() {
         description:
           'Awarded for demonstrating advanced cloud computing skills including architecture, deployment, and security best practices.',
         imageUrl: 'https://picsum.photos/400/400?random=1',
-        category: 'Technical',
+        category: 'certification',
         skillIds: [
           IDS.skillTypescript,
           IDS.skillAzure,
@@ -493,11 +493,8 @@ async function main() {
           IDS.skillAI,
         ],
         issuanceCriteria: {
-          requirements: [
-            'Complete cloud architecture certification',
-            'Deploy 3+ production workloads',
-            'Pass security audit review',
-          ],
+          type: 'manual',
+          description: 'Complete cloud architecture certification; Deploy 3+ production workloads; Pass security audit review',
         },
         validityPeriod: 365,
         status: TemplateStatus.ACTIVE,
@@ -511,14 +508,11 @@ async function main() {
         description:
           'Recognizes outstanding leadership qualities, mentorship, and team development capabilities.',
         imageUrl: 'https://picsum.photos/400/400?random=2',
-        category: 'Leadership',
+        category: 'achievement',
         skillIds: [IDS.skillTeamLeadership, IDS.skillPublicSpeaking],
         issuanceCriteria: {
-          requirements: [
-            'Lead a cross-functional project',
-            'Mentor 2+ junior team members',
-            'Positive 360-degree feedback',
-          ],
+          type: 'manual',
+          description: 'Lead a cross-functional project; Mentor 2+ junior team members; Positive 360-degree feedback',
         },
         validityPeriod: 730,
         status: TemplateStatus.ACTIVE,
@@ -532,14 +526,11 @@ async function main() {
         description:
           'Awarded for innovative thinking, creative problem-solving, and driving process improvements.',
         imageUrl: 'https://picsum.photos/400/400?random=3',
-        category: 'Innovation',
+        category: 'achievement',
         skillIds: [],
         issuanceCriteria: {
-          requirements: [
-            'Submit approved innovation proposal',
-            'Implement cost-saving improvement',
-            'Present at internal tech talk',
-          ],
+          type: 'manual',
+          description: 'Submit approved innovation proposal; Implement cost-saving improvement; Present at internal tech talk',
         },
         validityPeriod: 365,
         status: TemplateStatus.ACTIVE,
@@ -553,14 +544,11 @@ async function main() {
         description:
           'Validates expertise in cybersecurity practices, threat analysis, and compliance frameworks.',
         imageUrl: 'https://picsum.photos/400/400?random=4',
-        category: 'Security',
+        category: 'certification',
         skillIds: [],
         issuanceCriteria: {
-          requirements: [
-            'Complete security certification (CISSP/CEH)',
-            'Conduct vulnerability assessment',
-            'Author security policy document',
-          ],
+          type: 'manual',
+          description: 'Complete security certification (CISSP/CEH); Conduct vulnerability assessment; Author security policy document',
         },
         validityPeriod: 365,
         status: TemplateStatus.ACTIVE,
@@ -574,14 +562,11 @@ async function main() {
         description:
           'Recognizes exceptional collaboration, positive team culture contribution, and cross-team cooperation.',
         imageUrl: 'https://picsum.photos/400/400?random=5',
-        category: 'Teamwork',
+        category: 'participation',
         skillIds: [IDS.skillProjectMgmt],
         issuanceCriteria: {
-          requirements: [
-            'Consistently supports team goals',
-            'Positive peer feedback',
-            'Cross-team collaboration on 2+ projects',
-          ],
+          type: 'manual',
+          description: 'Consistently supports team goals; Positive peer feedback; Cross-team collaboration on 2+ projects',
         },
         validityPeriod: null,
         status: TemplateStatus.ACTIVE,
@@ -604,14 +589,11 @@ async function main() {
         description:
           'Validates proficiency in CI/CD pipelines, infrastructure as code, container orchestration, and monitoring.',
         imageUrl: 'https://picsum.photos/400/400?random=6',
-        category: 'Technical',
+        category: 'skill',
         skillIds: [IDS.skillAzure, IDS.skillDocker, IDS.skillTypescript],
         issuanceCriteria: {
-          requirements: [
-            'Implement CI/CD pipeline for a production service',
-            'Manage Kubernetes clusters',
-            'Achieve 99.9% uptime SLA',
-          ],
+          type: 'manual',
+          description: 'Implement CI/CD pipeline for a production service; Manage Kubernetes clusters; Achieve 99.9% uptime SLA',
         },
         validityPeriod: 365,
         status: TemplateStatus.ACTIVE,
@@ -625,14 +607,11 @@ async function main() {
         description:
           'Recognizes hands-on expertise in building, training, and deploying machine learning models in production.',
         imageUrl: 'https://picsum.photos/400/400?random=7',
-        category: 'Technical',
+        category: 'skill',
         skillIds: [IDS.skillAI, IDS.skillTypescript],
         issuanceCriteria: {
-          requirements: [
-            'Train and deploy an ML model to production',
-            'Complete internal AI ethics course',
-            'Author a technical blog post on applied ML',
-          ],
+          type: 'manual',
+          description: 'Train and deploy an ML model to production; Complete internal AI ethics course; Author a technical blog post on applied ML',
         },
         validityPeriod: 365,
         status: TemplateStatus.ACTIVE,
@@ -646,14 +625,11 @@ async function main() {
         description:
           'Awarded for exceptional mentorship, knowledge sharing, and fostering growth in junior team members.',
         imageUrl: 'https://picsum.photos/400/400?random=8',
-        category: 'Leadership',
+        category: 'achievement',
         skillIds: [IDS.skillTeamLeadership, IDS.skillPublicSpeaking, IDS.skillProjectMgmt],
         issuanceCriteria: {
-          requirements: [
-            'Mentor 3+ colleagues for at least 6 months',
-            'Conduct 2+ internal workshops',
-            'Receive outstanding mentor feedback',
-          ],
+          type: 'manual',
+          description: 'Mentor 3+ colleagues for at least 6 months; Conduct 2+ internal workshops; Receive outstanding mentor feedback',
         },
         validityPeriod: null,
         status: TemplateStatus.ACTIVE,
@@ -667,14 +643,11 @@ async function main() {
         description:
           'Recognizes outstanding contributions to customer satisfaction, support excellence, and relationship management.',
         imageUrl: 'https://picsum.photos/400/400?random=9',
-        category: 'Teamwork',
+        category: 'participation',
         skillIds: [IDS.skillPublicSpeaking, IDS.skillProjectMgmt],
         issuanceCriteria: {
-          requirements: [
-            'Achieve 95%+ customer satisfaction score',
-            'Resolve 50+ customer escalations',
-            'Document 3+ customer success case studies',
-          ],
+          type: 'manual',
+          description: 'Achieve 95%+ customer satisfaction score; Resolve 50+ customer escalations; Document 3+ customer success case studies',
         },
         validityPeriod: 365,
         status: TemplateStatus.ACTIVE,
