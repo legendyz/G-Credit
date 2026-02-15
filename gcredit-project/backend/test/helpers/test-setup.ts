@@ -117,12 +117,33 @@ export async function createAndLoginUser(
     .send(credentials)
     .expect(200); // Story 8.6: Login returns 200 OK
 
-  const body = response.body as { accessToken: string };
+  // Story 11.25: Tokens are now in httpOnly cookies only (no longer in response body).
+  // Extract access_token from Set-Cookie header for E2E Bearer auth fallback.
+  const token = extractCookieToken(response, 'access_token');
+
   return {
     user,
-    token: body.accessToken,
+    token,
     credentials,
   };
+}
+
+/**
+ * Extract a cookie value from a supertest response Set-Cookie header.
+ * Story 11.25: Tokens moved from response body to httpOnly cookies.
+ */
+export function extractCookieToken(
+  response: request.Response,
+  cookieName: string,
+): string {
+  const raw = response.headers['set-cookie'];
+  const cookies: string[] = Array.isArray(raw)
+    ? raw
+    : typeof raw === 'string'
+      ? [raw]
+      : [];
+  const match = cookies.find((c) => c.startsWith(`${cookieName}=`));
+  return match ? match.split(';')[0].replace(`${cookieName}=`, '') : '';
 }
 
 /**

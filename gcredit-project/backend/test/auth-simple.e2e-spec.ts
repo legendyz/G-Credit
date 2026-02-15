@@ -8,6 +8,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
+import { extractCookieToken } from './helpers/test-setup';
 import { PrismaService } from '../src/common/prisma.service';
 
 describe('Auth E2E (Simple)', () => {
@@ -52,11 +53,11 @@ describe('Auth E2E (Simple)', () => {
       .expect(201);
 
     const registerBody = registerResponse.body as {
-      accessToken: string;
       user: { email: string };
     };
-    console.log('Register response:', registerResponse.body);
-    expect(registerBody.accessToken).toBeDefined();
+    // Story 11.25: Tokens now in httpOnly cookies only (not in response body)
+    const registerToken = extractCookieToken(registerResponse, 'access_token');
+    expect(registerToken).toBeTruthy();
     expect(registerBody.user.email).toBe(uniqueEmail);
 
     // Login
@@ -69,11 +70,11 @@ describe('Auth E2E (Simple)', () => {
       .expect(200); // Story 8.6: Login returns 200 OK (was 201 before)
 
     const loginBody = loginResponse.body as {
-      accessToken: string;
       user: { email: string };
     };
-    console.log('Login response:', loginResponse.body);
-    expect(loginBody.accessToken).toBeDefined();
+    // Story 11.25: Tokens now in httpOnly cookies only (not in response body)
+    const loginToken = extractCookieToken(loginResponse, 'access_token');
+    expect(loginToken).toBeTruthy();
     expect(loginBody.user.email).toBe(uniqueEmail);
 
     // Cleanup
