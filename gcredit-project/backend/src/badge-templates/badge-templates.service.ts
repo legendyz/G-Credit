@@ -19,6 +19,15 @@ import { TemplateStatus, Prisma } from '@prisma/client';
 export class BadgeTemplatesService {
   private readonly logger = new Logger(BadgeTemplatesService.name);
 
+  /** Reusable Prisma select for user info (creator/updater) */
+  private readonly userSelect = {
+    id: true,
+    email: true,
+    firstName: true,
+    lastName: true,
+    role: true,
+  } as const;
+
   constructor(
     private prisma: PrismaService,
     private blobStorage: BlobStorageService,
@@ -79,13 +88,10 @@ export class BadgeTemplatesService {
       },
       include: {
         creator: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-          },
+          select: this.userSelect,
+        },
+        updater: {
+          select: this.userSelect,
         },
       },
     });
@@ -149,13 +155,10 @@ export class BadgeTemplatesService {
         orderBy: { [sortBy]: sortOrder },
         include: {
           creator: {
-            select: {
-              id: true,
-              email: true,
-              firstName: true,
-              lastName: true,
-              role: true,
-            },
+            select: this.userSelect,
+          },
+          updater: {
+            select: this.userSelect,
           },
         },
       }),
@@ -179,13 +182,10 @@ export class BadgeTemplatesService {
       where: { id },
       include: {
         creator: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-          },
+          select: this.userSelect,
+        },
+        updater: {
+          select: this.userSelect,
         },
       },
     });
@@ -260,6 +260,7 @@ export class BadgeTemplatesService {
     id: string,
     updateDto: UpdateBadgeTemplateDto,
     imageFile?: Express.Multer.File,
+    userId?: string,
   ) {
     // Check if template exists
     const existing = await this.prisma.badgeTemplate.findUnique({
@@ -321,6 +322,7 @@ export class BadgeTemplatesService {
       updateData.validityPeriod = updateDto.validityPeriod;
     if (updateDto.status) updateData.status = updateDto.status;
     if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
+    if (userId) updateData.updater = { connect: { id: userId } };
 
     // Convert IssuanceCriteriaDto to plain JSON if present
     if (updateDto.issuanceCriteria) {
@@ -334,12 +336,10 @@ export class BadgeTemplatesService {
       data: updateData,
       include: {
         creator: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-          },
+          select: this.userSelect,
+        },
+        updater: {
+          select: this.userSelect,
         },
       },
     });

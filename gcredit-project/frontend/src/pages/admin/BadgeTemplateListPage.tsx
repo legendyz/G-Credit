@@ -173,6 +173,14 @@ export function BadgeTemplateListPage() {
       day: 'numeric',
     });
 
+  const formatUserName = (
+    user?: { firstName?: string; lastName?: string; email: string } | null
+  ) => {
+    if (!user) return null;
+    const name = [user.firstName, user.lastName].filter(Boolean).join(' ');
+    return name || user.email;
+  };
+
   // Loading state
   if (isLoading) {
     return (
@@ -363,6 +371,20 @@ export function BadgeTemplateListPage() {
                   <p className="text-body-sm text-neutral-600 line-clamp-2 mt-3 min-h-[2.5rem]">
                     {template.description || '\u00A0'}
                   </p>
+
+                  {/* Creator / Last Modified By */}
+                  <div className="text-xs text-neutral-500 mt-2 space-y-0.5">
+                    {template.creator && (
+                      <p title={template.creator.email}>
+                        Created by: {formatUserName(template.creator)}
+                      </p>
+                    )}
+                    {template.updater && (
+                      <p title={template.updater.email}>
+                        Modified by: {formatUserName(template.updater)}
+                      </p>
+                    )}
+                  </div>
 
                   {/* Validity */}
                   <p className="text-xs text-neutral-500 mt-2 min-h-[1rem]">

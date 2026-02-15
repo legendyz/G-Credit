@@ -29,6 +29,7 @@ import {
   getTemplateById,
   type TemplateCategory,
   type TemplateStatus,
+  type TemplateUser,
 } from '@/lib/badgeTemplatesApi';
 import { useSkills } from '@/hooks/useSkills';
 import { LayoutGrid, Save, Loader2, Upload, X, AlertCircle } from 'lucide-react';
@@ -82,6 +83,10 @@ export function BadgeTemplateFormPage() {
   const [isLoading, setIsLoading] = useState(isEditMode);
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  // Creator / last modifier info (edit mode only)
+  const [creatorInfo, setCreatorInfo] = useState<TemplateUser | null>(null);
+  const [updaterInfo, setUpdaterInfo] = useState<TemplateUser | null>(null);
+
   // Fetch template data in edit mode
   useEffect(() => {
     if (!id) return;
@@ -111,6 +116,10 @@ export function BadgeTemplateFormPage() {
         if (template.skillIds && Array.isArray(template.skillIds)) {
           setSelectedSkills(template.skillIds);
         }
+
+        // Store creator/updater info
+        if (template.creator) setCreatorInfo(template.creator);
+        if (template.updater) setUpdaterInfo(template.updater);
       } catch (err) {
         setLoadError(err instanceof Error ? err.message : 'Failed to load template');
       } finally {
@@ -306,6 +315,26 @@ export function BadgeTemplateFormPage() {
             <LayoutGrid className="h-5 w-5 text-brand-600" />
             Template Details
           </CardTitle>
+          {isEditMode && (creatorInfo || updaterInfo) && (
+            <div className="text-xs text-neutral-500 mt-1 space-y-0.5">
+              {creatorInfo && (
+                <p title={creatorInfo.email}>
+                  Created by:{' '}
+                  {[creatorInfo.firstName, creatorInfo.lastName].filter(Boolean).join(' ') ||
+                    creatorInfo.email}{' '}
+                  <span className="text-neutral-400">({creatorInfo.email})</span>
+                </p>
+              )}
+              {updaterInfo && (
+                <p title={updaterInfo.email}>
+                  Last modified by:{' '}
+                  {[updaterInfo.firstName, updaterInfo.lastName].filter(Boolean).join(' ') ||
+                    updaterInfo.email}{' '}
+                  <span className="text-neutral-400">({updaterInfo.email})</span>
+                </p>
+              )}
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">

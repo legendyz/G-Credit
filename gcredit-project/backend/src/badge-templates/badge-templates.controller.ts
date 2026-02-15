@@ -290,7 +290,7 @@ export class BadgeTemplatesController {
     // JSON fields are automatically parsed by MultipartJsonInterceptor
     const updateDto: UpdateBadgeTemplateDto = body;
 
-    return this.badgeTemplatesService.update(id, updateDto, image);
+    return this.badgeTemplatesService.update(id, updateDto, image, userId);
   }
 
   @Delete(':id')

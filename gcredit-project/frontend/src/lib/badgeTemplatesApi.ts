@@ -8,6 +8,13 @@ import { apiFetch } from './apiFetch';
 export type TemplateStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
 export type TemplateCategory = 'achievement' | 'skill' | 'certification' | 'participation';
 
+export interface TemplateUser {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+}
+
 export interface BadgeTemplate {
   id: string;
   name: string;
@@ -19,6 +26,9 @@ export interface BadgeTemplate {
   validityPeriod?: number | null;
   status: TemplateStatus;
   createdBy: string;
+  creator?: TemplateUser;
+  updatedBy?: string | null;
+  updater?: TemplateUser | null;
   createdAt: string;
   updatedAt: string;
 }

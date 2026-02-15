@@ -61,6 +61,7 @@ describe('BadgeTemplatesService', () => {
     validityPeriod: null,
     status: TemplateStatus.DRAFT,
     createdBy: 'user-1',
+    updatedBy: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     creator: {
@@ -70,6 +71,7 @@ describe('BadgeTemplatesService', () => {
       lastName: 'User',
       role: 'ADMIN',
     },
+    updater: null,
   };
 
   beforeEach(async () => {
@@ -622,11 +624,18 @@ describe('BadgeTemplatesService', () => {
         status: 'ARCHIVED',
       });
 
-      await service.update('tmpl-1', { status: 'ARCHIVED' as TemplateStatus });
+      await service.update(
+        'tmpl-1',
+        { status: 'ARCHIVED' as TemplateStatus },
+        undefined,
+        'user-1',
+      );
 
       const updateCall = prisma.badgeTemplate.update.mock.calls[0][0];
       expect(updateCall.data).not.toHaveProperty('skillIds');
       expect(updateCall.data.status).toBe('ARCHIVED');
+      // Should still record who made the update
+      expect(updateCall.data.updater).toEqual({ connect: { id: 'user-1' } });
     });
 
     it('should validate issuanceCriteria on update', async () => {

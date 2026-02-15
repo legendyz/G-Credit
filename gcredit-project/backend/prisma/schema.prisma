@@ -43,7 +43,8 @@ model User {
 
   passwordResetTokens   PasswordResetToken[]
   refreshTokens         RefreshToken[]
-  badgeTemplates        BadgeTemplate[]
+  badgeTemplates        BadgeTemplate[]        @relation("TemplateCreator")
+  badgeTemplatesUpdated BadgeTemplate[]         @relation("TemplateUpdater")
   badgesReceived        Badge[]                @relation("BadgesReceived")
   badgesIssued          Badge[]                @relation("BadgesIssued")
   badgesRevoked         Badge[]                @relation("RevokedBadges")
@@ -127,7 +128,9 @@ model BadgeTemplate {
   validityPeriod   Int?           // Validity period in days, null = permanent
   status           TemplateStatus @default(DRAFT)
   createdBy        String
-  creator          User           @relation(fields: [createdBy], references: [id])
+  creator          User           @relation("TemplateCreator", fields: [createdBy], references: [id])
+  updatedBy        String?
+  updater          User?          @relation("TemplateUpdater", fields: [updatedBy], references: [id])
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
   badges           Badge[]        // Badges issued from this template
@@ -136,6 +139,7 @@ model BadgeTemplate {
   @@index([status])
   @@index([createdAt])
   @@index([createdBy])
+  @@index([updatedBy])
   @@index([category, status]) // Composite index for filtering by category + status
   @@index([status, createdAt]) // Composite index for status + sorting
   @@map("badge_templates")
