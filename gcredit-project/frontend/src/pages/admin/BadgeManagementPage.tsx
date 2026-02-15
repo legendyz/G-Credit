@@ -268,17 +268,23 @@ export function BadgeManagementPage({
     handleModalClose();
   }, [queryClient, handleModalClose]);
 
-  // Pagination based on filtered results
-  const displayTotal = displayBadges.length;
-  const totalPages = Math.ceil(displayTotal / PAGE_SIZE) || 1;
+  // Pagination using backend meta (server-side pagination)
+  const serverTotal = data?.meta?.total ?? 0;
+  const serverTotalPages = data?.meta?.totalPages ?? 1;
+  // When client-side filters are active, use filtered count; otherwise use server total
+  const displayTotal = hasFilters ? displayBadges.length : serverTotal;
+  const totalPages = hasFilters ? Math.ceil(displayTotal / PAGE_SIZE) || 1 : serverTotalPages;
   const canGoBack = currentPage > 1;
   const canGoForward = currentPage < totalPages;
 
-  // Paginate display badges
+  // Display badges: when filters active, paginate client-side; otherwise use server-paginated data
   const paginatedBadges = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
-    return displayBadges.slice(start, start + PAGE_SIZE);
-  }, [displayBadges, currentPage]);
+    if (hasFilters) {
+      const start = (currentPage - 1) * PAGE_SIZE;
+      return displayBadges.slice(start, start + PAGE_SIZE);
+    }
+    return displayBadges;
+  }, [displayBadges, currentPage, hasFilters]);
 
   return (
     <div className="min-h-screen">
