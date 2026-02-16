@@ -81,11 +81,15 @@ export class BadgeIssuanceController {
 
   @Post('claim')
   @ApiOperation({
-    summary: 'Claim a badge using claim token (authenticated user must be the recipient)',
+    summary:
+      'Claim a badge using claim token (authenticated user must be the recipient)',
   })
   @ApiResponse({ status: 200, description: 'Badge claimed successfully' })
   @ApiResponse({ status: 400, description: 'claimToken is required' })
-  @ApiResponse({ status: 403, description: 'Badge belongs to a different user' })
+  @ApiResponse({
+    status: 403,
+    description: 'Badge belongs to a different user',
+  })
   @ApiResponse({ status: 404, description: 'Invalid claim token' })
   @ApiResponse({ status: 410, description: 'Badge expired or revoked' })
   async claimBadgeByToken(
