@@ -1012,7 +1012,7 @@ async function main() {
       title: 'First Badge',
       description:
         'Earned your very first badge! Welcome to the G-Credit community.',
-      trigger: { type: 'BADGE_COUNT', threshold: 1 },
+      trigger: { type: 'badge_count', value: 1 },
       icon: '🏆',
       isActive: true,
       createdBy: admin.id,
@@ -1025,7 +1025,7 @@ async function main() {
       type: MilestoneType.BADGE_COUNT,
       title: 'Badge Collector',
       description: 'Earned 5 badges! You are a dedicated learner.',
-      trigger: { type: 'BADGE_COUNT', threshold: 5 },
+      trigger: { type: 'badge_count', value: 5 },
       icon: '⭐',
       isActive: true,
       createdBy: admin.id,

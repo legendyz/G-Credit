@@ -58,10 +58,16 @@ describe('BadgeIssuanceService', () => {
     // Interactive transaction: execute callback with tx proxy that delegates to badge mocks
     $transaction: jest.fn(
       async (callback: (tx: unknown) => Promise<unknown>): Promise<unknown> => {
-        const tx: { badge: { create: jest.Mock; update: jest.Mock } } = {
+        const tx: {
+          badge: { create: jest.Mock; update: jest.Mock };
+          auditLog: { create: jest.Mock };
+        } = {
           badge: {
             create: mockPrismaService.badge.create,
             update: mockPrismaService.badge.update,
+          },
+          auditLog: {
+            create: jest.fn().mockResolvedValue({}),
           },
         };
         return callback(tx);

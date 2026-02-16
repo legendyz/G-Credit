@@ -301,9 +301,10 @@ describe('Badge Issuance (e2e)', () => {
           expiresIn: 365,
         });
 
-      // Claim one badge (using public claim endpoint)
+      // Claim one badge (using authenticated claim endpoint)
       await request(ctx.app.getHttpServer() as App)
         .post('/api/badges/claim')
+        .set('Authorization', `Bearer ${recipientUser.token}`)
         .send({
           claimToken: issue1Body.claimToken,
         })

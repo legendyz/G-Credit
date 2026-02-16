@@ -168,6 +168,23 @@ export class BadgeIssuanceService {
         },
       });
 
+      // 9. Create audit log entry for badge issuance
+      await tx.auditLog.create({
+        data: {
+          entityType: 'Badge',
+          entityId: created.id,
+          action: 'ISSUED',
+          actorId: issuerId,
+          actorEmail: issuer?.email ?? 'unknown',
+          timestamp: issuedAt,
+          metadata: {
+            badgeName: template.name,
+            recipientEmail: recipient.email,
+            templateId: template.id,
+          },
+        },
+      });
+
       return updated;
     });
 
