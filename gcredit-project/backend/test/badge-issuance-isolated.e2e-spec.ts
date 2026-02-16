@@ -39,12 +39,12 @@ describe('Badge Issuance (e2e) - Isolated', () => {
       'employee',
     );
 
-    // Create recipient (without login)
-    recipientUser = {
-      user: await ctx.userFactory.createEmployee(),
-      token: '',
-      credentials: { email: '', password: '' },
-    };
+    // Create recipient (with login for claim endpoint authentication)
+    recipientUser = await createAndLoginUser(
+      ctx.app,
+      ctx.userFactory,
+      'employee',
+    );
 
     // Create badge template using factory
     const template = await ctx.templateFactory.createActive({
@@ -154,8 +154,8 @@ describe('Badge Issuance (e2e) - Isolated', () => {
       validClaimToken = badge.claimToken!;
     });
 
-    it('should claim badge with valid token (PUBLIC endpoint - no auth required)', async () => {
-      const response = await request(ctx.app.getHttpServer() as App)
+    it('should claim badge with valid token (authenticated as recipient)', async () => {
+      const response = await authRequest(ctx.app, recipientUser.token)
         .post('/api/badges/claim')
         .send({
           claimToken: validClaimToken,
@@ -174,8 +174,25 @@ describe('Badge Issuance (e2e) - Isolated', () => {
       expect(body.assertionUrl).toContain(validBadgeId);
     });
 
+    it('should return 401 when claiming without authentication', async () => {
+      await request(ctx.app.getHttpServer() as App)
+        .post('/api/badges/claim')
+        .send({ claimToken: validClaimToken })
+        .expect(401);
+    });
+
+    it('should return 403 when wrong user tries to claim', async () => {
+      const response = await authRequest(ctx.app, adminUser.token)
+        .post('/api/badges/claim')
+        .send({ claimToken: validClaimToken })
+        .expect(403);
+
+      const body = response.body as { message: string };
+      expect(body.message).toContain('different user');
+    });
+
     it('should return 400 for invalid claim token', async () => {
-      const response = await request(ctx.app.getHttpServer() as App)
+      const response = await authRequest(ctx.app, recipientUser.token)
         .post('/api/badges/claim')
         .send({
           claimToken: 'invalid-token-' + 'x'.repeat(19), // 32 chars total
@@ -188,13 +205,13 @@ describe('Badge Issuance (e2e) - Isolated', () => {
 
     it('should return 400 when badge already claimed (token kept for better error messages)', async () => {
       // First claim
-      await request(ctx.app.getHttpServer() as App)
+      await authRequest(ctx.app, recipientUser.token)
         .post('/api/badges/claim')
         .send({ claimToken: validClaimToken })
         .expect(201);
 
       // Second claim attempt - token still exists but badge status is CLAIMED
-      const response = await request(ctx.app.getHttpServer() as App)
+      const response = await authRequest(ctx.app, recipientUser.token)
         .post('/api/badges/claim')
         .send({ claimToken: validClaimToken })
         .expect(400);

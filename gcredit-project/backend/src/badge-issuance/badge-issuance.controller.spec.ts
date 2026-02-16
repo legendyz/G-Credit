@@ -6,6 +6,7 @@ import { ClaimBadgeDto } from './dto/claim-badge.dto';
 import { RecommendationsService } from '../badge-templates/recommendations.service';
 import { IS_PUBLIC_KEY } from '../common/decorators/public.decorator';
 import { ROLES_KEY } from '../common/decorators/roles.decorator';
+import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
 import { UserRole } from '@prisma/client';
 
 describe('BadgeIssuanceController', () => {
@@ -49,6 +50,8 @@ describe('BadgeIssuanceController', () => {
   });
 
   describe('claimBadgeByToken()', () => {
+    const mockReq = { user: { userId: 'user-123' } } as RequestWithUser;
+
     it('should claim badge with valid claimToken', async () => {
       const mockResult = {
         id: 'badge-uuid',
@@ -57,19 +60,21 @@ describe('BadgeIssuanceController', () => {
       };
       mockBadgeIssuanceService.claimBadge.mockResolvedValue(mockResult);
 
-      const result = await controller.claimBadgeByToken({
-        claimToken: 'valid-token-123',
-      });
+      const result = await controller.claimBadgeByToken(
+        { claimToken: 'valid-token-123' },
+        mockReq,
+      );
 
       expect(result).toEqual(mockResult);
       expect(mockBadgeIssuanceService.claimBadge).toHaveBeenCalledWith(
         'valid-token-123',
+        'user-123',
       );
     });
 
     it('should throw BadRequestException when claimToken is missing', async () => {
       const dto = new ClaimBadgeDto();
-      await expect(controller.claimBadgeByToken(dto)).rejects.toThrow(
+      await expect(controller.claimBadgeByToken(dto, mockReq)).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -84,12 +89,12 @@ describe('BadgeIssuanceController', () => {
     const proto = BadgeIssuanceController.prototype;
 
     describe('@Public() decorators', () => {
-      it('POST /claim (claimBadgeByToken) should be @Public()', () => {
+      it('POST /claim (claimBadgeByToken) should NOT be @Public() (requires auth for recipient verification)', () => {
         const isPublic = Reflect.getMetadata(
           IS_PUBLIC_KEY,
           proto.claimBadgeByToken,
         ) as boolean | undefined;
-        expect(isPublic).toBe(true);
+        expect(isPublic).toBeUndefined();
       });
 
       it('POST /:id/claim (claimBadge) should NOT be @Public()', () => {

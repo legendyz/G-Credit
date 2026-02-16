@@ -170,9 +170,10 @@ describe('Badge Issuance (e2e)', () => {
       validClaimToken = issueBody.claimToken;
     });
 
-    it('should claim badge with valid token (PUBLIC endpoint - no auth required)', async () => {
+    it('should claim badge with valid token (authenticated as recipient)', async () => {
       const response = await request(ctx.app.getHttpServer() as App)
         .post('/api/badges/claim')
+        .set('Authorization', `Bearer ${recipientUser.token}`)
         .send({
           claimToken: validClaimToken,
         })
@@ -192,9 +193,29 @@ describe('Badge Issuance (e2e)', () => {
       expect(body.assertionUrl).toContain(validBadgeId);
     });
 
+    it('should return 401 when claiming without authentication', () => {
+      return request(ctx.app.getHttpServer() as App)
+        .post('/api/badges/claim')
+        .send({ claimToken: validClaimToken })
+        .expect(401);
+    });
+
+    it('should return 403 when wrong user tries to claim', async () => {
+      return request(ctx.app.getHttpServer() as App)
+        .post('/api/badges/claim')
+        .set('Authorization', `Bearer ${adminUser.token}`)
+        .send({ claimToken: validClaimToken })
+        .expect(403)
+        .expect((res) => {
+          const body = res.body as { message: string };
+          expect(body.message).toContain('different user');
+        });
+    });
+
     it('should return 400 for invalid claim token', () => {
       return request(ctx.app.getHttpServer() as App)
         .post('/api/badges/claim')
+        .set('Authorization', `Bearer ${recipientUser.token}`)
         .send({
           claimToken: 'invalid-token-' + 'x'.repeat(19), // 32 chars total
         })
@@ -206,9 +227,10 @@ describe('Badge Issuance (e2e)', () => {
     });
 
     it('should return 400 when badge already claimed (token kept for accurate error messages)', async () => {
-      // Claim once
+      // Claim once (as recipient)
       await request(ctx.app.getHttpServer() as App)
         .post('/api/badges/claim')
+        .set('Authorization', `Bearer ${recipientUser.token}`)
         .send({
           claimToken: validClaimToken,
         })
@@ -217,6 +239,7 @@ describe('Badge Issuance (e2e)', () => {
       // Try to claim again - token still exists but badge status is CLAIMED
       return request(ctx.app.getHttpServer() as App)
         .post('/api/badges/claim')
+        .set('Authorization', `Bearer ${recipientUser.token}`)
         .send({
           claimToken: validClaimToken,
         })
@@ -239,6 +262,7 @@ describe('Badge Issuance (e2e)', () => {
 
       return request(ctx.app.getHttpServer() as App)
         .post('/api/badges/claim')
+        .set('Authorization', `Bearer ${recipientUser.token}`)
         .send({
           claimToken: validClaimToken,
         })

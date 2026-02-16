@@ -12,6 +12,7 @@ import { ConfigService } from '@nestjs/config';
 import {
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
   GoneException,
 } from '@nestjs/common';
 import { BadgeStatus } from '@prisma/client';
@@ -549,6 +550,28 @@ describe('BadgeIssuanceService', () => {
           recipient: true,
         },
       });
+    });
+
+    it('should throw ForbiddenException if authenticated user is not the recipient', async () => {
+      // Arrange
+      const mockPendingBadge = {
+        id: 'badge-uuid',
+        status: BadgeStatus.PENDING,
+        issuedAt: new Date(),
+        expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        claimToken: mockClaimToken,
+        recipientId: 'recipient-uuid',
+        template: mockTemplate,
+        recipient: mockRecipient,
+      };
+
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockPendingBadge);
+
+      // Act & Assert — wrong user trying to claim
+      await expect(
+        service.claimBadge(mockClaimToken, 'wrong-user-uuid'),
+      ).rejects.toThrow(ForbiddenException);
+      expect(mockPrismaService.badge.update).not.toHaveBeenCalled();
     });
 
     it('should throw BadRequestException if already claimed', async () => {

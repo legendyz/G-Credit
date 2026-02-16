@@ -254,7 +254,7 @@ export class BadgeIssuanceService {
     return this.processClaimBadge(badge);
   }
 
-  async claimBadge(claimToken: string) {
+  async claimBadge(claimToken: string, userId?: string) {
     // 1. Find badge by claim token
     const badge = await this.prisma.badge.findUnique({
       where: { claimToken },
@@ -268,6 +268,14 @@ export class BadgeIssuanceService {
       throw new NotFoundException(
         'This claim link is invalid or has already been used. ' +
           'If you have already claimed this badge, you can find it in your wallet.',
+      );
+    }
+
+    // 1b. Verify authenticated user is the badge recipient
+    if (userId && badge.recipientId !== userId) {
+      throw new ForbiddenException(
+        'This badge was issued to a different user. ' +
+          'Please log in with the correct account to claim this badge.',
       );
     }
 
