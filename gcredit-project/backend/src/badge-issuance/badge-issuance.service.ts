@@ -332,7 +332,8 @@ export class BadgeIssuanceService {
       data: {
         status: BadgeStatus.CLAIMED,
         claimedAt: new Date(),
-        claimToken: null, // Clear token (one-time use)
+        // Keep claimToken so re-visits give accurate status messages
+        // (e.g. "already claimed" vs "revoked") instead of generic "invalid token"
       },
       include: {
         template: true,

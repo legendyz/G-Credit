@@ -205,7 +205,7 @@ describe('Badge Issuance (e2e)', () => {
         });
     });
 
-    it('should return 404 when trying to use already-claimed token (one-time use)', async () => {
+    it('should return 400 when badge already claimed (token kept for accurate error messages)', async () => {
       // Claim once
       await request(ctx.app.getHttpServer() as App)
         .post('/api/badges/claim')
@@ -214,16 +214,16 @@ describe('Badge Issuance (e2e)', () => {
         })
         .expect(201);
 
-      // Try to claim again with same token (should fail - token is cleared after claim)
+      // Try to claim again - token still exists but badge status is CLAIMED
       return request(ctx.app.getHttpServer() as App)
         .post('/api/badges/claim')
         .send({
           claimToken: validClaimToken,
         })
-        .expect(404)
+        .expect(400)
         .expect((res) => {
           const body = res.body as { message: string };
-          expect(body.message).toContain('invalid or has already been used');
+          expect(body.message).toContain('already been claimed');
         });
     });
 

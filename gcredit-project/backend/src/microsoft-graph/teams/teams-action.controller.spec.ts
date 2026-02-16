@@ -119,13 +119,12 @@ describe('TeamsActionController', () => {
         },
       });
 
-      // Verify token cleared on claim (one-time use)
+      // Verify claim update (token kept for accurate error messages)
       expect(prismaService.badge.update).toHaveBeenCalledWith(
         expect.objectContaining({
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           data: expect.objectContaining({
             status: BadgeStatus.CLAIMED,
-            claimToken: null,
           }),
         }),
       );
@@ -139,7 +138,6 @@ describe('TeamsActionController', () => {
         ...mockBadge,
         status: BadgeStatus.CLAIMED,
         claimedAt: claimedDate,
-        claimToken: null,
       });
 
       // Act

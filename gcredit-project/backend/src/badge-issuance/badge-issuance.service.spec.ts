@@ -505,7 +505,6 @@ describe('BadgeIssuanceService', () => {
         ...mockPendingBadge,
         status: BadgeStatus.CLAIMED,
         claimedAt: new Date(),
-        claimToken: null,
       };
 
       mockPrismaService.badge.findUnique.mockResolvedValue(mockPendingBadge);
@@ -527,7 +526,6 @@ describe('BadgeIssuanceService', () => {
         data: {
           status: BadgeStatus.CLAIMED,
           claimedAt: anyDate(),
-          claimToken: null,
         },
         include: {
           template: true,
@@ -554,12 +552,12 @@ describe('BadgeIssuanceService', () => {
     });
 
     it('should throw BadRequestException if already claimed', async () => {
-      // Arrange
+      // Arrange - token is kept after claim (not cleared)
       const mockClaimedBadge = {
         id: 'badge-uuid',
         status: BadgeStatus.CLAIMED,
         issuedAt: new Date(),
-        claimToken: null,
+        claimToken: mockClaimToken,
         template: mockTemplate,
         recipient: mockRecipient,
       };

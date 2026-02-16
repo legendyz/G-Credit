@@ -118,13 +118,12 @@ export class TeamsActionController {
       );
     }
 
-    // 4. Update badge status to CLAIMED and clear token (one-time use)
+    // 4. Update badge status to CLAIMED (keep token for accurate error messages on re-visit)
     const updatedBadge = await this.prisma.badge.update({
       where: { id: badge.id },
       data: {
         status: BadgeStatus.CLAIMED,
         claimedAt: new Date(),
-        claimToken: null, // One-time use: clear after claim
       },
       include: {
         template: true,
