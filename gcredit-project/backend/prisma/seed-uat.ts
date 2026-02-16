@@ -213,18 +213,39 @@ async function main() {
   // CLEANUP: Delete existing UAT data in FK-safe order
   // Handles both old (uat-*) and new (00000000-*) ID formats
   // ========================================
-  // Evidence files: by ID (new) or badge claimToken (old+new)
+  // Evidence files: by ID (new) or badge claimToken (old+new) or badge templateId
   await prisma.evidenceFile.deleteMany({
     where: {
       OR: [
         { id: { in: [IDS.evidence1, IDS.evidence2] } },
         { badge: { claimToken: { startsWith: 'uat-claim-token-' } } },
+        {
+          badge: {
+            templateId: {
+              in: [
+                IDS.tmpl1, IDS.tmpl2, IDS.tmpl3, IDS.tmpl4, IDS.tmpl5,
+                IDS.tmpl6, IDS.tmpl7, IDS.tmpl8, IDS.tmpl9,
+              ],
+            },
+          },
+        },
       ],
     },
   });
   // Badges: by claimToken pattern (covers both old and new ID schemes)
   await prisma.badge.deleteMany({
     where: { claimToken: { startsWith: 'uat-claim-token-' } },
+  });
+  // Also delete any badges referencing our template IDs (e.g. manually issued during UAT)
+  await prisma.badge.deleteMany({
+    where: {
+      templateId: {
+        in: [
+          IDS.tmpl1, IDS.tmpl2, IDS.tmpl3, IDS.tmpl4, IDS.tmpl5,
+          IDS.tmpl6, IDS.tmpl7, IDS.tmpl8, IDS.tmpl9,
+        ],
+      },
+    },
   });
   // Templates: by new IDs and old uat-tmpl-* IDs
   await prisma.badgeTemplate.deleteMany({
@@ -236,6 +257,10 @@ async function main() {
           IDS.tmpl3,
           IDS.tmpl4,
           IDS.tmpl5,
+          IDS.tmpl6,
+          IDS.tmpl7,
+          IDS.tmpl8,
+          IDS.tmpl9,
           // Old format IDs for migration cleanup
           'uat-tmpl-0001-0001-0001-000000000001',
           'uat-tmpl-0001-0001-0001-000000000002',
@@ -680,7 +705,7 @@ async function main() {
       recipientId: employee.id,
       issuerId: issuer.id,
       status: BadgeStatus.CLAIMED,
-      claimToken: 'uat-claim-token-001',
+      claimToken: 'uat-claim-token-001-000000000000',
       verificationId: IDS.verify1,
       metadataHash: crypto
         .createHash('sha256')
@@ -702,7 +727,7 @@ async function main() {
       recipientId: employee.id,
       issuerId: issuer.id,
       status: BadgeStatus.CLAIMED,
-      claimToken: 'uat-claim-token-002',
+      claimToken: 'uat-claim-token-002-000000000000',
       verificationId: IDS.verify2,
       metadataHash: crypto
         .createHash('sha256')
@@ -724,7 +749,7 @@ async function main() {
       recipientId: employee.id,
       issuerId: admin.id,
       status: BadgeStatus.CLAIMED,
-      claimToken: 'uat-claim-token-003',
+      claimToken: 'uat-claim-token-003-000000000000',
       verificationId: IDS.verify3,
       metadataHash: crypto
         .createHash('sha256')
@@ -746,7 +771,7 @@ async function main() {
       recipientId: employee.id,
       issuerId: issuer.id,
       status: BadgeStatus.CLAIMED,
-      claimToken: 'uat-claim-token-004',
+      claimToken: 'uat-claim-token-004-000000000000',
       verificationId: IDS.verify4,
       metadataHash: crypto
         .createHash('sha256')
@@ -768,7 +793,7 @@ async function main() {
       recipientId: employee.id,
       issuerId: admin.id,
       status: BadgeStatus.PENDING,
-      claimToken: 'uat-claim-token-005-pending',
+      claimToken: 'uat-claim-token-005-pending00000',
       verificationId: IDS.verify5,
       metadataHash: crypto
         .createHash('sha256')
@@ -790,7 +815,7 @@ async function main() {
       recipientId: employee.id,
       issuerId: issuer.id,
       status: BadgeStatus.REVOKED,
-      claimToken: 'uat-claim-token-006',
+      claimToken: 'uat-claim-token-006-000000000000',
       verificationId: IDS.verify6,
       metadataHash: crypto
         .createHash('sha256')
@@ -820,7 +845,7 @@ async function main() {
       recipientId: manager.id,
       issuerId: admin.id,
       status: BadgeStatus.CLAIMED,
-      claimToken: 'uat-claim-token-007',
+      claimToken: 'uat-claim-token-007-000000000000',
       verificationId: IDS.verify7,
       metadataHash: crypto
         .createHash('sha256')
@@ -842,7 +867,7 @@ async function main() {
       recipientId: manager.id,
       issuerId: issuer.id,
       status: BadgeStatus.CLAIMED,
-      claimToken: 'uat-claim-token-008',
+      claimToken: 'uat-claim-token-008-000000000000',
       verificationId: IDS.verify8,
       metadataHash: crypto
         .createHash('sha256')
@@ -864,7 +889,7 @@ async function main() {
       recipientId: manager.id,
       issuerId: admin.id,
       status: BadgeStatus.CLAIMED,
-      claimToken: 'uat-claim-token-009',
+      claimToken: 'uat-claim-token-009-000000000000',
       verificationId: IDS.verify9,
       metadataHash: crypto
         .createHash('sha256')
@@ -888,7 +913,7 @@ async function main() {
       recipientId: admin.id,
       issuerId: issuer.id,
       status: BadgeStatus.CLAIMED,
-      claimToken: 'uat-claim-token-010',
+      claimToken: 'uat-claim-token-010-000000000000',
       verificationId: IDS.verify10,
       metadataHash: crypto
         .createHash('sha256')
@@ -910,7 +935,7 @@ async function main() {
       recipientId: admin.id,
       issuerId: issuer.id,
       status: BadgeStatus.PENDING,
-      claimToken: 'uat-claim-token-011-pending',
+      claimToken: 'uat-claim-token-011-pending00000',
       verificationId: IDS.verify11,
       metadataHash: crypto
         .createHash('sha256')

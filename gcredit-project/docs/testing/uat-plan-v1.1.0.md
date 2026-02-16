@@ -47,14 +47,17 @@
 
 ### 1.2 启动后台 (Backend)
 
+> **已有开发环境？** 步骤 2-4 可跳过（依赖已安装、.env 已配置、迁移已执行）。  
+> 只需执行 **步骤 1 → 5 → 6** 即可。
+
 ```powershell
 # 1. 进入后台目录
-cd gcredit-project/backend
+cd c:\G_Credit\CODE\gcredit-project\backend
 
-# 2. 安装依赖
+# 2. 安装依赖（已有开发环境可跳过）
 npm install
 
-# 3. 配置环境变量 — 复制并编辑
+# 3. 配置环境变量（已有开发环境可跳过）
 cp .env.example .env
 # 编辑 .env，确保以下关键配置正确：
 #   DATABASE_URL="postgresql://postgres:password@localhost:5432/gcredit"
@@ -65,10 +68,10 @@ cp .env.example .env
 #   PLATFORM_URL="http://localhost:5173"
 #   FRONTEND_URL="http://localhost:5173"
 
-# 4. 执行数据库迁移
+# 4. 执行数据库迁移（已有开发环境可跳过）
 npx prisma migrate deploy
 
-# 5. 注入 UAT 测试数据（见下方第2节）
+# 5. 注入 UAT 测试数据 ⚠️ 必须执行 — 清空数据库并注入干净的测试数据
 npm run seed:reset
 
 # 6. 启动开发服务器
@@ -92,11 +95,13 @@ curl http://localhost:3000/ready
 
 ### 1.3 启动前台 (Frontend)
 
+> **已有开发环境？** 步骤 2 可跳过，只需 **步骤 1 → 3**。
+
 ```powershell
 # 1. 进入前台目录
-cd gcredit-project/frontend
+cd c:\G_Credit\CODE\gcredit-project\frontend
 
-# 2. 安装依赖
+# 2. 安装依赖（已有开发环境可跳过）
 npm install
 
 # 3. 启动开发服务器
@@ -115,7 +120,7 @@ npm run dev
 ### 2.1 自动注入（推荐）
 
 ```powershell
-cd gcredit-project/backend
+cd c:\G_Credit\CODE\gcredit-project\backend
 
 # 完整重置：清空数据库 + 执行迁移 + 注入 UAT 数据
 npm run seed:reset
