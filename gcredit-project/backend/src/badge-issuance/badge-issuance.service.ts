@@ -912,8 +912,16 @@ export class BadgeIssuanceService {
     }
 
     // Story 9.3: Transform response to include/exclude revocation fields
+    // Compute effective status: EXPIRED if expiresAt is in the past
+    const isExpired =
+      badge.expiresAt &&
+      badge.expiresAt < new Date() &&
+      badge.status !== BadgeStatus.REVOKED;
+    const effectiveStatus = isExpired ? 'EXPIRED' : badge.status;
+
     const response: Record<string, unknown> = {
       ...badge,
+      status: effectiveStatus,
     };
 
     // Story 9.3 AC2: Add categorized revocation details
@@ -1138,14 +1146,23 @@ export class BadgeIssuanceService {
 
     // Merge badges and milestones, sorted by date
     const badgeItems = badges.map((b) => {
+      // Compute effective status: if expiresAt is in the past and badge
+      // is not already REVOKED, treat it as EXPIRED for display purposes.
+      const isExpired =
+        b.expiresAt &&
+        b.expiresAt < new Date() &&
+        b.status !== BadgeStatus.REVOKED;
+      const effectiveStatus = isExpired ? 'EXPIRED' : b.status;
+
       // Story 9.3: Transform badge to include/exclude revocation fields
       const badgeData: Record<string, unknown> = {
         id: b.id,
         recipientId: b.recipientId,
-        status: b.status,
+        status: effectiveStatus,
         visibility: b.visibility,
         issuedAt: b.issuedAt,
         claimedAt: b.claimedAt,
+        expiresAt: b.expiresAt,
         template: b.template,
         issuer: b.issuer,
       };

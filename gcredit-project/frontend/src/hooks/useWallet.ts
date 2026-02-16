@@ -9,6 +9,7 @@ export interface Badge {
   status: BadgeStatus;
   visibility?: 'PUBLIC' | 'PRIVATE';
   claimedAt?: string;
+  expiresAt?: string;
   // Story 11.24 AC-C3: type discriminator for wallet items
   type?: 'badge';
   // Story 9.3: Revocation fields (only present when status = REVOKED)

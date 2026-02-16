@@ -103,10 +103,13 @@ export class BadgeVerificationController {
     const now = new Date();
     const isExpired = badge.expiresAt && new Date(badge.expiresAt) < now;
     const isRevoked = badge.status === BadgeStatus.REVOKED;
+    const isPending = badge.status === BadgeStatus.PENDING;
 
-    let verificationStatus: 'valid' | 'expired' | 'revoked';
+    let verificationStatus: 'valid' | 'expired' | 'revoked' | 'pending';
     if (isRevoked) {
       verificationStatus = 'revoked';
+    } else if (isPending) {
+      verificationStatus = 'pending';
     } else if (isExpired) {
       verificationStatus = 'expired';
     } else {

@@ -47,7 +47,7 @@ export interface BadgeDetail {
 export interface VerificationResponse {
   id: string;
   verificationId: string;
-  status: 'ACTIVE' | 'REVOKED' | 'EXPIRED';
+  status: 'ACTIVE' | 'REVOKED' | 'EXPIRED' | 'PENDING';
   badge: {
     name: string;
     description: string;

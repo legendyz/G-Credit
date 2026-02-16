@@ -31,6 +31,8 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
   }, [badge.visibility]);
 
   const isRevoked = badge.status === BadgeStatus.REVOKED;
+  const isExpired = badge.status === BadgeStatus.EXPIRED;
+  const isInactive = isRevoked || isExpired;
 
   const handleToggleVisibility = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -60,6 +62,8 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
         return 'bg-amber-600'; // WCAG AA compliant
       case BadgeStatus.REVOKED:
         return 'bg-red-600';
+      case BadgeStatus.EXPIRED:
+        return 'bg-gray-400';
       default:
         return 'bg-gray-500';
     }
@@ -90,7 +94,7 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
           role="button"
           tabIndex={0}
           className={`bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
-            isRevoked ? 'opacity-50' : ''
+            isInactive ? 'opacity-50' : ''
           }`}
           aria-label={`${badge.template.name} badge, ${badge.status.toLowerCase()}${isRevoked && badge.revokedAt ? `, revoked on ${new Date(badge.revokedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}` : ''}`}
           onClick={() => openModal(badge.id)}
@@ -125,8 +129,15 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
             {/* Badge Info */}
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-lg mb-1 truncate">{badge.template.name}</h3>
-              <p className="text-sm text-gray-600 mb-2 truncate">
+              <p className="text-sm text-gray-600 mb-1 truncate">
                 Issued by {badge.issuer.firstName} {badge.issuer.lastName}
+              </p>
+              <p className="text-xs text-gray-500 mb-2">
+                {new Date(badge.issuedAt).toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
               </p>
 
               {/* Status Badge - Story 8.3: WCAG AA compliant colors */}
@@ -147,6 +158,18 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
                 <p className="text-sm text-red-600 mt-2">
                   Revoked on{' '}
                   {new Date(badge.revokedAt).toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </p>
+              )}
+
+              {/* Show expiry date for expired badges */}
+              {badge.status === BadgeStatus.EXPIRED && badge.expiresAt && (
+                <p className="text-sm text-gray-500 mt-2">
+                  Expired on{' '}
+                  {new Date(badge.expiresAt).toLocaleDateString('en-US', {
                     month: 'long',
                     day: 'numeric',
                     year: 'numeric',
@@ -199,6 +222,13 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
         {isRevoked && (
           <div className="absolute top-2 right-2 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md">
             🚫 REVOKED
+          </div>
+        )}
+
+        {/* Gray "EXPIRED" banner overlay — UX Decision 2026-02-17: neutral gray for expired */}
+        {isExpired && (
+          <div className="absolute top-2 right-2 bg-gray-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md">
+            ⏰ EXPIRED
           </div>
         )}
       </div>

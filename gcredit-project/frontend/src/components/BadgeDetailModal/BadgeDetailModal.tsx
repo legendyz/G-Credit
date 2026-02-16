@@ -14,6 +14,7 @@ import ReportIssueForm from './ReportIssueForm';
 import BadgeAnalytics from './BadgeAnalytics';
 import BadgeShareModal from '../BadgeShareModal';
 import RevocationSection from './RevocationSection';
+import ExpirationSection from './ExpirationSection';
 import ClaimSuccessModal from '../ClaimSuccessModal';
 import { Globe, Lock, Loader2 } from 'lucide-react';
 import { apiFetch } from '../../lib/apiFetch';
@@ -162,6 +163,9 @@ const BadgeDetailModal: React.FC = () => {
         prev ? { ...prev, status: BadgeStatus.CLAIMED, claimedAt: new Date().toISOString() } : null
       );
 
+      // Invalidate wallet queries so the list reflects the claimed status
+      queryClient.invalidateQueries({ queryKey: ['wallet'] });
+
       // Show celebration modal
       setClaimSuccessOpen(true);
 
@@ -284,6 +288,11 @@ const BadgeDetailModal: React.FC = () => {
                       revokedBy={badge.revokedBy}
                     />
                   )}
+
+                {/* Expiration Details Section */}
+                {badge.status === BadgeStatus.EXPIRED && badge.expiresAt && (
+                  <ExpirationSection expiresAt={badge.expiresAt} />
+                )}
 
                 {/* AC 4.5: Timeline Section */}
                 <TimelineSection
@@ -426,16 +435,22 @@ const BadgeDetailModal: React.FC = () => {
               </svg>
               Share Badge
             </button>
-            {/* Story 9.3 AC3: Download button disabled for revoked badges (PO decision: prevent misuse of revoked credential PNG) */}
+            {/* Story 9.3 AC3: Download button disabled for revoked/pending badges (UX Decision 2026-02-17: unclaimed badges cannot be downloaded) */}
             <button
               onClick={handleDownloadBadge}
-              disabled={downloading || badge?.status === BadgeStatus.REVOKED}
+              disabled={
+                downloading ||
+                badge?.status === BadgeStatus.REVOKED ||
+                badge?.status === BadgeStatus.PENDING
+              }
               title={
                 badge?.status === BadgeStatus.REVOKED
                   ? 'Revoked badges cannot be downloaded'
-                  : downloading
-                    ? 'Downloading...'
-                    : 'Download badge as PNG'
+                  : badge?.status === BadgeStatus.PENDING
+                    ? 'Claim this badge before downloading'
+                    : downloading
+                      ? 'Downloading...'
+                      : 'Download badge as PNG'
               }
               className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg flex items-center border-none transition-colors hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
             >

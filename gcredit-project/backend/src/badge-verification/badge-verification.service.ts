@@ -167,7 +167,11 @@ export class BadgeVerificationService {
       claimedAt: badge.claimedAt,
 
       // Story 9.2: Revocation details with categorization
-      isValid: badge.status !== BadgeStatus.REVOKED,
+      // isValid is false for REVOKED, PENDING, and dynamically expired badges
+      isValid:
+        badge.status !== BadgeStatus.REVOKED &&
+        badge.status !== BadgeStatus.PENDING &&
+        !(badge.expiresAt && new Date(badge.expiresAt) < new Date()),
       ...(badge.status === BadgeStatus.REVOKED && {
         revokedAt: badge.revokedAt,
         revocationReason: badge.revocationReason,

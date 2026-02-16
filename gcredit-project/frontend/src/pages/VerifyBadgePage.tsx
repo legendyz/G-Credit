@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
+  Clock,
   Download,
   ExternalLink,
   Calendar,
@@ -72,7 +73,9 @@ export function VerifyBadgePage() {
               ? 'REVOKED'
               : apiData.verificationStatus === 'expired'
                 ? 'EXPIRED'
-                : 'ACTIVE',
+                : apiData.verificationStatus === 'pending'
+                  ? 'PENDING'
+                  : 'ACTIVE',
           badge: meta.badge || {},
           recipient: meta.recipient || {},
           issuer: meta.issuer || {},
@@ -151,8 +154,9 @@ export function VerifyBadgePage() {
   if (!badge) return null;
 
   const isRevoked = badge.status === 'REVOKED';
+  const isPending = badge.status === 'PENDING';
   const isExpired = badge.expiresAt && new Date(badge.expiresAt) < new Date();
-  const isValid = !isRevoked && !isExpired;
+  const isValid = !isRevoked && !isExpired && !isPending;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -178,12 +182,24 @@ export function VerifyBadgePage() {
         />
       )}
 
-      {/* Expired Badge Alert */}
+      {/* Pending Badge Alert */}
+      {isPending && (
+        <Alert variant="warning" className="mb-6 border-amber-500 bg-amber-50">
+          <AlertTriangle className="h-5 w-5 text-amber-600" />
+          <AlertTitle className="text-amber-900">Pending Credential</AlertTitle>
+          <AlertDescription className="text-amber-800">
+            This badge has been issued but has not yet been claimed by the recipient. It cannot be
+            considered verified until claimed.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Expired Badge Alert — UX Decision 2026-02-17: neutral gray for expired */}
       {!isRevoked && isExpired && (
-        <Alert variant="warning" className="mb-6 border-yellow-600">
-          <AlertTriangle className="h-5 w-5 text-yellow-600" />
-          <AlertTitle className="text-yellow-900">This credential has expired</AlertTitle>
-          <AlertDescription className="text-yellow-800">
+        <Alert className="mb-6 border-gray-400 bg-gray-50">
+          <Clock className="h-5 w-5 text-gray-500" />
+          <AlertTitle className="text-gray-800">This credential has expired</AlertTitle>
+          <AlertDescription className="text-gray-600">
             Expired on {format(new Date(badge.expiresAt!), 'MMMM d, yyyy')}
           </AlertDescription>
         </Alert>

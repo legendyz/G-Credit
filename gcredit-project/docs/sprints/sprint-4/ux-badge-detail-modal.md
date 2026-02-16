@@ -247,6 +247,10 @@ const [selectedBadgeId, setSelectedBadgeId] = useState<string | null>(null);
   - 🟡 Pending: Yellow (#FFF4CE background, #F7630C text)
   - 🚫 Revoked: Gray (#F3F2F1 background, #605E5C text)
 
+> **⚠️ UX Design Change (Sprint 7 → Sprint 11):**
+> - **REVOKED:** 原始设计为灰色（低调处理），Sprint 7 Story 9.3 决定改为**红色**（`bg-red-100 text-red-800`），作为撤销凭证的强警告信号。实现统一使用红色系。
+> - **EXPIRED:** 原始设计未包含此状态。Sprint 11 UAT 期间新增，使用**灰色**（`bg-gray-100 text-gray-800`）。决策依据：Sprint 6 UX Audit 建议 EXPIRED 用灰色，Sprint 7 Epic 9 UX Review 定义 expired 为 "neutral, expected lifecycle event"，Sprint 8 WCAG 测试列表也使用 gray。灰色表达“不再活跃”的中性语义，与 PENDING 的琥珀色（“需要行动”）明确区分。
+
 **Issue Date:**
 - **Typography:** Body Small (12px), Regular, Neutral-500
 - **Format:** "• Jan 26, 2026" (bullet separator)

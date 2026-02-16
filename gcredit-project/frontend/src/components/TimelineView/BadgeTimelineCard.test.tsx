@@ -76,6 +76,11 @@ describe('BadgeTimelineCard - Visibility Toggle', () => {
     expect(toggleBtn).toBeInTheDocument();
   });
 
+  it('displays the issued date', () => {
+    render(<BadgeTimelineCard badge={makeBadge()} />, { wrapper });
+    expect(screen.getByText('January 20, 2026')).toBeInTheDocument();
+  });
+
   // Story 11.24 AC-M9: Image null fallback
   it('renders placeholder when imageUrl is null', () => {
     render(

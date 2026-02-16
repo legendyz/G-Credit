@@ -23,7 +23,7 @@ const ModalHero: React.FC<ModalHeroProps> = ({
       case 'CLAIMED':
         return { label: '✅ Claimed', color: 'bg-green-100 text-green-800' };
       case 'PENDING':
-        return { label: '🟡 Pending', color: 'bg-yellow-100 text-yellow-800' };
+        return { label: '🟡 Pending', color: 'bg-amber-100 text-amber-800' };
       case 'REVOKED':
         return { label: '🔒 Revoked', color: 'bg-red-100 text-red-800' };
       case 'EXPIRED':
