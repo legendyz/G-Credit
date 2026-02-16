@@ -95,7 +95,10 @@ export class TeamsActionController {
     });
 
     if (!badge) {
-      throw new NotFoundException('Invalid claim token');
+      throw new NotFoundException(
+        'This claim link is invalid or has already been used. ' +
+          'If you have already claimed this badge, you can find it in your wallet.',
+      );
     }
 
     // 2. Check badge status

@@ -223,7 +223,7 @@ describe('Badge Issuance (e2e)', () => {
         .expect(404)
         .expect((res) => {
           const body = res.body as { message: string };
-          expect(body.message).toContain('Invalid claim token');
+          expect(body.message).toContain('invalid or has already been used');
         });
     });
 

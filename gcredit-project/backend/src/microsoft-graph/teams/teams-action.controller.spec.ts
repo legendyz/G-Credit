@@ -173,7 +173,7 @@ describe('TeamsActionController', () => {
       ).rejects.toThrow(NotFoundException);
       await expect(
         controller.claimBadge({ claimToken: 'invalid-token' }),
-      ).rejects.toThrow('Invalid claim token');
+      ).rejects.toThrow('invalid or has already been used');
     });
 
     it('should throw BadRequestException if badge already claimed', async () => {

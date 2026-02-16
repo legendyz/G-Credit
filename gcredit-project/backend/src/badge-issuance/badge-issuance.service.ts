@@ -265,7 +265,10 @@ export class BadgeIssuanceService {
     });
 
     if (!badge) {
-      throw new NotFoundException('Invalid claim token');
+      throw new NotFoundException(
+        'This claim link is invalid or has already been used. ' +
+          'If you have already claimed this badge, you can find it in your wallet.',
+      );
     }
 
     return this.processClaimBadge(badge);
@@ -288,7 +291,10 @@ export class BadgeIssuanceService {
     recipient: { id: string; email: string };
   }) {
     if (!badge) {
-      throw new NotFoundException('Invalid claim token');
+      throw new NotFoundException(
+        'This claim link is invalid or has already been used. ' +
+          'If you have already claimed this badge, you can find it in your wallet.',
+      );
     }
 
     // 2. Check if already claimed
