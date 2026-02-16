@@ -167,7 +167,7 @@ async function main() {
     },
   });
 
-  const employee = await prisma.user.upsert({
+  const employee2 = await prisma.user.upsert({
     where: { email: 'M365DevAdmin@2wjh85.onmicrosoft.com' },
     update: {
       passwordHash,
@@ -187,7 +187,7 @@ async function main() {
     },
   });
 
-  const employee2 = await prisma.user.upsert({
+  const employee = await prisma.user.upsert({
     where: { email: 'employee@gcredit.com' },
     update: {
       passwordHash,
@@ -711,7 +711,7 @@ async function main() {
         .createHash('sha256')
         .update('badge1-meta')
         .digest('hex'),
-      recipientHash: hashEmail('M365DevAdmin@2wjh85.onmicrosoft.com'),
+      recipientHash: hashEmail('employee@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify1),
       issuedAt: twoMonthsAgo,
       claimedAt: new Date(twoMonthsAgo.getTime() + 2 * 24 * 60 * 60 * 1000),
@@ -733,7 +733,7 @@ async function main() {
         .createHash('sha256')
         .update('badge2-meta')
         .digest('hex'),
-      recipientHash: hashEmail('M365DevAdmin@2wjh85.onmicrosoft.com'),
+      recipientHash: hashEmail('employee@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify2),
       issuedAt: oneMonthAgo,
       claimedAt: new Date(oneMonthAgo.getTime() + 1 * 24 * 60 * 60 * 1000),
@@ -755,7 +755,7 @@ async function main() {
         .createHash('sha256')
         .update('badge3-meta')
         .digest('hex'),
-      recipientHash: hashEmail('M365DevAdmin@2wjh85.onmicrosoft.com'),
+      recipientHash: hashEmail('employee@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify3),
       issuedAt: oneWeekAgo,
       claimedAt: new Date(oneWeekAgo.getTime() + 12 * 60 * 60 * 1000),
@@ -777,7 +777,7 @@ async function main() {
         .createHash('sha256')
         .update('badge4-meta')
         .digest('hex'),
-      recipientHash: hashEmail('M365DevAdmin@2wjh85.onmicrosoft.com'),
+      recipientHash: hashEmail('employee@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify4),
       issuedAt: threeDaysAgo,
       claimedAt: new Date(threeDaysAgo.getTime() + 6 * 60 * 60 * 1000),
@@ -799,7 +799,7 @@ async function main() {
         .createHash('sha256')
         .update('badge5-meta')
         .digest('hex'),
-      recipientHash: hashEmail('M365DevAdmin@2wjh85.onmicrosoft.com'),
+      recipientHash: hashEmail('employee@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify5),
       issuedAt: now,
       claimedAt: null,
@@ -821,7 +821,7 @@ async function main() {
         .createHash('sha256')
         .update('badge6-meta')
         .digest('hex'),
-      recipientHash: hashEmail('M365DevAdmin@2wjh85.onmicrosoft.com'),
+      recipientHash: hashEmail('employee@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify6),
       issuedAt: twoMonthsAgo,
       claimedAt: new Date(twoMonthsAgo.getTime() + 1 * 24 * 60 * 60 * 1000),
