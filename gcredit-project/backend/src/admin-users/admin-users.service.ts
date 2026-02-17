@@ -107,13 +107,24 @@ export class AdminUsersService {
     // Build where clause
     const where: Prisma.UserWhereInput = {};
 
-    // Search filter: name or email (case-insensitive)
+    // Search filter: name, email, department, or role (case-insensitive)
     if (search) {
-      where.OR = [
+      const orConditions: Prisma.UserWhereInput[] = [
         { firstName: { contains: search, mode: 'insensitive' } },
         { lastName: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
+        { department: { contains: search, mode: 'insensitive' } },
       ];
+
+      // Match search term against role enum values (e.g. "employee" matches EMPLOYEE)
+      const matchingRoles = Object.values(UserRole).filter((role) =>
+        role.toLowerCase().includes(search.toLowerCase()),
+      );
+      if (matchingRoles.length > 0) {
+        orConditions.push({ role: { in: matchingRoles } });
+      }
+
+      where.OR = orConditions;
     }
 
     // Role filter
@@ -472,6 +483,10 @@ export class AdminUsersService {
         return [{ email: order }];
       case 'role':
         return [{ role: order }];
+      case 'department':
+        return [{ department: order }];
+      case 'status':
+        return [{ isActive: order }];
       case 'lastLogin':
         return [{ lastLoginAt: order }];
       case 'createdAt':

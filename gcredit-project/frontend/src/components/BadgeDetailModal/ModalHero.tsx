@@ -8,6 +8,7 @@ interface ModalHeroProps {
   issuedAt: string;
   category: string;
   visibility?: 'PUBLIC' | 'PRIVATE';
+  issuerName?: string;
 }
 
 const ModalHero: React.FC<ModalHeroProps> = ({
@@ -17,6 +18,7 @@ const ModalHero: React.FC<ModalHeroProps> = ({
   issuedAt,
   category,
   visibility = 'PUBLIC',
+  issuerName,
 }) => {
   const getStatusConfig = (status: BadgeStatus) => {
     switch (status) {
@@ -86,6 +88,11 @@ const ModalHero: React.FC<ModalHeroProps> = ({
             <p className="text-sm">
               <span className="font-semibold">Issued:</span> {formattedDate}
             </p>
+            {issuerName && (
+              <p className="text-sm">
+                <span className="font-semibold">Issued by:</span> {issuerName}
+              </p>
+            )}
           </div>
         </div>
       </div>

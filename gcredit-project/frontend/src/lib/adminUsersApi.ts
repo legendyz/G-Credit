@@ -40,7 +40,7 @@ export interface AdminUsersQueryParams {
   search?: string;
   roleFilter?: UserRole;
   statusFilter?: boolean;
-  sortBy?: 'name' | 'email' | 'role' | 'lastLogin' | 'createdAt';
+  sortBy?: 'name' | 'email' | 'role' | 'department' | 'status' | 'lastLogin' | 'createdAt';
   sortOrder?: 'asc' | 'desc';
   cursor?: string;
 }

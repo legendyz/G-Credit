@@ -264,6 +264,11 @@ const BadgeDetailModal: React.FC = () => {
                   issuedAt={badge.issuedAt}
                   category={badge.template.category}
                   visibility={localVisibility}
+                  issuerName={
+                    badge.issuer?.firstName || badge.issuer?.lastName
+                      ? `${badge.issuer.firstName || ''} ${badge.issuer.lastName || ''}`.trim()
+                      : undefined
+                  }
                 />
 
                 {/* AC 4.4: Badge Info */}

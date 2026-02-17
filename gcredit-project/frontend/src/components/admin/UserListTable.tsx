@@ -45,7 +45,7 @@ interface UserListTableProps {
   onSort: (field: string) => void;
 }
 
-type SortField = 'name' | 'email' | 'role' | 'lastLogin' | 'createdAt';
+type SortField = 'name' | 'email' | 'role' | 'department' | 'status' | 'lastLogin' | 'createdAt';
 
 /** Sort header component (extracted to avoid creating components during render) */
 function SortHeader({
@@ -335,13 +335,18 @@ export function UserListTable({
                 Role
               </SortHeader>
               {!isTablet && (
-                <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+                <SortHeader
+                  field="department"
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSort={handleSort}
+                >
                   Department
-                </th>
+                </SortHeader>
               )}
-              <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
+              <SortHeader field="status" sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort}>
                 Status
-              </th>
+              </SortHeader>
               <SortHeader
                 field="lastLogin"
                 sortBy={sortBy}
