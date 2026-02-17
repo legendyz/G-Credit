@@ -10,7 +10,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { Badge as BadgeType, BadgeQueryParams } from '@/lib/badgesApi';
+import type { Badge as BadgeType } from '@/lib/badgesApi';
 import { BadgeStatus, getAllBadges, getIssuedBadges } from '@/lib/badgesApi';
 import { RevokeBadgeModal } from '@/components/admin/RevokeBadgeModal';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,9 @@ import {
   Clock,
   XCircle,
   PlusCircle,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
 } from 'lucide-react';
 import { useSkills } from '@/hooks/useSkills';
 import { useBadgeSearch } from '@/hooks/useBadgeSearch';
@@ -42,6 +45,25 @@ interface BadgeManagementPageProps {
 
 const PAGE_SIZE = 10;
 
+/** Sortable column fields */
+type SortField = 'badge' | 'recipient' | 'issuedBy' | 'issuedAt' | 'status';
+type SortDirection = 'asc' | 'desc';
+
+const STATUS_ORDER: Record<string, number> = {
+  [BadgeStatus.CLAIMED]: 0,
+  [BadgeStatus.PENDING]: 1,
+  [BadgeStatus.EXPIRED]: 2,
+  [BadgeStatus.REVOKED]: 3,
+};
+
+const SORT_LABELS: Record<SortField, string> = {
+  badge: 'Badge',
+  recipient: 'Recipient',
+  issuedBy: 'Issued By',
+  issuedAt: 'Issued On',
+  status: 'Status',
+};
+
 /**
  * Format date for display
  */
@@ -58,6 +80,30 @@ function formatDate(dateString: string): string {
  */
 function getRecipientName(badge: BadgeType): string {
   const { firstName, lastName, email } = badge.recipient;
+  if (firstName || lastName) {
+    return `${firstName || ''} ${lastName || ''}`.trim();
+  }
+  return email;
+}
+
+/**
+ * Get issuer display name
+ */
+function getIssuerName(badge: BadgeType): string {
+  if (!badge.issuer) return 'Unknown';
+  const { firstName, lastName, email } = badge.issuer;
+  if (firstName || lastName) {
+    return `${firstName || ''} ${lastName || ''}`.trim();
+  }
+  return email;
+}
+
+/**
+ * Get revoker display name
+ */
+function getRevokerName(badge: BadgeType): string | null {
+  if (!badge.revoker) return null;
+  const { firstName, lastName, email } = badge.revoker;
   if (firstName || lastName) {
     return `${firstName || ''} ${lastName || ''}`.trim();
   }
@@ -117,22 +163,61 @@ export function BadgeManagementPage({
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedBadge, setSelectedBadge] = useState<BadgeType | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
-  // Fetch all badges for client-side filtering
-  const queryParams: BadgeQueryParams = useMemo(
-    () => ({
-      page: currentPage,
-      limit: PAGE_SIZE,
-    }),
-    [currentPage]
+  // Toggle sort on column click: asc → desc → clear
+  const handleSort = useCallback(
+    (field: SortField) => {
+      setCurrentPage(1);
+      if (sortField !== field) {
+        // New column: start ascending
+        setSortField(field);
+        setSortDirection('asc');
+      } else if (sortDirection === 'asc') {
+        // Same column, was asc: switch to desc
+        setSortDirection('desc');
+      } else {
+        // Same column, was desc: clear sort
+        setSortField(null);
+        setSortDirection('asc');
+      }
+    },
+    [sortField, sortDirection]
   );
 
+  // Fetch ALL badges across pages for client-side sorting, filtering, and pagination
+  const fetchAllBadges = useCallback(async (): Promise<BadgeType[]> => {
+    const fetchFn = userRole === 'ADMIN' ? getAllBadges : getIssuedBadges;
+    const allBadges: BadgeType[] = [];
+    let page = 1;
+    let hasMore = true;
+
+    while (hasMore) {
+      const result = await fetchFn({ page, limit: 100 });
+      allBadges.push(...result.data);
+      hasMore = result.meta.hasNextPage;
+      page++;
+    }
+    return allBadges;
+  }, [userRole]);
+
   // Fetch badges - Admin sees all, Issuer sees own, Manager sees department badges
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['badges', userRole, queryParams],
-    queryFn: () =>
-      userRole === 'ADMIN' ? getAllBadges(queryParams) : getIssuedBadges(queryParams),
+  const {
+    data: allBadges,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ['badges', userRole, 'all'],
+    queryFn: fetchAllBadges,
   });
+
+  // Wrap in a shape compatible with rest of component
+  const data = useMemo(() => {
+    if (!allBadges) return undefined;
+    return { data: allBadges, meta: { total: allBadges.length } };
+  }, [allBadges]);
 
   // Fetch skills for filter dropdown (Story 8.2 AC2)
   const { data: skills = [] } = useSkills();
@@ -222,8 +307,35 @@ export function BadgeManagementPage({
   const displayBadges = useMemo(() => {
     if (!data?.data) return [];
     const filteredIds = new Set(filteredBadges.map((b) => b.id));
-    return data.data.filter((badge) => filteredIds.has(badge.id));
-  }, [data, filteredBadges]);
+    const result = data.data.filter((badge) => filteredIds.has(badge.id));
+
+    // Apply client-side sorting
+    if (sortField) {
+      result.sort((a, b) => {
+        let cmp = 0;
+        switch (sortField) {
+          case 'badge':
+            cmp = a.template.name.localeCompare(b.template.name);
+            break;
+          case 'recipient':
+            cmp = getRecipientName(a).localeCompare(getRecipientName(b));
+            break;
+          case 'issuedBy':
+            cmp = getIssuerName(a).localeCompare(getIssuerName(b));
+            break;
+          case 'issuedAt':
+            cmp = new Date(a.issuedAt).getTime() - new Date(b.issuedAt).getTime();
+            break;
+          case 'status':
+            cmp = (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99);
+            break;
+        }
+        return sortDirection === 'desc' ? -cmp : cmp;
+      });
+    }
+
+    return result;
+  }, [data, filteredBadges, sortField, sortDirection]);
 
   // Check if user can revoke a specific badge
   const canRevokeBadge = useCallback(
@@ -268,23 +380,16 @@ export function BadgeManagementPage({
     handleModalClose();
   }, [queryClient, handleModalClose]);
 
-  // Pagination using backend meta (server-side pagination)
-  const serverTotal = data?.meta?.total ?? 0;
-  const serverTotalPages = data?.meta?.totalPages ?? 1;
-  // When client-side filters are active, use filtered count; otherwise use server total
-  const displayTotal = hasFilters ? displayBadges.length : serverTotal;
-  const totalPages = hasFilters ? Math.ceil(displayTotal / PAGE_SIZE) || 1 : serverTotalPages;
+  // Client-side pagination over sorted/filtered results
+  const displayTotal = displayBadges.length;
+  const totalPages = Math.ceil(displayTotal / PAGE_SIZE) || 1;
   const canGoBack = currentPage > 1;
   const canGoForward = currentPage < totalPages;
 
-  // Display badges: when filters active, paginate client-side; otherwise use server-paginated data
   const paginatedBadges = useMemo(() => {
-    if (hasFilters) {
-      const start = (currentPage - 1) * PAGE_SIZE;
-      return displayBadges.slice(start, start + PAGE_SIZE);
-    }
-    return displayBadges;
-  }, [displayBadges, currentPage, hasFilters]);
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return displayBadges.slice(start, start + PAGE_SIZE);
+  }, [displayBadges, currentPage]);
 
   return (
     <div className="min-h-screen">
@@ -376,6 +481,38 @@ export function BadgeManagementPage({
               </div>
             ) : (
               <>
+                {/* Mobile Sort Selector */}
+                <div className="md:hidden flex items-center gap-2 px-4 py-2 border-b border-neutral-200 bg-neutral-50">
+                  <span className="text-xs text-neutral-500">Sort by:</span>
+                  <select
+                    value={sortField ? `${sortField}-${sortDirection}` : ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (!val) {
+                        setSortField(null);
+                        setSortDirection('asc');
+                      } else {
+                        const [field, dir] = val.split('-') as [SortField, SortDirection];
+                        setSortField(field);
+                        setSortDirection(dir);
+                      }
+                      setCurrentPage(1);
+                    }}
+                    className="text-xs border border-neutral-300 rounded px-2 py-1.5 bg-white text-neutral-700 min-h-[36px]"
+                    aria-label="Sort badges"
+                  >
+                    <option value="">Default</option>
+                    {(Object.entries(SORT_LABELS) as [SortField, string][]).map(
+                      ([field, label]) => (
+                        <optgroup key={field} label={label}>
+                          <option value={`${field}-asc`}>{label} ↑</option>
+                          <option value={`${field}-desc`}>{label} ↓</option>
+                        </optgroup>
+                      )
+                    )}
+                  </select>
+                </div>
+
                 {/* Mobile Card Layout (< 768px) - Story 8.5 AC2 */}
                 <div className="md:hidden divide-y divide-neutral-200">
                   {paginatedBadges.map((badge) => {
@@ -402,7 +539,7 @@ export function BadgeManagementPage({
                               {getRecipientName(badge)}
                             </div>
                             <div className="text-xs text-neutral-500">
-                              {formatDate(badge.issuedAt)}
+                              {formatDate(badge.issuedAt)} · Issued by {getIssuerName(badge)}
                             </div>
                           </div>
                           <StatusBadge status={badge.status} />
@@ -424,9 +561,19 @@ export function BadgeManagementPage({
                             <span className="text-xs text-neutral-400">Revoked</span>
                           ) : null}
                         </div>
-                        {isRevoked && badge.revocationReason && (
-                          <div className="mt-2 text-xs text-neutral-500">
-                            Reason: {badge.revocationReason}
+                        {isRevoked && (
+                          <div className="mt-2 space-y-0.5">
+                            {badge.revocationReason && (
+                              <div className="text-xs text-neutral-500">
+                                Reason: {badge.revocationReason}
+                              </div>
+                            )}
+                            {getRevokerName(badge) && (
+                              <div className="text-xs text-neutral-400">
+                                Revoked by {getRevokerName(badge)}
+                                {badge.revokedAt ? ` on ${formatDate(badge.revokedAt)}` : ''}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -436,21 +583,52 @@ export function BadgeManagementPage({
 
                 {/* Desktop Table (>= 768px) */}
                 <div className="hidden md:block overflow-x-auto">
-                  <table className="w-full">
+                  <table className="w-full table-fixed">
+                    <colgroup>
+                      <col className="w-[22%]" />
+                      <col className="w-[18%]" />
+                      <col className="w-[14%]" />
+                      <col className="w-[12%]" />
+                      <col className="w-[24%]" />
+                      <col className="w-[10%]" />
+                    </colgroup>
                     <thead className="bg-neutral-100">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
-                          Badge
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
-                          Recipient
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
-                          Issued
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
-                          Status
-                        </th>
+                        {(
+                          [
+                            ['badge', 'Badge'],
+                            ['recipient', 'Recipient'],
+                            ['issuedBy', 'Issued By'],
+                            ['issuedAt', 'Issued On'],
+                            ['status', 'Status'],
+                          ] as [SortField, string][]
+                        ).map(([field, label]) => (
+                          <th
+                            key={field}
+                            className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500 cursor-pointer select-none hover:text-neutral-700 hover:bg-neutral-200/50 transition-colors"
+                            onClick={() => handleSort(field)}
+                            aria-sort={
+                              sortField === field
+                                ? sortDirection === 'asc'
+                                  ? 'ascending'
+                                  : 'descending'
+                                : 'none'
+                            }
+                          >
+                            <span className="inline-flex items-center gap-1">
+                              {label}
+                              {sortField === field ? (
+                                sortDirection === 'asc' ? (
+                                  <ArrowUp className="h-3 w-3" />
+                                ) : (
+                                  <ArrowDown className="h-3 w-3" />
+                                )
+                              ) : (
+                                <ArrowUpDown className="h-3 w-3 opacity-30" />
+                              )}
+                            </span>
+                          </th>
+                        ))}
                         <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-neutral-500">
                           Actions
                         </th>
@@ -466,43 +644,54 @@ export function BadgeManagementPage({
                               isRevoked ? 'bg-neutral-50 opacity-60' : 'hover:bg-neutral-50'
                             }
                           >
-                            <td className="whitespace-nowrap px-4 py-4">
+                            <td className="px-4 py-4">
                               <div className="flex items-center gap-3">
                                 {badge.template.imageUrl && (
                                   <img
                                     src={badge.template.imageUrl}
                                     alt=""
-                                    className="h-10 w-10 rounded object-cover"
+                                    className="h-10 w-10 rounded object-cover flex-shrink-0"
                                   />
                                 )}
-                                <div>
-                                  <div className="font-medium text-neutral-900">
+                                <div className="min-w-0">
+                                  <div className="font-medium text-neutral-900 truncate">
                                     {badge.template.name}
                                   </div>
                                   {badge.template.category && (
-                                    <div className="text-xs text-neutral-500">
+                                    <div className="text-xs text-neutral-500 truncate">
                                       {badge.template.category}
                                     </div>
                                   )}
                                 </div>
                               </div>
                             </td>
-                            <td className="whitespace-nowrap px-4 py-4">
-                              <div className="text-sm text-neutral-900">
+                            <td className="px-4 py-4">
+                              <div className="text-sm text-neutral-900 truncate">
                                 {getRecipientName(badge)}
                               </div>
-                              <div className="text-xs text-neutral-500">
+                              <div className="text-xs text-neutral-500 truncate">
                                 {badge.recipient.email}
                               </div>
                             </td>
-                            <td className="whitespace-nowrap px-4 py-4 text-sm text-neutral-600">
+                            <td className="px-4 py-4">
+                              <div className="text-sm text-neutral-900 truncate">
+                                {getIssuerName(badge)}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 text-sm text-neutral-600">
                               {formatDate(badge.issuedAt)}
                             </td>
-                            <td className="whitespace-nowrap px-4 py-4">
+                            <td className="px-4 py-4 align-top">
                               <StatusBadge status={badge.status} />
                               {isRevoked && badge.revocationReason && (
-                                <div className="mt-1 text-xs text-neutral-500">
+                                <div className="mt-1 text-xs text-neutral-500 break-words">
                                   {badge.revocationReason}
+                                </div>
+                              )}
+                              {isRevoked && getRevokerName(badge) && (
+                                <div className="mt-1 text-xs text-neutral-400">
+                                  by {getRevokerName(badge)}
+                                  {badge.revokedAt ? ` · ${formatDate(badge.revokedAt)}` : ''}
                                 </div>
                               )}
                             </td>
