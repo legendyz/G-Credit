@@ -41,6 +41,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Chinese Character Fix (11.21):** `方案B` → `Option B` in badge-verification-service
 - **Husky Hooks (11.22):** Pre-commit runs lint-staged + Chinese character check, pre-push mirrors full CI
 
+### UAT Fixes & Enhancements (2026-02-17 ~ 2026-02-18)
+
+Changes discovered and fixed during v1.1.0 UAT testing session.
+
+#### Badge Lifecycle UX (dde4685)
+
+- **Wallet Timeline:** Badge issued date now displayed on timeline cards
+- **Expired Badge Detection:** Dynamic status detection in wallet and detail modal
+- **ExpirationSection:** New component in badge detail modal (gray styling for expired badges)
+- **PENDING Badge:** Download button disabled (must claim first)
+- **Claim Success:** Wallet cache invalidated for instant UI refresh
+- **Verification Page:** PENDING shows amber alert instead of "valid"; EXPIRED badges show isValid=false
+- **Unified Status Colors:** CLAIMED=green, PENDING=amber, EXPIRED=gray, REVOKED=red across all components
+
+#### Badge Management (c24441f)
+
+- **Sortable Column Headers:** Badge, Recipient, Issued By, Issued On, Status — 3-click cycle (asc→desc→clear)
+- **Mobile Sort Dropdown:** Sort field selector for mobile screens
+- **Full-Data Pagination:** Client-side sort/filter over all badges (auto-paginated fetch, 100/page)
+- **Table Layout Fix:** `table-fixed` with `colgroup` widths, prevents horizontal scrolling on long revocation reasons
+- **Sort Indicators:** ArrowUp/ArrowDown/ArrowUpDown icons + `aria-sort` attributes
+
+#### Badge Detail Modal (eb5a7bf)
+
+- **Issued By:** Hero section now shows issuer name (`Issued by: FirstName LastName`)
+
+#### User Management (eb5a7bf)
+
+- **Search Scope Extended:** Now matches role (enum) and department in addition to name/email
+- **Sortable Columns:** Department and Status columns now sortable with 3-click cycle
+- **Search Placeholder:** Updated to "Search by name, email, role, or department..."
+
+#### Analytics — ISSUER Scoping (f431669)
+
+- **Issuer Overview:** ISSUER sees only own-issued badge stats (recipients, badges issued, claim rate)
+- **Role-Based Sections:** Admin-only sections (Templates, Health, Performers, Skills, Activity, CSV Export) hidden for ISSUER
+- **Description Text:** ISSUER sees "Overview of badges you have issued, claim rates, and activity"
+- **Hook Optimization:** `useTopPerformers`, `useSkillsDistribution`, `useRecentActivity` hooks accept `enabled` parameter
+
+#### Template Form UX (91a4976)
+
+- **Badge Type Rename:** "Category" label renamed to "Badge Type" to avoid confusion with Skill Category
+
+#### Other Fixes
+
+- **Search Input Mobile:** Restricted expand behavior to small screens only (d81fc73)
+
 ---
 
 ## [1.0.0] - 2026-02-11 (Sprint 10 — v1.0.0 Release)

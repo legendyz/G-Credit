@@ -548,24 +548,38 @@ curl -b cookies.txt http://localhost:3000/api/admin/users
 
 | 测试组 | 用例数 | Pass | Fail | Skip | 备注 |
 |--------|--------|------|------|------|------|
-| TC-01: 认证与安全 | 12 | | | | |
-| TC-02: Dashboard | 5 | | | | |
-| TC-03: Template 管理 | 10 | | | | |
-| TC-04: Badge 发放 | 8 | | | | |
-| TC-05: Badge 认领 | 6 | | | | |
-| TC-06: Badge Wallet | 7 | | | | |
-| TC-07: Badge 分享 | 6 | | | | |
-| TC-08: 公开验证与嵌入 | 9 | | | | |
-| TC-09: Badge 撤销 | 8 | | | | |
-| TC-10: 批量发放 | 10 | | | | |
-| TC-11: 用户管理 | 12 | | | | |
-| TC-12: Analytics | 9 | | | | |
-| TC-13: 技能管理 | 9 | | | | |
-| TC-14: 里程碑 | 5 | | | | |
-| TC-15: Evidence | 6 | | | | |
-| TC-16: 权限矩阵 | 15 项 | | | | |
-| TC-17: 安全加固 | 16 | | | | |
+| TC-01: 认证与安全 | 12 | | | | 待测 |
+| TC-02: Dashboard | 5 | | | | 待测 |
+| TC-03: Template 管理 | 10 | | | | 待测 |
+| TC-04: Badge 发放 | 8 | | | | 待测 |
+| TC-05: Badge 认领 | 6 | | | | 待测 |
+| TC-06: Badge Wallet | 7 | | | | UAT 中修复: 发放日期显示、过期状态检测、PENDING 下载禁用、Claim 后缓存刷新、统一状态颜色 (dde4685) |
+| TC-07: Badge 分享 | 6 | | | | 待测 |
+| TC-08: 公开验证与嵌入 | 9 | | | | UAT 中修复: PENDING 显示 amber 提示、EXPIRED 显示 isValid=false (dde4685) |
+| TC-09: Badge 撤销 | 8 | | | | 待测 |
+| TC-10: 批量发放 | 10 | | | | 待测 |
+| TC-11: 用户管理 | 12 | | | | UAT 中增强: 搜索支持 role/department、Department/Status 列排序 (eb5a7bf) |
+| TC-12: Analytics | 9 | | | | UAT 中修复: ISSUER 角色作用域 (f431669)。TC-12.8 Pass (by design) |
+| TC-13: 技能管理 | 9 | | | | 待测 |
+| TC-14: 里程碑 | 5 | | | | 待测 |
+| TC-15: Evidence | 6 | | | | 待测 |
+| TC-16: 权限矩阵 | 15 项 | | | | 待测 |
+| TC-17: 安全加固 | 16 | | | | 待测 |
 | **总计** | **153** | | | | |
+
+### UAT Session 修复日志 (2026-02-17 ~ 2026-02-18)
+
+以下问题在 UAT 执行期间发现并立即修复：
+
+| Commit | 修复内容 | 涉及 TC |
+|--------|----------|---------|
+| `dde4685` | Badge 生命周期 UX: 发放日期、过期检测、PENDING 限制、Claim 缓存、验证页状态、统一颜色 | TC-06, TC-08 |
+| `d81fc73` | 搜索输入框移动端展开行为修复 | TC-06 |
+| `4cc58e0` | 开发者入职指南文档 | — |
+| `c24441f` | Badge 管理: 排序列、全量分页、表格布局 | TC-11 (Badge Management) |
+| `eb5a7bf` | Badge 详情 issuer 显示 + 用户管理搜索/排序增强 | TC-06, TC-11 |
+| `f431669` | Analytics ISSUER 角色作用域 + TC-12.8 确认 | TC-12 |
+| `91a4976` | E2E 测试修复 + "Category" → "Badge Type" 重命名 | TC-03, TC-12 |
 
 ### UAT 通过标准
 

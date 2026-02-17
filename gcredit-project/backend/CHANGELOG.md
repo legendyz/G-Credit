@@ -47,6 +47,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CI Quality Gates (11.21):** ESLint `no-console: 'error'` rule, CI Chinese character detection in both BE/FE jobs, `scripts/check-chinese.sh`
 - **Husky Pre-commit Hooks (11.22):** Root `package.json` with Husky v9 + lint-staged, pre-push mirrors full CI pipeline
 
+### UAT Fixes & Enhancements (2026-02-17 ~ 2026-02-18)
+
+Changes discovered and fixed during v1.1.0 UAT testing session.
+
+#### User Management (eb5a7bf)
+
+- **Search Scope Extended:** `admin-users.service.ts` search now matches `role` (enum value matching via `Object.values(UserRole).filter()`) and `department` (contains) in addition to firstName/lastName/email
+- **Sort Enhancements:** Added `department` and `status` to `sortBy` enum in `admin-users-query.dto.ts`; `buildOrderBy` handles department→department, status→isActive mapping
+
+#### Analytics — ISSUER Scoping (f431669)
+
+- **New `getIssuerOverview()` Method:** Analytics service returns issuer-scoped badge stats (distinct recipients, own-issued badges, claim rate)
+- **Controller Update:** `system-overview` endpoint changed from `@Roles('ADMIN')` to `@Roles('ADMIN', 'ISSUER')`; routes to `getIssuerOverview()` for ISSUER role
+- **Cache Fix:** Removed fixed `@CacheKey` from system-overview (was serving identical cached data regardless of user role)
+- **E2E Test Update:** `analytics.e2e-spec.ts` updated — ISSUER now expects 200 (scoped data) instead of 403
+
+#### Developer Experience (4cc58e0)
+
+- **Developer Onboarding Guide:** New `docs/development/developer-onboarding-guide.md` for new team members
+
 ---
 
 ## [1.0.0] - 2026-02-11 (Sprint 10 — v1.0.0 Release)
