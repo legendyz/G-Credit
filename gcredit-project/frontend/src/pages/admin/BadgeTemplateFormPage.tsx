@@ -161,7 +161,7 @@ export function BadgeTemplateFormPage() {
       return;
     }
     if (!category) {
-      toast.error('Please select a category');
+      toast.error('Please select a badge type');
       return;
     }
     if (validityPeriod && (Number(validityPeriod) < 1 || Number(validityPeriod) > 3650)) {
@@ -370,10 +370,10 @@ export function BadgeTemplateFormPage() {
               />
             </div>
 
-            {/* Category */}
+            {/* Badge Type */}
             <div className="space-y-2">
               <Label htmlFor="category" className="text-body font-medium text-neutral-700">
-                Category <span className="text-error">*</span>
+                Badge Type <span className="text-error">*</span>
               </Label>
               <Select
                 value={category}
@@ -381,7 +381,7 @@ export function BadgeTemplateFormPage() {
                 disabled={isReadOnly}
               >
                 <SelectTrigger id="category" className="min-h-[44px] focus:ring-brand-500">
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder="Select a badge type" />
                 </SelectTrigger>
                 <SelectContent>
                   {CATEGORIES.map((c) => (

@@ -187,7 +187,7 @@ describe('BadgeTemplateFormPage', () => {
       const submitBtn = screen.getByRole('button', { name: /create template/i });
       await user.click(submitBtn);
 
-      expect(toast.error).toHaveBeenCalledWith('Please select a category');
+      expect(toast.error).toHaveBeenCalledWith('Please select a badge type');
     });
 
     it('shows validation error for invalid validity period', async () => {
