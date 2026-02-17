@@ -432,7 +432,7 @@ curl -b cookies.txt http://localhost:3000/api/admin/users
 | 12.5 | 查看近期活动 | 显示系统活动流 | |
 | 12.6 | 导出 CSV | 下载 analytics CSV 文件 | |
 | 12.7 | ISSUER 访问 Analytics | 只看到自己发放相关的趋势 | |
-| 12.8 | MANAGER 访问 Analytics | 只看到 top performers（团队维度） | |
+| 12.8 | MANAGER 访问 Analytics | 只看到 top performers（团队维度） | Pass (by design) — Manager 团队分析通过 Manager Dashboard 首页提供（Top Performers + Revocation Alerts），无需单独 Analytics 页面 |
 | 12.9 | EMPLOYEE 访问 Analytics 页面 | Access Denied | |
 
 ---

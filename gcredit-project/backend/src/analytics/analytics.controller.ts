@@ -43,24 +43,27 @@ export class AnalyticsController {
 
   /**
    * AC1: System Overview API
-   * Returns system-wide statistics for Admin dashboard
+   * Returns system-wide statistics for Admin, issuer-scoped stats for Issuer
    */
   @Get('system-overview')
-  @Roles('ADMIN')
-  @CacheKey('analytics:system-overview')
-  @CacheTTL(CACHE_TTL_15_MIN)
+  @Roles('ADMIN', 'ISSUER')
   @ApiOperation({
     summary: 'Get system overview statistics',
     description:
-      'Returns user counts, badge statistics, template counts, and system health. Admin only.',
+      'Returns user counts, badge statistics, template counts, and system health. Admin sees system-wide; Issuer sees own-issued badges only.',
   })
   @ApiResponse({
     status: 200,
     description: 'System overview statistics',
     type: SystemOverviewDto,
   })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
-  async getSystemOverview(): Promise<SystemOverviewDto> {
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  async getSystemOverview(
+    @CurrentUser() user: { userId: string; role: string },
+  ): Promise<SystemOverviewDto> {
+    if (user.role === 'ISSUER') {
+      return this.analyticsService.getIssuerOverview(user.userId);
+    }
     return this.analyticsService.getSystemOverview();
   }
 
