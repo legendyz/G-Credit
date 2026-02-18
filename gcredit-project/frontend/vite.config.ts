@@ -16,6 +16,7 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
+        cookieDomainRewrite: 'localhost', // Ensure dev cookies work correctly
       },
     },
   },
@@ -31,7 +32,6 @@ export default defineConfig({
             '@radix-ui/react-slot',
           ],
           'query-vendor': ['@tanstack/react-query'],
-          'animation-vendor': ['framer-motion'],
           'utils-vendor': ['date-fns', 'clsx', 'tailwind-merge', 'class-variance-authority'],
         },
       },

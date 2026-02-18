@@ -300,6 +300,11 @@ const groupBadgesByDate = (badges: Badge[]) => {
   - 🟡 Pending: Yellow background (#FFF4CE), Orange text (#F7630C)
   - 🚫 Revoked: Gray background (#F3F2F1), Gray text (#605E5C)
 
+> **⚠️ UX Design Change (Sprint 7 → Sprint 11):**
+> - **REVOKED:** 原始设计为灰色，Sprint 7 Story 9.3 决定改为**红色**（`bg-red-100 text-red-800`）。撤销是重要的凭证状态变更，需要显著的视觉警告而非低调的灰色处理。包括红色状态标签、红色 "REVOKED" 横幅和红色撤销详情区域。
+> - **EXPIRED:** 原始设计未包含此状态。Sprint 11 新增，使用**灰色**（`bg-gray-100 text-gray-800`）。灰色表达“不再活跃”的中性语义（Sprint 7 UX Review: "Expired = neutral, expected lifecycle event"），与 PENDING 的琥珀色（“需要用户操作”）明确区分。包括灰色状态标签、灰色 "EXPIRED" 横幅和灰色过期日期提示。
+> - **PENDING 时间线圆点:** 原始设计指定 `#FFB900 (Gold)` + pulse 动画。实现使用 Tailwind `bg-amber-600`（色值接近 ≈ `#d97706`），未实现 pulse 动画（装饰性细节，不影响功能）。
+
 **Visibility Indicator:**
 - Icon + Text: 🌐 Public / 🔒 Internal
 - Font: 12px, Regular, Neutral-500
@@ -307,9 +312,11 @@ const groupBadgesByDate = (badges: Badge[]) => {
 
 **Actions Column:**
 - **View Details Icon:** 👁️ (Eye icon, 20x20px)
-- **Download Icon:** ⬇️ (Download icon, 20x20px)
+- **Download Icon:** ⬇️ (Download icon, 20x20px) - only for claimed badges
 - **Share Icon:** 🔗 (Link icon, 20x20px) - only for claimed badges
 - **Claim Button:** Only for pending badges (Primary-600 button, 100px width)
+
+> **⚠️ UX Design Change (2026-02-17):** Download originally had no status restriction. Revised to match Share behavior — both Download and Share are disabled for PENDING badges. Rationale: unclaimed badges are not yet "owned" by the user; downloading a baked PNG with embedded Open Badges assertion for an unclaimed credential is semantically incorrect and could cause confusion. Users must claim first, then download/share.
 
 **Hover State:**
 - Card: Elevate to shadow-elevation-2

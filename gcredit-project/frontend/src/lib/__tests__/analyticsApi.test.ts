@@ -16,20 +16,9 @@ import {
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-const mockLocalStorage = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-  length: 0,
-  key: vi.fn(),
-};
-Object.defineProperty(window, 'localStorage', { value: mockLocalStorage });
-
 describe('analyticsApi', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockLocalStorage.getItem.mockReturnValue('test-access-token');
   });
 
   afterEach(() => {
@@ -67,8 +56,8 @@ describe('analyticsApi', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('/analytics/system-overview'),
         expect.objectContaining({
+          credentials: 'include',
           headers: expect.objectContaining({
-            Authorization: 'Bearer test-access-token',
             'Content-Type': 'application/json',
           }),
         })
@@ -266,10 +255,8 @@ describe('analyticsApi', () => {
 
   // ─── Auth header behavior ─────────────────────────────────────────
 
-  describe('auth headers', () => {
-    it('sends request without Authorization when no token', async () => {
-      mockLocalStorage.getItem.mockReturnValue(null);
-
+  describe('auth credentials', () => {
+    it('sends request with credentials: include (cookie-based auth)', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve({}),
@@ -277,6 +264,12 @@ describe('analyticsApi', () => {
 
       await getSystemOverview();
 
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          credentials: 'include',
+        })
+      );
       const calledHeaders = mockFetch.mock.calls[0][1].headers;
       expect(calledHeaders.Authorization).toBeUndefined();
       expect(calledHeaders['Content-Type']).toBe('application/json');

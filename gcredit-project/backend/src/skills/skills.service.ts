@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { CreateSkillDto, UpdateSkillDto } from './dto/skill.dto';
@@ -10,6 +11,7 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class SkillsService {
+  private readonly logger = new Logger(SkillsService.name);
   constructor(private prisma: PrismaService) {}
 
   /**

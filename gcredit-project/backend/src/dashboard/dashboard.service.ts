@@ -23,6 +23,55 @@ import {
 export class DashboardService {
   private readonly logger = new Logger(DashboardService.name);
 
+  /**
+   * Convert audit log action + metadata into human-readable description.
+   * Story 11.24 AC-C1: Admin Dashboard shows readable activity descriptions.
+   */
+  static formatActivityDescription(
+    action: string,
+    metadata: Record<string, unknown> | null,
+  ): string {
+    if (!metadata) return action;
+
+    const s = (key: string): string => {
+      const val = metadata[key];
+      return typeof val === 'string' ? val : '';
+    };
+
+    // Build the description; fall back to raw action if critical fields are empty
+    // (Code Review #3: avoid emitting strings like 'Badge "" issued to ')
+    switch (action) {
+      case 'ISSUED': {
+        const name = s('badgeName');
+        const email = s('recipientEmail');
+        return name && email ? `Badge "${name}" issued to ${email}` : action;
+      }
+      case 'CLAIMED':
+        return `Badge status changed: ${s('oldStatus') || '?'} → ${s('newStatus') || '?'}`;
+      case 'REVOKED': {
+        const name = s('badgeName');
+        return name
+          ? `Revoked "${name}" — ${s('reason') || 'no reason given'}`
+          : action;
+      }
+      case 'NOTIFICATION_SENT': {
+        const type = s('notificationType');
+        const email = s('recipientEmail');
+        return type && email ? `${type} notification sent to ${email}` : action;
+      }
+      case 'CREATED': {
+        const name = s('templateName');
+        return name ? `Template "${name}" created` : action;
+      }
+      case 'UPDATED': {
+        const name = s('templateName');
+        return name ? `Template "${name}" updated` : action;
+      }
+      default:
+        return action;
+    }
+  }
+
   constructor(private readonly prisma: PrismaService) {}
 
   /**
@@ -398,7 +447,10 @@ export class DashboardService {
     const recentActivity: AdminActivityDto[] = recentActivityRaw.map((log) => ({
       id: log.id,
       type: log.action,
-      description: log.metadata ? JSON.stringify(log.metadata) : log.action,
+      description: DashboardService.formatActivityDescription(
+        log.action,
+        log.metadata as Record<string, unknown>,
+      ),
       actorName: actorMap.get(log.actorId) || 'System',
       timestamp: log.timestamp,
     }));

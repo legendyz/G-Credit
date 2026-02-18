@@ -76,13 +76,14 @@ describe('AdminUsersController', () => {
   describe('findAll', () => {
     it('should return paginated user list', async () => {
       const mockResponse = {
-        users: [mockUser],
-        pagination: {
+        data: [mockUser],
+        meta: {
           total: 1,
           page: 1,
           limit: 25,
           totalPages: 1,
-          hasMore: false,
+          hasNextPage: false,
+          hasPreviousPage: false,
         },
       };
       service.findAll.mockResolvedValue(mockResponse);
@@ -95,13 +96,14 @@ describe('AdminUsersController', () => {
 
     it('should pass query parameters to service', async () => {
       service.findAll.mockResolvedValue({
-        users: [],
-        pagination: {
+        data: [],
+        meta: {
           total: 0,
           page: 1,
           limit: 25,
           totalPages: 0,
-          hasMore: false,
+          hasNextPage: false,
+          hasPreviousPage: false,
         },
       });
 

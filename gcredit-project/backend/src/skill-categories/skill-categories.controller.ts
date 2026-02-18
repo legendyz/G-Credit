@@ -10,6 +10,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -32,6 +33,7 @@ import { UserRole } from '@prisma/client';
 @ApiTags('Skill Categories')
 @Controller('api/skill-categories')
 export class SkillCategoriesController {
+  private readonly logger = new Logger(SkillCategoriesController.name);
   constructor(
     private readonly skillCategoriesService: SkillCategoriesService,
   ) {}

@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PageTemplate } from '@/components/layout/PageTemplate';
-import { API_BASE_URL } from '@/lib/apiConfig';
+import { apiFetch } from '@/lib/apiFetch';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from 'sonner';
 import { Loader2, User, Lock, Eye, EyeOff } from 'lucide-react';
@@ -29,13 +29,6 @@ interface ProfileData {
   lastLoginAt: string | null;
   createdAt: string;
   updatedAt: string;
-}
-
-function getAuthHeader(): Record<string, string> {
-  const token = localStorage.getItem('accessToken');
-  return token
-    ? { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
-    : { 'Content-Type': 'application/json' };
 }
 
 export function ProfilePage() {
@@ -69,9 +62,7 @@ export function ProfilePage() {
     setProfileLoading(true);
     setProfileError('');
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
-        headers: getAuthHeader(),
-      });
+      const response = await apiFetch('/auth/profile');
       if (!response.ok) {
         throw new Error('Failed to load profile');
       }
@@ -95,9 +86,8 @@ export function ProfilePage() {
     setProfileSaving(true);
     setProfileError('');
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+      const response = await apiFetch('/auth/profile', {
         method: 'PATCH',
-        headers: getAuthHeader(),
         body: JSON.stringify({
           firstName: firstName.trim(),
           lastName: lastName.trim(),
@@ -162,9 +152,8 @@ export function ProfilePage() {
 
     setPasswordSaving(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
+      const response = await apiFetch('/auth/change-password', {
         method: 'POST',
-        headers: getAuthHeader(),
         body: JSON.stringify({
           currentPassword,
           newPassword,

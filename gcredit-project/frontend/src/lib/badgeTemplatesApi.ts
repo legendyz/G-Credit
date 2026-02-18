@@ -3,10 +3,17 @@
  * Story 10.8 BUG-003: Badge Template CRUD UI
  */
 
-import { API_BASE_URL } from './apiConfig';
+import { apiFetch } from './apiFetch';
 
 export type TemplateStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
 export type TemplateCategory = 'achievement' | 'skill' | 'certification' | 'participation';
+
+export interface TemplateUser {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+}
 
 export interface BadgeTemplate {
   id: string;
@@ -19,6 +26,9 @@ export interface BadgeTemplate {
   validityPeriod?: number | null;
   status: TemplateStatus;
   createdBy: string;
+  creator?: TemplateUser;
+  updatedBy?: string | null;
+  updater?: TemplateUser | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -28,20 +38,6 @@ export interface BadgeTemplateListResponse {
   total: number;
   page: number;
   limit: number;
-}
-
-function getAuthHeader(): HeadersInit {
-  const token = localStorage.getItem('accessToken');
-  return {
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
-
-function getJsonAuthHeader(): HeadersInit {
-  return {
-    ...getAuthHeader(),
-    'Content-Type': 'application/json',
-  };
 }
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -54,18 +50,14 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
 /** Get all templates (ADMIN/ISSUER — includes DRAFT, ACTIVE, ARCHIVED) */
 export async function getAllTemplates(): Promise<BadgeTemplate[]> {
-  const response = await fetch(`${API_BASE_URL}/badge-templates/all`, {
-    headers: getJsonAuthHeader(),
-  });
+  const response = await apiFetch('/badge-templates/all');
   const data = await handleResponse<BadgeTemplate[] | BadgeTemplateListResponse>(response);
   return Array.isArray(data) ? data : data.data || [];
 }
 
 /** Get a single template by ID */
 export async function getTemplateById(id: string): Promise<BadgeTemplate> {
-  const response = await fetch(`${API_BASE_URL}/badge-templates/${id}`, {
-    headers: getJsonAuthHeader(),
-  });
+  const response = await apiFetch(`/badge-templates/${id}`);
   return handleResponse<BadgeTemplate>(response);
 }
 
@@ -97,9 +89,8 @@ export async function createTemplate(
     formData.append('image', image);
   }
 
-  const response = await fetch(`${API_BASE_URL}/badge-templates`, {
+  const response = await apiFetch('/badge-templates', {
     method: 'POST',
-    headers: getAuthHeader(),
     body: formData,
   });
   return handleResponse<BadgeTemplate>(response);
@@ -123,8 +114,10 @@ export async function updateTemplate(
   if (data.name !== undefined) formData.append('name', data.name);
   if (data.description !== undefined) formData.append('description', data.description);
   if (data.category !== undefined) formData.append('category', data.category);
-  // Always send skillIds as JSON string for MultipartJsonInterceptor
-  formData.append('skillIds', JSON.stringify(data.skillIds || []));
+  // Only send skillIds when explicitly provided (avoid clearing on status-only updates)
+  if (data.skillIds !== undefined) {
+    formData.append('skillIds', JSON.stringify(data.skillIds));
+  }
   if (data.issuanceCriteria !== undefined) {
     formData.append('issuanceCriteria', JSON.stringify(data.issuanceCriteria));
   }
@@ -139,9 +132,8 @@ export async function updateTemplate(
     formData.append('image', image);
   }
 
-  const response = await fetch(`${API_BASE_URL}/badge-templates/${id}`, {
+  const response = await apiFetch(`/badge-templates/${id}`, {
     method: 'PATCH',
-    headers: getAuthHeader(),
     body: formData,
   });
   return handleResponse<BadgeTemplate>(response);
@@ -149,9 +141,8 @@ export async function updateTemplate(
 
 /** Delete a template */
 export async function deleteTemplate(id: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/badge-templates/${id}`, {
+  const response = await apiFetch(`/badge-templates/${id}`, {
     method: 'DELETE',
-    headers: getJsonAuthHeader(),
   });
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Unknown error' }));

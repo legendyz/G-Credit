@@ -29,6 +29,7 @@ const IssueBadgePage = lazy(() =>
 );
 const ClaimBadgePage = lazy(() => import('@/pages/ClaimBadgePage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
+const AccessDeniedPage = lazy(() => import('@/pages/AccessDeniedPage'));
 const BadgeTemplateListPage = lazy(() => import('@/pages/admin/BadgeTemplateListPage'));
 const BadgeTemplateFormPage = lazy(() => import('@/pages/admin/BadgeTemplateFormPage'));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
@@ -187,6 +188,9 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            {/* Story 11.19: 403 Access Denied Page */}
+            <Route path="/access-denied" element={<AccessDeniedPage />} />
 
             {/* Catch-all: 404 Not Found */}
             <Route path="*" element={<NotFoundPage />} />

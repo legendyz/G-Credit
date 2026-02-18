@@ -2,10 +2,10 @@
 
 **Project:** G-Credit Digital Credentialing System  
 **Purpose:** Capture key learnings and establish best practices for efficient development  
-**Last Updated:** 2026-02-11 (Sprint 10 Complete — v1.0.0 Released)  
+**Last Updated:** 2026-02-15 (Sprint 11 — Lesson 43: API Contract Changes Need E2E Impact Check)  
 **Status:** Living document - update after each Sprint Retrospective  
-**Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 → Sprint 6 → Sprint 7 → Sprint 8 → Sprint 9 → Sprint 10 (Complete) + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
-**Total Lessons:** 36 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 8, Sprint 7: 3, Sprint 8: 3, Sprint 9: 3, Sprint 10: 3)
+**Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 → Sprint 6 → Sprint 7 → Sprint 8 → Sprint 9 → Sprint 10 → Sprint 11 (Complete) + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
+**Total Lessons:** 39 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 8, Sprint 7: 3, Sprint 8: 3, Sprint 9: 3, Sprint 10: 3, Sprint 11: 5)
 
 ---
 
@@ -23,10 +23,11 @@
 | Sprint 8 | 12/12 (100%) | 76h | 80h | 95% | ~6.7h/item |
 | Sprint 9 | 5/5 (100%) | 51h | 37h | 73% | ~7.4h/story |
 | Sprint 10 | 12/12 (100%) | 95h | 109h | 87% | ~9.1h/story | ⭐
+| Sprint 11 | 23/23 (100%) | 51.5-65.5h | ~60h | ~92-100% | ~2.6h/story | ⭐
 
 ### Quality Metrics
-- **Test Pass Rate:** 100% (1,061/1,061 tests Sprint 10) ⭐
-- **UAT Pass Rate:** 100% (33/33 tests Sprint 10, 2 rounds) ⭐
+- **Test Pass Rate:** 100% (1,263/1,263 tests Sprint 11) ⭐
+- **UAT Pass Rate:** 100% (33/33 tests Sprint 10, pending Sprint 11 UAT)
 - **Documentation Accuracy:** 95%+ (comprehensive guides created)
 - **Technical Debt:** 56 items tracked (17 P1 resolved Sprint 8, 7 TD resolved Sprint 10) ⭐
 - **Zero Production Bugs:** All issues caught in development/UAT
@@ -74,7 +75,7 @@
   - Lesson 30: Technical Debt Registry as SSOT
 - [Sprint 9 Lessons](#sprint-9-lessons-february-2026) - ESLint Cleanup & TypeScript Gaps (3 lessons) 🆕
   - Lesson 34: `eslint --fix` Strips `as` Type Assertions
-  - Lesson 35: Three TypeScript Compilation Layers in CI
+  - Lesson 35: Local CI Parity — TypeScript, ESLint, and Prettier Each Check Different Things
   - Lesson 36: Replacing `any` Cascades into Test Mocks
 - [Sprint 8 Lessons](#sprint-8-lessons-february-2026) - Production-Ready MVP (3 lessons)
   - Lesson 31: Code Review as DoD Gate
@@ -84,6 +85,11 @@
   - Lesson 37: Jest Asymmetric Matchers Return `any` — Centralized Typed Wrappers
   - Lesson 38: Centralize `eslint-disable` in Utility Files, Not Scattered Across Codebase
   - Lesson 39: UX Spec ≠ Implementation — Design System Foundation Must Be a Sprint 0 Story 🔴
+- [Sprint 11 Lessons](#sprint-11-lessons-february-2026) - Wave Execution, CI/E2E Gaps (5 lessons)
+  - Lesson 40: Local Pre-Push Checks Must Mirror CI Pipeline
+  - Lesson 41: Wave-Based Execution Handles Large Sprints Well
+  - Lesson 42: Service Test Suites Are High-Value Technical Debt Items
+  - Lesson 43: API Response Contract Changes Require E2E Impact Check 🔴
 - [Cross-Sprint Patterns](#cross-sprint-patterns) - 13 patterns
 - [Development Checklists](#development-checklists)
 - [Common Pitfalls](#common-pitfalls-to-avoid)
@@ -1705,11 +1711,12 @@ const rows: CsvRow[] = parse(csvContent);
 
 ---
 
-### 🎯 Lesson 35: Three TypeScript Compilation Layers in CI — Each Has Different Strictness
+### 🎯 Lesson 35: Local CI Parity — TypeScript, ESLint, and Prettier Each Check Different Things
 
 **Category:** 🏗️ Architecture, 🧪 Testing, 📋 Process  
-**Impact:** CRITICAL (129 type errors accumulated undetected across 8 sprints)  
+**Impact:** CRITICAL (129 type errors accumulated undetected across 8 sprints; recurred Sprint 11 with 11 lint/prettier errors on new files)  
 **Sprint Discovered:** Sprint 9, TD-015 SM Acceptance Review  
+**Recurrence:** Sprint 11, Wave 4 (Stories 11.10, 11.11, 11.12) — 2026-02-14  
 **Discovery Date:** 2026-02-07  
 **Related Story:** [TD-017](../../sprints/sprint-9/td-017-tsc-type-errors.md)
 
@@ -1761,15 +1768,51 @@ Total: 138 errors (129 pre-existing + 9 from TD-015)
 2. Source file errors fixed immediately via CI pipeline repair (commits `5deace0`, `769a151`)
 3. Plan: Add `"type-check": "tsc --noEmit"` script to package.json and gate in CI (Sprint 11)
 
+#### Sprint 11 Recurrence (2026-02-14)
+
+**What happened again:** Wave 4 created 3 new spec files (Stories 11.10-11.12) and modified a frontend test file. Local verification ran:
+- `npx jest --forceExit` ✅ (718 tests passed)
+- `npx vitest run` ✅ (541 tests passed)
+- `npx tsc --noEmit` ✅ (0 errors)
+- `npx eslint` on **source files only** ✅
+
+But CI failed with **11 errors and 17 warnings**: `prettier/prettier` formatting violations, `@typescript-eslint/no-require-imports` error — all in the **new spec files** that were never linted locally.
+
+**Why it recurred:** The fix for the original lesson added `tsc --noEmit` to the checklist but the local ESLint check was only run on modified source (non-test) files. Newly created `.spec.ts` files bypassed lint entirely. The verification was **selective** (cherry-picked files) instead of **exhaustive** (all changed files).
+
+**Additional gap identified:**
+
+| Check | Ran locally? | Ran in CI? | Scope |
+|-------|-------------|-----------|-------|
+| `tsc --noEmit` | ✅ | ✅ | All files |
+| `eslint` | ⚠️ Partial | ✅ All files | Only ran on 2 source files, skipped 3 new spec files |
+| `prettier` | ❌ Never | ✅ (via eslint) | Never ran standalone |
+| `jest` | ✅ | ✅ | All test files |
+
 #### Prevention for Future
 
 - **Sprint 0 Rule:** Add `tsc --noEmit` to CI pipeline from day one
 - **Dev Prompt:** Include `npx tsc --noEmit` as verification step in all dev prompts
 - **SM Acceptance:** Always run `npx tsc --noEmit` during story acceptance
 - **New Projects:** Add to project setup checklist: "CI must include tsc --noEmit"
+- **🆕 Pre-commit: Lint ALL changed files, not cherry-picked ones:**
+  ```powershell
+  # Backend: lint all changed/new .ts files (including spec files)
+  cd gcredit-project/backend
+  npx eslint src/ --max-warnings=0    # Full scope, not selective
+  npx prettier --check "src/**/*.ts"  # Explicit prettier check
+  npx tsc --noEmit
+  
+  # Frontend: same pattern
+  cd gcredit-project/frontend
+  npx eslint src/ --max-warnings=0
+  npx prettier --check "src/**/*.{ts,tsx}"
+  npx tsc --noEmit
+  ```
+- **🆕 Rule: New files need MORE scrutiny, not less.** Hand-written code (vs. modified existing code) is most likely to have formatting issues since it wasn't formatted by an editor on save.
 
 #### Key Takeaway
-> A NestJS/TypeScript project has at least 3 TypeScript compilation layers (build, lint, test), each with different strictness. Only `tsc --noEmit` provides full type checking. If it's not in CI, type errors WILL accumulate silently. Add it from Sprint 0.
+> A NestJS/TypeScript project has at least 4 verification layers (build, lint, prettier, tsc), each checking different things. Tests passing gives false confidence — `jest`/`vitest` don't check formatting or lint rules. **Always run `eslint` and `prettier --check` on the FULL `src/` directory before commit, not just on selected files.** New/hand-written files are the most likely to fail formatting checks.
 
 ---
 
@@ -3931,13 +3974,17 @@ Spec Written (Sprint 0) → Assumption: "It'll get done" → 10 sprints pass
 ### ✅ Before Committing Code
 
 ```markdown
-[ ] Run tests (npm test)
-[ ] Check for TypeScript errors (npm run build)
+[ ] Run tests: backend `npx jest --forceExit` + frontend `npx vitest run`
+[ ] TypeScript check: `npx tsc --noEmit` (both backend and frontend)
+[ ] ESLint full scope: `npx eslint src/` (NOT selective files — catches new file issues)
+[ ] Prettier check: `npx prettier --check "src/**/*.ts"` (especially for new/hand-written files)
 [ ] Verify imports use correct paths (no red squiggles in IDE)
 [ ] Update IMPORT-PATHS.md if new pattern introduced
 [ ] Check if documentation needs update
 [ ] Write meaningful commit message
 ```
+
+> ⚠️ **Lesson 35 (Sprint 9 + Sprint 11):** Never lint only selected files. New files are the most likely to fail formatting. Always lint the full `src/` directory.
 
 ### ✅ Sprint Retrospective (Must-Do Items)
 
@@ -4955,8 +5002,218 @@ Created `docs/setup/external-services-setup-guide.md`:
 
 ---
 
-**Last Major Update:** Sprint 10 Story 10.6a (2026-02-09) - UX Spec-to-Implementation Gap (Lesson 39)  
-**Next Review:** Sprint 10 Retrospective  
+**Last Major Update:** Sprint 11 Complete (2026-02-14) - Lessons 35, 40, 41, 42  
+**Next Review:** Sprint 12 Retrospective  
 **Owner:** PM (John) + Dev Team
+
+---
+
+## Sprint 11: Lesson 41 — Wave-Based Execution Handles Large Sprints Well
+
+**Date:** 2026-02-14  
+**Sprint:** 11 (Security & Quality Hardening)  
+**Severity:** Positive — enabled 23 stories in 3 days with zero confusion
+
+### What Happened
+
+23 stories spanning security, code quality, features, and DX were organized into 5 thematic waves:
+- Wave 1: Quick Wins (trivial fixes, confidence builder)
+- Wave 2: Core Security (highest risk, needed careful review)
+- Wave 3: Complex Cross-cutting Features
+- Wave 4: Test Suites + Infrastructure (highest test count growth)
+- Wave 5: Polish + CI Tooling
+
+Each wave followed: dev prompt → implementation → code review → acceptance.
+
+### Root Cause (of Success)
+
+Thematic grouping reduced context switching. Code reviews per wave caught issues early. Acceptance per wave provided clear progress visibility.
+
+### Action Items
+
+1. **[SM] Sprint Planning:** For sprints with >10 stories, always organize into waves
+2. **[SM] Wave sizing:** Aim for 4-5 stories per wave with similar complexity
+3. **[SM] Wave ordering:** Start with quick wins for momentum, end with tooling/DX
+
+### Key Takeaway
+
+> **Wave-based execution = thematic batching + incremental quality gates. It turns a chaotic 23-story sprint into 5 manageable mini-sprints.**
+
+---
+
+## Sprint 11: Lesson 42 — Service Test Suites Are High-Value Technical Debt Items
+
+**Date:** 2026-02-14  
+**Sprint:** 11 (Security & Quality Hardening), Wave 4  
+**Severity:** Positive — 3 services went from 0% to 90%+ coverage
+
+### What Happened
+
+Stories 11.10-11.12 added test suites for 3 critical services that had 0% coverage:
+- `badge-templates.service` (96%+ coverage, 15 test cases)
+- `issuance-criteria-validator.service` (90%+ coverage)
+- `blob-storage.service` (Azure mock tests)
+
+These tests caught edge cases and provided regression safety for business-critical code paths.
+
+### Root Cause
+
+These services were initially built without tests (Sprint 2-3) because velocity was prioritized. The code quality audit in Sprint 11 planning correctly identified them as the highest-value test investment.
+
+### Action Items
+
+1. **[Dev] New services:** Always create test suite alongside service implementation
+2. **[SM] Sprint Planning:** When auditing test coverage, prioritize services with business logic over simple CRUD
+3. **[SM] Estimation:** Service test suites typically take 2-3h each — they’re straightforward but high-value
+
+### Key Takeaway
+
+> **A service test suite at 90%+ coverage takes ~3h to write but provides ongoing regression safety for the life of the project. Always worth the investment.**
+
+---
+
+## Sprint 11: Lesson 40 — Local Pre-Push Checks Must Mirror CI Pipeline
+
+**Date:** 2026-02-14  
+**Sprint:** 11 (Security & Quality Hardening), Wave 2  
+**Severity:** Medium — caused 4 consecutive CI failures on a single push  
+
+### What Happened
+
+Wave 2 完成 5 个安全 Story 后，本地只跑了部分检查就 push，导致 CI 连续失败 4 次：
+
+| CI 轮次 | 失败原因 | 本地遗漏的检查步骤 |
+|---------|---------|-------------------|
+| 1 | ESLint: `require()` import + unsafe-any warnings | 只跑了单文件 `npx eslint file.ts`，没用 `npm run lint`（含 `--max-warnings=0`） |
+| 2 | TypeScript TS1272: `import type` required | 没跑 `npx tsc --noEmit` |
+| 3 | E2E: register 返回格式变了，断言不匹配 | 没跑 E2E 测试 |
+| 4 | E2E: refresh token 唯一约束冲突 | 同上 |
+
+### Root Cause
+
+CI 执行 4 个步骤，本地每次只跑了 1-2 个：
+```
+CI Pipeline:
+1. npm run lint              (ESLint --max-warnings=0)
+2. npx tsc --noEmit          (TypeScript 类型检查)
+3. npm test                  (单元测试)
+4. jest --config e2e         (E2E 测试)
+```
+
+### Action Items
+
+1. **[Dev] 立即生效：** Push 前必须执行完整检查链：
+   ```powershell
+   # Backend
+   cd gcredit-project/backend
+   npm run lint && npx tsc --noEmit && npm test && npx jest --config test/jest-e2e.json
+
+   # Frontend
+   cd gcredit-project/frontend
+   npx prettier --check "src/**/*.{ts,tsx}" && npm test
+   ```
+
+2. **[Scrum Master] 建议：** 将上述检查链写入 `project-context.md` 的开发标准
+
+3. **[Dev] Story 11.22：** 实现 Husky pre-push hook 自动化执行，彻底消除人为遗漏
+
+### Key Takeaway
+
+> **本地检查必须 100% 覆盖 CI 的每个步骤。部分检查 = 假信心。**
+
+---
+
+## Sprint 11: Lesson 43 — API Response Contract Changes Require E2E Impact Check 🔴
+
+**Date:** 2026-02-15  
+**Sprint:** 11 (Security & Quality Hardening), Story 11.25 Cookie Auth Hardening  
+**Severity:** High — 121/158 E2E tests failed in CI, all local checks (lint, tsc, 756 unit tests, 551 FE tests, build) passed  
+**Commit:** `c5ce6ab` (broke CI) → `0aab578` (fixed)
+
+### What Happened
+
+Story 11.25 Task 3 removed `accessToken` and `refreshToken` from the `login()`/`register()`/`refresh()` response bodies (tokens moved to httpOnly cookies only). All local pre-push checks passed — lint ✅, TypeScript ✅, 756 backend unit tests ✅, 551 frontend tests ✅, both builds ✅. But CI's E2E test job failed with **121 of 158 tests red**.
+
+### Root Cause
+
+Two layers of the testing pyramid have fundamentally different visibility:
+
+| Test Layer | Knows about `response.body` change? | Runs locally? |
+|-----------|--------------------------------------|---------------|
+| Unit tests (756) | ❌ No — all mock `AuthService`, never call real HTTP | ✅ Yes (pre-push) |
+| E2E tests (158) | ✅ Yes — `createAndLoginUser()` reads `response.body.accessToken` | ❌ No (CI-only, needs Postgres container) |
+
+The E2E test helper `createAndLoginUser()` in `test/helpers/test-setup.ts` extracted the JWT from `response.body.accessToken`. After Task 3, that field disappeared — token was `undefined` — so every authenticated E2E request failed with 401.
+
+```
+// BEFORE (worked): login returns { accessToken, refreshToken, user }
+const body = response.body as { accessToken: string };
+return { token: body.accessToken };  // ✅ "eyJhbG..."
+
+// AFTER (broken): login returns { user } — tokens only in Set-Cookie
+const body = response.body as { accessToken: string };
+return { token: body.accessToken };  // ❌ undefined
+```
+
+### Why Local Checks Didn't Catch It
+
+1. **Pre-push excludes E2E by design** — E2E tests require a live PostgreSQL container (`test/jest-e2e.json`), not available on developer machines
+2. **Unit tests mock the boundary** — controller unit tests mock `AuthService.login()` and never invoke the real controller method, so they don't see the response shape change
+3. **No contract test existed** — no test verified "login response body must contain field X" at unit level
+
+### Fix Applied
+
+Created `extractCookieToken()` helper to parse JWT from `Set-Cookie` header instead of response body:
+
+```typescript
+export function extractCookieToken(response: request.Response, cookieName: string): string {
+  const raw = response.headers['set-cookie'];
+  const cookies: string[] = Array.isArray(raw) ? raw : typeof raw === 'string' ? [raw] : [];
+  const match = cookies.find((c) => c.startsWith(`${cookieName}=`));
+  return match ? match.split(';')[0].replace(`${cookieName}=`, '') : '';
+}
+```
+
+Updated 3 files: `test-setup.ts`, `analytics.e2e-spec.ts`, `auth-simple.e2e-spec.ts`.
+
+### Action Items
+
+1. **[Dev] 立即生效 — API 响应变更检查清单：**  
+   修改任何 controller 的返回值时，**必须** grep E2E 测试目录中的消费端：
+   ```bash
+   grep -r "body\.accessToken\|body\.refreshToken\|body\.token" test/
+   grep -r "response\.body" test/ | grep -i "<changed-field>"
+   ```
+   在 dev-prompt 中加入 "E2E Impact" 检查项。
+
+2. **[Dev] 短期改进 — Auth contract test：**  
+   为 auth 响应格式写一个 unit 级别的 controller integration test，确保 `Set-Cookie` header 结构符合约定（可在 pre-push 运行，不需要 DB）。
+
+3. **[SM] 流程改进 — dev-prompt 模板更新：**  
+   对涉及 API 响应格式变更的 task，模板中增加必填字段：
+   ```
+   ## E2E Impact Assessment
+   - [ ] Searched `test/` for consumers of changed response fields
+   - [ ] Updated E2E helpers if response contract changed
+   - [ ] If E2E can't run locally: documented which E2E tests are affected
+   ```
+
+4. **[SM/Dev] 中期改进 — 冒烟 E2E 可选步骤：**  
+   考虑将 `auth-simple.e2e-spec.ts`（耗时 ~6s、验证核心 auth 流程）加入 pre-push 的可选步骤（检测到本地 DB 时运行，否则跳过）。
+
+### Classification
+
+| Aspect | Value |
+|--------|-------|
+| **Category** | Testing gap — test pyramid blind spot |
+| **Pattern** | "Green unit tests, red integration tests" — classic mock boundary problem |
+| **Related Lessons** | Lesson 40 (CI parity), Lesson 32 (E2E test isolation) |
+| **Preventable?** | Yes — a simple `grep` of E2E test files would have revealed the dependency |
+| **Cost** | ~1.5h diagnosis + fix + re-push |
+| **Risk of recurrence** | Medium — will happen again whenever API response contracts change without E2E grep |
+
+### Key Takeaway
+
+> **单元测试覆盖率 100% ≠ 安全。当你修改 API 响应契约时，单元测试用 mock 跳过了真实 HTTP 层，只有 E2E 测试才能验证端到端数据流。修改 controller 返回值前，永远先 `grep test/` 找消费端。**
 
 *This is a living document - keep it updated, keep it useful!*

@@ -12,6 +12,7 @@ import { ConfigService } from '@nestjs/config';
 import {
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
   GoneException,
 } from '@nestjs/common';
 import { BadgeStatus } from '@prisma/client';
@@ -57,10 +58,16 @@ describe('BadgeIssuanceService', () => {
     // Interactive transaction: execute callback with tx proxy that delegates to badge mocks
     $transaction: jest.fn(
       async (callback: (tx: unknown) => Promise<unknown>): Promise<unknown> => {
-        const tx: { badge: { create: jest.Mock; update: jest.Mock } } = {
+        const tx: {
+          badge: { create: jest.Mock; update: jest.Mock };
+          auditLog: { create: jest.Mock };
+        } = {
           badge: {
             create: mockPrismaService.badge.create,
             update: mockPrismaService.badge.update,
+          },
+          auditLog: {
+            create: jest.fn().mockResolvedValue({}),
           },
         };
         return callback(tx);
@@ -505,7 +512,6 @@ describe('BadgeIssuanceService', () => {
         ...mockPendingBadge,
         status: BadgeStatus.CLAIMED,
         claimedAt: new Date(),
-        claimToken: null,
       };
 
       mockPrismaService.badge.findUnique.mockResolvedValue(mockPendingBadge);
@@ -527,7 +533,6 @@ describe('BadgeIssuanceService', () => {
         data: {
           status: BadgeStatus.CLAIMED,
           claimedAt: anyDate(),
-          claimToken: null,
         },
         include: {
           template: true,
@@ -553,13 +558,35 @@ describe('BadgeIssuanceService', () => {
       });
     });
 
-    it('should throw BadRequestException if already claimed', async () => {
+    it('should throw ForbiddenException if authenticated user is not the recipient', async () => {
       // Arrange
+      const mockPendingBadge = {
+        id: 'badge-uuid',
+        status: BadgeStatus.PENDING,
+        issuedAt: new Date(),
+        expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        claimToken: mockClaimToken,
+        recipientId: 'recipient-uuid',
+        template: mockTemplate,
+        recipient: mockRecipient,
+      };
+
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockPendingBadge);
+
+      // Act & Assert — wrong user trying to claim
+      await expect(
+        service.claimBadge(mockClaimToken, 'wrong-user-uuid'),
+      ).rejects.toThrow(ForbiddenException);
+      expect(mockPrismaService.badge.update).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException if already claimed', async () => {
+      // Arrange - token is kept after claim (not cleared)
       const mockClaimedBadge = {
         id: 'badge-uuid',
         status: BadgeStatus.CLAIMED,
         issuedAt: new Date(),
-        claimToken: null,
+        claimToken: mockClaimToken,
         template: mockTemplate,
         recipient: mockRecipient,
       };
@@ -1276,18 +1303,18 @@ describe('BadgeIssuanceService', () => {
         const result = await service.getWalletBadges(mockUserId, {});
 
         // Assert - Revocation fields should be present
-        expect(result.badges).toHaveLength(1);
-        expect(result.badges[0]).toHaveProperty('status', BadgeStatus.REVOKED);
-        expect(result.badges[0]).toHaveProperty('revokedAt');
-        expect(result.badges[0]).toHaveProperty(
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0]).toHaveProperty('status', BadgeStatus.REVOKED);
+        expect(result.data[0]).toHaveProperty('revokedAt');
+        expect(result.data[0]).toHaveProperty(
           'revocationReason',
           'Policy Violation',
         );
-        expect(result.badges[0]).toHaveProperty(
+        expect(result.data[0]).toHaveProperty(
           'revocationNotes',
           'Violated company code of conduct',
         );
-        expect(result.badges[0]).toHaveProperty('revokedBy');
+        expect(result.data[0]).toHaveProperty('revokedBy');
       });
 
       it('should NOT include revocation fields when badge is CLAIMED', async () => {
@@ -1329,11 +1356,11 @@ describe('BadgeIssuanceService', () => {
         const result = await service.getWalletBadges(mockUserId, {});
 
         // Assert - Revocation fields should NOT be present
-        expect(result.badges).toHaveLength(1);
-        expect(result.badges[0]).toHaveProperty('status', BadgeStatus.CLAIMED);
-        expect(result.badges[0]).not.toHaveProperty('revokedAt');
-        expect(result.badges[0]).not.toHaveProperty('revocationReason');
-        expect(result.badges[0]).not.toHaveProperty('revocationNotes');
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0]).toHaveProperty('status', BadgeStatus.CLAIMED);
+        expect(result.data[0]).not.toHaveProperty('revokedAt');
+        expect(result.data[0]).not.toHaveProperty('revocationReason');
+        expect(result.data[0]).not.toHaveProperty('revocationNotes');
       });
 
       it('should support status filter for REVOKED badges', async () => {
@@ -1380,8 +1407,8 @@ describe('BadgeIssuanceService', () => {
             status: BadgeStatus.REVOKED,
           },
         });
-        expect(result.badges).toHaveLength(1);
-        expect(result.badges[0]).toHaveProperty('status', BadgeStatus.REVOKED);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0]).toHaveProperty('status', BadgeStatus.REVOKED);
       });
     });
   });

@@ -8,6 +8,7 @@ import {
   Param,
   UseGuards,
   Request,
+  Logger,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -28,6 +29,7 @@ import type { RequestWithUser } from '../common/interfaces/request-with-user.int
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class MilestonesController {
+  private readonly logger = new Logger(MilestonesController.name);
   constructor(private readonly milestonesService: MilestonesService) {}
 
   // ========== Admin Endpoints ==========

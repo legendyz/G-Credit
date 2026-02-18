@@ -7,13 +7,27 @@ interface BadgeInfoProps {
 }
 
 const BadgeInfo: React.FC<BadgeInfoProps> = ({ description, skills, criteria }) => {
-  // Parse criteria (assuming it's a JSON object with a 'requirements' array)
+  // Story 11.24 AC-C2: Parse criteria in multiple formats
   const parsedCriteria = typeof criteria === 'object' && criteria !== null ? criteria : null;
+
+  // Format 1: { requirements: ['req1', 'req2'] } → bullet list
   const criteriaList = Array.isArray(parsedCriteria?.requirements)
     ? (parsedCriteria.requirements as string[])
-    : typeof criteria === 'string'
-      ? [criteria]
-      : [];
+    : [];
+
+  // Format 2: { description: '...' } or { type: 'manual', description: '...' } → paragraph
+  const criteriaDescription =
+    criteriaList.length === 0 && parsedCriteria && typeof parsedCriteria.description === 'string'
+      ? (parsedCriteria.description as string)
+      : null;
+
+  // Format 3: plain string → paragraph
+  const criteriaText =
+    criteriaList.length === 0 && !criteriaDescription && typeof criteria === 'string'
+      ? criteria
+      : null;
+
+  const hasCriteria = criteriaList.length > 0 || criteriaDescription || criteriaText;
 
   return (
     <section className="px-6 py-6 border-b">
@@ -41,16 +55,22 @@ const BadgeInfo: React.FC<BadgeInfoProps> = ({ description, skills, criteria }) 
       )}
 
       {/* AC 4.4: Criteria list */}
-      {criteriaList.length > 0 && (
+      {hasCriteria && (
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-3">Earning Criteria</h3>
-          <ul className="list-disc list-inside space-y-2 text-gray-700">
-            {criteriaList.map((item: string, index: number) => (
-              <li key={index} className="text-sm leading-relaxed">
-                {item}
-              </li>
-            ))}
-          </ul>
+          {criteriaList.length > 0 ? (
+            <ul className="list-disc list-inside space-y-2 text-gray-700">
+              {criteriaList.map((item: string, index: number) => (
+                <li key={index} className="text-sm leading-relaxed">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-700 text-sm leading-relaxed">
+              {criteriaDescription || criteriaText}
+            </p>
+          )}
         </div>
       )}
     </section>

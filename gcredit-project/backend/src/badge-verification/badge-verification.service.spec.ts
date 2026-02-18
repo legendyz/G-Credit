@@ -13,6 +13,9 @@ describe('BadgeVerificationService - Story 6.3', () => {
     badge: {
       findUnique: jest.fn(),
     },
+    skill: {
+      findMany: jest.fn(),
+    },
   };
 
   const mockAssertionGeneratorService = {
@@ -36,6 +39,9 @@ describe('BadgeVerificationService - Story 6.3', () => {
 
     service = module.get<BadgeVerificationService>(BadgeVerificationService);
     _prisma = module.get<PrismaService>(PrismaService);
+
+    // Story 11.18: Default skill.findMany to empty array
+    mockPrismaService.skill.findMany.mockResolvedValue([]);
   });
 
   describe('verifyBadge()', () => {
@@ -80,6 +86,10 @@ describe('BadgeVerificationService - Story 6.3', () => {
       };
 
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+      mockPrismaService.skill.findMany.mockResolvedValue([
+        { id: 'skill-1', name: 'JavaScript' },
+        { id: 'skill-2', name: 'TypeScript' },
+      ]);
 
       // Act
       const result = await service.verifyBadge(mockVerificationId);
@@ -88,8 +98,14 @@ describe('BadgeVerificationService - Story 6.3', () => {
       expect(result).toBeDefined();
       expect(result?.verificationId).toBe(mockVerificationId);
       expect(result?.badge.name).toBe('Excellence Badge');
+      // Story 11.18: Skills should be resolved objects, not UUIDs
+      expect(result?.badge.skills).toEqual([
+        { id: 'skill-1', name: 'JavaScript' },
+        { id: 'skill-2', name: 'TypeScript' },
+      ]);
       expect(result?.recipient.name).toBe('John Doe');
       expect(result?.recipient.email).toMatch(/^j\*\*\*@/); // Masked email
+      expect(result?.issuer.email).toMatch(/^a\*\*\*@/); // Issuer email also masked
       expect(mockPrismaService.badge.findUnique).toHaveBeenCalledWith({
         where: { verificationId: mockVerificationId },
         include: anyObject(),
@@ -197,6 +213,50 @@ describe('BadgeVerificationService - Story 6.3', () => {
       // Assert
       expect(result?.recipient.email).not.toBe('test.user@example.com');
       expect(result?.recipient.email).toMatch(/^t\*\*\*@example\.com$/);
+    });
+
+    it('should mask issuer email for privacy', async () => {
+      // Arrange
+      const mockBadge = {
+        id: 'badge-uuid',
+        verificationId: mockVerificationId,
+        status: BadgeStatus.CLAIMED,
+        issuedAt: new Date(),
+        expiresAt: null,
+        claimedAt: new Date(),
+        assertionJson: {},
+        template: {
+          id: 'template-uuid',
+          name: 'Badge',
+          description: 'Test badge',
+          imageUrl: 'https://example.com/badge.png',
+          issuanceCriteria: {},
+          category: 'test',
+          skillIds: [],
+        },
+        recipient: {
+          id: 'recipient-uuid',
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test.user@example.com',
+        },
+        issuer: {
+          id: 'issuer-uuid',
+          firstName: 'Admin',
+          lastName: 'User',
+          email: 'admin@gcredit.com',
+        },
+        evidenceFiles: [],
+      };
+
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+
+      // Act
+      const result = await service.verifyBadge(mockVerificationId);
+
+      // Assert
+      expect(result?.issuer.email).not.toBe('admin@gcredit.com');
+      expect(result?.issuer.email).toMatch(/^a\*\*\*@gcredit\.com$/);
     });
   });
 
@@ -392,6 +452,95 @@ describe('BadgeVerificationService - Story 6.3', () => {
 
       expect(result?.isValid).toBe(true);
       expect(result?.status).toBe(BadgeStatus.CLAIMED);
+    });
+
+    // Story 11.4: PRIVATE badge returns null (404) on verification
+    it('should return null for PRIVATE visibility badge', async () => {
+      const mockBadge = {
+        id: 'badge-uuid-private',
+        verificationId: mockVerificationId,
+        status: BadgeStatus.CLAIMED,
+        visibility: 'PRIVATE',
+        issuedAt: new Date('2026-01-20T10:00:00Z'),
+        expiresAt: null,
+        claimedAt: new Date('2026-01-21T12:00:00Z'),
+        assertionJson: {},
+        metadataHash: null,
+        template: {
+          id: 'template-uuid',
+          name: 'Test Badge',
+          description: 'Test',
+          imageUrl: null,
+          issuanceCriteria: {},
+          category: 'test',
+          skillIds: [],
+        },
+        recipient: {
+          id: 'recipient-uuid',
+          firstName: 'Jane',
+          lastName: 'Doe',
+          email: 'jane@example.com',
+        },
+        issuer: {
+          id: 'issuer-uuid',
+          firstName: 'Admin',
+          lastName: 'User',
+          email: 'admin@example.com',
+        },
+        revoker: null,
+        evidenceFiles: [],
+      };
+
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+
+      const result = await service.verifyBadge(mockVerificationId);
+
+      expect(result).toBeNull();
+    });
+
+    // Story 11.4 C-3: PUBLIC badge still returns verification data
+    it('should return data for PUBLIC visibility badge', async () => {
+      const mockBadge = {
+        id: 'badge-uuid-public',
+        verificationId: mockVerificationId,
+        status: BadgeStatus.CLAIMED,
+        visibility: 'PUBLIC',
+        issuedAt: new Date('2026-01-20T10:00:00Z'),
+        expiresAt: null,
+        claimedAt: new Date('2026-01-21T12:00:00Z'),
+        assertionJson: {},
+        metadataHash: null,
+        template: {
+          id: 'template-uuid',
+          name: 'Test Badge',
+          description: 'Test',
+          imageUrl: null,
+          issuanceCriteria: {},
+          category: 'test',
+          skillIds: [],
+        },
+        recipient: {
+          id: 'recipient-uuid',
+          firstName: 'Jane',
+          lastName: 'Doe',
+          email: 'jane@example.com',
+        },
+        issuer: {
+          id: 'issuer-uuid',
+          firstName: 'Admin',
+          lastName: 'User',
+          email: 'admin@example.com',
+        },
+        revoker: null,
+        evidenceFiles: [],
+      };
+
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+
+      const result = await service.verifyBadge(mockVerificationId);
+
+      expect(result).not.toBeNull();
+      expect(result?.badge.name).toBe('Test Badge');
     });
   });
 });

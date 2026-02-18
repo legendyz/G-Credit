@@ -64,7 +64,7 @@ describe('EvidenceService - Story 4.3', () => {
       encoding: '7bit',
       mimetype: 'application/pdf',
       size: 5 * 1024 * 1024, // 5MB
-      buffer: Buffer.from('test'),
+      buffer: Buffer.from([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x34]), // %PDF-1.4 magic bytes
       stream: null!,
       destination: '',
       filename: '',

@@ -1,0 +1,83 @@
+# generated: 2026-02-12
+# project: G-Credit
+# tracking_system: file-system
+# story_location: gcredit-project/docs/sprints
+
+# STATUS DEFINITIONS:
+# ==================
+# Sprint 11 uses a flat structure (no epics) for Post-MVP hardening work.
+# Stories are grouped by theme but not nested under epics.
+#
+# Story Status:
+#   - backlog: Story defined in sprint backlog
+#   - ready-for-dev: Story file created, ready for development
+#   - in-progress: Developer actively working on implementation
+#   - review: Implementation complete, ready for review
+#   - done: Story completed and SM accepted
+#
+# WORKFLOW NOTES:
+# ===============
+# - SM creates story docs via [CS] workflow before development begins
+# - Dev moves story to 'in-progress', then to 'review'
+# - SM acceptance moves story to 'done'
+# - Stories within the same Wave can be parallelized if no dependencies
+
+generated: 2026-02-12
+project: G-Credit
+tracking_system: file-system
+story_location: "gcredit-project/docs/sprints"
+
+# ============================================
+# Sprint 0-10: MVP Phase (All Complete)
+# ============================================
+sprint-0: done    # Infrastructure Setup
+sprint-1: done    # JWT Auth & User Management (Epic 2)
+sprint-2: done    # Badge Template Management (Epic 3)
+sprint-3: done    # Badge Issuance System (Epic 4)
+sprint-4: done    # Employee Badge Wallet (Epic 5)
+sprint-5: done    # Badge Verification (Epic 6)
+sprint-6: done    # Badge Sharing & Social Proof (Epic 7)
+sprint-7: done    # Badge Revocation & Lifecycle UAT (Epic 9)
+sprint-8: done    # Production-Ready MVP (Epic 10)
+sprint-9: done    # Bulk Badge Issuance + TD Cleanup (Epic 8)
+sprint-10: done   # v1.0.0 Release (TD + UAT + Release)
+
+# ============================================
+# Sprint 11: Post-MVP Hardening
+# Goal: Security + Code Quality + Feature Completion
+# Target: v1.1.0 (Pilot-Ready)
+# ============================================
+sprint-11: in-progress
+
+# --- Wave 1: Quick Wins + Security Foundation ---
+11-1-sec-001-account-lockout: backlog
+11-2-sec-005-file-upload-magic-byte: backlog
+11-3-sec-007-dep-001-npm-audit-swagger: backlog
+11-4-fr19-badge-visibility-toggle: backlog
+11-5-linkedin-share-tab: backlog
+
+# --- Wave 2: P1 Security Hardening ---
+11-6-sec-002-jwt-httponly-cookies: backlog
+11-7-sec-003-issuer-email-masking: backlog
+11-8-sec-004-log-pii-sanitization: backlog
+11-9-sec-006-html-sanitization-pipe: backlog
+
+# --- Wave 3: P1 Code Quality ---
+11-10-cq-001-badge-templates-service-tests: backlog
+11-11-cq-002-issuance-criteria-validator-tests: backlog
+11-12-cq-003-blob-storage-service-tests: backlog
+11-13-cq-004-nestjs-logger-integration: backlog
+11-14-cq-005-remove-unused-dependencies: backlog
+11-15-cq-006-design-system-consistency: backlog
+11-16-cq-007-pagination-standardization: backlog
+
+# --- Wave 4: P1 Feature Fixes ---
+11-17-fr26-analytics-csv-export: backlog
+11-18-verification-skill-uuid-to-name: backlog
+11-19-403-access-denied-page: backlog
+11-20-claimpage-hardcoded-uuid-fix: backlog
+
+# --- Wave 5: P1 Tech Debt + Nav ---
+11-21-ci-quality-gates-chinese-console: backlog
+11-22-husky-precommit-hooks: backlog
+11-23-user-management-nav-fix: backlog

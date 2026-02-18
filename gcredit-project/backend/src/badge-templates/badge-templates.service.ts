@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../common/prisma.service';
 import { BlobStorageService } from '../common/services/blob-storage.service';
 import { IssuanceCriteriaValidatorService } from '../common/services/issuance-criteria-validator.service';
+import { createPaginatedResponse } from '../common/utils/pagination.util';
 import {
   CreateBadgeTemplateDto,
   UpdateBadgeTemplateDto,
@@ -17,6 +18,15 @@ import { TemplateStatus, Prisma } from '@prisma/client';
 @Injectable()
 export class BadgeTemplatesService {
   private readonly logger = new Logger(BadgeTemplatesService.name);
+
+  /** Reusable Prisma select for user info (creator/updater) */
+  private readonly userSelect = {
+    id: true,
+    email: true,
+    firstName: true,
+    lastName: true,
+    role: true,
+  } as const;
 
   constructor(
     private prisma: PrismaService,
@@ -78,13 +88,10 @@ export class BadgeTemplatesService {
       },
       include: {
         creator: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-          },
+          select: this.userSelect,
+        },
+        updater: {
+          select: this.userSelect,
         },
       },
     });
@@ -148,33 +155,17 @@ export class BadgeTemplatesService {
         orderBy: { [sortBy]: sortOrder },
         include: {
           creator: {
-            select: {
-              id: true,
-              email: true,
-              firstName: true,
-              lastName: true,
-              role: true,
-            },
+            select: this.userSelect,
+          },
+          updater: {
+            select: this.userSelect,
           },
         },
       }),
       this.prisma.badgeTemplate.count({ where }),
     ]);
 
-    // Calculate pagination metadata
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      data,
-      meta: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1,
-      },
-    };
+    return createPaginatedResponse(data, total, page, limit);
   }
 
   /**
@@ -191,13 +182,10 @@ export class BadgeTemplatesService {
       where: { id },
       include: {
         creator: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-          },
+          select: this.userSelect,
+        },
+        updater: {
+          select: this.userSelect,
         },
       },
     });
@@ -272,6 +260,7 @@ export class BadgeTemplatesService {
     id: string,
     updateDto: UpdateBadgeTemplateDto,
     imageFile?: Express.Multer.File,
+    userId?: string,
   ) {
     // Check if template exists
     const existing = await this.prisma.badgeTemplate.findUnique({
@@ -327,11 +316,13 @@ export class BadgeTemplatesService {
     if (updateDto.name) updateData.name = updateDto.name;
     if (updateDto.description) updateData.description = updateDto.description;
     if (updateDto.category) updateData.category = updateDto.category;
-    if (updateDto.skillIds) updateData.skillIds = updateDto.skillIds;
+    if (updateDto.skillIds !== undefined)
+      updateData.skillIds = updateDto.skillIds;
     if (updateDto.validityPeriod !== undefined)
       updateData.validityPeriod = updateDto.validityPeriod;
     if (updateDto.status) updateData.status = updateDto.status;
     if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
+    if (userId) updateData.updater = { connect: { id: userId } };
 
     // Convert IssuanceCriteriaDto to plain JSON if present
     if (updateDto.issuanceCriteria) {
@@ -345,12 +336,10 @@ export class BadgeTemplatesService {
       data: updateData,
       include: {
         creator: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-          },
+          select: this.userSelect,
+        },
+        updater: {
+          select: this.userSelect,
         },
       },
     });

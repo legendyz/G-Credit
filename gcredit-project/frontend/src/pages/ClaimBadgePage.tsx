@@ -5,7 +5,7 @@
  * Flow:
  *  1. User clicks "Claim Your Badge" in email → lands here
  *  2. If not logged in → ProtectedRoute redirects to /login, then back here after login
- *  3. Reads ?token= from URL, calls POST /api/badges/claim-by-token
+ *  3. Reads ?token= from URL, calls POST /api/badges/claim
  *  4. On success → redirects to /wallet with success toast
  *  5. On error → shows inline error with retry / go-to-wallet options
  */
@@ -13,8 +13,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { API_BASE_URL } from '../lib/apiConfig';
-import { useAuthStore } from '../stores/authStore';
+import { apiFetch } from '../lib/apiFetch';
 
 type ClaimState = 'claiming' | 'success' | 'error' | 'no-token';
 
@@ -22,7 +21,6 @@ export default function ClaimBadgePage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
-  const { accessToken } = useAuthStore();
 
   const [state, setState] = useState<ClaimState>(token ? 'claiming' : 'no-token');
   const [errorMessage, setErrorMessage] = useState('');
@@ -36,18 +34,10 @@ export default function ClaimBadgePage() {
     const claimBadge = async () => {
       setState('claiming');
       try {
-        // Use a placeholder UUID; the backend ignores :id when claimToken is provided
-        const response = await fetch(
-          `${API_BASE_URL}/badges/00000000-0000-0000-0000-000000000000/claim`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-            },
-            body: JSON.stringify({ claimToken: token }),
-          }
-        );
+        const response = await apiFetch('/badges/claim', {
+          method: 'POST',
+          body: JSON.stringify({ claimToken: token }),
+        });
 
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
@@ -73,7 +63,7 @@ export default function ClaimBadgePage() {
     };
 
     claimBadge();
-  }, [token, accessToken, navigate]);
+  }, [token, navigate]);
 
   const handleRetry = () => {
     claimAttempted.current = false;

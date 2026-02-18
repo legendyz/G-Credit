@@ -8,7 +8,7 @@ import ConfirmationModal from './ConfirmationModal';
 import EmptyPreviewState from './EmptyPreviewState';
 import ProcessingComplete from './ProcessingComplete';
 import ProcessingModal from './ProcessingModal';
-import { API_BASE_URL } from '../../lib/apiConfig';
+import { apiFetch } from '../../lib/apiFetch';
 
 interface PreviewRow {
   rowNumber: number;
@@ -91,11 +91,7 @@ export default function BulkPreviewPage() {
         setIsLoading(true);
         setError(null);
 
-        const response = await fetch(`${API_BASE_URL}/bulk-issuance/preview/${sessionId}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-          },
-        });
+        const response = await apiFetch(`/bulk-issuance/preview/${sessionId}`);
 
         if (!response.ok) {
           if (response.status === 403) {
@@ -130,11 +126,7 @@ export default function BulkPreviewPage() {
 
   const handleDownloadErrorReport = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/bulk-issuance/error-report/${sessionId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-        },
-      });
+      const response = await apiFetch(`/bulk-issuance/error-report/${sessionId}`);
 
       if (!response.ok) {
         throw new Error('Failed to download error report');
@@ -167,12 +159,8 @@ export default function BulkPreviewPage() {
     const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/bulk-issuance/confirm/${sessionId}`, {
+      const response = await apiFetch(`/bulk-issuance/confirm/${sessionId}`, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-          'Content-Type': 'application/json',
-        },
         signal: controller.signal,
       });
 

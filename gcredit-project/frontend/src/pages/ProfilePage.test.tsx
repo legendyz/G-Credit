@@ -15,15 +15,6 @@ import { ProfilePage } from './ProfilePage';
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-// Mock localStorage
-const mockLocalStorage = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-};
-Object.defineProperty(window, 'localStorage', { value: mockLocalStorage });
-
 // Mock sonner
 vi.mock('sonner', () => ({
   toast: {
@@ -75,7 +66,6 @@ const MOCK_PROFILE = {
 describe('ProfilePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockLocalStorage.getItem.mockReturnValue('test-token');
     // Default: successful profile load
     mockFetch.mockResolvedValue({
       ok: true,
@@ -90,16 +80,14 @@ describe('ProfilePage', () => {
       expect(screen.getByText('Loading profile...')).toBeInTheDocument();
     });
 
-    it('fetches profile with auth header on mount', async () => {
+    it('fetches profile with credentials: include on mount', async () => {
       render(<ProfilePage />);
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith(
           expect.stringContaining('/auth/profile'),
           expect.objectContaining({
-            headers: expect.objectContaining({
-              Authorization: 'Bearer test-token',
-            }),
+            credentials: 'include',
           })
         );
       });

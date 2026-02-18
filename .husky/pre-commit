@@ -1,0 +1,14 @@
+# Lint-staged: ESLint + Prettier on staged files
+npx lint-staged
+
+# Chinese character check on staged .ts/.tsx files
+STAGED_TS=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|tsx)$' | grep -v '\.spec\.' | grep -v '\.test\.' | grep -v '__tests__' || true)
+
+if [ -n "$STAGED_TS" ]; then
+  CHINESE=$(echo "$STAGED_TS" | xargs grep -l '[\x{4E00}-\x{9FFF}]' 2>/dev/null || true)
+  if [ -n "$CHINESE" ]; then
+    echo "ERROR: Chinese characters found in staged files:"
+    echo "$CHINESE"
+    exit 1
+  fi
+fi

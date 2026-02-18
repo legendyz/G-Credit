@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 import { useBadgeDetailModal } from '../../stores/badgeDetailModal';
 import type { BadgeDetail } from '../../types/badge';
 import { BadgeStatus } from '../../types/badge';
 import ModalHero from './ModalHero';
-import IssuerMessage from './IssuerMessage';
 import BadgeInfo from './BadgeInfo';
 import TimelineSection from './TimelineSection';
 import VerificationSection from './VerificationSection';
@@ -14,13 +14,17 @@ import ReportIssueForm from './ReportIssueForm';
 import BadgeAnalytics from './BadgeAnalytics';
 import BadgeShareModal from '../BadgeShareModal';
 import RevocationSection from './RevocationSection';
+import ExpirationSection from './ExpirationSection';
 import ClaimSuccessModal from '../ClaimSuccessModal';
-import { API_BASE_URL } from '../../lib/apiConfig';
+import { Globe, Lock, Loader2 } from 'lucide-react';
+import { apiFetch } from '../../lib/apiFetch';
 import { useCurrentUser } from '../../stores/authStore';
+import { useSkillNamesMap } from '../../hooks/useSkills';
 
 const BadgeDetailModal: React.FC = () => {
   const { isOpen, badgeId, closeModal } = useBadgeDetailModal();
   const currentUser = useCurrentUser();
+  const queryClient = useQueryClient();
   const [badge, setBadge] = useState<BadgeDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +32,15 @@ const BadgeDetailModal: React.FC = () => {
   const [downloading, setDownloading] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [claimSuccessOpen, setClaimSuccessOpen] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
+  const [localVisibility, setLocalVisibility] = useState<'PUBLIC' | 'PRIVATE'>('PUBLIC');
+
+  // Resolve skill UUIDs to human-readable names
+  const skillNamesMap = useSkillNamesMap(badge?.template?.skillIds);
+  // Story 11.24 AC-M13: Fallback to 'Unknown Skill' instead of raw UUID
+  const resolvedSkillNames = (badge?.template?.skillIds || []).map(
+    (id) => skillNamesMap[id] || 'Unknown Skill'
+  );
 
   useEffect(() => {
     if (!isOpen || !badgeId) return;
@@ -37,12 +50,7 @@ const BadgeDetailModal: React.FC = () => {
       setError(null);
 
       try {
-        const token = localStorage.getItem('accessToken');
-        const response = await fetch(`${API_BASE_URL}/badges/${badgeId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await apiFetch(`/badges/${badgeId}`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch badge details');
@@ -50,6 +58,7 @@ const BadgeDetailModal: React.FC = () => {
 
         const data = await response.json();
         setBadge(data);
+        setLocalVisibility(data.visibility ?? 'PUBLIC');
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
@@ -85,12 +94,7 @@ const BadgeDetailModal: React.FC = () => {
 
     setDownloading(true);
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`${API_BASE_URL}/badges/${badge.id}/download/png`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await apiFetch(`/badges/${badge.id}/download/png`);
 
       if (!response.ok) {
         throw new Error('Failed to download badge');
@@ -114,19 +118,36 @@ const BadgeDetailModal: React.FC = () => {
     }
   };
 
+  // Story 11.4: Toggle badge visibility (PUBLIC/PRIVATE)
+  const handleToggleVisibility = async () => {
+    if (!badge) return;
+    setIsToggling(true);
+    try {
+      const newVisibility = localVisibility === 'PUBLIC' ? 'PRIVATE' : 'PUBLIC';
+      const res = await apiFetch(`/badges/${badge.id}/visibility`, {
+        method: 'PATCH',
+        body: JSON.stringify({ visibility: newVisibility }),
+      });
+      if (!res.ok) throw new Error();
+      setLocalVisibility(newVisibility);
+      // Invalidate wallet queries so the list reflects the new visibility
+      queryClient.invalidateQueries({ queryKey: ['wallet'] });
+      toast.success(`Badge set to ${newVisibility === 'PUBLIC' ? 'Public' : 'Private'}`);
+    } catch {
+      toast.error('Failed to update visibility. Please try again.');
+    } finally {
+      setIsToggling(false);
+    }
+  };
+
   // UX-P0-004: Claim badge functionality
   const handleClaimBadge = async () => {
     if (!badge || badge.status !== BadgeStatus.PENDING) return;
 
     setClaiming(true);
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`${API_BASE_URL}/badges/${badge.id}/claim`, {
+      const response = await apiFetch(`/badges/${badge.id}/claim`, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
       });
 
       if (!response.ok) {
@@ -141,6 +162,9 @@ const BadgeDetailModal: React.FC = () => {
       setBadge((prev) =>
         prev ? { ...prev, status: BadgeStatus.CLAIMED, claimedAt: new Date().toISOString() } : null
       );
+
+      // Invalidate wallet queries so the list reflects the claimed status
+      queryClient.invalidateQueries({ queryKey: ['wallet'] });
 
       // Show celebration modal
       setClaimSuccessOpen(true);
@@ -239,20 +263,18 @@ const BadgeDetailModal: React.FC = () => {
                   status={badge.status}
                   issuedAt={badge.issuedAt}
                   category={badge.template.category}
+                  visibility={localVisibility}
+                  issuerName={
+                    badge.issuer?.firstName || badge.issuer?.lastName
+                      ? `${badge.issuer.firstName || ''} ${badge.issuer.lastName || ''}`.trim()
+                      : undefined
+                  }
                 />
-
-                {/* AC 4.3: Issuer Message (conditional) */}
-                {badge.issuerMessage && (
-                  <IssuerMessage
-                    issuerName={`${badge.issuer.firstName} ${badge.issuer.lastName}`}
-                    message={badge.issuerMessage}
-                  />
-                )}
 
                 {/* AC 4.4: Badge Info */}
                 <BadgeInfo
                   description={badge.template.description}
-                  skills={badge.template.skillIds}
+                  skills={resolvedSkillNames}
                   criteria={badge.template.issuanceCriteria}
                 />
 
@@ -271,6 +293,11 @@ const BadgeDetailModal: React.FC = () => {
                       revokedBy={badge.revokedBy}
                     />
                   )}
+
+                {/* Expiration Details Section */}
+                {badge.status === BadgeStatus.EXPIRED && badge.expiresAt && (
+                  <ExpirationSection expiresAt={badge.expiresAt} />
+                )}
 
                 {/* AC 4.5: Timeline Section */}
                 <TimelineSection
@@ -310,47 +337,14 @@ const BadgeDetailModal: React.FC = () => {
           </div>
 
           {/* AC 4.8: Action Footer (Share/Download/Claim buttons) | Story 9.3 AC3: Disable for revoked badges */}
-          <footer
-            style={{
-              padding: '1rem 1.5rem',
-              borderTop: '1px solid #e5e7eb',
-              backgroundColor: '#f9fafb',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '0.5rem',
-            }}
-          >
+          <footer className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-between items-center flex-wrap gap-2">
             {/* UX-P0-004: Claim Button for PENDING badges */}
             {badge?.status === BadgeStatus.PENDING && (
               <button
                 onClick={handleClaimBadge}
                 disabled={claiming}
                 title={claiming ? 'Claiming...' : 'Claim this badge'}
-                style={{
-                  padding: '0.625rem 1.5rem',
-                  fontSize: '0.875rem',
-                  fontWeight: 600,
-                  color: 'white',
-                  backgroundColor: claiming ? '#9ca3af' : '#16a34a',
-                  borderRadius: '0.5rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  cursor: claiming ? 'not-allowed' : 'pointer',
-                  border: 'none',
-                  transition: 'background-color 0.2s',
-                }}
-                onMouseEnter={(e) => {
-                  if (!claiming) {
-                    e.currentTarget.style.backgroundColor = '#15803d';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!claiming) {
-                    e.currentTarget.style.backgroundColor = '#16a34a';
-                  }
-                }}
+                className="px-6 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-lg flex items-center border-none transition-colors hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 {claiming ? (
                   <>
@@ -379,7 +373,7 @@ const BadgeDetailModal: React.FC = () => {
                 ) : (
                   <>
                     <svg
-                      style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }}
+                      className="w-4 h-4 mr-2"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -397,6 +391,30 @@ const BadgeDetailModal: React.FC = () => {
               </button>
             )}
 
+            {/* Story 11.4: Visibility toggle */}
+            <div className="flex items-center gap-2 text-sm text-neutral-600">
+              <span>Visibility:</span>
+              <button
+                onClick={handleToggleVisibility}
+                disabled={isToggling}
+                className="flex items-center gap-1 px-3 py-1 rounded-full border border-gray-200 bg-transparent text-sm transition-colors hover:bg-gray-50 disabled:cursor-not-allowed"
+                title={localVisibility === 'PUBLIC' ? 'Set to Private' : 'Set to Public'}
+                aria-label={`Badge visibility: ${localVisibility.toLowerCase()}`}
+              >
+                {isToggling ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                ) : localVisibility === 'PUBLIC' ? (
+                  <>
+                    <Globe className="h-4 w-4" aria-hidden="true" /> Public
+                  </>
+                ) : (
+                  <>
+                    <Lock className="h-4 w-4" aria-hidden="true" /> Private
+                  </>
+                )}
+              </button>
+            </div>
+
             {/* Story 9.3 AC3: Disable Share button for revoked badges */}
             <button
               onClick={() => setShareModalOpen(true)}
@@ -410,52 +428,9 @@ const BadgeDetailModal: React.FC = () => {
                     ? 'Claim this badge before sharing'
                     : 'Share this badge'
               }
-              style={{
-                padding: '0.625rem 1.5rem',
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                color: 'white',
-                backgroundColor:
-                  badge?.status === BadgeStatus.REVOKED || badge?.status === BadgeStatus.PENDING
-                    ? '#9ca3af'
-                    : '#2563eb',
-                borderRadius: '0.5rem',
-                display: 'flex',
-                alignItems: 'center',
-                cursor:
-                  badge?.status === BadgeStatus.REVOKED || badge?.status === BadgeStatus.PENDING
-                    ? 'not-allowed'
-                    : 'pointer',
-                border: 'none',
-                opacity:
-                  badge?.status === BadgeStatus.REVOKED || badge?.status === BadgeStatus.PENDING
-                    ? 0.5
-                    : 1,
-                transition: 'background-color 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                if (
-                  badge?.status !== BadgeStatus.REVOKED &&
-                  badge?.status !== BadgeStatus.PENDING
-                ) {
-                  e.currentTarget.style.backgroundColor = '#1d4ed8';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (
-                  badge?.status !== BadgeStatus.REVOKED &&
-                  badge?.status !== BadgeStatus.PENDING
-                ) {
-                  e.currentTarget.style.backgroundColor = '#2563eb';
-                }
-              }}
+              className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg flex items-center border-none transition-colors hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <svg
-                style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -465,43 +440,24 @@ const BadgeDetailModal: React.FC = () => {
               </svg>
               Share Badge
             </button>
-            {/* Story 9.3 AC3: Download button disabled for revoked badges (PO decision: prevent misuse of revoked credential PNG) */}
+            {/* Story 9.3 AC3: Download button disabled for revoked/pending badges (UX Decision 2026-02-17: unclaimed badges cannot be downloaded) */}
             <button
               onClick={handleDownloadBadge}
-              disabled={downloading || badge?.status === BadgeStatus.REVOKED}
+              disabled={
+                downloading ||
+                badge?.status === BadgeStatus.REVOKED ||
+                badge?.status === BadgeStatus.PENDING
+              }
               title={
                 badge?.status === BadgeStatus.REVOKED
                   ? 'Revoked badges cannot be downloaded'
-                  : downloading
-                    ? 'Downloading...'
-                    : 'Download badge as PNG'
+                  : badge?.status === BadgeStatus.PENDING
+                    ? 'Claim this badge before downloading'
+                    : downloading
+                      ? 'Downloading...'
+                      : 'Download badge as PNG'
               }
-              style={{
-                padding: '0.625rem 1.5rem',
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                color: 'white',
-                backgroundColor:
-                  downloading || badge?.status === BadgeStatus.REVOKED ? '#9ca3af' : '#2563eb',
-                border: 'none',
-                borderRadius: '0.5rem',
-                display: 'flex',
-                alignItems: 'center',
-                cursor:
-                  downloading || badge?.status === BadgeStatus.REVOKED ? 'not-allowed' : 'pointer',
-                opacity: downloading || badge?.status === BadgeStatus.REVOKED ? 0.5 : 1,
-                transition: 'background-color 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                if (!downloading && badge?.status !== BadgeStatus.REVOKED) {
-                  e.currentTarget.style.backgroundColor = '#1d4ed8';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!downloading && badge?.status !== BadgeStatus.REVOKED) {
-                  e.currentTarget.style.backgroundColor = '#2563eb';
-                }
-              }}
+              className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg flex items-center border-none transition-colors hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {downloading ? (
                 <>
@@ -557,6 +513,7 @@ const BadgeDetailModal: React.FC = () => {
           onClose={() => setShareModalOpen(false)}
           badgeId={badge.id}
           badgeName={badge.template.name}
+          verificationId={badge.verificationId}
         />
       )}
 
@@ -569,7 +526,6 @@ const BadgeDetailModal: React.FC = () => {
             closeModal();
           }}
           badgeName={badge.template.name}
-          issuerMessage={badge.issuerMessage}
         />
       )}
     </>

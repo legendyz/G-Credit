@@ -4,8 +4,12 @@
  * Sprint 8 - Story 8.3 (UX-P1-006): Tab keyboard navigation
  */
 
-import React, { useState, useCallback } from 'react';
-import { shareBadgeViaEmail, shareBadgeToTeams } from '../../lib/badgeShareApi';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  shareBadgeViaEmail,
+  shareBadgeToTeams,
+  recordLinkedInShare,
+} from '../../lib/badgeShareApi';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 interface BadgeShareModalProps {
@@ -13,17 +17,19 @@ interface BadgeShareModalProps {
   onClose: () => void;
   badgeId: string;
   badgeName: string;
+  verificationId?: string;
 }
 
-type ShareTab = 'email' | 'teams' | 'widget';
+type ShareTab = 'email' | 'linkedin' | 'teams' | 'widget';
 
-const TABS: ShareTab[] = ['email', 'teams', 'widget'];
+const TABS: ShareTab[] = ['email', 'linkedin', 'teams', 'widget'];
 
 const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
   isOpen,
   onClose,
   badgeId,
   badgeName,
+  verificationId,
 }) => {
   const [activeTab, setActiveTab] = useState<ShareTab>('email');
   const [loading, setLoading] = useState(false);
@@ -76,6 +82,40 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
   const [teamsTeamId, setTeamsTeamId] = useState('');
   const [teamsChannelId, setTeamsChannelId] = useState('');
   const [teamsMessage, setTeamsMessage] = useState('');
+
+  // LinkedIn sharing state
+  const [linkedInMessage, setLinkedInMessage] = useState('');
+  const [linkedInShared, setLinkedInShared] = useState(false);
+  const [copiedLinkedIn, setCopiedLinkedIn] = useState(false);
+
+  const verificationUrl = `${window.location.origin}/verify/${verificationId ?? badgeId}`;
+
+  // LinkedIn default message
+  useEffect(() => {
+    if (activeTab === 'linkedin' && !linkedInMessage) {
+      setLinkedInMessage(
+        `I'm proud to have earned the ${badgeName} badge via G-Credit. ` +
+          `This credential validates my professional skills. ` +
+          `Verify my badge: ${verificationUrl} ` +
+          `#DigitalCredentials #ProfessionalDevelopment #GCredit`
+      );
+    }
+  }, [activeTab, badgeName, linkedInMessage, verificationUrl]);
+
+  const handleLinkedInShare = async () => {
+    const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(verificationUrl)}`;
+    window.open(shareUrl, '_blank', 'width=600,height=600');
+
+    // Record analytics (non-blocking)
+    try {
+      await recordLinkedInShare(badgeId);
+    } catch {
+      // Non-blocking — don't fail the share if analytics fails
+    }
+
+    setLinkedInShared(true);
+    setTimeout(() => setLinkedInShared(false), 5000);
+  };
 
   const handleShareViaEmail = async () => {
     if (!emailRecipients.trim()) {
@@ -234,6 +274,32 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
           </button>
           <button
             role="tab"
+            data-tab="linkedin"
+            id="share-tab-linkedin"
+            aria-selected={activeTab === 'linkedin'}
+            aria-controls="share-panel-linkedin"
+            tabIndex={activeTab === 'linkedin' ? 0 : -1}
+            onClick={() => setActiveTab('linkedin')}
+            onKeyDown={(e) => handleTabKeyDown(e, 'linkedin')}
+            className={`flex-1 min-h-[44px] px-3 py-2.5 text-sm font-medium transition-all
+                       ${
+                         activeTab === 'linkedin'
+                           ? 'text-blue-600 bg-white border-b-2 border-blue-600'
+                           : 'text-gray-600 hover:text-gray-900 active:bg-gray-100'
+                       }`}
+          >
+            <svg
+              className="inline h-4 w-4 mr-1"
+              viewBox="0 0 24 24"
+              fill="#0A66C2"
+              aria-hidden="true"
+            >
+              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+            </svg>
+            LinkedIn
+          </button>
+          <button
+            role="tab"
             data-tab="teams"
             id="share-tab-teams"
             aria-selected={activeTab === 'teams'}
@@ -276,16 +342,8 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
           <div role="status" aria-live="polite" aria-atomic="true">
             {/* Success Message */}
             {success && (
-              <div
-                style={{
-                  marginBottom: '1rem',
-                  padding: '1rem',
-                  backgroundColor: '#f0fdf4',
-                  border: '1px solid #bbf7d0',
-                  borderRadius: '0.5rem',
-                }}
-              >
-                <p style={{ color: '#166534', fontWeight: 500 }}>
+              <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-green-800 font-medium">
                   ✅ {activeTab === 'widget' ? 'Link copied!' : 'Badge shared successfully!'}
                 </p>
               </div>
@@ -293,17 +351,8 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
 
             {/* Error Message */}
             {error && (
-              <div
-                role="alert"
-                style={{
-                  marginBottom: '1rem',
-                  padding: '1rem',
-                  backgroundColor: '#fef2f2',
-                  border: '1px solid #fecaca',
-                  borderRadius: '0.5rem',
-                }}
-              >
-                <p style={{ color: '#991b1b' }}>{error}</p>
+              <div role="alert" className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-800">{error}</p>
               </div>
             )}
           </div>
@@ -314,18 +363,12 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
               role="tabpanel"
               id="share-panel-email"
               aria-labelledby="share-tab-email"
-              style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+              className="flex flex-col gap-4"
             >
               <div>
                 <label
                   htmlFor="share-email-recipients"
-                  style={{
-                    display: 'block',
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    color: '#374151',
-                    marginBottom: '0.5rem',
-                  }}
+                  className="block text-sm font-medium text-gray-700 mb-2"
                 >
                   Recipient Emails *
                 </label>
@@ -335,21 +378,11 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                   value={emailRecipients}
                   onChange={(e) => setEmailRecipients(e.target.value)}
                   placeholder="email1@example.com, email2@example.com"
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem 0.75rem',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '0.5rem',
-                    fontSize: '0.875rem',
-                    outline: 'none',
-                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none"
                   disabled={loading}
                   aria-describedby="email-recipients-hint"
                 />
-                <p
-                  id="email-recipients-hint"
-                  style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: '#6b7280' }}
-                >
+                <p id="email-recipients-hint" className="mt-1 text-xs text-gray-500">
                   Separate multiple emails with commas
                 </p>
               </div>
@@ -357,13 +390,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
               <div>
                 <label
                   htmlFor="share-email-message"
-                  style={{
-                    display: 'block',
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    color: '#374151',
-                    marginBottom: '0.5rem',
-                  }}
+                  className="block text-sm font-medium text-gray-700 mb-2"
                 >
                   Custom Message (Optional)
                 </label>
@@ -373,15 +400,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                   onChange={(e) => setEmailMessage(e.target.value)}
                   placeholder="Add a personal message..."
                   rows={4}
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem 0.75rem',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '0.5rem',
-                    fontSize: '0.875rem',
-                    resize: 'none',
-                    outline: 'none',
-                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:outline-none"
                   disabled={loading}
                 />
               </div>
@@ -389,47 +408,18 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
               <button
                 onClick={handleShareViaEmail}
                 disabled={loading || !emailRecipients.trim()}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem 1rem',
-                  backgroundColor: loading || !emailRecipients.trim() ? '#d1d5db' : '#2563eb',
-                  color: 'white',
-                  fontWeight: 500,
-                  borderRadius: '0.5rem',
-                  border: 'none',
-                  cursor: loading || !emailRecipients.trim() ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'background-color 0.2s',
-                }}
-                onMouseEnter={(e) =>
-                  !loading &&
-                  emailRecipients.trim() &&
-                  (e.currentTarget.style.backgroundColor = '#1d4ed8')
-                }
-                onMouseLeave={(e) =>
-                  !loading &&
-                  emailRecipients.trim() &&
-                  (e.currentTarget.style.backgroundColor = '#2563eb')
-                }
+                className="w-full px-4 py-3 bg-blue-600 text-white font-medium rounded-lg border-none flex items-center justify-center transition-colors hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
                     <svg
-                      style={{
-                        animation: 'spin 1s linear infinite',
-                        marginLeft: '-0.25rem',
-                        marginRight: '0.75rem',
-                        width: '1.25rem',
-                        height: '1.25rem',
-                      }}
+                      className="animate-spin -ml-1 mr-3 w-5 h-5"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
                     >
                       <circle
-                        style={{ opacity: 0.25 }}
+                        className="opacity-25"
                         cx="12"
                         cy="12"
                         r="10"
@@ -437,7 +427,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                         strokeWidth="4"
                       ></circle>
                       <path
-                        style={{ opacity: 0.75 }}
+                        className="opacity-75"
                         fill="currentColor"
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
@@ -451,24 +441,113 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
             </div>
           )}
 
+          {/* LinkedIn Tab Panel */}
+          {activeTab === 'linkedin' && (
+            <div
+              role="tabpanel"
+              id="share-panel-linkedin"
+              aria-labelledby="share-tab-linkedin"
+              className="flex flex-col gap-4"
+            >
+              {/* Share Preview */}
+              <div>
+                <span className="block text-sm font-medium text-gray-700 mb-2">Share Preview</span>
+                <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 text-sm text-gray-700">
+                  <p className="font-semibold mb-2">🏆 I earned the "{badgeName}" digital badge!</p>
+                  <p className="text-gray-500 mb-2">
+                    Issued via G-Credit. Verify:{' '}
+                    <span className="text-blue-600 underline">{verificationUrl}</span>
+                  </p>
+                  <p className="text-gray-400 text-xs">
+                    #DigitalCredentials #ProfessionalDevelopment #GCredit
+                  </p>
+                </div>
+              </div>
+
+              {/* Editable Message */}
+              <div>
+                <label
+                  htmlFor="linkedin-message"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Your Message
+                </label>
+                <textarea
+                  id="linkedin-message"
+                  rows={3}
+                  value={linkedInMessage}
+                  onChange={(e) => setLinkedInMessage(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 p-3 text-sm"
+                  placeholder="Add a personal message to your LinkedIn post..."
+                />
+                <button
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(linkedInMessage);
+                      setCopiedLinkedIn(true);
+                      setTimeout(() => setCopiedLinkedIn(false), 2000);
+                    } catch {
+                      // Fallback for older browsers
+                      const textarea = document.createElement('textarea');
+                      textarea.value = linkedInMessage;
+                      document.body.appendChild(textarea);
+                      textarea.select();
+                      document.execCommand('copy');
+                      document.body.removeChild(textarea);
+                      setCopiedLinkedIn(true);
+                      setTimeout(() => setCopiedLinkedIn(false), 2000);
+                    }
+                  }}
+                  className="mt-2 w-full flex items-center justify-center gap-1.5 min-h-[36px] rounded-md text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                  aria-label="Copy message to clipboard"
+                >
+                  {copiedLinkedIn ? <>✓ Copied to clipboard</> : <>📋 Copy message first</>}
+                </button>
+              </div>
+
+              {/* Share Button */}
+              <button
+                onClick={handleLinkedInShare}
+                disabled={linkedInShared}
+                className={`w-full flex items-center justify-center gap-2 min-h-[44px] rounded-lg text-sm font-medium border-none transition-colors ${
+                  linkedInShared
+                    ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                    : 'bg-[#0A66C2] text-white cursor-pointer hover:bg-[#094F96]'
+                }`}
+              >
+                {linkedInShared ? (
+                  <>✓ LinkedIn opened — paste your message there</>
+                ) : (
+                  <>
+                    <svg
+                      className="h-4 w-4"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                    Open LinkedIn to post
+                  </>
+                )}
+              </button>
+
+              <p className="text-xs text-gray-500 text-center">
+                💡 Copy the message above, then paste it into the LinkedIn post editor
+              </p>
+            </div>
+          )}
+
           {/* Teams Tab Panel */}
           {activeTab === 'teams' && (
             <div
               role="tabpanel"
               id="share-panel-teams"
               aria-labelledby="share-tab-teams"
-              style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+              className="flex flex-col gap-4"
             >
-              <div
-                style={{
-                  backgroundColor: '#eff6ff',
-                  border: '1px solid #bfdbfe',
-                  borderRadius: '0.5rem',
-                  padding: '1rem',
-                  marginBottom: '1rem',
-                }}
-              >
-                <p style={{ fontSize: '0.875rem', color: '#1e40af' }}>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <p className="text-sm text-blue-800">
                   💡 Leave Team ID and Channel ID empty to use default settings configured by your
                   administrator.
                 </p>
@@ -477,13 +556,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
               <div>
                 <label
                   htmlFor="share-teams-team-id"
-                  style={{
-                    display: 'block',
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    color: '#374151',
-                    marginBottom: '0.5rem',
-                  }}
+                  className="block text-sm font-medium text-gray-700 mb-2"
                 >
                   Team ID (Optional)
                 </label>
@@ -493,14 +566,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                   value={teamsTeamId}
                   onChange={(e) => setTeamsTeamId(e.target.value)}
                   placeholder="Leave empty for default team"
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem 0.75rem',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '0.5rem',
-                    fontSize: '0.875rem',
-                    outline: 'none',
-                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none"
                   disabled={loading}
                 />
               </div>
@@ -508,13 +574,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
               <div>
                 <label
                   htmlFor="share-teams-channel-id"
-                  style={{
-                    display: 'block',
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    color: '#374151',
-                    marginBottom: '0.5rem',
-                  }}
+                  className="block text-sm font-medium text-gray-700 mb-2"
                 >
                   Channel ID (Optional)
                 </label>
@@ -524,14 +584,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                   value={teamsChannelId}
                   onChange={(e) => setTeamsChannelId(e.target.value)}
                   placeholder="Leave empty for default channel"
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem 0.75rem',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '0.5rem',
-                    fontSize: '0.875rem',
-                    outline: 'none',
-                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none"
                   disabled={loading}
                 />
               </div>
@@ -539,13 +592,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
               <div>
                 <label
                   htmlFor="share-teams-message"
-                  style={{
-                    display: 'block',
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    color: '#374151',
-                    marginBottom: '0.5rem',
-                  }}
+                  className="block text-sm font-medium text-gray-700 mb-2"
                 >
                   Custom Message (Optional)
                 </label>
@@ -555,15 +602,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                   onChange={(e) => setTeamsMessage(e.target.value)}
                   placeholder="Add a personal message..."
                   rows={4}
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem 0.75rem',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '0.5rem',
-                    fontSize: '0.875rem',
-                    resize: 'none',
-                    outline: 'none',
-                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:outline-none"
                   disabled={loading}
                 />
               </div>
@@ -571,44 +610,19 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
               <button
                 onClick={handleShareToTeams}
                 disabled={loading}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem 1rem',
-                  backgroundColor: loading ? '#d1d5db' : '#7c3aed',
-                  color: 'white',
-                  fontWeight: 500,
-                  borderRadius: '0.5rem',
-                  border: 'none',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'background-color 0.2s',
-                }}
-                onMouseEnter={(e) =>
-                  !loading && (e.currentTarget.style.backgroundColor = '#6d28d9')
-                }
-                onMouseLeave={(e) =>
-                  !loading && (e.currentTarget.style.backgroundColor = '#7c3aed')
-                }
+                className="w-full px-4 py-3 bg-violet-600 text-white font-medium rounded-lg border-none flex items-center justify-center transition-colors hover:bg-violet-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
                     <svg
-                      style={{
-                        animation: 'spin 1s linear infinite',
-                        marginLeft: '-0.25rem',
-                        marginRight: '0.75rem',
-                        width: '1.25rem',
-                        height: '1.25rem',
-                      }}
+                      className="animate-spin -ml-1 mr-3 w-5 h-5"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
                       aria-hidden="true"
                     >
                       <circle
-                        style={{ opacity: 0.25 }}
+                        className="opacity-25"
                         cx="12"
                         cy="12"
                         r="10"
@@ -616,7 +630,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                         strokeWidth="4"
                       ></circle>
                       <path
-                        style={{ opacity: 0.75 }}
+                        className="opacity-75"
                         fill="currentColor"
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
@@ -636,45 +650,23 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
               role="tabpanel"
               id="share-panel-widget"
               aria-labelledby="share-tab-widget"
-              style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+              className="flex flex-col gap-4"
             >
-              <div
-                style={{
-                  background: 'linear-gradient(to right, #f0fdf4, #eff6ff)',
-                  border: '1px solid #bbf7d0',
-                  borderRadius: '0.5rem',
-                  padding: '1rem',
-                }}
-              >
-                <h3 style={{ fontWeight: 500, color: '#111827', marginBottom: '0.5rem' }}>
-                  🎨 Embeddable Badge Widget
-                </h3>
-                <p style={{ fontSize: '0.875rem', color: '#374151' }}>
+              <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4">
+                <h3 className="font-medium text-gray-900 mb-2">🎨 Embeddable Badge Widget</h3>
+                <p className="text-sm text-gray-700">
                   Generate an embeddable widget to display this badge on your website, portfolio, or
                   LinkedIn profile.
                 </p>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div className="flex flex-col gap-3">
                 <button
                   onClick={handleOpenWidgetGenerator}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem 1rem',
-                    background: 'linear-gradient(to right, #10b981, #3b82f6)',
-                    color: 'white',
-                    fontWeight: 500,
-                    borderRadius: '0.5rem',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s',
-                  }}
+                  className="w-full px-4 py-3 bg-gradient-to-r from-emerald-500 to-blue-500 text-white font-medium rounded-lg border-none cursor-pointer flex items-center justify-center transition-all"
                 >
                   <svg
-                    style={{ width: '1.25rem', height: '1.25rem', marginRight: '0.5rem' }}
+                    className="w-5 h-5 mr-2"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -690,55 +682,21 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                   Open Widget Generator
                 </button>
 
-                <div style={{ position: 'relative' }}>
-                  <div
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                    aria-hidden="true"
-                  >
-                    <div style={{ width: '100%', borderTop: '1px solid #d1d5db' }}></div>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                    <div className="w-full border-t border-gray-300"></div>
                   </div>
-                  <div
-                    style={{
-                      position: 'relative',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      fontSize: '0.875rem',
-                    }}
-                  >
-                    <span
-                      style={{ padding: '0 0.5rem', backgroundColor: 'white', color: '#6b7280' }}
-                    >
-                      or
-                    </span>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">or</span>
                   </div>
                 </div>
 
                 <button
                   onClick={handleCopyWidgetLink}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem 1rem',
-                    border: '2px solid #d1d5db',
-                    backgroundColor: 'white',
-                    color: '#374151',
-                    fontWeight: 500,
-                    borderRadius: '0.5rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'background-color 0.2s',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f3f4f6')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'white')}
+                  className="w-full px-4 py-3 border-2 border-gray-300 bg-white text-gray-700 font-medium rounded-lg cursor-pointer flex items-center justify-center transition-colors hover:bg-gray-100"
                 >
                   <svg
-                    style={{ width: '1.25rem', height: '1.25rem', marginRight: '0.5rem' }}
+                    className="w-5 h-5 mr-2"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -754,16 +712,8 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                 </button>
               </div>
 
-              <div
-                style={{
-                  backgroundColor: '#f9fafb',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '0.5rem',
-                  padding: '1rem',
-                  marginTop: '1rem',
-                }}
-              >
-                <p style={{ fontSize: '0.75rem', color: '#4b5563' }}>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-4">
+                <p className="text-xs text-gray-600">
                   <strong>Widget Features:</strong>
                   <br />
                   • 3 sizes (small, medium, large)

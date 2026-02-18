@@ -8,12 +8,14 @@
 import {
   Controller,
   Get,
+  Post,
   Param,
   Query,
   UseGuards,
   Request,
   ParseIntPipe,
   DefaultValuePipe,
+  Logger,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -36,6 +38,7 @@ import type { RequestWithUser } from '../../common/interfaces/request-with-user.
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class BadgeAnalyticsController {
+  private readonly logger = new Logger(BadgeAnalyticsController.name);
   constructor(private readonly badgeAnalyticsService: BadgeAnalyticsService) {}
 
   /**
@@ -170,5 +173,23 @@ export class BadgeAnalyticsController {
   ): Promise<ShareHistoryDto[]> {
     const userId = req.user.userId;
     return this.badgeAnalyticsService.getShareHistory(badgeId, userId, limit);
+  }
+
+  /**
+   * Story 11.5: Record LinkedIn share analytics
+   */
+  @Post(':badgeId/share/linkedin')
+  @ApiOperation({ summary: 'Record LinkedIn share for analytics' })
+  @ApiResponse({ status: 201, description: 'Share recorded' })
+  async recordLinkedInShare(
+    @Param('badgeId') badgeId: string,
+    @Request() req: RequestWithUser,
+  ) {
+    await this.badgeAnalyticsService.recordShare(
+      badgeId,
+      'linkedin',
+      req.user.userId,
+    );
+    return { success: true };
   }
 }

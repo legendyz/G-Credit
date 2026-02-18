@@ -63,6 +63,7 @@ const SkillsDistributionChart: React.FC<SkillsDistributionChartProps> = ({
                 tick={{ fontSize: 12, fill: '#374151' }}
               />
               <Tooltip
+                // inline style retained: Recharts library API prop
                 contentStyle={{
                   borderRadius: '8px',
                   border: '1px solid #e5e7eb',
@@ -90,6 +91,7 @@ const SkillsDistributionChart: React.FC<SkillsDistributionChartProps> = ({
                   <div className="flex-1 bg-gray-100 rounded-full h-5 overflow-hidden">
                     <div
                       className={`h-5 rounded-full ${CATEGORY_COLORS[idx % CATEGORY_COLORS.length]}`}
+                      // inline style retained: dynamic value computed from props
                       style={{ width: `${Math.max(pct, 2)}%` }}
                     />
                   </div>

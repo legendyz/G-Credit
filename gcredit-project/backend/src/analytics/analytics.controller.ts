@@ -2,8 +2,10 @@ import {
   Controller,
   Get,
   Query,
+  Res,
   UseInterceptors,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 import {
@@ -13,6 +15,7 @@ import {
   ApiBearerAuth,
   ApiQuery,
 } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { AnalyticsService } from './analytics.service';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -35,28 +38,32 @@ const CACHE_TTL_15_MIN = 900000;
 @Controller('api/analytics')
 @UseInterceptors(CacheInterceptor)
 export class AnalyticsController {
+  private readonly logger = new Logger(AnalyticsController.name);
   constructor(private readonly analyticsService: AnalyticsService) {}
 
   /**
    * AC1: System Overview API
-   * Returns system-wide statistics for Admin dashboard
+   * Returns system-wide statistics for Admin, issuer-scoped stats for Issuer
    */
   @Get('system-overview')
-  @Roles('ADMIN')
-  @CacheKey('analytics:system-overview')
-  @CacheTTL(CACHE_TTL_15_MIN)
+  @Roles('ADMIN', 'ISSUER')
   @ApiOperation({
     summary: 'Get system overview statistics',
     description:
-      'Returns user counts, badge statistics, template counts, and system health. Admin only.',
+      'Returns user counts, badge statistics, template counts, and system health. Admin sees system-wide; Issuer sees own-issued badges only.',
   })
   @ApiResponse({
     status: 200,
     description: 'System overview statistics',
     type: SystemOverviewDto,
   })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
-  async getSystemOverview(): Promise<SystemOverviewDto> {
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  async getSystemOverview(
+    @CurrentUser() user: { userId: string; role: string },
+  ): Promise<SystemOverviewDto> {
+    if (user.role === 'ISSUER') {
+      return this.analyticsService.getIssuerOverview(user.userId);
+    }
     return this.analyticsService.getSystemOverview();
   }
 
@@ -211,5 +218,41 @@ export class AnalyticsController {
     @Query() query: RecentActivityQueryDto,
   ): Promise<RecentActivityDto> {
     return this.analyticsService.getRecentActivity(query.limit, query.offset);
+  }
+
+  /**
+   * Export analytics data as CSV file
+   * Admin only
+   */
+  @Get('export')
+  @Roles('ADMIN')
+  @ApiOperation({
+    summary: 'Export analytics data as CSV',
+    description:
+      'Exports system overview, issuance trends, top performers, and skills distribution as a CSV file. Admin only.',
+  })
+  @ApiQuery({
+    name: 'format',
+    required: false,
+    enum: ['csv'],
+    description: 'Export format (currently only csv)',
+  })
+  @ApiResponse({ status: 200, description: 'CSV file download' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
+  async exportAnalytics(
+    @Query('format') _format: string = 'csv',
+    @Res() res: Response,
+    @CurrentUser() user: { userId: string; role: string },
+  ): Promise<void> {
+    const csv = await this.analyticsService.generateCsvExport(user.userId);
+    const dateStr = new Date().toISOString().split('T')[0];
+    const BOM = '\uFEFF';
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="gcredit-analytics-${dateStr}.csv"`,
+    );
+    res.send(BOM + csv);
   }
 }

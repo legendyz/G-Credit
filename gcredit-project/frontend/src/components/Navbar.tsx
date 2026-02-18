@@ -17,8 +17,8 @@ export function Navbar() {
   const { pathname } = useLocation();
   const isActive = (path: string) => pathname === path;
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     toast.success('Logged out successfully');
     navigate('/login');
   };

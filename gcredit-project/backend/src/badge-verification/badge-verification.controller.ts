@@ -6,6 +6,7 @@ import {
   InternalServerErrorException,
   Res,
   Header,
+  Logger,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import type { Response } from 'express';
@@ -16,6 +17,7 @@ import { BadgeStatus } from '@prisma/client';
 @ApiTags('Badge Verification (Public)')
 @Controller('api/verify')
 export class BadgeVerificationController {
+  private readonly logger = new Logger(BadgeVerificationController.name);
   constructor(private readonly verificationService: BadgeVerificationService) {}
 
   /**
@@ -101,10 +103,13 @@ export class BadgeVerificationController {
     const now = new Date();
     const isExpired = badge.expiresAt && new Date(badge.expiresAt) < now;
     const isRevoked = badge.status === BadgeStatus.REVOKED;
+    const isPending = badge.status === BadgeStatus.PENDING;
 
-    let verificationStatus: 'valid' | 'expired' | 'revoked';
+    let verificationStatus: 'valid' | 'expired' | 'revoked' | 'pending';
     if (isRevoked) {
       verificationStatus = 'revoked';
+    } else if (isPending) {
+      verificationStatus = 'pending';
     } else if (isExpired) {
       verificationStatus = 'expired';
     } else {
@@ -121,8 +126,8 @@ export class BadgeVerificationController {
       response.setHeader('Pragma', 'no-cache');
       response.setHeader('Expires', '0');
     } else {
-      // Valid badges can be cached for 1 hour
-      response.setHeader('Cache-Control', 'public, max-age=3600');
+      // Valid badges: short cache to respect visibility changes promptly
+      response.setHeader('Cache-Control', 'public, max-age=60');
     }
 
     // Story 6.3: Custom verification status header
@@ -143,6 +148,11 @@ export class BadgeVerificationController {
     return {
       // Open Badges 2.0 assertion (from Story 6.1)
       ...assertionData,
+
+      // Story 11.24 AC-M4/M5/L6: Explicit fields for frontend mapping
+      expiresAt: badge.expiresAt,
+      claimedAt: badge.claimedAt,
+      badgeId: badge.id,
 
       // Story 6.3: Additional verification metadata
       verificationStatus,

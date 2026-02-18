@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Patch,
   Body,
   UseGuards,
   Request,
@@ -15,6 +16,7 @@ import {
   UploadedFile,
   BadRequestException,
   Res,
+  Logger,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -38,6 +40,7 @@ import { QueryBadgeDto } from './dto/query-badge.dto';
 import { RevokeBadgeDto } from './dto/revoke-badge.dto';
 import { WalletQueryDto } from './dto/wallet-query.dto';
 import { ReportBadgeIssueDto } from './dto/report-badge-issue.dto';
+import { UpdateBadgeVisibilityDto } from './dto/update-badge-visibility.dto';
 import { SimilarBadgesQueryDto } from '../badge-templates/dto/similar-badges-query.dto';
 import { RecommendationsService } from '../badge-templates/recommendations.service';
 import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
@@ -47,6 +50,7 @@ import type { RequestWithUser } from '../common/interfaces/request-with-user.int
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class BadgeIssuanceController {
+  private readonly logger = new Logger(BadgeIssuanceController.name);
   constructor(
     private readonly badgeService: BadgeIssuanceService,
     private readonly recommendationsService: RecommendationsService,
@@ -75,10 +79,32 @@ export class BadgeIssuanceController {
     return this.badgeService.issueBadge(dto, req.user.userId);
   }
 
-  @Post(':id/claim')
-  @Public() // No authentication required when using claimToken; auth required when claiming by ID
+  @Post('claim')
   @ApiOperation({
-    summary: 'Claim a badge using claim token or badge ID (authenticated)',
+    summary:
+      'Claim a badge using claim token (authenticated user must be the recipient)',
+  })
+  @ApiResponse({ status: 200, description: 'Badge claimed successfully' })
+  @ApiResponse({ status: 400, description: 'claimToken is required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Badge belongs to a different user',
+  })
+  @ApiResponse({ status: 404, description: 'Invalid claim token' })
+  @ApiResponse({ status: 410, description: 'Badge expired or revoked' })
+  async claimBadgeByToken(
+    @Body() dto: ClaimBadgeDto,
+    @Request() req: RequestWithUser,
+  ) {
+    if (!dto.claimToken) {
+      throw new BadRequestException('claimToken is required');
+    }
+    return this.badgeService.claimBadge(dto.claimToken, req.user.userId);
+  }
+
+  @Post(':id/claim')
+  @ApiOperation({
+    summary: 'Claim a badge by ID (authenticated user must be the recipient)',
   })
   @ApiResponse({
     status: 200,
@@ -114,7 +140,7 @@ export class BadgeIssuanceController {
       return this.badgeService.claimBadge(dto.claimToken);
     }
     // Authenticated user claiming their own badge by ID
-    return this.badgeService.claimBadgeById(id, req.user?.userId);
+    return this.badgeService.claimBadgeById(id, req.user.userId);
   }
 
   @Get('my-badges')
@@ -134,8 +160,15 @@ export class BadgeIssuanceController {
     description: 'Wallet badges retrieved with date groups',
     schema: {
       example: {
-        badges: [],
-        pagination: { page: 1, limit: 50, total: 100, totalPages: 2 },
+        data: [],
+        meta: {
+          page: 1,
+          limit: 50,
+          total: 100,
+          totalPages: 2,
+          hasNextPage: true,
+          hasPreviousPage: false,
+        },
         dateGroups: [
           { label: 'January 2026', count: 12, startIndex: 0 },
           { label: 'December 2025', count: 15, startIndex: 12 },
@@ -196,6 +229,28 @@ export class BadgeIssuanceController {
     }
 
     return badge;
+  }
+
+  @Patch(':id/visibility')
+  @ApiOperation({
+    summary: 'Toggle badge visibility (PUBLIC/PRIVATE) — owner only',
+  })
+  @ApiResponse({ status: 200, description: 'Visibility updated' })
+  @ApiResponse({
+    status: 403,
+    description: 'Only the badge recipient can change visibility',
+  })
+  @ApiResponse({ status: 404, description: 'Badge not found' })
+  async updateVisibility(
+    @Param('id') id: string,
+    @Body() dto: UpdateBadgeVisibilityDto,
+    @Request() req: RequestWithUser,
+  ) {
+    return this.badgeService.updateVisibility(
+      id,
+      dto.visibility,
+      req.user.userId,
+    );
   }
 
   @Post(':id/revoke')

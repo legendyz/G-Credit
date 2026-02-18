@@ -78,10 +78,10 @@ export class TeamsBadgeNotificationService {
 
     try {
       await this.sendEmailFallback(badge, recipient, claimUrl);
-      this.logger.log(`✅ Badge issuance email sent to ${recipient.email}`);
+      this.logger.log(`✅ Badge issuance email sent to user:${recipient.id}`);
     } catch (error: unknown) {
       this.logger.error(
-        `❌ Failed to send badge issuance email to ${recipient.email}: ${(error as Error).message}`,
+        `❌ Failed to send badge issuance email to user:${recipient.id}: ${(error as Error).message}`,
       );
       throw error;
     }
@@ -185,17 +185,17 @@ export class TeamsBadgeNotificationService {
 
       // Task 6: Email fallback
       this.logger.log(
-        `📧 Attempting email fallback for badge ${badgeId} → ${recipient.email}`,
+        `📧 Attempting email fallback for badge ${badgeId} → user:${recipient.id}`,
       );
 
       try {
         await this.sendEmailFallback(badge, recipient, cardData.claimUrl);
         this.logger.log(
-          `✅ Email fallback sent successfully to ${recipient.email}`,
+          `✅ Email fallback sent successfully to user:${recipient.id}`,
         );
       } catch (emailError: unknown) {
         this.logger.error(
-          `❌ Email fallback also failed for ${recipient.email}: ${emailError instanceof Error ? emailError.message : String(emailError)}`,
+          `❌ Email fallback also failed for user:${recipient.id}: ${emailError instanceof Error ? emailError.message : String(emailError)}`,
         );
         // Don't throw - notification failure shouldn't block badge issuance
       }

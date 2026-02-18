@@ -19,19 +19,9 @@ import {
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-// Mock localStorage
-const mockLocalStorage = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-};
-Object.defineProperty(window, 'localStorage', { value: mockLocalStorage });
-
 describe('badgesApi', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockLocalStorage.getItem.mockReturnValue('mock-access-token');
   });
 
   afterEach(() => {
@@ -94,10 +84,9 @@ describe('badgesApi', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('/badges/issued?'),
         expect.objectContaining({
-          method: 'GET',
+          credentials: 'include',
           headers: expect.objectContaining({
             'Content-Type': 'application/json',
-            Authorization: 'Bearer mock-access-token',
           }),
         })
       );
@@ -197,9 +186,9 @@ describe('badgesApi', () => {
         expect.stringContaining('/badges/badge-1/revoke'),
         expect.objectContaining({
           method: 'POST',
+          credentials: 'include',
           headers: expect.objectContaining({
             'Content-Type': 'application/json',
-            Authorization: 'Bearer mock-access-token',
           }),
           body: JSON.stringify({
             reason: 'Policy Violation',
@@ -272,7 +261,7 @@ describe('badgesApi', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('/badges/badge-1'),
         expect.objectContaining({
-          method: 'GET',
+          credentials: 'include',
         })
       );
       expect(result).toEqual(mockBadge);
@@ -290,8 +279,7 @@ describe('badgesApi', () => {
   });
 
   describe('authentication', () => {
-    it('should include auth header when token exists', async () => {
-      mockLocalStorage.getItem.mockReturnValue('valid-token');
+    it('should send credentials: include for cookie-based auth', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve({ badges: [], total: 0, page: 1, limit: 10, totalPages: 0 }),
@@ -302,22 +290,9 @@ describe('badgesApi', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
-          headers: expect.objectContaining({
-            Authorization: 'Bearer valid-token',
-          }),
+          credentials: 'include',
         })
       );
-    });
-
-    it('should not include auth header when no token', async () => {
-      mockLocalStorage.getItem.mockReturnValue(null);
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ badges: [], total: 0, page: 1, limit: 10, totalPages: 0 }),
-      });
-
-      await getAllBadges();
-
       const headers = mockFetch.mock.calls[0][1].headers;
       expect(headers.Authorization).toBeUndefined();
     });

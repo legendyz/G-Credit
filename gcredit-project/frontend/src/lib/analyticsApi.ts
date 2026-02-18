@@ -5,7 +5,7 @@
  * Follows the same pattern as adminUsersApi.ts.
  */
 
-import { API_BASE_URL } from './apiConfig';
+import { apiFetch } from './apiFetch';
 import type {
   SystemOverviewDto,
   IssuanceTrendsDto,
@@ -13,19 +13,6 @@ import type {
   SkillsDistributionDto,
   RecentActivityDto,
 } from '../types/analytics';
-
-const ANALYTICS_BASE = `${API_BASE_URL}/analytics`;
-
-/**
- * Helper to get auth headers with Bearer token
- */
-function getAuthHeaders(): HeadersInit {
-  const token = localStorage.getItem('accessToken');
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
 
 /**
  * Helper to handle response errors consistently
@@ -43,9 +30,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
  * GET /api/analytics/system-overview
  */
 export async function getSystemOverview(): Promise<SystemOverviewDto> {
-  const response = await fetch(`${ANALYTICS_BASE}/system-overview`, {
-    headers: getAuthHeaders(),
-  });
+  const response = await apiFetch('/analytics/system-overview');
   return handleResponse<SystemOverviewDto>(response);
 }
 
@@ -55,9 +40,7 @@ export async function getSystemOverview(): Promise<SystemOverviewDto> {
  */
 export async function getIssuanceTrends(period: number = 30): Promise<IssuanceTrendsDto> {
   const params = new URLSearchParams({ period: period.toString() });
-  const response = await fetch(`${ANALYTICS_BASE}/issuance-trends?${params}`, {
-    headers: getAuthHeaders(),
-  });
+  const response = await apiFetch(`/analytics/issuance-trends?${params}`);
   return handleResponse<IssuanceTrendsDto>(response);
 }
 
@@ -67,9 +50,7 @@ export async function getIssuanceTrends(period: number = 30): Promise<IssuanceTr
  */
 export async function getTopPerformers(limit: number = 10): Promise<TopPerformersDto> {
   const params = new URLSearchParams({ limit: limit.toString() });
-  const response = await fetch(`${ANALYTICS_BASE}/top-performers?${params}`, {
-    headers: getAuthHeaders(),
-  });
+  const response = await apiFetch(`/analytics/top-performers?${params}`);
   return handleResponse<TopPerformersDto>(response);
 }
 
@@ -78,9 +59,7 @@ export async function getTopPerformers(limit: number = 10): Promise<TopPerformer
  * GET /api/analytics/skills-distribution
  */
 export async function getSkillsDistribution(): Promise<SkillsDistributionDto> {
-  const response = await fetch(`${ANALYTICS_BASE}/skills-distribution`, {
-    headers: getAuthHeaders(),
-  });
+  const response = await apiFetch('/analytics/skills-distribution');
   return handleResponse<SkillsDistributionDto>(response);
 }
 
@@ -96,8 +75,19 @@ export async function getRecentActivity(
     limit: limit.toString(),
     offset: offset.toString(),
   });
-  const response = await fetch(`${ANALYTICS_BASE}/recent-activity?${params}`, {
-    headers: getAuthHeaders(),
-  });
+  const response = await apiFetch(`/analytics/recent-activity?${params}`);
   return handleResponse<RecentActivityDto>(response);
+}
+
+/**
+ * Export analytics data as CSV file
+ * GET /api/analytics/export?format=csv
+ */
+export async function exportAnalyticsCsv(): Promise<Blob> {
+  const response = await apiFetch('/analytics/export?format=csv');
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Export failed' }));
+    throw new Error(error.message || `HTTP ${response.status}`);
+  }
+  return response.blob();
 }

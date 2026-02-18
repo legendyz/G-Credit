@@ -9,6 +9,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter } from 'react-router-dom';
 import { BadgeManagementPage } from './BadgeManagementPage';
 import * as badgesApi from '@/lib/badgesApi';
 import type { Badge, BadgeListResponse } from '@/lib/badgesApi';
@@ -92,7 +93,7 @@ const createMockBadge = (overrides: Partial<Badge> = {}): Badge => ({
 });
 
 const mockBadgesResponse: BadgeListResponse = {
-  badges: [
+  data: [
     createMockBadge({
       id: 'badge-1',
       status: 'PENDING',
@@ -121,10 +122,14 @@ const mockBadgesResponse: BadgeListResponse = {
       },
     }),
   ],
-  total: 4,
-  page: 1,
-  limit: 10,
-  totalPages: 1,
+  meta: {
+    total: 4,
+    page: 1,
+    limit: 10,
+    totalPages: 1,
+    hasNextPage: false,
+    hasPreviousPage: false,
+  },
 };
 
 // Helper to create QueryClient wrapper
@@ -138,7 +143,9 @@ const createWrapper = () => {
     },
   });
   return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <MemoryRouter>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </MemoryRouter>
   );
 };
 
@@ -263,11 +270,15 @@ describe('BadgeManagementPage', () => {
 
     it('should NOT show Revoke button for REVOKED badges', async () => {
       const revokedOnlyResponse = {
-        badges: [createMockBadge({ id: 'badge-1', status: 'REVOKED' })],
-        total: 1,
-        page: 1,
-        limit: 10,
-        totalPages: 1,
+        data: [createMockBadge({ id: 'badge-1', status: 'REVOKED' })],
+        meta: {
+          total: 1,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
       };
       vi.mocked(badgesApi.getAllBadges).mockResolvedValue(revokedOnlyResponse);
 
@@ -280,11 +291,15 @@ describe('BadgeManagementPage', () => {
 
     it('should NOT show Revoke button for EXPIRED badges', async () => {
       const expiredOnlyResponse = {
-        badges: [createMockBadge({ id: 'badge-1', status: 'EXPIRED' })],
-        total: 1,
-        page: 1,
-        limit: 10,
-        totalPages: 1,
+        data: [createMockBadge({ id: 'badge-1', status: 'EXPIRED' })],
+        meta: {
+          total: 1,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
       };
       vi.mocked(badgesApi.getAllBadges).mockResolvedValue(expiredOnlyResponse);
 
@@ -297,14 +312,18 @@ describe('BadgeManagementPage', () => {
 
     it('should only allow ISSUER to revoke own badges', async () => {
       const mixedIssuersResponse = {
-        badges: [
+        data: [
           createMockBadge({ id: 'badge-1', issuerId: 'current-user-id', status: 'PENDING' }), // Own badge
           createMockBadge({ id: 'badge-2', issuerId: 'other-issuer', status: 'PENDING' }), // Not own badge
         ],
-        total: 2,
-        page: 1,
-        limit: 10,
-        totalPages: 1,
+        meta: {
+          total: 2,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
       };
       vi.mocked(badgesApi.getIssuedBadges).mockResolvedValue(mixedIssuersResponse);
 
@@ -366,11 +385,15 @@ describe('BadgeManagementPage', () => {
   describe('Empty State', () => {
     it('should show empty state when no badges', async () => {
       vi.mocked(badgesApi.getAllBadges).mockResolvedValue({
-        badges: [],
-        total: 0,
-        page: 1,
-        limit: 10,
-        totalPages: 0,
+        data: [],
+        meta: {
+          total: 0,
+          page: 1,
+          limit: 10,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
       });
 
       render(<BadgeManagementPage />, { wrapper: createWrapper() });
@@ -385,11 +408,15 @@ describe('BadgeManagementPage', () => {
     it('should open modal when Revoke button clicked', async () => {
       const user = userEvent.setup();
       const pendingOnlyResponse = {
-        badges: [createMockBadge({ id: 'badge-1', status: 'PENDING' })],
-        total: 1,
-        page: 1,
-        limit: 10,
-        totalPages: 1,
+        data: [createMockBadge({ id: 'badge-1', status: 'PENDING' })],
+        meta: {
+          total: 1,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
       };
       vi.mocked(badgesApi.getAllBadges).mockResolvedValue(pendingOnlyResponse);
 
@@ -428,11 +455,15 @@ describe('BadgeManagementPage', () => {
 
     it('should have accessible revoke buttons with badge context', async () => {
       const pendingOnlyResponse = {
-        badges: [createMockBadge({ id: 'badge-1', status: 'PENDING' })],
-        total: 1,
-        page: 1,
-        limit: 10,
-        totalPages: 1,
+        data: [createMockBadge({ id: 'badge-1', status: 'PENDING' })],
+        meta: {
+          total: 1,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
       };
       vi.mocked(badgesApi.getAllBadges).mockResolvedValue(pendingOnlyResponse);
 

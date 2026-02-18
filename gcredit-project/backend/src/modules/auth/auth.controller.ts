@@ -6,7 +6,11 @@ import {
   HttpStatus,
   Get,
   Patch,
+  Req,
+  Res,
+  Logger,
 } from '@nestjs/common';
+import type { Request, Response } from 'express';
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -21,6 +25,7 @@ import type { AuthenticatedUser } from '../../common/interfaces/request-with-use
 
 @Controller('api/auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
   constructor(private authService: AuthService) {}
 
   // Rate limit: 3 registrations per hour per IP (Story 8.6 - SEC-P1-004)
@@ -28,8 +33,14 @@ export class AuthController {
   @Public()
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  async register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
+  async register(
+    @Body() dto: RegisterDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.register(dto);
+    this.setAuthCookies(res, result.accessToken, result.refreshToken);
+    // Story 11.25 AC-M4: Only return user profile — tokens are in httpOnly cookies only
+    return { user: result.user };
   }
 
   // Rate limit: 5 login attempts per minute per IP (Story 8.6 - SEC-P1-004)
@@ -37,8 +48,14 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.login(dto);
+    this.setAuthCookies(res, result.accessToken, result.refreshToken);
+    // Story 11.25 AC-M4: Only return user profile — tokens are in httpOnly cookies only
+    return { user: result.user };
   }
 
   // Rate limit: 3 password reset requests per 5 minutes (Story 8.6 - SEC-P1-004)
@@ -64,14 +81,34 @@ export class AuthController {
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  async refresh(@Body('refreshToken') refreshToken: string) {
-    return this.authService.refreshAccessToken(refreshToken);
+  async refresh(
+    @Body('refreshToken') bodyRefreshToken: string,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    // Dual-read: prefer cookie, fallback to body (transition period)
+    const refreshToken: string =
+      (req.cookies?.refresh_token as string) || bodyRefreshToken;
+    const result = await this.authService.refreshAccessToken(refreshToken);
+    this.setAuthCookies(res, result.accessToken, result.refreshToken);
+    // Story 11.25 AC-M4: Tokens only in httpOnly cookies
+    return { message: 'Token refreshed' };
   }
 
   @Public()
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  async logout(@Body('refreshToken') refreshToken: string) {
+  async logout(
+    @Body('refreshToken') bodyRefreshToken: string,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    // Dual-read: prefer cookie, fallback to body
+    const refreshToken: string =
+      (req.cookies?.refresh_token as string) || bodyRefreshToken;
+    // Clear httpOnly cookies (Story 11.25 AC-M3: match setCookie attributes exactly)
+    res.clearCookie('access_token', this.getCookieOptions('/api'));
+    res.clearCookie('refresh_token', this.getCookieOptions('/api/auth'));
     return this.authService.logout(refreshToken);
   }
 
@@ -101,5 +138,41 @@ export class AuthController {
     @Body() dto: ChangePasswordDto,
   ) {
     return this.authService.changePassword(user.userId, dto);
+  }
+
+  /**
+   * Story 11.25 AC-M3: Shared cookie options to ensure setCookie and clearCookie
+   * use identical attributes (httpOnly, secure, sameSite, path).
+   * Browsers require exact attribute match to clear cookies.
+   */
+  private getCookieOptions(path: string) {
+    const isProduction = process.env.NODE_ENV === 'production';
+    return {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax' as const,
+      path,
+    };
+  }
+
+  /**
+   * Set httpOnly cookies for JWT tokens (Story 11.6 - SEC-002)
+   * Access token: path=/api (all API requests)
+   * Refresh token: path=/api/auth (auth endpoints only)
+   */
+  private setAuthCookies(
+    res: Response,
+    accessToken: string,
+    refreshToken: string,
+  ) {
+    res.cookie('access_token', accessToken, {
+      ...this.getCookieOptions('/api'),
+      maxAge: 15 * 60 * 1000, // 15 min (match JWT expiry)
+    });
+
+    res.cookie('refresh_token', refreshToken, {
+      ...this.getCookieOptions('/api/auth'),
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
   }
 }

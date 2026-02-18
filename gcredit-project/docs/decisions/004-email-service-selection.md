@@ -1,7 +1,10 @@
-# ADR 004: Email Service Selection for Badge Notifications
 
+# ADR-004: Email Service Selection for Badge Notifications
+
+
+**ADR Number:** 004  
+**Status:** ✅ Accepted  
 **Date:** 2026-01-27  
-**Status:** Accepted  
 **Deciders:** Development Team  
 **Tags:** email, notifications, azure, infrastructure
 

@@ -2,9 +2,10 @@
 
 This directory contains project-specific technical documentation, setup guides, sprint history, and testing resources.
 
-**Last Updated:** 2026-02-11 (Sprint 10 complete — v1.0.0 Released)
+**Last Updated:** 2026-02-18 (Sprint 11 complete — v1.1.0 Released)
 
 ---
+
 
 ## 📁 Directory Structure
 
@@ -47,13 +48,31 @@ Project planning documents, epics, user stories, and UX specifications.
 - **[implementation-readiness-report-2026-01-22.md](./planning/implementation-readiness-report-2026-01-22.md)** - Score: 10/10 (52 KB)
 - **[ux-design-directions.html](./planning/ux-design-directions.html)** - Visual UX design directions (47 KB)
 
+
 ### 🏃 Sprint History (`sprints/`)
 Historical sprint documentation organized by sprint number.
 
 **Sprint Structure:**
-- **Sprint 0-10:** Each sprint directory contains backlog, retrospective, and sprint-specific docs
-- **Total Files:** 100+ files across 11 sprint directories
+- **Sprint 0-11:** Each sprint directory contains backlog, retrospective, evaluation, technical debt, and sprint-specific docs
+- **Total Files:** 120+ files across 12 sprint directories
 - **Index:** [sprints/README.md](./sprints/README.md)
+
+**Sprint 11 Closure:**
+- Sprint 11 completed (2026-02-15). All evaluation, UAT, and technical debt docs are consolidated.
+- Technical debt registry updated (TD-009, TD-010 from health audit merged).
+- See [sprints/sprint-11/](./sprints/sprint-11/) for details.
+
+---
+
+## 🧹 Documentation Hygiene (2026-02-18)
+
+- ADRs: Naming and metadata will be unified (ADR-002 to ADR-010, see `decisions/`).
+- Outdated/legacy files in `_bmad-output/` will be reviewed and cleaned up.
+- Index and project-context.md are now up-to-date.
+
+**Next Steps:**
+- Evaluate systematic documentation management (e.g., GitHub Wiki) for future archiving and navigation.
+
 
 ### 🛠️ Setup Guides (`setup/`)
 Configuration and installation instructions for various services and integrations.

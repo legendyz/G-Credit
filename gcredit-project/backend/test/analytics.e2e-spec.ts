@@ -6,6 +6,7 @@ import {
   teardownE2ETest,
   createAndLoginUser,
   TestUser,
+  extractCookieToken,
 } from './helpers/test-setup';
 
 jest.setTimeout(30000);
@@ -112,12 +113,22 @@ describe('Analytics API (e2e) - Story 8.4', () => {
       expect(body.systemHealth.status).toBe('healthy');
     });
 
-    it('should reject non-admin users (403)', async () => {
-      await request(ctx.app.getHttpServer() as App)
+    it('should return issuer-scoped overview for Issuer (200)', async () => {
+      const response = await request(ctx.app.getHttpServer() as App)
         .get('/api/analytics/system-overview')
         .set('Authorization', `Bearer ${issuerUser.token}`)
-        .expect(403);
+        .expect(200);
 
+      const body = response.body as {
+        users: unknown;
+        badges: { totalIssued: number };
+      };
+      expect(body).toHaveProperty('users');
+      expect(body).toHaveProperty('badges');
+      expect(body.badges).toHaveProperty('totalIssued');
+    });
+
+    it('should reject non-admin/non-issuer users (403)', async () => {
       await request(ctx.app.getHttpServer() as App)
         .get('/api/analytics/system-overview')
         .set('Authorization', `Bearer ${employeeUser.token}`)
@@ -190,8 +201,11 @@ describe('Analytics API (e2e) - Story 8.4', () => {
         .send({ email: freshManagerUser.email, password: 'TestPassword123!' })
         .expect(200);
 
-      const loginBody = loginResponse.body as { accessToken: string };
-      const freshManagerToken = loginBody.accessToken;
+      // Story 11.25: Extract token from Set-Cookie header (no longer in body)
+      const freshManagerToken = extractCookieToken(
+        loginResponse,
+        'access_token',
+      );
 
       // Manager can access their own team
       const response = await request(ctx.app.getHttpServer() as App)

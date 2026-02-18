@@ -15,6 +15,7 @@ import {
   BadRequestException,
   HttpCode,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -38,6 +39,7 @@ import type { RequestWithUser } from '../../common/interfaces/request-with-user.
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class TeamsSharingController {
+  private readonly logger = new Logger(TeamsSharingController.name);
   constructor(
     private readonly teamsNotificationService: TeamsBadgeNotificationService,
     private readonly badgeAnalyticsService: BadgeAnalyticsService,

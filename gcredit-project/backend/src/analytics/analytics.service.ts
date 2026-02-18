@@ -129,6 +129,73 @@ export class AnalyticsService {
   }
 
   /**
+   * Issuer-scoped overview: only badges issued by this user
+   */
+  async getIssuerOverview(issuerId: string): Promise<SystemOverviewDto> {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const [badgesByStatus, recipientCount, badgesThisMonth] = await Promise.all(
+      [
+        this.prisma.badge.groupBy({
+          by: ['status'],
+          where: { issuerId },
+          _count: true,
+        }),
+        this.prisma.badge
+          .findMany({
+            where: { issuerId },
+            select: { recipientId: true },
+            distinct: ['recipientId'],
+          })
+          .then((r) => r.length),
+        this.prisma.badge.count({
+          where: { issuerId, issuedAt: { gte: startOfMonth } },
+        }),
+      ],
+    );
+
+    // Badge counts scoped to this issuer
+    const badgeCounts = {
+      totalIssued: 0,
+      claimedCount: 0,
+      pendingCount: 0,
+      revokedCount: 0,
+    };
+    for (const item of badgesByStatus) {
+      badgeCounts.totalIssued += item._count;
+      if (item.status === 'CLAIMED') badgeCounts.claimedCount = item._count;
+      if (item.status === 'PENDING') badgeCounts.pendingCount = item._count;
+      if (item.status === 'REVOKED') badgeCounts.revokedCount = item._count;
+    }
+    const claimRate =
+      badgeCounts.totalIssued > 0
+        ? Math.round(
+            (badgeCounts.claimedCount / badgeCounts.totalIssued) * 100,
+          ) / 100
+        : 0;
+
+    return {
+      users: {
+        total: recipientCount,
+        activeThisMonth: badgesThisMonth,
+        newThisMonth: badgesThisMonth,
+        byRole: { ADMIN: 0, ISSUER: 0, MANAGER: 0, EMPLOYEE: recipientCount },
+      },
+      badges: {
+        ...badgeCounts,
+        claimRate,
+      },
+      badgeTemplates: { total: 0, active: 0, draft: 0, archived: 0 },
+      systemHealth: {
+        status: 'healthy',
+        lastSync: now.toISOString(),
+        apiResponseTime: '120ms',
+      },
+    };
+  }
+
+  /**
    * AC2: Get badge issuance trends over time
    * ADMIN and ISSUER can access
    * @param period - Number of days (7, 30, 90, 365)
@@ -493,5 +560,67 @@ export class AnalyticsService {
         total,
       },
     };
+  }
+
+  /**
+   * Generate CSV export of analytics data
+   * Combines system overview, issuance trends, top performers, and skills distribution
+   * @param userId - Current user ID for RBAC filtering
+   */
+  async generateCsvExport(userId: string): Promise<string> {
+    const [overview, trends, performers, skills] = await Promise.all([
+      this.getSystemOverview(),
+      this.getIssuanceTrends(30, undefined, userId, 'ADMIN'),
+      this.getTopPerformers(undefined, 50, userId, 'ADMIN'),
+      this.getSkillsDistribution(),
+    ]);
+
+    const lines: string[] = [];
+
+    // Section 1: System Overview
+    lines.push('Section,Metric,Value');
+    lines.push(`System Overview,Total Users,${overview.users.total}`);
+    lines.push(
+      `System Overview,Active Users This Month,${overview.users.activeThisMonth}`,
+    );
+    lines.push(
+      `System Overview,New Users This Month,${overview.users.newThisMonth}`,
+    );
+    lines.push(`System Overview,Badges Issued,${overview.badges.totalIssued}`);
+    lines.push(
+      `System Overview,Badges Claimed,${overview.badges.claimedCount}`,
+    );
+    lines.push(`System Overview,Claim Rate,${overview.badges.claimRate}%`);
+    lines.push(
+      `System Overview,Active Templates,${overview.badgeTemplates.active}`,
+    );
+    lines.push('');
+
+    // Section 2: Issuance Trends (last 30 days)
+    lines.push('Date,Issued,Claimed,Revoked');
+    for (const point of trends.dataPoints) {
+      lines.push(
+        `${point.date},${point.issued},${point.claimed},${point.revoked}`,
+      );
+    }
+    lines.push('');
+
+    // Section 3: Top Performers
+    lines.push('Rank,Employee,Badge Count');
+    performers.topPerformers.forEach((p, i) => {
+      // RFC 4180: double-quote fields that may contain commas; escape quotes with ""
+      const name = `"${(p.name || '').replace(/"/g, '""')}"`;
+      lines.push(`${i + 1},${name},${p.badgeCount}`);
+    });
+    lines.push('');
+
+    // Section 4: Skills Distribution
+    lines.push('Skill,Badge Count,Employee Count');
+    for (const skill of skills.topSkills) {
+      const skillName = `"${(skill.skillName || '').replace(/"/g, '""')}"`;
+      lines.push(`${skillName},${skill.badgeCount},${skill.employeeCount}`);
+    }
+
+    return lines.join('\n');
   }
 }

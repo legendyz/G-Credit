@@ -30,7 +30,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { PageTemplate } from '@/components/layout/PageTemplate';
 import type { UserRole, AdminUsersQueryParams } from '@/lib/adminUsersApi';
 
-type SortByField = 'name' | 'email' | 'role' | 'lastLogin' | 'createdAt';
+type SortByField = 'name' | 'email' | 'role' | 'department' | 'status' | 'lastLogin' | 'createdAt';
 
 const PAGE_SIZE = 25;
 const ROLES: (UserRole | 'ALL')[] = ['ALL', 'ADMIN', 'ISSUER', 'MANAGER', 'EMPLOYEE'];
@@ -41,7 +41,7 @@ export function AdminUserManagementPage() {
 
   // Parse URL params for initial state (sort state persistence)
   const initialPage = parseInt(searchParams.get('page') || '1', 10);
-  const initialSortBy = (searchParams.get('sortBy') as SortByField | null) || 'name';
+  const initialSortBy = (searchParams.get('sortBy') as SortByField | null) || null;
   const initialSortOrder = (searchParams.get('sortOrder') as 'asc' | 'desc') || 'asc';
   const initialRoleFilter = searchParams.get('roleFilter') as UserRole | null;
   const initialStatusFilter = searchParams.get('statusFilter');
@@ -49,7 +49,7 @@ export function AdminUserManagementPage() {
   // Local state
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [page, setPage] = useState(initialPage);
-  const [sortBy, setSortBy] = useState<SortByField>(initialSortBy);
+  const [sortBy, setSortBy] = useState<SortByField | null>(initialSortBy);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(initialSortOrder);
   const [roleFilter, setRoleFilter] = useState<UserRole | 'ALL'>(initialRoleFilter || 'ALL');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>(
@@ -64,8 +64,8 @@ export function AdminUserManagementPage() {
     const params: AdminUsersQueryParams = {
       page,
       limit: PAGE_SIZE,
-      sortBy,
-      sortOrder,
+      sortBy: sortBy || undefined,
+      sortOrder: sortBy ? sortOrder : undefined,
     };
     if (debouncedSearch) params.search = debouncedSearch;
     if (roleFilter !== 'ALL') params.roleFilter = roleFilter;
@@ -93,16 +93,32 @@ export function AdminUserManagementPage() {
     [searchParams, setSearchParams]
   );
 
-  // Handle sort
+  // Handle sort: 3-click cycle (asc -> desc -> clear)
   const handleSort = useCallback(
     (field: string) => {
-      const newOrder = sortBy === field && sortOrder === 'asc' ? 'desc' : 'asc';
-      setSortBy(field as SortByField);
-      setSortOrder(newOrder);
+      let newSortBy: SortByField | null;
+      let newSortOrder: 'asc' | 'desc';
+
+      if (sortBy !== field) {
+        // New column: start ascending
+        newSortBy = field as SortByField;
+        newSortOrder = 'asc';
+      } else if (sortOrder === 'asc') {
+        // Same column, was asc: switch to desc
+        newSortBy = field as SortByField;
+        newSortOrder = 'desc';
+      } else {
+        // Same column, was desc: clear sort
+        newSortBy = null;
+        newSortOrder = 'asc';
+      }
+
+      setSortBy(newSortBy);
+      setSortOrder(newSortOrder);
       setPage(1);
       updateUrlParams({
-        sortBy: field,
-        sortOrder: newOrder,
+        sortBy: newSortBy,
+        sortOrder: newSortBy ? newSortOrder : null,
         page: '1',
       });
     },
@@ -169,7 +185,7 @@ export function AdminUserManagementPage() {
   }, [setSearchParams]);
 
   // Empty state
-  const isEmpty = data && data.users.length === 0;
+  const isEmpty = data && data.data.length === 0;
   const hasFilters = debouncedSearch || roleFilter !== 'ALL' || statusFilter !== 'all';
 
   return (
@@ -179,7 +195,7 @@ export function AdminUserManagementPage() {
       actions={
         data ? (
           <p className="text-sm text-neutral-500">
-            {data.pagination.total} user{data.pagination.total !== 1 ? 's' : ''}
+            {data.meta.total} user{data.meta.total !== 1 ? 's' : ''}
           </p>
         ) : undefined
       }
@@ -191,7 +207,7 @@ export function AdminUserManagementPage() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
           <Input
             type="text"
-            placeholder="Search by name or email..."
+            placeholder="Search by name, email, role, or department..."
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10 focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
@@ -268,22 +284,22 @@ export function AdminUserManagementPage() {
       )}
 
       {/* User Table */}
-      {data && data.users.length > 0 && (
+      {data && data.data.length > 0 && (
         <>
           <UserListTable
-            users={data.users}
+            users={data.data}
             currentUserId={currentUser?.id || ''}
-            sortBy={sortBy || 'name'}
+            sortBy={sortBy || ''}
             sortOrder={sortOrder}
             onSort={handleSort}
           />
 
           {/* Pagination */}
-          {data.pagination.totalPages > 1 && (
+          {data.meta.totalPages > 1 && (
             <div className="flex items-center justify-between border-t border-neutral-200 pt-4">
               <p className="text-sm text-neutral-500">
                 Showing {(page - 1) * PAGE_SIZE + 1} to{' '}
-                {Math.min(page * PAGE_SIZE, data.pagination.total)} of {data.pagination.total} users
+                {Math.min(page * PAGE_SIZE, data.meta.total)} of {data.meta.total} users
               </p>
               <div className="flex gap-2">
                 <Button
@@ -299,7 +315,7 @@ export function AdminUserManagementPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => handlePageChange(page + 1)}
-                  disabled={!data.pagination.hasMore}
+                  disabled={!data.meta.hasNextPage}
                   className="min-h-[44px] min-w-[44px] focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
                 >
                   Next

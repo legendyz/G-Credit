@@ -90,12 +90,14 @@ export interface DateGroup {
 }
 
 export interface WalletResponse {
-  badges: any[];
-  pagination: {
+  data: any[];
+  meta: {
     page: number;
     limit: number;
     total: number;
     totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
   };
   dateGroups: DateGroup[];
 }

@@ -13,6 +13,7 @@ import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../common/prisma.service';
 import { EmailService } from '../../common/email.service';
+import { maskEmailForLog } from '../../common/utils/log-sanitizer';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -21,6 +22,9 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
+  private readonly MAX_LOGIN_ATTEMPTS = 5;
+  private readonly LOCKOUT_DURATION_MINUTES = 30;
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
@@ -54,11 +58,43 @@ export class AuthService {
     });
 
     // Audit logging via NestJS Logger — full audit trail system deferred to Phase 2
-    this.logger.log(`[AUDIT] User registered: ${user.email} (${user.id})`);
+    this.logger.log(`[AUDIT] User registered: user:${user.id}`);
 
-    // 5. Return user without password hash
-    const { passwordHash: _hash, ...result } = user;
-    return result;
+    // 4. Generate JWT tokens (auto-login after registration)
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    };
+
+    const accessToken = this.jwtService.sign(payload);
+
+    const refreshExpiresIn =
+      this.config.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
+    const refreshToken = this.jwtService.sign(
+      { sub: user.id, jti: randomBytes(16).toString('hex') },
+      {
+        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+        expiresIn: refreshExpiresIn,
+      } as JwtSignOptions,
+    );
+
+    const expiresAt = this.calculateExpiryDate(refreshExpiresIn);
+    await this.prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: user.id,
+        expiresAt,
+      },
+    });
+
+    // 5. Return tokens and user profile (without password hash)
+    const { passwordHash: _hash, ...userProfile } = user;
+    return {
+      accessToken,
+      refreshToken,
+      user: userProfile,
+    };
   }
 
   async login(dto: LoginDto) {
@@ -73,7 +109,16 @@ export class AuthService {
 
     // 2. Check if account is active
     if (!user.isActive) {
-      throw new UnauthorizedException('Account is inactive');
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // 2.5. Check if account is locked
+    if (user.lockedUntil) {
+      if (user.lockedUntil > new Date()) {
+        // Still locked — don't reveal remaining time
+        throw new UnauthorizedException('Invalid credentials');
+      }
+      // Lock expired — will be fully reset on successful login below
     }
 
     // 3. Verify password
@@ -83,11 +128,31 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
-      // Rate limiting deferred to Phase 2 — failed attempts logged for monitoring
-      this.logger.warn(
-        `Failed login attempt for user: ${dto.email}`,
-        'LoginAttempt',
-      );
+      const attempts = user.failedLoginAttempts + 1;
+      const updateData: { failedLoginAttempts: number; lockedUntil?: Date } = {
+        failedLoginAttempts: attempts,
+      };
+
+      if (attempts >= this.MAX_LOGIN_ATTEMPTS) {
+        updateData.lockedUntil = new Date(
+          Date.now() + this.LOCKOUT_DURATION_MINUTES * 60 * 1000,
+        );
+        this.logger.warn(
+          `[SECURITY] Account locked after ${attempts} failed attempts: user ${user.id}`,
+          'AccountLockout',
+        );
+      } else {
+        this.logger.warn(
+          `Failed login attempt ${attempts}/${this.MAX_LOGIN_ATTEMPTS} for user ${user.id}`,
+          'LoginAttempt',
+        );
+      }
+
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: updateData,
+      });
+
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -103,10 +168,13 @@ export class AuthService {
     // 5. Generate refresh token with longer expiry
     const refreshExpiresIn =
       this.config.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
-    const refreshToken = this.jwtService.sign({ sub: user.id }, {
-      secret: this.config.get<string>('JWT_REFRESH_SECRET'),
-      expiresIn: refreshExpiresIn,
-    } as JwtSignOptions);
+    const refreshToken = this.jwtService.sign(
+      { sub: user.id, jti: randomBytes(16).toString('hex') },
+      {
+        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+        expiresIn: refreshExpiresIn,
+      } as JwtSignOptions,
+    );
 
     // 6. Store refresh token in database (use same expiry as JWT)
     const expiresAt = this.calculateExpiryDate(refreshExpiresIn);
@@ -118,15 +186,19 @@ export class AuthService {
       },
     });
 
-    // 7. Update lastLoginAt timestamp
+    // 7. Update lastLoginAt + reset lockout counters
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { lastLoginAt: new Date() },
+      data: {
+        lastLoginAt: new Date(),
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+      },
     });
 
     // 8. Log successful login
     this.logger.log(
-      `Successful login: ${user.email} (${user.id}, role: ${user.role})`,
+      `Successful login: user:${user.id} (role: ${user.role})`,
       'LoginSuccess',
     );
 
@@ -179,7 +251,9 @@ export class AuthService {
     // 5. Send reset email
     try {
       await this.emailService.sendPasswordReset(user.email, token);
-      this.logger.log(`[AUDIT] Password reset requested: ${user.email}`);
+      this.logger.log(
+        `[AUDIT] Password reset requested: ${maskEmailForLog(user.email)}`,
+      );
     } catch (error: unknown) {
       this.logger.error(
         `Failed to send reset email: ${(error as Error).message}`,
@@ -307,10 +381,13 @@ export class AuthService {
     // 6. ARCH-P1-001: Generate and store new refresh token
     const refreshExpiresIn =
       this.config.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
-    const newRefreshToken = this.jwtService.sign({ sub: tokenRecord.user.id }, {
-      secret: this.config.get<string>('JWT_REFRESH_SECRET'),
-      expiresIn: refreshExpiresIn,
-    } as JwtSignOptions);
+    const newRefreshToken = this.jwtService.sign(
+      { sub: tokenRecord.user.id, jti: randomBytes(16).toString('hex') },
+      {
+        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+        expiresIn: refreshExpiresIn,
+      } as JwtSignOptions,
+    );
 
     const expiresAt = this.calculateExpiryDate(refreshExpiresIn);
     await this.prisma.refreshToken.create({
@@ -354,7 +431,7 @@ export class AuthService {
         data: { isRevoked: true },
       });
 
-      this.logger.log(`[AUDIT] User logged out: ${tokenRecord.user.email}`);
+      this.logger.log(`[AUDIT] User logged out: user:${tokenRecord.user.id}`);
     }
 
     // Always return success (even if token not found - already logged out)
@@ -427,7 +504,7 @@ export class AuthService {
       },
     });
 
-    this.logger.log(`[AUDIT] Profile updated: ${user.email} (${userId})`);
+    this.logger.log(`[AUDIT] Profile updated: user:${userId}`);
 
     return updatedUser;
   }
@@ -478,7 +555,7 @@ export class AuthService {
       data: { passwordHash: newPasswordHash },
     });
 
-    this.logger.log(`[AUDIT] Password changed: ${user.email} (${userId})`);
+    this.logger.log(`[AUDIT] Password changed: user:${userId}`);
 
     return { message: 'Password changed successfully' };
   }

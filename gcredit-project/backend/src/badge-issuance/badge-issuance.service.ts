@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { StorageService } from '../common/storage.service';
+import { createPaginatedResponse } from '../common/utils/pagination.util';
 import { AssertionGeneratorService } from './services/assertion-generator.service';
 import { BadgeNotificationService } from './services/badge-notification.service';
 import { CSVParserService } from './services/csv-parser.service';
@@ -23,7 +24,7 @@ import {
   DateGroup,
 } from './dto/wallet-query.dto';
 import { ReportBadgeIssueDto } from './dto/report-badge-issue.dto';
-import { BadgeStatus, Prisma, UserRole } from '@prisma/client';
+import { BadgeStatus, Prisma, UserRole, BadgeVisibility } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { MilestonesService } from '../milestones/milestones.service';
 import sharp from 'sharp';
@@ -167,6 +168,23 @@ export class BadgeIssuanceService {
         },
       });
 
+      // 9. Create audit log entry for badge issuance
+      await tx.auditLog.create({
+        data: {
+          entityType: 'Badge',
+          entityId: created.id,
+          action: 'ISSUED',
+          actorId: issuerId,
+          actorEmail: issuer?.email ?? 'unknown',
+          timestamp: issuedAt,
+          metadata: {
+            badgeName: template.name,
+            recipientEmail: recipient.email,
+            templateId: template.id,
+          },
+        },
+      });
+
       return updated;
     });
 
@@ -253,7 +271,7 @@ export class BadgeIssuanceService {
     return this.processClaimBadge(badge);
   }
 
-  async claimBadge(claimToken: string) {
+  async claimBadge(claimToken: string, userId?: string) {
     // 1. Find badge by claim token
     const badge = await this.prisma.badge.findUnique({
       where: { claimToken },
@@ -264,7 +282,18 @@ export class BadgeIssuanceService {
     });
 
     if (!badge) {
-      throw new NotFoundException('Invalid claim token');
+      throw new NotFoundException(
+        'This claim link is invalid or has already been used. ' +
+          'If you have already claimed this badge, you can find it in your wallet.',
+      );
+    }
+
+    // 1b. Verify authenticated user is the badge recipient
+    if (userId && badge.recipientId !== userId) {
+      throw new ForbiddenException(
+        'This badge was issued to a different user. ' +
+          'Please log in with the correct account to claim this badge.',
+      );
     }
 
     return this.processClaimBadge(badge);
@@ -287,7 +316,10 @@ export class BadgeIssuanceService {
     recipient: { id: string; email: string };
   }) {
     if (!badge) {
-      throw new NotFoundException('Invalid claim token');
+      throw new NotFoundException(
+        'This claim link is invalid or has already been used. ' +
+          'If you have already claimed this badge, you can find it in your wallet.',
+      );
     }
 
     // 2. Check if already claimed
@@ -325,7 +357,8 @@ export class BadgeIssuanceService {
       data: {
         status: BadgeStatus.CLAIMED,
         claimedAt: new Date(),
-        claimToken: null, // Clear token (one-time use)
+        // Keep claimToken so re-visits give accurate status messages
+        // (e.g. "already claimed" vs "revoked") instead of generic "invalid token"
       },
       include: {
         template: true,
@@ -614,10 +647,11 @@ export class BadgeIssuanceService {
     });
 
     // Format response
-    return {
-      data: badges.map((badge) => ({
+    return createPaginatedResponse(
+      badges.map((badge) => ({
         id: badge.id,
         status: badge.status,
+        visibility: badge.visibility,
         issuedAt: badge.issuedAt,
         claimedAt: badge.claimedAt,
         expiresAt: badge.expiresAt,
@@ -632,14 +666,10 @@ export class BadgeIssuanceService {
               : badge.issuer.email,
         },
       })),
-      pagination: {
-        page: query.page,
-        limit: query.limit,
-        totalCount,
-        totalPages: Math.ceil(totalCount / query.limit),
-        hasMore: skip + take < totalCount,
-      },
-    };
+      totalCount,
+      query.page,
+      query.limit,
+    );
   }
 
   /**
@@ -790,8 +820,8 @@ export class BadgeIssuanceService {
     });
 
     // Format response - include all fields for Admin UI (Story 9.5)
-    return {
-      badges: badges.map((badge) => ({
+    return createPaginatedResponse(
+      badges.map((badge) => ({
         id: badge.id,
         templateId: badge.templateId,
         recipientId: badge.recipientId,
@@ -828,16 +858,43 @@ export class BadgeIssuanceService {
             }
           : undefined,
       })),
-      total: totalCount,
-      page: query.page,
-      limit: query.limit,
-      totalPages: Math.ceil(totalCount / query.limit),
-    };
+      totalCount,
+      query.page,
+      query.limit,
+    );
   }
 
   /**
    * Find badge by ID (helper method)
    */
+  /**
+   * Story 11.4: Update badge visibility (PUBLIC/PRIVATE) — owner only
+   */
+  async updateVisibility(
+    badgeId: string,
+    visibility: BadgeVisibility,
+    userId: string,
+  ) {
+    const badge = await this.prisma.badge.findUnique({
+      where: { id: badgeId },
+    });
+
+    if (!badge) {
+      throw new NotFoundException('Badge not found');
+    }
+
+    if (badge.recipientId !== userId) {
+      throw new ForbiddenException(
+        'Only the badge recipient can change visibility',
+      );
+    }
+
+    return this.prisma.badge.update({
+      where: { id: badgeId },
+      data: { visibility },
+    });
+  }
+
   async findOne(id: string) {
     const badge = await this.prisma.badge.findUnique({
       where: { id },
@@ -855,8 +912,16 @@ export class BadgeIssuanceService {
     }
 
     // Story 9.3: Transform response to include/exclude revocation fields
+    // Compute effective status: EXPIRED if expiresAt is in the past
+    const isExpired =
+      badge.expiresAt &&
+      badge.expiresAt < new Date() &&
+      badge.status !== BadgeStatus.REVOKED;
+    const effectiveStatus = isExpired ? 'EXPIRED' : badge.status;
+
     const response: Record<string, unknown> = {
       ...badge,
+      status: effectiveStatus,
     };
 
     // Story 9.3 AC2: Add categorized revocation details
@@ -871,6 +936,9 @@ export class BadgeIssuanceService {
           name: `${badge.revoker.firstName} ${badge.revoker.lastName}`,
           role: badge.revoker.role,
         };
+      } else {
+        // Story 11.24 AC-M8: Fallback when revoker (admin) has been deleted
+        response.revokedBy = { name: 'Unknown User', email: '', role: 'N/A' };
       }
     }
 
@@ -1035,7 +1103,6 @@ export class BadgeIssuanceService {
 
     // Calculate total items for pagination
     const totalItems = totalBadges + totalMilestones;
-    const totalPages = Math.ceil(totalItems / limit);
 
     // For now, fetch ALL badges and milestones to properly merge and paginate
     // (Future optimization: Fetch only needed range after calculating positions)
@@ -1079,13 +1146,23 @@ export class BadgeIssuanceService {
 
     // Merge badges and milestones, sorted by date
     const badgeItems = badges.map((b) => {
+      // Compute effective status: if expiresAt is in the past and badge
+      // is not already REVOKED, treat it as EXPIRED for display purposes.
+      const isExpired =
+        b.expiresAt &&
+        b.expiresAt < new Date() &&
+        b.status !== BadgeStatus.REVOKED;
+      const effectiveStatus = isExpired ? 'EXPIRED' : b.status;
+
       // Story 9.3: Transform badge to include/exclude revocation fields
       const badgeData: Record<string, unknown> = {
         id: b.id,
         recipientId: b.recipientId,
-        status: b.status,
+        status: effectiveStatus,
+        visibility: b.visibility,
         issuedAt: b.issuedAt,
         claimedAt: b.claimedAt,
+        expiresAt: b.expiresAt,
         template: b.template,
         issuer: b.issuer,
       };
@@ -1133,8 +1210,11 @@ export class BadgeIssuanceService {
     const skip = (page - 1) * limit;
     const paginatedItems = allItems.slice(skip, skip + limit);
 
-    // Extract final timeline items
-    const timelineItems = paginatedItems.map((item) => item.data);
+    // Extract final timeline items — preserve type field for frontend discrimination (Story 11.24 AC-C3)
+    const timelineItems = paginatedItems.map((item) => ({
+      ...item.data,
+      type: item.type,
+    }));
 
     // Generate date groups from paginated items
     const dateGroups = this.generateDateGroups(
@@ -1145,13 +1225,7 @@ export class BadgeIssuanceService {
     );
 
     return {
-      badges: timelineItems, // Contains both badges and milestone objects
-      pagination: {
-        page,
-        limit,
-        total: totalItems,
-        totalPages,
-      },
+      ...createPaginatedResponse(timelineItems, totalItems, page, limit),
       dateGroups,
     };
   }

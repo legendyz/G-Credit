@@ -3,7 +3,7 @@
 **Created:** 2026-02-01  
 **Source:** Pre-UAT Reviews + Historical Sprint Debt (Sprint 0-6)  
 **Status:** Consolidated master list for Sprint 8+ planning  
-**Last Updated:** 2026-02-05 (Added TD-016: Async Batch Processing)
+**Last Updated:** 2026-02-06 (Added TD-017: Teams Callback Origin Verification)
 
 ---
 
@@ -14,8 +14,8 @@
 | **P0 (UAT Blocker)** | 9 | Pre-UAT Reviews | Sprint 7 | ✅ **9/9 Fixed** |
 | **P1 (Must Fix)** | 17 | Reviews + Historical | Sprint 8 | Pending |
 | **P2 (Medium)** | 23 | Reviews + Historical + TD-009~015 | Sprint 8-10 | +1 new item (TD-015) |
-| **P3 (Low/Future)** | 9 | Historical + TD-016 | Sprint 9+ | +1 new item (TD-016) |
-| **Total** | **58** | - | - | - |
+| **P3 (Low/Future)** | 10 | Historical + TD-016~017 | Sprint 9+ | +1 new item (TD-017) |
+| **Total** | **59** | - | - | - |
 
 ---
 
@@ -67,6 +67,7 @@
 | TD-014 | Dual Email System (SMTP + M365) | S8 | 2h | 📋 Sprint 9 | Unify to GraphEmailService, remove nodemailer |
 | TD-015 | Backend ESLint Warnings (1100) | S8 | 8h | 📋 Sprint 9-10 | Reduce warnings to 0, improve type safety |
 | TD-016 | Async Batch Processing (Redis) | S9 | 6-8h | ⏸️ Deferred | Post-MVP enhancement, validate user needs first |
+| TD-017 | Teams Callback Origin Verification | S11 | 2-4h | ⏸️ Future | Signed callback / webhook secret verification |
 
 **TD-015 Details (ESLint Technical Debt):**
 - **Issue**: Backend has 1100 ESLint warnings (0 errors), primarily `@typescript-eslint/no-unsafe-*` type safety warnings
@@ -114,6 +115,22 @@
 - **Files**: `sprint-9/8-4-batch-processing-phase1.md`, `sprint-9/technical-debt-tasks.md`
 - **Metric to Track**: Bulk issuance usage frequency, batch sizes, user satisfaction with 20-second wait
 - **Reference**: Sprint 9 Planning Discussion (2026-02-05) - "MVP优先，避免过早优化"
+
+**TD-017 Details (Teams Action Callback Origin Verification):**
+- **Created**: 2026-02-06 (Sprint 11 Code Review - Story 11.25)
+- **Issue**: `TeamsController.handleActionCallback()` uses cookie-based JWT auth but does not verify the request originates from a legitimate Teams Adaptive Card action (no signed callback or webhook secret)
+- **Impact**: 
+  - Current Risk: Low — endpoint is already protected by `@UseGuards(JwtAuthGuard)` requiring valid user session
+  - Future Risk: If Teams integration scales, request-origin spoofing becomes a larger attack surface
+- **Root Cause**: MVP focus on functional auth; Teams Bot SDK webhook verification was out of scope
+- **Solution Plan**:
+  1. Evaluate Microsoft Bot Framework's `BotFrameworkAdapter` signature verification
+  2. Alternatively, add HMAC-signed action URLs with server-side secret
+  3. Validate `serviceUrl` origin against known Microsoft domains
+  4. Add integration tests for signature verification
+- **Files**: `teams.controller.ts`, `teams-badge-action.service.ts`
+- **Source**: Code Review 11-25, Suggestion S-1
+- **Priority**: P3 — JwtAuthGuard provides adequate protection for MVP
 
 **TD-014 Details:**
 - **Issue**: System maintains two email mechanisms - `EmailService` (SMTP/nodemailer) for password reset and `GraphEmailService` (M365) for badge notifications

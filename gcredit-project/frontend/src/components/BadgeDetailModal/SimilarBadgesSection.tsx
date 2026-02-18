@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../../lib/apiConfig';
+import { apiFetch } from '../../lib/apiFetch';
 
 interface SimilarBadge {
   id: string;
@@ -25,12 +25,7 @@ const SimilarBadgesSection: React.FC<SimilarBadgesSectionProps> = ({ badgeId, on
   useEffect(() => {
     const fetchSimilarBadges = async () => {
       try {
-        const token = localStorage.getItem('accessToken');
-        const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/similar?limit=6`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await apiFetch(`/badges/${badgeId}/similar?limit=6`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch similar badges');

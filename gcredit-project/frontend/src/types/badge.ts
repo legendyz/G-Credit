@@ -10,10 +10,10 @@ export type BadgeStatus = (typeof BadgeStatus)[keyof typeof BadgeStatus];
 export interface BadgeDetail {
   id: string;
   status: BadgeStatus;
+  visibility: 'PUBLIC' | 'PRIVATE';
   issuedAt: string;
   claimedAt: string | null;
   expiresAt: string | null;
-  issuerMessage: string | null;
   verificationId: string;
   // Story 9.3: Revocation fields (only present when status = REVOKED)
   revokedAt?: string;
@@ -47,14 +47,14 @@ export interface BadgeDetail {
 export interface VerificationResponse {
   id: string;
   verificationId: string;
-  status: 'ACTIVE' | 'REVOKED' | 'EXPIRED';
+  status: 'ACTIVE' | 'REVOKED' | 'EXPIRED' | 'PENDING';
   badge: {
     name: string;
     description: string;
     imageUrl: string | null;
     criteria: string;
     category: string;
-    skills: string[];
+    skills: Array<{ id: string; name: string }>;
   };
   recipient: {
     name: string;

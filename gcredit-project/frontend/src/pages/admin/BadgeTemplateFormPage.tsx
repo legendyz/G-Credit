@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { PageTemplate } from '@/components/layout/PageTemplate';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,6 +29,7 @@ import {
   getTemplateById,
   type TemplateCategory,
   type TemplateStatus,
+  type TemplateUser,
 } from '@/lib/badgeTemplatesApi';
 import { useSkills } from '@/hooks/useSkills';
 import { LayoutGrid, Save, Loader2, Upload, X, AlertCircle } from 'lucide-react';
@@ -51,7 +52,9 @@ const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png'];
 
 export function BadgeTemplateFormPage() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const isEditMode = !!id;
+  const isReadOnly = searchParams.get('readonly') === 'true';
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -79,6 +82,10 @@ export function BadgeTemplateFormPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(isEditMode);
   const [loadError, setLoadError] = useState<string | null>(null);
+
+  // Creator / last modifier info (edit mode only)
+  const [creatorInfo, setCreatorInfo] = useState<TemplateUser | null>(null);
+  const [updaterInfo, setUpdaterInfo] = useState<TemplateUser | null>(null);
 
   // Fetch template data in edit mode
   useEffect(() => {
@@ -109,6 +116,10 @@ export function BadgeTemplateFormPage() {
         if (template.skillIds && Array.isArray(template.skillIds)) {
           setSelectedSkills(template.skillIds);
         }
+
+        // Store creator/updater info
+        if (template.creator) setCreatorInfo(template.creator);
+        if (template.updater) setUpdaterInfo(template.updater);
       } catch (err) {
         setLoadError(err instanceof Error ? err.message : 'Failed to load template');
       } finally {
@@ -150,7 +161,7 @@ export function BadgeTemplateFormPage() {
       return;
     }
     if (!category) {
-      toast.error('Please select a category');
+      toast.error('Please select a badge type');
       return;
     }
     if (validityPeriod && (Number(validityPeriod) < 1 || Number(validityPeriod) > 3650)) {
@@ -158,11 +169,22 @@ export function BadgeTemplateFormPage() {
       return;
     }
 
-    // Build issuance criteria – preserve existing type/conditions on edit
-    const issuanceCriteria =
-      isEditMode && originalCriteria
-        ? { ...originalCriteria, description: criteriaText.trim() || undefined }
-        : { type: 'manual' as const, description: criteriaText.trim() || undefined };
+    // Build issuance criteria – ensure valid DTO structure
+    // Legacy seed data may have { requirements: [...] } without type — always normalize
+    const issuanceCriteria = (() => {
+      if (isEditMode && originalCriteria) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { requirements, ...cleanCriteria } = originalCriteria as Record<string, unknown> & {
+          requirements?: unknown;
+        };
+        return {
+          type: 'manual' as const,
+          ...cleanCriteria,
+          description: criteriaText.trim() || undefined,
+        };
+      }
+      return { type: 'manual' as const, description: criteriaText.trim() || undefined };
+    })();
 
     setIsSubmitting(true);
     try {
@@ -209,9 +231,14 @@ export function BadgeTemplateFormPage() {
 
   // Loading state (edit mode)
   if (isLoading) {
+    const loadingTitle = isReadOnly
+      ? 'View Template'
+      : isEditMode
+        ? 'Edit Template'
+        : 'Create Template';
     return (
       <PageTemplate
-        title={isEditMode ? 'Edit Template' : 'Create Template'}
+        title={loadingTitle}
         actions={
           <Button
             variant="outline"
@@ -261,10 +288,17 @@ export function BadgeTemplateFormPage() {
     );
   }
 
+  const pageTitle = isReadOnly ? 'View Template' : isEditMode ? 'Edit Template' : 'Create Template';
+  const pageDescription = isReadOnly
+    ? 'Viewing badge template details (read-only)'
+    : isEditMode
+      ? 'Update badge template details'
+      : 'Create a new badge template';
+
   return (
     <PageTemplate
-      title={isEditMode ? 'Edit Template' : 'Create Template'}
-      description={isEditMode ? 'Update badge template details' : 'Create a new badge template'}
+      title={pageTitle}
+      description={pageDescription}
       actions={
         <Button
           variant="outline"
@@ -281,6 +315,26 @@ export function BadgeTemplateFormPage() {
             <LayoutGrid className="h-5 w-5 text-brand-600" />
             Template Details
           </CardTitle>
+          {isEditMode && (creatorInfo || updaterInfo) && (
+            <div className="text-xs text-neutral-500 mt-1 space-y-0.5">
+              {creatorInfo && (
+                <p title={creatorInfo.email}>
+                  Created by:{' '}
+                  {[creatorInfo.firstName, creatorInfo.lastName].filter(Boolean).join(' ') ||
+                    creatorInfo.email}{' '}
+                  <span className="text-neutral-400">({creatorInfo.email})</span>
+                </p>
+              )}
+              {updaterInfo && (
+                <p title={updaterInfo.email}>
+                  Last modified by:{' '}
+                  {[updaterInfo.firstName, updaterInfo.lastName].filter(Boolean).join(' ') ||
+                    updaterInfo.email}{' '}
+                  <span className="text-neutral-400">({updaterInfo.email})</span>
+                </p>
+              )}
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -296,6 +350,7 @@ export function BadgeTemplateFormPage() {
                 placeholder="e.g. Cloud Expert Certification"
                 className="min-h-[44px] focus:ring-brand-500"
                 required
+                disabled={isReadOnly}
               />
             </div>
 
@@ -311,17 +366,22 @@ export function BadgeTemplateFormPage() {
                 placeholder="Describe what this badge recognizes..."
                 rows={3}
                 className="focus:ring-brand-500"
+                disabled={isReadOnly}
               />
             </div>
 
-            {/* Category */}
+            {/* Badge Type */}
             <div className="space-y-2">
               <Label htmlFor="category" className="text-body font-medium text-neutral-700">
-                Category <span className="text-error">*</span>
+                Badge Type <span className="text-error">*</span>
               </Label>
-              <Select value={category} onValueChange={(v) => setCategory(v as TemplateCategory)}>
+              <Select
+                value={category}
+                onValueChange={(v) => setCategory(v as TemplateCategory)}
+                disabled={isReadOnly}
+              >
                 <SelectTrigger id="category" className="min-h-[44px] focus:ring-brand-500">
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder="Select a badge type" />
                 </SelectTrigger>
                 <SelectContent>
                   {CATEGORIES.map((c) => (
@@ -345,6 +405,7 @@ export function BadgeTemplateFormPage() {
                 placeholder="Enter one requirement per line..."
                 rows={4}
                 className="focus:ring-brand-500"
+                disabled={isReadOnly}
               />
               <p className="text-xs text-neutral-500">One requirement per line</p>
             </div>
@@ -360,6 +421,7 @@ export function BadgeTemplateFormPage() {
                       <button
                         key={skill.id}
                         type="button"
+                        disabled={isReadOnly}
                         onClick={() =>
                           setSelectedSkills((prev) =>
                             isSelected
@@ -367,7 +429,7 @@ export function BadgeTemplateFormPage() {
                               : [...prev, skill.id]
                           )
                         }
-                        className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                        className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${isReadOnly ? 'cursor-default' : ''} ${
                           isSelected
                             ? 'bg-brand-600 text-white'
                             : 'bg-white text-neutral-700 border border-neutral-300 hover:border-brand-400'
@@ -402,6 +464,7 @@ export function BadgeTemplateFormPage() {
                 onChange={(e) => setValidityPeriod(e.target.value)}
                 placeholder="e.g. 365 (leave empty for no expiry)"
                 className="min-h-[44px] focus:ring-brand-500"
+                disabled={isReadOnly}
               />
             </div>
 
@@ -411,7 +474,11 @@ export function BadgeTemplateFormPage() {
                 <Label htmlFor="status" className="text-body font-medium text-neutral-700">
                   Status
                 </Label>
-                <Select value={status} onValueChange={(v) => setStatus(v as TemplateStatus)}>
+                <Select
+                  value={status}
+                  onValueChange={(v) => setStatus(v as TemplateStatus)}
+                  disabled={isReadOnly}
+                >
                   <SelectTrigger id="status" className="min-h-[44px] focus:ring-brand-500">
                     <SelectValue />
                   </SelectTrigger>
@@ -427,84 +494,98 @@ export function BadgeTemplateFormPage() {
             )}
 
             {/* Image Upload */}
-            <div className="space-y-2">
-              <Label className="text-body font-medium text-neutral-700">
-                Badge Image{' '}
-                <span className="text-neutral-500">
-                  (optional, JPG/PNG, max 2MB, 128×128 ~ 2048×2048 px)
-                </span>
-              </Label>
+            {!isReadOnly && (
+              <div className="space-y-2">
+                <Label className="text-body font-medium text-neutral-700">
+                  Badge Image{' '}
+                  <span className="text-neutral-500">
+                    (optional, JPG/PNG, max 2MB, 128×128 ~ 2048×2048 px)
+                  </span>
+                </Label>
 
-              {/* Current/Preview Image */}
-              {(imagePreview || existingImageUrl) && (
-                <div className="relative w-32 h-32 rounded-lg overflow-hidden bg-neutral-100 border border-neutral-200">
-                  <img
-                    src={imagePreview || existingImageUrl || ''}
-                    alt="Badge preview"
-                    className="w-full h-full object-cover"
+                {/* Current/Preview Image */}
+                {(imagePreview || existingImageUrl) && (
+                  <div className="relative w-32 h-32 rounded-lg overflow-hidden bg-neutral-100 border border-neutral-200">
+                    <img
+                      src={imagePreview || existingImageUrl || ''}
+                      alt="Badge preview"
+                      className="w-full h-full object-cover"
+                    />
+                    {imagePreview && (
+                      <button
+                        type="button"
+                        onClick={clearImage}
+                        className="absolute top-1 right-1 w-6 h-6 bg-neutral-900/60 rounded-full flex items-center justify-center hover:bg-neutral-900/80"
+                        aria-label="Remove image"
+                      >
+                        <X className="h-3.5 w-3.5 text-white" />
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                    id="image-upload"
                   />
-                  {imagePreview && (
-                    <button
-                      type="button"
-                      onClick={clearImage}
-                      className="absolute top-1 right-1 w-6 h-6 bg-neutral-900/60 rounded-full flex items-center justify-center hover:bg-neutral-900/80"
-                      aria-label="Remove image"
-                    >
-                      <X className="h-3.5 w-3.5 text-white" />
-                    </button>
-                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="min-h-[44px]"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    {imagePreview || existingImageUrl ? 'Change Image' : 'Upload Image'}
+                  </Button>
                 </div>
-              )}
+              </div>
+            )}
 
-              <div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png"
-                  onChange={handleImageSelect}
-                  className="hidden"
-                  id="image-upload"
-                />
+            {/* Existing image preview (readonly) */}
+            {isReadOnly && existingImageUrl && (
+              <div className="space-y-2">
+                <Label className="text-body font-medium text-neutral-700">Badge Image</Label>
+                <div className="w-32 h-32 rounded-lg overflow-hidden bg-neutral-100 border border-neutral-200">
+                  <img src={existingImageUrl} alt="Badge" className="w-full h-full object-cover" />
+                </div>
+              </div>
+            )}
+
+            {/* Form Actions */}
+            {!isReadOnly && (
+              <div className="flex justify-end gap-3 pt-4 border-t border-neutral-200">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="min-h-[44px]"
+                  onClick={() => navigate('/admin/templates')}
+                  className="min-h-[44px] px-6"
                 >
-                  <Upload className="h-4 w-4 mr-2" />
-                  {imagePreview || existingImageUrl ? 'Change Image' : 'Upload Image'}
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-brand-600 hover:bg-brand-700 text-white min-h-[44px] px-6"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      {isEditMode ? 'Saving...' : 'Creating...'}
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      {isEditMode ? 'Save Changes' : 'Create Template'}
+                    </>
+                  )}
                 </Button>
               </div>
-            </div>
-
-            {/* Form Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-neutral-200">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate('/admin/templates')}
-                className="min-h-[44px] px-6"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="bg-brand-600 hover:bg-brand-700 text-white min-h-[44px] px-6"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    {isEditMode ? 'Saving...' : 'Creating...'}
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    {isEditMode ? 'Save Changes' : 'Create Template'}
-                  </>
-                )}
-              </Button>
-            </div>
+            )}
           </form>
         </CardContent>
       </Card>

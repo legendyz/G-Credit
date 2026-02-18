@@ -246,14 +246,14 @@ export class M365SyncService {
 
           deactivatedCount++;
           this.logger.log(
-            `Deactivated user: ${localUser.email} (${deactivationReason})`,
+            `Deactivated user: ${localUser.id} (${deactivationReason})`,
           );
         } catch (error) {
           errors.push(
-            `Failed to deactivate ${localUser.email}: ${(error as Error).message}`,
+            `Failed to deactivate user:${localUser.id}: ${(error as Error).message}`,
           );
           this.logger.error(
-            `Failed to deactivate ${localUser.email}`,
+            `Failed to deactivate user:${localUser.id}`,
             (error as Error).stack,
           );
         }
@@ -398,9 +398,7 @@ export class M365SyncService {
           if (result.action === 'created') createdCount++;
           if (result.action === 'updated') updatedCount++;
         } else if (result.error) {
-          errors.push(
-            `${azureUser.mail || azureUser.userPrincipalName}: ${result.error}`,
-          );
+          errors.push(`user:${azureUser.id || 'unknown'}: ${result.error}`);
         }
       }
 

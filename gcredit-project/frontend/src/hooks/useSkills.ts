@@ -7,7 +7,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import type { Skill } from '@/components/search/SkillsFilter';
-import { API_BASE_URL } from '@/lib/apiConfig';
+import { apiFetch } from '@/lib/apiFetch';
 
 interface SkillApiResponse {
   id: string;
@@ -37,11 +37,11 @@ export function useSkills(options: UseSkillsOptions = {}) {
   return useQuery({
     queryKey: ['skills', { categoryId, search }],
     queryFn: async (): Promise<Skill[]> => {
-      let url = `${API_BASE_URL}/skills`;
+      let url = '/skills';
       const params = new URLSearchParams();
 
       if (search && search.length >= 2) {
-        url = `${API_BASE_URL}/skills/search`;
+        url = '/skills/search';
         params.set('q', search);
       } else if (categoryId) {
         params.set('categoryId', categoryId);
@@ -50,11 +50,7 @@ export function useSkills(options: UseSkillsOptions = {}) {
       const queryString = params.toString();
       const fullUrl = queryString ? `${url}?${queryString}` : url;
 
-      const response = await fetch(fullUrl, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-        },
-      });
+      const response = await apiFetch(fullUrl);
 
       if (!response.ok) {
         throw new Error('Failed to fetch skills');

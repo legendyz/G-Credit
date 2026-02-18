@@ -61,38 +61,41 @@ export function useIssuanceTrends(period: number = 30) {
 /**
  * Top performers leaderboard
  */
-export function useTopPerformers(limit: number = 10) {
+export function useTopPerformers(limit: number = 10, enabled: boolean = true) {
   return useQuery({
     queryKey: analyticsKeys.topPerformers(limit),
     queryFn: () => getTopPerformers(limit),
     staleTime: ANALYTICS_REFRESH_MS,
     refetchInterval: ANALYTICS_REFRESH_MS,
     refetchOnWindowFocus: true,
+    enabled,
   });
 }
 
 /**
  * Skills distribution — top skills and category breakdown
  */
-export function useSkillsDistribution() {
+export function useSkillsDistribution(enabled: boolean = true) {
   return useQuery({
     queryKey: analyticsKeys.skillsDistribution(),
     queryFn: getSkillsDistribution,
     staleTime: ANALYTICS_REFRESH_MS,
     refetchInterval: ANALYTICS_REFRESH_MS,
     refetchOnWindowFocus: true,
+    enabled,
   });
 }
 
 /**
  * Recent activity feed
  */
-export function useRecentActivity(limit: number = 10) {
+export function useRecentActivity(limit: number = 10, enabled: boolean = true) {
   return useQuery({
     queryKey: analyticsKeys.recentActivity(limit),
     queryFn: () => getRecentActivity(limit),
     staleTime: ANALYTICS_REFRESH_MS,
     refetchInterval: ANALYTICS_REFRESH_MS,
     refetchOnWindowFocus: true,
+    enabled,
   });
 }

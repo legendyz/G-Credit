@@ -41,6 +41,7 @@ const ConfettiParticle: React.FC<{ delay: number; color: string; leftPercent: nu
 }) => (
   <div
     className="absolute w-2 h-2 rounded-full animate-confetti"
+    // inline style retained: dynamic values computed from props
     style={{
       left: `${leftPercent}%`,
       backgroundColor: color,

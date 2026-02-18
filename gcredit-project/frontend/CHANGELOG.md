@@ -7,6 +7,89 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-02-14 (Sprint 11 — Security & Quality Hardening)
+
+### Sprint 11 Summary — Post-MVP Hardening
+
+**Branch:** `sprint-11/security-quality-hardening`  
+**Stories:** 23/23 complete (5 waves, all code reviews APPROVED)  
+**Tests:** 541 tests (49 suites), 100% pass rate (+14 from v1.0.0)
+
+#### Security
+
+- **JWT httpOnly Cookie Migration (11.6):** `apiFetch` wrapper replaces raw `fetch` calls, `credentials: 'include'` for cookie-based auth, removed all `localStorage` JWT token handling
+- **Issuer Email Masking (11.7):** Frontend displays masked emails from API responses
+
+#### Features
+
+- **Badge Visibility Toggle (11.4):** Toggle switch in badge detail for owner to set `isPublic`/private
+- **LinkedIn Share Tab (11.5):** New tab in ShareDialog with LinkedIn URL builder and `window.open`
+- **Analytics CSV Export (11.17):** Export CSV button in AdminAnalyticsPage PageTemplate actions with Download icon, loading spinner, and toast notification
+- **403 Access Denied Page (11.19):** Dedicated `/403` route with role-based messaging and navigation links
+- **ClaimPage UUID Fix (11.20):** Dynamic UUID from URL params
+- **User Management Nav Fix (11.23):** Admin-only navigation entry restored
+
+#### UI/UX Improvements
+
+- **Design System Consistency (11.15):** Migrated 74 inline styles to Tailwind CSS classes (86→12 remaining, all dynamic/Recharts), deleted `App.css` (Vite scaffold remnant)
+- **Verification Skill Display (11.18):** Shows `nameEn` instead of raw UUID
+- **Pagination Standardization (11.16):** All list pages consume `PaginatedResponse<T>` format consistently
+
+#### Developer Experience
+
+- **ESLint no-console (11.21):** `no-console: 'error'` with test overrides, `ErrorBoundary` eslint-disable exception
+- **Chinese Character Fix (11.21):** `方案B` → `Option B` in badge-verification-service
+- **Husky Hooks (11.22):** Pre-commit runs lint-staged + Chinese character check, pre-push mirrors full CI
+
+### UAT Fixes & Enhancements (2026-02-17 ~ 2026-02-18)
+
+Changes discovered and fixed during v1.1.0 UAT testing session.
+
+#### Badge Lifecycle UX (dde4685)
+
+- **Wallet Timeline:** Badge issued date now displayed on timeline cards
+- **Expired Badge Detection:** Dynamic status detection in wallet and detail modal
+- **ExpirationSection:** New component in badge detail modal (gray styling for expired badges)
+- **PENDING Badge:** Download button disabled (must claim first)
+- **Claim Success:** Wallet cache invalidated for instant UI refresh
+- **Verification Page:** PENDING shows amber alert instead of "valid"; EXPIRED badges show isValid=false
+- **Unified Status Colors:** CLAIMED=green, PENDING=amber, EXPIRED=gray, REVOKED=red across all components
+
+#### Badge Management (c24441f)
+
+- **Sortable Column Headers:** Badge, Recipient, Issued By, Issued On, Status — 3-click cycle (asc→desc→clear)
+- **Mobile Sort Dropdown:** Sort field selector for mobile screens
+- **Full-Data Pagination:** Client-side sort/filter over all badges (auto-paginated fetch, 100/page)
+- **Table Layout Fix:** `table-fixed` with `colgroup` widths, prevents horizontal scrolling on long revocation reasons
+- **Sort Indicators:** ArrowUp/ArrowDown/ArrowUpDown icons + `aria-sort` attributes
+
+#### Badge Detail Modal (eb5a7bf)
+
+- **Issued By:** Hero section now shows issuer name (`Issued by: FirstName LastName`)
+
+#### User Management (eb5a7bf)
+
+- **Search Scope Extended:** Now matches role (enum) and department in addition to name/email
+- **Sortable Columns:** Department and Status columns now sortable with 3-click cycle
+- **Search Placeholder:** Updated to "Search by name, email, role, or department..."
+
+#### Analytics — ISSUER Scoping (f431669)
+
+- **Issuer Overview:** ISSUER sees only own-issued badge stats (recipients, badges issued, claim rate)
+- **Role-Based Sections:** Admin-only sections (Templates, Health, Performers, Skills, Activity, CSV Export) hidden for ISSUER
+- **Description Text:** ISSUER sees "Overview of badges you have issued, claim rates, and activity"
+- **Hook Optimization:** `useTopPerformers`, `useSkillsDistribution`, `useRecentActivity` hooks accept `enabled` parameter
+
+#### Template Form UX (91a4976)
+
+- **Badge Type Rename:** "Category" label renamed to "Badge Type" to avoid confusion with Skill Category
+
+#### Other Fixes
+
+- **Search Input Mobile:** Restricted expand behavior to small screens only (d81fc73)
+
+---
+
 ## [1.0.0] - 2026-02-11 (Sprint 10 — v1.0.0 Release)
 
 ### Sprint 10 Summary — v1.0.0 Release Sprint

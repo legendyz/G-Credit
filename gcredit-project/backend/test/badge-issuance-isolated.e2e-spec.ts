@@ -39,12 +39,12 @@ describe('Badge Issuance (e2e) - Isolated', () => {
       'employee',
     );
 
-    // Create recipient (without login)
-    recipientUser = {
-      user: await ctx.userFactory.createEmployee(),
-      token: '',
-      credentials: { email: '', password: '' },
-    };
+    // Create recipient (with login for claim endpoint authentication)
+    recipientUser = await createAndLoginUser(
+      ctx.app,
+      ctx.userFactory,
+      'employee',
+    );
 
     // Create badge template using factory
     const template = await ctx.templateFactory.createActive({
@@ -139,7 +139,7 @@ describe('Badge Issuance (e2e) - Isolated', () => {
     });
   });
 
-  describe('POST /api/badges/:id/claim', () => {
+  describe('POST /api/badges/claim', () => {
     let validBadgeId: string;
     let validClaimToken: string;
 
@@ -154,9 +154,9 @@ describe('Badge Issuance (e2e) - Isolated', () => {
       validClaimToken = badge.claimToken!;
     });
 
-    it('should claim badge with valid token (PUBLIC endpoint - no auth required)', async () => {
-      const response = await request(ctx.app.getHttpServer() as App)
-        .post(`/api/badges/${validBadgeId}/claim`)
+    it('should claim badge with valid token (authenticated as recipient)', async () => {
+      const response = await authRequest(ctx.app, recipientUser.token)
+        .post('/api/badges/claim')
         .send({
           claimToken: validClaimToken,
         })
@@ -174,9 +174,26 @@ describe('Badge Issuance (e2e) - Isolated', () => {
       expect(body.assertionUrl).toContain(validBadgeId);
     });
 
+    it('should return 401 when claiming without authentication', async () => {
+      await request(ctx.app.getHttpServer() as App)
+        .post('/api/badges/claim')
+        .send({ claimToken: validClaimToken })
+        .expect(401);
+    });
+
+    it('should return 403 when wrong user tries to claim', async () => {
+      const response = await authRequest(ctx.app, adminUser.token)
+        .post('/api/badges/claim')
+        .send({ claimToken: validClaimToken })
+        .expect(403);
+
+      const body = response.body as { message: string };
+      expect(body.message).toContain('different user');
+    });
+
     it('should return 400 for invalid claim token', async () => {
-      const response = await request(ctx.app.getHttpServer() as App)
-        .post(`/api/badges/${validBadgeId}/claim`)
+      const response = await authRequest(ctx.app, recipientUser.token)
+        .post('/api/badges/claim')
         .send({
           claimToken: 'invalid-token-' + 'x'.repeat(19), // 32 chars total
         })
@@ -186,21 +203,21 @@ describe('Badge Issuance (e2e) - Isolated', () => {
       expect(body.message).toBeDefined();
     });
 
-    it('should return 404 when badge claim token already used (one-time use)', async () => {
+    it('should return 400 when badge already claimed (token kept for better error messages)', async () => {
       // First claim
-      await request(ctx.app.getHttpServer() as App)
-        .post(`/api/badges/${validBadgeId}/claim`)
+      await authRequest(ctx.app, recipientUser.token)
+        .post('/api/badges/claim')
         .send({ claimToken: validClaimToken })
         .expect(201);
 
-      // Second claim attempt - token has been cleared
-      const response = await request(ctx.app.getHttpServer() as App)
-        .post(`/api/badges/${validBadgeId}/claim`)
+      // Second claim attempt - token still exists but badge status is CLAIMED
+      const response = await authRequest(ctx.app, recipientUser.token)
+        .post('/api/badges/claim')
         .send({ claimToken: validClaimToken })
-        .expect(404); // Token no longer exists in DB
+        .expect(400);
 
       const body = response.body as { message: string };
-      expect(body.message).toContain('Invalid claim token');
+      expect(body.message).toContain('already been claimed');
     });
   });
 
@@ -274,19 +291,21 @@ describe('Badge Issuance (e2e) - Isolated', () => {
         .expect(200);
 
       const body = response.body as {
-        badges: Array<{ id: string; status: string }>;
-        total: number;
-        page: number;
-        limit: number;
-        totalPages: number;
+        data: Array<{ id: string; status: string }>;
+        meta: {
+          total: number;
+          page: number;
+          limit: number;
+          totalPages: number;
+        };
       };
-      // getIssuedBadges returns: { badges: [], total, page, limit, totalPages }
-      expect(Array.isArray(body.badges)).toBe(true);
-      expect(body.badges.length).toBeGreaterThan(0);
-      expect(body).toHaveProperty('total');
-      expect(body).toHaveProperty('page');
-      expect(body).toHaveProperty('limit');
-      expect(body).toHaveProperty('totalPages');
+      // findAllAdmin now returns: { data: [], meta: { total, page, limit, totalPages, ... } }
+      expect(Array.isArray(body.data)).toBe(true);
+      expect(body.data.length).toBeGreaterThan(0);
+      expect(body.meta).toHaveProperty('total');
+      expect(body.meta).toHaveProperty('page');
+      expect(body.meta).toHaveProperty('limit');
+      expect(body.meta).toHaveProperty('totalPages');
     });
 
     it('should return 403 for EMPLOYEE listing all badges', async () => {

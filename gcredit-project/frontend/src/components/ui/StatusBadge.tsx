@@ -6,7 +6,7 @@
  * - CLAIMED: green-800 on green-100 = 7.1:1 ✓
  * - PENDING: amber-800 on amber-100 = 5.9:1 ✓
  * - REVOKED: red-800 on red-100 = 7.2:1 ✓
- * - EXPIRED: gray-700 on gray-100 = 7.5:1 ✓
+ * - EXPIRED: gray-800 on gray-100 = 10.3:1 ✓ (UX Decision 2026-02-17: neutral gray)
  */
 
 import { cn } from '@/lib/utils';
@@ -48,7 +48,7 @@ const STATUS_CONFIG: Record<
   EXPIRED: {
     label: 'Expired',
     bgColor: 'bg-gray-100',
-    textColor: 'text-gray-700', // #374151 on #f3f4f6 = 7.5:1
+    textColor: 'text-gray-800', // #1f2937 on #f3f4f6 = 10.3:1
     ariaLabel: 'Badge status: Expired',
   },
 };

@@ -1,13 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
 import { BadgeStatus } from '../types/badge';
-import { API_BASE_URL } from '../lib/apiConfig';
+import { apiFetch } from '../lib/apiFetch';
 
 export interface Badge {
   id: string;
   recipientId: string;
   issuedAt: string;
   status: BadgeStatus;
+  visibility?: 'PUBLIC' | 'PRIVATE';
   claimedAt?: string;
+  expiresAt?: string;
+  // Story 11.24 AC-C3: type discriminator for wallet items
+  type?: 'badge';
   // Story 9.3: Revocation fields (only present when status = REVOKED)
   revokedAt?: string;
   revocationReason?: string;
@@ -19,8 +23,8 @@ export interface Badge {
   template: {
     id: string;
     name: string;
-    description: string;
-    imageUrl: string;
+    description: string | null;
+    imageUrl: string | null;
     category: string;
     // Story 8.2: Skill IDs for filtering
     skillIds?: string[];
@@ -33,6 +37,17 @@ export interface Badge {
   };
 }
 
+// Story 11.24 AC-C3: Milestone type for wallet timeline
+export interface Milestone {
+  type: 'milestone';
+  milestoneId: string;
+  title: string;
+  description: string;
+  achievedAt: string;
+}
+
+export type WalletItem = (Badge & { type: 'badge' }) | Milestone;
+
 export interface DateGroup {
   label: string;
   count: number;
@@ -40,12 +55,14 @@ export interface DateGroup {
 }
 
 export interface WalletResponse {
-  badges: Badge[];
-  pagination: {
+  data: (Badge | WalletItem)[];
+  meta: {
     page: number;
     limit: number;
     total: number;
     totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
   };
   dateGroups: DateGroup[];
 }
@@ -67,11 +84,7 @@ export function useWallet(params: UseWalletParams = {}) {
       if (params.status) searchParams.set('status', params.status);
       if (params.sort) searchParams.set('sort', params.sort);
 
-      const response = await fetch(`${API_BASE_URL}/badges/wallet?${searchParams}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-        },
-      });
+      const response = await apiFetch(`/badges/wallet?${searchParams}`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch wallet badges');

@@ -7,6 +7,8 @@ interface ModalHeroProps {
   status: BadgeStatus;
   issuedAt: string;
   category: string;
+  visibility?: 'PUBLIC' | 'PRIVATE';
+  issuerName?: string;
 }
 
 const ModalHero: React.FC<ModalHeroProps> = ({
@@ -15,13 +17,15 @@ const ModalHero: React.FC<ModalHeroProps> = ({
   status,
   issuedAt,
   category,
+  visibility = 'PUBLIC',
+  issuerName,
 }) => {
   const getStatusConfig = (status: BadgeStatus) => {
     switch (status) {
       case 'CLAIMED':
         return { label: '✅ Claimed', color: 'bg-green-100 text-green-800' };
       case 'PENDING':
-        return { label: '🟡 Pending', color: 'bg-yellow-100 text-yellow-800' };
+        return { label: '🟡 Pending', color: 'bg-amber-100 text-amber-800' };
       case 'REVOKED':
         return { label: '🔒 Revoked', color: 'bg-red-100 text-red-800' };
       case 'EXPIRED':
@@ -66,9 +70,13 @@ const ModalHero: React.FC<ModalHeroProps> = ({
               {statusConfig.label}
             </span>
 
-            {/* Privacy indicator (assume Public for MVP) */}
-            <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-              🌐 Public
+            {/* Story 11.4: Privacy indicator — reflects actual visibility */}
+            <span
+              className={`px-3 py-1 rounded-full text-sm font-medium ${
+                visibility === 'PUBLIC' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'
+              }`}
+            >
+              {visibility === 'PUBLIC' ? '🌐 Public' : '🔒 Private'}
             </span>
           </div>
 
@@ -80,6 +88,11 @@ const ModalHero: React.FC<ModalHeroProps> = ({
             <p className="text-sm">
               <span className="font-semibold">Issued:</span> {formattedDate}
             </p>
+            {issuerName && (
+              <p className="text-sm">
+                <span className="font-semibold">Issued by:</span> {issuerName}
+              </p>
+            )}
           </div>
         </div>
       </div>

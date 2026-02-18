@@ -3,7 +3,7 @@
  * Sprint 6 - Epic 7: Badge Sharing & Social Proof
  */
 
-import { API_BASE_URL } from './apiConfig';
+import { apiFetch } from './apiFetch';
 
 export interface ShareViaEmailRequest {
   recipientEmails: string[];
@@ -56,17 +56,11 @@ export async function shareBadgeViaEmail(
   badgeId: string,
   data: ShareViaEmailRequest
 ): Promise<{ message: string; shareCount: number }> {
-  const token = localStorage.getItem('accessToken');
-
   // Backend currently only supports single recipient
   const recipientEmail = data.recipientEmails[0];
 
-  const response = await fetch(`${API_BASE_URL}/badges/share/email`, {
+  const response = await apiFetch('/badges/share/email', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
     body: JSON.stringify({
       badgeId,
       recipientEmail,
@@ -89,14 +83,8 @@ export async function shareBadgeToTeams(
   badgeId: string,
   data: ShareToTeamsRequest
 ): Promise<{ message: string; activityId: string }> {
-  const token = localStorage.getItem('accessToken');
-
-  const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/share/teams`, {
+  const response = await apiFetch(`/badges/${badgeId}/share/teams`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
     body: JSON.stringify(data),
   });
 
@@ -112,13 +100,7 @@ export async function shareBadgeToTeams(
  * Get badge sharing analytics statistics
  */
 export async function getBadgeShareStats(badgeId: string): Promise<ShareStats> {
-  const token = localStorage.getItem('accessToken');
-
-  const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/analytics/shares`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await apiFetch(`/badges/${badgeId}/analytics/shares`);
 
   if (!response.ok) {
     const error = await response.json();
@@ -135,16 +117,7 @@ export async function getBadgeShareHistory(
   badgeId: string,
   limit: number = 10
 ): Promise<ShareHistoryItem[]> {
-  const token = localStorage.getItem('accessToken');
-
-  const response = await fetch(
-    `${API_BASE_URL}/badges/${badgeId}/analytics/shares/history?limit=${limit}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  const response = await apiFetch(`/badges/${badgeId}/analytics/shares/history?limit=${limit}`);
 
   if (!response.ok) {
     const error = await response.json();
@@ -158,7 +131,7 @@ export async function getBadgeShareHistory(
  * Get widget embed data (JSON)
  */
 export async function getWidgetEmbedData(badgeId: string): Promise<WidgetEmbedData> {
-  const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/embed`);
+  const response = await apiFetch(`/badges/${badgeId}/embed`);
 
   if (!response.ok) {
     const error = await response.json();
@@ -186,7 +159,7 @@ export async function getWidgetHtml(
     showDetails: String(showDetails),
   });
 
-  const response = await fetch(`${API_BASE_URL}/badges/${badgeId}/widget?${params}`);
+  const response = await apiFetch(`/badges/${badgeId}/widget?${params}`);
 
   if (!response.ok) {
     const error = await response.json();
@@ -194,4 +167,13 @@ export async function getWidgetHtml(
   }
 
   return response.json();
+}
+
+/**
+ * Story 11.5: Record LinkedIn share analytics (non-blocking)
+ */
+export async function recordLinkedInShare(badgeId: string): Promise<void> {
+  await apiFetch(`/badges/${badgeId}/share/linkedin`, {
+    method: 'POST',
+  });
 }

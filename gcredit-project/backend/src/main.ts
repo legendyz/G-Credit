@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import type { Request, Response, NextFunction } from 'express';
 import { AppModule } from './app.module';
 
@@ -183,6 +184,9 @@ async function bootstrap() {
   });
   logger.log('✅ Helmet security headers configured (AC1 compliant)');
 
+  // Cookie parser middleware — required for httpOnly JWT cookies (Story 11.6)
+  app.use(cookieParser());
+
   // CORS Configuration (SEC-P1-003, AC2)
   const rawOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim())
@@ -237,59 +241,70 @@ async function bootstrap() {
     }),
   );
 
-  // Swagger API Documentation Setup
-  const config = new DocumentBuilder()
-    .setTitle('G-Credit Digital Badge Platform API')
-    .setDescription(
-      'API documentation for G-Credit Digital Badge Management System. ' +
-        'This platform enables organizations to create, issue, and manage digital badges.',
-    )
-    .setVersion('1.0')
-    .addTag('Authentication', 'User authentication and authorization')
-    .addTag(
-      'Badge Templates',
-      'Badge template management (CRUD, query, image upload)',
-    )
-    .addTag(
-      'Badge Sharing',
-      'Share badges to Teams and other platforms (Story 7.4)',
-    )
-    .addTag(
-      'Badge Widget',
-      'PUBLIC API - Embeddable badge widgets for external websites (Story 7.3)',
-    )
-    .addTag(
-      'Teams Actions',
-      'Handle Adaptive Card actions from Microsoft Teams (Story 7.4)',
-    )
-    .addTag('Skills', 'Skill management and categories')
-    .addTag('Users', 'User profile and management')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        description: 'Enter your JWT token',
-      },
-      'JWT-auth',
-    )
-    .build();
+  // Swagger API Documentation Setup — only in non-production environments
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('G-Credit Digital Badge Platform API')
+      .setDescription(
+        'API documentation for G-Credit Digital Badge Management System. ' +
+          'This platform enables organizations to create, issue, and manage digital badges.',
+      )
+      .setVersion('1.0')
+      .addTag('Authentication', 'User authentication and authorization')
+      .addTag(
+        'Badge Templates',
+        'Badge template management (CRUD, query, image upload)',
+      )
+      .addTag(
+        'Badge Sharing',
+        'Share badges to Teams and other platforms (Story 7.4)',
+      )
+      .addTag(
+        'Badge Widget',
+        'PUBLIC API - Embeddable badge widgets for external websites (Story 7.3)',
+      )
+      .addTag(
+        'Teams Actions',
+        'Handle Adaptive Card actions from Microsoft Teams (Story 7.4)',
+      )
+      .addTag('Skills', 'Skill management and categories')
+      .addTag('Users', 'User profile and management')
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Enter your JWT token',
+        },
+        'JWT-auth',
+      )
+      .addCookieAuth('access_token', {
+        type: 'apiKey',
+        in: 'cookie',
+        name: 'access_token',
+        description:
+          'httpOnly JWT cookie (set automatically by login/register)',
+      })
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api-docs', app, document, {
-    swaggerOptions: {
-      persistAuthorization: true, // Keep authorization token after page refresh
-      tagsSorter: 'alpha',
-      operationsSorter: 'alpha',
-    },
-    customSiteTitle: 'G-Credit API Documentation',
-  });
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api-docs', app, document, {
+      swaggerOptions: {
+        persistAuthorization: true, // Keep authorization token after page refresh
+        tagsSorter: 'alpha',
+        operationsSorter: 'alpha',
+      },
+      customSiteTitle: 'G-Credit API Documentation',
+    });
+  }
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
   logger.log(`🚀 Application is running on: http://localhost:${port}`);
-  logger.log(
-    `📚 API Documentation available at: http://localhost:${port}/api-docs`,
-  );
+  if (process.env.NODE_ENV !== 'production') {
+    logger.log(
+      `📚 API Documentation available at: http://localhost:${port}/api-docs`,
+    );
+  }
 }
 void bootstrap();

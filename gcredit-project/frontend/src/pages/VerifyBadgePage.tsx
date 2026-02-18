@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
+  Clock,
   Download,
   ExternalLink,
   Calendar,
@@ -17,8 +18,7 @@ import {
   Award,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import axios from 'axios';
-import { API_BASE_URL } from '../lib/apiConfig';
+import { apiFetch } from '../lib/apiFetch';
 import { RevokedBadgeAlert } from '../components/badges/RevokedBadgeAlert';
 
 export function VerifyBadgePage() {
@@ -39,50 +39,63 @@ export function VerifyBadgePage() {
       try {
         setIsLoading(true);
         setError(null);
-        const response = await axios.get(`${API_BASE_URL}/verify/${verificationId}`);
+        // Story 11.25 AC-M5: Use apiFetch instead of axios (credentials: 'include')
+        const response = await apiFetch(`/verify/${verificationId}`);
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            setError('Badge not found. The verification link may be invalid.');
+            return;
+          }
+          if (response.status === 410) {
+            // Badge revoked - try to show revocation details
+            const errorData = (await response.json().catch(() => null)) as {
+              badge?: VerificationResponse;
+            } | null;
+            setBadge(errorData?.badge ?? null);
+            setError(null);
+            return;
+          }
+          throw new Error(`Verification failed: ${response.status}`);
+        }
 
         // Transform API response to match frontend type
-        const apiData = response.data;
-        const meta = apiData._meta || {};
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        const apiData = (await response.json()) as any;
+        const meta = (apiData._meta || {}) as any;
+        /* eslint-enable @typescript-eslint/no-explicit-any */
         const transformedData: VerificationResponse = {
-          id: apiData.id,
+          // Story 11.24 AC-L6: Use badgeId (actual UUID) instead of OB assertion URL
+          id: (apiData.badgeId || apiData.id) as string,
           verificationId: verificationId!,
           status:
             apiData.verificationStatus === 'revoked'
               ? 'REVOKED'
               : apiData.verificationStatus === 'expired'
                 ? 'EXPIRED'
-                : 'ACTIVE',
+                : apiData.verificationStatus === 'pending'
+                  ? 'PENDING'
+                  : 'ACTIVE',
           badge: meta.badge || {},
           recipient: meta.recipient || {},
           issuer: meta.issuer || {},
-          issuedAt: apiData.issuedOn || new Date().toISOString(),
-          expiresAt: apiData.expiresAt || null,
-          claimedAt: apiData.claimedAt || null,
-          isValid: apiData.isValid !== undefined ? apiData.isValid : true,
-          revokedAt: apiData.revokedAt || undefined,
-          revocationReason: apiData.revocationReason || undefined,
-          revocationNotes: apiData.revocationNotes || undefined,
-          isPublicReason: apiData.isPublicReason || false,
+          issuedAt: (apiData.issuedOn as string) || new Date().toISOString(),
+          expiresAt: (apiData.expiresAt as string) || null,
+          claimedAt: (apiData.claimedAt as string) || null,
+          isValid: apiData.isValid !== undefined ? (apiData.isValid as boolean) : true,
+          revokedAt: (apiData.revokedAt as string) || undefined,
+          revocationReason: (apiData.revocationReason as string) || undefined,
+          revocationNotes: (apiData.revocationNotes as string) || undefined,
+          isPublicReason: (apiData.isPublicReason as boolean) || false,
           revokedBy: apiData.revokedBy || undefined,
           evidenceFiles: meta.evidenceFiles || [],
           assertionJson: apiData,
         };
 
         setBadge(transformedData);
-      } catch (err: unknown) {
-        const axiosErr = err as {
-          response?: { status?: number; data?: { badge?: VerificationResponse } };
-        };
-        if (axiosErr.response?.status === 404) {
-          setError('Badge not found. The verification link may be invalid.');
-        } else if (axiosErr.response?.status === 410) {
-          // Badge revoked - show revocation details
-          setBadge(axiosErr.response.data?.badge ?? null);
-          setError(null);
-        } else {
-          setError('Failed to verify badge. Please try again later.');
-        }
+      } catch {
+        // Only set generic error if not already handled above (404/410)
+        setError((prev) => prev ?? 'Failed to verify badge. Please try again later.');
       } finally {
         setIsLoading(false);
       }
@@ -141,8 +154,9 @@ export function VerifyBadgePage() {
   if (!badge) return null;
 
   const isRevoked = badge.status === 'REVOKED';
+  const isPending = badge.status === 'PENDING';
   const isExpired = badge.expiresAt && new Date(badge.expiresAt) < new Date();
-  const isValid = !isRevoked && !isExpired;
+  const isValid = !isRevoked && !isExpired && !isPending;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -168,12 +182,24 @@ export function VerifyBadgePage() {
         />
       )}
 
-      {/* Expired Badge Alert */}
+      {/* Pending Badge Alert */}
+      {isPending && (
+        <Alert variant="warning" className="mb-6 border-amber-500 bg-amber-50">
+          <AlertTriangle className="h-5 w-5 text-amber-600" />
+          <AlertTitle className="text-amber-900">Pending Credential</AlertTitle>
+          <AlertDescription className="text-amber-800">
+            This badge has been issued but has not yet been claimed by the recipient. It cannot be
+            considered verified until claimed.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Expired Badge Alert — UX Decision 2026-02-17: neutral gray for expired */}
       {!isRevoked && isExpired && (
-        <Alert variant="warning" className="mb-6 border-yellow-600">
-          <AlertTriangle className="h-5 w-5 text-yellow-600" />
-          <AlertTitle className="text-yellow-900">This credential has expired</AlertTitle>
-          <AlertDescription className="text-yellow-800">
+        <Alert className="mb-6 border-gray-400 bg-gray-50">
+          <Clock className="h-5 w-5 text-gray-500" />
+          <AlertTitle className="text-gray-800">This credential has expired</AlertTitle>
+          <AlertDescription className="text-gray-600">
             Expired on {format(new Date(badge.expiresAt!), 'MMMM d, yyyy')}
           </AlertDescription>
         </Alert>
@@ -281,12 +307,12 @@ export function VerifyBadgePage() {
                 Skills & Competencies
               </div>
               <div className="flex flex-wrap gap-2">
-                {badge.badge.skills.map((skillId: string) => (
+                {badge.badge.skills.map((skill: { id: string; name: string }) => (
                   <span
-                    key={skillId}
+                    key={skill.id}
                     className="px-3 py-1 bg-brand-100 text-brand-800 rounded-full text-sm"
                   >
-                    {skillId}
+                    {skill.name}
                   </span>
                 ))}
               </div>
@@ -333,6 +359,12 @@ export function VerifyBadgePage() {
               Download Open Badges 2.0 JSON-LD
             </Button>
           </div>
+
+          {/* Story 11.7: Privacy trust statement */}
+          <p className="mt-6 text-xs text-neutral-400 text-center max-w-md mx-auto">
+            Personal information is partially hidden to protect privacy. Badge authenticity is
+            verified by G-Credit's cryptographic signature.
+          </p>
         </CardContent>
       </Card>
     </div>

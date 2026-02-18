@@ -92,10 +92,10 @@ describe('AdminUsersService', () => {
 
       const result = await service.findAll({ page: 1, limit: 25 });
 
-      expect(result.users).toHaveLength(1);
-      expect(result.pagination.total).toBe(1);
-      expect(result.pagination.page).toBe(1);
-      expect(result.pagination.totalPages).toBe(1);
+      expect(result.data).toHaveLength(1);
+      expect(result.meta.total).toBe(1);
+      expect(result.meta.page).toBe(1);
+      expect(result.meta.totalPages).toBe(1);
     });
 
     it('should filter by search term (name/email)', async () => {
@@ -177,8 +177,8 @@ describe('AdminUsersService', () => {
           take: 25,
         }),
       );
-      expect(result.pagination.totalPages).toBe(4);
-      expect(result.pagination.hasMore).toBe(true);
+      expect(result.meta.totalPages).toBe(4);
+      expect(result.meta.hasNextPage).toBe(true);
     });
 
     it('should return empty list when no users found', async () => {
@@ -187,8 +187,8 @@ describe('AdminUsersService', () => {
 
       const result = await service.findAll({ page: 1, limit: 25 });
 
-      expect(result.users).toHaveLength(0);
-      expect(result.pagination.total).toBe(0);
+      expect(result.data).toHaveLength(0);
+      expect(result.meta.total).toBe(0);
     });
   });
 

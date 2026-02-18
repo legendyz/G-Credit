@@ -83,6 +83,16 @@ export class BadgeVerificationService {
       return null;
     }
 
+    // Story 11.4: PRIVATE badges return 404 on verification page (C-3 Option B)
+    if (badge.visibility === 'PRIVATE') {
+      this.logger.log({
+        action: 'BADGE_VERIFICATION_BLOCKED',
+        verificationId,
+        reason: 'PRIVATE_VISIBILITY',
+      });
+      return null;
+    }
+
     // Log successful verification
     this.logger.log({
       action: 'BADGE_VERIFICATION_SUCCESS',
@@ -116,6 +126,15 @@ export class BadgeVerificationService {
     }
 
     // Format response for frontend
+
+    // Story 11.18: Resolve skill UUIDs to display names
+    const skills = badge.template.skillIds?.length
+      ? await this.prisma.skill.findMany({
+          where: { id: { in: badge.template.skillIds } },
+          select: { id: true, name: true },
+        })
+      : [];
+
     return {
       id: badge.id,
       verificationId: badge.verificationId,
@@ -129,7 +148,7 @@ export class BadgeVerificationService {
           ((badge.template.issuanceCriteria as Record<string, unknown>)
             ?.description as string) || 'No criteria specified',
         category: badge.template.category,
-        skills: badge.template.skillIds || [],
+        skills: skills.map((s) => ({ id: s.id, name: s.name })),
       },
 
       recipient: {
@@ -140,7 +159,7 @@ export class BadgeVerificationService {
 
       issuer: {
         name: `${badge.issuer.firstName} ${badge.issuer.lastName}`,
-        email: badge.issuer.email,
+        email: this.maskEmail(badge.issuer.email),
       },
 
       issuedAt: badge.issuedAt,
@@ -148,7 +167,11 @@ export class BadgeVerificationService {
       claimedAt: badge.claimedAt,
 
       // Story 9.2: Revocation details with categorization
-      isValid: badge.status !== BadgeStatus.REVOKED,
+      // isValid is false for REVOKED, PENDING, and dynamically expired badges
+      isValid:
+        badge.status !== BadgeStatus.REVOKED &&
+        badge.status !== BadgeStatus.PENDING &&
+        !(badge.expiresAt && new Date(badge.expiresAt) < new Date()),
       ...(badge.status === BadgeStatus.REVOKED && {
         revokedAt: badge.revokedAt,
         revocationReason: badge.revocationReason,

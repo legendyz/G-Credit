@@ -67,12 +67,27 @@ export class AdminUsersQueryDto {
 
   @ApiPropertyOptional({
     description: 'Sort field',
-    enum: ['name', 'email', 'role', 'lastLogin', 'createdAt'],
+    enum: [
+      'name',
+      'email',
+      'role',
+      'department',
+      'status',
+      'lastLogin',
+      'createdAt',
+    ],
     default: 'name',
   })
   @IsOptional()
   @IsString()
-  sortBy?: 'name' | 'email' | 'role' | 'lastLogin' | 'createdAt' = 'name';
+  sortBy?:
+    | 'name'
+    | 'email'
+    | 'role'
+    | 'department'
+    | 'status'
+    | 'lastLogin'
+    | 'createdAt' = 'name';
 
   @ApiPropertyOptional({
     description: 'Sort order',

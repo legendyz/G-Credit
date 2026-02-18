@@ -52,12 +52,14 @@ const IssuanceTrendChart: React.FC<IssuanceTrendChartProps> = ({ dataPoints }) =
         />
         <YAxis tick={{ fontSize: 12, fill: '#6b7280' }} allowDecimals={false} />
         <Tooltip
+          // inline style retained: Recharts library API prop
           contentStyle={{
             borderRadius: '8px',
             border: '1px solid #e5e7eb',
             fontSize: '13px',
           }}
         />
+        {/* inline style retained: Recharts library API prop */}
         <Legend wrapperStyle={{ fontSize: '13px' }} />
         <Area
           type="monotone"

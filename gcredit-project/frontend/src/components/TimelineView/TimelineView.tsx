@@ -14,8 +14,24 @@ import { useBadgeDetailModal } from '../../stores/badgeDetailModal';
 import { BadgeSearchBar } from '../search/BadgeSearchBar';
 import { PageTemplate } from '../layout/PageTemplate';
 import type { BadgeForFilter } from '../../utils/searchFilters';
+import type { Badge } from '../../hooks/useWallet';
 
 export type ViewMode = 'timeline' | 'grid';
+
+/**
+ * Type guard: distinguish Badge from Milestone in wallet items.
+ *
+ * Design decision (Story 11.24 / Code Review #1): Milestones are intentionally
+ * filtered out of the TimelineView rendering path. MilestoneTimelineCard exists
+ * as a component but is not wired in because:
+ *  - Milestones lack search/filter support (no template, no issuer)
+ *  - The wallet API returns them inline with badges, but the UI treats them
+ *    as a future feature (render when milestone display is spec'd)
+ *  - Keeping the component allows easy activation without re-implementation
+ */
+function isBadge(item: { type?: string }): item is Badge {
+  return !('type' in item) || item.type !== 'milestone';
+}
 
 export function TimelineView() {
   const [viewMode, setViewMode] = useState<ViewMode>('timeline');
@@ -27,9 +43,10 @@ export function TimelineView() {
   const { data: skills = [] } = useSkills();
 
   // Convert badges to BadgeForFilter format for client-side filtering
+  // Story 11.24 AC-C3: Filter out milestones — only badges support search/filter
   const badgesForFilter: BadgeForFilter[] = useMemo(() => {
-    if (!data?.badges) return [];
-    return data.badges.map((badge) => ({
+    if (!data?.data) return [];
+    return data.data.filter(isBadge).map((badge) => ({
       id: badge.id,
       template: {
         id: badge.template.id,
@@ -79,7 +96,7 @@ export function TimelineView() {
     isSearching,
   } = useBadgeSearch({
     allBadges: badgesForFilter,
-    totalCount: data?.pagination?.total,
+    totalCount: data?.meta?.total,
     skillNames,
   });
 
@@ -97,10 +114,10 @@ export function TimelineView() {
   }, [setStatusFilter]);
 
   // Map filtered badges back to original badge objects for display
-  const displayBadges = useMemo(() => {
-    if (!data?.badges) return [];
+  const displayBadges: Badge[] = useMemo(() => {
+    if (!data?.data) return [];
     const filteredIds = new Set(filteredBadges.map((b) => b.id));
-    return data.badges.filter((badge) => filteredIds.has(badge.id));
+    return data.data.filter(isBadge).filter((badge) => filteredIds.has(badge.id));
   }, [data, filteredBadges]);
 
   // Group badges by date for timeline display
@@ -147,11 +164,11 @@ export function TimelineView() {
     );
   }
 
-  if (!data || data.badges.length === 0) {
+  if (!data || data.data.length === 0) {
     // AC 6.14: Detect which empty state scenario to display
     // Calculate badge counts for scenario detection
-    const totalBadges = data?.pagination?.total || 0;
-    const badges = data?.badges ?? [];
+    const totalBadges = data?.meta?.total || 0;
+    const badges = (data?.data ?? []).filter(isBadge);
     const claimedBadges = badges.filter((b) => b.status === 'CLAIMED').length;
     const pendingBadges = badges.filter((b) => b.status === 'PENDING').length;
     const revokedBadges = badges.filter((b) => b.status === 'REVOKED').length;
@@ -232,7 +249,7 @@ export function TimelineView() {
           {/* Search results count - Story 8.2 */}
           {hasFilters && !showNoResults && (
             <p className="text-sm text-neutral-500 mb-4">
-              Showing {displayBadges.length} of {data.badges.length} badges
+              Showing {displayBadges.length} of {data.data.length} badges
             </p>
           )}
 
@@ -331,7 +348,7 @@ interface GridViewProps {
   badges: Array<{
     id: string;
     template: {
-      imageUrl?: string;
+      imageUrl?: string | null;
       name: string;
       category: string;
     };

@@ -126,7 +126,7 @@ export class AdminUsersController {
     @Request() req: RequestWithUser,
   ): Promise<UserListResponse> {
     this.logger.log(
-      `Admin ${req.user.email} listing users with filters: ${JSON.stringify(query)}`,
+      `Admin user:${req.user.userId} listing users with filters: ${JSON.stringify(query)}`,
     );
     return this.adminUsersService.findAll(query);
   }
@@ -150,7 +150,7 @@ export class AdminUsersController {
     @Param('id', ParseUUIDPipe) id: string,
     @Request() req: RequestWithUser,
   ): Promise<UserListItem> {
-    this.logger.log(`Admin ${req.user.email} retrieving user ${id}`);
+    this.logger.log(`Admin user:${req.user.userId} retrieving user ${id}`);
     return this.adminUsersService.findOne(id);
   }
 
@@ -183,7 +183,7 @@ export class AdminUsersController {
     @Request() req: RequestWithUser,
   ): Promise<RoleUpdateResponse> {
     this.logger.log(
-      `Admin ${req.user.email} updating role for user ${id} to ${dto.role}`,
+      `Admin user:${req.user.userId} updating role for user ${id} to ${dto.role}`,
     );
     return this.adminUsersService.updateRole(id, dto, req.user.userId);
   }
@@ -213,7 +213,7 @@ export class AdminUsersController {
     @Request() req: RequestWithUser,
   ): Promise<StatusUpdateResponse> {
     const action = dto.isActive ? 'activating' : 'deactivating';
-    this.logger.log(`Admin ${req.user.email} ${action} user ${id}`);
+    this.logger.log(`Admin user:${req.user.userId} ${action} user ${id}`);
     return this.adminUsersService.updateStatus(id, dto, req.user.userId);
   }
 
@@ -238,7 +238,7 @@ export class AdminUsersController {
     @Request() req: RequestWithUser,
   ): Promise<DepartmentUpdateResponse> {
     this.logger.log(
-      `Admin ${req.user.email} updating department for user ${id} to "${dto.department}"`,
+      `Admin user:${req.user.userId} updating department for user ${id} to "${dto.department}"`,
     );
     return this.adminUsersService.updateDepartment(id, dto, req.user.userId);
   }

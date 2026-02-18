@@ -146,7 +146,7 @@ describe('Badge Issuance (e2e)', () => {
     });
   });
 
-  describe('POST /api/badges/:id/claim', () => {
+  describe('POST /api/badges/claim', () => {
     let validBadgeId: string;
     let validClaimToken: string;
 
@@ -170,9 +170,10 @@ describe('Badge Issuance (e2e)', () => {
       validClaimToken = issueBody.claimToken;
     });
 
-    it('should claim badge with valid token (PUBLIC endpoint - no auth required)', async () => {
+    it('should claim badge with valid token (authenticated as recipient)', async () => {
       const response = await request(ctx.app.getHttpServer() as App)
-        .post(`/api/badges/${validBadgeId}/claim`)
+        .post('/api/badges/claim')
+        .set('Authorization', `Bearer ${recipientUser.token}`)
         .send({
           claimToken: validClaimToken,
         })
@@ -192,9 +193,29 @@ describe('Badge Issuance (e2e)', () => {
       expect(body.assertionUrl).toContain(validBadgeId);
     });
 
+    it('should return 401 when claiming without authentication', () => {
+      return request(ctx.app.getHttpServer() as App)
+        .post('/api/badges/claim')
+        .send({ claimToken: validClaimToken })
+        .expect(401);
+    });
+
+    it('should return 403 when wrong user tries to claim', async () => {
+      return request(ctx.app.getHttpServer() as App)
+        .post('/api/badges/claim')
+        .set('Authorization', `Bearer ${adminUser.token}`)
+        .send({ claimToken: validClaimToken })
+        .expect(403)
+        .expect((res) => {
+          const body = res.body as { message: string };
+          expect(body.message).toContain('different user');
+        });
+    });
+
     it('should return 400 for invalid claim token', () => {
       return request(ctx.app.getHttpServer() as App)
-        .post(`/api/badges/${validBadgeId}/claim`)
+        .post('/api/badges/claim')
+        .set('Authorization', `Bearer ${recipientUser.token}`)
         .send({
           claimToken: 'invalid-token-' + 'x'.repeat(19), // 32 chars total
         })
@@ -205,25 +226,27 @@ describe('Badge Issuance (e2e)', () => {
         });
     });
 
-    it('should return 404 when trying to use already-claimed token (one-time use)', async () => {
-      // Claim once
+    it('should return 400 when badge already claimed (token kept for accurate error messages)', async () => {
+      // Claim once (as recipient)
       await request(ctx.app.getHttpServer() as App)
-        .post(`/api/badges/${validBadgeId}/claim`)
+        .post('/api/badges/claim')
+        .set('Authorization', `Bearer ${recipientUser.token}`)
         .send({
           claimToken: validClaimToken,
         })
         .expect(201);
 
-      // Try to claim again with same token (should fail - token is cleared after claim)
+      // Try to claim again - token still exists but badge status is CLAIMED
       return request(ctx.app.getHttpServer() as App)
-        .post(`/api/badges/${validBadgeId}/claim`)
+        .post('/api/badges/claim')
+        .set('Authorization', `Bearer ${recipientUser.token}`)
         .send({
           claimToken: validClaimToken,
         })
-        .expect(404)
+        .expect(400)
         .expect((res) => {
           const body = res.body as { message: string };
-          expect(body.message).toContain('Invalid claim token');
+          expect(body.message).toContain('already been claimed');
         });
     });
 
@@ -238,7 +261,8 @@ describe('Badge Issuance (e2e)', () => {
       });
 
       return request(ctx.app.getHttpServer() as App)
-        .post(`/api/badges/${validBadgeId}/claim`)
+        .post('/api/badges/claim')
+        .set('Authorization', `Bearer ${recipientUser.token}`)
         .send({
           claimToken: validClaimToken,
         })
@@ -251,8 +275,6 @@ describe('Badge Issuance (e2e)', () => {
   });
 
   describe('GET /api/badges/my-badges', () => {
-    let badge1Id: string;
-
     beforeAll(async () => {
       // Issue 2 badges to recipient
       const issueResponse1 = await request(ctx.app.getHttpServer() as App)
@@ -268,7 +290,6 @@ describe('Badge Issuance (e2e)', () => {
         id: string;
         claimToken: string;
       };
-      badge1Id = issue1Body.id;
 
       await request(ctx.app.getHttpServer() as App)
         .post('/api/badges')
@@ -280,9 +301,10 @@ describe('Badge Issuance (e2e)', () => {
           expiresIn: 365,
         });
 
-      // Claim one badge
+      // Claim one badge (using authenticated claim endpoint)
       await request(ctx.app.getHttpServer() as App)
-        .post(`/api/badges/${badge1Id}/claim`)
+        .post('/api/badges/claim')
+        .set('Authorization', `Bearer ${recipientUser.token}`)
         .send({
           claimToken: issue1Body.claimToken,
         })
@@ -303,14 +325,14 @@ describe('Badge Issuance (e2e)', () => {
           template: { name: string };
           issuer: { name: string };
         }>;
-        pagination: { page: number; limit: number; totalCount: number };
+        meta: { page: number; limit: number; total: number };
       };
       expect(body.data).toBeInstanceOf(Array);
       expect(body.data.length).toBeGreaterThanOrEqual(2);
-      expect(body.pagination).toBeDefined();
-      expect(body.pagination.page).toBe(1);
-      expect(body.pagination.limit).toBe(10);
-      expect(body.pagination.totalCount).toBeGreaterThanOrEqual(2);
+      expect(body.meta).toBeDefined();
+      expect(body.meta.page).toBe(1);
+      expect(body.meta.limit).toBe(10);
+      expect(body.meta.total).toBeGreaterThanOrEqual(2);
 
       // Check badge structure
       const badge = body.data[0];
@@ -353,19 +375,19 @@ describe('Badge Issuance (e2e)', () => {
         .expect(200);
 
       const body = response.body as {
-        badges: Array<{
+        data: Array<{
           id: string;
           status: string;
           recipient: { email: string };
         }>;
-        total: number;
+        meta: { total: number };
       };
-      expect(body.badges).toBeInstanceOf(Array);
-      expect(body.badges.length).toBeGreaterThanOrEqual(1);
-      expect(body).toHaveProperty('total');
+      expect(body.data).toBeInstanceOf(Array);
+      expect(body.data.length).toBeGreaterThanOrEqual(1);
+      expect(body.meta).toHaveProperty('total');
 
       // Check badge structure includes recipient
-      const badge = body.badges[0];
+      const badge = body.data[0];
       expect(badge).toHaveProperty('id');
       expect(badge).toHaveProperty('status');
       expect(badge).toHaveProperty('recipient');

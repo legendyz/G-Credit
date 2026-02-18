@@ -25,11 +25,15 @@ ENV/
 env/
 
 # Virtual Environment
-Scripts/
+/Scripts/
 Include/
 Lib/
 !gcredit-project/frontend/src/lib/
 pyvenv.cfg
+
+# Root monorepo (Husky/lint-staged only)
+/node_modules/
+/package-lock.json
 
 # IDEs
 .vscode/
@@ -60,3 +64,9 @@ _bmad-output/playwright-sessions/
 
 # ESLint reports
 **/eslint-report.txt
+
+# Dev/debug scripts with hardcoded credentials
+gcredit-project/backend/scripts/check-users.js
+gcredit-project/scripts/e2e-api-test.ps1
+gcredit-project/scripts/get-token.ps1
+gcredit-project/scripts/test-teams-channel.ps1

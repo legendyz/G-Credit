@@ -1,7 +1,10 @@
-# ADR 003: Open Badges 2.0 Assertion Format
 
+# ADR-003: Open Badges 2.0 Assertion Format
+
+
+**ADR Number:** 003  
+**Status:** ✅ Accepted  
 **Date:** 2026-01-27  
-**Status:** Accepted  
 **Deciders:** Development Team  
 **Tags:** badge-issuance, open-badges, standards-compliance
 

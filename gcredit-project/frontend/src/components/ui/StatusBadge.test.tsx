@@ -41,7 +41,7 @@ describe('StatusBadge', () => {
     const badge = screen.getByRole('status');
     expect(badge).toHaveTextContent('Expired');
     expect(badge).toHaveAttribute('aria-label', 'Badge status: Expired');
-    expect(badge).toHaveClass('bg-gray-100', 'text-gray-700');
+    expect(badge).toHaveClass('bg-gray-100', 'text-gray-800');
   });
 
   it('should accept custom label', () => {

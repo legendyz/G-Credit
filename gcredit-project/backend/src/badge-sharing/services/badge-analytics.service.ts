@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import { Injectable, ForbiddenException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
 import { Prisma } from '@prisma/client';
 
@@ -23,19 +23,20 @@ export interface ShareHistoryDto {
 
 @Injectable()
 export class BadgeAnalyticsService {
+  private readonly logger = new Logger(BadgeAnalyticsService.name);
   constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Record a badge share event
    * @param badgeId Badge ID that was shared
-   * @param platform Platform where badge was shared ('email', 'teams', 'widget')
+   * @param platform Platform where badge was shared ('email', 'teams', 'widget', 'linkedin')
    * @param userId User ID who initiated the share (nullable for anonymous widget embeds)
    * @param metadata Platform-specific metadata (e.g., team/channel IDs, referrer URL, recipient email)
    * @returns Created BadgeShare record
    */
   async recordShare(
     badgeId: string,
-    platform: 'email' | 'teams' | 'widget',
+    platform: 'email' | 'teams' | 'widget' | 'linkedin',
     userId: string | null,
     metadata?: {
       recipientEmail?: string;
@@ -45,13 +46,21 @@ export class BadgeAnalyticsService {
       referrerUrl?: string;
     },
   ) {
-    // Verify badge exists
+    // Verify badge exists and fetch ownership info
     const badge = await this.prisma.badge.findUnique({
       where: { id: badgeId },
+      select: { id: true, recipientId: true, issuerId: true },
     });
 
     if (!badge) {
       throw new Error(`Badge with ID ${badgeId} not found`);
+    }
+
+    // F-NEW-1: Verify ownership — authenticated users can only share their own badges
+    if (userId && badge.recipientId !== userId && badge.issuerId !== userId) {
+      throw new ForbiddenException(
+        'You are not authorized to share this badge',
+      );
     }
 
     // Create share record

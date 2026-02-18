@@ -36,8 +36,6 @@ describe('useEmployeeDashboard', () => {
     vi.clearAllMocks();
     // Mock global fetch
     global.fetch = mockFetch;
-    // Mock localStorage
-    vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('test-token');
   });
 
   const mockEmployeeData = {
@@ -95,7 +93,6 @@ describe('useIssuerDashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     global.fetch = mockFetch;
-    vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('test-token');
   });
 
   const mockIssuerData = {
@@ -132,7 +129,6 @@ describe('useManagerDashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     global.fetch = mockFetch;
-    vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('test-token');
   });
 
   const mockManagerData = {
@@ -168,7 +164,6 @@ describe('useAdminDashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     global.fetch = mockFetch;
-    vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('test-token');
   });
 
   const mockAdminData = {

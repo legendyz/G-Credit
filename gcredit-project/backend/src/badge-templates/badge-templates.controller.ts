@@ -15,6 +15,7 @@ import {
   Request,
   BadRequestException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -46,13 +47,14 @@ import type { RequestWithUser } from '../common/interfaces/request-with-user.int
 @ApiTags('Badge Templates')
 @Controller('api/badge-templates')
 export class BadgeTemplatesController {
+  private readonly logger = new Logger(BadgeTemplatesController.name);
   constructor(private readonly badgeTemplatesService: BadgeTemplatesService) {}
 
   @Get()
   @ApiOperation({
     summary: 'Get all badge templates with filters and pagination',
     description:
-      'Public endpoint for listing badge templates. Returns only ACTIVE templates by default.',
+      'Lists badge templates (auth required via global guard). Returns only ACTIVE templates by default.',
   })
   @ApiResponse({
     status: 200,
@@ -60,7 +62,7 @@ export class BadgeTemplatesController {
     type: PaginatedBadgeTemplatesResponseDto,
   })
   async findAll(@Query() query: QueryBadgeTemplatesDto) {
-    // Public endpoint: only show ACTIVE templates
+    // Auth-required (global JwtAuthGuard): only show ACTIVE templates
     return this.badgeTemplatesService.findAll(query, true);
   }
 
@@ -288,7 +290,7 @@ export class BadgeTemplatesController {
     // JSON fields are automatically parsed by MultipartJsonInterceptor
     const updateDto: UpdateBadgeTemplateDto = body;
 
-    return this.badgeTemplatesService.update(id, updateDto, image);
+    return this.badgeTemplatesService.update(id, updateDto, image, userId);
   }
 
   @Delete(':id')

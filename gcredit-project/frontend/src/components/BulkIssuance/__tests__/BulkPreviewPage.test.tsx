@@ -115,7 +115,6 @@ const mockPreviewData = {
 describe('BulkPreviewPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (window.localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue('test-token');
   });
 
   it('should render loading state', () => {

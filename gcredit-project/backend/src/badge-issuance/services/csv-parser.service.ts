@@ -1,9 +1,10 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { parse } from 'csv-parse/sync';
 import { BulkIssuanceRow } from '../dto/bulk-issue-badges.dto';
 
 @Injectable()
 export class CSVParserService {
+  private readonly logger = new Logger(CSVParserService.name);
   /**
    * Parse CSV file and validate structure
    */

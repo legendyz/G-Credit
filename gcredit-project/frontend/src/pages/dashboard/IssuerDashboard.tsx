@@ -259,6 +259,7 @@ const ClaimRateCard: React.FC<{ claimRate: number }> = ({ claimRate }) => {
               'h-full rounded-full transition-all duration-500',
               percentage >= 80 ? 'bg-green-500' : percentage >= 50 ? 'bg-yellow-500' : 'bg-red-500'
             )}
+            // inline style retained: dynamic value computed from props
             style={{ width: `${percentage}%` }}
             role="progressbar"
             aria-valuenow={percentage}
@@ -276,7 +277,7 @@ const ClaimRateCard: React.FC<{ claimRate: number }> = ({ claimRate }) => {
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
   const statusColors: Record<string, string> = {
     CLAIMED: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-    PENDING: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+    PENDING: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
     REVOKED: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
     EXPIRED: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
   };

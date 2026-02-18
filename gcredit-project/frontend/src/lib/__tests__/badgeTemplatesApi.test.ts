@@ -20,15 +20,6 @@ import {
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-// Mock localStorage
-const mockLocalStorage = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-};
-Object.defineProperty(window, 'localStorage', { value: mockLocalStorage });
-
 const MOCK_TEMPLATE: BadgeTemplate = {
   id: 'tpl-1',
   name: 'Cloud Expert',
@@ -39,6 +30,9 @@ const MOCK_TEMPLATE: BadgeTemplate = {
   validityPeriod: 365,
   status: 'ACTIVE',
   createdBy: 'admin-1',
+  creator: { id: 'admin-1', email: 'admin@test.com', firstName: 'Admin', lastName: 'User' },
+  updatedBy: null,
+  updater: null,
   createdAt: '2026-01-01T00:00:00Z',
   updatedAt: '2026-01-01T00:00:00Z',
 };
@@ -46,7 +40,6 @@ const MOCK_TEMPLATE: BadgeTemplate = {
 describe('badgeTemplatesApi', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockLocalStorage.getItem.mockReturnValue('test-token');
   });
 
   afterEach(() => {
@@ -65,8 +58,8 @@ describe('badgeTemplatesApi', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('/badge-templates/all'),
         expect.objectContaining({
+          credentials: 'include',
           headers: expect.objectContaining({
-            Authorization: 'Bearer test-token',
             'Content-Type': 'application/json',
           }),
         })
@@ -126,9 +119,7 @@ describe('badgeTemplatesApi', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('/badge-templates/tpl-1'),
         expect.objectContaining({
-          headers: expect.objectContaining({
-            Authorization: 'Bearer test-token',
-          }),
+          credentials: 'include',
         })
       );
     });
@@ -187,7 +178,7 @@ describe('badgeTemplatesApi', () => {
       expect(formData.get('validityPeriod')).toBe('365');
     });
 
-    it('sends auth header without Content-Type (FormData sets it)', async () => {
+    it('sends credentials: include without Content-Type (FormData sets it)', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve(MOCK_TEMPLATE),
@@ -195,9 +186,9 @@ describe('badgeTemplatesApi', () => {
 
       await createTemplate({ name: 'Test', category: 'skill' });
 
-      const headers = mockFetch.mock.calls[0][1].headers;
-      expect(headers).toHaveProperty('Authorization', 'Bearer test-token');
-      expect(headers).not.toHaveProperty('Content-Type');
+      const callOptions = mockFetch.mock.calls[0][1];
+      expect(callOptions.credentials).toBe('include');
+      expect(callOptions.headers).not.toHaveProperty('Content-Type');
     });
 
     it('appends image file when provided', async () => {
@@ -259,10 +250,47 @@ describe('badgeTemplatesApi', () => {
       const formData = mockFetch.mock.calls[0][1].body as FormData;
       expect(formData.get('validityPeriod')).toBe('');
     });
+
+    it('does not send skillIds when not provided (status-only update)', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(MOCK_TEMPLATE),
+      });
+
+      await updateTemplate('tpl-1', { status: 'ARCHIVED' });
+
+      const formData = mockFetch.mock.calls[0][1].body as FormData;
+      expect(formData.has('skillIds')).toBe(false);
+      expect(formData.get('status')).toBe('ARCHIVED');
+    });
+
+    it('sends skillIds when explicitly provided', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(MOCK_TEMPLATE),
+      });
+
+      await updateTemplate('tpl-1', { skillIds: ['skill-1', 'skill-2'] });
+
+      const formData = mockFetch.mock.calls[0][1].body as FormData;
+      expect(formData.get('skillIds')).toBe('["skill-1","skill-2"]');
+    });
+
+    it('sends empty skillIds array when explicitly clearing skills', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(MOCK_TEMPLATE),
+      });
+
+      await updateTemplate('tpl-1', { skillIds: [] });
+
+      const formData = mockFetch.mock.calls[0][1].body as FormData;
+      expect(formData.get('skillIds')).toBe('[]');
+    });
   });
 
   describe('deleteTemplate', () => {
-    it('sends DELETE to correct URL with auth headers', async () => {
+    it('sends DELETE to correct URL with credentials', async () => {
       mockFetch.mockResolvedValueOnce({ ok: true });
 
       await deleteTemplate('tpl-1');
@@ -271,8 +299,8 @@ describe('badgeTemplatesApi', () => {
         expect.stringContaining('/badge-templates/tpl-1'),
         expect.objectContaining({
           method: 'DELETE',
+          credentials: 'include',
           headers: expect.objectContaining({
-            Authorization: 'Bearer test-token',
             'Content-Type': 'application/json',
           }),
         })
@@ -296,9 +324,8 @@ describe('badgeTemplatesApi', () => {
     });
   });
 
-  describe('auth headers', () => {
-    it('sends request without Authorization when no token', async () => {
-      mockLocalStorage.getItem.mockReturnValue(null);
+  describe('auth credentials', () => {
+    it('sends request with credentials: include (cookie-based auth)', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve([]),
@@ -306,6 +333,12 @@ describe('badgeTemplatesApi', () => {
 
       await getAllTemplates();
 
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          credentials: 'include',
+        })
+      );
       const headers = mockFetch.mock.calls[0][1].headers;
       expect(headers).not.toHaveProperty('Authorization');
     });

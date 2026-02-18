@@ -83,8 +83,8 @@ export function MobileNav({ className = '' }: MobileNavProps) {
     return () => drawer.removeEventListener('keydown', handleTabKey);
   }, [isOpen]);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     toast.success('Logged out successfully');
     navigate('/login');
     setIsOpen(false);
@@ -104,7 +104,7 @@ export function MobileNav({ className = '' }: MobileNavProps) {
     { to: '/admin/badges', label: 'Badge Management', roles: ['ADMIN', 'ISSUER', 'MANAGER'] },
     { to: '/admin/bulk-issuance', label: 'Bulk Issuance', roles: ['ADMIN', 'ISSUER'] },
     { to: '/admin/analytics', label: 'Analytics', roles: ['ADMIN', 'ISSUER'] },
-    { to: '/admin/users', label: 'User Management', roles: ['ADMIN'] },
+    { to: '/admin/users', label: 'Users', roles: ['ADMIN'] },
     { to: '/profile', label: 'Profile', roles: ['ADMIN', 'ISSUER', 'MANAGER', 'EMPLOYEE'] },
   ];
 
