@@ -315,7 +315,7 @@ _bmad-output/
 - ✅ Feature polish (badge visibility toggle, LinkedIn share tab, CSV export, 403 page, skill UUID→name, nav fix)
 - ✅ DX improvements (Husky v9 pre-commit + pre-push CI mirror, CI Chinese char detection, ESLint no-console)
 - ✅ Data contract alignment (14 API-to-UI issues fixed in Story 11.24: formatActivityDescription, multi-format criteria, wallet type discrimination, null safety, dead code cleanup)
-- **Tests:** 1,061 → 1,263+ (+202+, +19%+), 0 regressions
+- **Tests:** 1,061 → 1,307 (+246, +23%), 0 regressions
 - **Security:** 2 HIGH → 0 HIGH findings resolved
 - **Pre-push hook:** Fully aligned with CI pipeline — `npm run lint` (not bare eslint), `npm run build` for both BE/FE, Jest `--forceExit` exit code tolerance
 
@@ -1493,7 +1493,7 @@ Sprint 0-2 established this pattern:
    
    **Key Achievements:**
    - Security: 2 HIGH → 0 HIGH (httpOnly cookies, account lockout, magic-byte, PII sanitization, HTML sanitization, email masking)
-   - Tests: 1,061 → 1,310 (+249, +23%), 0 regressions
+   - Tests: 1,061 → 1,307 (+246, +23%), 0 regressions
    - Code Quality: NestJS Logger in 22 services, PaginatedResponse<T>, 5 unused deps removed
    - DX: Husky v9 pre-commit + pre-push (CI mirror), CI Chinese char detection
    - Features: Badge visibility, LinkedIn share, CSV export, 403 page, skill UUID→name
