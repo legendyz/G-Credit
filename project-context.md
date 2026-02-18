@@ -5,7 +5,7 @@
 **Project Type:** Enterprise Internal Platform (Greenfield)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
 **License:** MIT License (Open Source)  
-**Status:** ✅ Sprint 11 COMPLETE — 25/25 stories (v1.1.0 pending merge to main + tag)  
+**Status:** ✅ Sprint 11 COMPLETE — 25/25 stories, v1.1.0 Released  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, committed 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, committed 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, committed 2026-01-26)  
@@ -17,8 +17,8 @@
 **Sprint 8:** ✅ Complete (12/12 items, 100%, 80h/76h, branch: sprint-8/epic-10-production-ready-mvp, tagged v0.8.0, 876 tests)  
 **Sprint 9:** ✅ Complete (5/5 stories, 37h/51h, branch: sprint-9/epic-8-bulk-issuance-td-cleanup, 1087 tests, v0.9.0-dev)  
 **Sprint 10:** ✅ Complete (12/12 stories, branch: sprint-10/v1-release, 1061 tests, UAT 33/33 PASS, v1.0.0)  
-**Sprint 11:** ✅ Complete (25/25 stories, 7 waves, branch: sprint-11/security-quality-hardening, 1310 tests, UAT 152/153 PASS, v1.1.0 pending tag)  
-**Last Updated:** 2026-02-18 (Sprint 11 COMPLETE — UAT passed, ready for merge to main + tag v1.1.0)
+**Sprint 11:** ✅ Complete (25/25 stories, 7 waves, branch: sprint-11/security-quality-hardening, 1,307 tests, UAT 152/153 PASS, v1.1.0)  
+**Last Updated:** 2026-02-18 (Sprint 11 COMPLETE — merged to main, tagged v1.1.0, GitHub Release published)
 
 ---
 
@@ -139,7 +139,7 @@ Build an internal digital credentialing (badging) platform to securely recognize
 - **Audit #6: Feature & UX:** `gcredit-project/docs/planning/feature-completeness-audit-2026-02.md` — 19/22 screens (86%), 35/37 endpoints (95%), 2 P0, 8 P1 (238 lines)
 - **Sprint 11 Candidate List:** `gcredit-project/docs/planning/sprint-11-candidate-list.md` — Consolidated audit findings → actionable tickets (166 lines)
 - **Sprint 11 Backlog:** `gcredit-project/docs/sprints/sprint-11/backlog.md` ✅ COMPLETE (25 stories, 7 waves, 65h)
-- **Sprint 11 Summary:** `gcredit-project/docs/sprints/sprint-11/summary.md` ✅ COMPLETE (25/25 stories, 1,310 tests)
+- **Sprint 11 Summary:** `gcredit-project/docs/sprints/sprint-11/summary.md` ✅ COMPLETE (25/25 stories, 1,307 tests)
 - **Sprint 11 Retrospective:** `gcredit-project/docs/sprints/sprint-11/retrospective.md` ✅ COMPLETE (Lessons 35-43, 6 action items)
 - **Sprint 11 Evaluation:** `gcredit-project/docs/sprints/sprint-11/sprint-11-evaluation.md` ✅ COMPLETE (Grade A+, 4.95/5.0)
 - **Story 11.24 Dev Prompt:** `gcredit-project/docs/sprints/sprint-11/11-24-dev-prompt.md` — Dev agent execution prompt
@@ -385,12 +385,12 @@ _bmad-output/
 | → Sprint 9 | 3 days | Bulk Badge Issuance + TD Cleanup (Epic 8) | ✅ COMPLETE (2026-02-08, 37h/51h, 1087 tests, v0.9.0-dev) |
 | → Sprint 10 | 2 weeks | v1.0.0 Release (TD + UAT + Release) | ✅ COMPLETE (2026-02-09→02-11, 12 stories, 1061 tests, UAT 33/33 PASS, v1.0.0) |
 | Post-MVP Audit | 1 day | 6 comprehensive audits (PRD, Arch, Security, CQ, UX) | ✅ COMPLETE (2026-02-11, 6 reports, ~2,000 lines) |
-| → Sprint 11 | 7 days | Security Hardening + Code Quality + Feature Polish | ✅ COMPLETE (2026-02-12→02-18, 25/25 stories, 7 waves, 1,310 tests, UAT 152/153 PASS, v1.1.0 pending tag) |
+| → Sprint 11 | 7 days | Security Hardening + Code Quality + Feature Polish | ✅ COMPLETE (2026-02-12→02-18, 25/25 stories, 7 waves, 1,307 tests, UAT 152/153 PASS, v1.1.0 Released) |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ Pending |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
 
-**Current Status:** ✅ Sprint 11 Complete — All 25 stories delivered across 7 waves. UAT 152/153 PASS (99.3%). Ready for merge to main + tag v1.1.0
+**Current Status:** ✅ Sprint 11 Complete, v1.1.0 Released — All 25 stories delivered across 7 waves. UAT 152/153 PASS (99.3%). Merged to main, tagged v1.1.0, GitHub Release published.
 
 ---
 
@@ -1513,7 +1513,7 @@ Sprint 0-2 established this pattern:
    
    **Evaluation:** Grade A+ (4.95/5.0) — see sprint-11-evaluation.md
    
-   **Status:** ✅ Ready for merge to main + tag v1.1.0
+   **Status:** ✅ v1.1.0 Released (merged to main, tagged, GitHub Release published)
    
    **Sprint Docs:** summary.md, retrospective.md, backlog.md, sprint-11-evaluation.md, 25 story files, 7 wave code reviews, uat-plan-v1.1.0.md
 

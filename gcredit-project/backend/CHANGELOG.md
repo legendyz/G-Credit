@@ -12,8 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Sprint 11 Summary — Post-MVP Hardening
 
 **Branch:** `sprint-11/security-quality-hardening`  
-**Stories:** 23/23 complete (5 waves, all code reviews APPROVED)  
-**Tests:** 722 tests (47 suites), 100% pass rate (+188 from v1.0.0)
+**Stories:** 25/25 complete (7 waves, all code reviews APPROVED)  
+**Tests:** 756 tests (49 suites), 100% pass rate (+222 from v1.0.0)
 
 #### Security — 8 Stories
 
