@@ -30,7 +30,7 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 
 | # | Story | Priority | Est | Depends On |
 |---|-------|----------|-----|------------|
-| 12.1 | Skill Category Management UI | 🔴 HIGH | 8h | — |
+| 12.1 | Skill Category Management UI | 🔴 HIGH | 10h | — |
 | 12.2 | Skill Management UI | 🔴 HIGH | 8h | 12.1 |
 | 12.3 | User Management UI Enhancement | 🔴 HIGH | 10h | — |
 | 12.4 | Milestone Admin UI | 🟡 MEDIUM | 8h | — |
@@ -42,7 +42,7 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 
 | # | Story | Priority | Est | Depends On |
 |---|-------|----------|-----|------------|
-| 12.5 | Evidence Unification — Data Model | 🔴 HIGH | 12h | — |
+| 12.5 | Evidence Unification — Data Model | 🔴 HIGH | 14h | — |
 | 12.6 | Evidence Unification — UI | 🔴 HIGH | 10h | 12.5 |
 
 **Parallelization:** 12.5 → 12.6 (sequential). Can run after Wave 1 or in parallel if not resource-constrained.
@@ -65,16 +65,18 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 
 #### Story 12.1: Skill Category Management UI
 **Priority:** 🔴 High  
-**Estimate:** 8h  
+**Estimate:** 10h  
 **Status:** 🔴 Not Started  
 **Story Doc:** 📄 [12-1-skill-category-management-ui.md](sprint-12/12-1-skill-category-management-ui.md)
 
 **Quick Summary:** As an Admin, I want to manage skill categories in a hierarchical tree UI so that skills are organized into a browsable taxonomy.
 
 **Key Deliverables:**
-- [ ] Tree view with expand/collapse for 3-level hierarchy
+- [ ] Shared `<AdminPageShell>`, `<ConfirmDialog>`, `<CategoryTree>` components
+- [ ] Tree view with drag-and-drop reorder (`@dnd-kit`, same-level)
 - [ ] CRUD operations (create, rename, reorder, delete with guard)
-- [ ] System-defined category protection (lock icon, no delete)
+- [ ] System-defined category protection (lock icon, no delete, 403)
+- [ ] Responsive: tree → dropdown on <1024px
 - [ ] Tests
 
 **Dependencies:** None
@@ -141,16 +143,17 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 
 #### Story 12.5: Evidence Unification — Data Model
 **Priority:** 🔴 High  
-**Estimate:** 12h  
+**Estimate:** 14h  
 **Status:** 🔴 Not Started  
 **Story Doc:** 📄 [12-5-evidence-unification-data-model.md](sprint-12/12-5-evidence-unification-data-model.md)
 
 **Quick Summary:** As a Developer, I want to unify the dual evidence system into a single EvidenceFile model with migration so that evidence is consistent across the platform.
 
 **Key Deliverables:**
-- [ ] EvidenceFile schema: type (FILE|URL), externalUrl field
-- [ ] Data migration: Badge.evidenceUrl → EvidenceFile records
-- [ ] Unified API endpoints
+- [ ] EvidenceFile schema: type (FILE|URL), `sourceUrl` field
+- [ ] Two-phase migration: schema (Prisma) + data script (standalone)
+- [ ] Unified `EvidenceItem` API contract
+- [ ] Bulk issuance update (20+ file references)
 - [ ] Tests
 
 **Dependencies:** None (resolves TD-010 Phase 1)
@@ -217,15 +220,15 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 
 | Story ID | Title | Priority | Hours | Status | Tech Debt |
 |----------|-------|----------|-------|--------|-----------|
-| 12.1 | Skill Category Management UI | 🔴 High | 8h | 🔴 | — |
+| 12.1 | Skill Category Management UI | 🔴 High | 10h | 🔴 | — |
 | 12.2 | Skill Management UI | 🔴 High | 8h | 🔴 | — |
 | 12.3 | User Management UI Enhancement | 🔴 High | 10h | 🔴 | — |
 | 12.4 | Milestone Admin UI | 🟡 Med | 8h | 🔴 | TD-009 |
-| 12.5 | Evidence Unification — Data Model | 🔴 High | 12h | 🔴 | TD-010 P1 |
+| 12.5 | Evidence Unification — Data Model | 🔴 High | 14h | 🔴 | TD-010 P1 |
 | 12.6 | Evidence Unification — UI | 🔴 High | 10h | 🔴 | TD-010 P2 |
 | 12.7 | Admin Activity Feed Formatting | 🟢 Low | 3h | 🔴 | TD-016 |
 | 12.8 | Skills UUID Fallback Hardening | 🟢 Low | 2h | 🔴 | TD-017 |
-| **Total** | **8 stories** | — | **61h** | — | — |
+| **Total** | **8 stories** | — | **65h** | — | — |
 
 ---
 
@@ -292,6 +295,23 @@ All 8 stories are marked "⚠️ Phase 2 Review Needed". Party Mode session with
 - Validate estimates
 - Confirm/adjust wave ordering
 
+### Phase 2 Review Findings (Applied)
+All 8 stories reviewed by Architect (Winston) + UX Designer (Sally) on 2026-02-19.
+
+**Key decisions:**
+- Drag-and-drop for tree reorder (`@dnd-kit`, same-level only)
+- Skill tag colors derived from category (`color` field on SkillCategory)
+- Inline add skill (tab-to-submit)
+- Shared components: `<AdminPageShell>`, `<ConfirmDialog>`, `<CategoryTree>`, `<EvidenceList>`
+- Milestone trigger Zod schemas per type
+- Evidence field renamed: `sourceUrl` (not `externalUrl`)
+- Two-phase migration (schema + data script separately)
+- Bulk issuance impact: +2h to Story 12.5
+- Two-step issuance UX (issue → attach evidence)
+- `Badge.evidenceUrl` kept through Sprint 12 for backward compat, removed Sprint 13
+
+**Estimate change:** 61h → **65h** (+2h Story 12.1 for dnd + shared components, +2h Story 12.5 for bulk issuance)
+
 ### Lessons Applied from Sprint 11
 - **Lesson 41:** Wave structure for parallelization
 - **Lesson 42:** Stories are implementation-ready with explicit ACs and task lists
@@ -299,6 +319,6 @@ All 8 stories are marked "⚠️ Phase 2 Review Needed". Party Mode session with
 
 ---
 
-**Last Updated:** Phase 1 Sprint Planning  
-**Status:** Phase 1 Complete — Awaiting Phase 2 Review  
+**Last Updated:** Phase 3 (2026-02-19) — All stories updated with Phase 2 review findings  
+**Status:** Planning Complete — Ready for Sprint Branch + Development  
 **Template Version:** v1.2

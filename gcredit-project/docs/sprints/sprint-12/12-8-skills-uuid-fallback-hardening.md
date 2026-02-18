@@ -33,12 +33,13 @@ So that no page ever shows raw UUIDs to users, even when the skill lookup fails.
   - [ ] Any other skill pill/tag rendering
 - [ ] Task 2: Fix remaining gaps (AC: #1, #2, #3)
   - [ ] Apply `useSkillNamesMap()` where missing
-  - [ ] Add "Unknown Skill" fallback styling
+  - [ ] Add "Unknown Skill" fallback with `text-muted-foreground italic` styling — subtle but honest
 - [ ] Task 3: Backend — include skill names in verification response (AC: #4)
   - [ ] `GET /api/verify/:verificationId` should return resolved skill names
   - [ ] Public endpoint — no auth needed, skill names from template join
+  - [ ] This is the critical fix: public pages can't call skill API (no auth)
 - [ ] Task 4: Tests (AC: #5)
-  - [ ] Test fallback rendering ("Unknown Skill")
+  - [ ] Test fallback rendering ("Unknown Skill" with muted italic styling)
   - [ ] Test verification page skill display
 
 ## Dev Notes
@@ -46,8 +47,14 @@ So that no page ever shows raw UUIDs to users, even when the skill lookup fails.
 ### Architecture Patterns
 - `useSkillNamesMap()` hook pattern (already exists)
 - Backend resolution preferred for public pages (no auth → no skill API access)
+- "Unknown Skill" styling: `text-muted-foreground italic` (Tailwind classes)
 
 ### Effort: ~2h (audit + targeted fixes)
+
+### ✅ Phase 2 Review Complete (2026-02-19)
+- **Architecture (Winston):** Backend must resolve skill names for public verification endpoint. Approved as-is.
+- **UX (Sally):** "Unknown Skill" uses `text-muted-foreground italic` — subtle, honest about data gap
+- **Estimate confirmed:** 2h
 
 ## Dev Agent Record
 ### Agent Model Used

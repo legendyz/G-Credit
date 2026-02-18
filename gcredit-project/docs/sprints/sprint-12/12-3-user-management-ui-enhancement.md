@@ -34,41 +34,50 @@ So that I can efficiently manage all platform users without direct database acce
 ## Tasks / Subtasks
 
 - [ ] Task 1: Enhance `UserManagementPage` data table (AC: #1, #8, #9)
+  - [ ] Wrap in `<AdminPageShell>` (from Story 12.1)
   - [ ] Redesign table columns per design-direction.md
-  - [ ] Add user avatar placeholder (initials)
-  - [ ] Add role badge chips with color coding
-  - [ ] Add status indicator (green dot / red dot)
-  - [ ] Pagination with `PaginatedResponse<T>`
+  - [ ] Add user avatar placeholder (initials circle)
+  - [ ] Add role badge chips with color coding: ADMIN=red, ISSUER=blue, MANAGER=purple, EMPLOYEE=gray
+  - [ ] Add status indicator (green dot=active, red dot=locked)
+  - [ ] Pagination with `PaginatedResponse<T>` (standardized per CQ-007)
 - [ ] Task 2: Search + filter bar (AC: #2, #3, #4)
-  - [ ] Search input with debounce (300ms)
+  - [ ] Search input with debounce (300ms) — searches name AND email simultaneously
   - [ ] Role dropdown filter
   - [ ] Status dropdown filter
   - [ ] Clear filters button
 - [ ] Task 3: Role edit functionality (AC: #5, #10)
   - [ ] Edit dialog with role selector
-  - [ ] Confirmation: "Change Alice Smith from Employee to Issuer?"
+  - [ ] Confirmation via shared `<ConfirmDialog>`: "Change Alice Smith from Employee to Issuer?"
+  - [ ] **Self-demotion guard:** Admin cannot change their OWN role (backend 403 + frontend disable)
   - [ ] API: `PATCH /api/admin/users/:id` (body: { role })
 - [ ] Task 4: Lock/unlock functionality (AC: #6)
-  - [ ] Lock button in actions column
+  - [ ] **Toggle switch** (Shadcn `Switch`) — not a button — visual state is clearer
+  - [ ] Lock confirmation via `<ConfirmDialog>`: "Lock account for jane@example.com? They won't be able to sign in."
   - [ ] Unlock resets `failedLoginAttempts` to 0
   - [ ] API: `PATCH /api/admin/users/:id` (body: { isLocked })
-- [ ] Task 5: User detail panel/drawer (AC: #7)
-  - [ ] Slide-out panel or dedicated section
-  - [ ] Profile info, role, created date
-  - [ ] Badge summary (count, recent badges)
-  - [ ] Recent activity (from audit log)
+- [ ] Task 5: User detail slide-over panel (AC: #7)
+  - [ ] Slide-over from RIGHT side (standard pattern)
+  - [ ] Show: avatar, name, email, role, lock status, badge count, last login date, created date
+  - [ ] Badge summary section (count + recent badges)
+  - [ ] Recent activity section (from audit log)
+  - [ ] Compose from existing APIs (no new backend endpoint needed)
 - [ ] Task 6: Tests
   - [ ] Table rendering + filtering tests
-  - [ ] Role change flow tests
-  - [ ] Lock/unlock flow tests
+  - [ ] Role change flow tests (including self-demotion guard)
+  - [ ] Lock/unlock toggle tests
+  - [ ] Slide-over panel render tests
 
 ## Dev Notes
 
 ### Architecture Patterns
 - Enhance existing `UserManagementPage.tsx` — don't create new page
+- Wrap in `<AdminPageShell>` from Story 12.1
+- Use `<ConfirmDialog>` from Story 12.1 for role change + lock confirmations
 - Follow data table pattern from design-direction.md
-- Role chips: Admin=blue, Issuer=gold, Manager=purple, Employee=gray
-- Use Shadcn `Dialog` for confirmations
+- Role badge colors: ADMIN=red, ISSUER=blue, MANAGER=purple, EMPLOYEE=gray
+- Lock/unlock: Shadcn `Switch` (toggle) — not a button
+- Slide-over: render from RIGHT side using Shadcn `Sheet` component
+- Use Shadcn `Dialog` for role change confirmation
 
 ### Existing Backend Endpoints
 - `GET /api/admin/users` — paginated, supports search + role filter
@@ -80,9 +89,10 @@ So that I can efficiently manage all platform users without direct database acce
 - SSO/password changes (DEC-001~006 deferred)
 - Bulk role changes
 
-### ⚠️ Phase 2 Review Needed
-- **Architecture Review:** User detail endpoint, audit log query for user activity
-- **UX Review:** Table layout, detail panel slide-out vs drawer
+### ✅ Phase 2 Review Complete (2026-02-19)
+- **Architecture (Winston):** Self-demotion guard (backend 403 + frontend disable), no new backend endpoint needed (compose from existing APIs for detail panel)
+- **UX (Sally):** Toggle switch for lock/unlock (not button), role colors ADMIN=red/ISSUER=blue/MANAGER=purple/EMPLOYEE=gray, debounced search (name+email), slide-over from RIGHT, specific confirm dialog text
+- **Estimate confirmed:** 10h
 
 ## Dev Agent Record
 ### Agent Model Used

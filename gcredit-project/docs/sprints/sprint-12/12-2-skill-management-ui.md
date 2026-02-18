@@ -32,38 +32,72 @@ So that I can maintain a comprehensive and accurate skill taxonomy for badge tem
 ## Tasks / Subtasks
 
 - [ ] Task 1: Create `SkillManagement` page — split layout (AC: #1, #3, #10)
-  - [ ] Left panel: Category tree from Story 12.1 (reuse component)
+  - [ ] Wrap in `<AdminPageShell>` (from Story 12.1)
+  - [ ] Left panel: `<CategoryTree editable={false}>` (read-only selector from Story 12.1)
   - [ ] Right panel: Skills data table
   - [ ] Click category → filter skills table
+  - [ ] Responsive: on <1024px, collapse tree into dropdown selector above table
 - [ ] Task 2: Skills data table (AC: #1, #2, #4, #9)
-  - [ ] Columns: name, description, category chip, level, badge count
-  - [ ] Search input (debounced)
-  - [ ] Pagination (reuse `PaginatedResponse<T>` pattern)
+  - [ ] Columns: name, description, category chip (colored), level, badge count
+  - [ ] Search input (debounced 300ms)
+  - [ ] Pagination using standardized `PaginatedResponse<T>` pattern (per CQ-007)
   - [ ] Hover-reveal action buttons (edit, delete)
-- [ ] Task 3: Skill form dialog (AC: #5, #6)
-  - [ ] Create: name, description, category selector, level dropdown
-  - [ ] Edit: pre-populated
+- [ ] Task 3: Skill tag color system (AC: #9)
+  - [ ] Add `color` field to `SkillCategory` Prisma model (small migration)
+  - [ ] 10-color Tailwind palette: `slate`, `blue`, `emerald`, `amber`, `rose`, `violet`, `cyan`, `orange`, `pink`, `lime`
+  - [ ] Auto-assign color on category creation, editable by admin
+  - [ ] Shared color constant map: `src/lib/categoryColors.ts`
+  - [ ] Skill tags render with category color as background
+- [ ] Task 4: Inline add skill (AC: #5)
+  - [ ] Inline "Add Skill" row at top of table
+  - [ ] Fields: name, description, level (category pre-selected from tree)
+  - [ ] Tab-to-submit, Escape-to-cancel
+  - [ ] Auto-focus name field on click "+ Add Skill"
+- [ ] Task 5: Edit skill dialog (AC: #6)
+  - [ ] Pre-populated form
   - [ ] Validation: name required, unique per category
-- [ ] Task 4: Delete skill with guard (AC: #7, #8)
+- [ ] Task 6: Delete skill with guard (AC: #7, #8)
+  - [ ] Use shared `<ConfirmDialog>` from Story 12.1
   - [ ] Backend check: any templates referencing this skill?
   - [ ] Show template list if blocked
-- [ ] Task 5: API integration
+- [ ] Task 7: API integration
   - [ ] `GET /api/skills?categoryId=&search=&page=&limit=`
   - [ ] `POST /api/skills`
   - [ ] `PATCH /api/skills/:id`
   - [ ] `DELETE /api/skills/:id`
-- [ ] Task 6: Tests
+- [ ] Task 8: Tests
   - [ ] Data table render + filter tests
+  - [ ] Inline add skill tests
   - [ ] Form validation tests
   - [ ] Delete guard tests
+  - [ ] Skill tag color rendering tests
 
 ## Dev Notes
 
 ### Architecture Patterns
-- Reuse `SkillCategoryTree` component from Story 12.1
+- Reuse `<CategoryTree editable={false}>` from Story 12.1 (read-only selector mode)
+- Reuse `<AdminPageShell>` from Story 12.1
+- Reuse `<ConfirmDialog>` from Story 12.1
 - Data table pattern from existing `BadgeManagementPage` or `UserManagementPage`
-- Shadcn/ui `Table` + custom pagination
-- Color mapping: category → skill tag color (define in shared constant)
+- Shadcn/ui `Table` + standardized pagination (CQ-007)
+- Inline add: custom inline editing row at table top
+
+### Schema Change (small migration)
+```prisma
+model SkillCategory {
+  // ... existing fields ...
+  color String? @db.VarChar(20) // Tailwind color name: blue, emerald, amber...
+}
+```
+
+### Skill Tag Color Map
+```typescript
+// src/lib/categoryColors.ts
+export const CATEGORY_COLORS = [
+  'slate', 'blue', 'emerald', 'amber', 'rose',
+  'violet', 'cyan', 'orange', 'pink', 'lime'
+] as const;
+```
 
 ### Existing Backend Endpoints
 - `GET /api/skills` — paginated list, supports categoryId filter
@@ -82,9 +116,10 @@ model Skill {
 ### Dependencies
 - Story 12.1 (SkillCategoryTree component)
 
-### ⚠️ Phase 2 Review Needed
-- **Architecture Review:** Backend endpoint for badge count per skill, delete guard
-- **UX Review:** Split layout interaction, skill tag color system
+### ✅ Phase 2 Review Complete (2026-02-19)
+- **Architecture (Winston):** Shared `<CategoryTree>` with editable/read-only modes, color field on SkillCategory (derived from category, not skill), pagination per CQ-007
+- **UX (Sally):** Responsive split→dropdown on <1024px, inline add skill row (tab-to-submit), 10-color Tailwind palette, colored skill tags from category
+- **Estimate confirmed:** 8h
 
 ## Dev Agent Record
 ### Agent Model Used

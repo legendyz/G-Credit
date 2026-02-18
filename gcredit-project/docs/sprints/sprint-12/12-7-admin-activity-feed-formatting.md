@@ -29,11 +29,13 @@ So that I can quickly understand platform activity without parsing JSON strings.
 - [ ] Task 1: Create `formatActivityDescription()` in `dashboard.service.ts` (AC: #1, #2, #3)
   - [ ] Switch statement by action type
   - [ ] Extract key fields from metadata
-  - [ ] Fallback: return action name for unknown types
+  - [ ] Description pattern: **"[User] [verbed] [object]"** e.g., "Jane Smith issued badge 'Cloud Expert' to john@example.com"
+  - [ ] Fallback: return action name for unknown types (not JSON)
 - [ ] Task 2: Apply formatter in `getAdminDashboard()` (AC: #1, #4)
   - [ ] Replace `JSON.stringify(metadata)` with `formatActivityDescription(action, metadata)`
+  - [ ] Original metadata preserved in audit log table (not modified)
 - [ ] Task 3: Unit tests (AC: #5)
-  - [ ] Test each action type
+  - [ ] Test each action type: ISSUED, CLAIMED, REVOKED, NOTIFICATION_SENT, CREATED, UPDATED
   - [ ] Test unknown action fallback
   - [ ] Test null metadata handling
 
@@ -42,11 +44,17 @@ So that I can quickly understand platform activity without parsing JSON strings.
 ### Architecture Patterns
 - Backend-only fix (Option A from TD-016)
 - Reference: `frontend/src/components/analytics/RecentActivityFeed.tsx` — `buildDescription()` pattern
+- Description format: "[User] [verbed] [object]" — clean, scannable
 
 ### Key File
 - `backend/src/dashboard/dashboard.service.ts` (L398-404)
 
 ### Effort: ~3h (small, well-scoped)
+
+### ✅ Phase 2 Review Complete (2026-02-19)
+- **Architecture (Winston):** Approved as-is. Straightforward backend-only change.
+- **UX (Sally):** Description pattern "[User] [verbed] [object]" — e.g., "Jane Smith issued badge 'Cloud Expert' to john@example.com"
+- **Estimate confirmed:** 3h
 
 ## Dev Agent Record
 ### Agent Model Used
