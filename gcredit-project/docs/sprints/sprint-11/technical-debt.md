@@ -300,3 +300,120 @@ async verifyPage(@Param('verificationId') id: string, @Req() req, @Res() res) {
 - [ ] 预览卡片显示该徽章的图片（非通用 logo）
 - [ ] 普通用户访问验证链接仍正常渲染 SPA 验证页面
 - [ ] PRIVATE visibility 的徽章不生成动态 OG（显示通用卡片或 404）
+
+---
+
+## TD-009: Milestone Admin UI (里程碑管理界面)
+
+**Priority:** P2 (Medium)  
+**Category:** Feature Gap / Admin UX  
+**Source:** UAT 测试 (2026-02-18), 从 health-audit-report 提取  
+**Effort Estimate:** 2-3d (16-24h)  
+**Suggested Sprint:** Sprint 12  
+
+### Problem Statement
+
+里程碑系统后端 API 已完整实现（CRUD + 自动触发），但前端缺少管理界面，目前只能通过 Swagger/API 操作。
+
+### Current State
+
+| Component | Status |
+|-----------|--------|
+| 后端 API: `/api/admin/milestones` (CRUD) | ✅ Complete |
+| 自动触发: Badge 发放/认领后自动检测 | ✅ Complete |
+| 用户成就展示: Wallet 时间线 + Dashboard 进度卡 | ✅ Complete |
+| **Admin UI 管理界面** | ❌ **Missing** |
+
+### Requirements
+
+1. **Admin → Milestones 页面**
+   - 列表视图（支持筛选、排序）
+   - 显示: 名称、描述、触发类型、阈值、达成用户数
+
+2. **创建里程碑表单**
+   - 支持 3 种触发类型: `BADGE_COUNT`, `BADGE_CATEGORY`, `SPECIFIC_BADGE`
+   - 字段: name, description, triggerType, badgeCount, categoryId, templateId, rewardType, rewardValue
+
+3. **编辑/软删除功能**
+   - isActive toggle
+   - 验证: 无法删除已有用户达成的里程碑
+
+4. **统计预览**
+   - 显示已达成用户数量
+
+### Acceptance Criteria
+
+- [ ] Admin 可通过 UI 创建新里程碑配置
+- [ ] Admin 可编辑现有里程碑
+- [ ] Admin 可停用/激活里程碑
+- [ ] 列表支持搜索和排序
+- [ ] 显示达成人数统计
+
+---
+
+## TD-010: Evidence System Unification (凭证系统统一)
+
+**Priority:** P1 (High)  
+**Category:** Architecture / UX Consistency  
+**Source:** UAT 测试 (2026-02-18), 从 health-audit-report 提取  
+**Effort Estimate:** 3-5d (24-40h)  
+**Suggested Sprint:** Sprint 12  
+
+### Problem Statement
+
+当前存在**两套并行的凭证机制**，导致数据模型混乱、用户体验不一致：
+
+| 机制 | 存储 | 时机 | 数量 | 安全 |
+|------|------|------|------|------|
+| `Badge.evidenceUrl` | 字段 | 发放时 | 1 个外部 URL | 无验证 |
+| `EvidenceFile` 表 | Azure Blob | 发放后 | ≤5 个文件 | SAS token |
+
+### Issues Identified
+
+#### 1. 数据模型冲突
+- 发放时只能设置 1 个 URL (`evidenceUrl` 字段)
+- 发放后可上传多个文件 (`EvidenceFile` 表)
+- 两套数据无关联，用户困惑
+
+#### 2. 前端展示不一致
+| 页面 | 展示内容 | 问题 |
+|------|----------|------|
+| `IssueBadgePage` | 只收集 `evidenceUrl` | 无法上传文件 |
+| Wallet `BadgeDetailModal` | 只展示 `evidenceFiles` | 丢失 `evidenceUrl` |
+| `VerifyBadgePage` | 使用直接 blobUrl | 无 SAS token，可能无法访问 |
+
+#### 3. 管理入口缺失
+| 场景 | 用户 | 当前状态 |
+|------|------|----------|
+| 查看凭证 | Badge 持有者 | ✅ Wallet → Badge 详情 |
+| 查看凭证 | Admin/Issuer | ❌ Badge Management 页面无入口 |
+| 下载凭证 | Badge 持有者 | ✅ EvidenceSection 有 Download 按钮 |
+| 下载凭证 | 公开验证 | ⚠️ 直接 blobUrl（无 SAS，可能失效） |
+| 上传凭证 | Admin/Issuer | ❌ 无 UI，只能通过 API |
+
+### Proposed Solution
+
+1. **数据模型统一**
+   - 废弃 `Badge.evidenceUrl` 字段（或迁移为 `EvidenceFile` 的 external URL 类型）
+   - 迁移脚本：将历史 `evidenceUrl` 转为 `EvidenceFile` 记录
+
+2. **发放流程改进**
+   - 发放界面支持直接上传文件（不只是 URL）
+   - 可选：批量发放支持附件列
+
+3. **管理界面入口**
+   - Badge Management 页面添加"查看详情"或 Evidence 列
+   - 为 Issuer/Admin 添加"上传凭证"按钮
+
+4. **验证页面修复**
+   - 使用 SAS token 下载端点 (`/api/badges/:id/evidence/:evidenceId/preview`)
+   - 或公开预签名 URL（有效期 1h）
+
+### Acceptance Criteria
+
+- [ ] 统一的凭证数据模型（`EvidenceFile` 表为主）
+- [ ] 发放界面支持上传文件附件
+- [ ] Badge Management 可查看/管理凭证
+- [ ] 公开验证页面正确展示凭证（带 SAS token）
+- [ ] 历史 `evidenceUrl` 数据迁移完成
+- [ ] 无测试回归
