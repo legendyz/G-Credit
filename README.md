@@ -414,6 +414,8 @@ This project uses the **BMAD (Business Model Agent Development) Framework** v6.0
 | → Sprint 8 | 10 days | Production-Ready MVP (Epic 10) | ✅ Complete (2026-02-05, 12/12 items, 80h/76h, v0.8.0) |
 | → Sprint 9 | 3 days | Bulk Badge Issuance + TD Cleanup (Epic 8) | ✅ Complete (2026-02-08, 5/5 stories, 37h/51h, v0.9.0-dev) |
 | → Sprint 10 | 3 days | v1.0.0 Release: TD Cleanup + UAT + Release Tag | ✅ Complete (2026-02-11, 12/12 stories, 109h/95h, 1061 tests, v1.0.0) |
+| **Post-MVP Hardening** | **7 days** | **Security, Quality, DX** | **✅ v1.1.0 Released** |
+| → Sprint 11 | 7 days | Security & Quality Hardening (25 stories, 7 waves) | ✅ Complete (2026-02-18, 25/25 stories, ~60h/51-66h, 1,307 tests, UAT 152/153 PASS, v1.1.0) |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ Pending |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
