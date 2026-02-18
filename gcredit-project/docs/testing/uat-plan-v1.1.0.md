@@ -548,24 +548,24 @@ curl -b cookies.txt http://localhost:3000/api/admin/users
 
 | 测试组 | 用例数 | Pass | Fail | Skip | 备注 |
 |--------|--------|------|------|------|------|
-| TC-01: 认证与安全 | 12 | | | | 待测 |
-| TC-02: Dashboard | 5 | | | | 待测 |
-| TC-03: Template 管理 | 10 | | | | 待测 |
-| TC-04: Badge 发放 | 8 | | | | 待测 |
-| TC-05: Badge 认领 | 6 | | | | 待测 |
-| TC-06: Badge Wallet | 7 | | | | UAT 中修复: 发放日期显示、过期状态检测、PENDING 下载禁用、Claim 后缓存刷新、统一状态颜色 (dde4685) |
-| TC-07: Badge 分享 | 6 | | | | 待测 |
-| TC-08: 公开验证与嵌入 | 9 | | | | UAT 中修复: PENDING 显示 amber 提示、EXPIRED 显示 isValid=false (dde4685) |
-| TC-09: Badge 撤销 | 8 | | | | 待测 |
-| TC-10: 批量发放 | 10 | | | | 待测 |
-| TC-11: 用户管理 | 12 | | | | UAT 中增强: 搜索支持 role/department、Department/Status 列排序 (eb5a7bf) |
-| TC-12: Analytics | 9 | | | | UAT 中修复: ISSUER 角色作用域 (f431669)。TC-12.8 Pass (by design) |
-| TC-13: 技能管理 | 9 | | | | 待测 |
-| TC-14: 里程碑 | 5 | | | | 待测 |
-| TC-15: Evidence | 6 | | | | 待测 |
-| TC-16: 权限矩阵 | 15 项 | | | | 待测 |
-| TC-17: 安全加固 | 16 | | | | 待测 |
-| **总计** | **153** | | | | |
+| TC-01: 认证与安全 | 12 | 12 | 0 | 0 | ✅ 全部通过 (2026-02-18) |
+| TC-02: Dashboard | 5 | 5 | 0 | 0 | ✅ 全部通过 (2026-02-18) |
+| TC-03: Template 管理 | 10 | 10 | 0 | 0 | ✅ 全部通过 (2026-02-18) |
+| TC-04: Badge 发放 | 8 | 8 | 0 | 0 | ✅ 全部通过 (2026-02-18) |
+| TC-05: Badge 认领 | 6 | 6 | 0 | 0 | ✅ 全部通过 (2026-02-18) |
+| TC-06: Badge Wallet | 7 | 7 | 0 | 0 | ✅ 全部通过 (2026-02-18) · UAT 中修复: 发放日期显示、过期状态检测、PENDING 下载禁用、Claim 后缓存刷新、统一状态颜色 (dde4685) |
+| TC-07: Badge 分享 | 6 | 6 | 0 | 0 | ✅ 全部通过 (2026-02-18) |
+| TC-08: 公开验证与嵌入 | 9 | 9 | 0 | 0 | ✅ 全部通过 (2026-02-18) · 8.1-8.5 手工测试 · 8.6-8.9 API 脚本测试 · UAT 中修复: PENDING amber、EXPIRED isValid=false (dde4685) |
+| TC-09: Badge 撤销 | 8 | 8 | 0 | 0 | ✅ 全部通过 (2026-02-18) |
+| TC-10: 批量发放 | 10 | 9 | 0 | 1 | ✅ 9/10 通过 (2026-02-18) · 10.10 未测试 (Skip) |
+| TC-11: 用户管理 | 12 | 12 | 0 | 0 | ✅ 全部通过 (2026-02-18) · UAT 中增强: 搜索支持 role/department、Department/Status 列排序 (eb5a7bf) |
+| TC-12: Analytics | 9 | 9 | 0 | 0 | ✅ 全部通过 (2026-02-18) · UAT 中修复: ISSUER 角色作用域 (f431669) · TC-12.8 Pass (by design) |
+| TC-13: 技能管理 | 9 | 9 | 0 | 0 | ✅ 全部通过 (2026-02-18) · 13.1-13.3 手工测试 · 13.4-13.9 API 脚本测试 |
+| TC-14: 里程碑 | 5 | 5 | 0 | 0 | ✅ 全部通过 (2026-02-18) · API 脚本测试 |
+| TC-15: Evidence | 6 | 6 | 0 | 0 | ✅ 全部通过 (2026-02-18) · API 脚本测试 · 15.5 代码验证(10MB限制) |
+| TC-16: 权限矩阵 | 15 项 | 15 | 0 | 0 | ✅ 全部通过 (2026-02-18) · API 脚本测试 · Dashboard/UserMgmt/Milestone/Template 权限确认 |
+| TC-17: 安全加固 | 16 | 16 | 0 | 0 | ✅ 全部通过 (2026-02-18) · Cookie(HttpOnly/Path) · Security Headers · Rate Limit(429) · F-NEW-1(403) · CORS · Input Validation |
+| **总计** | **153** | **152** | **0** | **1** | ✅ UAT PASS |
 
 ### UAT Session 修复日志 (2026-02-17 ~ 2026-02-18)
 
