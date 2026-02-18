@@ -12,7 +12,7 @@
 ## ✅ Planning Artifacts Complete
 
 - [x] **Sprint Backlog Created** — `sprint-12/backlog.md` ✅
-- [x] **Story Files Created** — All 8 stories have detailed files ✅
+- [x] **Story Files Created** — All 9 stories have detailed files (12.1–12.9) ✅
 - [x] **Version Manifest Created** — `sprint-12/version-manifest.md` ✅
 - [x] **sprint-status.yaml Updated** — Sprint 12 = planning, 8 stories as backlog ✅
 - [x] **UX/Architecture Review Complete** — Party Mode with Winston + Sally (2026-02-19) ✅
@@ -147,8 +147,10 @@
 
 **Development Order:**
 ```
-12.1 → 12.2 → 12.3/12.4 (parallel) → 12.5 → 12.6 → 12.7/12.8 (buffer)
+12.1 → 12.2 → 12.3/12.4 (parallel) → 12.5 → 12.6 → 12.7/12.8 (buffer) → 12.9 (UAT)
 ```
+
+**UAT Timing:** Story 12.9 executes after all dev stories complete, before merge to main.
 
 ---
 

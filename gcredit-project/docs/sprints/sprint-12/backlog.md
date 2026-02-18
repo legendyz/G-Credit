@@ -57,6 +57,15 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 
 **Parallelization:** Both independent — can be done anytime as buffer work.
 
+### Wave 4: UAT (Story 12.9)
+*Focus: User acceptance testing of all Sprint 12 features*
+
+| # | Story | Priority | Est | Depends On |
+|---|-------|----------|-----|------------|
+| 12.9 | Sprint 12 UAT | 🟡 MEDIUM | 5h | 12.1–12.8 all complete |
+
+**Timing:** Execute after all development stories are done, before merge to main.
+
 ---
 
 ## User Stories
@@ -216,6 +225,27 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 
 ---
 
+### Wave 4: UAT
+
+#### Story 12.9: Sprint 12 UAT — Management UIs + Evidence Unification
+**Priority:** 🟡 Medium  
+**Estimate:** 5h  
+**Status:** 🔴 Not Started  
+**Story Doc:** 📄 [12-9-sprint-12-uat.md](sprint-12/12-9-sprint-12-uat.md)
+
+**Quick Summary:** As a PO/Tester, I want to validate all Sprint 12 features through structured UAT so that the release is verified.
+
+**Key Deliverables:**
+- [ ] UAT test plan document (`sprint-12/uat-test-plan.md`)
+- [ ] ~24 new feature test cases (Skill Category, Skill, User, Milestone, Evidence, Quick Fixes)
+- [ ] ~6 regression test cases (issuance, wallet, verify, revoke, sharing, RBAC)
+- [ ] Seed data updated for new entities
+- [ ] Sign-off
+
+**Dependencies:** All Stories 12.1–12.8
+
+---
+
 ### 📊 Stories Summary
 
 | Story ID | Title | Priority | Hours | Status | Tech Debt |
@@ -228,7 +258,8 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 | 12.6 | Evidence Unification — UI | 🔴 High | 10h | 🔴 | TD-010 P2 |
 | 12.7 | Admin Activity Feed Formatting | 🟢 Low | 3h | 🔴 | TD-016 |
 | 12.8 | Skills UUID Fallback Hardening | 🟢 Low | 2h | 🔴 | TD-017 |
-| **Total** | **8 stories** | — | **65h** | — | — |
+| 12.9 | Sprint 12 UAT | 🟡 Med | 5h | 🔴 | — |
+| **Total** | **9 stories** | — | **70h** | — | — |
 
 ---
 
@@ -243,6 +274,8 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 - Story doc updated with completion notes
 
 **Sprint-Level DoD:**
+- [ ] UAT test plan created and executed (Story 12.9)
+- [ ] All CRITICAL/HIGH UAT test cases PASS
 - [ ] project-context.md updated
 - [ ] Sprint summary + retrospective created
 - [ ] CHANGELOG.md updated (frontend + backend)
@@ -310,7 +343,7 @@ All 8 stories reviewed by Architect (Winston) + UX Designer (Sally) on 2026-02-1
 - Two-step issuance UX (issue → attach evidence)
 - `Badge.evidenceUrl` kept through Sprint 12 for backward compat, removed Sprint 13
 
-**Estimate change:** 61h → **65h** (+2h Story 12.1 for dnd + shared components, +2h Story 12.5 for bulk issuance)
+**Estimate change:** 61h → 65h (+2h Story 12.1 for dnd + shared components, +2h Story 12.5 for bulk issuance) → **70h** (+5h Story 12.9 UAT added)
 
 ### Lessons Applied from Sprint 11
 - **Lesson 41:** Wave structure for parallelization
@@ -319,6 +352,6 @@ All 8 stories reviewed by Architect (Winston) + UX Designer (Sally) on 2026-02-1
 
 ---
 
-**Last Updated:** Phase 3 (2026-02-19) — All stories updated with Phase 2 review findings  
+**Last Updated:** 2026-02-19 — Story 12.9 (UAT) added, total 70h  
 **Status:** Planning Complete — Ready for Sprint Branch + Development  
 **Template Version:** v1.2

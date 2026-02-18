@@ -1,0 +1,123 @@
+# Story 12.9: Sprint 12 UAT — Management UIs + Evidence Unification
+
+Status: backlog
+
+## Story
+
+As a **Product Owner / Tester**,
+I want to validate all Sprint 12 features through structured user acceptance testing,
+So that I can confirm the new admin management UIs and unified evidence system work correctly before release.
+
+## Context
+
+- Sprint 12 delivers 4 new admin pages (Skill Category, Skill, User Enhancement, Milestone) + evidence unification
+- Previous UAT: Sprint 10 v1.0.0 (35 test cases, 153 PASS — see `sprint-10/uat-test-plan.md`)
+- This UAT focuses on **new Sprint 12 features** + regression of affected existing features
+- UAT should be executed after all Stories 12.1–12.8 are complete
+- UAT test plan document will be created as a deliverable of this story
+
+## Acceptance Criteria
+
+1. [ ] UAT test plan document created (`sprint-12/uat-test-plan.md`)
+2. [ ] Seed data updated to include new management entities (categories, skills, milestones)
+3. [ ] All Sprint 12 UAT test cases executed
+4. [ ] All CRITICAL/HIGH test cases PASS
+5. [ ] Regression test cases PASS (existing features not broken)
+6. [ ] Bugs found during UAT documented and fixed (or deferred with justification)
+7. [ ] UAT sign-off recorded in test plan
+
+## UAT Scope
+
+### New Feature Test Cases (~18 cases)
+
+**Skill Category Management (Stories 12.1):**
+- UAT-S12-001: Admin views skill category tree (3 levels)
+- UAT-S12-002: Admin creates top-level category
+- UAT-S12-003: Admin creates subcategory under existing category
+- UAT-S12-004: Admin edits category name/description
+- UAT-S12-005: Admin drag-and-drop reorders categories (same level)
+- UAT-S12-006: Admin delete blocked for category with skills
+- UAT-S12-007: System-defined category shows lock icon, no delete
+
+**Skill Management (Story 12.2):**
+- UAT-S12-008: Admin views skills filtered by category
+- UAT-S12-009: Admin creates skill with inline add (tab-to-submit)
+- UAT-S12-010: Admin edits/deletes skill (delete blocked if badge usage)
+- UAT-S12-011: Skill tags show category color
+
+**User Management Enhancement (Story 12.3):**
+- UAT-S12-012: Admin searches/filters user list
+- UAT-S12-013: Admin changes user role (confirm self-demotion blocked)
+- UAT-S12-014: Admin lock/unlock user account (toggle switch)
+- UAT-S12-015: Admin opens user detail slide-over panel
+
+**Milestone Admin (Story 12.4):**
+- UAT-S12-016: Admin views milestone card grid
+- UAT-S12-017: Admin creates milestone with type-specific form (BADGE_COUNT, SKILL_TRACK, etc.)
+- UAT-S12-018: Admin activates/deactivates milestone toggle
+
+**Evidence Unification (Stories 12.5–12.6):**
+- UAT-S12-019: Issuer uploads file evidence during badge issuance
+- UAT-S12-020: Issuer adds URL evidence during badge issuance
+- UAT-S12-021: Evidence displays consistently across Badge Management, Wallet, Verify pages
+- UAT-S12-022: Existing badges with old evidence still display correctly (migration)
+
+**Quick Fixes (Stories 12.7–12.8):**
+- UAT-S12-023: Activity feed shows human-readable descriptions (not JSON/UUID)
+- UAT-S12-024: No UUID displayed for skill names anywhere in the UI
+
+### Regression Test Cases (~6 cases)
+
+- UAT-S12-R01: Existing badge issuance flow still works (single + bulk)
+- UAT-S12-R02: Badge claim/verify/revoke lifecycle unaffected
+- UAT-S12-R03: Dashboard analytics still display correctly
+- UAT-S12-R04: Employee wallet view still works
+- UAT-S12-R05: Email sharing still functional
+- UAT-S12-R06: RBAC enforcement unchanged
+
+### Test Accounts
+
+| Role | Email | Password | Sprint 12 Features |
+|------|-------|----------|-------------------|
+| Admin | admin@gcredit.com | password123 | All new admin pages, user management |
+| Issuer | issuer@gcredit.com | password123 | Evidence upload during issuance |
+| Manager | manager@gcredit.com | password123 | Regression: revocation |
+| Employee | M365DevAdmin@2wjh85.onmicrosoft.com | password123 | Regression: wallet, evidence display |
+
+## Tasks / Subtasks
+
+- [ ] Task 1: Create UAT test plan document (2h)
+  - [ ] Define detailed test steps for each UAT case
+  - [ ] Prepare pre-conditions and expected results
+  - [ ] Document environment setup steps
+- [ ] Task 2: Prepare seed data for Sprint 12 features (1h)
+  - [ ] Add sample skill categories (3-level tree, include system-defined)
+  - [ ] Add sample skills with category assignments
+  - [ ] Add sample milestones (multiple types)
+  - [ ] Ensure evidence migration data is present
+- [ ] Task 3: Execute UAT test cases (2h)
+  - [ ] New feature tests: ~24 cases
+  - [ ] Regression tests: ~6 cases
+  - [ ] Record PASS/FAIL for each
+- [ ] Task 4: Bug triage and fix (1h buffer)
+  - [ ] Document bugs found
+  - [ ] Fix CRITICAL/HIGH bugs
+  - [ ] Defer LOW bugs to Sprint 13 with justification
+- [ ] Task 5: Sign-off and documentation (0.5h)
+  - [ ] Update UAT test plan with results
+  - [ ] Record sign-off
+
+## Dev Notes
+
+- Reference Sprint 10 UAT structure: `sprint-10/uat-test-plan.md`
+- Playwright scripts in `_bmad-output/playwright-sessions/` can be updated for new pages
+- Keep UAT lightweight — focus on happy paths + critical error paths
+- Evidence migration regression is HIGH priority (data integrity)
+
+---
+
+✅ Phase 2 Review Complete (2026-02-19) — Added during final planning audit
+
+**Estimate:** 5h  
+**Priority:** 🟡 Medium  
+**Dependencies:** All Stories 12.1–12.8 must be complete before UAT execution
