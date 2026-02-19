@@ -5,67 +5,211 @@ Status: backlog
 ## Story
 
 As an **Admin**,
-I want an enhanced user management page with role editing, status toggling, filtering, and bulk actions,
-So that I can efficiently manage all platform users without direct database access.
+I want an enhanced user management page with dual-mode user provisioning (M365 sync + manual creation), source-aware management controls, and proper organizational hierarchy support,
+So that I can efficiently manage all platform users across both M365-synced and locally-created accounts.
 
 ## Context
 
 - Current `UserManagementPage.tsx` exists but has limited functionality
 - Backend RBAC system is complete (4 roles: ADMIN, ISSUER, MANAGER, EMPLOYEE)
-- User model includes: id, email, firstName, lastName, role, isLocked, badgeCount, etc.
+- User model includes: id, email, firstName, lastName, role, isLocked, badgeCount, azureId, etc.
 - Account lockout system from Sprint 11 (Story 11.1) — `isLocked`, `failedLoginAttempts`
-- M365 sync creates users with `passwordHash=null` — relevant for display but auth changes deferred
-- DEC-001~006 (SSO/password decisions) NOT in Sprint 12 scope
+- M365 sync infrastructure exists (Sprint 8) — `POST /api/admin/m365-sync`, sync logs, retry logic
+- M365 sync currently creates all users as EMPLOYEE with `passwordHash=''`
+- Manager-Employee relationship currently uses `department` string matching — needs migration to `managerId` FK
+- Seed admin (`admin@gcredit.com`) retained for bootstrap + dev/demo environments
+
+### Key Design Decisions (PO-Confirmed 2026-02-20)
+
+| # | Decision | Resolution |
+|---|---|---|
+| DEC-003 | Manual user creation | ✅ Supported — Admin can create local users for dev/demo environments |
+| DEC-005 | Admin bootstrap | ✅ Keep seed `admin@gcredit.com` for initial M365 sync trigger |
+| NEW-001 | M365 role mapping | ✅ Azure AD Security Group → ADMIN/ISSUER; `directReports` > 0 → MANAGER |
+| NEW-002 | M365 user roles in UI | ✅ Read-only — roles managed exclusively by Security Group, not editable in UI |
+| NEW-003 | Group-only sync | ✅ Required — separate "Sync Groups" for role-only refresh (scale: 100K+ users) |
+| NEW-004 | M365 user management scope | ✅ Limited to lock/disable only — identity/role managed by M365 |
+| NEW-005 | User source indicator | ✅ Show `M365` vs `Local` badge in table, detail panel, and profile page |
+| NEW-006 | Password for M365 users | ✅ Temporary default password until SSO; show notice to user |
+| NEW-007 | Manager assignment | ✅ Schema: add `managerId` FK; migrate department-scoping → managerId-scoping |
+
+### Dual-Mode User Provisioning
+
+```
+┌─────────────────────────────────────┐
+│         User Sources                │
+├──────────────────┬──────────────────┤
+│   M365 Sync      │   Manual Create  │
+│   (Production)   │   (Dev/Demo)     │
+├──────────────────┼──────────────────┤
+│ azureId != null  │ azureId == null   │
+│ Roles: Security  │ Roles: Admin     │
+│   Group mapped   │   selects at     │
+│ Manager: direct  │   creation       │
+│   Reports API    │ Manager: select  │
+│ Password: temp   │   from existing  │
+│   default        │ Password: Admin  │
+│ Edit: lock only  │   sets default   │
+│                  │ Edit: full CRUD  │
+└──────────────────┴──────────────────┘
+```
+
+### Source-Aware Management Rules
+
+| Feature | M365 User (`azureId != null`) | Local User (`azureId == null`) |
+|---|---|---|
+| View in table | ✅ | ✅ |
+| Search/filter | ✅ | ✅ |
+| View detail panel | ✅ | ✅ |
+| Edit role | ❌ Read-only (Security Group) | ✅ Admin selects |
+| Edit name/email | ❌ (managed by M365) | ✅ |
+| Edit department | ❌ (managed by M365) | ✅ |
+| Change manager | ❌ (managed by directReports) | ✅ Select from dropdown |
+| Lock/Disable | ✅ (safety override) | ✅ |
+| Delete | ❌ (M365 = source of truth) | ✅ |
+| Change password | ⚠️ Temporary until SSO (with notice) | ✅ |
+| Source badge | "M365" (blue) | "Local" (gray) |
 
 ## Acceptance Criteria
 
-1. [ ] Admin can view all users in a data table with: name, email, role, status, badge count, last active
-2. [ ] Admin can search users by name or email (debounced)
+### User Table & Management (Sub-story 12.3a)
+1. [ ] Admin can view all users in a data table with: name, email, role, status, **source (M365/Local)**, badge count, last active
+2. [ ] Admin can search users by name or email (debounced 300ms)
 3. [ ] Admin can filter by role (Admin/Issuer/Manager/Employee)
 4. [ ] Admin can filter by status (Active/Locked/Inactive)
-5. [ ] Admin can edit a user's role via inline dropdown or edit dialog
-6. [ ] Admin can lock/unlock a user account
-7. [ ] Admin can view user detail panel (profile info + badge summary + activity)
-8. [ ] Table supports pagination with page size selector
-9. [ ] Row hover reveals action buttons (edit, view, lock/unlock)
-10. [ ] Role change requires confirmation dialog
-11. [ ] Route: `/admin/users` (already exists, enhance existing page)
+5. [ ] Admin can filter by source (M365/Local/All)
+6. [ ] Admin can edit a **local** user's role via edit dialog (role edit disabled for M365 users)
+7. [ ] Admin can lock/unlock **any** user account (M365 or Local)
+8. [ ] Admin can view user detail slide-over panel (profile info + badge summary + activity + source indicator)
+9. [ ] Table supports pagination with page size selector
+10. [ ] Row hover reveals action buttons — **contextual** per source (M365: view + lock only; Local: edit + view + lock + delete)
+11. [ ] Role change requires confirmation dialog
+12. [ ] Route: `/admin/users` (enhance existing page)
+13. [ ] User source badge displayed: `M365` (blue Microsoft icon) or `Local` (gray icon)
+14. [ ] M365 user detail panel shows: "Identity managed by Microsoft 365. Role assigned via Security Group." + last sync timestamp
+
+### Manual User Creation (Sub-story 12.3a)
+15. [ ] Admin can create a local user via "Add User" dialog: email, firstName, lastName, department, role (EMPLOYEE/ISSUER/MANAGER), manager (select existing user), default password
+16. [ ] Created user has `azureId = null`, `roleSetManually = true`
+17. [ ] Email uniqueness enforced (400 if already exists)
+18. [ ] New backend endpoint: `POST /api/admin/users`
+
+### Schema & Manager Hierarchy (Sub-story 12.3b)
+19. [ ] Prisma schema: `managerId` self-referential FK added to User model
+20. [ ] Migration: existing seed users linked via `managerId` (employee → manager)
+21. [ ] Backend scoping migrated from `department` to `managerId`: dashboard, badge-issuance, analytics
+22. [ ] Seed data: keep only `admin@gcredit.com` as bootstrap seed (other demo users optional for dev env)
+
+### M365 Sync Enhancement (Sub-story 12.3b)
+23. [ ] M365 sync fetches `directReports` for each user → sets `managerId` FK (two-pass: create users, then link managers)
+24. [ ] M365 sync checks Security Group membership (`GET /users/{id}/memberOf`) → assigns ADMIN/ISSUER roles
+25. [ ] Security Group IDs configured via `.env`: `AZURE_ADMIN_GROUP_ID`, `AZURE_ISSUER_GROUP_ID`
+26. [ ] Sync skips role update for locally-created users (`azureId = null`)
+27. [ ] **Group-only sync** mode: `POST /api/admin/m365-sync` with `syncType: 'GROUPS_ONLY'` — refreshes Security Group memberships + directReports without re-importing all user data
+28. [ ] UI: "Sync Users" button (full sync) + "Sync Roles" button (group-only sync)
+29. [ ] Sync history table shows sync type (FULL / GROUPS_ONLY)
+30. [ ] Role priority logic: Security Group > `roleSetManually` > directReports > default EMPLOYEE
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Enhance `UserManagementPage` data table (AC: #1, #8, #9)
+### Sub-story 12.3a: User Management UI + Manual Creation (~14h)
+
+- [ ] Task 1: Enhance `UserManagementPage` data table (AC: #1, #5, #9, #10, #12, #13)
   - [ ] Wrap in `<AdminPageShell>` (from Story 12.1)
-  - [ ] Redesign table columns per design-direction.md
-  - [ ] Add user avatar placeholder (initials circle)
-  - [ ] Add role badge chips with color coding: ADMIN=red, ISSUER=blue, MANAGER=purple, EMPLOYEE=gray
-  - [ ] Add status indicator (green dot=active, red dot=locked)
+  - [ ] Redesign table columns: avatar initials, name, email, role badge, status dot, **source badge**, badge count, last active
+  - [ ] Source column: `M365` badge (blue with Microsoft icon) | `Local` badge (gray)
+  - [ ] Role badge chips with color coding: ADMIN=red, ISSUER=blue, MANAGER=purple, EMPLOYEE=gray
+  - [ ] Status indicator (green dot=active, red dot=locked, gray dot=inactive)
+  - [ ] **Context-aware row actions:** M365 users → view + lock only; Local users → edit + view + lock + delete
   - [ ] Pagination with `PaginatedResponse<T>` (standardized per CQ-007)
-- [ ] Task 2: Search + filter bar (AC: #2, #3, #4)
+- [ ] Task 2: Search + filter bar (AC: #2, #3, #4, #5)
   - [ ] Search input with debounce (300ms) — searches name AND email simultaneously
   - [ ] Role dropdown filter
   - [ ] Status dropdown filter
+  - [ ] **Source dropdown filter** (All / M365 / Local)
   - [ ] Clear filters button
-- [ ] Task 3: Role edit functionality (AC: #5, #10)
-  - [ ] Edit dialog with role selector
+- [ ] Task 3: Role edit for **local users only** (AC: #6, #11)
+  - [ ] Edit dialog with role selector — **disabled/hidden for M365 users**
   - [ ] Confirmation via shared `<ConfirmDialog>`: "Change Alice Smith from Employee to Issuer?"
   - [ ] **Self-demotion guard:** Admin cannot change their OWN role (backend 403 + frontend disable)
-  - [ ] API: `PATCH /api/admin/users/:id` (body: { role })
-- [ ] Task 4: Lock/unlock functionality (AC: #6)
-  - [ ] **Toggle switch** (Shadcn `Switch`) — not a button — visual state is clearer
+  - [ ] API: `PATCH /api/admin/users/:id/role` (existing endpoint)
+  - [ ] Backend guard: reject role change for users with `azureId != null` (400: "M365 user roles are managed via Security Group")
+- [ ] Task 4: Lock/unlock functionality — **all users** (AC: #7)
+  - [ ] **Toggle switch** (Shadcn `Switch`) — visual state for lock status
   - [ ] Lock confirmation via `<ConfirmDialog>`: "Lock account for jane@example.com? They won't be able to sign in."
   - [ ] Unlock resets `failedLoginAttempts` to 0
-  - [ ] API: `PATCH /api/admin/users/:id` (body: { isLocked })
-- [ ] Task 5: User detail slide-over panel (AC: #7)
-  - [ ] Slide-over from RIGHT side (standard pattern)
-  - [ ] Show: avatar, name, email, role, lock status, badge count, last login date, created date
+  - [ ] API: `PATCH /api/admin/users/:id/status`
+- [ ] Task 5: User detail slide-over panel (AC: #8, #14)
+  - [ ] Slide-over from RIGHT side (Shadcn `Sheet`)
+  - [ ] Show: avatar, name, email, role, lock status, badge count, last login, created date
+  - [ ] **Source section:** "Account Source: Microsoft 365 (synced)" or "Account Source: Local Account"
+  - [ ] For M365 users: "Identity managed by Microsoft 365. Role assigned via Security Group." + `Last Synced: {lastSyncAt}`
+  - [ ] For M365 users: disable all edit controls except lock/unlock
   - [ ] Badge summary section (count + recent badges)
   - [ ] Recent activity section (from audit log)
-  - [ ] Compose from existing APIs (no new backend endpoint needed)
-- [ ] Task 6: Tests
-  - [ ] Table rendering + filtering tests
-  - [ ] Role change flow tests (including self-demotion guard)
-  - [ ] Lock/unlock toggle tests
-  - [ ] Slide-over panel render tests
+- [ ] Task 6: Manual user creation (AC: #15, #16, #17, #18)
+  - [ ] "Add User" button → creation dialog
+  - [ ] Fields: email*, firstName*, lastName*, department, role (EMPLOYEE/ISSUER/MANAGER dropdown), manager (search/select existing user)
+  - [ ] Default password: configurable via `DEFAULT_USER_PASSWORD` env var (default: `password123`)
+  - [ ] Backend: `POST /api/admin/users` — creates user with `azureId=null`, `roleSetManually=true`, bcrypt-hashed default password
+  - [ ] Backend: email uniqueness check → 409 if exists
+  - [ ] Backend: audit log entry for user creation
+- [ ] Task 7: API response enhancement
+  - [ ] Add `source` computed field to user list/detail API responses: `azureId ? 'M365' : 'LOCAL'`
+  - [ ] Add `sourceLabel` field: `azureId ? 'Microsoft 365' : 'Local Account'`
+- [ ] Task 8: Tests (12.3a)
+  - [ ] Table rendering + source badge tests
+  - [ ] Filter by source tests
+  - [ ] Role change flow tests (including M365 user role-edit blocked)
+  - [ ] Lock/unlock toggle tests (both M365 and Local users)
+  - [ ] Slide-over panel tests (source-aware content)
+  - [ ] Manual user creation tests (form validation, API call, duplicate email)
+
+### Sub-story 12.3b: Manager Hierarchy + M365 Sync Enhancement (~14h)
+
+- [ ] Task 9: Schema — `managerId` self-relation (AC: #19, #20)
+  - [ ] Add to Prisma schema:
+    ```prisma
+    managerId     String?
+    manager       User?   @relation("ManagerReports", fields: [managerId], references: [id])
+    directReports User[]  @relation("ManagerReports")
+    ```
+  - [ ] Generate + apply migration
+  - [ ] Update seed data: link employee → manager via `managerId`
+  - [ ] Keep `admin@gcredit.com` seed user as bootstrap (guard: `NODE_ENV !== 'production'` for other seeds)
+- [ ] Task 10: Backend scoping migration — department → managerId (AC: #21)
+  - [ ] `dashboard.service.ts`: Manager team query → `WHERE managerId = manager.id`
+  - [ ] `badge-issuance.service.ts`: Manager badge scoping → `recipient.managerId = manager.id`
+  - [ ] `analytics.service.ts`: Manager filter → `WHERE managerId = manager.id`
+  - [ ] Keep `department` field for display only (not for access control)
+  - [ ] Update affected tests
+- [ ] Task 11: M365 sync — Security Group role mapping (AC: #24, #25, #26, #30)
+  - [ ] Add `.env` vars: `AZURE_ADMIN_GROUP_ID`, `AZURE_ISSUER_GROUP_ID`
+  - [ ] In `syncSingleUser()`: call `GET /users/{id}/memberOf` → check group IDs
+  - [ ] Role priority: Security Group membership > `roleSetManually=true` > directReports > default EMPLOYEE
+  - [ ] Skip role update for users with `azureId = null` (locally created)
+  - [ ] Requires Graph API permission: `GroupMember.Read.All` or `Directory.Read.All`
+- [ ] Task 12: M365 sync — `directReports` + `managerId` linkage (AC: #23)
+  - [ ] Two-pass sync: Pass 1 — create/update all users; Pass 2 — fetch `/users/{id}/manager` for each user → set `managerId`
+  - [ ] Users with `directReports > 0` → set role MANAGER (if not overridden by Security Group)
+  - [ ] Set `managerId` on subordinate users based on Graph API manager endpoint
+- [ ] Task 13: Group-only sync mode (AC: #27, #28, #29)
+  - [ ] New `syncType: 'GROUPS_ONLY'` in `TriggerSyncDto`
+  - [ ] Implementation: fetch existing M365 users from DB (skip user import) → re-check `/memberOf` + `/manager` for each → update roles + `managerId`
+  - [ ] Performance: avoids re-fetching all user profiles from Graph API, only queries group/manager endpoints
+  - [ ] Sync log records: `syncType: 'GROUPS_ONLY'`, counts only role/manager changes
+- [ ] Task 14: M365 Sync UI controls (AC: #28, #29)
+  - [ ] "Sync Users" button → triggers `POST /api/admin/m365-sync` with `syncType: 'FULL'`
+  - [ ] "Sync Roles" button → triggers `POST /api/admin/m365-sync` with `syncType: 'GROUPS_ONLY'`
+  - [ ] Sync history table with type column (FULL / GROUPS_ONLY / INCREMENTAL)
+  - [ ] Last sync timestamp + status indicator
+- [ ] Task 15: Tests (12.3b)
+  - [ ] `managerId` schema tests (relation, cascade behavior)
+  - [ ] Dashboard/badge-issuance/analytics scoping migration tests
+  - [ ] M365 sync Security Group role mapping tests
+  - [ ] M365 sync `directReports` + `managerId` linkage tests
+  - [ ] Group-only sync mode tests
+  - [ ] Regression tests for existing features affected by department→managerId migration
 
 ## Dev Notes
 
@@ -77,22 +221,60 @@ So that I can efficiently manage all platform users without direct database acce
 - Role badge colors: ADMIN=red, ISSUER=blue, MANAGER=purple, EMPLOYEE=gray
 - Lock/unlock: Shadcn `Switch` (toggle) — not a button
 - Slide-over: render from RIGHT side using Shadcn `Sheet` component
-- Use Shadcn `Dialog` for role change confirmation
+- **Source-aware UI:** All edit controls check `azureId` to determine editable state
+- **User source detection:** `azureId != null` → M365 synced; `azureId == null` → Local
 
-### Existing Backend Endpoints
-- `GET /api/admin/users` — paginated, supports search + role filter
-- `PATCH /api/admin/users/:id` — update role, isLocked
-- `GET /api/admin/users/:id` — user detail (may need to add)
+### Existing Backend Endpoints (to enhance)
+- `GET /api/admin/users` — paginated, supports search + role filter → add source filter + `source` field
+- `PATCH /api/admin/users/:id/role` — update role → add M365 user guard
+- `PATCH /api/admin/users/:id/status` — activate/deactivate → works for both sources
+- `GET /api/admin/users/:id` — user detail → add `source` field
+- `POST /api/admin/m365-sync` — trigger sync → add `GROUPS_ONLY` sync type
+
+### New Backend Endpoints
+- `POST /api/admin/users` — create local user (email, name, role, department, managerId, default password)
+
+### Schema Changes
+- `managerId String?` — self-referential FK to User
+- `manager User? @relation("ManagerReports", ...)`
+- `directReports User[] @relation("ManagerReports")`
+
+### Environment Variables (new)
+```env
+AZURE_ADMIN_GROUP_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+AZURE_ISSUER_GROUP_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+DEFAULT_USER_PASSWORD="password123"
+```
+
+### Graph API Permissions (additional)
+- `GroupMember.Read.All` — read security group memberships
+- Already have: `User.Read.All`
 
 ### ⚠️ Out of Scope
-- User creation (M365 sync handles this, manual creation deferred)
-- SSO/password changes (DEC-001~006 deferred)
+- SSO implementation (FR27 — separate epic)
+- User self-registration (existing `/api/auth/register` remains as-is)
 - Bulk role changes
+- Azure AD Group creation (IT admin pre-creates groups in Azure portal)
+- Profile page M365 source indicator (deferred — can add later with minimal effort)
+
+### ⚠️ Breaking Changes
+- **Department-based scoping → managerId-based scoping**: Dashboard team view, badge issuance manager scope, analytics manager filter all change from `WHERE department = X` to `WHERE managerId = Y`. Requires regression testing.
+- **M365 user role edit blocked**: If admin previously changed M365 user roles via UI, this will no longer be possible. Roles must be managed via Security Group.
 
 ### ✅ Phase 2 Review Complete (2026-02-19)
-- **Architecture (Winston):** Self-demotion guard (backend 403 + frontend disable), no new backend endpoint needed (compose from existing APIs for detail panel)
+- **Architecture (Winston):** Self-demotion guard (backend 403 + frontend disable), no new backend endpoint needed for detail panel (compose from existing APIs)
 - **UX (Sally):** Toggle switch for lock/unlock (not button), role colors ADMIN=red/ISSUER=blue/MANAGER=purple/EMPLOYEE=gray, debounced search (name+email), slide-over from RIGHT, specific confirm dialog text
-- **Estimate confirmed:** 10h
+
+### ✅ PO Design Session (2026-02-20)
+- **Dual-mode provisioning confirmed:** M365 sync (production) + manual create (dev/demo)
+- **Security Group role mapping confirmed:** Azure AD groups → ADMIN/ISSUER; directReports → MANAGER
+- **M365 user roles read-only in UI:** Managed exclusively by Security Group
+- **Group-only sync required:** Separate lightweight sync for role/manager refresh (scale: 100K+ users)
+- **Source-aware management:** M365 users limited to lock/disable; local users full CRUD
+- **User source indicator:** M365 (blue) vs Local (gray) badge throughout UI
+- **Bootstrap strategy:** Seed `admin@gcredit.com` for initial M365 sync trigger
+- **Temporary password:** Default password until SSO; show notice to M365 users
+- **Revised estimate:** ~28h total → split into 12.3a (14h) + 12.3b (14h)
 
 ## Dev Agent Record
 ### Agent Model Used
