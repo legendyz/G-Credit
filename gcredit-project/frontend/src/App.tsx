@@ -22,6 +22,7 @@ const BadgeEmbedPage = lazy(() => import('@/pages/BadgeEmbedPage'));
 const AdminAnalyticsPage = lazy(() => import('@/pages/AdminAnalyticsPage'));
 const BadgeManagementPage = lazy(() => import('@/pages/admin/BadgeManagementPage'));
 const AdminUserManagementPage = lazy(() => import('@/pages/AdminUserManagementPage'));
+const SkillCategoryManagementPage = lazy(() => import('@/pages/admin/SkillCategoryManagementPage'));
 const BulkIssuancePage = lazy(() => import('@/pages/BulkIssuancePage'));
 const BulkPreviewPage = lazy(() => import('@/components/BulkIssuance/BulkPreviewPage'));
 const IssueBadgePage = lazy(() =>
@@ -174,6 +175,16 @@ function App() {
                 <ProtectedRoute requiredRoles={['ADMIN']}>
                   <Layout pageTitle="User Management">
                     <AdminUserManagementPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/skills/categories"
+              element={
+                <ProtectedRoute requiredRoles={['ADMIN']}>
+                  <Layout pageTitle="Skill Categories">
+                    <SkillCategoryManagementPage />
                   </Layout>
                 </ProtectedRoute>
               }

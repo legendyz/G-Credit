@@ -134,20 +134,36 @@ export function Navbar() {
 
             {/* Admin-only: User Management */}
             {user?.role === 'ADMIN' && (
-              <li>
-                <Link
-                  to="/admin/users"
-                  className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
-                             flex items-center ${
-                               isActive('/admin/users')
-                                 ? 'text-brand-600 bg-brand-50'
-                                 : 'text-neutral-700 hover:text-brand-600 hover:bg-neutral-100 active:bg-neutral-200'
-                             }`}
-                  aria-current={isActive('/admin/users') ? 'page' : undefined}
-                >
-                  Users
-                </Link>
-              </li>
+              <>
+                <li>
+                  <Link
+                    to="/admin/users"
+                    className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
+                               flex items-center ${
+                                 isActive('/admin/users')
+                                   ? 'text-brand-600 bg-brand-50'
+                                   : 'text-neutral-700 hover:text-brand-600 hover:bg-neutral-100 active:bg-neutral-200'
+                               }`}
+                    aria-current={isActive('/admin/users') ? 'page' : undefined}
+                  >
+                    Users
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/admin/skills/categories"
+                    className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
+                               flex items-center ${
+                                 isActive('/admin/skills/categories')
+                                   ? 'text-brand-600 bg-brand-50'
+                                   : 'text-neutral-700 hover:text-brand-600 hover:bg-neutral-100 active:bg-neutral-200'
+                               }`}
+                    aria-current={isActive('/admin/skills/categories') ? 'page' : undefined}
+                  >
+                    Skill Categories
+                  </Link>
+                </li>
+              </>
             )}
 
             {/* Manager Links */}

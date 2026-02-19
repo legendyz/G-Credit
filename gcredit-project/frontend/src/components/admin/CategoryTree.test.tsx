@@ -1,0 +1,177 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { CategoryTree } from './CategoryTree';
+import type { SkillCategory } from '@/hooks/useSkillCategories';
+
+const mockCategories: SkillCategory[] = [
+  {
+    id: 'cat-1',
+    name: 'Technical Skills',
+    level: 1,
+    isSystemDefined: true,
+    isEditable: true,
+    displayOrder: 0,
+    children: [
+      {
+        id: 'cat-1-1',
+        name: 'Frontend',
+        level: 2,
+        parentId: 'cat-1',
+        isSystemDefined: true,
+        isEditable: true,
+        displayOrder: 0,
+        children: [],
+        skills: [
+          { id: 's1', name: 'React' },
+          { id: 's2', name: 'Vue' },
+        ],
+      },
+      {
+        id: 'cat-1-2',
+        name: 'Backend',
+        level: 2,
+        parentId: 'cat-1',
+        isSystemDefined: false,
+        isEditable: true,
+        displayOrder: 1,
+        children: [],
+        skills: [],
+      },
+    ],
+    skills: [],
+  },
+  {
+    id: 'cat-2',
+    name: 'Soft Skills',
+    level: 1,
+    isSystemDefined: false,
+    isEditable: true,
+    displayOrder: 1,
+    children: [],
+    skills: [{ id: 's3', name: 'Leadership' }],
+  },
+];
+
+describe('CategoryTree', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('renders tree with nested children', () => {
+    render(<CategoryTree categories={mockCategories} />);
+
+    expect(screen.getByText('Technical Skills')).toBeInTheDocument();
+    expect(screen.getByText('Soft Skills')).toBeInTheDocument();
+    // Top-level nodes expanded by default -> children visible
+    expect(screen.getByText('Frontend')).toBeInTheDocument();
+    expect(screen.getByText('Backend')).toBeInTheDocument();
+  });
+
+  it('expand/collapse toggles children visibility', () => {
+    render(<CategoryTree categories={mockCategories} />);
+
+    // Children should be visible initially (top-level expanded)
+    expect(screen.getByText('Frontend')).toBeInTheDocument();
+
+    // Click collapse button on "Technical Skills"
+    const collapseButton = screen.getByLabelText('Collapse');
+    fireEvent.click(collapseButton);
+
+    // Children should be hidden
+    expect(screen.queryByText('Frontend')).not.toBeInTheDocument();
+
+    // Click expand button
+    const expandButton = screen.getByLabelText('Expand');
+    fireEvent.click(expandButton);
+
+    // Children should be visible again
+    expect(screen.getByText('Frontend')).toBeInTheDocument();
+  });
+
+  it('shows skill count per node', () => {
+    render(<CategoryTree categories={mockCategories} />);
+
+    expect(screen.getByText('2 skills')).toBeInTheDocument(); // Frontend has 2 skills
+    expect(screen.getByText('1 skill')).toBeInTheDocument(); // Soft Skills has 1 skill
+  });
+
+  it('shows lock icon for system-defined categories', () => {
+    render(<CategoryTree categories={mockCategories} />);
+
+    const lockIcons = screen.getAllByTestId('lock-icon');
+    // Technical Skills + Frontend are system-defined
+    expect(lockIcons.length).toBe(2);
+  });
+
+  it('calls onEdit when edit button clicked', () => {
+    const onEdit = vi.fn();
+    render(<CategoryTree categories={mockCategories} editable onEdit={onEdit} />);
+
+    const editButtons = screen.getAllByLabelText(/^Edit/);
+    fireEvent.click(editButtons[0]);
+    expect(onEdit).toHaveBeenCalledWith(mockCategories[0]);
+  });
+
+  it('calls onDelete when delete button clicked', () => {
+    const onDelete = vi.fn();
+    render(<CategoryTree categories={mockCategories} editable onDelete={onDelete} />);
+
+    const deleteButtons = screen.getAllByLabelText(/^Delete/);
+    // Click delete on a non-system category
+    fireEvent.click(deleteButtons[deleteButtons.length - 1]);
+    expect(onDelete).toHaveBeenCalled();
+  });
+
+  it('calls onAddChild when add child button clicked', () => {
+    const onAddChild = vi.fn();
+    render(<CategoryTree categories={mockCategories} editable onAddChild={onAddChild} />);
+
+    const addButtons = screen.getAllByLabelText(/^Add child/);
+    fireEvent.click(addButtons[0]);
+    expect(onAddChild).toHaveBeenCalledWith(mockCategories[0]);
+  });
+
+  it('delete button disabled for system-defined categories', () => {
+    render(<CategoryTree categories={mockCategories} editable />);
+
+    const deleteButton = screen.getByLabelText('Delete Technical Skills');
+    expect(deleteButton).toBeDisabled();
+  });
+
+  it('hides action buttons in read-only mode', () => {
+    render(<CategoryTree categories={mockCategories} editable={false} />);
+
+    expect(screen.queryAllByLabelText(/^Edit/)).toHaveLength(0);
+    expect(screen.queryAllByLabelText(/^Delete/)).toHaveLength(0);
+    expect(screen.queryAllByLabelText(/^Add child/)).toHaveLength(0);
+  });
+
+  it('hides drag handles in read-only mode', () => {
+    render(<CategoryTree categories={mockCategories} editable={false} />);
+
+    expect(screen.queryAllByTestId('drag-handle')).toHaveLength(0);
+  });
+
+  it('shows drag handles in editable mode', () => {
+    render(<CategoryTree categories={mockCategories} editable />);
+
+    const handles = screen.getAllByTestId('drag-handle');
+    expect(handles.length).toBeGreaterThan(0);
+  });
+
+  it('renders empty state when no categories', () => {
+    render(<CategoryTree categories={[]} onCreateRoot={vi.fn()} />);
+
+    expect(screen.getByText('No categories found')).toBeInTheDocument();
+    expect(screen.getByText('Create your first skill category.')).toBeInTheDocument();
+    expect(screen.getByText('Create Category')).toBeInTheDocument();
+  });
+
+  it('calls onCreateRoot CTA in empty state', () => {
+    const onCreateRoot = vi.fn();
+    render(<CategoryTree categories={[]} onCreateRoot={onCreateRoot} />);
+
+    fireEvent.click(screen.getByText('Create Category'));
+    expect(onCreateRoot).toHaveBeenCalledTimes(1);
+  });
+});

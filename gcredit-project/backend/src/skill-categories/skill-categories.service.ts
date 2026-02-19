@@ -67,36 +67,42 @@ export class SkillCategoriesService {
 
   /**
    * Create a new custom skill category
-   * - Must have a parentId (cannot create top-level categories)
+   * - parentId optional: omit to create top-level (Level 1) category
    * - Max 3 levels of nesting
    */
   async create(createDto: CreateSkillCategoryDto) {
     const { parentId, ...data } = createDto;
 
-    // Verify parent exists
-    const parent = await this.prisma.skillCategory.findUnique({
-      where: { id: parentId },
-    });
+    let level = 1;
 
-    if (!parent) {
-      throw new NotFoundException(
-        `Parent category with ID ${parentId} not found`,
-      );
-    }
+    if (parentId) {
+      // Verify parent exists
+      const parent = await this.prisma.skillCategory.findUnique({
+        where: { id: parentId },
+      });
 
-    // Check nesting level (max 3 levels)
-    if (parent.level >= 3) {
-      throw new BadRequestException(
-        'Cannot create subcategory: maximum nesting level (3) reached',
-      );
+      if (!parent) {
+        throw new NotFoundException(
+          `Parent category with ID ${parentId} not found`,
+        );
+      }
+
+      // Check nesting level (max 3 levels)
+      if (parent.level >= 3) {
+        throw new BadRequestException(
+          'Cannot create subcategory: maximum nesting level (3) reached',
+        );
+      }
+
+      level = parent.level + 1;
     }
 
     // Create category
     const category = await this.prisma.skillCategory.create({
       data: {
         ...data,
-        parentId,
-        level: parent.level + 1,
+        parentId: parentId || null,
+        level,
         isSystemDefined: false,
         isEditable: true,
       },

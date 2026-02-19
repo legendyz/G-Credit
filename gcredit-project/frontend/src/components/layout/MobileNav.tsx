@@ -105,6 +105,7 @@ export function MobileNav({ className = '' }: MobileNavProps) {
     { to: '/admin/bulk-issuance', label: 'Bulk Issuance', roles: ['ADMIN', 'ISSUER'] },
     { to: '/admin/analytics', label: 'Analytics', roles: ['ADMIN', 'ISSUER'] },
     { to: '/admin/users', label: 'Users', roles: ['ADMIN'] },
+    { to: '/admin/skills/categories', label: 'Skill Categories', roles: ['ADMIN'] },
     { to: '/profile', label: 'Profile', roles: ['ADMIN', 'ISSUER', 'MANAGER', 'EMPLOYEE'] },
   ];
 

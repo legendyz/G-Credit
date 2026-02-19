@@ -38,13 +38,14 @@ export class CreateSkillCategoryDto {
   @SanitizeHtml()
   description?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 'da721a77-18c0-40e7-a7aa-269efe8e26bb',
     description:
-      'Parent category ID (required, top-level creation not allowed)',
+      'Parent category ID. Omit or null to create a top-level (Level 1) category.',
   })
+  @IsOptional()
   @IsUUID()
-  parentId: string;
+  parentId?: string;
 
   @ApiPropertyOptional({
     example: 10,
