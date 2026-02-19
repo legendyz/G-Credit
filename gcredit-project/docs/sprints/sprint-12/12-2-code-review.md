@@ -1,5 +1,39 @@
 # Code Review — Story 12.2: Skill Management UI
 
+## Re-Review (Post-Fix Commit `9d7eaa6`)
+
+Date: 2026-02-20  
+Reviewer: Dev Agent (Re-validation)
+
+### Re-review Scope
+- Fix commit: `9d7eaa6` (`fix(12.2): address code review findings - 5 fixes`)
+- Re-validated files: `SkillManagementPage`, `useSkills`, `useSkillMutations`, `skills.service`, `skill.dto`, `SkillsFilter`, related tests/docs
+- Re-run tests:
+  - Frontend targeted: `21/21 PASS`
+  - Backend type-check: `tsc --noEmit PASS`
+
+### Previously Reported Findings — Status
+
+1. **AC #2 Badge Count column missing** — **Closed**  
+  `SkillManagementPage` now includes `Badges` column and row values from `skill.badgeCount`.
+
+2. **AC #8 no template list in delete block message** — **Closed**  
+  `skills.service.remove()` now returns blocking message with template names list.
+
+3. **Tab-to-submit not implemented** — **Closed**  
+  Inline add now supports submit on `Tab` (last field) and `Enter`, with `Escape` cancel.
+
+4. **Edit dialog missing category selector** — **Closed**  
+  Edit dialog now includes category selector (`edit-category`), and backend supports `categoryId` update in DTO/service.
+
+5. **Touch discoverability of row actions** — **Closed**  
+  Action buttons are always visible on small screens; hover-only behavior kept for `sm+`.
+
+### Updated Decision
+
+**Result: APPROVED**  
+The previously identified 5 issues are addressed and verified. Story 12.2 can remain in `done` state.
+
 Date: 2026-02-19  
 Reviewer: Dev Agent (Adversarial Review)
 
