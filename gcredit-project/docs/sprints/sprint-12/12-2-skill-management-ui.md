@@ -28,6 +28,8 @@ So that I can maintain a comprehensive and accurate skill taxonomy for badge tem
 8. [ ] Delete blocked with message showing which templates reference the skill
 9. [ ] Colored skill tags match category colors (tech=blue, leadership=gold, etc.)
 10. [ ] Route: `/admin/skills` — combined page with category tree (left) + skills table (right)
+11. [ ] Badge Template form skill picker groups skills by category (with category headers)
+12. [ ] Badge detail modal and verification page show skill tags with category colors
 
 ## Tasks / Subtasks
 
@@ -42,12 +44,19 @@ So that I can maintain a comprehensive and accurate skill taxonomy for badge tem
   - [ ] Search input (debounced 300ms)
   - [ ] Pagination using standardized `PaginatedResponse<T>` pattern (per CQ-007)
   - [ ] Hover-reveal action buttons (edit, delete)
-- [ ] Task 3: Skill tag color system (AC: #9)
+- [ ] Task 3: Skill tag color system (AC: #9, #11, #12)
   - [ ] Add `color` field to `SkillCategory` Prisma model (small migration)
   - [ ] 10-color Tailwind palette: `slate`, `blue`, `emerald`, `amber`, `rose`, `violet`, `cyan`, `orange`, `pink`, `lime`
   - [ ] Auto-assign color on category creation, editable by admin
   - [ ] Shared color constant map: `src/lib/categoryColors.ts`
   - [ ] Skill tags render with category color as background
+- [ ] Task 3b: Fix `useSkills` category field bug + propagate category colors (AC: #11, #12)
+  - [ ] **BUG FIX:** `useSkills.ts` returns `{ category: name }` but `SkillsFilter` expects `{ categoryName: name }` — fix field mapping
+  - [ ] Add `categoryColor` to the Skill interface returned by `useSkills` hook
+  - [ ] **Badge Template Form** (`BadgeTemplateFormPage.tsx`): replace flat pill list with `SkillsFilter` using `groupByCategory={true}`, skills grouped under category headers
+  - [ ] **Badge Detail Modal** (`BadgeInfo.tsx`): change prop from `skills: string[]` to `skills: { name, categoryColor? }[]`, render pills with category color instead of hardcoded blue
+  - [ ] **Verify Badge Page** (`VerifyBadgePage.tsx`): add category color to skill pills (backend verification API already returns skill objects, add `category.color` to response)
+  - [ ] **Backend:** include `category.color` in skill response DTOs (verification endpoint + skills list)
 - [ ] Task 4: Inline add skill (AC: #5)
   - [ ] Inline "Add Skill" row at top of table
   - [ ] Fields: name, description, level (category pre-selected from tree)
@@ -71,6 +80,9 @@ So that I can maintain a comprehensive and accurate skill taxonomy for badge tem
   - [ ] Form validation tests
   - [ ] Delete guard tests
   - [ ] Skill tag color rendering tests
+  - [ ] `useSkills` category field fix test
+  - [ ] Badge Template form grouped skills test
+  - [ ] Badge detail modal colored skill tags test
 
 ## Dev Notes
 
@@ -119,7 +131,12 @@ model Skill {
 ### ✅ Phase 2 Review Complete (2026-02-19)
 - **Architecture (Winston):** Shared `<CategoryTree>` with editable/read-only modes, color field on SkillCategory (derived from category, not skill), pagination per CQ-007
 - **UX (Sally):** Responsive split→dropdown on <1024px, inline add skill row (tab-to-submit), 10-color Tailwind palette, colored skill tags from category
-- **Estimate confirmed:** 8h
+- **Estimate revised:** 8h → **10h** (+2h for Task 3b: category color propagation to Template Form, Badge Detail, Verify Page + useSkills bug fix)
+
+### Category Display Improvements (2026-02-19)
+- **Bug found:** `useSkills` hook maps `category.name` to `category` field, but `SkillsFilter` expects `categoryName` — `groupByCategory` silently broken since inception
+- **Scope added:** Template form skill picker grouped by category, badge detail + verify page skill pills colored by category
+- **Affected files:** `useSkills.ts`, `BadgeTemplateFormPage.tsx`, `BadgeInfo.tsx`, `VerifyBadgePage.tsx`, backend verification DTO
 
 ## Dev Agent Record
 ### Agent Model Used

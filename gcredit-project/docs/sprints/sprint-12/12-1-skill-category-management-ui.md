@@ -13,15 +13,16 @@ So that I can organize the skill taxonomy without using Swagger or direct API ca
 - Backend API already exists: `GET/POST/PATCH/DELETE /api/skills/categories`
 - Prisma model `SkillCategory` supports hierarchy: `parentId`, `level` (1-3), `children` relation
 - Currently no frontend page for category management
+- **Backend change needed:** `parentId` is currently required in `CreateSkillCategoryDto` — must be made optional so Admin can create Level 1 categories
 - Design reference: [ui-design-direction.md](../../planning/ui-design-direction.md) — Skill Tags section
 - Prototype reference: [gcredit-ui-prototype.html](../../../../_bmad-output/gcredit-ui-prototype.html) — Skill Management page
 
 ## Acceptance Criteria
 
 1. [ ] Admin can view all skill categories in a tree/nested list structure
-2. [ ] Admin can create a new top-level category (level 1)
+2. [ ] Admin can create a new top-level category (level 1) — no parent required
 3. [ ] Admin can create subcategories under any existing category (level 2, 3)
-4. [ ] Admin can edit category name, description, and display order
+4. [ ] Admin can edit category name, description, and display order for ALL levels
 5. [ ] Admin can delete empty categories (no skills assigned)
 6. [ ] Delete is blocked with clear message if category has skills
 7. [ ] System-defined categories (`isSystemDefined=true`) show a lock icon and cannot be deleted
@@ -56,18 +57,24 @@ So that I can organize the skill taxonomy without using Swagger or direct API ca
   - [ ] Cross-level move: separate "Move to..." menu action
   - [ ] API: `PATCH /api/skills/categories/:id` with new `displayOrder`
 - [ ] Task 3: Create category form dialog (AC: #2, #3, #4)
-  - [ ] Create dialog: name, description, parent selector
+  - [ ] Create dialog: name, description, parent selector (optional — empty = Level 1)
   - [ ] Edit dialog: pre-populated fields
   - [ ] Validation: name required, max 100 chars
+- [ ] Task 3b: Backend — allow Level 1 category creation (AC: #2)
+  - [ ] `CreateSkillCategoryDto`: change `parentId` from `@IsUUID()` required to `@IsOptional() @IsUUID()` optional
+  - [ ] `skill-categories.service.ts` `create()`: if no `parentId`, set `level = 1`; if `parentId`, validate parent exists + `level < 3`
+  - [ ] Update existing backend tests for create without `parentId`
+  - [ ] Update Swagger docs (`description` field on `parentId`)
 - [ ] Task 4: Delete category with guard (AC: #5, #6, #7)
   - [ ] Use shared `<ConfirmDialog>` with specific text: "Delete 'Frontend Development' and its 12 skills?"
   - [ ] Backend validation: reject DELETE + UPDATE on `isSystemDefined` categories with 403
   - [ ] Frontend: disable delete button for system categories (lock icon)
 - [ ] Task 5: API integration (AC: #1-#6)
-  - [ ] Fetch tree: `GET /api/skills/categories/tree` (NEW — returns nested JSON, not flat list)
-  - [ ] Create: `POST /api/skills/categories`
-  - [ ] Update: `PATCH /api/skills/categories/:id`
-  - [ ] Delete: `DELETE /api/skills/categories/:id`
+  - [ ] Fetch tree: `GET /api/skill-categories` (existing — returns nested JSON with `?includeSkills=true`)
+  - [ ] Flat list: `GET /api/skill-categories/flat` (for parent selector dropdown)
+  - [ ] Create: `POST /api/skill-categories` (parentId optional — null = Level 1)
+  - [ ] Update: `PATCH /api/skill-categories/:id`
+  - [ ] Delete: `DELETE /api/skill-categories/:id`
   - [ ] Consider optimistic UI updates with rollback on error (tree is small, ~30-50 nodes)
 - [ ] Task 6: Route + navigation setup (AC: #10)
   - [ ] Add route to router config
@@ -101,10 +108,12 @@ So that I can organize the skill taxonomy without using Swagger or direct API ca
 - `@dnd-kit/sortable` (sortable preset for lists/trees)
 
 ### Backend Endpoint Changes
-- **NEW:** `GET /api/skills/categories/tree` — returns pre-structured nested JSON (avoids N+1 on frontend)
-- `POST /api/skills/categories` — create (body: name, description, parentId?)
-- `PATCH /api/skills/categories/:id` — update (including displayOrder for reorder)
-- `DELETE /api/skills/categories/:id` — delete (blocked if has skills; 403 if isSystemDefined)
+- **EXISTING:** `GET /api/skill-categories` — already returns nested tree (no new endpoint needed)
+- `GET /api/skill-categories/flat` — flat list for dropdowns
+- `POST /api/skill-categories` — create (body: name, description, parentId?)
+  - **CHANGE:** `parentId` becomes optional. When `null` → creates Level 1 category
+- `PATCH /api/skill-categories/:id` — update (including displayOrder for reorder)
+- `DELETE /api/skill-categories/:id` — delete (blocked if has skills/children; 403 if isSystemDefined)
 
 ### Key Schema Reference
 ```prisma
@@ -119,6 +128,7 @@ model SkillCategory {
 - **UX (Sally):** Skill count per node, empty state CTA, specific delete messages, responsive tree→dropdown on <1024px, drag handle (⠿) + blue insertion line
 - **Estimate revised:** 8h → **10h** (+2h for dnd-kit + shared components)
 - **Cross-cutting components:** AdminPageShell, ConfirmDialog, CategoryTree established here
+- **Backend fix (2026-02-19):** `parentId` made optional in CreateDTO + service to allow Admin to create all levels (L1/L2/L3)
 
 ## Dev Agent Record
 ### Agent Model Used

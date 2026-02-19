@@ -31,7 +31,7 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 | # | Story | Priority | Est | Depends On |
 |---|-------|----------|-----|------------|
 | 12.1 | Skill Category Management UI | 🔴 HIGH | 10h | — |
-| 12.2 | Skill Management UI | 🔴 HIGH | 8h | 12.1 |
+| 12.2 | Skill Management UI | 🔴 HIGH | 10h | 12.1 |
 | 12.3 | User Management UI Enhancement | 🔴 HIGH | 10h | — |
 | 12.4 | Milestone Admin UI | 🟡 MEDIUM | 8h | — |
 
@@ -94,7 +94,7 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 
 #### Story 12.2: Skill Management UI
 **Priority:** 🔴 High  
-**Estimate:** 8h  
+**Estimate:** 10h  
 **Status:** 🔴 Not Started  
 **Story Doc:** 📄 [12-2-skill-management-ui.md](sprint-12/12-2-skill-management-ui.md)
 
@@ -251,7 +251,7 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 | Story ID | Title | Priority | Hours | Status | Tech Debt |
 |----------|-------|----------|-------|--------|-----------|
 | 12.1 | Skill Category Management UI | 🔴 High | 10h | 🔴 | — |
-| 12.2 | Skill Management UI | 🔴 High | 8h | 🔴 | — |
+| 12.2 | Skill Management UI | 🔴 High | 10h | 🔴 | — |
 | 12.3 | User Management UI Enhancement | 🔴 High | 10h | 🔴 | — |
 | 12.4 | Milestone Admin UI | 🟡 Med | 8h | 🔴 | TD-009 |
 | 12.5 | Evidence Unification — Data Model | 🔴 High | 14h | 🔴 | TD-010 P1 |
@@ -259,7 +259,7 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 | 12.7 | Admin Activity Feed Formatting | 🟢 Low | 3h | 🔴 | TD-016 |
 | 12.8 | Skills UUID Fallback Hardening | 🟢 Low | 2h | 🔴 | TD-017 |
 | 12.9 | Sprint 12 UAT | 🟡 Med | 5h | 🔴 | — |
-| **Total** | **9 stories** | — | **70h** | — | — |
+| **Total** | **9 stories** | — | **72h** | — | — |
 
 ---
 
@@ -343,7 +343,7 @@ All 8 stories reviewed by Architect (Winston) + UX Designer (Sally) on 2026-02-1
 - Two-step issuance UX (issue → attach evidence)
 - `Badge.evidenceUrl` kept through Sprint 12 for backward compat, removed Sprint 13
 
-**Estimate change:** 61h → 65h (+2h Story 12.1 for dnd + shared components, +2h Story 12.5 for bulk issuance) → **70h** (+5h Story 12.9 UAT added)
+**Estimate change:** 61h → 65h (+2h Story 12.1 for dnd + shared components, +2h Story 12.5 for bulk issuance) → 70h (+5h Story 12.9 UAT added) → **72h** (+2h Story 12.2 for category color propagation)
 
 ### Lessons Applied from Sprint 11
 - **Lesson 41:** Wave structure for parallelization
