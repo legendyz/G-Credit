@@ -32,6 +32,7 @@ import {
   type TemplateUser,
 } from '@/lib/badgeTemplatesApi';
 import { useSkills } from '@/hooks/useSkills';
+import { SkillsFilter } from '@/components/search/SkillsFilter';
 import { LayoutGrid, Save, Loader2, Upload, X, AlertCircle } from 'lucide-react';
 
 const CATEGORIES: { value: TemplateCategory; label: string }[] = [
@@ -413,41 +414,16 @@ export function BadgeTemplateFormPage() {
             {/* Skills Selection */}
             <div className="space-y-2">
               <Label className="text-body font-medium text-neutral-700">Related Skills</Label>
-              {availableSkills.length > 0 ? (
-                <div className="flex flex-wrap gap-2 p-3 border border-neutral-200 rounded-md bg-neutral-50 max-h-48 overflow-y-auto">
-                  {availableSkills.map((skill) => {
-                    const isSelected = selectedSkills.includes(skill.id);
-                    return (
-                      <button
-                        key={skill.id}
-                        type="button"
-                        disabled={isReadOnly}
-                        onClick={() =>
-                          setSelectedSkills((prev) =>
-                            isSelected
-                              ? prev.filter((sid) => sid !== skill.id)
-                              : [...prev, skill.id]
-                          )
-                        }
-                        className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${isReadOnly ? 'cursor-default' : ''} ${
-                          isSelected
-                            ? 'bg-brand-600 text-white'
-                            : 'bg-white text-neutral-700 border border-neutral-300 hover:border-brand-400'
-                        }`}
-                      >
-                        {skill.name}
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="text-sm text-neutral-500">No skills available</p>
-              )}
-              {selectedSkills.length > 0 && (
-                <p className="text-xs text-neutral-500">
-                  {selectedSkills.length} skill{selectedSkills.length > 1 ? 's' : ''} selected
-                </p>
-              )}
+              <SkillsFilter
+                skills={availableSkills}
+                selectedSkills={selectedSkills}
+                onChange={setSelectedSkills}
+                groupByCategory={true}
+                searchable={true}
+                showClearButton={true}
+                disabled={isReadOnly}
+                placeholder="Select related skills..."
+              />
             </div>
 
             {/* Validity Period */}

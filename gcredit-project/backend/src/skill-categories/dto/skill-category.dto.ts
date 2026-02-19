@@ -56,6 +56,16 @@ export class CreateSkillCategoryDto {
   @IsInt()
   @Min(0)
   displayOrder?: number;
+
+  @ApiPropertyOptional({
+    example: 'blue',
+    description:
+      'Tailwind color name for category tags (e.g. blue, emerald, amber)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  color?: string;
 }
 
 export class UpdateSkillCategoryDto {
@@ -93,6 +103,15 @@ export class UpdateSkillCategoryDto {
   @IsInt()
   @Min(0)
   displayOrder?: number;
+
+  @ApiPropertyOptional({
+    example: 'blue',
+    description: 'Tailwind color name for category tags',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  color?: string;
 }
 
 export class SkillCategoryResponseDto {
@@ -124,6 +143,12 @@ export class SkillCategoryResponseDto {
 
   @ApiProperty({ example: 10 })
   displayOrder: number;
+
+  @ApiPropertyOptional({
+    example: 'blue',
+    description: 'Tailwind color name for category tags',
+  })
+  color: string | null;
 
   @ApiProperty({ type: [Object], description: 'Subcategories' })
   children?: SkillCategoryResponseDto[];

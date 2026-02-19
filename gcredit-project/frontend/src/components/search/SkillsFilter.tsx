@@ -20,6 +20,10 @@ export interface Skill {
   id: string;
   name: string;
   categoryName?: string;
+  categoryColor?: string | null;
+  categoryId?: string;
+  description?: string;
+  level?: string;
 }
 
 export interface SkillsFilterProps {

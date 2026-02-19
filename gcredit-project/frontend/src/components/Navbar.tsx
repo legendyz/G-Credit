@@ -163,6 +163,20 @@ export function Navbar() {
                     Skill Categories
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    to="/admin/skills"
+                    className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
+                               flex items-center ${
+                                 isActive('/admin/skills')
+                                   ? 'text-brand-600 bg-brand-50'
+                                   : 'text-neutral-700 hover:text-brand-600 hover:bg-neutral-100 active:bg-neutral-200'
+                               }`}
+                    aria-current={isActive('/admin/skills') ? 'page' : undefined}
+                  >
+                    Skills
+                  </Link>
+                </li>
               </>
             )}
 

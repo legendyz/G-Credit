@@ -157,6 +157,7 @@ model SkillCategory {
   isSystemDefined Boolean          @default(false) // true=preset, false=custom
   isEditable      Boolean          @default(true)
   displayOrder    Int              @default(0)
+  color           String?          @db.VarChar(20) // Tailwind color name: blue, emerald, amber, etc.
   skills          Skill[]
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt

@@ -62,4 +62,34 @@ describe('BadgeInfo', () => {
       expect(screen.queryByText('Earning Criteria')).not.toBeInTheDocument();
     });
   });
+
+  // Story 12.2: Category color support
+  describe('category color skills', () => {
+    it('renders object-form skills with category color classes', () => {
+      render(
+        <BadgeInfo
+          description="Test"
+          skills={[
+            { name: 'React', categoryColor: 'emerald' },
+            { name: 'Node.js', categoryColor: 'blue' },
+          ]}
+          criteria={null}
+        />
+      );
+      const reactChip = screen.getByText('React');
+      expect(reactChip.className).toContain('bg-emerald-100');
+      expect(reactChip.className).toContain('text-emerald-800');
+
+      const nodeChip = screen.getByText('Node.js');
+      expect(nodeChip.className).toContain('bg-blue-100');
+      expect(nodeChip.className).toContain('text-blue-800');
+    });
+
+    it('renders plain string skills with fallback blue styling', () => {
+      render(<BadgeInfo description="Test" skills={['JavaScript']} criteria={null} />);
+      const chip = screen.getByText('JavaScript');
+      expect(chip.className).toContain('bg-blue-600');
+      expect(chip.className).toContain('text-white');
+    });
+  });
 });

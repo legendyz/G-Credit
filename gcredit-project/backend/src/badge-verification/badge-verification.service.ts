@@ -128,10 +128,15 @@ export class BadgeVerificationService {
     // Format response for frontend
 
     // Story 11.18: Resolve skill UUIDs to display names
+    // Story 12.2: Include category color for colored skill tags
     const skills = badge.template.skillIds?.length
       ? await this.prisma.skill.findMany({
           where: { id: { in: badge.template.skillIds } },
-          select: { id: true, name: true },
+          select: {
+            id: true,
+            name: true,
+            category: { select: { color: true } },
+          },
         })
       : [];
 
@@ -148,7 +153,11 @@ export class BadgeVerificationService {
           ((badge.template.issuanceCriteria as Record<string, unknown>)
             ?.description as string) || 'No criteria specified',
         category: badge.template.category,
-        skills: skills.map((s) => ({ id: s.id, name: s.name })),
+        skills: skills.map((s) => ({
+          id: s.id,
+          name: s.name,
+          categoryColor: s.category?.color ?? null,
+        })),
       },
 
       recipient: {

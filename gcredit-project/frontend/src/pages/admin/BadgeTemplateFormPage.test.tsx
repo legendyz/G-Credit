@@ -148,8 +148,9 @@ describe('BadgeTemplateFormPage', () => {
     it('renders skill picker with available skills', () => {
       renderCreateMode();
       expect(screen.getByText('Related Skills')).toBeInTheDocument();
-      expect(screen.getByText('Cloud Computing')).toBeInTheDocument();
-      expect(screen.getByText('Leadership')).toBeInTheDocument();
+      // Story 12.2: SkillsFilter renders as a combobox dropdown
+      expect(screen.getByRole('combobox', { expanded: false })).toBeInTheDocument();
+      expect(screen.getByText('Select related skills...')).toBeInTheDocument();
     });
 
     it('shows Create Template submit button', () => {
@@ -260,9 +261,13 @@ describe('BadgeTemplateFormPage', () => {
       const categorySelect = screen.getAllByRole('combobox')[0];
       await user.selectOptions(categorySelect, 'skill');
 
-      // Select a skill
-      const cloudBtn = screen.getByRole('button', { name: /cloud computing/i });
-      await user.click(cloudBtn);
+      // Story 12.2: Open the SkillsFilter dropdown and select a skill
+      const skilsCombobox = screen.getByRole('combobox', { expanded: false });
+      await user.click(skilsCombobox);
+
+      // Click the cloud computing option inside the dropdown
+      const cloudOption = screen.getByRole('option', { name: /cloud computing/i });
+      await user.click(cloudOption);
 
       // Check selection count indicator
       expect(screen.getByText('1 skill selected')).toBeInTheDocument();
@@ -284,14 +289,18 @@ describe('BadgeTemplateFormPage', () => {
       const user = userEvent.setup();
       renderCreateMode();
 
-      const cloudBtn = screen.getByRole('button', { name: /cloud computing/i });
+      // Open dropdown
+      const skilsCombobox = screen.getByRole('combobox', { expanded: false });
+      await user.click(skilsCombobox);
+
+      const cloudOption = screen.getByRole('option', { name: /cloud computing/i });
 
       // Select
-      await user.click(cloudBtn);
+      await user.click(cloudOption);
       expect(screen.getByText('1 skill selected')).toBeInTheDocument();
 
       // Deselect
-      await user.click(cloudBtn);
+      await user.click(cloudOption);
       expect(screen.queryByText(/skill selected/i)).not.toBeInTheDocument();
     });
 
@@ -392,9 +401,8 @@ describe('BadgeTemplateFormPage', () => {
         expect(screen.getByDisplayValue('Cloud Expert')).toBeInTheDocument();
       });
 
-      // skill-1 = Cloud Computing should be selected (has brand-600 class)
-      const cloudBtn = screen.getByRole('button', { name: /cloud computing/i });
-      expect(cloudBtn.className).toContain('bg-brand-600');
+      // Story 12.2: SkillsFilter shows count of selected skills
+      expect(screen.getByText(/1 skill selected/i)).toBeInTheDocument();
     });
 
     it('shows Save Changes button in edit mode', async () => {

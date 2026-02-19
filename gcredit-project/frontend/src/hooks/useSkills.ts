@@ -13,9 +13,11 @@ interface SkillApiResponse {
   id: string;
   name: string;
   description?: string;
+  level?: string;
   category?: {
     id: string;
     name: string;
+    color?: string | null;
   };
 }
 
@@ -62,7 +64,11 @@ export function useSkills(options: UseSkillsOptions = {}) {
       return data.map((skill) => ({
         id: skill.id,
         name: skill.name,
-        category: skill.category?.name,
+        categoryName: skill.category?.name, // FIX: was `category` (Story 12.2)
+        categoryColor: skill.category?.color, // NEW: category color for pills
+        categoryId: skill.category?.id, // NEW: for admin page filtering
+        description: skill.description, // NEW: for admin table
+        level: skill.level, // NEW: for admin table
       }));
     },
     enabled,

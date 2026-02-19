@@ -14,6 +14,21 @@ import {
 @Injectable()
 export class SkillCategoriesService {
   private readonly logger = new Logger(SkillCategoriesService.name);
+
+  /** Color palette for auto-assigning to new categories */
+  private static readonly CATEGORY_COLORS = [
+    'slate',
+    'blue',
+    'emerald',
+    'amber',
+    'rose',
+    'violet',
+    'cyan',
+    'orange',
+    'pink',
+    'lime',
+  ] as const;
+
   constructor(private prisma: PrismaService) {}
 
   /**
@@ -95,6 +110,15 @@ export class SkillCategoriesService {
       }
 
       level = parent.level + 1;
+    }
+
+    // Auto-assign color if not provided
+    if (!data.color) {
+      const existingCount = await this.prisma.skillCategory.count();
+      data.color =
+        SkillCategoriesService.CATEGORY_COLORS[
+          existingCount % SkillCategoriesService.CATEGORY_COLORS.length
+        ];
     }
 
     // Create category

@@ -21,6 +21,7 @@ describe('SkillCategoriesService', () => {
       create: jest.Mock;
       update: jest.Mock;
       delete: jest.Mock;
+      count: jest.Mock;
     };
   };
 
@@ -32,6 +33,7 @@ describe('SkillCategoriesService', () => {
         create: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
+        count: jest.fn().mockResolvedValue(0),
       },
     };
 

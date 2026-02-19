@@ -19,7 +19,7 @@ import ClaimSuccessModal from '../ClaimSuccessModal';
 import { Globe, Lock, Loader2 } from 'lucide-react';
 import { apiFetch } from '../../lib/apiFetch';
 import { useCurrentUser } from '../../stores/authStore';
-import { useSkillNamesMap } from '../../hooks/useSkills';
+import { useSkillNamesMap, useSkills } from '../../hooks/useSkills';
 
 const BadgeDetailModal: React.FC = () => {
   const { isOpen, badgeId, closeModal } = useBadgeDetailModal();
@@ -35,12 +35,16 @@ const BadgeDetailModal: React.FC = () => {
   const [isToggling, setIsToggling] = useState(false);
   const [localVisibility, setLocalVisibility] = useState<'PUBLIC' | 'PRIVATE'>('PUBLIC');
 
-  // Resolve skill UUIDs to human-readable names
+  // Resolve skill UUIDs to human-readable names with category colors
   const skillNamesMap = useSkillNamesMap(badge?.template?.skillIds);
-  // Story 11.24 AC-M13: Fallback to 'Unknown Skill' instead of raw UUID
-  const resolvedSkillNames = (badge?.template?.skillIds || []).map(
-    (id) => skillNamesMap[id] || 'Unknown Skill'
-  );
+  const { data: allSkills = [] } = useSkills();
+  // Story 12.2: Pass objects with categoryColor to BadgeInfo for colored pills
+  const resolvedSkills = (badge?.template?.skillIds || []).map((id) => {
+    const found = allSkills.find((s) => s.id === id);
+    return found
+      ? { name: found.name, categoryColor: found.categoryColor }
+      : { name: skillNamesMap[id] || 'Unknown Skill', categoryColor: null };
+  });
 
   useEffect(() => {
     if (!isOpen || !badgeId) return;
@@ -274,7 +278,7 @@ const BadgeDetailModal: React.FC = () => {
                 {/* AC 4.4: Badge Info */}
                 <BadgeInfo
                   description={badge.template.description}
-                  skills={resolvedSkillNames}
+                  skills={resolvedSkills}
                   criteria={badge.template.issuanceCriteria}
                 />
 

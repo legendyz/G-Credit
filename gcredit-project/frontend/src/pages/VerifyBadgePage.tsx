@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { apiFetch } from '../lib/apiFetch';
+import { getCategoryColorClasses } from '../lib/categoryColors';
 import { RevokedBadgeAlert } from '../components/badges/RevokedBadgeAlert';
 
 export function VerifyBadgePage() {
@@ -307,14 +308,19 @@ export function VerifyBadgePage() {
                 Skills & Competencies
               </div>
               <div className="flex flex-wrap gap-2">
-                {badge.badge.skills.map((skill: { id: string; name: string }) => (
-                  <span
-                    key={skill.id}
-                    className="px-3 py-1 bg-brand-100 text-brand-800 rounded-full text-sm"
-                  >
-                    {skill.name}
-                  </span>
-                ))}
+                {badge.badge.skills.map(
+                  (skill: { id: string; name: string; categoryColor?: string }) => {
+                    const color = getCategoryColorClasses(skill.categoryColor);
+                    return (
+                      <span
+                        key={skill.id}
+                        className={`px-3 py-1 rounded-full text-sm ${color.bg} ${color.text}`}
+                      >
+                        {skill.name}
+                      </span>
+                    );
+                  }
+                )}
               </div>
             </div>
           )}
