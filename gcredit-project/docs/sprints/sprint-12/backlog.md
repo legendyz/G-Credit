@@ -345,6 +345,17 @@ All 8 stories reviewed by Architect (Winston) + UX Designer (Sally) on 2026-02-1
 
 **Estimate change:** 61h → 65h (+2h Story 12.1 for dnd + shared components, +2h Story 12.5 for bulk issuance) → 70h (+5h Story 12.9 UAT added) → **72h** (+2h Story 12.2 for category color propagation)
 
+### Items Deferred to Sprint 13
+
+| # | Item | Source | Est. | Reason |
+|---|------|--------|------|--------|
+| D-1 | Responsive tree→dropdown (`<1024px`) | Story 12.1 Task 1 | ~2h | Admin 管理页面主要桌面端使用，非核心 AC |
+| D-2 | Blue insertion line (DnD visual feedback) | Story 12.1 Task 2 | ~1h | 需要 DragOverlay 自定义，当前 opacity 反馈可用 |
+| D-3 | Cross-level "Move to..." action | Story 12.1 Task 2 | ~3h | 需新增后端 reparent API + MoveToDialog，独立功能点 |
+| D-4 | Remove deprecated `Badge.evidenceUrl` field | Story 12.5 | ~1h | Sprint 12 保留向后兼容，Sprint 13 移除 |
+
+**Total Sprint 13 carry-forward: ~7h**
+
 ### Lessons Applied from Sprint 11
 - **Lesson 41:** Wave structure for parallelization
 - **Lesson 42:** Stories are implementation-ready with explicit ACs and task lists
