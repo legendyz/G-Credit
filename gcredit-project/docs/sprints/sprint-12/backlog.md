@@ -75,18 +75,18 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 #### Story 12.1: Skill Category Management UI
 **Priority:** 🔴 High  
 **Estimate:** 10h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [12-1-skill-category-management-ui.md](sprint-12/12-1-skill-category-management-ui.md)
 
 **Quick Summary:** As an Admin, I want to manage skill categories in a hierarchical tree UI so that skills are organized into a browsable taxonomy.
 
 **Key Deliverables:**
-- [ ] Shared `<AdminPageShell>`, `<ConfirmDialog>`, `<CategoryTree>` components
-- [ ] Tree view with drag-and-drop reorder (`@dnd-kit`, same-level)
-- [ ] CRUD operations (create, rename, reorder, delete with guard)
-- [ ] System-defined category protection (lock icon, no delete, 403)
-- [ ] Responsive: tree → dropdown on <1024px
-- [ ] Tests
+- [x] Shared `<AdminPageShell>`, `<ConfirmDialog>`, `<CategoryTree>` components
+- [x] Tree view with drag-and-drop reorder (`@dnd-kit`, same-level)
+- [x] CRUD operations (create, rename, reorder, delete with guard)
+- [x] System-defined category protection (lock icon, no delete, 403)
+- [ ] Responsive: tree → dropdown on <1024px *(deferred to Sprint 13 — D-1)*
+- [x] Tests (70 new tests)
 
 **Dependencies:** None
 
@@ -250,7 +250,7 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 
 | Story ID | Title | Priority | Hours | Status | Tech Debt |
 |----------|-------|----------|-------|--------|-----------|
-| 12.1 | Skill Category Management UI | 🔴 High | 10h | 🔴 | — |
+| 12.1 | Skill Category Management UI | 🔴 High | 10h | ✅ Done | — |
 | 12.2 | Skill Management UI | 🔴 High | 10h | 🔴 | — |
 | 12.3 | User Management UI Enhancement | 🔴 High | 10h | 🔴 | — |
 | 12.4 | Milestone Admin UI | 🟡 Med | 8h | 🔴 | TD-009 |
@@ -363,6 +363,6 @@ All 8 stories reviewed by Architect (Winston) + UX Designer (Sally) on 2026-02-1
 
 ---
 
-**Last Updated:** 2026-02-19 — Story 12.9 (UAT) added, total 70h  
-**Status:** Planning Complete — Ready for Sprint Branch + Development  
+**Last Updated:** 2026-02-19 — Story 12.1 completed (SM accepted), 1/9 stories done  
+**Status:** In Development — Story 12.1 done, Story 12.2 next  
 **Template Version:** v1.2
