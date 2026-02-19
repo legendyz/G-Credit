@@ -95,16 +95,17 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 #### Story 12.2: Skill Management UI
 **Priority:** 🔴 High  
 **Estimate:** 10h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [12-2-skill-management-ui.md](sprint-12/12-2-skill-management-ui.md)
 
 **Quick Summary:** As an Admin, I want to manage individual skills within categories so that the skill library is maintainable through the UI.
 
 **Key Deliverables:**
-- [ ] Split layout: category tree (left) + skills table (right)
-- [ ] Skill CRUD (add, edit, delete with badge-usage guard)
-- [ ] Colored skill tags
-- [ ] Tests
+- [x] Split layout: category tree (left) + skills table (right)
+- [x] Skill CRUD (add, edit, delete with badge-usage guard)
+- [x] Colored skill tags (10-color palette, auto-assign, propagated to 3 existing pages)
+- [x] useSkills bug fix (`category` → `categoryName`)
+- [x] Tests (32 new tests)
 
 **Dependencies:** Story 12.1
 
@@ -251,7 +252,7 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 | Story ID | Title | Priority | Hours | Status | Tech Debt |
 |----------|-------|----------|-------|--------|-----------|
 | 12.1 | Skill Category Management UI | 🔴 High | 10h | ✅ Done | — |
-| 12.2 | Skill Management UI | 🔴 High | 10h | 🔴 | — |
+| 12.2 | Skill Management UI | 🔴 High | 10h | ✅ Done | — |
 | 12.3 | User Management UI Enhancement | 🔴 High | 10h | 🔴 | — |
 | 12.4 | Milestone Admin UI | 🟡 Med | 8h | 🔴 | TD-009 |
 | 12.5 | Evidence Unification — Data Model | 🔴 High | 14h | 🔴 | TD-010 P1 |
@@ -363,6 +364,6 @@ All 8 stories reviewed by Architect (Winston) + UX Designer (Sally) on 2026-02-1
 
 ---
 
-**Last Updated:** 2026-02-19 — Story 12.1 completed (SM accepted), 1/9 stories done  
-**Status:** In Development — Story 12.1 done, Story 12.2 next  
+**Last Updated:** 2026-02-20 — Story 12.2 completed (SM accepted), 2/9 stories done  
+**Status:** In Development — Stories 12.1–12.2 done, Story 12.3 next  
 **Template Version:** v1.2
