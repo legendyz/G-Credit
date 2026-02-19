@@ -167,6 +167,34 @@ So that I can efficiently manage all platform users across both M365-synced and 
 
 ### Sub-story 12.3b: Manager Hierarchy + M365 Sync Enhancement (~14h)
 
+#### Prerequisites (Azure/M365 Setup — PO action before dev starts)
+
+The following Azure/M365 configurations must be completed by PO (with SM guidance) before 12.3b development begins. Estimated time: ~20 minutes total.
+
+- [ ] **Prereq 1: Add Graph API Permission** (~5 min)
+  - Azure Portal → Azure Active Directory → App registrations → G-Credit app
+  - API permissions → Add permission → Microsoft Graph → Application permissions
+  - Add `GroupMember.Read.All`
+  - Click "Grant admin consent" button
+  - *Purpose: allows sync to read Security Group memberships for role mapping*
+
+- [ ] **Prereq 2: Create Security Groups** (~10 min)
+  - Microsoft 365 Admin Center → Teams & Groups → Security groups → Add
+  - Create group: **G-Credit Admins** → add users who should be ADMIN → copy Object ID
+  - Create group: **G-Credit Issuers** → add users who should be ISSUER → copy Object ID
+  - Add Object IDs to backend `.env`:
+    ```env
+    AZURE_ADMIN_GROUP_ID="<G-Credit Admins Object ID>"
+    AZURE_ISSUER_GROUP_ID="<G-Credit Issuers Object ID>"
+    ```
+  - *Purpose: maps M365 Security Group membership → G-Credit ADMIN/ISSUER roles*
+
+- [ ] **Prereq 3: Verify M365 Organizational Hierarchy** (~5 min)
+  - Microsoft 365 Admin Center → Users → Active users → select a user → check Manager field is set
+  - Or: Azure Portal → Azure AD → Users → select user → Properties → Manager
+  - Verify at least one user has a manager assigned + at least one user has direct reports
+  - *Purpose: `directReports` API depends on manager field being set in Azure AD*
+
 - [ ] Task 9: Schema — `managerId` self-relation (AC: #19, #20)
   - [ ] Add to Prisma schema:
     ```prisma
