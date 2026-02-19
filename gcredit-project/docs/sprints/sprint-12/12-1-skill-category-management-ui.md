@@ -1,6 +1,6 @@
 # Story 12.1: Skill Category Management UI
 
-Status: review
+Status: done
 
 ## Story
 
@@ -136,7 +136,7 @@ Claude Opus 4.6 (GitHub Copilot)
 
 ### Completion Notes
 - All 10 acceptance criteria met
-- All 8 implementation tasks completed with tests
+- Implementation delivered with tests; 3 subtasks are explicitly deferred (responsive tree dropdown, blue insertion line, cross-level "Move to...")
 - Frontend: 621 tests passing (57 files) — +70 new tests from baseline 551
 - Backend: 763 tests passing (46 suites) — +4 new tests
 - TypeScript: 0 errors (both FE and BE)

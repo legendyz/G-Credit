@@ -1,5 +1,49 @@
 # Code Review — Story 12.1: Skill Category Management UI
 
+## Re-Review (Post-Fix Commit `4c0e2da`)
+
+Date: 2026-02-19  
+Reviewer: Dev Agent (Re-validation)
+
+### Re-review Scope
+- Fix commit: `4c0e2da` (`fix(Story-12.1): code review fixes - parentId bug, DnD batch, role policy, ESC guard, indentation`)
+- Re-validated files: FE form/tree/dialog/page, BE controller/service tests, story doc updates
+- Re-run tests:
+  - Frontend targeted: `44/44 PASS`
+  - Backend targeted: `13/13 PASS`
+
+### Previously Reported Issues — Recheck Status
+
+#### Closed
+1. **`__none__` parentId bug** — **Closed**  
+  Evidence: `effectiveParentId` guard now excludes `__none__` before submit.
+
+2. **Tree double indentation** — **Closed**  
+  Evidence: `ml-6` branch removed; only `marginLeft` retained.
+
+3. **DnD N+1 per-item callback contract** — **Closed (improved)**  
+  Evidence: `CategoryTree` now emits a **batch updates array** to `onReorder`.
+
+4. **Role mismatch (ADMIN vs ISSUER)** — **Closed**  
+  Evidence: create/update/delete are now all `@Roles(UserRole.ADMIN)`.
+
+5. **ConfirmDialog ESC/overlay close during loading** — **Closed**  
+  Evidence: `handleOpenChange` blocks close while `loading=true`; dedicated test added.
+
+6. **Backend test scope narrow (create-only)** — **Closed**  
+  Evidence: service spec now includes `update` and `remove` suites (13 tests total).
+
+7. **Task false-claims (responsive dropdown / insertion line / cross-level move)** — **Closed as documentation alignment**  
+  Evidence: corresponding subtasks are now unchecked and marked deferred in story task list.
+
+#### Remaining
+- None.
+
+### Updated Decision
+
+**Result: APPROVED**  
+Code fixes are valid, tests pass, and story documentation is now synchronized with deferred subtasks.
+
 Date: 2026-02-19  
 Reviewer: Dev Agent (Adversarial Review)
 

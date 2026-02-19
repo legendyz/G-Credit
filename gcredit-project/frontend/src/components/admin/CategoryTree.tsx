@@ -8,6 +8,8 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DraggableAttributes,
+  type DraggableSyntheticListeners,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -191,8 +193,8 @@ function SortableTreeNode(props: CategoryTreeNodeProps) {
 }
 
 interface CategoryTreeNodeInnerProps extends CategoryTreeNodeProps {
-  dragAttributes?: Record<string, unknown>;
-  dragListeners?: Record<string, unknown>;
+  dragAttributes?: DraggableAttributes;
+  dragListeners?: DraggableSyntheticListeners;
 }
 
 function CategoryTreeNodeInner({
