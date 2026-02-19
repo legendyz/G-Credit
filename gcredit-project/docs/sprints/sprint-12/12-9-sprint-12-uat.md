@@ -28,7 +28,7 @@ So that I can confirm the new admin management UIs and unified evidence system w
 
 ## UAT Scope
 
-### New Feature Test Cases (~18 cases)
+### New Feature Test Cases (~20 cases)
 
 **Skill Category Management (Stories 12.1):**
 - UAT-S12-001: Admin views skill category tree (3 levels)
@@ -44,6 +44,8 @@ So that I can confirm the new admin management UIs and unified evidence system w
 - UAT-S12-009: Admin creates skill with inline add (tab-to-submit)
 - UAT-S12-010: Admin edits/deletes skill (delete blocked if badge usage)
 - UAT-S12-011: Skill tags show category color
+- UAT-S12-011b: Badge Template form groups skills by category (AC #11)
+- UAT-S12-011c: Badge detail + verify page show category-colored skill tags (AC #12)
 
 **User Management Enhancement (Story 12.3):**
 - UAT-S12-012: Admin searches/filters user list
@@ -96,7 +98,7 @@ So that I can confirm the new admin management UIs and unified evidence system w
   - [ ] Add sample milestones (multiple types)
   - [ ] Ensure evidence migration data is present
 - [ ] Task 3: Execute UAT test cases (2h)
-  - [ ] New feature tests: ~24 cases
+  - [ ] New feature tests: ~26 cases
   - [ ] Regression tests: ~6 cases
   - [ ] Record PASS/FAIL for each
 - [ ] Task 4: Bug triage and fix (1h buffer)
