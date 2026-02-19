@@ -76,7 +76,7 @@ export class SkillCategoriesController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.ISSUER)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new custom skill category' })
   @ApiResponse({
@@ -89,7 +89,7 @@ export class SkillCategoriesController {
     description: 'Invalid input or max nesting level reached',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin/Issuer only' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
   @ApiResponse({ status: 404, description: 'Parent category not found' })
   async create(@Body() createDto: CreateSkillCategoryDto) {
     return this.skillCategoriesService.create(createDto);
@@ -97,7 +97,7 @@ export class SkillCategoriesController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.ISSUER)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update an existing category' })
   @ApiResponse({

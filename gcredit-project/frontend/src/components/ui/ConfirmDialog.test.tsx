@@ -63,4 +63,17 @@ describe('ConfirmDialog', () => {
 
     expect(screen.queryByText('Delete Item')).not.toBeInTheDocument();
   });
+
+  it('prevents closing via onOpenChange when loading', () => {
+    const onOpenChange = vi.fn();
+    render(<ConfirmDialog {...defaultProps} onOpenChange={onOpenChange} loading />);
+
+    // Try to close via cancel (which calls onOpenChange(false))
+    // The cancel button is disabled, but the dialog's onOpenChange should also be guarded
+    // Simulate ESC key which triggers the Dialog's onOpenChange
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    // onOpenChange should NOT have been called because loading=true
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
 });

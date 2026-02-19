@@ -45,16 +45,16 @@ So that I can organize the skill taxonomy without using Swagger or direct API ca
   - [x] Tree/nested list with expand/collapse (Lucide ChevronRight/ChevronDown)
   - [x] Display per node: name, skill count (e.g., "Frontend (12 skills)"), system lock icon
   - [x] Props: `editable` (true = show drag handles + action buttons; false = read-only selector)
-  - [x] Responsive: on <1024px collapse tree into dropdown selector
+  - [ ] Responsive: on <1024px collapse tree into dropdown selector *(deferred to Sprint 13)*
   - [x] Empty state: "Create your first skill category" prompt with CTA button
   - [x] Location: `src/components/admin/CategoryTree.tsx`
   - [x] Used by: Stories 12.1 (editable), 12.2 (read-only selector)
 - [x] Task 2: Drag-and-drop reorder (AC: #4 — displayOrder)
   - [x] Install `@dnd-kit/core` + `@dnd-kit/sortable`
   - [x] Drag handle icon (⠿) on left of each tree node
-  - [x] Blue insertion line during drag
+  - [ ] Blue insertion line during drag *(deferred — requires DnD overlay customization)*
   - [x] Constraint: same-level reorder ONLY (no cross-level reparenting via drag)
-  - [x] Cross-level move: separate "Move to..." menu action
+  - [ ] Cross-level move: separate "Move to..." menu action *(deferred to Sprint 13)*
   - [x] API: `PATCH /api/skills/categories/:id` with new `displayOrder`
 - [x] Task 3: Create category form dialog (AC: #2, #3, #4)
   - [x] Create dialog: name, description, parent selector (optional — empty = Level 1)

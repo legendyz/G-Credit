@@ -31,8 +31,13 @@ export function ConfirmDialog({
   loading = false,
   onConfirm,
 }: ConfirmDialogProps) {
+  const handleOpenChange = (value: boolean) => {
+    if (loading) return; // prevent close via ESC/overlay while loading
+    onOpenChange(value);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>

@@ -85,11 +85,13 @@ export function CategoryFormDialog({
     setNameError('');
 
     if (mode === 'create') {
+      const effectiveParentId =
+        selectedParentId && selectedParentId !== '__none__' ? selectedParentId : undefined;
       const data: CreateSkillCategoryInput = {
         name: name.trim(),
         ...(nameEn.trim() && { nameEn: nameEn.trim() }),
         ...(description.trim() && { description: description.trim() }),
-        ...(selectedParentId && { parentId: selectedParentId }),
+        ...(effectiveParentId && { parentId: effectiveParentId }),
       };
       onSubmit(data);
     } else {

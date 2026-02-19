@@ -113,8 +113,11 @@ export function SkillCategoryManagementPage() {
   }, [deletingCategory, deleteBlockMessage, deleteMutation]);
 
   const handleReorder = useCallback(
-    (id: string, newDisplayOrder: number) => {
-      updateMutation.mutate({ id, displayOrder: newDisplayOrder });
+    (updates: Array<{ id: string; displayOrder: number }>) => {
+      // Batch: fire all reorder mutations concurrently
+      updates.forEach(({ id, displayOrder }) => {
+        updateMutation.mutate({ id, displayOrder });
+      });
     },
     [updateMutation]
   );

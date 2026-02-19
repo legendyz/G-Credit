@@ -25,7 +25,7 @@ interface CategoryTreeProps {
   onEdit?: (category: SkillCategory) => void;
   onDelete?: (category: SkillCategory) => void;
   onAddChild?: (parent: SkillCategory) => void;
-  onReorder?: (id: string, newDisplayOrder: number) => void;
+  onReorder?: (updates: Array<{ id: string; displayOrder: number }>) => void;
   selectedId?: string;
   onSelect?: (category: SkillCategory) => void;
   onCreateRoot?: () => void;
@@ -83,11 +83,12 @@ export function CategoryTree({
       if (oldIndex === -1 || newIndex === -1) return;
 
       const reordered = arrayMove(siblings, oldIndex, newIndex);
-      reordered.forEach((item, index) => {
-        if (item.displayOrder !== index) {
-          onReorder(item.id, index);
-        }
-      });
+      const updates = reordered
+        .map((item, index) => ({ id: item.id, displayOrder: index }))
+        .filter((u, index) => reordered[index].displayOrder !== u.displayOrder);
+      if (updates.length > 0) {
+        onReorder(updates);
+      }
     },
     [categories, onReorder]
   );
@@ -163,7 +164,7 @@ interface CategoryTreeNodeProps {
   onEdit?: (category: SkillCategory) => void;
   onDelete?: (category: SkillCategory) => void;
   onAddChild?: (parent: SkillCategory) => void;
-  onReorder?: (id: string, newDisplayOrder: number) => void;
+  onReorder?: (updates: Array<{ id: string; displayOrder: number }>) => void;
   selectedId?: string;
   onSelect?: (category: SkillCategory) => void;
   level: number;
@@ -229,11 +230,12 @@ function CategoryTreeNodeInner({
       if (oldIndex === -1 || newIndex === -1) return;
 
       const reordered = arrayMove(category.children, oldIndex, newIndex);
-      reordered.forEach((item, index) => {
-        if (item.displayOrder !== index) {
-          onReorder(item.id, index);
-        }
-      });
+      const updates = reordered
+        .map((item, index) => ({ id: item.id, displayOrder: index }))
+        .filter((u, index) => reordered[index].displayOrder !== u.displayOrder);
+      if (updates.length > 0) {
+        onReorder(updates);
+      }
     },
     [category.children, onReorder]
   );
@@ -252,7 +254,7 @@ function CategoryTreeNodeInner({
       <div
         className={`flex items-center gap-2 px-3 py-2 rounded-md group transition-colors ${
           isSelected ? 'bg-brand-50 border border-brand-200' : 'hover:bg-neutral-50'
-        } ${level > 0 ? 'ml-6' : ''}`}
+        }`}
         style={{ marginLeft: level > 0 ? `${level * 1.5}rem` : undefined }}
         onClick={() => onSelect?.(category)}
         role={onSelect ? 'button' : undefined}
