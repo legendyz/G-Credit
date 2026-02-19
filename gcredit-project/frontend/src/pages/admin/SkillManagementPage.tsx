@@ -143,11 +143,22 @@ export default function SkillManagementPage() {
     }
   };
 
+  // Tab-to-submit on last focusable field in inline row
+  const handleLastFieldKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      handleCancelAdd();
+    } else if (e.key === 'Enter' || (e.key === 'Tab' && !e.shiftKey)) {
+      e.preventDefault();
+      handleSubmitAdd();
+    }
+  };
+
   // --- Edit dialog ---
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editLevel, setEditLevel] = useState<string>('');
+  const [editCategoryId, setEditCategoryId] = useState<string>('');
   const [editError, setEditError] = useState('');
 
   const updateSkill = useUpdateSkill();
@@ -157,6 +168,7 @@ export default function SkillManagementPage() {
       setEditName(editingSkill.name);
       setEditDescription(editingSkill.description || '');
       setEditLevel(editingSkill.level || '');
+      setEditCategoryId(editingSkill.categoryId || '');
       setEditError('');
     }
   }, [editingSkill]);
@@ -179,6 +191,9 @@ export default function SkillManagementPage() {
         name: trimmed,
         ...(editDescription.trim() ? { description: editDescription.trim() } : {}),
         ...(editLevel ? { level: editLevel } : {}),
+        ...(editCategoryId && editCategoryId !== editingSkill.categoryId
+          ? { categoryId: editCategoryId }
+          : {}),
       },
       { onSuccess: () => setEditingSkill(null) }
     );
@@ -322,11 +337,12 @@ export default function SkillManagementPage() {
             <div className="overflow-x-auto">
               <table className="w-full table-fixed">
                 <colgroup>
-                  <col className="w-[25%]" />
-                  <col className="w-[25%]" />
-                  <col className="w-[18%]" />
-                  <col className="w-[14%]" />
-                  <col className="w-[18%]" />
+                  <col className="w-[22%]" />
+                  <col className="w-[22%]" />
+                  <col className="w-[16%]" />
+                  <col className="w-[12%]" />
+                  <col className="w-[12%]" />
+                  <col className="w-[16%]" />
                 </colgroup>
                 <thead>
                   <tr className="border-b border-neutral-200 bg-neutral-50">
@@ -341,6 +357,9 @@ export default function SkillManagementPage() {
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider hidden sm:table-cell">
                       Level
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-neutral-600 uppercase tracking-wider hidden sm:table-cell">
+                      Badges
                     </th>
                     <th className="px-4 py-3 text-right text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                       Actions
@@ -380,7 +399,7 @@ export default function SkillManagementPage() {
                       </td>
                       <td className="px-4 py-2 hidden sm:table-cell">
                         <Select value={newLevel} onValueChange={setNewLevel}>
-                          <SelectTrigger className="h-8 text-xs">
+                          <SelectTrigger className="h-8 text-xs" onKeyDown={handleLastFieldKeyDown}>
                             <SelectValue placeholder="Level" />
                           </SelectTrigger>
                           <SelectContent>
@@ -391,6 +410,9 @@ export default function SkillManagementPage() {
                             ))}
                           </SelectContent>
                         </Select>
+                      </td>
+                      <td className="px-4 py-2 text-center hidden sm:table-cell">
+                        <span className="text-xs text-neutral-400">—</span>
                       </td>
                       <td className="px-4 py-2 text-right">
                         <div className="flex items-center justify-end gap-1">
@@ -438,8 +460,11 @@ export default function SkillManagementPage() {
                         <td className="px-4 py-3 text-sm text-neutral-600 hidden sm:table-cell">
                           {skill.level || '—'}
                         </td>
+                        <td className="px-4 py-3 text-center text-sm text-neutral-600 hidden sm:table-cell">
+                          {skill.badgeCount ?? 0}
+                        </td>
                         <td className="px-4 py-3 text-right">
-                          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex items-center justify-end gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                             <Button
                               size="sm"
                               variant="ghost"
@@ -467,7 +492,7 @@ export default function SkillManagementPage() {
                   {/* Empty state */}
                   {!isAddingInline && paginatedSkills.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="px-4 py-12 text-center">
+                      <td colSpan={6} className="px-4 py-12 text-center">
                         <p className="text-sm text-neutral-500">
                           {debouncedSearch
                             ? `No skills match "${debouncedSearch}"`
@@ -557,6 +582,21 @@ export default function SkillManagementPage() {
                   {SKILL_LEVELS.map((lvl) => (
                     <SelectItem key={lvl} value={lvl}>
                       {lvl}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="edit-category">Category</Label>
+              <Select value={editCategoryId} onValueChange={setEditCategoryId}>
+                <SelectTrigger id="edit-category" className="mt-1">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {flatCategories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {'—'.repeat(cat.level - 1)} {cat.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

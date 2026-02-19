@@ -19,6 +19,7 @@ export interface UpdateSkillInput {
   name?: string;
   description?: string;
   level?: string;
+  categoryId?: string;
 }
 
 export function useCreateSkill() {

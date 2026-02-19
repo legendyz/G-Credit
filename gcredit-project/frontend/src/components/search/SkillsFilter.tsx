@@ -24,6 +24,7 @@ export interface Skill {
   categoryId?: string;
   description?: string;
   level?: string;
+  badgeCount?: number;
 }
 
 export interface SkillsFilterProps {

@@ -26,6 +26,7 @@ describe('useSkills', () => {
       name: 'React',
       description: 'Frontend framework',
       level: 'ADVANCED',
+      badgeCount: 2,
       category: { id: 'cat-1', name: 'Frontend', color: 'emerald' },
     },
     {
@@ -33,6 +34,7 @@ describe('useSkills', () => {
       name: 'Node.js',
       description: 'Server runtime',
       level: 'INTERMEDIATE',
+      badgeCount: 0,
       category: { id: 'cat-2', name: 'Backend', color: 'blue' },
     },
     {
@@ -85,5 +87,8 @@ describe('useSkills', () => {
     expect(skills[0].categoryId).toBe('cat-1');
     expect(skills[0].description).toBe('Frontend framework');
     expect(skills[0].level).toBe('ADVANCED');
+    expect(skills[0].badgeCount).toBe(2);
+    expect(skills[1].badgeCount).toBe(0);
+    expect(skills[2].badgeCount).toBe(0); // undefined from API → defaults to 0
   });
 });

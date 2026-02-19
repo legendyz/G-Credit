@@ -64,6 +64,7 @@ const mockSkills = [
     categoryId: 'cat-1-1',
     description: 'React framework',
     level: 'ADVANCED',
+    badgeCount: 3,
   },
   {
     id: 's2',
@@ -73,6 +74,7 @@ const mockSkills = [
     categoryId: 'cat-1-1',
     description: 'TS language',
     level: 'INTERMEDIATE',
+    badgeCount: 1,
   },
   {
     id: 's3',
@@ -82,6 +84,7 @@ const mockSkills = [
     categoryId: 'cat-1',
     description: 'Server runtime',
     level: 'BEGINNER',
+    badgeCount: 0,
   },
 ];
 
@@ -162,6 +165,14 @@ describe('SkillManagementPage', () => {
     expect(screen.getByText('3 skills')).toBeInTheDocument();
   });
 
+  it('renders Badge Count column with values', () => {
+    render(<SkillManagementPage />, { wrapper: createWrapper() });
+    // Header
+    expect(screen.getByText('Badges')).toBeInTheDocument();
+    // Values — React has 3, TypeScript has 1, Node.js has 0
+    expect(screen.getByText('3')).toBeInTheDocument();
+  });
+
   it('renders category color chips', () => {
     render(<SkillManagementPage />, { wrapper: createWrapper() });
     const chips = screen.getAllByText('Frontend');
@@ -191,6 +202,8 @@ describe('SkillManagementPage', () => {
     const editButton = screen.getByLabelText('Edit React');
     fireEvent.click(editButton);
     expect(screen.getByText('Edit Skill')).toBeInTheDocument();
+    // Edit dialog should include category selector (id="edit-category")
+    expect(document.getElementById('edit-category')).toBeInTheDocument();
   });
 
   it('clicking delete opens confirm dialog', () => {

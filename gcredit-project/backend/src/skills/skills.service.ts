@@ -15,12 +15,13 @@ export class SkillsService {
   constructor(private prisma: PrismaService) {}
 
   /**
-   * Get all skills with optional category filter
+   * Get all skills with optional category filter.
+   * Includes badgeCount — number of badge templates referencing each skill.
    */
   async findAll(categoryId?: string) {
     const where: Prisma.SkillWhereInput = categoryId ? { categoryId } : {};
 
-    return this.prisma.skill.findMany({
+    const skills = await this.prisma.skill.findMany({
       where,
       include: {
         category: true,
@@ -29,6 +30,39 @@ export class SkillsService {
         name: 'asc',
       },
     });
+
+    // Compute badge template count for each skill (skillIds is String[])
+    const skillIds = skills.map((s) => s.id);
+    const badgeCounts = await this.computeBadgeCounts(skillIds);
+
+    return skills.map((s) => ({
+      ...s,
+      badgeCount: badgeCounts.get(s.id) ?? 0,
+    }));
+  }
+
+  /**
+   * Count how many badge templates reference each skill ID.
+   */
+  private async computeBadgeCounts(
+    skillIds: string[],
+  ): Promise<Map<string, number>> {
+    if (skillIds.length === 0) return new Map();
+
+    const templates = await this.prisma.badgeTemplate.findMany({
+      where: { skillIds: { hasSome: skillIds } },
+      select: { skillIds: true },
+    });
+
+    const counts = new Map<string, number>();
+    for (const t of templates) {
+      for (const sid of t.skillIds) {
+        if (skillIds.includes(sid)) {
+          counts.set(sid, (counts.get(sid) ?? 0) + 1);
+        }
+      }
+    }
+    return counts;
   }
 
   /**
@@ -110,19 +144,33 @@ export class SkillsService {
       throw new NotFoundException(`Skill with ID ${id} not found`);
     }
 
-    // If updating name, check for duplicates in the same category
-    if (updateDto.name && updateDto.name !== skill.name) {
+    // If reassigning category, verify target category exists
+    const targetCategoryId = updateDto.categoryId ?? skill.categoryId;
+    if (updateDto.categoryId && updateDto.categoryId !== skill.categoryId) {
+      const category = await this.prisma.skillCategory.findUnique({
+        where: { id: updateDto.categoryId },
+      });
+      if (!category) {
+        throw new NotFoundException(
+          `Category with ID ${updateDto.categoryId} not found`,
+        );
+      }
+    }
+
+    // If updating name or category, check for duplicates in the target category
+    const nameToCheck = updateDto.name ?? skill.name;
+    if (updateDto.name || updateDto.categoryId) {
       const existing = await this.prisma.skill.findFirst({
         where: {
-          name: updateDto.name,
-          categoryId: skill.categoryId,
+          name: nameToCheck,
+          categoryId: targetCategoryId,
           id: { not: id },
         },
       });
 
       if (existing) {
         throw new ConflictException(
-          `Skill "${updateDto.name}" already exists in this category`,
+          `Skill "${nameToCheck}" already exists in this category`,
         );
       }
     }
@@ -152,14 +200,16 @@ export class SkillsService {
       throw new NotFoundException(`Skill with ID ${id} not found`);
     }
 
-    const referencingTemplates = await this.prisma.badgeTemplate.count({
+    const referencingTemplates = await this.prisma.badgeTemplate.findMany({
       where: {
         skillIds: { has: id },
       },
+      select: { id: true, name: true },
     });
-    if (referencingTemplates > 0) {
+    if (referencingTemplates.length > 0) {
+      const names = referencingTemplates.map((t) => t.name).join(', ');
       throw new BadRequestException(
-        `Cannot delete skill: referenced by ${referencingTemplates} badge template(s)`,
+        `Cannot delete skill: referenced by ${referencingTemplates.length} badge template(s): ${names}`,
       );
     }
 
@@ -171,10 +221,11 @@ export class SkillsService {
   }
 
   /**
-   * Search skills by name
+   * Search skills by name.
+   * Includes badgeCount for each result.
    */
   async search(query: string) {
-    return this.prisma.skill.findMany({
+    const skills = await this.prisma.skill.findMany({
       where: {
         name: {
           contains: query,
@@ -186,5 +237,13 @@ export class SkillsService {
       },
       take: 20, // Limit results
     });
+
+    const skillIds = skills.map((s) => s.id);
+    const badgeCounts = await this.computeBadgeCounts(skillIds);
+
+    return skills.map((s) => ({
+      ...s,
+      badgeCount: badgeCounts.get(s.id) ?? 0,
+    }));
   }
 }
