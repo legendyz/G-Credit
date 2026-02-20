@@ -111,7 +111,14 @@ So that I can efficiently manage all platform users across both M365-synced and 
 30. [ ] Role priority logic: Security Group > `roleSetManually` > directReports > default EMPLOYEE
 
 ### Login-Time Freshness (Sub-story 12.3b)
-31. [ ] On M365 user login/token-refresh, verify Azure AD account status (`accountEnabled`) + Security Group membership (`/memberOf`) in real-time; update local role if changed; reject login if Azure AD account disabled. (~200ms overhead per login)
+31. [ ] **Login-time mini-sync** for M365 users (`azureId != null`): on every login/token-refresh, query Graph API to perform a complete single-user sync:
+    - a. `GET /me` (or `/users/{azureId}`) → verify `accountEnabled`; reject login (401) if disabled
+    - b. Update profile fields: `firstName`, `lastName`, `department` from Graph API `displayName`, `department`
+    - c. `GET /me/memberOf` → check Security Group membership → update `role` if changed (priority: Security Group > roleSetManually > directReports > EMPLOYEE)
+    - d. `GET /me/manager` → update `managerId` FK if manager changed
+    - e. Set `lastSyncAt = now()` on user record
+    - f. Graceful fallback: if Graph API unavailable, allow login with cached data + log warning
+    - g. Target overhead: ~200-300ms per login (3 parallel Graph API calls)
 
 ## Tasks / Subtasks
 
@@ -234,20 +241,27 @@ The following Azure/M365 configurations must be completed by PO (with SM guidanc
   - [ ] "Sync Roles" button → triggers `POST /api/admin/m365-sync` with `syncType: 'GROUPS_ONLY'`
   - [ ] Sync history table with type column (FULL / GROUPS_ONLY / INCREMENTAL)
   - [ ] Last sync timestamp + status indicator
-- [ ] Task 15: Login-time role refresh (AC: #31)
+- [ ] Task 15: Login-time mini-sync (AC: #31)
   - [ ] In JWT auth guard or login handler: detect M365 user (`azureId != null`)
-  - [ ] Call `GET /users/{azureId}` → check `accountEnabled`; if disabled → reject login (401)
-  - [ ] Call `GET /users/{azureId}/memberOf` → check Security Group membership → update role if changed
-  - [ ] Update `lastSyncAt` timestamp on user record
-  - [ ] Cache result for token refresh within same session (avoid repeated Graph calls)
-  - [ ] Graceful fallback: if Graph API unavailable, allow login with cached role + log warning
+  - [ ] Fire 3 Graph API calls **in parallel** for performance:
+    - `GET /users/{azureId}` → accountEnabled, displayName, department
+    - `GET /users/{azureId}/memberOf` → Security Group membership
+    - `GET /users/{azureId}/manager` → manager's azureId
+  - [ ] If `accountEnabled = false` → reject login (401 Unauthorized)
+  - [ ] Update profile: parse displayName → firstName/lastName, update department
+  - [ ] Update role: apply Security Group mapping (same priority logic as full sync)
+  - [ ] Update managerId: resolve manager's azureId → local User id → set FK
+  - [ ] Set `lastSyncAt = now()` on user record
+  - [ ] Cache result for token refresh within same session (avoid repeated Graph calls per session)
+  - [ ] Graceful fallback: if Graph API unavailable (timeout/5xx), allow login with cached data + log warning
+  - [ ] Extract shared helper `syncUserFromGraph(userId)` reusable by both full sync and login-time mini-sync
 - [ ] Task 16: Tests (12.3b)
   - [ ] `managerId` schema tests (relation, cascade behavior)
   - [ ] Dashboard/badge-issuance/analytics scoping migration tests
   - [ ] M365 sync Security Group role mapping tests
   - [ ] M365 sync `directReports` + `managerId` linkage tests
   - [ ] Group-only sync mode tests
-  - [ ] Login-time role refresh tests (role changed, account disabled, Graph API unavailable)
+  - [ ] Login-time mini-sync tests (profile updated, role changed, manager changed, account disabled, Graph API unavailable, partial failure)
   - [ ] Regression tests for existing features affected by department→managerId migration
 
 ## Dev Notes
