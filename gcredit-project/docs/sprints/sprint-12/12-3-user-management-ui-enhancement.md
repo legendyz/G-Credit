@@ -72,7 +72,7 @@ So that I can efficiently manage all platform users across both M365-synced and 
 
 ## Acceptance Criteria
 
-### User Table & Management (Sub-story 12.3a)
+### User Table & Management (Sub-story 12.3b)
 1. [ ] Admin can view all users in a data table with: name, email, role, status, **source (M365/Local)**, badge count, last active
 2. [ ] Admin can search users by name or email (debounced 300ms)
 3. [ ] Admin can filter by role (Admin/Issuer/Manager/Employee)
@@ -88,19 +88,19 @@ So that I can efficiently manage all platform users across both M365-synced and 
 13. [ ] User source badge displayed: `M365` (blue Microsoft icon) or `Local` (gray icon)
 14. [ ] M365 user detail panel shows: "Identity managed by Microsoft 365. Role assigned via Security Group." + last sync timestamp
 
-### Manual User Creation (Sub-story 12.3a)
+### Manual User Creation (Sub-story 12.3b)
 15. [ ] Admin can create a local user via "Add User" dialog: email, firstName, lastName, department, role (EMPLOYEE/ISSUER/MANAGER), manager (select existing user), default password
 16. [ ] Created user has `azureId = null`, `roleSetManually = true`
 17. [ ] Email uniqueness enforced (400 if already exists)
 18. [ ] New backend endpoint: `POST /api/admin/users`
 
-### Schema & Manager Hierarchy (Sub-story 12.3b)
+### Schema & Manager Hierarchy (Sub-story 12.3a)
 19. [ ] Prisma schema: `managerId` self-referential FK added to User model
 20. [ ] Migration: existing seed users linked via `managerId` (employee → manager)
 21. [ ] Backend scoping migrated from `department` to `managerId`: dashboard, badge-issuance, analytics
 22. [ ] Seed data: keep only `admin@gcredit.com` as bootstrap seed (other demo users optional for dev env)
 
-### M365 Sync Enhancement (Sub-story 12.3b)
+### M365 Sync Enhancement (Sub-story 12.3a)
 23. [ ] M365 sync fetches `directReports` for each user → sets `managerId` FK (two-pass: create users, then link managers)
 24. [ ] M365 sync checks Security Group membership (`GET /users/{id}/memberOf`) → assigns ADMIN/ISSUER roles
 25. [ ] Security Group IDs configured via `.env`: `AZURE_ADMIN_GROUP_ID`, `AZURE_ISSUER_GROUP_ID`
@@ -110,7 +110,7 @@ So that I can efficiently manage all platform users across both M365-synced and 
 29. [ ] Sync history table shows sync type (FULL / GROUPS_ONLY)
 30. [ ] Role priority logic: Security Group > `roleSetManually` > directReports > default EMPLOYEE
 
-### Login-Time Freshness (Sub-story 12.3b)
+### Login-Time Freshness (Sub-story 12.3a)
 31. [ ] **Login-time mini-sync** for M365 users (`azureId != null`): on every login/token-refresh, query Graph API to perform a complete single-user sync:
     - a. `GET /me` (or `/users/{azureId}`) → verify `accountEnabled`; reject login (401) if disabled
     - b. Update profile fields: `firstName`, `lastName`, `department` from Graph API `displayName`, `department`
@@ -131,7 +131,7 @@ So that I can efficiently manage all platform users across both M365-synced and 
 
 ## Tasks / Subtasks
 
-### Sub-story 12.3a: User Management UI + Manual Creation (~14h)
+### Sub-story 12.3b: User Management UI + Manual Creation (~14h)
 
 - [ ] Task 1: Enhance `UserManagementPage` data table (AC: #1, #5, #9, #10, #12, #13)
   - [ ] Wrap in `<AdminPageShell>` (from Story 12.1)
@@ -180,7 +180,7 @@ So that I can efficiently manage all platform users across both M365-synced and 
   - [ ] Add `sourceLabel` field: `azureId ? 'Microsoft 365' : 'Local Account'`
   - [ ] **Exclude `azureId` from API response** — do NOT add to `getUserSelect()`. Compute `source` internally, strip `azureId` before returning.
   - [ ] Add `lastSyncAt` to API response (for M365 users detail panel)
-- [ ] Task 8: Tests (12.3a)
+- [ ] Task 8: Tests (12.3b)
   - [ ] Table rendering + source badge tests
   - [ ] Filter by source tests
   - [ ] Role change flow tests (including M365 user role-edit blocked)
@@ -190,11 +190,11 @@ So that I can efficiently manage all platform users across both M365-synced and 
   - [ ] `CreateUserDto` validation tests (invalid email, oversized names, invalid role enum, non-existent managerId)
   - [ ] Delete user with subordinates tests (managerId set to null, confirmation prompt)
 
-### Sub-story 12.3b: Manager Hierarchy + M365 Sync Enhancement (~16h)
+### Sub-story 12.3a: Manager Hierarchy + M365 Sync Enhancement (~16h)
 
 #### Prerequisites (Azure/M365 Setup — PO action before dev starts)
 
-The following Azure/M365 configurations must be completed by PO (with SM guidance) before 12.3b development begins. Estimated time: ~20 minutes total.
+The following Azure/M365 configurations must be completed by PO (with SM guidance) before 12.3a development begins. Estimated time: ~20 minutes total.
 
 - [ ] **Prereq 1: Add Graph API Permission** (~5 min)
   - Azure Portal → Azure Active Directory → App registrations → G-Credit app
@@ -270,7 +270,7 @@ The following Azure/M365 configurations must be completed by PO (with SM guidanc
   - [ ] Cache result for token refresh within same session (avoid repeated Graph calls per session)
   - [ ] Graceful fallback: if Graph API unavailable (timeout/5xx) AND `lastSyncAt` within 24h → allow login with cached data + log warning; if `lastSyncAt > 24h` → reject login (401) + log ERROR
   - [ ] Extract shared helper `syncUserFromGraph(userId)` reusable by both full sync and login-time mini-sync
-- [ ] Task 16: Tests (12.3b)
+- [ ] Task 16: Tests (12.3a)
   - [ ] `managerId` schema tests (relation, cascade behavior)
   - [ ] Dashboard/badge-issuance/analytics scoping migration tests
   - [ ] M365 sync Security Group role mapping tests
@@ -357,7 +357,7 @@ DEFAULT_USER_PASSWORD="password123"
 - **User source indicator:** M365 (blue) vs Local (gray) badge throughout UI
 - **Bootstrap strategy:** Seed `admin@gcredit.com` for initial M365 sync trigger
 - **Temporary password:** Default password until SSO; show notice to M365 users
-- **Revised estimate:** ~30h total → split into 12.3a (14h) + 12.3b (16h)
+- **Revised estimate:** ~30h total → split into 12.3a (16h) + 12.3b (14h)
 
 ## Dev Agent Record
 ### Agent Model Used

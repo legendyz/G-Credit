@@ -234,7 +234,7 @@ M365 (Source of Truth) → Sync → Local DB (Reference Cache) ← FK queries
 | **Layer 2: Scheduled full sync** | Background job (configurable) | All M365 users | Minutes | All fields + deactivation detection |
 | **Layer 3: Manual sync** | Admin clicks "Sync Users" / "Sync Roles" | All or groups-only | Minutes | Depends on sync type |
 
-**Layer 1 Details (AC #31 — Sprint 12.3b):**
+**Layer 1 Details (AC #31 — Sprint 12.3a):**
 - 3 parallel Graph API calls: `/users/{azureId}`, `/memberOf`, `/manager`
 - Updates: firstName, lastName, department, role, managerId, lastSyncAt
 - Rejects login if `accountEnabled = false`
@@ -380,7 +380,7 @@ First SSO login → azureId not found in DB → JIT create (azureId = token.oid)
 
 **Decision:** Sync logs (`M365SyncLog` records) and application logs (`this.logger.*`) MUST NOT contain user PII (names, emails). Reference users by internal `id` only. Error messages may include `azureId` for debugging but not `email` or `displayName`.
 
-**Current code audit:** Existing `m365-sync.service.ts` logs reference `localUser.id` (safe) but sync error arrays may contain email addresses passed through from Graph API errors. This must be sanitized in 12.3b.
+**Current code audit:** Existing `m365-sync.service.ts` logs reference `localUser.id` (safe) but sync error arrays may contain email addresses passed through from Graph API errors. This must be sanitized in 12.3a.
 
 **Rationale:** Log aggregation systems (CloudWatch, Application Insights, etc.) often have broader access than the application database. PII in logs creates compliance risk (GDPR, corporate data governance) and increases the blast radius of a log system compromise.
 
@@ -403,7 +403,7 @@ First SSO login → azureId not found in DB → JIT create (azureId = token.oid)
 
 ### Negative
 - **Complexity:** Dual-mode provisioning adds branching logic to every user-related feature
-- **Azure dependency:** Security Group mapping requires Azure AD setup (prerequisites for 12.3b)
+- **Azure dependency:** Security Group mapping requires Azure AD setup (prerequisites for 12.3a)
 - **Breaking change:** `department` → `managerId` migration affects dashboard, badge-issuance, analytics
 - **Login latency:** ~200-300ms overhead per M365 user login (3 Graph API calls)
 
