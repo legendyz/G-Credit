@@ -167,3 +167,45 @@ From `12-3b-code-review-prompt.md` “Potential Issues Identified Pre-Review”:
 - Align Swagger docs for `statusFilter` enum.
 - Revisit hard-delete strategy/constraints for users with related badge data.
 - Add targeted frontend tests for `CreateUserDialog`, `DeleteUserDialog`, and `UserDetailPanel`.
+
+---
+
+## Re-Review (Post-Fix) — 2026-02-21
+
+Re-review target commit: `70b0a33` (`fix(12.3b): address code review — filter composition, UUID validation, audit note cleanup`)
+
+### Re-Verification Summary
+
+All three blocking findings from the initial review are now resolved:
+
+1. **Search + LOCKED filter conflict** — ✅ Fixed  
+   - `backend/src/admin-users/admin-users.service.ts` now composes search and status constraints using `AND` blocks (`andConditions`) instead of overwriting `where.OR`.
+
+2. **AC #33 `managerId` UUID validation** — ✅ Fixed  
+   - `backend/src/admin-users/dto/create-user.dto.ts` now applies `@IsUUID()` on `managerId`.
+
+3. **Delete dialog audit-note mismatch** — ✅ Fixed (UX aligned)  
+   - `frontend/src/components/admin/DeleteUserDialog.tsx` removes the unused audit-note field so UI no longer implies persistence that does not exist.
+
+### Additional Improvements Confirmed
+
+- `admin-users.controller.ts` Swagger `statusFilter` docs updated to enum (`ACTIVE/LOCKED/INACTIVE`).
+- Dead boolean backward-compat branch for `statusFilter` removed in service logic.
+- Admin-users tests extended with explicit search + LOCKED composition coverage.
+
+### Regression Validation
+
+- `cd gcredit-project/backend && npx jest src/admin-users --verbose --forceExit` → **PASS** (43 tests)
+- `cd gcredit-project/backend && npx tsc --noEmit; cd ..\\frontend; npx tsc --noEmit` → **PASS**
+
+## Updated Final Decision
+
+**APPROVED**
+
+Story 12.3b review findings are addressed and verified in code/tests.
+
+### Remaining Non-Blocking Follow-ups
+
+- Evaluate hard-delete strategy vs FK constraints for users with badge/activity references.
+- Consider reducing PII in operational logs for `createUser` / `deleteUser` paths.
+- Add frontend tests for `CreateUserDialog`, `DeleteUserDialog`, and `UserDetailPanel` when practical.
