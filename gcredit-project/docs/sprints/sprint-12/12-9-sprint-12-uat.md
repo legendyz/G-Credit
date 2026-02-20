@@ -28,7 +28,7 @@ So that I can confirm the new admin management UIs and unified evidence system w
 
 ## UAT Scope
 
-### New Feature Test Cases (~20 cases)
+### New Feature Test Cases (~25 cases)
 
 **Skill Category Management (Stories 12.1):**
 - UAT-S12-001: Admin views skill category tree (3 levels)
@@ -47,11 +47,16 @@ So that I can confirm the new admin management UIs and unified evidence system w
 - UAT-S12-011b: Badge Template form groups skills by category (AC #11)
 - UAT-S12-011c: Badge detail + verify page show category-colored skill tags (AC #12)
 
-**User Management Enhancement (Story 12.3):**
-- UAT-S12-012: Admin searches/filters user list
-- UAT-S12-013: Admin changes user role (confirm self-demotion blocked)
-- UAT-S12-014: Admin lock/unlock user account (toggle switch)
-- UAT-S12-015: Admin opens user detail slide-over panel
+**User Management Enhancement (Story 12.3 — Dual-Mode Provisioning):**
+- UAT-S12-012: Admin views user table with source badges (M365 blue / Local gray), role badges, status, badge count
+- UAT-S12-012b: Admin searches users by name/email (debounced); filters by role, status (Active/Locked/Inactive), and **source (M365/Local/All)**; changes page size (10/25/50/100)
+- UAT-S12-013: Admin edits **local** user role via confirmation dialog; verify role edit is **disabled/hidden for M365 users** (backend returns 400)
+- UAT-S12-013b: Context-aware row actions — M365 user row shows only view + lock; Local user row shows edit + view + lock + delete
+- UAT-S12-014: Admin lock/unlock any user; M365 lock dialog shows notice: "This will prevent sign-in to G-Credit only. To disable their Microsoft 365 account, contact your IT administrator."
+- UAT-S12-015: Admin opens user detail slide-over (Sheet); M365 user panel shows "Identity managed by Microsoft 365. Role assigned via Security Group." + last synced timestamp
+- UAT-S12-015b: Admin creates a local user via "Add User" dialog (email, firstName, lastName, department, role); duplicate email returns 409; ADMIN role excluded from creation
+- UAT-S12-015c: Admin deletes a local user; if user is a manager, confirmation shows subordinate count warning; delete is **blocked for M365 users**
+- UAT-S12-015d: M365 Sync panel: "Sync Users" (full sync) and "Sync Roles" (groups-only sync) buttons; sync history table shows sync type (FULL / GROUPS_ONLY)
 
 **Milestone Admin (Story 12.4):**
 - UAT-S12-016: Admin views milestone card grid
@@ -68,14 +73,16 @@ So that I can confirm the new admin management UIs and unified evidence system w
 - UAT-S12-023: Activity feed shows human-readable descriptions (not JSON/UUID)
 - UAT-S12-024: No UUID displayed for skill names anywhere in the UI
 
-### Regression Test Cases (~6 cases)
+### Regression Test Cases (~8 cases)
 
 - UAT-S12-R01: Existing badge issuance flow still works (single + bulk)
 - UAT-S12-R02: Badge claim/verify/revoke lifecycle unaffected
-- UAT-S12-R03: Dashboard analytics still display correctly
+- UAT-S12-R03: Dashboard analytics still display correctly — **verify manager-based team scoping** (migrated from department-based in 12.3a)
 - UAT-S12-R04: Employee wallet view still works
 - UAT-S12-R05: Email sharing still functional
 - UAT-S12-R06: RBAC enforcement unchanged
+- UAT-S12-R07: Manager badge-issuance scoping uses `managerId` (not department) — manager sees only direct reports
+- UAT-S12-R08: API responses for `/api/admin/users` exclude `azureId`, return computed `source` field only
 
 ### Test Accounts
 
@@ -98,7 +105,7 @@ So that I can confirm the new admin management UIs and unified evidence system w
   - [ ] Add sample milestones (multiple types)
   - [ ] Ensure evidence migration data is present
 - [ ] Task 3: Execute UAT test cases (2h)
-  - [ ] New feature tests: ~26 cases
+  - [ ] New feature tests: ~31 cases
   - [ ] Regression tests: ~6 cases
   - [ ] Record PASS/FAIL for each
 - [ ] Task 4: Bug triage and fix (1h buffer)
