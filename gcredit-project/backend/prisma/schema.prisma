@@ -41,6 +41,11 @@ model User {
   roleVersion     Int       @default(0) // Optimistic locking for role changes
   lastSyncAt      DateTime? // Last M365 sync timestamp
 
+  // Story 12.3a: Manager hierarchy self-relation
+  managerId     String?
+  manager       User?   @relation("ManagerReports", fields: [managerId], references: [id], onDelete: SetNull)
+  directReports User[]  @relation("ManagerReports")
+
   passwordResetTokens   PasswordResetToken[]
   refreshTokens         RefreshToken[]
   badgeTemplates        BadgeTemplate[]        @relation("TemplateCreator")
@@ -64,6 +69,7 @@ model User {
   @@index([azureId])
   @@index([isActive])
   @@index([roleUpdatedAt])
+  @@index([managerId])
   @@map("users")
 }
 

@@ -14,6 +14,7 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../common/prisma.service';
 import { EmailService } from '../../common/email.service';
 import { maskEmailForLog } from '../../common/utils/log-sanitizer';
+import { M365SyncService } from '../../m365-sync/m365-sync.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -30,6 +31,7 @@ export class AuthService {
     private jwtService: JwtService,
     private config: ConfigService,
     private emailService: EmailService,
+    private m365SyncService: M365SyncService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -121,6 +123,11 @@ export class AuthService {
       // Lock expired — will be fully reset on successful login below
     }
 
+    // Story 12.3a AC #32: Empty passwordHash guard (M365 users with no local password)
+    if (!user.passwordHash) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
     // 3. Verify password
     const isPasswordValid = await bcrypt.compare(
       dto.password,
@@ -156,11 +163,31 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // 4. Generate JWT tokens
+    // Story 12.3a AC #31: Login-time mini-sync for M365 users
+    let freshUser = user;
+    if (user.azureId) {
+      const syncResult = await this.m365SyncService.syncUserFromGraph({
+        id: user.id,
+        azureId: user.azureId,
+        lastSyncAt: user.lastSyncAt,
+      });
+      if (syncResult.rejected) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+      // Refresh user data after sync (role may have changed)
+      const updatedUser = await this.prisma.user.findUnique({
+        where: { id: user.id },
+      });
+      if (updatedUser) {
+        freshUser = updatedUser;
+      }
+    }
+
+    // 4. Generate JWT tokens — use FRESH role from synced user data
     const payload = {
-      sub: user.id,
-      email: user.email,
-      role: user.role,
+      sub: freshUser.id,
+      email: freshUser.email,
+      role: freshUser.role,
     };
 
     const accessToken = this.jwtService.sign(payload);

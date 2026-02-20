@@ -210,6 +210,16 @@ async function main() {
   console.log('✅ 5 users created/updated');
 
   // ========================================
+  // 1b. LINK MANAGER HIERARCHY (Story 12.3a)
+  // ========================================
+  // Link employee → manager via managerId
+  await prisma.user.update({
+    where: { id: employee.id },
+    data: { managerId: manager.id },
+  });
+  console.log('✅ Employee linked to Manager via managerId');
+
+  // ========================================
   // CLEANUP: Delete existing UAT data in FK-safe order
   // Handles both old (uat-*) and new (00000000-*) ID formats
   // ========================================

@@ -96,7 +96,7 @@ sprint-12: planning
 # --- Wave 1: Admin Management UIs ---
 12-1-skill-category-management-ui: done
 12-2-skill-management-ui: done
-12-3-user-management-ui-enhancement: backlog
+12-3-user-management-ui-enhancement: in-progress
 12-4-milestone-admin-ui: backlog
 
 # --- Wave 2: Evidence Unification ---

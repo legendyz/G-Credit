@@ -264,30 +264,19 @@ export class DashboardService {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    // Get manager's department
-    const manager = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { department: true },
+    // Get direct reports (managerId-based scoping — Story 12.3a)
+    const teamMembers = await this.prisma.user.findMany({
+      where: {
+        managerId: userId,
+        isActive: true,
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+      },
     });
-
-    const department = manager?.department || null;
-
-    // Get team members (same department) - if no department, show empty
-    const teamMembers = department
-      ? await this.prisma.user.findMany({
-          where: {
-            department,
-            role: 'EMPLOYEE',
-            isActive: true,
-          },
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        })
-      : [];
 
     const teamMemberIds = teamMembers.map((m) => m.id);
 

@@ -8,12 +8,14 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { PrismaModule } from '../../common/prisma.module';
 import type { StringValue } from 'ms';
 import { EmailModule } from '../../common/email.module';
+import { M365SyncModule } from '../../m365-sync/m365-sync.module';
 
 @Module({
   imports: [
     PrismaModule,
     PassportModule,
     EmailModule,
+    M365SyncModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

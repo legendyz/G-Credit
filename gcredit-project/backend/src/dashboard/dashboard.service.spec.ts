@@ -271,12 +271,8 @@ describe('DashboardService', () => {
       expect(result.revocationAlerts[0].reason).toBe('Policy violation');
     });
 
-    it('should handle manager without department', async () => {
-      // Arrange
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-        ...mockUser,
-        department: null,
-      });
+    it('should return empty team when manager has no direct reports (Story 12.3a)', async () => {
+      // Arrange — no findUnique needed; managerId-based scoping
       (prisma.user.findMany as jest.Mock).mockResolvedValue([]);
 
       // Act
@@ -285,6 +281,29 @@ describe('DashboardService', () => {
       // Assert
       expect(result.teamInsights.teamMembersCount).toBe(0);
       expect(result.revocationAlerts).toHaveLength(0);
+    });
+
+    it('should query by managerId for direct reports (Story 12.3a)', async () => {
+      // Arrange
+      (prisma.user.findMany as jest.Mock).mockResolvedValue([mockUser]);
+      (prisma.badge.count as jest.Mock).mockResolvedValue(3);
+      (prisma.badge.groupBy as jest.Mock).mockResolvedValue([]);
+      (prisma.badge.findMany as jest.Mock).mockResolvedValue([]);
+
+      // Act
+      await service.getManagerDashboard('manager-1');
+
+      // Assert — verify managerId-based query
+      /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+      expect(prisma.user.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            managerId: 'manager-1',
+            isActive: true,
+          }),
+        }),
+      );
+      /* eslint-enable @typescript-eslint/no-unsafe-assignment */
     });
   });
 

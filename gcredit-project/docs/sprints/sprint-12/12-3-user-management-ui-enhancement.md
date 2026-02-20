@@ -1,6 +1,6 @@
 # Story 12.3: User Management UI Enhancement
 
-Status: backlog
+Status: in-progress
 
 ## Story
 
@@ -95,23 +95,23 @@ So that I can efficiently manage all platform users across both M365-synced and 
 18. [ ] New backend endpoint: `POST /api/admin/users`
 
 ### Schema & Manager Hierarchy (Sub-story 12.3a)
-19. [ ] Prisma schema: `managerId` self-referential FK added to User model
-20. [ ] Migration: existing seed users linked via `managerId` (employee → manager)
-21. [ ] Backend scoping migrated from `department` to `managerId`: dashboard, badge-issuance, analytics
+19. [x] Prisma schema: `managerId` self-referential FK added to User model
+20. [x] Migration: existing seed users linked via `managerId` (employee → manager)
+21. [x] Backend scoping migrated from `department` to `managerId`: dashboard, badge-issuance, analytics
 22. [ ] Seed data: keep only `admin@gcredit.com` as bootstrap seed (other demo users optional for dev env)
 
 ### M365 Sync Enhancement (Sub-story 12.3a)
-23. [ ] M365 sync fetches `directReports` for each user → sets `managerId` FK (two-pass: create users, then link managers)
-24. [ ] M365 sync checks Security Group membership (`GET /users/{id}/memberOf`) → assigns ADMIN/ISSUER roles
-25. [ ] Security Group IDs configured via `.env`: `AZURE_ADMIN_GROUP_ID`, `AZURE_ISSUER_GROUP_ID`
-26. [ ] Sync skips role update for locally-created users (`azureId = null`)
-27. [ ] **Group-only sync** mode: `POST /api/admin/m365-sync` with `syncType: 'GROUPS_ONLY'` — refreshes Security Group memberships + directReports without re-importing all user data
-28. [ ] UI: "Sync Users" button (full sync) + "Sync Roles" button (group-only sync)
-29. [ ] Sync history table shows sync type (FULL / GROUPS_ONLY)
-30. [ ] Role priority logic: Security Group > `roleSetManually` > directReports > default EMPLOYEE
+23. [x] M365 sync fetches `directReports` for each user → sets `managerId` FK (two-pass: create users, then link managers)
+24. [x] M365 sync checks Security Group membership (`GET /users/{id}/memberOf`) → assigns ADMIN/ISSUER roles
+25. [x] Security Group IDs configured via `.env`: `AZURE_ADMIN_GROUP_ID`, `AZURE_ISSUER_GROUP_ID`
+26. [x] Sync skips role update for locally-created users (`azureId = null`)
+27. [x] **Group-only sync** mode: `POST /api/admin/m365-sync` with `syncType: 'GROUPS_ONLY'` — refreshes Security Group memberships + directReports without re-importing all user data
+28. [x] UI: "Sync Users" button (full sync) + "Sync Roles" button (group-only sync)
+29. [x] Sync history table shows sync type (FULL / GROUPS_ONLY)
+30. [x] Role priority logic: Security Group > `roleSetManually` > directReports > default EMPLOYEE
 
 ### Login-Time Freshness (Sub-story 12.3a)
-31. [ ] **Login-time mini-sync** for M365 users (`azureId != null`): on every login/token-refresh, query Graph API to perform a complete single-user sync:
+31. [x] **Login-time mini-sync** for M365 users (`azureId != null`): on every login/token-refresh, query Graph API to perform a complete single-user sync:
     - a. `GET /me` (or `/users/{azureId}`) → verify `accountEnabled`; reject login (401) if disabled
     - b. Update profile fields: `firstName`, `lastName`, `department` from Graph API `displayName`, `department`
     - c. `GET /me/memberOf` → check Security Group membership → update `role` if changed (priority: Security Group > roleSetManually > directReports > EMPLOYEE)
@@ -121,13 +121,13 @@ So that I can efficiently manage all platform users across both M365-synced and 
     - g. Target overhead: ~200-300ms per login (3 parallel Graph API calls)
 
 ### Security Hardening (Sprint 12.3)
-32. [ ] Users with empty `passwordHash` (M365 synced, `passwordHash=''`) attempting password login → return 401 (same error message as invalid credentials, no account existence leakage)
+32. [x] Users with empty `passwordHash` (M365 synced, `passwordHash=''`) attempting password login → return 401 (same error message as invalid credentials, no account existence leakage)
 33. [ ] `POST /api/admin/users` validates input via `CreateUserDto`: `@IsEmail()` email, `@MaxLength(100)` firstName/lastName, `@IsEnum(UserRole)` role, `@IsOptional() @IsUUID()` managerId (must reference existing user)
 34. [ ] Deleting a Local user who is a manager → `managerId` set to null on subordinates (`onDelete: SetNull`); UI confirms: "This user manages X users. Their manager will be unassigned."
-35. [ ] Login-time mini-sync degradation window: if `lastSyncAt > 24h` AND Graph API unavailable → reject login (401) with log level ERROR
+35. [x] Login-time mini-sync degradation window: if `lastSyncAt > 24h` AND Graph API unavailable → reject login (401) with log level ERROR
 36. [ ] API responses (`GET /api/admin/users`, `GET /api/admin/users/:id`) MUST exclude `azureId` raw value; only return computed `source` field (`'M365'` | `'LOCAL'`). `azureId` is internal-only — never exposed to frontend/API consumers. (Prevents Azure AD Object ID reconnaissance if API is compromised)
 37. [ ] Lock confirmation for M365 users includes context notice: "This will prevent sign-in to G-Credit only. To disable their Microsoft 365 account, contact your IT administrator."
-38. [ ] Sync error logs and M365SyncLog records MUST NOT contain user PII (name, email). Reference users by internal `id` only in logs. Error messages may include `azureId` for debugging but not `email`/`displayName`.
+38. [x] Sync error logs and M365SyncLog records MUST NOT contain user PII (name, email). Reference users by internal `id` only in logs. Error messages may include `azureId` for debugging but not `email`/`displayName`.
 
 ## Tasks / Subtasks
 
@@ -220,7 +220,7 @@ The following Azure/M365 configurations must be completed by PO (with SM guidanc
   - Verify at least one user has a manager assigned + at least one user has direct reports
   - *Purpose: `directReports` API depends on manager field being set in Azure AD*
 
-- [ ] Task 9: Schema — `managerId` self-relation (AC: #19, #20)
+- [x] Task 9: Schema — `managerId` self-relation (AC: #19, #20)
   - [ ] Add to Prisma schema:
     ```prisma
     managerId     String?
@@ -230,33 +230,33 @@ The following Azure/M365 configurations must be completed by PO (with SM guidanc
   - [ ] Generate + apply migration
   - [ ] Update seed data: link employee → manager via `managerId`
   - [ ] Keep `admin@gcredit.com` seed user as bootstrap (guard: `NODE_ENV !== 'production'` for other seeds)
-- [ ] Task 10: Backend scoping migration — department → managerId (AC: #21)
+- [x] Task 10: Backend scoping migration — department → managerId (AC: #21)
   - [ ] `dashboard.service.ts`: Manager team query → `WHERE managerId = manager.id`
   - [ ] `badge-issuance.service.ts`: Manager badge scoping → `recipient.managerId = manager.id`
   - [ ] `analytics.service.ts`: Manager filter → `WHERE managerId = manager.id`
   - [ ] Keep `department` field for display only (not for access control)
   - [ ] Update affected tests
-- [ ] Task 11: M365 sync — Security Group role mapping (AC: #24, #25, #26, #30)
+- [x] Task 11: M365 sync — Security Group role mapping (AC: #24, #25, #26, #30)
   - [ ] Add `.env` vars: `AZURE_ADMIN_GROUP_ID`, `AZURE_ISSUER_GROUP_ID`
   - [ ] In `syncSingleUser()`: call `GET /users/{id}/memberOf` → check group IDs
   - [ ] Role priority: Security Group membership > `roleSetManually=true` > directReports > default EMPLOYEE
   - [ ] Skip role update for users with `azureId = null` (locally created)
   - [ ] Requires Graph API permission: `GroupMember.Read.All` or `Directory.Read.All`
-- [ ] Task 12: M365 sync — `directReports` + `managerId` linkage (AC: #23)
+- [x] Task 12: M365 sync — `directReports` + `managerId` linkage (AC: #23)
   - [ ] Two-pass sync: Pass 1 — create/update all users; Pass 2 — fetch `/users/{id}/manager` for each user → set `managerId`
   - [ ] Users with `directReports > 0` → set role MANAGER (if not overridden by Security Group)
   - [ ] Set `managerId` on subordinate users based on Graph API manager endpoint
-- [ ] Task 13: Group-only sync mode (AC: #27, #28, #29)
+- [x] Task 13: Group-only sync mode (AC: #27, #28, #29)
   - [ ] New `syncType: 'GROUPS_ONLY'` in `TriggerSyncDto`
   - [ ] Implementation: fetch existing M365 users from DB (skip user import) → re-check `/memberOf` + `/manager` for each → update roles + `managerId`
   - [ ] Performance: avoids re-fetching all user profiles from Graph API, only queries group/manager endpoints
   - [ ] Sync log records: `syncType: 'GROUPS_ONLY'`, counts only role/manager changes
-- [ ] Task 14: M365 Sync UI controls (AC: #28, #29)
+- [x] Task 14: M365 Sync UI controls (AC: #28, #29)
   - [ ] "Sync Users" button → triggers `POST /api/admin/m365-sync` with `syncType: 'FULL'`
   - [ ] "Sync Roles" button → triggers `POST /api/admin/m365-sync` with `syncType: 'GROUPS_ONLY'`
   - [ ] Sync history table with type column (FULL / GROUPS_ONLY / INCREMENTAL)
   - [ ] Last sync timestamp + status indicator
-- [ ] Task 15: Login-time mini-sync (AC: #31)
+- [x] Task 15: Login-time mini-sync (AC: #31)
   - [ ] In JWT auth guard or login handler: detect M365 user (`azureId != null`)
   - [ ] Fire 3 Graph API calls **in parallel** for performance:
     - `GET /users/{azureId}` → accountEnabled, displayName, department
@@ -270,7 +270,7 @@ The following Azure/M365 configurations must be completed by PO (with SM guidanc
   - [ ] Cache result for token refresh within same session (avoid repeated Graph calls per session)
   - [ ] Graceful fallback: if Graph API unavailable (timeout/5xx) AND `lastSyncAt` within 24h → allow login with cached data + log warning; if `lastSyncAt > 24h` → reject login (401) + log ERROR
   - [ ] Extract shared helper `syncUserFromGraph(userId)` reusable by both full sync and login-time mini-sync
-- [ ] Task 16: Tests (12.3a)
+- [x] Task 16: Tests (12.3a)
   - [ ] `managerId` schema tests (relation, cascade behavior)
   - [ ] Dashboard/badge-issuance/analytics scoping migration tests
   - [ ] M365 sync Security Group role mapping tests
@@ -361,5 +361,46 @@ DEFAULT_USER_PASSWORD="password123"
 
 ## Dev Agent Record
 ### Agent Model Used
+Claude Opus 4.6 (Amelia — Dev Agent)
+
 ### Completion Notes
+**Sub-story 12.3a completed (2026-02-20)**
+
+All 8 tasks (Tasks 9-16) implemented and verified:
+- Task 9: Prisma migration `20260220140126_add_manager_id_self_relation` applied; seed updated
+- Task 10: Department→managerId scoping in dashboard, badge-issuance (×2), analytics
+- Task 11: `getUserRoleFromGroups()` + `resolveUserRole()` with priority logic
+- Task 12: Two-pass sync with `linkManagerRelationships()` + `updateDirectReportsRoles()`
+- Task 13: GROUPS_ONLY sync type routed to `runGroupsOnlySync()`
+- Task 14: Frontend M365SyncPanel with Sync Users/Sync Roles buttons + history table
+- Task 15: Login-time mini-sync with 3 parallel Graph calls + 24h degradation window
+- Task 16: 31 new tests added (803 total, 0 failures)
+
+ACs verified: #19-31, #32, #35, #38. ACs #22, #33-34, #36-37 for 12.3b.
+
 ### File List
+
+**Modified (Backend):**
+- `prisma/schema.prisma` — managerId self-relation + index
+- `prisma/seed-uat.ts` — employee→manager linkage
+- `src/dashboard/dashboard.service.ts` — managerId-based team query
+- `src/badge-issuance/badge-issuance.service.ts` — managerId-based scoping (×2)
+- `src/analytics/analytics.service.ts` — managerId-based top performers
+- `src/m365-sync/m365-sync.service.ts` — 6 new methods + enhanced sync flow
+- `src/m365-sync/dto/trigger-sync.dto.ts` — GROUPS_ONLY SyncType
+- `src/modules/auth/auth.service.ts` — empty passwordHash guard + mini-sync
+- `src/modules/auth/auth.module.ts` — M365SyncModule import
+
+**Modified (Tests):**
+- `src/modules/auth/auth.service.spec.ts` — M365SyncService mock + 8 mini-sync tests
+- `src/m365-sync/m365-sync.service.spec.ts` — 21 new tests (Security Group, manager linkage, GROUPS_ONLY, syncUserFromGraph, PII audit)
+- `src/analytics/analytics.service.spec.ts` — 3 tests updated (department→managerId)
+- `src/dashboard/dashboard.service.spec.ts` — 1 test updated + 1 new test (managerId query)
+
+**Created (Frontend):**
+- `src/lib/m365SyncApi.ts` — API functions for sync operations
+- `src/hooks/useM365Sync.ts` — TanStack Query hooks
+- `src/components/admin/M365SyncPanel.tsx` — Sync panel UI component
+
+**Migration:**
+- `prisma/migrations/20260220140126_add_manager_id_self_relation/`

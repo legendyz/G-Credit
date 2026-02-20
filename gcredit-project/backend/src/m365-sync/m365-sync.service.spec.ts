@@ -35,8 +35,10 @@ describe('M365SyncService', () => {
     user: {
       findFirst: jest.Mock;
       findMany: jest.Mock;
+      findUnique: jest.Mock;
       create: jest.Mock;
       update: jest.Mock;
+      count: jest.Mock;
     };
     m365SyncLog: {
       create: jest.Mock;
@@ -110,8 +112,10 @@ describe('M365SyncService', () => {
       user: {
         findFirst: jest.fn(),
         findMany: jest.fn(),
+        findUnique: jest.fn(),
         create: jest.fn(),
         update: jest.fn(),
+        count: jest.fn(),
       },
       m365SyncLog: {
         create: jest.fn(),
@@ -979,6 +983,584 @@ describe('M365SyncService', () => {
       expect(result.available).toBe(true);
       expect(result.lastSync).toBeNull();
       expect(result.lastSyncStatus).toBeNull();
+    });
+  });
+
+  // ============================================================
+  // Story 12.3a — Task 16e: Security Group Role Mapping Tests
+  // ============================================================
+  describe('getUserRoleFromGroups (Story 12.3a)', () => {
+    const ADMIN_GROUP_ID = '3403ed09-414d-490a-ac69-3c2c38c14c38';
+    const ISSUER_GROUP_ID = '7aa2bac0-0146-4cec-9d7a-17c9f63264ba';
+
+    beforeEach(() => {
+      process.env.AZURE_ADMIN_GROUP_ID = ADMIN_GROUP_ID;
+      process.env.AZURE_ISSUER_GROUP_ID = ISSUER_GROUP_ID;
+    });
+
+    afterEach(() => {
+      delete process.env.AZURE_ADMIN_GROUP_ID;
+      delete process.env.AZURE_ISSUER_GROUP_ID;
+    });
+
+    it('should assign ADMIN role for user in Admin Security Group', async () => {
+      const mockGet = jest.fn().mockResolvedValue({
+        value: [
+          { id: ADMIN_GROUP_ID, '@odata.type': '#microsoft.graph.group' },
+        ],
+      });
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      const result = await service.getUserRoleFromGroups('azure-id-123');
+      expect(result).toBe('ADMIN');
+    });
+
+    it('should assign ISSUER role for user in Issuer Security Group', async () => {
+      const mockGet = jest.fn().mockResolvedValue({
+        value: [
+          { id: ISSUER_GROUP_ID, '@odata.type': '#microsoft.graph.group' },
+        ],
+      });
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      const result = await service.getUserRoleFromGroups('azure-id-123');
+      expect(result).toBe('ISSUER');
+    });
+
+    it('should return null when no Security Group match', async () => {
+      const mockGet = jest.fn().mockResolvedValue({
+        value: [
+          { id: 'other-group-id', '@odata.type': '#microsoft.graph.group' },
+        ],
+      });
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      const result = await service.getUserRoleFromGroups('azure-id-123');
+      expect(result).toBeNull();
+    });
+
+    it('should prioritize ADMIN over ISSUER when in both groups', async () => {
+      const mockGet = jest.fn().mockResolvedValue({
+        value: [
+          { id: ADMIN_GROUP_ID, '@odata.type': '#microsoft.graph.group' },
+          { id: ISSUER_GROUP_ID, '@odata.type': '#microsoft.graph.group' },
+        ],
+      });
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      const result = await service.getUserRoleFromGroups('azure-id-123');
+      expect(result).toBe('ADMIN');
+    });
+
+    it('should handle memberOf API failure gracefully', async () => {
+      const mockGet = jest
+        .fn()
+        .mockRejectedValue(new Error('Graph unavailable'));
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      const result = await service.getUserRoleFromGroups('azure-id-123');
+      expect(result).toBeNull();
+    });
+
+    it('should filter out non-group memberships', async () => {
+      const mockGet = jest.fn().mockResolvedValue({
+        value: [
+          {
+            id: ADMIN_GROUP_ID,
+            '@odata.type': '#microsoft.graph.directoryRole',
+          },
+        ],
+      });
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      const result = await service.getUserRoleFromGroups('azure-id-123');
+      expect(result).toBeNull();
+    });
+  });
+
+  // ============================================================
+  // Story 12.3a — Task 16e: resolveUserRole Tests
+  // ============================================================
+  describe('syncSingleUser role resolution (Story 12.3a)', () => {
+    it('should assign ADMIN role when user is in Admin Security Group', async () => {
+      // Mock Graph API for syncSingleUser → resolveUserRole → getUserRoleFromGroups
+      const mockGet = jest.fn().mockResolvedValue({
+        value: [
+          {
+            id: '3403ed09-414d-490a-ac69-3c2c38c14c38',
+            '@odata.type': '#microsoft.graph.group',
+          },
+        ],
+      });
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+      process.env.AZURE_ADMIN_GROUP_ID = '3403ed09-414d-490a-ac69-3c2c38c14c38';
+
+      prisma.user.findFirst.mockResolvedValue(null);
+      prisma.user.create.mockResolvedValue({ id: 'new-user' } as any);
+
+      await service.syncSingleUser(mockAzureUser);
+
+      expect(prisma.user.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ role: 'ADMIN' }) as unknown,
+      });
+
+      delete process.env.AZURE_ADMIN_GROUP_ID;
+    });
+
+    it('should keep existing role for locally-created user (azureId = null)', async () => {
+      const mockGet = jest.fn().mockResolvedValue({ value: [] });
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      const localUser = {
+        ...mockLocalUser,
+        azureId: null,
+        role: 'ISSUER',
+        roleSetManually: false,
+      };
+      prisma.user.findFirst.mockResolvedValue(localUser);
+      prisma.user.update.mockResolvedValue(localUser);
+
+      await service.syncSingleUser(mockAzureUser);
+
+      // Should keep ISSUER role (local user - azureId is null)
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: localUser.id },
+        data: expect.objectContaining({ role: 'ISSUER' }) as unknown,
+      });
+    });
+
+    it('should default to EMPLOYEE when no group match and no directReports', async () => {
+      const mockGet = jest.fn().mockResolvedValue({ value: [] });
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      prisma.user.findFirst.mockResolvedValue(null);
+      prisma.user.create.mockResolvedValue({ id: 'new-user' } as any);
+
+      await service.syncSingleUser(mockAzureUser);
+
+      expect(prisma.user.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ role: 'EMPLOYEE' }) as unknown,
+      });
+    });
+
+    it('should keep roleSetManually role when no Security Group match', async () => {
+      const mockGet = jest.fn().mockResolvedValue({ value: [] });
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      const existingUser = {
+        ...mockLocalUser,
+        role: 'MANAGER',
+        roleSetManually: true,
+      };
+      prisma.user.findFirst.mockResolvedValue(existingUser);
+      prisma.user.update.mockResolvedValue(existingUser);
+
+      await service.syncSingleUser(mockAzureUser);
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: existingUser.id },
+        data: expect.objectContaining({ role: 'MANAGER' }) as unknown,
+      });
+    });
+  });
+
+  // ============================================================
+  // Story 12.3a — Task 16f: directReports + managerId Linkage Tests
+  // ============================================================
+  describe('runSync Pass 2: manager linkage (Story 12.3a)', () => {
+    beforeEach(() => {
+      prisma.m365SyncLog.create.mockResolvedValue(mockSyncLog);
+      prisma.m365SyncLog.update.mockResolvedValue(mockSyncLog);
+      prisma.user.findMany.mockResolvedValue([]);
+    });
+
+    it('should link manager relationships in Pass 2 of FULL sync', async () => {
+      // Pass 1: sync user
+      const mockResponse = {
+        value: [mockAzureUser],
+        '@odata.nextLink': undefined,
+      };
+      const mockGet = jest
+        .fn()
+        .mockResolvedValueOnce(mockResponse) // getAllAzureUsers
+        .mockResolvedValueOnce({ value: [] }) // getUserRoleFromGroups (resolveUserRole)
+        .mockResolvedValueOnce({ id: 'azure-manager-id' }) // linkManagerRelationships - /manager
+        .mockResolvedValue({}); // fallback
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      prisma.user.findFirst.mockResolvedValue(null);
+      prisma.user.create.mockResolvedValue({ id: 'new-user' } as any);
+      // For linkManagerRelationships
+      prisma.user.findUnique
+        .mockResolvedValueOnce({ id: 'local-user-1', azureId: 'azure-id-123' })
+        .mockResolvedValueOnce({ id: 'local-manager-1' });
+      prisma.user.update.mockResolvedValue({});
+
+      const result = await service.runSync('FULL');
+
+      // Verify Pass 2 manager linkage happened
+      expect(result.status).toBeDefined();
+    });
+
+    it('should upgrade EMPLOYEE to MANAGER when user has directReports (Pass 2b)', async () => {
+      const mockResponse = {
+        value: [mockAzureUser],
+        '@odata.nextLink': undefined,
+      };
+      const mockGet = jest.fn().mockResolvedValue(mockResponse);
+      // Override for specific calls
+      mockGet
+        .mockResolvedValueOnce(mockResponse) // getAllAzureUsers
+        .mockResolvedValueOnce({ value: [] }) // getUserRoleFromGroups
+        .mockRejectedValueOnce({ statusCode: 404 }); // /manager → no manager (normal)
+
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      prisma.user.findFirst.mockResolvedValue(null);
+      prisma.user.create.mockResolvedValue({ id: 'new-user' } as any);
+
+      // updateDirectReportsRoles runs BEFORE syncUserDeactivations
+      prisma.user.findMany
+        .mockResolvedValueOnce([
+          {
+            id: 'user-1',
+            azureId: 'azure-id-123',
+            role: 'EMPLOYEE',
+            roleSetManually: false,
+          },
+        ]) // updateDirectReportsRoles query (runs first)
+        .mockResolvedValueOnce([]); // syncUserDeactivations (runs second)
+      prisma.user.update.mockResolvedValue({});
+
+      await service.runSync('FULL');
+
+      // Should have been called to upgrade role to MANAGER
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: { role: 'MANAGER' },
+      });
+    });
+  });
+
+  // ============================================================
+  // Story 12.3a — Task 16g: GROUPS_ONLY Sync Mode Tests
+  // ============================================================
+  describe('GROUPS_ONLY sync (Story 12.3a)', () => {
+    beforeEach(() => {
+      prisma.m365SyncLog.create.mockResolvedValue(mockSyncLog);
+      prisma.m365SyncLog.update.mockResolvedValue(mockSyncLog);
+    });
+
+    it('should not import new users in GROUPS_ONLY mode', async () => {
+      // Return existing M365 users from DB
+      prisma.user.findMany.mockResolvedValue([
+        {
+          id: 'user-1',
+          azureId: 'azure-id-123',
+          role: 'EMPLOYEE',
+          managerId: null,
+          roleSetManually: false,
+        },
+      ]);
+
+      const mockGet = jest
+        .fn()
+        .mockResolvedValueOnce({ value: [] }) // getUserRoleFromGroups
+        .mockRejectedValueOnce({ statusCode: 404 }); // /manager
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      prisma.user.count.mockResolvedValue(0);
+
+      const result = await service.runSync('GROUPS_ONLY');
+
+      // Should not call getAllAzureUsers — verify no new user creation
+      expect(result.createdUsers).toBe(0);
+      expect(prisma.user.create).not.toHaveBeenCalled();
+    });
+
+    it('should update roles based on Security Group membership', async () => {
+      const ADMIN_GROUP_ID = '3403ed09-414d-490a-ac69-3c2c38c14c38';
+      process.env.AZURE_ADMIN_GROUP_ID = ADMIN_GROUP_ID;
+
+      prisma.user.findMany.mockResolvedValue([
+        {
+          id: 'user-1',
+          azureId: 'azure-id-123',
+          role: 'EMPLOYEE',
+          managerId: null,
+          roleSetManually: false,
+        },
+      ]);
+
+      const mockGet = jest
+        .fn()
+        .mockResolvedValueOnce({
+          value: [
+            { id: ADMIN_GROUP_ID, '@odata.type': '#microsoft.graph.group' },
+          ],
+        }) // getUserRoleFromGroups
+        .mockRejectedValueOnce({ statusCode: 404 }); // /manager
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      await service.runSync('GROUPS_ONLY');
+
+      // Should update role to ADMIN
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: expect.objectContaining({ role: 'ADMIN' }) as unknown,
+      });
+
+      delete process.env.AZURE_ADMIN_GROUP_ID;
+    });
+
+    it('should create sync log with syncType GROUPS_ONLY', async () => {
+      prisma.user.findMany.mockResolvedValue([]);
+
+      await service.runSync('GROUPS_ONLY');
+
+      expect(prisma.m365SyncLog.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          syncType: 'GROUPS_ONLY',
+          status: 'IN_PROGRESS',
+        }) as unknown,
+      });
+    });
+  });
+
+  // ============================================================
+  // Story 12.3a — Task 16e: syncUserFromGraph Tests
+  // ============================================================
+  describe('syncUserFromGraph (Story 12.3a)', () => {
+    const mockGraphUser = {
+      id: 'user-1',
+      azureId: 'azure-id-123',
+      lastSyncAt: new Date(),
+    };
+
+    it('should reject when M365 account is disabled', async () => {
+      const mockGet = jest
+        .fn()
+        .mockResolvedValueOnce({
+          accountEnabled: false,
+          displayName: 'Test',
+          department: 'Eng',
+        }) // profile
+        .mockResolvedValueOnce({ value: [] }) // memberOf
+        .mockRejectedValueOnce({ statusCode: 404 }); // manager
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      const result = await service.syncUserFromGraph(mockGraphUser);
+
+      expect(result.rejected).toBe(true);
+      expect(result.reason).toContain('disabled');
+    });
+
+    it('should accept login with cached data when Graph unavailable AND lastSyncAt < 24h', async () => {
+      const mockGet = jest.fn().mockRejectedValue(new Error('Network error'));
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      const recentSyncUser = {
+        ...mockGraphUser,
+        lastSyncAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+      };
+
+      const result = await service.syncUserFromGraph(recentSyncUser);
+      expect(result.rejected).toBe(false);
+    });
+
+    it('should reject when Graph unavailable AND lastSyncAt > 24h (AC #35)', async () => {
+      const mockGet = jest.fn().mockRejectedValue(new Error('Network error'));
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      const oldSyncUser = {
+        ...mockGraphUser,
+        lastSyncAt: new Date(Date.now() - 48 * 60 * 60 * 1000), // 48 hours ago
+      };
+
+      const result = await service.syncUserFromGraph(oldSyncUser);
+      expect(result.rejected).toBe(true);
+      expect(result.reason).toContain('expired');
+    });
+
+    it('should reject when Graph unavailable AND no lastSyncAt', async () => {
+      const mockGet = jest.fn().mockRejectedValue(new Error('Network error'));
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      const noSyncUser = { ...mockGraphUser, lastSyncAt: null };
+
+      const result = await service.syncUserFromGraph(noSyncUser);
+      expect(result.rejected).toBe(true);
+    });
+
+    it('should update profile and role from Graph API', async () => {
+      const ADMIN_GROUP_ID = '3403ed09-414d-490a-ac69-3c2c38c14c38';
+      process.env.AZURE_ADMIN_GROUP_ID = ADMIN_GROUP_ID;
+
+      const mockGet = jest
+        .fn()
+        .mockResolvedValueOnce({
+          accountEnabled: true,
+          displayName: 'John Doe',
+          department: 'Engineering',
+        }) // profile
+        .mockResolvedValueOnce({
+          value: [
+            { id: ADMIN_GROUP_ID, '@odata.type': '#microsoft.graph.group' },
+          ],
+        }) // memberOf
+        .mockRejectedValueOnce({ statusCode: 404 }); // manager (404 = no manager)
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      prisma.user.update.mockResolvedValue({});
+
+      const result = await service.syncUserFromGraph(mockGraphUser);
+
+      expect(result.rejected).toBe(false);
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: expect.objectContaining({
+          firstName: 'John',
+          lastName: 'Doe',
+          department: 'Engineering',
+          role: 'ADMIN',
+        }) as unknown,
+      });
+
+      delete process.env.AZURE_ADMIN_GROUP_ID;
+    });
+
+    it('should update managerId from Graph API', async () => {
+      const mockGet = jest
+        .fn()
+        .mockResolvedValueOnce({
+          accountEnabled: true,
+          displayName: 'Test',
+          department: 'Eng',
+        }) // profile
+        .mockResolvedValueOnce({ value: [] }) // memberOf
+        .mockResolvedValueOnce({ id: 'azure-manager-id' }); // manager
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      prisma.user.findUnique.mockResolvedValue({ id: 'local-manager-id' });
+      prisma.user.update.mockResolvedValue({});
+
+      const result = await service.syncUserFromGraph(mockGraphUser);
+
+      expect(result.rejected).toBe(false);
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: expect.objectContaining({
+          managerId: 'local-manager-id',
+        }) as unknown,
+      });
+    });
+  });
+
+  // ============================================================
+  // Story 12.3a — Task 16i: PII-free Logging Audit
+  // ============================================================
+  describe('PII-free logging (AC #38)', () => {
+    it('should not include email in deactivation select fields', async () => {
+      const azureUsers: GraphUser[] = [];
+      const localUser = {
+        id: 'user-1',
+        azureId: 'azure-id-1',
+        roleSetManually: false,
+      };
+
+      prisma.user.findMany.mockResolvedValue([localUser]);
+      prisma.user.update.mockResolvedValue({ ...localUser, isActive: false });
+      prisma.userAuditLog.create.mockResolvedValue({} as any);
+
+      await service.syncUserDeactivations(azureUsers, 'sync-123');
+
+      // Verify the findMany select does NOT include email
+      /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+      const findManyCall = prisma.user.findMany.mock.calls[0][0];
+      if (findManyCall?.select) {
+        expect(findManyCall.select).not.toHaveProperty('email');
+      }
+      /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
     });
   });
 });

@@ -312,24 +312,14 @@ export class AnalyticsService {
     currentUserId?: string,
     currentUserRole?: string,
   ): Promise<TopPerformersDto> {
-    // MANAGER can only see their own department
+    // Story 12.3a: MANAGER scoped to direct reports (managerId-based)
+    let filterManagerId: string | undefined;
     let filterDepartment: string | undefined;
 
     if (currentUserRole === 'MANAGER') {
-      // Get manager's department
-      const manager = await this.prisma.user.findUnique({
-        where: { id: currentUserId },
-        select: { department: true },
-      });
-
-      if (!manager?.department) {
-        throw new ForbiddenException('Manager has no assigned department');
-      }
-
-      filterDepartment = manager.department;
-
-      // If teamId provided, verify it matches manager's department
-      if (teamId && teamId !== filterDepartment) {
+      // Manager can only see their direct reports
+      filterManagerId = currentUserId;
+      if (teamId) {
         throw new ForbiddenException('You can only view your own team');
       }
     } else if (teamId) {
@@ -340,8 +330,8 @@ export class AnalyticsService {
     // Query users with badge counts
     const usersWithBadges = await this.prisma.user.findMany({
       where: {
-        role: 'EMPLOYEE',
         isActive: true,
+        ...(filterManagerId && { managerId: filterManagerId }),
         ...(filterDepartment && { department: filterDepartment }),
       },
       select: {
@@ -388,8 +378,8 @@ export class AnalyticsService {
       .slice(0, limit);
 
     return {
-      teamId: filterDepartment,
-      teamName: filterDepartment, // Department name = team name for MVP
+      teamId: filterManagerId || filterDepartment,
+      teamName: filterManagerId ? 'Direct Reports' : filterDepartment, // Story 12.3a
       period: 'allTime',
       topPerformers: performers,
     };
