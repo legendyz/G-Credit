@@ -138,3 +138,40 @@ Minimum required fixes:
 3. Return login `user` payload from `freshUser` after mini-sync.
 
 After these are fixed, re-review can likely move to **APPROVED** quickly.
+
+---
+
+## Re-Review (Post-Fix) — 2026-02-20
+
+Re-review target commit: `b63c60d` (`fix(12.3a): address code review — mount sync panel, manager unlink, freshUser response`)
+
+### Re-Verification Summary
+
+All three blocking findings from the initial review are now resolved:
+
+1. **M365SyncPanel integration (AC #28/#29)** — ✅ Fixed  
+    - `frontend/src/pages/AdminUserManagementPage.tsx` now imports and renders `<M365SyncPanel />`.
+
+2. **Manager unlink/nulling behavior** — ✅ Fixed  
+    - `backend/src/m365-sync/m365-sync.service.ts` now clears stale `managerId` when:
+       - Graph manager endpoint returns 404 (no manager),
+       - manager exists in Graph but not in local DB,
+       - manager data is absent/unresolved in mini-sync and GROUPS_ONLY flows.
+
+3. **Fresh user payload in login response** — ✅ Fixed  
+    - `backend/src/modules/auth/auth.service.ts` now logs and returns profile data from `freshUser` after mini-sync.
+
+### Additional Evidence
+
+- Tests added to cover the fixes:
+   - `m365-sync.service.spec.ts`: manager clear on 404 and manager-not-in-local-db cases
+   - `auth.service.spec.ts`: login returns freshUser (not stale pre-sync user)
+- Focused regression run:
+   - `npx jest src/m365-sync/m365-sync.service.spec.ts src/modules/auth/auth.service.spec.ts --verbose --forceExit` → **PASS** (105 tests)
+   - `cd frontend && npx tsc --noEmit` → **PASS**
+
+## Updated Final Decision
+
+**APPROVED**
+
+Story 12.3a review findings are addressed and verified in code and tests.
