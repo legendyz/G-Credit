@@ -16,10 +16,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
-import {
-  containing,
-  arrayContaining,
-} from '../../test/helpers/jest-typed-matchers';
+import { containing } from '../../test/helpers/jest-typed-matchers';
 
 describe('AdminUsersService', () => {
   let service: AdminUsersService;
@@ -111,16 +108,21 @@ describe('AdminUsersService', () => {
 
       await service.findAll({ page: 1, limit: 25, search: 'john' });
 
-      expect(prisma.user.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: containing({
-            OR: arrayContaining([
-              { firstName: { contains: 'john', mode: 'insensitive' } },
-              { lastName: { contains: 'john', mode: 'insensitive' } },
-              { email: { contains: 'john', mode: 'insensitive' } },
-            ]),
-          }),
-        }),
+      // Search OR conditions are now nested inside AND for safe composition
+      const calls = prisma.user.findMany.mock.calls;
+      const firstCallArg = calls[0] as unknown[];
+      const call = firstCallArg[0] as {
+        where: { AND: Array<{ OR: unknown[] }> };
+      };
+      expect(call.where.AND).toBeDefined();
+      expect(call.where.AND[0]).toHaveProperty('OR');
+      const searchOr = call.where.AND[0].OR as Array<Record<string, unknown>>;
+      expect(searchOr).toEqual(
+        expect.arrayContaining([
+          { firstName: { contains: 'john', mode: 'insensitive' } },
+          { lastName: { contains: 'john', mode: 'insensitive' } },
+          { email: { contains: 'john', mode: 'insensitive' } },
+        ]),
       );
     });
 
@@ -510,18 +512,46 @@ describe('AdminUsersService', () => {
 
       await service.findAll({ page: 1, limit: 25, statusFilter: 'LOCKED' });
 
-      // LOCKED filter uses OR condition: lockedUntil in future OR too many failed logins
+      // LOCKED filter uses AND > OR composition to avoid overwriting search OR
       expect(prisma.user.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: containing({
             isActive: true,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            OR: expect.arrayContaining([
-              expect.objectContaining({ failedLoginAttempts: { gte: 5 } }),
+            AND: expect.arrayContaining([
+              expect.objectContaining({
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                OR: expect.arrayContaining([
+                  expect.objectContaining({ failedLoginAttempts: { gte: 5 } }),
+                ]),
+              }),
             ]),
           }),
         }),
       );
+    });
+
+    it('should compose search + LOCKED filter without conflict', async () => {
+      prisma.user.findMany.mockResolvedValue([]);
+
+      await service.findAll({
+        page: 1,
+        limit: 25,
+        search: 'john',
+        statusFilter: 'LOCKED',
+      });
+
+      // Both search OR and LOCKED OR should be nested inside AND
+      const calls = prisma.user.findMany.mock.calls;
+      const firstCallArg = calls[0] as unknown[];
+      const call = firstCallArg[0] as {
+        where: { AND: Array<{ OR: unknown[] }> };
+      };
+      expect(call.where.AND).toHaveLength(2);
+      // First AND entry: search OR conditions
+      expect(call.where.AND[0]).toHaveProperty('OR');
+      // Second AND entry: locked OR conditions
+      expect(call.where.AND[1]).toHaveProperty('OR');
     });
 
     it('should filter by statusFilter INACTIVE', async () => {

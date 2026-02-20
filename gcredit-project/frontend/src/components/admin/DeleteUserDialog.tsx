@@ -10,11 +10,10 @@
  * WCAG 4.1.2 Compliant
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useDeleteUser } from '@/hooks/useAdminUsers';
 import type { AdminUser } from '@/lib/adminUsersApi';
@@ -34,7 +33,6 @@ export function DeleteUserDialog({
   onClose,
   triggerRef,
 }: DeleteUserDialogProps) {
-  const [auditNote, setAuditNote] = useState('');
   const dialogRef = useFocusTrap<HTMLDivElement>({
     isActive: isOpen,
     onEscape: onClose,
@@ -47,13 +45,6 @@ export function DeleteUserDialog({
   const isSelf = user.id === currentUserId;
   const hasSubordinates = (user.directReportsCount ?? 0) > 0;
   const userName = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email;
-
-  // Reset form when dialog opens
-  useEffect(() => {
-    if (isOpen) {
-      setAuditNote('');
-    }
-  }, [isOpen]);
 
   const handleConfirm = useCallback(async () => {
     try {
@@ -135,27 +126,6 @@ export function DeleteUserDialog({
             </p>
           </div>
         )}
-
-        {/* Audit Note */}
-        <div className="mb-4">
-          <label
-            htmlFor="delete-audit-note"
-            className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
-          >
-            Reason <span className="text-gray-400">(optional, max 200 chars)</span>
-          </label>
-          <Textarea
-            id="delete-audit-note"
-            value={auditNote}
-            onChange={(e) => setAuditNote(e.target.value.slice(0, 200))}
-            placeholder="e.g., User account no longer needed"
-            rows={2}
-            maxLength={200}
-            disabled={isSelf}
-            className="focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          />
-          <p className="mt-1 text-right text-xs text-gray-400">{auditNote.length}/200</p>
-        </div>
 
         {/* Actions */}
         <div className="flex justify-end gap-3">

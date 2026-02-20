@@ -97,8 +97,8 @@ export class AdminUsersController {
   @ApiQuery({
     name: 'statusFilter',
     required: false,
-    type: Boolean,
-    description: 'Filter by active status',
+    enum: ['ACTIVE', 'LOCKED', 'INACTIVE'],
+    description: 'Filter by status (ACTIVE, LOCKED, or INACTIVE)',
   })
   @ApiQuery({
     name: 'sortBy',

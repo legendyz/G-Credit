@@ -118,6 +118,9 @@ export class AdminUsersService {
     // Build where clause
     const where: Prisma.UserWhereInput = {};
 
+    // Collect AND conditions to compose safely with search + status filters
+    const andConditions: Prisma.UserWhereInput[] = [];
+
     // Search filter: name, email, department, or role (case-insensitive)
     if (search) {
       const orConditions: Prisma.UserWhereInput[] = [
@@ -135,7 +138,7 @@ export class AdminUsersService {
         orConditions.push({ role: { in: matchingRoles } });
       }
 
-      where.OR = orConditions;
+      andConditions.push({ OR: orConditions });
     }
 
     // Role filter
@@ -146,23 +149,25 @@ export class AdminUsersService {
     // Status filter (12.3b: enum-based: ACTIVE/LOCKED/INACTIVE)
     if (statusFilter === 'ACTIVE') {
       where.isActive = true;
-      where.AND = [
-        {
-          OR: [{ lockedUntil: null }, { lockedUntil: { lt: new Date() } }],
-        },
-        { failedLoginAttempts: { lt: 5 } },
-      ];
+      andConditions.push({
+        OR: [{ lockedUntil: null }, { lockedUntil: { lt: new Date() } }],
+      });
+      andConditions.push({ failedLoginAttempts: { lt: 5 } });
     } else if (statusFilter === 'LOCKED') {
       where.isActive = true;
-      where.OR = [
-        { lockedUntil: { gt: new Date() } },
-        { failedLoginAttempts: { gte: 5 } },
-      ];
+      andConditions.push({
+        OR: [
+          { lockedUntil: { gt: new Date() } },
+          { failedLoginAttempts: { gte: 5 } },
+        ],
+      });
     } else if (statusFilter === 'INACTIVE') {
       where.isActive = false;
-    } else if (statusFilter !== undefined) {
-      // Backward compat: boolean true/false
-      where.isActive = statusFilter as unknown as boolean;
+    }
+
+    // Apply composed AND conditions
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
     }
 
     // Source filter (12.3b AC #5)

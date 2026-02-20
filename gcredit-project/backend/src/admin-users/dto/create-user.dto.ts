@@ -9,6 +9,7 @@ import {
   IsEnum,
   IsOptional,
   IsString,
+  IsUUID,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -51,6 +52,6 @@ export class CreateUserDto {
 
   @ApiPropertyOptional({ example: 'uuid-of-manager' })
   @IsOptional()
-  @IsString()
+  @IsUUID()
   managerId?: string;
 }
