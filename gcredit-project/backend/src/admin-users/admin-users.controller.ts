@@ -13,7 +13,9 @@
 import {
   Controller,
   Get,
+  Post,
   Patch,
+  Delete,
   Param,
   Query,
   Body,
@@ -45,6 +47,7 @@ import {
   DepartmentUpdateResponse,
 } from './admin-users.service';
 import { AdminUsersQueryDto } from './dto/admin-users-query.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import { UpdateUserDepartmentDto } from './dto/update-user-department.dto';
@@ -155,6 +158,29 @@ export class AdminUsersController {
   }
 
   /**
+   * 12.3b AC #18: Create a local user
+   * POST /api/admin/users
+   */
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a local user' })
+  @ApiResponse({ status: 201, description: 'User created successfully' })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid input or ADMIN role',
+  })
+  @ApiResponse({ status: 409, description: 'Email already exists' })
+  async createUser(
+    @Body() dto: CreateUserDto,
+    @Request() req: RequestWithUser,
+  ): Promise<UserListItem> {
+    this.logger.log(
+      `Admin user:${req.user.userId} creating local user ${dto.email}`,
+    );
+    return this.adminUsersService.createUser(dto, req.user.userId);
+  }
+
+  /**
    * AC2: Update user role with optimistic locking
    * PATCH /api/admin/users/:id/role
    */
@@ -241,5 +267,24 @@ export class AdminUsersController {
       `Admin user:${req.user.userId} updating department for user ${id} to "${dto.department}"`,
     );
     return this.adminUsersService.updateDepartment(id, dto, req.user.userId);
+  }
+
+  /**
+   * 12.3b AC #34: Delete a local user
+   * DELETE /api/admin/users/:id
+   */
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Delete a local user' })
+  @ApiParam({ name: 'id', type: String, description: 'User ID (UUID)' })
+  @ApiResponse({ status: 200, description: 'User deleted' })
+  @ApiResponse({ status: 400, description: 'Cannot delete M365 user or self' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async deleteUser(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Request() req: RequestWithUser,
+  ): Promise<{ message: string }> {
+    this.logger.log(`Admin user:${req.user.userId} deleting user ${id}`);
+    return this.adminUsersService.deleteUser(id, req.user.userId);
   }
 }

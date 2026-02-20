@@ -32,6 +32,14 @@ describe('AdminUsersController', () => {
     roleUpdatedBy: null,
     roleVersion: 0,
     createdAt: new Date('2026-01-01'),
+    // 12.3b fields
+    source: 'LOCAL' as const,
+    sourceLabel: 'Local Account',
+    badgeCount: 0,
+    lastSyncAt: null,
+    managerId: null,
+    failedLoginAttempts: 0,
+    lockedUntil: null,
   };
 
   const mockAdmin = {
@@ -48,6 +56,8 @@ describe('AdminUsersController', () => {
       findOne: jest.fn(),
       updateRole: jest.fn(),
       updateStatus: jest.fn(),
+      createUser: jest.fn(),
+      deleteUser: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({

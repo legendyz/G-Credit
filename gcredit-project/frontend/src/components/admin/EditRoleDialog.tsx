@@ -135,6 +135,11 @@ export function EditRoleDialog({
 
   if (!isOpen) return null;
 
+  // M365 users: role is managed by Security Group — cannot edit (12.3b AC #6)
+  if (user.source === 'M365') {
+    return null;
+  }
+
   const userName = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email;
 
   return (

@@ -1,5 +1,5 @@
 /**
- * Admin Users API Types - Story 8.10
+ * Admin Users API Types - Story 8.10, 12.3b
  */
 
 export type UserRole = 'ADMIN' | 'ISSUER' | 'MANAGER' | 'EMPLOYEE';
@@ -18,6 +18,15 @@ export interface AdminUser {
   roleUpdatedBy: string | null;
   roleVersion: number;
   createdAt: string;
+  // 12.3b additions
+  source: 'M365' | 'LOCAL';
+  sourceLabel: string;
+  badgeCount: number;
+  lastSyncAt: string | null;
+  managerId: string | null;
+  failedLoginAttempts: number;
+  lockedUntil: string | null;
+  directReportsCount: number;
 }
 
 export interface PaginationInfo {
@@ -39,10 +48,20 @@ export interface AdminUsersQueryParams {
   limit?: number;
   search?: string;
   roleFilter?: UserRole;
-  statusFilter?: boolean;
+  statusFilter?: 'ACTIVE' | 'LOCKED' | 'INACTIVE';
+  sourceFilter?: 'M365' | 'LOCAL';
   sortBy?: 'name' | 'email' | 'role' | 'department' | 'status' | 'lastLogin' | 'createdAt';
   sortOrder?: 'asc' | 'desc';
   cursor?: string;
+}
+
+export interface CreateUserRequest {
+  email: string;
+  firstName: string;
+  lastName: string;
+  department?: string;
+  role: UserRole;
+  managerId?: string;
 }
 
 export interface UpdateRoleRequest {
@@ -97,8 +116,8 @@ export async function getAdminUsers(
   if (params.limit) searchParams.set('limit', params.limit.toString());
   if (params.search) searchParams.set('search', params.search);
   if (params.roleFilter) searchParams.set('roleFilter', params.roleFilter);
-  if (params.statusFilter !== undefined)
-    searchParams.set('statusFilter', params.statusFilter.toString());
+  if (params.statusFilter) searchParams.set('statusFilter', params.statusFilter);
+  if (params.sourceFilter) searchParams.set('sourceFilter', params.sourceFilter);
   if (params.sortBy) searchParams.set('sortBy', params.sortBy);
   if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder);
   if (params.cursor) searchParams.set('cursor', params.cursor);
@@ -181,6 +200,39 @@ export async function updateUserStatus(
       throw new Error('User not found');
     }
     throw new Error('Failed to update user status');
+  }
+
+  return response.json();
+}
+
+/**
+ * Create a local user (12.3b)
+ */
+export async function createUser(data: CreateUserRequest): Promise<AdminUser> {
+  const response = await apiFetch('/admin/users', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'Failed to create user');
+  }
+
+  return response.json();
+}
+
+/**
+ * Delete a local user (12.3b)
+ */
+export async function deleteUser(userId: string): Promise<{ message: string }> {
+  const response = await apiFetch(`/admin/users/${userId}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'Failed to delete user');
   }
 
   return response.json();

@@ -17,10 +17,12 @@ import {
 import { PrismaService } from '../common/prisma.service';
 import { createPaginatedResponse } from '../common/utils/pagination.util';
 import { AdminUsersQueryDto } from './dto/admin-users-query.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import { UpdateUserDepartmentDto } from './dto/update-user-department.dto';
 import { UserRole, Prisma } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 // Response types
 export interface UserListItem {
@@ -37,6 +39,15 @@ export interface UserListItem {
   roleUpdatedBy: string | null;
   roleVersion: number;
   createdAt: Date;
+  // 12.3b additions
+  source: 'M365' | 'LOCAL';
+  sourceLabel: string;
+  badgeCount: number;
+  lastSyncAt: Date | null;
+  managerId: string | null;
+  failedLoginAttempts: number;
+  lockedUntil: Date | null;
+  directReportsCount?: number;
 }
 
 export interface PaginationInfo {
@@ -132,9 +143,33 @@ export class AdminUsersService {
       where.role = roleFilter;
     }
 
-    // Status filter
-    if (statusFilter !== undefined) {
-      where.isActive = statusFilter;
+    // Status filter (12.3b: enum-based: ACTIVE/LOCKED/INACTIVE)
+    if (statusFilter === 'ACTIVE') {
+      where.isActive = true;
+      where.AND = [
+        {
+          OR: [{ lockedUntil: null }, { lockedUntil: { lt: new Date() } }],
+        },
+        { failedLoginAttempts: { lt: 5 } },
+      ];
+    } else if (statusFilter === 'LOCKED') {
+      where.isActive = true;
+      where.OR = [
+        { lockedUntil: { gt: new Date() } },
+        { failedLoginAttempts: { gte: 5 } },
+      ];
+    } else if (statusFilter === 'INACTIVE') {
+      where.isActive = false;
+    } else if (statusFilter !== undefined) {
+      // Backward compat: boolean true/false
+      where.isActive = statusFilter as unknown as boolean;
+    }
+
+    // Source filter (12.3b AC #5)
+    if (query.sourceFilter === 'M365') {
+      where.azureId = { not: null };
+    } else if (query.sourceFilter === 'LOCAL') {
+      where.azureId = null;
     }
 
     // Build orderBy clause
@@ -147,7 +182,7 @@ export class AdminUsersService {
     const useCursorPagination =
       total >= this.CURSOR_PAGINATION_THRESHOLD && cursor;
 
-    let users: UserListItem[];
+    let users: Record<string, unknown>[];
 
     if (useCursorPagination && cursor) {
       // Cursor-based pagination for large datasets
@@ -176,7 +211,10 @@ export class AdminUsersService {
         this.encodeCursor(
           lastUser.id,
           sortBy || 'name',
-          this.getSortValue(lastUser, sortBy || 'name'),
+          this.getSortValue(
+            lastUser as unknown as UserListItem,
+            sortBy || 'name',
+          ),
         );
       }
     } else {
@@ -192,7 +230,8 @@ export class AdminUsersService {
       });
     }
 
-    return createPaginatedResponse(users, total, page!, limit!);
+    const mappedUsers = users.map((u) => this.mapUserToResponse(u));
+    return createPaginatedResponse(mappedUsers, total, page!, limit!);
   }
 
   /**
@@ -208,7 +247,7 @@ export class AdminUsersService {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
-    return user;
+    return this.mapUserToResponse(user as unknown as Record<string, unknown>);
   }
 
   /**
@@ -233,11 +272,25 @@ export class AdminUsersService {
     // Get current user state
     const currentUser = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true, role: true, roleVersion: true },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        roleVersion: true,
+        azureId: true,
+      },
     });
 
     if (!currentUser) {
       throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    // 12.3b AC #6: M365 users' roles are managed via Security Group
+    if (currentUser.azureId) {
+      throw new BadRequestException(
+        'M365 user roles are managed via Security Group membership. ' +
+          "To change this user's role, update their Security Group in Azure AD.",
+      );
     }
 
     // AC5: Optimistic locking - check version match
@@ -452,7 +505,155 @@ export class AdminUsersService {
     };
   }
 
+  /**
+   * 12.3b AC #15, #16, #17, #18, #33: Create a local user
+   */
+  async createUser(dto: CreateUserDto, adminId: string): Promise<UserListItem> {
+    // AC #33: Validate ADMIN role blocked for manual creation
+    if (dto.role === UserRole.ADMIN) {
+      throw new BadRequestException(
+        'Cannot create users with ADMIN role directly. Use Security Group assignment.',
+      );
+    }
+
+    // AC #17: Email uniqueness
+    const existing = await this.prisma.user.findUnique({
+      where: { email: dto.email.toLowerCase() },
+    });
+    if (existing) {
+      throw new ConflictException(
+        `User with email ${dto.email} already exists`,
+      );
+    }
+
+    // Validate managerId if provided
+    if (dto.managerId) {
+      const manager = await this.prisma.user.findUnique({
+        where: { id: dto.managerId },
+      });
+      if (!manager) {
+        throw new BadRequestException('Selected manager does not exist');
+      }
+    }
+
+    // Hash default password
+    const defaultPassword = process.env.DEFAULT_USER_PASSWORD || 'password123';
+    const passwordHash = await bcrypt.hash(defaultPassword, 10);
+
+    // AC #16: Create with azureId=null, roleSetManually=true
+    const user = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.user.create({
+        data: {
+          email: dto.email.toLowerCase(),
+          passwordHash,
+          firstName: dto.firstName,
+          lastName: dto.lastName,
+          department: dto.department || null,
+          role: dto.role,
+          managerId: dto.managerId || null,
+          azureId: null,
+          roleSetManually: true,
+          isActive: true,
+        },
+        select: this.getUserSelect(),
+      });
+
+      await tx.userRoleAuditLog.create({
+        data: {
+          userId: created.id,
+          performedBy: adminId,
+          action: 'USER_CREATED',
+          newValue: JSON.stringify({
+            email: dto.email.toLowerCase(),
+            role: dto.role,
+            department: dto.department || null,
+          }),
+        },
+      });
+
+      return created;
+    });
+
+    this.logger.log(
+      `Local user created: ${dto.email.toLowerCase()} (role: ${dto.role}) by admin ${adminId}`,
+    );
+
+    return this.mapUserToResponse(user as unknown as Record<string, unknown>);
+  }
+
+  /**
+   * 12.3b AC #34: Delete a local user (with subordinate guard)
+   */
+  async deleteUser(
+    userId: string,
+    adminId: string,
+  ): Promise<{ message: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        azureId: true,
+        email: true,
+        _count: { select: { directReports: true } },
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User ${userId} not found`);
+    }
+
+    // Cannot delete M365 users
+    if (user.azureId) {
+      throw new BadRequestException(
+        'Cannot delete M365 users. Deactivate them instead, or remove from Azure AD.',
+      );
+    }
+
+    // Cannot delete self
+    if (userId === adminId) {
+      throw new BadRequestException('Cannot delete your own account');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      // Audit log
+      await tx.userRoleAuditLog.create({
+        data: {
+          userId,
+          performedBy: adminId,
+          action: 'USER_DELETED',
+          oldValue: JSON.stringify({
+            email: user.email,
+            directReportsCount: user._count.directReports,
+          }),
+          newValue: 'DELETED',
+        },
+      });
+
+      // onDelete: SetNull in schema handles subordinate managerId clearing
+      await tx.user.delete({ where: { id: userId } });
+    });
+
+    this.logger.log(`User ${user.email} deleted by admin ${adminId}`);
+
+    return { message: 'User deleted successfully' };
+  }
+
   // Helper methods
+
+  /**
+   * 12.3b: Map raw DB user to API response — strips azureId, computes source field
+   */
+  private mapUserToResponse(user: Record<string, unknown>): UserListItem {
+    const { azureId, _count, ...rest } = user;
+    return {
+      ...rest,
+      source: azureId ? 'M365' : 'LOCAL',
+      sourceLabel: azureId ? 'Microsoft 365' : 'Local Account',
+      badgeCount: (_count as { badgesReceived?: number })?.badgesReceived ?? 0,
+      directReportsCount:
+        (_count as { directReports?: number })?.directReports ?? 0,
+    } as UserListItem;
+  }
 
   private getUserSelect() {
     return {
@@ -469,6 +670,18 @@ export class AdminUsersService {
       roleUpdatedBy: true,
       roleVersion: true,
       createdAt: true,
+      // 12.3b additions
+      azureId: true,
+      lastSyncAt: true,
+      managerId: true,
+      failedLoginAttempts: true,
+      lockedUntil: true,
+      _count: {
+        select: {
+          badgesReceived: true,
+          directReports: true,
+        },
+      },
     };
   }
 
