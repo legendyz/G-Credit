@@ -20,6 +20,8 @@
 | [007](007-baked-badge-storage.md) | 2026-01-28 | Baked Badge Storage Strategy | ✅ Accepted | Architect |
 | [008](ADR-008-microsoft-graph-integration.md) | 2026-01-29 | Microsoft Graph Integration Strategy | ✅ Accepted | Architect |
 | [009](ADR-009-tailwind-v4-css-first-config.md) | 2026-02-09 | Tailwind CSS v4 CSS-First Configuration | ✅ Accepted | SM / Project Lead |
+| [010](ADR-010-jwt-token-transport.md) | 2026-02-14 | JWT Token Transport Migration | ✅ Accepted | SM / Dev |
+| [011](ADR-011-user-management-architecture.md) | 2026-02-20 | User Management Architecture — Dual-Mode Provisioning & M365 | ✅ Accepted | PO / SM |
 
 ---
 
@@ -41,6 +43,7 @@
 ### Security & Authentication
 - [ADR-002: lodash Security Risk Acceptance](002-lodash-security-risk-acceptance.md) ✅
 - [ADR-006: Public API Security Model](006-public-api-security.md) ✅
+- [ADR-010: JWT Token Transport Migration](ADR-010-jwt-token-transport.md) ✅
 
 ### Database & Data Management
 - [ADR-001: Prisma Version Lock](001-prisma-version-lock.md) ⏳
@@ -49,6 +52,10 @@
 
 ### Architecture & Design Patterns
 - [ADR-005: Open Badges 2.0 Integration Architecture](005-open-badges-integration.md) ✅
+
+### User Management & Identity
+- [ADR-008: Microsoft Graph Integration Strategy](ADR-008-microsoft-graph-integration.md) ✅
+- [ADR-011: User Management Architecture — Dual-Mode Provisioning & M365](ADR-011-user-management-architecture.md) ✅
 
 ### Third-Party Integrations
 - [ADR-004: Email Service Selection](004-email-service-selection.md) ✅
@@ -96,6 +103,6 @@ Each ADR should contain:
 
 ---
 
-**Last Updated:** 2026-02-11  
+**Last Updated:** 2026-02-20  
 **Maintained By:** Tech Lead / Architecture Team  
 **Review Frequency:** Monthly or as decisions are made
