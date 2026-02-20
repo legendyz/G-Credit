@@ -343,6 +343,54 @@ First SSO login → azureId not found in DB → JIT create (azureId = token.oid)
 
 ---
 
+### DEC-011-15: API Data Minimization — Exclude `azureId` from Responses
+
+**Decision:** API responses (`GET /api/admin/users`, `GET /api/admin/users/:id`) MUST NOT include the raw `azureId` (Azure AD Object ID). Only the computed `source` field (`'M365'` | `'LOCAL'`) is returned.
+
+**Implementation:**
+- `getUserSelect()` queries `azureId` internally to compute `source`
+- Response DTO strips `azureId` before serialization
+- `azureId` only exists in backend service layer
+
+**Rationale:** If an API endpoint is compromised (stolen JWT, RBAC bypass), the attacker would gain Azure AD Object IDs for all synced users. These IDs can be used for reconnaissance against the M365 tenant (e.g., querying Graph API, crafting phishing attacks). The `source` field provides the same UX value with zero security risk.
+
+**Impact on future modules:**
+- No API response should ever include `azureId` — any future endpoint returning user data must follow this rule
+- Backend services may use `azureId` internally (for sync, login verification)
+- If a future feature genuinely needs to expose Azure identity info, create a separate decision with security review
+
+---
+
+### DEC-011-16: M365 Lock Scope Transparency
+
+**Decision:** When admin locks an M365 user in G-Credit, the UI must clearly communicate that the lock only affects G-Credit sign-in, NOT the user's Microsoft 365 account.
+
+**Lock confirmation text for M365 users:**
+> "This will prevent sign-in to G-Credit only. To disable their Microsoft 365 account, contact your IT administrator."
+
+**Rationale:** G-Credit uses `User.Read.All` (read-only). Writing back to Azure AD (`User.ReadWrite.All`) is out of scope and would require elevated enterprise permissions. Admins must understand the scope limitation to avoid false security assumptions.
+
+**Impact on future modules:**
+- Any future user status change UI must include scope clarification for M365 users
+- If write-back to Azure AD is ever implemented, it would require a separate ADR + security review + enterprise permission approval
+
+---
+
+### DEC-011-17: PII Exclusion from Logs
+
+**Decision:** Sync logs (`M365SyncLog` records) and application logs (`this.logger.*`) MUST NOT contain user PII (names, emails). Reference users by internal `id` only. Error messages may include `azureId` for debugging but not `email` or `displayName`.
+
+**Current code audit:** Existing `m365-sync.service.ts` logs reference `localUser.id` (safe) but sync error arrays may contain email addresses passed through from Graph API errors. This must be sanitized in 12.3b.
+
+**Rationale:** Log aggregation systems (CloudWatch, Application Insights, etc.) often have broader access than the application database. PII in logs creates compliance risk (GDPR, corporate data governance) and increases the blast radius of a log system compromise.
+
+**Impact on future modules:**
+- All logging across the application should follow this principle
+- Audit logs (`UserRoleAuditLog`) are exempt — they exist specifically to record "who did what to whom" and are access-controlled separately
+- Error tracking (Sentry, etc.) should also strip PII from breadcrumbs
+
+---
+
 ## Consequences
 
 ### Positive

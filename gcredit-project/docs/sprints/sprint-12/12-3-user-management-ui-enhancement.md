@@ -125,6 +125,9 @@ So that I can efficiently manage all platform users across both M365-synced and 
 33. [ ] `POST /api/admin/users` validates input via `CreateUserDto`: `@IsEmail()` email, `@MaxLength(100)` firstName/lastName, `@IsEnum(UserRole)` role, `@IsOptional() @IsUUID()` managerId (must reference existing user)
 34. [ ] Deleting a Local user who is a manager → `managerId` set to null on subordinates (`onDelete: SetNull`); UI confirms: "This user manages X users. Their manager will be unassigned."
 35. [ ] Login-time mini-sync degradation window: if `lastSyncAt > 24h` AND Graph API unavailable → reject login (401) with log level ERROR
+36. [ ] API responses (`GET /api/admin/users`, `GET /api/admin/users/:id`) MUST exclude `azureId` raw value; only return computed `source` field (`'M365'` | `'LOCAL'`). `azureId` is internal-only — never exposed to frontend/API consumers. (Prevents Azure AD Object ID reconnaissance if API is compromised)
+37. [ ] Lock confirmation for M365 users includes context notice: "This will prevent sign-in to G-Credit only. To disable their Microsoft 365 account, contact your IT administrator."
+38. [ ] Sync error logs and M365SyncLog records MUST NOT contain user PII (name, email). Reference users by internal `id` only in logs. Error messages may include `azureId` for debugging but not `email`/`displayName`.
 
 ## Tasks / Subtasks
 
@@ -150,9 +153,10 @@ So that I can efficiently manage all platform users across both M365-synced and 
   - [ ] **Self-demotion guard:** Admin cannot change their OWN role (backend 403 + frontend disable)
   - [ ] API: `PATCH /api/admin/users/:id/role` (existing endpoint)
   - [ ] Backend guard: reject role change for users with `azureId != null` (400: "M365 user roles are managed via Security Group")
-- [ ] Task 4: Lock/unlock functionality — **all users** (AC: #7)
+- [ ] Task 4: Lock/unlock functionality — **all users** (AC: #7, #37)
   - [ ] **Toggle switch** (Shadcn `Switch`) — visual state for lock status
   - [ ] Lock confirmation via `<ConfirmDialog>`: "Lock account for jane@example.com? They won't be able to sign in."
+  - [ ] **M365 user lock notice:** "This will prevent sign-in to G-Credit only. To disable their Microsoft 365 account, contact your IT administrator."
   - [ ] Unlock resets `failedLoginAttempts` to 0
   - [ ] API: `PATCH /api/admin/users/:id/status`
 - [ ] Task 5: User detail slide-over panel (AC: #8, #14)
@@ -171,9 +175,11 @@ So that I can efficiently manage all platform users across both M365-synced and 
   - [ ] Backend: `CreateUserDto` with strict validation: `@IsEmail()`, `@IsString() @MaxLength(100)` names, `@IsEnum(UserRole)` role, `@IsOptional() @IsUUID()` managerId (verify referenced user exists)
   - [ ] Backend: email uniqueness check → 409 if exists
   - [ ] Backend: audit log entry for user creation
-- [ ] Task 7: API response enhancement
+- [ ] Task 7: API response enhancement (AC: #36)
   - [ ] Add `source` computed field to user list/detail API responses: `azureId ? 'M365' : 'LOCAL'`
   - [ ] Add `sourceLabel` field: `azureId ? 'Microsoft 365' : 'Local Account'`
+  - [ ] **Exclude `azureId` from API response** — do NOT add to `getUserSelect()`. Compute `source` internally, strip `azureId` before returning.
+  - [ ] Add `lastSyncAt` to API response (for M365 users detail panel)
 - [ ] Task 8: Tests (12.3a)
   - [ ] Table rendering + source badge tests
   - [ ] Filter by source tests
@@ -327,6 +333,12 @@ DEFAULT_USER_PASSWORD="password123"
 |---|---|---|---|
 | **SEC-GAP-2** | P1 High | Default password `password123` has no forced-change-on-first-login mechanism. Admin-created local users (including ADMIN role) may keep weak default password indefinitely. | Add `mustChangePassword` field to User model + middleware to intercept login and redirect to password change page. Requires new UI page. **Target: Security Hardening Sprint.** |
 | **SEC-GAP-3** | P1 High | JWT `role` claim remains valid for up to 15 minutes after role is changed in DB (via mini-sync or admin action). Creates a stale privilege window where revoked ADMIN access is still honored. | Options: (A) `RolesGuard` queries DB for real-time role on each request (+1 query/request), (B) shorten access_token to 5 min, (C) invalidate all refresh tokens on role change. **Target: Security Hardening Sprint.** |
+
+### ⚠️ Known Limitations
+
+| ID | Description | Mitigation |
+|---|---|---|
+| **SEC-GAP-7** | M365 users disabled in Azure AD who never log in remain "active" in local DB until next full sync. Badges can still be issued to them, they appear in team lists. Login-time mini-sync only catches users who attempt to log in. | Configure scheduled full sync to run at least daily. Badge issuance could optionally check `lastSyncAt` freshness but this is not in 12.3 scope. |
 
 ### ⚠️ Breaking Changes
 - **Department-based scoping → managerId-based scoping**: Dashboard team view, badge issuance manager scope, analytics manager filter all change from `WHERE department = X` to `WHERE managerId = Y`. Requires regression testing.
