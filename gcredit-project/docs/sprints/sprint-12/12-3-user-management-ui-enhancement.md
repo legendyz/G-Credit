@@ -110,6 +110,9 @@ So that I can efficiently manage all platform users across both M365-synced and 
 29. [ ] Sync history table shows sync type (FULL / GROUPS_ONLY)
 30. [ ] Role priority logic: Security Group > `roleSetManually` > directReports > default EMPLOYEE
 
+### Login-Time Freshness (Sub-story 12.3b)
+31. [ ] On M365 user login/token-refresh, verify Azure AD account status (`accountEnabled`) + Security Group membership (`/memberOf`) in real-time; update local role if changed; reject login if Azure AD account disabled. (~200ms overhead per login)
+
 ## Tasks / Subtasks
 
 ### Sub-story 12.3a: User Management UI + Manual Creation (~14h)
@@ -165,7 +168,7 @@ So that I can efficiently manage all platform users across both M365-synced and 
   - [ ] Slide-over panel tests (source-aware content)
   - [ ] Manual user creation tests (form validation, API call, duplicate email)
 
-### Sub-story 12.3b: Manager Hierarchy + M365 Sync Enhancement (~14h)
+### Sub-story 12.3b: Manager Hierarchy + M365 Sync Enhancement (~16h)
 
 #### Prerequisites (Azure/M365 Setup — PO action before dev starts)
 
@@ -231,12 +234,20 @@ The following Azure/M365 configurations must be completed by PO (with SM guidanc
   - [ ] "Sync Roles" button → triggers `POST /api/admin/m365-sync` with `syncType: 'GROUPS_ONLY'`
   - [ ] Sync history table with type column (FULL / GROUPS_ONLY / INCREMENTAL)
   - [ ] Last sync timestamp + status indicator
-- [ ] Task 15: Tests (12.3b)
+- [ ] Task 15: Login-time role refresh (AC: #31)
+  - [ ] In JWT auth guard or login handler: detect M365 user (`azureId != null`)
+  - [ ] Call `GET /users/{azureId}` → check `accountEnabled`; if disabled → reject login (401)
+  - [ ] Call `GET /users/{azureId}/memberOf` → check Security Group membership → update role if changed
+  - [ ] Update `lastSyncAt` timestamp on user record
+  - [ ] Cache result for token refresh within same session (avoid repeated Graph calls)
+  - [ ] Graceful fallback: if Graph API unavailable, allow login with cached role + log warning
+- [ ] Task 16: Tests (12.3b)
   - [ ] `managerId` schema tests (relation, cascade behavior)
   - [ ] Dashboard/badge-issuance/analytics scoping migration tests
   - [ ] M365 sync Security Group role mapping tests
   - [ ] M365 sync `directReports` + `managerId` linkage tests
   - [ ] Group-only sync mode tests
+  - [ ] Login-time role refresh tests (role changed, account disabled, Graph API unavailable)
   - [ ] Regression tests for existing features affected by department→managerId migration
 
 ## Dev Notes
@@ -302,7 +313,7 @@ DEFAULT_USER_PASSWORD="password123"
 - **User source indicator:** M365 (blue) vs Local (gray) badge throughout UI
 - **Bootstrap strategy:** Seed `admin@gcredit.com` for initial M365 sync trigger
 - **Temporary password:** Default password until SSO; show notice to M365 users
-- **Revised estimate:** ~28h total → split into 12.3a (14h) + 12.3b (14h)
+- **Revised estimate:** ~30h total → split into 12.3a (14h) + 12.3b (16h)
 
 ## Dev Agent Record
 ### Agent Model Used
