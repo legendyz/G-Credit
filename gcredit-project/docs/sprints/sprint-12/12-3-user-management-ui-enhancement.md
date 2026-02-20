@@ -404,3 +404,50 @@ ACs verified: #19-31, #32, #35, #38. ACs #22, #33-34, #36-37 for 12.3b.
 
 **Migration:**
 - `prisma/migrations/20260220140126_add_manager_id_self_relation/`
+
+## SM Acceptance Record
+
+### Sub-story 12.3a — ACCEPTED (2026-02-20)
+
+**Reviewer:** Bob (SM Agent)
+**Branch:** `sprint-12/management-uis-evidence`
+**Commits:** `9a25791` (implementation) → `b63c60d` (code review fixes) → `189cf8b` (review approval doc)
+
+#### Test Results
+- Backend: **834 tests** (806 passed, 28 skipped, 0 failures)
+- Backend type-check: **PASS** (`tsc --noEmit`)
+- Frontend type-check: **PASS** (`tsc --noEmit`)
+- 12.3a-specific tests: **161 tests** across 4 suites, all passing
+
+#### AC Verification Matrix (15/15 PASS)
+
+| AC | Description | Status | Evidence |
+|----|-------------|--------|----------|
+| #19 | `managerId` self-referential FK on User model | ✅ | `schema.prisma` L46-49: `managerId String?` + `@relation("ManagerReports")` + `@@index` |
+| #20 | Seed users linked via `managerId` | ✅ | `seed-uat.ts` L215-220: `employee.managerId = manager.id` |
+| #21 | Backend scoping: department → managerId | ✅ | `dashboard.service.ts`, `badge-issuance.service.ts` (×2), `analytics.service.ts` — all migrated |
+| #23 | Two-pass sync: create users → link managers | ✅ | `linkManagerRelationships()` L209-283, orchestrated at L706-712 |
+| #24 | Security Group → ADMIN/ISSUER role mapping | ✅ | `getUserRoleFromGroups()` L173-199: calls `/memberOf`, filters groups |
+| #25 | Security Group IDs via `.env` | ✅ | `process.env.AZURE_ADMIN_GROUP_ID` / `AZURE_ISSUER_GROUP_ID` at L191-192; documented in `.env.example` |
+| #26 | Skip role update for local users (`azureId = null`) | ✅ | `resolveUserRole()` L307-309: returns existing role when `!existingUser.azureId` |
+| #27 | GROUPS_ONLY sync mode | ✅ | `trigger-sync.dto.ts`: SyncType enum; `runGroupsOnlySync()` L799-955 |
+| #28 | UI: "Sync Users" + "Sync Roles" buttons | ✅ | `M365SyncPanel.tsx` L115-140: buttons trigger FULL / GROUPS_ONLY; mounted in `AdminUserManagementPage.tsx` |
+| #29 | Sync history shows sync type | ✅ | `M365SyncPanel.tsx` L160-200: `SyncTypeBadge` in history table |
+| #30 | Role priority: SecurityGroup > roleSetManually > directReports > EMPLOYEE | ✅ | `resolveUserRole()` L291-320: priority chain implemented |
+| #31 | Login-time mini-sync (3 parallel Graph calls) | ✅ | `auth.service.ts` L166-183 → `syncUserFromGraph()` L335-425: Promise.allSettled |
+| #32 | Empty `passwordHash` → 401 | ✅ | `auth.service.ts` L126-128: `if (!user.passwordHash) throw UnauthorizedException` |
+| #35 | 24h degradation window | ✅ | `syncUserFromGraph()` L430-449: `DEGRADATION_WINDOW_HOURS = 24`, reject if expired |
+| #38 | PII-free sync logs | ✅ | All logger statements use `user.id`/`azureId` only; no email/name in logs or M365SyncLog records |
+
+#### Code Review Summary
+- Initial review: **CHANGES REQUIRED** (3 findings: sync panel not mounted, stale managerId not cleared, login response stale)
+- Fix commit: `b63c60d` — all 3 resolved
+- Re-review: **APPROVED** — 105 tests confirmed, type-checks pass
+
+#### Known Limitations (Documented, Not Blocking)
+- No automatic MANAGER→EMPLOYEE downgrade when direct reports are removed (by design — policy decision)
+- GROUPS_ONLY sync: sequential Graph calls per user, no concurrency throttling (acceptable for MVP scale)
+- Badge-issuance scoping narrowed to direct reports only (tighter than department-based — intentional per AC #21)
+- Security Group IDs not validated on startup (fail-safe: null → no role change)
+
+**Verdict: Sub-story 12.3a ACCEPTED — ready to proceed with 12.3b development.**
