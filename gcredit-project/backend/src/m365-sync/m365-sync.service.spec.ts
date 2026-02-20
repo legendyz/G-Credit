@@ -1534,6 +1534,66 @@ describe('M365SyncService', () => {
         }) as unknown,
       });
     });
+
+    it('should clear managerId when Graph returns no manager (404)', async () => {
+      const mockGet = jest
+        .fn()
+        .mockResolvedValueOnce({
+          accountEnabled: true,
+          displayName: 'Test',
+          department: 'Eng',
+        }) // profile
+        .mockResolvedValueOnce({ value: [] }) // memberOf
+        .mockRejectedValueOnce({ statusCode: 404 }); // manager: 404
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      prisma.user.update.mockResolvedValue({});
+
+      const result = await service.syncUserFromGraph(mockGraphUser);
+
+      expect(result.rejected).toBe(false);
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: expect.objectContaining({
+          managerId: null,
+        }) as unknown,
+      });
+    });
+
+    it('should clear managerId when manager exists in Graph but not in local DB', async () => {
+      const mockGet = jest
+        .fn()
+        .mockResolvedValueOnce({
+          accountEnabled: true,
+          displayName: 'Test',
+          department: 'Eng',
+        }) // profile
+        .mockResolvedValueOnce({ value: [] }) // memberOf
+        .mockResolvedValueOnce({ id: 'unknown-azure-manager-id' }); // manager exists in Graph
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      // Manager NOT found in local DB
+      prisma.user.findUnique.mockResolvedValue(null);
+      prisma.user.update.mockResolvedValue({});
+
+      const result = await service.syncUserFromGraph(mockGraphUser);
+
+      expect(result.rejected).toBe(false);
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: expect.objectContaining({
+          managerId: null,
+        }) as unknown,
+      });
+    });
   });
 
   // ============================================================

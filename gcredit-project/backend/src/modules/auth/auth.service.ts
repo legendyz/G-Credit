@@ -225,12 +225,12 @@ export class AuthService {
 
     // 8. Log successful login
     this.logger.log(
-      `Successful login: user:${user.id} (role: ${user.role})`,
+      `Successful login: user:${freshUser.id} (role: ${freshUser.role})`,
       'LoginSuccess',
     );
 
     // 9. Return tokens and user profile (without password hash)
-    const { passwordHash: _hash2, ...userProfile } = user;
+    const { passwordHash: _hash2, ...userProfile } = freshUser;
 
     return {
       accessToken,

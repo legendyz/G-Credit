@@ -543,6 +543,42 @@ describe('AuthService', () => {
       );
     });
 
+    it('should return freshUser profile (not stale) in login response after mini-sync', async () => {
+      const m365User = {
+        ...mockUser,
+        azureId: 'azure-id-123',
+        role: UserRole.EMPLOYEE,
+        department: 'Old Dept',
+        lastSyncAt: new Date(),
+      };
+      const updatedUser = {
+        ...m365User,
+        role: UserRole.ADMIN,
+        department: 'New Dept',
+      };
+      mockPrismaService.user.findUnique
+        .mockResolvedValueOnce(m365User) // Initial lookup
+        .mockResolvedValueOnce(updatedUser); // After mini-sync refresh
+      bcrypt.compare.mockResolvedValue(true);
+      mockJwtService.sign.mockReturnValue('test-token');
+      mockPrismaService.refreshToken.create.mockResolvedValue({});
+      mockPrismaService.user.update.mockResolvedValue(updatedUser);
+      mockM365SyncService.syncUserFromGraph.mockResolvedValue({
+        rejected: false,
+      });
+
+      const result = await service.login({
+        email: 'test@example.com',
+        password: 'correct',
+      });
+
+      // Response user should reflect FRESH data, not stale pre-sync data
+      expect(result.user.role).toBe(UserRole.ADMIN);
+      expect(result.user.department).toBe('New Dept');
+      // Password hash must NOT be in response
+      expect(result.user).not.toHaveProperty('passwordHash');
+    });
+
     it('should allow login when Graph unavailable AND lastSyncAt < 24h', async () => {
       const m365User = {
         ...mockUser,

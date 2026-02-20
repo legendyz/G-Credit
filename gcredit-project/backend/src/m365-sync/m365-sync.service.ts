@@ -223,25 +223,60 @@ export class M365SyncService {
         const url = `https://graph.microsoft.com/v1.0/users/${azureId}/manager`;
         const managerData = await this.fetchWithRetry<{ id: string }>(url);
 
+        const localUser = await this.prisma.user.findUnique({
+          where: { azureId },
+        });
+        if (!localUser) continue;
+
         if (managerData?.id) {
-          const localUser = await this.prisma.user.findUnique({
-            where: { azureId },
-          });
           const localManager = await this.prisma.user.findUnique({
             where: { azureId: managerData.id },
           });
 
-          if (localUser && localManager) {
+          // Manager exists in Graph and locally → link
+          if (localManager) {
+            if (localUser.managerId !== localManager.id) {
+              await this.prisma.user.update({
+                where: { id: localUser.id },
+                data: { managerId: localManager.id },
+              });
+              linked++;
+            }
+          } else {
+            // Manager exists in Graph but not locally → clear stale link
+            if (localUser.managerId) {
+              await this.prisma.user.update({
+                where: { id: localUser.id },
+                data: { managerId: null },
+              });
+              linked++;
+            }
+          }
+        } else {
+          // Graph returned no manager data → clear stale link
+          if (localUser.managerId) {
             await this.prisma.user.update({
               where: { id: localUser.id },
-              data: { managerId: localManager.id },
+              data: { managerId: null },
             });
             linked++;
           }
         }
       } catch (error) {
-        // 404 = no manager assigned (normal)
-        if ((error as { statusCode?: number })?.statusCode !== 404) {
+        if ((error as { statusCode?: number })?.statusCode === 404) {
+          // 404 = no manager assigned → clear stale managerId
+          const localUser = await this.prisma.user.findUnique({
+            where: { azureId },
+            select: { id: true, managerId: true },
+          });
+          if (localUser?.managerId) {
+            await this.prisma.user.update({
+              where: { id: localUser.id },
+              data: { managerId: null },
+            });
+            linked++;
+          }
+        } else {
           errors++;
           this.logger.warn(`Failed to resolve manager for azureId ${azureId}`);
         }
@@ -360,15 +395,19 @@ export class M365SyncService {
           }
         }
 
-        // d. Update managerId
-        if (managerResult.status === 'fulfilled' && managerResult.value) {
-          const managerAzureId = (managerResult.value as { id: string }).id;
-          const localManager = await this.prisma.user.findUnique({
-            where: { azureId: managerAzureId },
-            select: { id: true },
-          });
-          if (localManager) {
-            updateData.managerId = localManager.id;
+        // d. Update managerId (clear stale link when manager absent/unresolved)
+        if (managerResult.status === 'fulfilled') {
+          if (managerResult.value) {
+            const managerAzureId = (managerResult.value as { id: string }).id;
+            const localManager = await this.prisma.user.findUnique({
+              where: { azureId: managerAzureId },
+              select: { id: true },
+            });
+            // Link to local manager, or clear if manager not in local DB
+            updateData.managerId = localManager?.id ?? null;
+          } else {
+            // Manager call returned null (404 caught) → no manager
+            updateData.managerId = null;
           }
         }
 
@@ -814,11 +853,17 @@ export class M365SyncService {
                 where: { azureId: managerData.id },
                 select: { id: true },
               });
-              newManagerId = localManager?.id || undefined;
+              // Manager in Graph but not locally → clear stale link
+              newManagerId = localManager?.id ?? null;
+            } else {
+              // Graph returned empty manager → clear
+              newManagerId = null;
             }
           } catch (err) {
-            // 404 = no manager (normal)
-            if ((err as { statusCode?: number })?.statusCode !== 404) {
+            if ((err as { statusCode?: number })?.statusCode === 404) {
+              // 404 = no manager assigned → clear stale managerId
+              newManagerId = null;
+            } else {
               this.logger.warn(`Failed to fetch manager for user ${user.id}`);
             }
           }

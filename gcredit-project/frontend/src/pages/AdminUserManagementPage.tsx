@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/select';
 import { UserListTable } from '@/components/admin/UserListTable';
 import { RoleBadge } from '@/components/admin/RoleBadge';
+import { M365SyncPanel } from '@/components/admin/M365SyncPanel';
 import { useAdminUsers } from '@/hooks/useAdminUsers';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useAuthStore } from '@/stores/authStore';
@@ -200,6 +201,9 @@ export function AdminUserManagementPage() {
         ) : undefined
       }
     >
+      {/* M365 Sync Panel — AC #28, #29 */}
+      <M365SyncPanel />
+
       {/* Filters */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         {/* Search */}
