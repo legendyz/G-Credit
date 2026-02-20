@@ -117,8 +117,14 @@ So that I can efficiently manage all platform users across both M365-synced and 
     - c. `GET /me/memberOf` → check Security Group membership → update `role` if changed (priority: Security Group > roleSetManually > directReports > EMPLOYEE)
     - d. `GET /me/manager` → update `managerId` FK if manager changed
     - e. Set `lastSyncAt = now()` on user record
-    - f. Graceful fallback: if Graph API unavailable, allow login with cached data + log warning
+    - f. Graceful fallback: if Graph API unavailable **AND** `lastSyncAt` within 24h, allow login with cached data + log warning; if `lastSyncAt` > 24h → reject login (401)
     - g. Target overhead: ~200-300ms per login (3 parallel Graph API calls)
+
+### Security Hardening (Sprint 12.3)
+32. [ ] Users with empty `passwordHash` (M365 synced, `passwordHash=''`) attempting password login → return 401 (same error message as invalid credentials, no account existence leakage)
+33. [ ] `POST /api/admin/users` validates input via `CreateUserDto`: `@IsEmail()` email, `@MaxLength(100)` firstName/lastName, `@IsEnum(UserRole)` role, `@IsOptional() @IsUUID()` managerId (must reference existing user)
+34. [ ] Deleting a Local user who is a manager → `managerId` set to null on subordinates (`onDelete: SetNull`); UI confirms: "This user manages X users. Their manager will be unassigned."
+35. [ ] Login-time mini-sync degradation window: if `lastSyncAt > 24h` AND Graph API unavailable → reject login (401) with log level ERROR
 
 ## Tasks / Subtasks
 
@@ -157,11 +163,12 @@ So that I can efficiently manage all platform users across both M365-synced and 
   - [ ] For M365 users: disable all edit controls except lock/unlock
   - [ ] Badge summary section (count + recent badges)
   - [ ] Recent activity section (from audit log)
-- [ ] Task 6: Manual user creation (AC: #15, #16, #17, #18)
+- [ ] Task 6: Manual user creation (AC: #15, #16, #17, #18, #33)
   - [ ] "Add User" button → creation dialog
   - [ ] Fields: email*, firstName*, lastName*, department, role (EMPLOYEE/ISSUER/MANAGER dropdown), manager (search/select existing user)
   - [ ] Default password: configurable via `DEFAULT_USER_PASSWORD` env var (default: `password123`)
   - [ ] Backend: `POST /api/admin/users` — creates user with `azureId=null`, `roleSetManually=true`, bcrypt-hashed default password
+  - [ ] Backend: `CreateUserDto` with strict validation: `@IsEmail()`, `@IsString() @MaxLength(100)` names, `@IsEnum(UserRole)` role, `@IsOptional() @IsUUID()` managerId (verify referenced user exists)
   - [ ] Backend: email uniqueness check → 409 if exists
   - [ ] Backend: audit log entry for user creation
 - [ ] Task 7: API response enhancement
@@ -174,6 +181,8 @@ So that I can efficiently manage all platform users across both M365-synced and 
   - [ ] Lock/unlock toggle tests (both M365 and Local users)
   - [ ] Slide-over panel tests (source-aware content)
   - [ ] Manual user creation tests (form validation, API call, duplicate email)
+  - [ ] `CreateUserDto` validation tests (invalid email, oversized names, invalid role enum, non-existent managerId)
+  - [ ] Delete user with subordinates tests (managerId set to null, confirmation prompt)
 
 ### Sub-story 12.3b: Manager Hierarchy + M365 Sync Enhancement (~16h)
 
@@ -209,7 +218,7 @@ The following Azure/M365 configurations must be completed by PO (with SM guidanc
   - [ ] Add to Prisma schema:
     ```prisma
     managerId     String?
-    manager       User?   @relation("ManagerReports", fields: [managerId], references: [id])
+    manager       User?   @relation("ManagerReports", fields: [managerId], references: [id], onDelete: SetNull)
     directReports User[]  @relation("ManagerReports")
     ```
   - [ ] Generate + apply migration
@@ -253,7 +262,7 @@ The following Azure/M365 configurations must be completed by PO (with SM guidanc
   - [ ] Update managerId: resolve manager's azureId → local User id → set FK
   - [ ] Set `lastSyncAt = now()` on user record
   - [ ] Cache result for token refresh within same session (avoid repeated Graph calls per session)
-  - [ ] Graceful fallback: if Graph API unavailable (timeout/5xx), allow login with cached data + log warning
+  - [ ] Graceful fallback: if Graph API unavailable (timeout/5xx) AND `lastSyncAt` within 24h → allow login with cached data + log warning; if `lastSyncAt > 24h` → reject login (401) + log ERROR
   - [ ] Extract shared helper `syncUserFromGraph(userId)` reusable by both full sync and login-time mini-sync
 - [ ] Task 16: Tests (12.3b)
   - [ ] `managerId` schema tests (relation, cascade behavior)
@@ -262,6 +271,8 @@ The following Azure/M365 configurations must be completed by PO (with SM guidanc
   - [ ] M365 sync `directReports` + `managerId` linkage tests
   - [ ] Group-only sync mode tests
   - [ ] Login-time mini-sync tests (profile updated, role changed, manager changed, account disabled, Graph API unavailable, partial failure)
+  - [ ] Empty passwordHash login rejection test (M365 user password login → 401)
+  - [ ] Degradation window tests (lastSyncAt > 24h + Graph unavailable → reject; lastSyncAt < 24h + Graph unavailable → allow)
   - [ ] Regression tests for existing features affected by department→managerId migration
 
 ## Dev Notes
@@ -288,8 +299,8 @@ The following Azure/M365 configurations must be completed by PO (with SM guidanc
 - `POST /api/admin/users` — create local user (email, name, role, department, managerId, default password)
 
 ### Schema Changes
-- `managerId String?` — self-referential FK to User
-- `manager User? @relation("ManagerReports", ...)`
+- `managerId String?` — self-referential FK to User (`onDelete: SetNull`)
+- `manager User? @relation("ManagerReports", fields: [managerId], references: [id], onDelete: SetNull)`
 - `directReports User[] @relation("ManagerReports")`
 
 ### Environment Variables (new)
@@ -309,6 +320,13 @@ DEFAULT_USER_PASSWORD="password123"
 - Bulk role changes
 - Azure AD Group creation (IT admin pre-creates groups in Azure portal)
 - Profile page M365 source indicator (deferred — can add later with minimal effort)
+
+### 🔒 Known Security Risks (Deferred to Security Hardening Sprint)
+
+| Risk ID | Severity | Description | Mitigation Plan |
+|---|---|---|---|
+| **SEC-GAP-2** | P1 High | Default password `password123` has no forced-change-on-first-login mechanism. Admin-created local users (including ADMIN role) may keep weak default password indefinitely. | Add `mustChangePassword` field to User model + middleware to intercept login and redirect to password change page. Requires new UI page. **Target: Security Hardening Sprint.** |
+| **SEC-GAP-3** | P1 High | JWT `role` claim remains valid for up to 15 minutes after role is changed in DB (via mini-sync or admin action). Creates a stale privilege window where revoked ADMIN access is still honored. | Options: (A) `RolesGuard` queries DB for real-time role on each request (+1 query/request), (B) shorten access_token to 5 min, (C) invalidate all refresh tokens on role change. **Target: Security Hardening Sprint.** |
 
 ### ⚠️ Breaking Changes
 - **Department-based scoping → managerId-based scoping**: Dashboard team view, badge issuance manager scope, analytics manager filter all change from `WHERE department = X` to `WHERE managerId = Y`. Requires regression testing.

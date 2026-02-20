@@ -363,6 +363,13 @@ First SSO login → azureId not found in DB → JIT create (azureId = token.oid)
 - `department` field retained as metadata — no data loss, just no longer used for access control
 - Local bootstrap admin is a permanent fixture — acceptable for all environment types
 
+### Known Risks (Deferred to Security Hardening Sprint)
+
+| Risk ID | Severity | Description | Target |
+|---|---|---|---|
+| **SEC-GAP-2** | P1 High | Default password `password123` has no forced-change-on-first-login. Admin-created local users may keep weak password indefinitely. Fix: add `mustChangePassword` field + forced redirect on login. | Security Hardening Sprint |
+| **SEC-GAP-3** | P1 High | JWT `role` claim remains valid up to 15 min after DB role change (mini-sync or admin action). Creates stale privilege window. Fix: (A) RolesGuard real-time DB check, (B) shorten token to 5min, or (C) invalidate tokens on role change. | Security Hardening Sprint |
+
 ---
 
 ## References
