@@ -1,6 +1,6 @@
 # Story 12.3: User Management UI Enhancement
 
-Status: review
+Status: accepted
 
 ## Story
 
@@ -492,3 +492,55 @@ ACs verified: #1-18, #22, #33-34, #36-37. All 38 ACs complete across 12.3a + 12.
 - Security Group IDs not validated on startup (fail-safe: null → no role change)
 
 **Verdict: Sub-story 12.3a ACCEPTED — ready to proceed with 12.3b development.**
+
+### Sub-story 12.3b — ACCEPTED (2026-02-21)
+
+**Reviewer:** Bob (SM Agent)
+**Branch:** `sprint-12/management-uis-evidence`
+**Commits:** `731e9a8` (implementation) → `70b0a33` (code review fixes) → `6ce0089` (review approval doc)
+
+#### Test Results
+- Backend: **848 tests** (820 passed, 28 skipped, 0 failures)
+- 12.3b-specific tests: **43 tests** across 2 suites (admin-users service + controller), all passing
+- Backend type-check: **PASS** (`tsc --noEmit`)
+- Frontend type-check: **PASS** (`tsc --noEmit`)
+
+#### AC Verification Matrix (20/20 PASS)
+
+| AC | Description | Status | Evidence |
+|----|-------------|--------|----------|
+| #1 | Data table: name, email, role, status, source, badge count, last active | ✅ | `UserListTable.tsx`: Source + Badges columns added; backend `UserListItem` includes all fields |
+| #2 | Search by name/email (debounced 300ms) | ✅ | `AdminUserManagementPage.tsx`: `useDebounce(search, 300)`; backend searches firstName/lastName/email |
+| #3 | Filter by role (Admin/Issuer/Manager/Employee) | ✅ | Role filter Select with ALL + 4 roles; `roleFilter` validated `@IsEnum(UserRole)` |
+| #4 | Filter by status (Active/Locked/Inactive) | ✅ | 3-state status filter; backend ACTIVE/LOCKED/INACTIVE with Prisma conditions |
+| #5 | Filter by source (M365/Local/All) | ✅ | Source filter Select; backend `azureId: { not: null }` / `azureId: null` |
+| #6 | Edit local user role only (M365 blocked) | ✅ | Backend: `updateRole()` throws 400 if `azureId` present; Frontend: Edit button hidden + dialog returns null for M365 |
+| #7 | Lock/unlock any user (M365 + Local) | ✅ | Lock/Unlock button shown for all users, no source guard |
+| #8 | User detail slide-over panel | ✅ | `UserDetailPanel.tsx`: Sheet with avatar, account info, source, badges, direct reports |
+| #9 | Pagination with page size selector | ✅ | `PAGE_SIZE_OPTIONS = [10, 25, 50, 100]`; URL param persistence |
+| #10 | Context-aware row actions (M365 vs Local) | ✅ | M365: view + lock; Local: view + edit + lock + delete; `user.source === 'LOCAL'` guards |
+| #11 | Role change confirmation dialog | ✅ | `EditRoleDialog.tsx`: full confirmation with role selector, audit note, admin 2-step confirm |
+| #12 | Route: `/admin/users` | ✅ | `App.tsx` route + Navbar/MobileNav links with ADMIN role guard |
+| #13 | Source badge: M365 (blue) / Local (gray) | ✅ | `SourceBadge.tsx`: blue with Microsoft icon / gray |
+| #14 | M365 detail panel: sync notice + last synced | ✅ | `UserDetailPanel.tsx`: "Identity managed by Microsoft 365" + `lastSyncAt` relative time |
+| #15 | Create local user via "Add User" dialog | ✅ | `CreateUserDialog.tsx`: form fields + `POST /admin/users`; "Add User" button in page header |
+| #16 | Created user: `azureId = null`, `roleSetManually = true` | ✅ | `createUser()`: explicit `azureId: null, roleSetManually: true` in Prisma create |
+| #17 | Email uniqueness (409) | ✅ | `createUser()`: `findUnique({ email })` → `ConflictException`; frontend handles 409 toast |
+| #18 | `POST /api/admin/users` endpoint | ✅ | `@Post()` on controller, `@HttpCode(CREATED)`, `CreateUserDto` body |
+| #22 | Seed data: admin bootstrap | ✅ | `seed-uat.ts`: `upsert` with `admin@gcredit.com`, `UserRole.ADMIN` |
+| #33 | `CreateUserDto` validation | ✅ | `@IsEmail`, `@IsEnum(UserRole)`, `@IsUUID` (managerId), `@SanitizeHtml`, `@MinLength/@MaxLength`; ADMIN role blocked in service |
+| #34 | Delete manager → subordinate `managerId` null + UI warning | ✅ | Schema `onDelete: SetNull`; `DeleteUserDialog.tsx` shows subordinate count warning |
+| #36 | API excludes `azureId`, returns computed `source` | ✅ | `mapUserToResponse()`: destructures out `azureId`, computes `source: azureId ? 'M365' : 'LOCAL'` |
+| #37 | M365 lock notice: "G-Credit only" scope | ✅ | `DeactivateUserDialog.tsx`: amber notice for M365 + deactivating |
+
+#### Code Review Summary
+- Initial review: **CHANGES REQUIRED** (7 findings: `where.OR` conflict, UUID validation, audit note cleanup, PII logging, badge relation name, backward compat, hard delete FK risk)
+- Fix commit: `70b0a33` — filter composition fixed (AND-wrapping), `@IsUUID()` added, audit note UI removed from delete dialog, relation name corrected
+- Re-review: **APPROVED** — 43 admin-users tests passing, type-checks clean
+
+#### Known Limitations (Documented, Not Blocking)
+- Manager picker not implemented in CreateUserDialog (managerId field is optional; users can be assigned managers later)
+- No frontend tests for CreateUserDialog/DeleteUserDialog/UserDetailPanel (SourceBadge has 3 tests; backend has full coverage)
+- Hard delete of users with existing badges may fail on FK constraints (documented for future soft-delete consideration)
+
+**Verdict: Sub-story 12.3b ACCEPTED — Story 12.3 fully complete (12.3a + 12.3b).**
