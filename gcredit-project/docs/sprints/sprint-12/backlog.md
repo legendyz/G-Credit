@@ -357,6 +357,12 @@ All 8 stories reviewed by Architect (Winston) + UX Designer (Sally) on 2026-02-1
 
 **Total Sprint 13 carry-forward: ~7h**
 
+### Future Enhancement Candidates (No Decision Made)
+
+| # | Area | Description | Analysis Date | Est. Effort | Notes |
+|---|------|-------------|---------------|-------------|-------|
+| F-1 | Fine-Grained RBAC | Issuer scope control: template-level access, recipient scope restriction, data isolation between issuers | 2026-02-22 | 8-60h (3 levels) | Current RBAC is coarse-grained (4 roles, endpoint-level guards). Analysis identified 3 evolution paths: L1 ownership scoping (~8-12h), L2 template-issuer assignment (~16-24h), L3 full RBAC/ABAC engine (~40-60h). Architecture is extensible — NestJS Guards + Prisma `where` injection patterns already support it. **No decision made — record for future sprint planning.** See: PRD FR10 gap analysis note. |
+
 ### Lessons Applied from Sprint 11
 - **Lesson 41:** Wave structure for parallelization
 - **Lesson 42:** Stories are implementation-ready with explicit ACs and task lists
