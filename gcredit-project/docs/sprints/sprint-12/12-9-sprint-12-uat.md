@@ -59,9 +59,11 @@ So that I can confirm the new admin management UIs and unified evidence system w
 - UAT-S12-015d: M365 Sync panel: "Sync Users" (full sync) and "Sync Roles" (groups-only sync) buttons; sync history table shows sync type (FULL / GROUPS_ONLY)
 
 **Milestone Admin (Story 12.4):**
-- UAT-S12-016: Admin views milestone card grid
-- UAT-S12-017: Admin creates milestone with type-specific form (BADGE_COUNT, SKILL_TRACK, etc.)
-- UAT-S12-018: Admin activates/deactivates milestone toggle
+- UAT-S12-016: Admin views milestone card grid (Global + Category sections)
+- UAT-S12-017: Admin creates milestone with unified form (metric + scope + threshold model): badge_count × global, badge_count × category, category_count × global
+- UAT-S12-018: Admin activates/deactivates milestone toggle; metric/scope locked in edit mode
+- UAT-S12-018b: Dashboard shows real milestone progress (not hardcoded); CelebrationModal fires on milestone achievement
+- UAT-S12-018c: MilestoneTimelineCard renders in wallet TimelineView
 
 **Evidence Unification (Stories 12.5–12.6):**
 - UAT-S12-019: Issuer uploads file evidence during badge issuance

@@ -1,6 +1,6 @@
 # Story 12.4: Milestone Admin UI & Engine Upgrade
 
-Status: review
+Status: done
 
 ## Story
 
@@ -10,9 +10,9 @@ So that I can define achievement milestones using a composable `metric + scope +
 
 ## Context
 
-- Resolves **TD-009** (Milestone Admin UI �?missing frontend)
+- Resolves **TD-009** (Milestone Admin UI �?missing frontend)
 - Replaces the rigid `MilestoneType` enum system (BADGE_COUNT/SKILL_TRACK/ANNIVERSARY/CUSTOM) with a unified **`metric + scope + threshold`** model
-- Fixes broken `SKILL_TRACK` evaluator �?currently compares `template.category` (freeform string) against `trigger.categoryId` (UUID), effectively non-functional
+- Fixes broken `SKILL_TRACK` evaluator �?currently compares `template.category` (freeform string) against `trigger.categoryId` (UUID), effectively non-functional
 - Replaces hardcoded Dashboard milestone logic (every-5-badges formula) with dynamic `MilestoneConfig`-driven progress
 - Wires up existing but disconnected frontend components: `CelebrationModal`, `MilestoneTimelineCard`
 - Prisma model: `MilestoneConfig { id, type, title, description, trigger(Json), icon, isActive, createdBy }`
@@ -21,45 +21,45 @@ So that I can define achievement milestones using a composable `metric + scope +
 ### Unified Milestone Model
 
 ```
-┌─────────────────────────────────────────────�?
-�? metric     What to measure                 �?
-�? ├── badge_count    Count claimed badges    �?
-�? └── category_count Count distinct categories�?
-�?                                            �?
-�? scope      Where to measure                �?
-�? ├── global     All badges, no filter       �?
-�? └── category   Specific SkillCategory      �?
-�?                                            �?
-�? threshold  How many to trigger (min 1)     �?
-�?                                            �?
-�? Extensibility:                             �?
-�? New metric �?add 1 evaluator case          �?
-�? New scope  �?add 1 buildScopeFilter branch �?
-└─────────────────────────────────────────────�?
+┌─────────────────────────────────────────────�?
+�? metric     What to measure                 �?
+�? ├── badge_count    Count claimed badges    �?
+�? └── category_count Count distinct categories�?
+�?                                            �?
+�? scope      Where to measure                �?
+�? ├── global     All badges, no filter       �?
+�? └── category   Specific SkillCategory      �?
+�?                                            �?
+�? threshold  How many to trigger (min 1)     �?
+�?                                            �?
+�? Extensibility:                             �?
+�? New metric �?add 1 evaluator case          �?
+�? New scope  �?add 1 buildScopeFilter branch �?
+└─────────────────────────────────────────────�?
 ```
 
 ### Combination Matrix
 
 | Metric | Scope | Example | Valid? |
 |---|---|---|---|
-| `badge_count` | `global` | "Earn 5 badges" | �?|
-| `badge_count` | `category` | "Earn 3 badges in Software Development" | �?|
-| `category_count` | `global` | "Earn badges across 3 different categories" | �?|
-| `category_count` | `category` | �?| �?Invalid |
+| `badge_count` | `global` | "Earn 5 badges" | �?|
+| `badge_count` | `category` | "Earn 3 badges in Software Development" | �?|
+| `category_count` | `global` | "Earn badges across 3 different categories" | �?|
+| `category_count` | `category` | �?| �?Invalid |
 
 ### Category Scope Query Chain (Fixing Broken SKILL_TRACK)
 
 ```
 trigger.categoryId
-    �?SkillCategory (+ descendants via parentId tree)
-        �?Skill[] (where categoryId IN descendant IDs)
-            �?Skill.id
-                �?
+    �?SkillCategory (+ descendants via parentId tree)
+        �?Skill[] (where categoryId IN descendant IDs)
+            �?Skill.id
+                �?
 Badge (status='CLAIMED', recipientId=userId)
-    �?BadgeTemplate.skillIds[]  �?hasSome �?Skill.id
+    �?BadgeTemplate.skillIds[]  �?hasSome �?Skill.id
 ```
 
-`template.category` (freeform string) is **no longer used** by the engine. The correct chain traverses `SkillCategory �?Skill �?BadgeTemplate.skillIds`.
+`template.category` (freeform string) is **no longer used** by the engine. The correct chain traverses `SkillCategory �?Skill �?BadgeTemplate.skillIds`.
 
 ## Acceptance Criteria
 
@@ -67,16 +67,16 @@ Badge (status='CLAIMED', recipientId=userId)
 1. [x] Milestone evaluation driven by `trigger` JSON (`metric + scope + threshold`), not by `MilestoneType` enum
 2. [x] `badge_count` metric: counts claimed badges matching scope filter; triggers when `count >= threshold`
 3. [x] `category_count` metric: counts distinct skill categories across claimed badges; triggers when `count >= threshold`
-4. [x] `scope = global`: no filter applied �?counts all user's claimed badges
-5. [x] `scope = category`: filters by `categoryId` (and optionally all descendant sub-categories); query chain: `SkillCategory �?Skill �?BadgeTemplate.skillIds hasSome`
+4. [x] `scope = global`: no filter applied �?counts all user's claimed badges
+5. [x] `scope = category`: filters by `categoryId` (and optionally all descendant sub-categories); query chain: `SkillCategory �?Skill �?BadgeTemplate.skillIds hasSome`
 6. [x] `category_count + scope=category` rejected at validation (400 Bad Request)
 7. [x] `includeSubCategories` flag (default `true`): when true, resolves all descendant category IDs via recursive `parentId` tree traversal
-8. [x] `MilestoneType` Prisma enum migrated: `BADGE_COUNT | SKILL_TRACK | ANNIVERSARY | CUSTOM` �?`BADGE_COUNT | CATEGORY_COUNT`
-9. [x] Existing milestone data migrated: `SKILL_TRACK` �?`BADGE_COUNT` (with category scope), `ANNIVERSARY`/`CUSTOM` �?deactivated
+8. [x] `MilestoneType` Prisma enum migrated: `BADGE_COUNT | SKILL_TRACK | ANNIVERSARY | CUSTOM` �?`BADGE_COUNT | CATEGORY_COUNT`
+9. [x] Existing milestone data migrated: `SKILL_TRACK` �?`BADGE_COUNT` (with category scope), `ANNIVERSARY`/`CUSTOM` �?deactivated
 10. [x] Active config cache retained (5-min TTL, existing behavior)
 
 ### Milestone Trigger DTO & Validation (Backend)
-11. [x] `MilestoneTriggerDto` validates: `metric` (enum), `scope` (enum), `threshold` (int �?1), `categoryId` (UUID, required when scope=category), `includeSubCategories` (boolean, optional)
+11. [x] `MilestoneTriggerDto` validates: `metric` (enum), `scope` (enum), `threshold` (int �?1), `categoryId` (UUID, required when scope=category), `includeSubCategories` (boolean, optional)
 12. [x] Zod-style discriminated validation: `scope=category` requires `categoryId`; `metric=category_count` requires `scope=global`
 13. [x] `CreateMilestoneDto` uses `@ValidateNested()` for trigger, `@IsEnum(MilestoneType)` for type
 
@@ -93,22 +93,22 @@ Badge (status='CLAIMED', recipientId=userId)
 ### Milestone Timeline (Frontend)
 20. [x] `MilestoneTimelineCard` (existing component) rendered in wallet `TimelineView` for achieved milestones
 
-### Admin UI �?Card Grid (Frontend)
+### Admin UI �?Card Grid (Frontend)
 21. [x] Admin can view all milestones in a card grid layout at `/admin/milestones`
 22. [x] Each card shows: icon, title, description, metric label, scope label (Global / category name), threshold, isActive toggle, achievement count
 23. [x] Cards grouped by scope: "Global Milestones" section + "Category Milestones" section
 24. [x] Admin can toggle isActive status directly from card (Shadcn `Switch`, top-right)
 25. [x] Empty state: "Create your first milestone" CTA card
 
-### Admin UI �?Create/Edit Form (Frontend)
+### Admin UI �?Create/Edit Form (Frontend)
 26. [x] Admin can create milestone via Sheet/Dialog with unified form: icon, title, description, metric selector, scope selector, threshold, category picker
-27. [x] Metric selector: radio group �?"Badge Count" / "Category Coverage"
-28. [x] Scope selector: radio group �?"Global (all badges)" / "Specific Category"
+27. [x] Metric selector: radio group �?"Badge Count" / "Category Coverage"
+28. [x] Scope selector: radio group �?"Global (all badges)" / "Specific Category"
 29. [x] When `metric = category_count`: scope auto-locked to Global, category picker hidden
 30. [x] When `scope = category`: category tree picker shown with search + "Include sub-categories" checkbox
 31. [x] Live preview card in form reflecting current configuration
 32. [x] Auto-generated description: "Earn {threshold} badges" / "Earn {threshold} badges in {categoryName}" / "Earn badges across {threshold} different categories"
-33. [x] Admin can edit milestone �?metric and scope **locked** after creation (disabled + tooltip: "Cannot change metric/scope after creation")
+33. [x] Admin can edit milestone �?metric and scope **locked** after creation (disabled + tooltip: "Cannot change metric/scope after creation")
 34. [x] Icon selection: Lucide icon picker (curated ~20 achievement icons)
 
 ### Tests
@@ -121,17 +121,17 @@ Badge (status='CLAIMED', recipientId=userId)
 
 ## Tasks / Subtasks
 
-### Engine Upgrade (Backend �?7h)
+### Engine Upgrade (Backend �?7h)
 
-- [x] Task 1: Refactor `MilestoneEvaluator` (AC: #1�?5, #7, #10)
+- [x] Task 1: Refactor `MilestoneEvaluator` (AC: #1�?5, #7, #10)
   - [x] Replace `evaluateTrigger()` switch-on-type with `metric + scope` evaluation
-  - [x] Implement `buildScopeFilter(trigger)`: global �?`{}`, category �?skill-chain query
+  - [x] Implement `buildScopeFilter(trigger)`: global �?`{}`, category �?skill-chain query
   - [x] Implement `getDescendantCategoryIds(categoryId)`: recursive parentId traversal
   - [x] Implement `getSkillIdsByCategories(categoryIds)`: Prisma query
   - [x] `badge_count` evaluator: `COUNT(badges WHERE CLAIMED AND scope filter) >= threshold`
   - [x] `category_count` evaluator: `COUNT(DISTINCT skill.categoryId WHERE badges CLAIMED) >= threshold`
   - [x] Keep 5-min active config cache
-- [x] Task 2: DTO & Validation upgrade (AC: #6, #11�?13)
+- [x] Task 2: DTO & Validation upgrade (AC: #6, #11�?13)
   - [x] Rewrite `MilestoneTriggerDto` with `metric`, `scope`, `threshold`, `categoryId`, `includeSubCategories`
   - [x] Add cross-field validation: `scope=category` requires `categoryId`; `metric=category_count` requires `scope=global`
   - [x] Update `CreateMilestoneDto` and `UpdateMilestoneDto`
@@ -139,24 +139,24 @@ Badge (status='CLAIMED', recipientId=userId)
   - [x] Migrate `MilestoneType` enum: add `CATEGORY_COUNT`, remove `SKILL_TRACK`, `ANNIVERSARY`, `CUSTOM`
   - [x] Data migration: convert existing `SKILL_TRACK` records to `BADGE_COUNT` with category scope; deactivate `ANNIVERSARY`/`CUSTOM` records
   - [x] Guard: check for existing records before enum removal
-- [x] Task 4: Dashboard integration (AC: #14�?16)
+- [x] Task 4: Dashboard integration (AC: #14�?16)
   - [x] Replace hardcoded `milestoneProgress = totalBadges % 5` in `dashboard.service.ts`
   - [x] Query next un-achieved milestone (by threshold ascending)
   - [x] Compute real progress: current badge/category count vs threshold
   - [x] Handle edge cases: all achieved, no active milestones
-- [x] Task 5: Achievement notification (AC: #17�?18)
+- [x] Task 5: Achievement notification (AC: #17�?18)
   - [x] `checkMilestones()` returns `MilestoneAchievement[]` of newly triggered milestones
   - [x] Include `newMilestones` in badge claim response DTO
 
-### Admin UI (Frontend �?9h)
+### Admin UI (Frontend �?9h)
 
-- [x] Task 6: Milestone management page (AC: #21�?25)
+- [x] Task 6: Milestone management page (AC: #21�?25)
   - [x] Wrap in `<AdminPageShell>` from Story 12.1
   - [x] Card grid layout (3 columns, responsive)
   - [x] Each card: icon (top-left), title, description, metric+scope chips, threshold, achievement count, toggle switch (top-right)
   - [x] Group cards: "Global Milestones" section + "Category Milestones" section
   - [x] Empty state: "Create your first milestone" CTA card
-- [x] Task 7: Create milestone form (AC: #26�?32, #34)
+- [x] Task 7: Create milestone form (AC: #26�?32, #34)
   - [x] Shadcn `Sheet` or `Dialog`
   - [x] Metric radio group: "Badge Count" / "Category Coverage"
   - [x] Scope radio group: "Global" / "Specific Category"
@@ -172,27 +172,27 @@ Badge (status='CLAIMED', recipientId=userId)
   - [x] Metric + scope locked (disabled + tooltip)
 - [x] Task 9: Toggle isActive (AC: #24)
   - [x] Inline `Switch` on card (top-right)
-  - [x] API: `PATCH /api/admin/milestones/:id` �?`{ isActive }`
+  - [x] API: `PATCH /api/admin/milestones/:id` �?`{ isActive }`
   - [x] Sonner toast confirmation
 - [x] Task 10: CelebrationModal + Timeline integration (AC: #19, #20)
-  - [x] On badge claim: check `newMilestones` in response �?trigger `CelebrationModal`
+  - [x] On badge claim: check `newMilestones` in response �?trigger `CelebrationModal`
   - [x] Wire `MilestoneTimelineCard` into `TimelineView`
 - [x] Task 11: API integration
-  - [x] `GET /api/admin/milestones` �?list with achievement counts
-  - [x] `POST /api/admin/milestones` �?create
-  - [x] `PATCH /api/admin/milestones/:id` �?update
-  - [x] `GET /api/skill-categories` �?for category tree picker
+  - [x] `GET /api/admin/milestones` �?list with achievement counts
+  - [x] `POST /api/admin/milestones` �?create
+  - [x] `PATCH /api/admin/milestones/:id` �?update
+  - [x] `GET /api/skill-categories` �?for category tree picker
 
 ### Tests (4h)
 
-- [x] Task 12: Engine tests (AC: #35�?37)
+- [x] Task 12: Engine tests (AC: #35�?37)
   - [x] `badge_count × global` evaluator test
   - [x] `badge_count × category` evaluator test (with sub-categories)
   - [x] `category_count × global` evaluator test
-  - [x] Invalid combo rejection test (`category_count × category` �?400)
+  - [x] Invalid combo rejection test (`category_count × category` �?400)
   - [x] `includeSubCategories` flag test (true vs false)
   - [x] Prisma migration data integrity test
-- [x] Task 13: Integration + UI tests (AC: #38�?40)
+- [x] Task 13: Integration + UI tests (AC: #38�?40)
   - [x] Dashboard milestone progress test (real config, not hardcoded)
   - [x] Milestone card rendering tests
   - [x] Form validation tests (Zod)
@@ -201,11 +201,11 @@ Badge (status='CLAIMED', recipientId=userId)
 ## Dev Notes
 
 ### Architecture Patterns
-- **Evaluator architecture:** `metric × scope` orthogonal evaluation �?clean separation of "what" and "where"
+- **Evaluator architecture:** `metric × scope` orthogonal evaluation �?clean separation of "what" and "where"
 - **Scope filter builder:** returns Prisma `where` clause fragment; easily extensible for new scopes
 - **Category tree traversal:** recursive query via `parentId` self-relation; cache results within evaluation batch
 - Wrap in `<AdminPageShell>` from Story 12.1
-- Card grid layout (not table �?milestones are configuration items)
+- Card grid layout (not table �?milestones are configuration items)
 - Create/edit: Shadcn `Sheet` or `Dialog` (NOT full page navigation)
 - Follow design-direction.md card styles
 - Zod schemas for frontend trigger validation
@@ -250,10 +250,10 @@ const MilestoneTriggerSchema = z.discriminatedUnion('scope', [
 | category_count | global | "Earn badges across {threshold} different categories" |
 
 ### Existing Backend Endpoints (to modify)
-- `GET /api/admin/milestones` �?list (add achievement count to response)
-- `POST /api/admin/milestones` �?create (update DTO validation)
-- `PATCH /api/admin/milestones/:id` �?update (lock metric/scope)
-- `DELETE /api/admin/milestones/:id` �?soft delete (set isActive=false)
+- `GET /api/admin/milestones` �?list (add achievement count to response)
+- `POST /api/admin/milestones` �?create (update DTO validation)
+- `PATCH /api/admin/milestones/:id` �?update (lock metric/scope)
+- `DELETE /api/admin/milestones/:id` �?soft delete (set isActive=false)
 
 ### Key Schema Reference (pre-migration)
 ```prisma
@@ -270,26 +270,26 @@ enum MilestoneType { BADGE_COUNT, CATEGORY_COUNT }
 ```
 
 ### ⚠️ Out of Scope (Deferred)
-- Composite AND/OR trigger rules �?JSON structure reserved but not implemented
-- BADGE_COMBO (earn specific badges) �?requires badge template picker, high complexity
-- STREAK (consecutive time periods) �?requires time-series analysis
-- Cron-based anniversary evaluation �?no scheduler needed for current metrics
-- Team/group milestones �?requires org-level aggregation
+- Composite AND/OR trigger rules �?JSON structure reserved but not implemented
+- BADGE_COMBO (earn specific badges) �?requires badge template picker, high complexity
+- STREAK (consecutive time periods) �?requires time-series analysis
+- Cron-based anniversary evaluation �?no scheduler needed for current metrics
+- Team/group milestones �?requires org-level aggregation
 
-### �?Phase 2 Review Complete (2026-02-19)
+### �?Phase 2 Review Complete (2026-02-19)
 - **Architecture (Winston):** Zod trigger schemas per MilestoneType, achievement count from MilestoneAchievement count, no DELETE (deactivate instead)
 - **UX (Sally):** Icon (top-left prominent), toggle (top-right on card), create in sheet/dialog (no page nav), card grid responsive, empty state CTA
 - **Original estimate:** 8h
 
-### �?Engine Upgrade Review (2026-02-21)
-- **Architecture (Winston �?simulated):**
+### �?Engine Upgrade Review (2026-02-21)
+- **Architecture (Winston �?simulated):**
   - Approved `metric + scope + threshold` unified model over multi-enum approach
-  - Evaluator uses orthogonal `metric × scope` design �?extensible via single `case`/`branch` additions
-  - SKILL_TRACK query fixed: `SkillCategory �?Skill �?BadgeTemplate.skillIds hasSome`
+  - Evaluator uses orthogonal `metric × scope` design �?extensible via single `case`/`branch` additions
+  - SKILL_TRACK query fixed: `SkillCategory �?Skill �?BadgeTemplate.skillIds hasSome`
   - Prisma migration from 4-value enum to 2-value enum; existing data migrated or deactivated
   - Dashboard hardcoded milestone replaced with MilestoneConfig-driven progress
   - Not in scope: AND/OR composites, BADGE_COMBO, STREAK, cron scheduler
-- **UX (Sally �?simulated):**
+- **UX (Sally �?simulated):**
   - Unified form with metric/scope radio groups replaces 4 type-specific forms
   - `category_count` auto-locks scope to Global (prevents invalid combination)
   - Category tree picker with search and "Include sub-categories" checkbox

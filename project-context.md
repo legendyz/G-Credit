@@ -386,11 +386,12 @@ _bmad-output/
 | → Sprint 10 | 2 weeks | v1.0.0 Release (TD + UAT + Release) | ✅ COMPLETE (2026-02-09→02-11, 12 stories, 1061 tests, UAT 33/33 PASS, v1.0.0) |
 | Post-MVP Audit | 1 day | 6 comprehensive audits (PRD, Arch, Security, CQ, UX) | ✅ COMPLETE (2026-02-11, 6 reports, ~2,000 lines) |
 | → Sprint 11 | 7 days | Security Hardening + Code Quality + Feature Polish | ✅ COMPLETE (2026-02-12→02-18, 25/25 stories, 7 waves, 1,307 tests, UAT 152/153 PASS, v1.1.0 Released) |
+| → Sprint 12 | TBD | Management UIs + Evidence Unification | ⏳ IN PROGRESS (Stories 12.1–12.4 done) |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ Pending |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
 
-**Current Status:** ✅ Sprint 11 Complete, v1.1.0 Released — All 25 stories delivered across 7 waves. UAT 152/153 PASS (99.3%). Merged to main, tagged v1.1.0, GitHub Release published.
+**Current Status:** ⏳ Sprint 12 In Progress — Stories 12.1 (Skill Category UI), 12.2 (Skill UI), 12.3 (User Management Enhancement), 12.4 (Milestone Admin UI & Engine Upgrade) all **done**. Story 12.4 UAT: 40/40 ACs PASS, 148 tests passing (36 milestone + 30 dashboard + 82 badge-issuance). Stories 12.5–12.9 remain.
 
 ---
 
@@ -1506,7 +1507,7 @@ Sprint 0-2 established this pattern:
    - Story 11.25: Cookie Auth Hardening — 8 httpOnly migration issues fixed
    
    **Technical Debt (5 items, ~53-77h):**
-   - TD-009: Milestone Admin UI (P2, 16-24h)
+   - TD-009: Milestone Admin UI (P2, 16-24h) → ✅ RESOLVED by Story 12.4
    - TD-010: Evidence System Unification (P1, 24-40h)
    - TD-016: Dashboard JSON display (P2, 3-4h)
    - TD-017: Skills UUID fallback (P2, 2-3h, partial fix)

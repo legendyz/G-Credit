@@ -10,12 +10,12 @@
 
 ## Verdict
 
-**Changes Requested (Not approved yet).**
+**Approved with Notes (Re-review passed).**
 
-The implementation is strong overall and most architecture/engine goals are met, but two medium-severity issues remain and should be fixed before approval:
+Re-review confirms both previously blocking findings are fixed in current code:
 
-1. `PATCH /admin/milestones/:id` does not enforce the same cross-field trigger validation as create (`category_count + category` can still pass through update path).
-2. Admin milestone cards do not expose a delete/deactivate entry point even though delete logic and confirmation dialog exist.
+1. `PATCH /admin/milestones/:id` now applies cross-field trigger validation when `dto.trigger` is present.
+2. Milestone cards now expose a visible deactivate action (trash button) that opens the existing confirmation flow.
 
 ## What Was Verified
 
@@ -34,23 +34,19 @@ The implementation is strong overall and most architecture/engine goals are met,
 - ✅ Claim flow reads `newMilestones` and triggers milestone celebration modal.
 - ⚠️ Timeline milestone card wiring remains partial (`MilestoneTimelineCard` import is still commented).
 
-## Blocking Findings (Must Fix)
+## Resolved Blocking Findings
 
-### B1 — Missing cross-field validation in update path
+### B1 — Missing cross-field validation in update path ✅ Resolved
 
 - **Severity:** Medium
 - **File:** `backend/src/milestones/milestones.controller.ts`
-- **Issue:** `createMilestone()` rejects invalid combination (`category_count` + `category`), but `updateMilestone()` does not apply equivalent validation when `dto.trigger` is supplied.
-- **Risk:** Invalid trigger state can be persisted through PATCH even though POST blocks it.
-- **Recommendation:** In `updateMilestone()`, when `dto.trigger` is present, apply the same cross-field rules as create (or extract shared validator used by both endpoints).
+- **Resolution:** `updateMilestone()` now validates `dto.trigger` for invalid `category_count + category` and missing `categoryId` when `scope=category`.
 
-### B2 — No actionable delete/deactivate trigger in card UI
+### B2 — No actionable delete/deactivate trigger in card UI ✅ Resolved
 
 - **Severity:** Medium
 - **File:** `frontend/src/pages/admin/MilestoneManagementPage.tsx`
-- **Issue:** `MilestoneCardProps` includes `onDelete`, parent passes `onDelete={handleDeleteRequest}`, but `MilestoneCard` does not destructure/use `onDelete`, and no delete/deactivate button/menu is rendered.
-- **Risk:** Admin users cannot initiate deactivation from card UI despite confirm dialog flow existing.
-- **Recommendation:** Add a visible delete/deactivate action in `MilestoneCard` (button/menu), stop event propagation, and call `onDelete(milestone)`.
+- **Resolution:** `MilestoneCard` now destructures `onDelete` and renders a trash icon button that triggers `onDelete(milestone)` with propagation control.
 
 ## Non-Blocking Observations (Should Fix)
 
@@ -63,7 +59,7 @@ The implementation is strong overall and most architecture/engine goals are met,
 
 - **Met:** Most backend ACs (engine rewrite, migration, dashboard integration, badge issuance return path) and most admin UI ACs.
 - **Partially met:** Timeline rendering AC (component not actually enabled).
-- **Not fully met for approval:** Update-path validation parity and delete action accessibility.
+- **Current status:** Prior blockers B1/B2 are closed; story can pass review with noted non-blocking items.
 
 ## Validation Evidence
 
@@ -77,8 +73,14 @@ Executed in local workspace:
 - `frontend`: `npm run build` ✅
 - `frontend`: `npm run lint` ✅
 
+Re-review verification (current workspace state):
+
+- `backend/src/milestones/milestones.controller.ts` diagnostics: no errors
+- `frontend/src/pages/admin/MilestoneManagementPage.tsx` diagnostics: no errors
+- `backend`: `npm test -- milestones.service.spec.ts --runInBand` ✅ (36/36)
+
 ## Approval Decision
 
-**Request Changes**
+**Approved with Notes**
 
-Please resolve **B1** and **B2**, then re-run targeted checks for milestones controller + milestone admin page behavior. After these two fixes, this story should be in good shape for approval.
+B1/B2 have been fixed and re-verified. Remaining observations are non-blocking improvements.
