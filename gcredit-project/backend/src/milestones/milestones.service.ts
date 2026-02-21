@@ -162,12 +162,18 @@ export class MilestonesService {
         }
 
         // Evaluate trigger with unified metric × scope engine
-        const trigger = config.trigger as {
-          metric: string;
-          scope: string;
-          threshold: number;
-          categoryId?: string;
-          includeSubCategories?: boolean;
+        // Normalize legacy trigger format { type, value } → { metric, scope, threshold }
+        const rawTrigger = config.trigger as Record<string, unknown>;
+        const trigger = {
+          metric: (rawTrigger.metric ??
+            rawTrigger.type ??
+            'badge_count') as string,
+          scope: (rawTrigger.scope ?? 'global') as string,
+          threshold: (rawTrigger.threshold ?? rawTrigger.value ?? 1) as number,
+          categoryId: rawTrigger.categoryId as string | undefined,
+          includeSubCategories: rawTrigger.includeSubCategories as
+            | boolean
+            | undefined,
         };
 
         const triggerMet = await this.evaluateTrigger(userId, trigger);
@@ -250,12 +256,15 @@ export class MilestonesService {
     if (unachieved.length === 0) return null;
 
     const next = unachieved[0];
-    const trigger = next.trigger as {
-      metric: string;
-      scope: string;
-      threshold: number;
-      categoryId?: string;
-      includeSubCategories?: boolean;
+    const rawTrigger = next.trigger as Record<string, unknown>;
+    const trigger = {
+      metric: (rawTrigger.metric ?? rawTrigger.type ?? 'badge_count') as string,
+      scope: (rawTrigger.scope ?? 'global') as string,
+      threshold: (rawTrigger.threshold ?? rawTrigger.value ?? 1) as number,
+      categoryId: rawTrigger.categoryId as string | undefined,
+      includeSubCategories: rawTrigger.includeSubCategories as
+        | boolean
+        | undefined,
     };
 
     // Calculate current progress
@@ -377,7 +386,7 @@ export class MilestonesService {
     categoryId?: string;
     includeSubCategories?: boolean;
   }): Promise<Record<string, unknown>> {
-    if (trigger.scope === 'global') {
+    if (!trigger.scope || trigger.scope === 'global') {
       return {};
     }
 
