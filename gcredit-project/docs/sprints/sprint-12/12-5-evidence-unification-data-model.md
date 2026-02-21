@@ -69,11 +69,13 @@ So that the platform has a consistent evidence data model that all features can 
 - [ ] Task 6: Extend evidence controller for URL-type evidence
   - [ ] `POST /api/badges/:badgeId/evidence` — accept JSON body `{ type: 'URL', sourceUrl: '...' }` alongside existing multipart upload
   - [ ] Existing download/preview endpoints: FILE-only (URL types don't need them)
-- [ ] Task 7: **Update Bulk Issuance** (NEW — identified in Phase 2 review)
-  - [ ] `bulk-issuance.service.ts`: CSV `evidenceUrl` column now creates `EvidenceFile(type=URL)` instead of setting `Badge.evidenceUrl`
-  - [ ] Update CSV template header comment (evidenceUrl still accepted, stored as EvidenceFile)
-  - [ ] Update bulk preview to show evidence via unified model
-  - [ ] Update all bulk issuance tests (20+ references to evidenceUrl)
+- [ ] Task 7: **Remove `evidenceUrl` from Bulk Issuance CSV** (REVISED — PO decision 2026-02-22)
+  - [ ] `csv-parser.service.ts`: Remove `evidenceUrl` from `optionalHeaders`, remove URL validation logic
+  - [ ] `BulkIssuanceRow` DTO: Remove `evidenceUrl` field
+  - [ ] `badge-issuance.service.ts` → `bulkIssueBadges()`: Stop passing `evidenceUrl` to `issueBadge()`
+  - [ ] `BulkPreviewTable.tsx`: Remove evidence URL column
+  - [ ] Clean up all bulk issuance tests (20+ references to evidenceUrl — DELETE, not convert)
+  - [ ] **Rationale:** Evidence will be attached post-issuance via two-step grouped flow (Sprint 13 story). CSV simplified to `recipientEmail, templateId, expiresIn` only.
 - [ ] Task 8: Tests (AC: #7)
   - [ ] Unit tests for migration script (mock Prisma, test idempotency)
   - [ ] Unit tests for unified evidence retrieval
@@ -118,24 +120,27 @@ interface EvidenceItem {
 }
 ```
 
-### Bulk Issuance Impact (20+ file references)
+### Bulk Issuance — Remove evidenceUrl from CSV (PO Decision 2026-02-22)
+**Decision:** Remove `evidenceUrl` column from CSV template entirely. Evidence will be attached post-issuance via a two-step grouped flow (Sprint 13).
+**Rationale:** (1) No production data exists — safe to clean up, (2) CSV only used for bulk issuance — small impact surface, (3) Simpler UX — avoids confusing dual-path (CSV + post-issuance).
 Files affected:
-- `backend/src/bulk-issuance/bulk-issuance.service.ts` (7 refs)
-- `backend/src/bulk-issuance/bulk-issuance.service.spec.ts` (13+ refs)
-- `frontend/src/components/BulkIssuance/BulkPreviewTable.tsx` (4 refs)
-- `frontend/src/components/BulkIssuance/BulkPreviewPage.tsx` (1 ref)
-- `frontend/src/lib/badgesApi.ts` (1 ref)
+- `backend/src/badge-issuance/services/csv-parser.service.ts` — remove from optionalHeaders + validation
+- `backend/src/badge-issuance/dto/bulk-issue-badges.dto.ts` — remove field
+- `backend/src/badge-issuance/badge-issuance.service.ts` — stop passing evidenceUrl in bulk
+- `backend/src/badge-issuance/badge-issuance.service.spec.ts` — clean up 15+ refs
+- `frontend/src/components/BulkIssuance/BulkPreviewTable.tsx` — remove column
+- `frontend/src/lib/badgesApi.ts` — remove from interface
 
 ### Risk Assessment
 - **HIGH:** Migration affects existing data — test with dry-run first, then execute
-- **HIGH:** Bulk issuance has 20+ references — extensive test updates needed
+- **LOW:** Bulk issuance CSV `evidenceUrl` removal — deletion is simpler than conversion
 - **MEDIUM:** API contract change for badge detail response — backward compat `evidenceUrl` field kept 1 sprint
 - **LOW:** `evidenceUrl` deprecation — field stays in schema for rollback, removed Sprint 13
 
 ### ✅ Phase 2 Review Complete (2026-02-19)
 - **Architecture (Winston):** Two-phase migration (schema + data script separately), `sourceUrl` field name (not `externalUrl`), backward-compat `evidenceUrl` in response for 1 sprint, bulk issuance impact identified (+2h), `EvidenceItem` interface contract
-- **Bulk Issuance:** NEW Task 7 added — critical path, 20+ test file references
-- **Estimate revised:** 12h → **14h** (+2h for bulk issuance impact)
+- **Bulk Issuance:** Task 7 REVISED (PO decision 2026-02-22) — remove `evidenceUrl` from CSV entirely instead of converting. Sprint 13 will add two-step grouped evidence flow for bulk issuance.
+- **Estimate revised:** 12h → **12h** (bulk removal simpler than conversion, net zero change)
 
 ## Dev Agent Record
 ### Agent Model Used

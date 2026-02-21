@@ -1,6 +1,6 @@
 # Dev Prompt: Story 12.5 — Evidence Unification: Data Model + Migration
 
-**Story:** 12.5 (14h estimated)
+**Story:** 12.5 (12h estimated)
 **Branch:** `sprint-12/management-uis-evidence` (continue on current branch)
 **Depends On:** Story 12.4 ACCEPTED (commit `64ab874`)
 **Story Spec:** `sprint-12/12-5-evidence-unification-data-model.md`
@@ -985,24 +985,113 @@ Update `listEvidence()` return mapping to include `type` and `sourceUrl` fields.
 
 ---
 
-### Task 7: Update Bulk Issuance (AC: #4)
+### Task 7: Remove `evidenceUrl` from Bulk Issuance CSV (PO Decision 2026-02-22)
 
-**Goal:** CSV `evidenceUrl` column should create `EvidenceFile(type=URL)` instead of only setting `Badge.evidenceUrl`. Since `bulkIssueBadges()` calls `issueBadge()` internally, the Task 3 changes handle this automatically.
+**Goal:** Remove the `evidenceUrl` column from CSV bulk issuance entirely. Evidence will be attached post-issuance via a two-step grouped flow (Sprint 13 story). This simplifies the CSV template and avoids confusing dual-path UX.
 
-**File:** `backend/src/badge-issuance/badge-issuance.service.ts`
+**Rationale:** (1) No production data exists — safe to clean up, (2) CSV only used for bulk issuance — small impact surface, (3) Simpler UX — avoids "fill URL in CSV AND attach evidence after".
 
-**7a. Verify the call chain:**
+**7a. Update CSV Parser** — `backend/src/badge-issuance/services/csv-parser.service.ts`:
+
+```typescript
+// BEFORE:
+const optionalHeaders = ['evidenceUrl', 'expiresIn'];
+// AFTER:
+const optionalHeaders = ['expiresIn'];
 ```
-bulkIssueBadges() → issueBadge({ evidenceUrl: row.evidenceUrl }) → Task 3 creates EvidenceFile(type=URL)
+
+Remove the `evidenceUrl` validation block in `validateRow()`:
+```typescript
+// DELETE this block:
+// Validate evidenceUrl (optional)
+if (row.evidenceUrl && !this.isValidURL(row.evidenceUrl)) {
+  errors.push(`Invalid evidenceUrl: ${row.evidenceUrl}`);
+}
 ```
 
-Since `issueBadge()` is updated in Task 3 to create `EvidenceFile(type=URL)` when `evidenceUrl` is provided, bulk issuance gets this behavior for free.
+Remove `evidenceUrl` from the return object in `validateRow()`:
+```typescript
+// BEFORE:
+return {
+  recipientEmail: row.recipientEmail.toLowerCase().trim(),
+  templateId: row.templateId.trim(),
+  evidenceUrl: row.evidenceUrl?.trim() || undefined,
+  expiresIn: row.expiresIn ? parseInt(row.expiresIn) : undefined,
+};
+// AFTER:
+return {
+  recipientEmail: row.recipientEmail.toLowerCase().trim(),
+  templateId: row.templateId.trim(),
+  expiresIn: row.expiresIn ? parseInt(row.expiresIn) : undefined,
+};
+```
 
-**7b. CSV Parser** — No changes needed. `csv-parser.service.ts` continues to parse `evidenceUrl` from CSV and pass through `BulkIssuanceRow`. The field remains valid — it's just stored differently now.
+**7b. Update BulkIssuanceRow DTO** — `backend/src/badge-issuance/dto/bulk-issue-badges.dto.ts`:
 
-**7c. `BulkIssuanceRow` DTO** — No changes needed. The DTO property name stays `evidenceUrl` (it's the CSV column name). The semantic change (now stored as EvidenceFile) is transparent.
+Remove `evidenceUrl` field entirely:
+```typescript
+export class BulkIssuanceRow {
+  @IsEmail()
+  recipientEmail: string;
 
-**7d. Verify bulk issuance tests** — After Task 3 changes, ensure all bulk issuance tests still pass. The mock for `issueBadge()` might need updating if tests check the created evidence records.
+  @IsUUID()
+  templateId: string;
+
+  // evidenceUrl REMOVED — PO decision 2026-02-22
+  // Evidence attached post-issuance via two-step flow (Sprint 13)
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(3650)
+  expiresIn?: number;
+}
+```
+
+**7c. Update `bulkIssueBadges()`** — `backend/src/badge-issuance/badge-issuance.service.ts` (line ~990):
+
+```typescript
+// BEFORE:
+const badge = await this.issueBadge(
+  {
+    templateId: row.templateId,
+    recipientId: recipient.id,
+    evidenceUrl: row.evidenceUrl,  // ← REMOVE THIS
+    expiresIn: row.expiresIn,
+  },
+  issuerId,
+);
+// AFTER:
+const badge = await this.issueBadge(
+  {
+    templateId: row.templateId,
+    recipientId: recipient.id,
+    expiresIn: row.expiresIn,
+  },
+  issuerId,
+);
+```
+
+**7d. Update `BulkPreviewTable.tsx`** — `frontend/src/components/BulkIssuance/BulkPreviewTable.tsx`:
+
+Remove the evidence URL column from the table. Remove all `evidenceUrl` references (4 occurrences).
+
+**7e. Clean up tests** — Delete all `evidenceUrl` references from:
+- `badge-issuance.service.spec.ts` (bulk issuance test cases)
+- `badge-issuance.controller.spec.ts` (if any bulk refs)
+- Any CSV parser tests
+
+**7f. Update `IssueBadgeDto`** — `backend/src/badge-issuance/dto/issue-badge.dto.ts`:
+
+The `evidenceUrl` field in `IssueBadgeDto` is KEPT for single badge issuance (used by Task 3). Only the bulk CSV path removes it.
+
+**7g. Update Swagger/API doc** — Update the bulk endpoint's `@ApiBody` description:
+```typescript
+@ApiBody({
+  description: 'CSV file with columns: recipientEmail, templateId, expiresIn (optional)',
+  // ...
+})
+```
 
 ---
 
@@ -1057,7 +1146,7 @@ it('should include evidenceUrl for backward compat');
 ```
 
 **8d. Bulk issuance tests:**
-Verify that bulk issuance with `evidenceUrl` in CSV creates `EvidenceFile(type=URL)`.
+Verify that bulk issuance WITHOUT `evidenceUrl` works correctly. All CSV-related evidence references should be removed.
 
 **8e. E2E impact assessment:**
 ```bash
@@ -1113,9 +1202,16 @@ The Open Badges 2.0 assertion stored in `badge.assertionJson` includes evidence 
 - Only evidence present at issuance time appears in the assertion
 - This is by design (Open Badges 2.0 spec)
 
-### Bulk Issuance — Why No CSV Parser Changes
+### Bulk Issuance — Remove evidenceUrl from CSV (PO Decision 2026-02-22)
 
-The CSV parser reads `evidenceUrl` as a URL string and passes it through `BulkIssuanceRow`. The change is in `issueBadge()` which now also creates an `EvidenceFile(type=URL)`. The CSV column name stays `evidenceUrl` for backward compat with existing CSV files.
+**Decision:** Remove `evidenceUrl` column from CSV template entirely. Evidence will be attached post-issuance via a two-step grouped flow (Sprint 13 story: Bulk Evidence Attachment by Template Group).
+
+**Rationale:**
+1. No production data exists — safe to clean up without backward compat concerns
+2. CSV only used for bulk issuance — small impact surface
+3. Simpler UX — avoids confusing dual-path ("fill URL in CSV" vs "attach evidence after")
+
+**Impact:** This is a deletion, not a conversion — simpler than the original Task 7 plan. Estimated time saved: ~2h.
 
 ### Frontend Impact (Story 12.6 Scope)
 
@@ -1159,7 +1255,11 @@ Frontend currently reads both `badge.evidenceUrl` (badge detail) and `badge.evid
 - [ ] `POST /api/badges/:badgeId/evidence/url` accepts URL evidence
 - [ ] `listEvidence()` returns type and sourceUrl fields
 - [ ] Download/preview endpoints reject URL-type evidence with clear error
-- [ ] Bulk issuance creates EvidenceFile(type=URL) (via issueBadge)
+- [ ] Bulk issuance CSV no longer accepts `evidenceUrl` column
+- [ ] `BulkIssuanceRow` DTO has no `evidenceUrl` field
+- [ ] `csv-parser.service.ts` only has `expiresIn` as optional header
+- [ ] `BulkPreviewTable.tsx` has no evidence URL column
+- [ ] Bulk issuance tests cleaned up (no evidenceUrl references)
 - [ ] Assertion evidence URLs built from unified EvidenceFile records
 - [ ] seed-uat.ts evidence records still work (type=FILE default)
 - [ ] All existing backend tests pass (no regression)

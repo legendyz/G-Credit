@@ -76,8 +76,9 @@ So that evidence is presented consistently across the entire platform.
   - [ ] FILE type: use SAS token preview endpoint
   - [ ] URL type: render as clickable link
 - [ ] Task 6: Update `BulkPreviewTable` evidence display
-  - [ ] Currently shows `evidenceUrl` column — rename to "Evidence"
-  - [ ] Show URL link or "(none)" — bulk remains URL-only (no file upload in CSV)
+  - [ ] Remove evidence URL column entirely (Story 12.5 removed `evidenceUrl` from CSV)
+  - [ ] Bulk issuance CSV now only has: `recipientEmail, templateId, expiresIn`
+  - [ ] Evidence for bulk-issued badges will be attached post-issuance (Sprint 13: two-step grouped flow)
 - [ ] Task 7: Tests (AC: #8)
   - [ ] EvidenceList component tests (FILE + URL rendering, editable + read-only)
   - [ ] File upload component tests (drag, browse, validation, progress)
