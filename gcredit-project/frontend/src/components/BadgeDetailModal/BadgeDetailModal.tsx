@@ -16,6 +16,7 @@ import BadgeShareModal from '../BadgeShareModal';
 import RevocationSection from './RevocationSection';
 import ExpirationSection from './ExpirationSection';
 import ClaimSuccessModal from '../ClaimSuccessModal';
+import { MilestoneReachedCelebration } from '../common/CelebrationModal';
 import { Globe, Lock, Loader2 } from 'lucide-react';
 import { apiFetch } from '../../lib/apiFetch';
 import { useCurrentUser } from '../../stores/authStore';
@@ -32,6 +33,11 @@ const BadgeDetailModal: React.FC = () => {
   const [downloading, setDownloading] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [claimSuccessOpen, setClaimSuccessOpen] = useState(false);
+  const [milestoneCelebration, setMilestoneCelebration] = useState<{
+    isOpen: boolean;
+    name: string;
+    description?: string;
+  }>({ isOpen: false, name: '' });
   const [isToggling, setIsToggling] = useState(false);
   const [localVisibility, setLocalVisibility] = useState<'PUBLIC' | 'PRIVATE'>('PUBLIC');
 
@@ -159,8 +165,8 @@ const BadgeDetailModal: React.FC = () => {
         throw new Error(errorData.message || 'Failed to claim badge');
       }
 
-      // Parse response (we don't need the full badge, just confirmation)
-      await response.json();
+      // Parse response to check for new milestones
+      const claimData = await response.json();
 
       // Update local badge state
       setBadge((prev) =>
@@ -172,6 +178,18 @@ const BadgeDetailModal: React.FC = () => {
 
       // Show celebration modal
       setClaimSuccessOpen(true);
+
+      // Story 12.4: Show milestone celebration if new milestones achieved
+      if (claimData.newMilestones?.length > 0) {
+        // Show milestone celebration after a brief delay (after claim celebration)
+        setTimeout(() => {
+          setMilestoneCelebration({
+            isOpen: true,
+            name: claimData.newMilestones[0].title,
+            description: claimData.newMilestones[0].description,
+          });
+        }, 1500);
+      }
 
       toast.success('Badge claimed!', {
         description: `You've successfully claimed the ${badge.template.name} badge.`,
@@ -532,6 +550,14 @@ const BadgeDetailModal: React.FC = () => {
           badgeName={badge.template.name}
         />
       )}
+
+      {/* Story 12.4: Milestone Reached Celebration */}
+      <MilestoneReachedCelebration
+        isOpen={milestoneCelebration.isOpen}
+        onClose={() => setMilestoneCelebration({ isOpen: false, name: '' })}
+        milestoneName={milestoneCelebration.name}
+        description={milestoneCelebration.description}
+      />
     </>
   );
 };

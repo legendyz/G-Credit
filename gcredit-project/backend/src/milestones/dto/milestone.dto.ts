@@ -7,162 +7,132 @@ import {
   IsInt,
   Min,
   IsUUID,
+  ValidateIf,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { SanitizeHtml } from '../../common/decorators/sanitize-html.decorator';
+import { MilestoneType } from '@prisma/client';
 
-export enum MilestoneTriggerType {
+// --- Enums ---
+export enum MilestoneMetric {
   BADGE_COUNT = 'badge_count',
-  SKILL_TRACK = 'skill_track',
-  ANNIVERSARY = 'anniversary',
+  CATEGORY_COUNT = 'category_count',
 }
 
-export class MilestoneTriggerDto {
-  @ApiProperty({
-    description: 'Type of trigger',
-    enum: MilestoneTriggerType,
-    example: MilestoneTriggerType.BADGE_COUNT,
-  })
-  @IsEnum(MilestoneTriggerType)
-  type: MilestoneTriggerType;
+export enum MilestoneScope {
+  GLOBAL = 'global',
+  CATEGORY = 'category',
+}
 
-  @ApiPropertyOptional({
-    description: 'Badge count required (for badge_count trigger)',
-    example: 10,
-  })
-  @IsOptional()
+// --- Trigger DTO ---
+export class MilestoneTriggerDto {
+  @ApiProperty({ enum: MilestoneMetric })
+  @IsEnum(MilestoneMetric)
+  metric: MilestoneMetric;
+
+  @ApiProperty({ enum: MilestoneScope })
+  @IsEnum(MilestoneScope)
+  scope: MilestoneScope;
+
+  @ApiProperty({ minimum: 1 })
   @IsInt()
   @Min(1)
-  value?: number;
+  threshold: number;
 
-  @ApiPropertyOptional({
-    description: 'Category ID (for skill_track trigger)',
-    example: 'category-uuid',
-  })
-  @IsOptional()
+  @ApiPropertyOptional({ description: 'Required when scope=category' })
+  @ValidateIf((o: MilestoneTriggerDto) => o.scope === MilestoneScope.CATEGORY)
   @IsUUID()
   categoryId?: string;
 
-  @ApiPropertyOptional({
-    description: 'Required badge count in category (for skill_track trigger)',
-    example: 5,
-  })
+  @ApiPropertyOptional({ default: true })
   @IsOptional()
-  @IsInt()
-  @Min(1)
-  requiredBadgeCount?: number;
-
-  @ApiPropertyOptional({
-    description: 'Months since registration (for anniversary trigger)',
-    example: 12,
-  })
-  @IsOptional()
-  @IsInt()
-  @Min(1)
-  months?: number;
+  @IsBoolean()
+  includeSubCategories?: boolean;
 }
 
+// --- Create DTO ---
 export class CreateMilestoneDto {
-  @ApiProperty({
-    description: 'Milestone type identifier',
-    example: 'badge-collector',
-  })
-  @IsString()
-  @SanitizeHtml()
-  type: string;
+  @ApiProperty({ enum: MilestoneType })
+  @IsEnum(MilestoneType)
+  type: MilestoneType;
 
-  @ApiProperty({
-    description: 'Milestone title',
-    example: '🎉 10 Badges Earned!',
-  })
+  @ApiProperty()
   @IsString()
   @SanitizeHtml()
   title: string;
 
-  @ApiProperty({
-    description: 'Milestone description',
-    example: "You've earned 10 badges! Keep up the great work!",
-  })
+  @ApiProperty()
   @IsString()
   @SanitizeHtml()
   description: string;
 
-  @ApiProperty({
-    description: 'Trigger configuration (JSON)',
-    type: MilestoneTriggerDto,
-  })
+  @ApiProperty({ type: MilestoneTriggerDto })
   @ValidateNested()
   @Type(() => MilestoneTriggerDto)
   trigger: MilestoneTriggerDto;
 
-  @ApiProperty({
-    description: 'Milestone icon/emoji',
-    example: '🎉',
-  })
+  @ApiProperty()
   @IsString()
   @SanitizeHtml()
   icon: string;
 
-  @ApiPropertyOptional({
-    description: 'Whether milestone is active',
-    default: true,
-  })
+  @ApiPropertyOptional({ default: true })
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
 }
 
+// --- Update DTO ---
+// NOTE: UpdateMilestoneDto intentionally does NOT include `type` — metric/scope
+// are locked after creation (cannot change the fundamental measurement).
 export class UpdateMilestoneDto {
-  @ApiPropertyOptional({
-    description: 'Milestone title',
-  })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @SanitizeHtml()
   title?: string;
 
-  @ApiPropertyOptional({
-    description: 'Milestone description',
-  })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @SanitizeHtml()
   description?: string;
 
-  @ApiPropertyOptional({
-    description: 'Trigger configuration (JSON)',
-    type: MilestoneTriggerDto,
-  })
+  @ApiPropertyOptional({ type: MilestoneTriggerDto })
   @IsOptional()
   @ValidateNested()
   @Type(() => MilestoneTriggerDto)
   trigger?: MilestoneTriggerDto;
 
-  @ApiPropertyOptional({
-    description: 'Milestone icon/emoji',
-  })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @SanitizeHtml()
   icon?: string;
 
-  @ApiPropertyOptional({
-    description: 'Whether milestone is active',
-  })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
 }
 
+// --- Response DTOs ---
 export class MilestoneConfigResponseDto {
   id: string;
   type: string;
   title: string;
   description: string;
-  trigger: any;
+  trigger: {
+    metric: string;
+    scope: string;
+    threshold: number;
+    categoryId?: string;
+    includeSubCategories?: boolean;
+  };
   icon: string;
   isActive: boolean;
+  achievementCount: number;
   createdAt: Date;
   updatedAt: Date;
 }

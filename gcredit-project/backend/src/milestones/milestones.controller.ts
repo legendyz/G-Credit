@@ -9,6 +9,7 @@ import {
   UseGuards,
   Request,
   Logger,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -21,7 +22,12 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { MilestonesService } from './milestones.service';
-import { CreateMilestoneDto, UpdateMilestoneDto } from './dto/milestone.dto';
+import {
+  CreateMilestoneDto,
+  UpdateMilestoneDto,
+  MilestoneMetric,
+  MilestoneScope,
+} from './dto/milestone.dto';
 import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
 
 @ApiTags('Milestones')
@@ -46,6 +52,24 @@ export class MilestonesController {
     @Body() dto: CreateMilestoneDto,
     @Request() req: RequestWithUser,
   ) {
+    // Cross-field validation: category_count + category scope is invalid
+    if (
+      dto.trigger.metric === MilestoneMetric.CATEGORY_COUNT &&
+      dto.trigger.scope === MilestoneScope.CATEGORY
+    ) {
+      throw new BadRequestException(
+        'category_count metric only supports global scope',
+      );
+    }
+    // Require categoryId when scope=category
+    if (
+      dto.trigger.scope === MilestoneScope.CATEGORY &&
+      !dto.trigger.categoryId
+    ) {
+      throw new BadRequestException(
+        'categoryId is required when scope is category',
+      );
+    }
     return this.milestonesService.createMilestone(dto, req.user.userId);
   }
 

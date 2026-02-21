@@ -5,11 +5,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DashboardService } from './dashboard.service';
 import { PrismaService } from '../common/prisma.service';
+import { MilestonesService } from '../milestones/milestones.service';
 import { BadgeStatus } from '@prisma/client';
 
 describe('DashboardService', () => {
   let service: DashboardService;
   let prisma: jest.Mocked<PrismaService>;
+  let milestonesService: jest.Mocked<MilestonesService>;
 
   const mockUser = {
     id: 'user-1',
@@ -79,6 +81,16 @@ describe('DashboardService', () => {
       $queryRaw: jest.fn().mockResolvedValue([1]),
     };
 
+    const mockMilestonesService = {
+      getNextMilestone: jest.fn().mockResolvedValue({
+        title: 'Badge Collector',
+        progress: 3,
+        target: 5,
+        percentage: 60,
+        icon: '🏆',
+      }),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DashboardService,
@@ -86,11 +98,16 @@ describe('DashboardService', () => {
           provide: PrismaService,
           useValue: mockPrisma,
         },
+        {
+          provide: MilestonesService,
+          useValue: mockMilestonesService,
+        },
       ],
     }).compile();
 
     service = module.get<DashboardService>(DashboardService);
     prisma = module.get(PrismaService);
+    milestonesService = module.get(MilestonesService);
   });
 
   describe('getEmployeeDashboard', () => {
@@ -112,7 +129,7 @@ describe('DashboardService', () => {
       expect(result.badgeSummary.pendingCount).toBe(2);
     });
 
-    it('should return milestone progress', async () => {
+    it('should return milestone progress from MilestonesService', async () => {
       // Arrange
       (prisma.badge.count as jest.Mock)
         .mockResolvedValueOnce(7) // totalBadges
@@ -124,9 +141,11 @@ describe('DashboardService', () => {
       const result = await service.getEmployeeDashboard('user-1');
 
       // Assert
+      expect(milestonesService.getNextMilestone).toHaveBeenCalledWith('user-1');
       expect(result.currentMilestone).toBeDefined();
       expect(result.currentMilestone?.title).toContain('Badge Collector');
-      expect(result.currentMilestone?.progress).toBeLessThanOrEqual(5);
+      expect(result.currentMilestone?.progress).toBe(3);
+      expect(result.currentMilestone?.target).toBe(5);
     });
 
     it('should return recent badges', async () => {
@@ -153,7 +172,21 @@ describe('DashboardService', () => {
       // Assert
       expect(result.badgeSummary.total).toBe(0);
       expect(result.recentBadges).toHaveLength(0);
-      expect(result.currentMilestone?.percentage).toBe(0);
+      expect(result.currentMilestone?.percentage).toBe(60);
+    });
+
+    it('should show all-achieved fallback when no next milestone', async () => {
+      // Arrange
+      (prisma.badge.count as jest.Mock).mockResolvedValue(10);
+      (prisma.badge.findMany as jest.Mock).mockResolvedValue([]);
+      milestonesService.getNextMilestone.mockResolvedValueOnce(null);
+
+      // Act
+      const result = await service.getEmployeeDashboard('user-1');
+
+      // Assert
+      expect(result.currentMilestone?.title).toBe('All milestones achieved!');
+      expect(result.currentMilestone?.percentage).toBe(100);
     });
   });
 

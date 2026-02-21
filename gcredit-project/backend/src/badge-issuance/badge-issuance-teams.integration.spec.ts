@@ -218,7 +218,7 @@ describe.skip('BadgeIssuanceService - Teams Integration', () => {
       notificationService.sendBadgeClaimNotification.mockResolvedValue(
         undefined,
       );
-      milestonesService.checkMilestones.mockResolvedValue(undefined);
+      milestonesService.checkMilestones.mockResolvedValue([]);
       teamsNotificationService.sendBadgeIssuanceNotification.mockResolvedValue(
         undefined,
       );

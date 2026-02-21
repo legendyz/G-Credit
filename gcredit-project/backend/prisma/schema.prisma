@@ -246,9 +246,7 @@ model Badge {
 
 enum MilestoneType {
   BADGE_COUNT
-  SKILL_TRACK
-  ANNIVERSARY
-  CUSTOM
+  CATEGORY_COUNT
 }
 
 model MilestoneConfig {

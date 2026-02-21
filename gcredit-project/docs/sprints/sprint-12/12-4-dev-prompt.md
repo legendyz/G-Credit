@@ -211,7 +211,7 @@ export type WalletItem = (Badge & { type: 'badge' }) | Milestone;
 
 ---
 
-## Tasks (1–13)
+## Tasks (1–14)
 
 ### Task 1: Prisma Migration — MilestoneType Enum (AC: #8, #9)
 
@@ -1122,6 +1122,93 @@ const MilestoneManagementPage = lazy(() => import('@/pages/admin/MilestoneManage
 
 ---
 
+### Task 14: seed-uat.ts Updates (Supplementary — Post-12.4 Migration)
+
+After the Prisma migration and evaluator rewrite, the seed data must be updated to match the new schema.
+
+**14a. Milestone trigger JSON format migration** — Update the 2 existing milestones to use the new `metric + scope + threshold` format:
+
+```typescript
+// BEFORE (old format):
+trigger: { type: 'badge_count', value: 1 }
+trigger: { type: 'badge_count', value: 5 }
+
+// AFTER (new unified format):
+trigger: { metric: 'badge_count', scope: 'global', threshold: 1 }
+trigger: { metric: 'badge_count', scope: 'global', threshold: 5 }
+```
+
+**14b. Add a CATEGORY_COUNT milestone** — Add a 3rd milestone to exercise the new metric type:
+
+```typescript
+// Add to IDS:
+milestone3: '00000000-0000-4000-a000-000500000003',
+
+// Add after milestone2 create:
+await prisma.milestoneConfig.create({
+  data: {
+    id: IDS.milestone3,
+    type: MilestoneType.CATEGORY_COUNT,
+    title: 'Well-Rounded Learner',
+    description: 'Earned badges across 3 different skill categories.',
+    trigger: { metric: 'category_count', scope: 'global', threshold: 3 },
+    icon: '🌟',
+    isActive: true,
+    createdBy: admin.id,
+  },
+});
+
+// Update deleteMany to include milestone3:
+in: [IDS.milestone1, IDS.milestone2, IDS.milestone3, ...]
+
+// Update console.log:
+console.log('✅ 3 milestone configs created');
+
+// Update summary:
+console.log('   3 milestone configs, 3 audit logs');
+```
+
+**14c. Add `color` to all 9 skill categories** — Story 12.2 added the `color` field but seed never sets it:
+
+```typescript
+// Level 1 categories — add color field to each create data:
+{ id: IDS.scatTech,         ..., color: 'blue'    }
+{ id: IDS.scatSoft,         ..., color: 'amber'   }
+{ id: IDS.scatDomain,       ..., color: 'emerald' }
+{ id: IDS.scatCompany,      ..., color: 'violet'  }
+{ id: IDS.scatProfessional, ..., color: 'cyan'    }
+
+// Level 2 sub-categories — inherit or distinguish:
+{ id: IDS.scatProgramming,  ..., color: 'blue'    }  // inherits from Tech
+{ id: IDS.scatCloud,        ..., color: 'cyan'    }  // distinct within Tech
+{ id: IDS.scatCommunication,..., color: 'amber'    }  // inherits from Soft
+{ id: IDS.scatLeadership,   ..., color: 'orange'  }  // distinct within Soft
+```
+
+Valid colors (from `frontend/src/lib/categoryColors.ts`):
+`slate | blue | emerald | amber | rose | violet | cyan | orange | pink | lime`
+
+**14d. employee2 email update** (already applied in working tree):
+
+```typescript
+// BEFORE:
+where: { email: 'M365DevAdmin@2wjh85.onmicrosoft.com' }
+// AFTER:
+where: { email: 'employee2@gcredit.com' }
+// Also update: firstName → 'Demo', lastName → 'Employee2'
+// Also update: audit log recipientEmail + actorEmail references
+```
+
+**14e. Update import** — After enum migration, `MilestoneType` import still works but seed must also import/use `CATEGORY_COUNT`:
+
+```typescript
+// Verify import covers new enum value:
+import { ..., MilestoneType, ... } from '@prisma/client';
+// MilestoneType.CATEGORY_COUNT should be available after prisma generate
+```
+
+---
+
 ## Dev Notes
 
 ### Architecture Patterns
@@ -1187,7 +1274,11 @@ Engine evaluates:
 
 - [ ] All 40 ACs verified
 - [ ] Prisma migration applied and reversible
-- [ ] Existing seed data / test data migrated
+- [ ] Existing seed data / test data migrated (Task 14 — see below)
+- [ ] seed-uat.ts: milestone triggers updated to `{ metric, scope, threshold }` format
+- [ ] seed-uat.ts: CATEGORY_COUNT milestone added (milestone3)
+- [ ] seed-uat.ts: skill categories have `color` field set
+- [ ] seed-uat.ts: employee2 email = `employee2@gcredit.com`
 - [ ] Backend tests pass (engine evaluator + dashboard + DTO validation)
 - [ ] Frontend tests pass (form + card + toggle)
 - [ ] No ESLint errors (both BE + FE, `--max-warnings=0`)

@@ -7,6 +7,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
+import { MilestonesService } from '../milestones/milestones.service';
 import {
   EmployeeDashboardDto,
   IssuerDashboardDto,
@@ -72,7 +73,10 @@ export class DashboardService {
     }
   }
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly milestonesService: MilestonesService,
+  ) {}
 
   /**
    * AC1: Get Employee Dashboard data
@@ -133,9 +137,16 @@ export class DashboardService {
     // Get latest badge for preview
     const latestBadge = recentBadges.length > 0 ? recentBadges[0] : undefined;
 
-    // Calculate milestone progress (simple: every 5 badges is a milestone)
-    const milestoneProgress = totalBadges % 5 || (totalBadges > 0 ? 5 : 0);
-    const milestonePercentage = Math.round((milestoneProgress / 5) * 100);
+    // Get real milestone progress from MilestonesService
+    const milestoneData = await this.milestonesService.getNextMilestone(userId);
+
+    const currentMilestone = milestoneData ?? {
+      title: 'All milestones achieved!',
+      progress: 0,
+      target: 0,
+      percentage: 100,
+      icon: '🏆',
+    };
 
     return {
       badgeSummary: {
@@ -144,13 +155,7 @@ export class DashboardService {
         pendingCount: pendingBadges,
         latestBadge,
       },
-      currentMilestone: {
-        title: `Badge Collector Level ${Math.ceil(totalBadges / 5) || 1}`,
-        progress: milestoneProgress,
-        target: 5,
-        percentage: milestonePercentage,
-        icon: '🏆',
-      },
+      currentMilestone,
       recentBadges,
     };
   }

@@ -205,13 +205,14 @@ export class BadgeIssuanceService {
       );
     }
 
-    // 11. Check milestones (non-blocking)
-    this.milestonesService
+    // 11. Check milestones (awaited — include results in response)
+    const newMilestones = await this.milestonesService
       .checkMilestones(dto.recipientId)
       .catch((err: Error) => {
         this.logger.warn(
           `Milestone check failed after badge issuance: ${err.message}`,
         );
+        return [];
       });
 
     // 12. Return badge response
@@ -224,6 +225,7 @@ export class BadgeIssuanceService {
       claimUrl: this.assertionGenerator.getClaimUrl(badge.claimToken!),
       assertionUrl: this.assertionGenerator.getAssertionUrl(badge.id),
       emailError, // Story 8.4 AC6: Surface email failures in completion summary
+      newMilestones, // Story 12.4: Newly achieved milestones
       template: {
         id: badge.template.id,
         name: badge.template.name,
@@ -366,13 +368,14 @@ export class BadgeIssuanceService {
       },
     });
 
-    // 6b. Check milestones (non-blocking)
-    this.milestonesService
+    // 6b. Check milestones (awaited — include results in response)
+    const newMilestones = await this.milestonesService
       .checkMilestones(claimedBadge.recipientId)
       .catch((err: Error) => {
         this.logger.warn(
           `Milestone check failed after badge claim: ${err.message}`,
         );
+        return [];
       });
 
     // 7. Return badge details
@@ -386,6 +389,7 @@ export class BadgeIssuanceService {
         imageUrl: claimedBadge.template.imageUrl,
       },
       assertionUrl: this.assertionGenerator.getAssertionUrl(claimedBadge.id),
+      newMilestones, // Story 12.4: Newly achieved milestones
       message:
         'Badge claimed successfully! You can now view it in your wallet.',
     };

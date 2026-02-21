@@ -168,7 +168,7 @@ async function main() {
   });
 
   const employee2 = await prisma.user.upsert({
-    where: { email: 'M365DevAdmin@2wjh85.onmicrosoft.com' },
+    where: { email: 'employee2@gcredit.com' },
     update: {
       passwordHash,
       role: UserRole.EMPLOYEE,
@@ -176,10 +176,10 @@ async function main() {
       emailVerified: true,
     },
     create: {
-      email: 'M365DevAdmin@2wjh85.onmicrosoft.com',
+      email: 'employee2@gcredit.com',
       passwordHash,
-      firstName: 'M365Dev',
-      lastName: 'Admin',
+      firstName: 'Demo',
+      lastName: 'Employee2',
       role: UserRole.EMPLOYEE,
       department: 'Development',
       isActive: true,
@@ -1059,7 +1059,7 @@ async function main() {
         timestamp: twoMonthsAgo,
         metadata: {
           templateName: 'Cloud Expert Certification',
-          recipientEmail: 'M365DevAdmin@2wjh85.onmicrosoft.com',
+          recipientEmail: 'employee2@gcredit.com',
         },
       },
       {
@@ -1067,7 +1067,7 @@ async function main() {
         entityId: IDS.badge6,
         action: 'CLAIMED',
         actorId: employee.id,
-        actorEmail: 'M365DevAdmin@2wjh85.onmicrosoft.com',
+        actorEmail: 'employee2@gcredit.com',
         timestamp: new Date(twoMonthsAgo.getTime() + 1 * 24 * 60 * 60 * 1000),
         metadata: { oldStatus: 'PENDING', newStatus: 'CLAIMED' },
       },
@@ -1100,7 +1100,7 @@ async function main() {
   console.log('   Issuer:   issuer@gcredit.com / password123');
   console.log('   Manager:  manager@gcredit.com / password123');
   console.log('   Employee: employee@gcredit.com / password123');
-  console.log('   Employee: M365DevAdmin@2wjh85.onmicrosoft.com / password123');
+  console.log('   Employee: employee2@gcredit.com / password123');
   console.log('\n📊 Data Summary:');
   console.log('   5 users, 5 templates, 11 badges, 2 evidence files');
   console.log('   2 milestone configs, 3 audit logs');

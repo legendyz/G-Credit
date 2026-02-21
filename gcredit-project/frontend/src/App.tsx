@@ -24,6 +24,7 @@ const BadgeManagementPage = lazy(() => import('@/pages/admin/BadgeManagementPage
 const AdminUserManagementPage = lazy(() => import('@/pages/AdminUserManagementPage'));
 const SkillCategoryManagementPage = lazy(() => import('@/pages/admin/SkillCategoryManagementPage'));
 const SkillManagementPage = lazy(() => import('@/pages/admin/SkillManagementPage'));
+const MilestoneManagementPage = lazy(() => import('@/pages/admin/MilestoneManagementPage'));
 const BulkIssuancePage = lazy(() => import('@/pages/BulkIssuancePage'));
 const BulkPreviewPage = lazy(() => import('@/components/BulkIssuance/BulkPreviewPage'));
 const IssueBadgePage = lazy(() =>
@@ -196,6 +197,16 @@ function App() {
                 <ProtectedRoute requiredRoles={['ADMIN']}>
                   <Layout pageTitle="Skill Management">
                     <SkillManagementPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/milestones"
+              element={
+                <ProtectedRoute requiredRoles={['ADMIN']}>
+                  <Layout pageTitle="Milestone Management">
+                    <MilestoneManagementPage />
                   </Layout>
                 </ProtectedRoute>
               }
