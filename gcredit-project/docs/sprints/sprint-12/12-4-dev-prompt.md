@@ -1274,11 +1274,11 @@ Engine evaluates:
 
 - [ ] All 40 ACs verified
 - [ ] Prisma migration applied and reversible
-- [ ] Existing seed data / test data migrated (Task 14 — see below)
-- [ ] seed-uat.ts: milestone triggers updated to `{ metric, scope, threshold }` format
-- [ ] seed-uat.ts: CATEGORY_COUNT milestone added (milestone3)
-- [ ] seed-uat.ts: skill categories have `color` field set
-- [ ] seed-uat.ts: employee2 email = `employee2@gcredit.com`
+- [x] Existing seed data / test data migrated (Task 14 — see below)
+- [x] seed-uat.ts: milestone triggers updated to `{ metric, scope, threshold }` format
+- [x] seed-uat.ts: CATEGORY_COUNT milestone added (milestone3)
+- [x] seed-uat.ts: skill categories have `color` field set
+- [x] seed-uat.ts: employee2 email = `employee2@gcredit.com`
 - [ ] Backend tests pass (engine evaluator + dashboard + DTO validation)
 - [ ] Frontend tests pass (form + card + toggle)
 - [ ] No ESLint errors (both BE + FE, `--max-warnings=0`)

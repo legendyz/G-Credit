@@ -61,6 +61,7 @@ const IDS = {
   // Milestones (type=0005)
   milestone1: '00000000-0000-4000-a000-000500000001',
   milestone2: '00000000-0000-4000-a000-000500000002',
+  milestone3: '00000000-0000-4000-a000-000500000003',
   // Skill Categories Level 1 (type=0006)
   scatTech: '00000000-0000-4000-a000-000600000001',
   scatSoft: '00000000-0000-4000-a000-000600000002',
@@ -325,6 +326,7 @@ async function main() {
         name: '技术技能',
         nameEn: 'Technical Skills',
         description: '编程、开发工具、云平台等技术相关能力',
+        color: 'blue',
         level: 1,
         isSystemDefined: true,
         isEditable: false,
@@ -337,6 +339,7 @@ async function main() {
         name: '软技能',
         nameEn: 'Soft Skills',
         description: '沟通、领导力、团队协作等人际交往能力',
+        color: 'amber',
         level: 1,
         isSystemDefined: true,
         isEditable: false,
@@ -349,6 +352,7 @@ async function main() {
         name: '行业知识',
         nameEn: 'Domain Knowledge',
         description: '特定行业的专业知识与经验',
+        color: 'emerald',
         level: 1,
         isSystemDefined: true,
         isEditable: false,
@@ -361,6 +365,7 @@ async function main() {
         name: '公司特定能力',
         nameEn: 'Company-Specific Competencies',
         description: '企业文化、内部流程、专有工具等公司特有的能力要求',
+        color: 'violet',
         level: 1,
         isSystemDefined: true,
         isEditable: false,
@@ -373,6 +378,7 @@ async function main() {
         name: '通用职业技能',
         nameEn: 'Professional Skills',
         description: '项目管理、数据分析等跨行业的通用职业技能',
+        color: 'cyan',
         level: 1,
         isSystemDefined: true,
         isEditable: false,
@@ -391,6 +397,7 @@ async function main() {
         id: IDS.scatProgramming,
         name: '编程语言',
         nameEn: 'Programming Languages',
+        color: 'blue',
         level: 2,
         parentId: IDS.scatTech,
         isSystemDefined: true,
@@ -403,6 +410,7 @@ async function main() {
         id: IDS.scatCloud,
         name: '云平台',
         nameEn: 'Cloud Platforms',
+        color: 'cyan',
         level: 2,
         parentId: IDS.scatTech,
         isSystemDefined: true,
@@ -415,6 +423,7 @@ async function main() {
         id: IDS.scatCommunication,
         name: '沟通能力',
         nameEn: 'Communication',
+        color: 'amber',
         level: 2,
         parentId: IDS.scatSoft,
         isSystemDefined: true,
@@ -427,6 +436,7 @@ async function main() {
         id: IDS.scatLeadership,
         name: '领导力',
         nameEn: 'Leadership',
+        color: 'orange',
         level: 2,
         parentId: IDS.scatSoft,
         isSystemDefined: true,
@@ -1007,6 +1017,7 @@ async function main() {
         in: [
           IDS.milestone1,
           IDS.milestone2,
+          IDS.milestone3,
           // Old format IDs for migration cleanup
           'uat-mile-0001-0001-0001-000000000001',
           'uat-mile-0001-0001-0001-000000000002',
@@ -1022,7 +1033,7 @@ async function main() {
       title: 'First Badge',
       description:
         'Earned your very first badge! Welcome to the G-Credit community.',
-      trigger: { type: 'badge_count', value: 1 },
+      trigger: { metric: 'badge_count', scope: 'global', threshold: 1 },
       icon: '🏆',
       isActive: true,
       createdBy: admin.id,
@@ -1035,14 +1046,27 @@ async function main() {
       type: MilestoneType.BADGE_COUNT,
       title: 'Badge Collector',
       description: 'Earned 5 badges! You are a dedicated learner.',
-      trigger: { type: 'badge_count', value: 5 },
+      trigger: { metric: 'badge_count', scope: 'global', threshold: 5 },
       icon: '⭐',
       isActive: true,
       createdBy: admin.id,
     },
   });
 
-  console.log('✅ 2 milestone configs created');
+  await prisma.milestoneConfig.create({
+    data: {
+      id: IDS.milestone3,
+      type: MilestoneType.CATEGORY_COUNT,
+      title: 'Well-Rounded Learner',
+      description: 'Earned badges across 3 different skill categories.',
+      trigger: { metric: 'category_count', scope: 'global', threshold: 3 },
+      icon: '🌟',
+      isActive: true,
+      createdBy: admin.id,
+    },
+  });
+
+  console.log('✅ 3 milestone configs created');
 
   // ========================================
   // 6. AUDIT LOGS (3 entries for revocation)
@@ -1103,7 +1127,7 @@ async function main() {
   console.log('   Employee: employee2@gcredit.com / password123');
   console.log('\n📊 Data Summary:');
   console.log('   5 users, 5 templates, 11 badges, 2 evidence files');
-  console.log('   2 milestone configs, 3 audit logs');
+  console.log('   3 milestone configs, 3 audit logs');
   console.log('\n🔗 Verification URLs:');
   console.log(`   CLAIMED:  http://localhost:5173/verify/${IDS.verify1}`);
   console.log(`   PENDING:  http://localhost:5173/verify/${IDS.verify5}`);
