@@ -5,8 +5,8 @@ Status: backlog
 ## Story
 
 As an **Admin/Issuer**,
-I want the badge issuance form to support file uploads (not just URL), and badge management/verification pages to display all evidence uniformly,
-So that evidence is presented consistently across the entire platform.
+I want the badge issuance form to support file uploads (not just URL), badge management/verification pages to display all evidence uniformly, and bulk-issued badges to support evidence attachment grouped by template,
+So that evidence is presented consistently across the entire platform and bulk issuance has the same evidence capabilities as single badge issuance.
 
 ## Context
 
@@ -17,6 +17,8 @@ So that evidence is presented consistently across the entire platform.
   - `BadgeDetailModal` only shows `EvidenceFile` records (misses URLs)
   - `VerifyBadgePage` uses direct blobUrl (no SAS token)
   - Badge Management page has no evidence column/action
+  - Bulk issuance has no evidence capability (CSV `evidenceUrl` removed in Story 12.5)
+- **PO Decision 2026-02-22:** Bulk evidence attached post-issuance via two-step grouped flow (by template), with optional per-badge individual evidence
 
 ## Acceptance Criteria
 
@@ -28,6 +30,11 @@ So that evidence is presented consistently across the entire platform.
 6. [ ] Evidence list component is reusable across all pages
 7. [ ] File upload shows progress bar and validates size (max 10MB) and type (PDF, PNG, JPG, DOCX)
 8. [ ] All existing frontend tests pass
+9. [ ] Bulk issuance result page displays badges grouped by template
+10. [ ] Each template group has shared evidence attachment area (files + URLs, up to 5 per badge)
+11. [ ] Shared evidence applied to ALL badges in template group via API fan-out
+12. [ ] Individual per-badge evidence can be added via [+ Individual Evidence] button
+13. [ ] User can skip evidence attachment entirely ("Skip — No Evidence" button)
 
 ## Tasks / Subtasks
 
@@ -75,16 +82,60 @@ So that evidence is presented consistently across the entire platform.
   - [ ] Use `<EvidenceList editable={false}>`
   - [ ] FILE type: use SAS token preview endpoint
   - [ ] URL type: render as clickable link
-- [ ] Task 6: Update `BulkPreviewTable` evidence display
+- [ ] Task 6: Update `BulkPreviewTable` — remove evidence column
   - [ ] Remove evidence URL column entirely (Story 12.5 removed `evidenceUrl` from CSV)
   - [ ] Bulk issuance CSV now only has: `recipientEmail, templateId, expiresIn`
-  - [ ] Evidence for bulk-issued badges will be attached post-issuance (Sprint 13: two-step grouped flow)
-- [ ] Task 7: Tests (AC: #8)
+- [ ] Task 7: Bulk result page — template group layout (AC: #9)
+  - [ ] After bulk issuance completes, show result page with badges grouped by `templateId`
+  - [ ] Collapsible group sections with template name + badge count
+  - [ ] Show recipient list per group with status indicators (✅ success, ✗ failed)
+  - [ ] Layout:
+    ```
+    ┌──────────────────────────────────────────────────────┐
+    │ 📋 Bulk Issuance Complete — 18 badges issued         │
+    │                                                      │
+    │ 🏆 Cloud Architecture (15 badges)           [展开 ▼] │
+    │  ├─ 📋 Shared Evidence (0/5):                        │
+    │  │  ┌────────────────────────────────┐               │
+    │  │  │ 📎 Drag files here or browse    │               │
+    │  │  └────────────────────────────────┘               │
+    │  │  🔗 [Enter URL______________] [+ Add]             │
+    │  │                                                   │
+    │  ├─ 📧 alice@gcredit.com  ✅  [+ Individual Evidence] │
+    │  ├─ 📧 bob@gcredit.com    ✅  [+ Individual Evidence] │
+    │  └─ 📧 carol@gcredit.com  ✅  [+ Individual Evidence] │
+    │                                                      │
+    │ 🏆 Innovation Award (3 badges)              [展开 ▼] │
+    │  ├─ 📋 Shared Evidence (0/5):  [Add Evidence]        │
+    │  ├─ 📧 dave@gcredit.com   ✅                         │
+    │  └─ 📧 emma@gcredit.com   ✅                         │
+    │                                                      │
+    │                          [完成] [Skip — No Evidence]  │
+    └──────────────────────────────────────────────────────┘
+    ```
+- [ ] Task 8: Shared evidence upload per template group (AC: #10, #11)
+  - [ ] Reuse `<EvidenceList editable={true}>` from Task 1
+  - [ ] On "完成" — iterate all badges in group, call evidence API for each badge
+  - [ ] Show group-level progress (X/N badges processed)
+  - [ ] Handle partial failures gracefully (some uploads fail, others succeed)
+  - [ ] API fan-out: 1 set of evidence items → N API calls (one per badge)
+- [ ] Task 9: Individual per-badge evidence (AC: #12)
+  - [ ] `[+ Individual Evidence]` button per badge row
+  - [ ] Inline expand → `<EvidenceList editable={true}>` for that specific badge
+  - [ ] Combined count: shared + individual ≤ 5 per badge
+  - [ ] Clear indicator when limit reached
+- [ ] Task 10: Skip flow (AC: #13)
+  - [ ] "Skip — No Evidence" button → navigate to success/dashboard
+  - [ ] Confirm dialog if evidence partially attached ("Some evidence has been attached. Skip remaining?")
+- [ ] Task 11: Tests (AC: #8)
   - [ ] EvidenceList component tests (FILE + URL rendering, editable + read-only)
   - [ ] File upload component tests (drag, browse, validation, progress)
   - [ ] Integration tests for IssueBadgePage two-step flow
   - [ ] Verification page evidence display tests
-  - [ ] BulkPreviewTable evidence column tests
+  - [ ] Template grouping logic tests
+  - [ ] Shared evidence API fan-out tests
+  - [ ] Individual evidence limit enforcement tests
+  - [ ] Skip flow navigation tests
 
 ## Dev Notes
 
@@ -109,6 +160,16 @@ Editable mode: ✕ remove button per item
 Read-only mode: no remove button
 ```
 
+### Bulk Evidence — Template Group Architecture
+- **Shared evidence = fan-out:** 1 set of evidence items → N API calls (one per badge in group)
+- Consider parallelism with concurrency limit for large groups (15+ badges)
+- All API endpoints already exist from Story 12.5:
+  - `POST /api/badges/:badgeId/evidence` — file upload (multipart)
+  - `POST /api/badges/:badgeId/evidence/url` — URL evidence (JSON body)
+  - `GET /api/badges/:badgeId/evidence` — list evidence per badge
+- **5-item limit enforcement:** shared + individual combined ≤ 5 per badge
+- **Frontend-only implementation** — no new backend APIs needed
+
 ### Dependencies
 - Story 12.5 (unified evidence API)
 
@@ -117,12 +178,14 @@ Read-only mode: no remove button
 - `frontend/src/components/BadgeDetailModal/` (swap to EvidenceList)
 - `frontend/src/pages/badge-operations/VerifyBadgePage.tsx` (swap to EvidenceList)
 - `frontend/src/pages/admin/BadgeManagementPage.tsx` (add evidence count column)
-- `frontend/src/components/BulkIssuance/BulkPreviewTable.tsx` (evidence column update)
+- `frontend/src/components/BulkIssuance/BulkPreviewTable.tsx` (remove evidence column)
+- `frontend/src/components/BulkIssuance/BulkResultPage.tsx` (NEW: template-grouped evidence attachment)
+- `frontend/src/components/evidence/EvidenceList.tsx` (NEW: shared component)
 
 ### ✅ Phase 2 Review Complete (2026-02-19)
 - **Architecture (Winston):** Evidence controller already exists with POST/GET/download/preview. Extend POST to accept JSON body for URL-type. Two-step issuance (issue → attach). Existing download/preview endpoints stay FILE-only.
 - **UX (Sally):** Stacked layout (drag zone → OR → URL input → attached list), per-file progress bar, specific validation toast messages, thumbnail for images, file type icon for PDF/DOCX, editable/read-only modes in EvidenceList
-- **Estimate confirmed:** 10h
+- **Estimate revised:** 10h → **17h** (+7h for bulk evidence grouped attachment — PO decision 2026-02-22 to merge Sprint 13 story into 12.6 for feature completeness)
 
 ## Dev Agent Record
 ### Agent Model Used
