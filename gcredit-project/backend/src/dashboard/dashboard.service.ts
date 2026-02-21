@@ -138,7 +138,17 @@ export class DashboardService {
     const latestBadge = recentBadges.length > 0 ? recentBadges[0] : undefined;
 
     // Get real milestone progress from MilestonesService
-    const milestoneData = await this.milestonesService.getNextMilestone(userId);
+    // NB2: wrap in try/catch so milestone DB failure doesn't fail entire dashboard
+    let milestoneData: Awaited<
+      ReturnType<MilestonesService['getNextMilestone']>
+    > = null;
+    try {
+      milestoneData = await this.milestonesService.getNextMilestone(userId);
+    } catch (error: unknown) {
+      this.logger.error(
+        `Milestone progress fetch failed for ${userId}: ${(error as Error).message}`,
+      );
+    }
 
     const currentMilestone = milestoneData ?? {
       title: 'All milestones achieved!',

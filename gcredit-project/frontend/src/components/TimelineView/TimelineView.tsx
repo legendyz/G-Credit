@@ -4,8 +4,8 @@ import { useSkills } from '../../hooks/useSkills';
 import { useBadgeSearch } from '../../hooks/useBadgeSearch';
 import { TimelineLine } from './TimelineLine';
 import { BadgeTimelineCard } from './BadgeTimelineCard';
-// Story 12.4: MilestoneTimelineCard ready for use once wallet API includes milestone data
-// import { MilestoneTimelineCard } from './MilestoneTimelineCard';
+// Story 12.4: MilestoneTimelineCard wired for rendering milestone achievements in timeline
+import { MilestoneTimelineCard } from './MilestoneTimelineCard';
 import { DateGroupHeader } from './DateGroupHeader';
 import { DateNavigationSidebar } from './DateNavigationSidebar';
 import { ViewToggle } from './ViewToggle';
@@ -16,7 +16,7 @@ import { useBadgeDetailModal } from '../../stores/badgeDetailModal';
 import { BadgeSearchBar } from '../search/BadgeSearchBar';
 import { PageTemplate } from '../layout/PageTemplate';
 import type { BadgeForFilter } from '../../utils/searchFilters';
-import type { Badge } from '../../hooks/useWallet';
+import type { Badge, Milestone } from '../../hooks/useWallet';
 
 export type ViewMode = 'timeline' | 'grid';
 
@@ -117,6 +117,14 @@ export function TimelineView() {
     const filteredIds = new Set(filteredBadges.map((b) => b.id));
     return data.data.filter(isBadge).filter((badge) => filteredIds.has(badge.id));
   }, [data, filteredBadges]);
+
+  // Story 12.4: Extract milestone items from wallet data for timeline rendering
+  const milestoneItems: Milestone[] = useMemo(() => {
+    if (!data?.data) return [];
+    return data.data.filter(
+      (item): item is Milestone => 'type' in item && item.type === 'milestone'
+    );
+  }, [data]);
 
   // Group badges by date for timeline display
   const dateGroups = useMemo(() => {
@@ -304,6 +312,14 @@ export function TimelineView() {
           {viewMode === 'timeline' && !showNoResults && (
             <div className="relative">
               <TimelineLine />
+              {/* Story 12.4: Render milestone achievements at the top of the timeline */}
+              {milestoneItems.length > 0 && (
+                <div className="space-y-4 mb-8">
+                  {milestoneItems.map((milestone) => (
+                    <MilestoneTimelineCard key={milestone.milestoneId} milestone={milestone} />
+                  ))}
+                </div>
+              )}
               <div className="space-y-8">
                 {dateGroups.map((group) => {
                   const groupBadges = displayBadges.slice(

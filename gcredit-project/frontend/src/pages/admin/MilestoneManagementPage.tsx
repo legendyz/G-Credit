@@ -5,7 +5,7 @@
  * Card grid layout grouped by scope, with create/edit/toggle/delete actions.
  */
 import { useState, useCallback } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -213,7 +213,7 @@ interface MilestoneCardProps {
   onToggle: (milestone: MilestoneConfig) => void;
 }
 
-function MilestoneCard({ milestone, onEdit, onToggle }: MilestoneCardProps) {
+function MilestoneCard({ milestone, onEdit, onDelete, onToggle }: MilestoneCardProps) {
   const achievementCount = milestone._count?.achievements ?? 0;
 
   return (
@@ -231,10 +231,22 @@ function MilestoneCard({ milestone, onEdit, onToggle }: MilestoneCardProps) {
         }
       }}
     >
-      {/* Top row: icon + switch */}
+      {/* Top row: icon + actions */}
       <div className="flex items-start justify-between">
         <span className="text-3xl">{milestone.icon}</span>
-        <div onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+        <div
+          className="flex items-center gap-2"
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={() => onDelete(milestone)}
+            className="p-1 rounded hover:bg-red-50 text-neutral-400 hover:text-red-600 transition-colors"
+            aria-label={`Deactivate ${milestone.title}`}
+            title="Deactivate"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
           <Switch
             checked={milestone.isActive}
             onCheckedChange={() => onToggle(milestone)}

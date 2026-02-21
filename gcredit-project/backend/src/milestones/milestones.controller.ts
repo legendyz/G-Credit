@@ -98,6 +98,25 @@ export class MilestonesController {
     @Param('id') id: string,
     @Body() dto: UpdateMilestoneDto,
   ) {
+    // Cross-field validation parity with create (B1 fix)
+    if (dto.trigger) {
+      if (
+        dto.trigger.metric === MilestoneMetric.CATEGORY_COUNT &&
+        dto.trigger.scope === MilestoneScope.CATEGORY
+      ) {
+        throw new BadRequestException(
+          'category_count metric only supports global scope',
+        );
+      }
+      if (
+        dto.trigger.scope === MilestoneScope.CATEGORY &&
+        !dto.trigger.categoryId
+      ) {
+        throw new BadRequestException(
+          'categoryId is required when scope is category',
+        );
+      }
+    }
     return this.milestonesService.updateMilestone(id, dto);
   }
 

@@ -13,6 +13,26 @@ export class MilestonesService {
   constructor(private prisma: PrismaService) {}
 
   /**
+   * Normalize legacy trigger format { type, value } → { metric, scope, threshold }.
+   * Shared helper used by checkMilestones() and getNextMilestone().
+   */
+  private normalizeTrigger(raw: Record<string, unknown>): {
+    metric: string;
+    scope: string;
+    threshold: number;
+    categoryId?: string;
+    includeSubCategories?: boolean;
+  } {
+    return {
+      metric: (raw.metric ?? raw.type ?? 'badge_count') as string,
+      scope: (raw.scope ?? 'global') as string,
+      threshold: (raw.threshold ?? raw.value ?? 1) as number,
+      categoryId: raw.categoryId as string | undefined,
+      includeSubCategories: raw.includeSubCategories as boolean | undefined,
+    };
+  }
+
+  /**
    * Create milestone configuration (Admin only)
    * DTO now sends MilestoneType enum directly — no typeMapping needed.
    */
@@ -162,19 +182,9 @@ export class MilestonesService {
         }
 
         // Evaluate trigger with unified metric × scope engine
-        // Normalize legacy trigger format { type, value } → { metric, scope, threshold }
-        const rawTrigger = config.trigger as Record<string, unknown>;
-        const trigger = {
-          metric: (rawTrigger.metric ??
-            rawTrigger.type ??
-            'badge_count') as string,
-          scope: (rawTrigger.scope ?? 'global') as string,
-          threshold: (rawTrigger.threshold ?? rawTrigger.value ?? 1) as number,
-          categoryId: rawTrigger.categoryId as string | undefined,
-          includeSubCategories: rawTrigger.includeSubCategories as
-            | boolean
-            | undefined,
-        };
+        const trigger = this.normalizeTrigger(
+          config.trigger as Record<string, unknown>,
+        );
 
         const triggerMet = await this.evaluateTrigger(userId, trigger);
 
@@ -244,28 +254,26 @@ export class MilestonesService {
       existingAchievements.map((a) => a.milestoneId),
     );
 
-    // Find un-achieved milestones, sorted by threshold (lowest first)
+    // Find un-achieved milestones, sorted by normalized threshold (lowest first)
     const unachieved = configs
       .filter((c) => !achievedMilestoneIds.has(c.id))
       .sort((a, b) => {
-        const ta = (a.trigger as { threshold: number }).threshold;
-        const tb = (b.trigger as { threshold: number }).threshold;
-        return ta - tb;
+        const ta = this.normalizeTrigger(a.trigger as Record<string, unknown>);
+        const tb = this.normalizeTrigger(b.trigger as Record<string, unknown>);
+        // Group by metric first (badge_count before category_count),
+        // then by threshold within same metric
+        if (ta.metric !== tb.metric) {
+          return ta.metric === 'badge_count' ? -1 : 1;
+        }
+        return ta.threshold - tb.threshold;
       });
 
     if (unachieved.length === 0) return null;
 
     const next = unachieved[0];
-    const rawTrigger = next.trigger as Record<string, unknown>;
-    const trigger = {
-      metric: (rawTrigger.metric ?? rawTrigger.type ?? 'badge_count') as string,
-      scope: (rawTrigger.scope ?? 'global') as string,
-      threshold: (rawTrigger.threshold ?? rawTrigger.value ?? 1) as number,
-      categoryId: rawTrigger.categoryId as string | undefined,
-      includeSubCategories: rawTrigger.includeSubCategories as
-        | boolean
-        | undefined,
-    };
+    const trigger = this.normalizeTrigger(
+      next.trigger as Record<string, unknown>,
+    );
 
     // Calculate current progress
     let progress = 0;
