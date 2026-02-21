@@ -75,7 +75,7 @@ So that the platform has a consistent evidence data model that all features can 
   - [ ] `badge-issuance.service.ts` → `bulkIssueBadges()`: Stop passing `evidenceUrl` to `issueBadge()`
   - [ ] `BulkPreviewTable.tsx`: Remove evidence URL column
   - [ ] Clean up all bulk issuance tests (20+ references to evidenceUrl — DELETE, not convert)
-  - [ ] **Rationale:** Evidence will be attached post-issuance via two-step grouped flow (Sprint 13 story). CSV simplified to `recipientEmail, templateId, expiresIn` only.
+  - [ ] **Rationale:** Evidence will be attached post-issuance via two-step grouped flow (Story 12.6, Tasks 7–10). CSV simplified to `recipientEmail, templateId, expiresIn` only.
 - [ ] Task 8: Tests (AC: #7)
   - [ ] Unit tests for migration script (mock Prisma, test idempotency)
   - [ ] Unit tests for unified evidence retrieval
@@ -121,7 +121,7 @@ interface EvidenceItem {
 ```
 
 ### Bulk Issuance — Remove evidenceUrl from CSV (PO Decision 2026-02-22)
-**Decision:** Remove `evidenceUrl` column from CSV template entirely. Evidence will be attached post-issuance via a two-step grouped flow (Sprint 13).
+**Decision:** Remove `evidenceUrl` column from CSV template entirely. Evidence will be attached post-issuance via a two-step grouped flow (Story 12.6, Tasks 7–10).
 **Rationale:** (1) No production data exists — safe to clean up, (2) CSV only used for bulk issuance — small impact surface, (3) Simpler UX — avoids confusing dual-path (CSV + post-issuance).
 Files affected:
 - `backend/src/badge-issuance/services/csv-parser.service.ts` — remove from optionalHeaders + validation
@@ -139,7 +139,7 @@ Files affected:
 
 ### ✅ Phase 2 Review Complete (2026-02-19)
 - **Architecture (Winston):** Two-phase migration (schema + data script separately), `sourceUrl` field name (not `externalUrl`), backward-compat `evidenceUrl` in response for 1 sprint, bulk issuance impact identified (+2h), `EvidenceItem` interface contract
-- **Bulk Issuance:** Task 7 REVISED (PO decision 2026-02-22) — remove `evidenceUrl` from CSV entirely instead of converting. Sprint 13 will add two-step grouped evidence flow for bulk issuance.
+- **Bulk Issuance:** Task 7 REVISED (PO decision 2026-02-22) — remove `evidenceUrl` from CSV entirely instead of converting. Story 12.6 (Tasks 7–10) will add two-step grouped evidence flow for bulk issuance.
 - **Estimate revised:** 12h → **12h** (bulk removal simpler than conversion, net zero change)
 
 ## Dev Agent Record

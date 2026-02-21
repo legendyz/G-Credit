@@ -987,7 +987,7 @@ Update `listEvidence()` return mapping to include `type` and `sourceUrl` fields.
 
 ### Task 7: Remove `evidenceUrl` from Bulk Issuance CSV (PO Decision 2026-02-22)
 
-**Goal:** Remove the `evidenceUrl` column from CSV bulk issuance entirely. Evidence will be attached post-issuance via a two-step grouped flow (Sprint 13 story). This simplifies the CSV template and avoids confusing dual-path UX.
+**Goal:** Remove the `evidenceUrl` column from CSV bulk issuance entirely. Evidence will be attached post-issuance via a two-step grouped flow (Story 12.6, Tasks 7–10). This simplifies the CSV template and avoids confusing dual-path UX.
 
 **Rationale:** (1) No production data exists — safe to clean up, (2) CSV only used for bulk issuance — small impact surface, (3) Simpler UX — avoids "fill URL in CSV AND attach evidence after".
 
@@ -1038,7 +1038,7 @@ export class BulkIssuanceRow {
   templateId: string;
 
   // evidenceUrl REMOVED — PO decision 2026-02-22
-  // Evidence attached post-issuance via two-step flow (Sprint 13)
+  // Evidence attached post-issuance via two-step flow (Story 12.6)
 
   @IsOptional()
   @IsInt()
@@ -1204,7 +1204,7 @@ The Open Badges 2.0 assertion stored in `badge.assertionJson` includes evidence 
 
 ### Bulk Issuance — Remove evidenceUrl from CSV (PO Decision 2026-02-22)
 
-**Decision:** Remove `evidenceUrl` column from CSV template entirely. Evidence will be attached post-issuance via a two-step grouped flow (Sprint 13 story: Bulk Evidence Attachment by Template Group).
+**Decision:** Remove `evidenceUrl` column from CSV template entirely. Evidence will be attached post-issuance via a two-step grouped flow (Story 12.6, Tasks 7–10: template-grouped bulk evidence attachment).
 
 **Rationale:**
 1. No production data exists — safe to clean up without backward compat concerns
