@@ -100,7 +100,7 @@ sprint-12: planning
 12-4-milestone-admin-ui: review
 
 # --- Wave 2: Evidence Unification ---
-12-5-evidence-unification-data-model: backlog
+12-5-evidence-unification-data-model: review
 12-6-evidence-unification-ui: backlog
 
 # --- Wave 3: Quick Fixes ---

@@ -59,12 +59,25 @@ describe('BadgeIssuanceService', () => {
     $transaction: jest.fn(
       async (callback: (tx: unknown) => Promise<unknown>): Promise<unknown> => {
         const tx: {
-          badge: { create: jest.Mock; update: jest.Mock };
+          badge: {
+            create: jest.Mock;
+            update: jest.Mock;
+            findUnique: jest.Mock;
+          };
+          evidenceFile: { create: jest.Mock };
           auditLog: { create: jest.Mock };
         } = {
           badge: {
             create: mockPrismaService.badge.create,
             update: mockPrismaService.badge.update,
+            findUnique: mockPrismaService.badge.findUnique,
+          },
+          evidenceFile: {
+            create: jest.fn().mockResolvedValue({
+              id: 'evidence-uuid-1',
+              type: 'URL',
+              sourceUrl: 'https://example.com/evidence.pdf',
+            }),
           },
           auditLog: {
             create: jest.fn().mockResolvedValue({}),
@@ -279,10 +292,29 @@ describe('BadgeIssuanceService', () => {
         revocationReason: null,
         assertionJson: mockAssertion,
         recipientHash: 'sha256$hashvalue',
+        evidenceFiles: [],
+      };
+
+      // Story 12.5: Mock findUnique for re-query after URL evidence creation
+      const mockBadgeWithEvidence = {
+        ...mockCreatedBadge,
+        evidenceFiles: issueDto.evidenceUrl
+          ? [
+              {
+                id: 'evidence-uuid-1',
+                type: 'URL',
+                sourceUrl: issueDto.evidenceUrl,
+                blobUrl: '',
+              },
+            ]
+          : [],
       };
 
       mockPrismaService.badge.create.mockResolvedValue(mockCreatedBadge);
       mockPrismaService.badge.update.mockResolvedValue(mockCreatedBadge);
+      mockPrismaService.badge.findUnique.mockResolvedValue(
+        mockBadgeWithEvidence,
+      );
 
       // Act
       const result = await service.issueBadge(issueDto, mockIssuer.id);
@@ -386,10 +418,12 @@ describe('BadgeIssuanceService', () => {
         revocationReason: null,
         assertionJson: mockAssertion,
         recipientHash: 'sha256$hashvalue',
+        evidenceFiles: [],
       };
 
       mockPrismaService.badge.create.mockResolvedValue(mockCreatedBadge);
       mockPrismaService.badge.update.mockResolvedValue(mockCreatedBadge);
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockCreatedBadge);
 
       // Act
       const result1 = await service.issueBadge(
@@ -408,6 +442,7 @@ describe('BadgeIssuanceService', () => {
       const mockCreatedBadge2 = { ...mockCreatedBadge, claimToken: token2 };
       mockPrismaService.badge.create.mockResolvedValue(mockCreatedBadge2);
       mockPrismaService.badge.update.mockResolvedValue(mockCreatedBadge2);
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockCreatedBadge2);
 
       const result2 = await service.issueBadge(
         { ...issueDto, expiresIn: undefined },
@@ -461,10 +496,29 @@ describe('BadgeIssuanceService', () => {
         revocationReason: null,
         assertionJson: mockAssertion,
         recipientHash: 'sha256$hashvalue',
+        evidenceFiles: [],
+      };
+
+      // Story 12.5: Mock findUnique for re-query after URL evidence creation
+      const mockBadgeWithEvidence = {
+        ...mockCreatedBadge,
+        evidenceFiles: issueDto.evidenceUrl
+          ? [
+              {
+                id: 'ev-1',
+                type: 'URL',
+                sourceUrl: issueDto.evidenceUrl,
+                blobUrl: '',
+              },
+            ]
+          : [],
       };
 
       mockPrismaService.badge.create.mockResolvedValue(mockCreatedBadge);
       mockPrismaService.badge.update.mockResolvedValue(mockCreatedBadge);
+      mockPrismaService.badge.findUnique.mockResolvedValue(
+        mockBadgeWithEvidence,
+      );
 
       // Act
       const result = await service.issueBadge(issueDto, mockIssuer.id);

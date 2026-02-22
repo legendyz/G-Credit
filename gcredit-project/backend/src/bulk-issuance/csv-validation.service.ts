@@ -288,9 +288,6 @@ export class CsvValidationService {
     const emailResult = await this.validateRegisteredEmail(row.recipientEmail);
     if (!emailResult.valid) errors.push(emailResult.error!);
 
-    const urlResult = this.validateEvidenceUrl(row.evidenceUrl);
-    if (!urlResult.valid) errors.push(urlResult.error!);
-
     const notesResult = this.validateNotes(row.narrativeJustification);
     if (!notesResult.valid) errors.push(notesResult.error!);
 
@@ -360,9 +357,6 @@ export class CsvValidationService {
     }
 
     // Non-DB validations (same as regular validateRow)
-    const urlResult = this.validateEvidenceUrl(row.evidenceUrl);
-    if (!urlResult.valid) errors.push(urlResult.error!);
-
     const notesResult = this.validateNotes(row.narrativeJustification);
     if (!notesResult.valid) errors.push(notesResult.error!);
 

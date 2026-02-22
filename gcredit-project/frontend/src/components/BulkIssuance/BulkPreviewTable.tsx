@@ -7,7 +7,6 @@ interface PreviewTableRow {
   badgeName?: string;
   recipientEmail: string;
   recipientName?: string;
-  evidenceUrl?: string;
   isValid: boolean;
 }
 
@@ -126,9 +125,6 @@ export default function BulkPreviewTable({ rows, validRows }: BulkPreviewTablePr
               <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
                 Recipient Email
               </th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                Evidence URL
-              </th>
               <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Status</th>
             </tr>
           </thead>
@@ -142,20 +138,6 @@ export default function BulkPreviewTable({ rows, validRows }: BulkPreviewTablePr
                   {row.recipientName ?? row.recipientEmail}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-600">{row.recipientEmail}</td>
-                <td className="px-4 py-3 text-sm text-gray-600 truncate max-w-[200px]">
-                  {row.evidenceUrl ? (
-                    <a
-                      href={row.evidenceUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
-                    >
-                      {row.evidenceUrl}
-                    </a>
-                  ) : (
-                    <span className="text-gray-400">—</span>
-                  )}
-                </td>
                 <td className="px-4 py-3">
                   <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                     ✓ Valid

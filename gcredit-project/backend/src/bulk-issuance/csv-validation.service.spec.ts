@@ -277,7 +277,6 @@ describe('CsvValidationService', () => {
       const result = await service.validateRow({
         badgeTemplateId: 'leadership-excellence',
         recipientEmail: 'john@company.com',
-        evidenceUrl: 'https://docs.company.com/evidence',
         narrativeJustification: 'Great leadership demonstrated',
       });
       expect(result.valid).toBe(true);
@@ -288,7 +287,6 @@ describe('CsvValidationService', () => {
       const result = await service.validateRow({
         badgeTemplateId: '',
         recipientEmail: 'john@company.com',
-        evidenceUrl: '',
         narrativeJustification: '',
       });
       expect(result.valid).toBe(false);
@@ -302,7 +300,6 @@ describe('CsvValidationService', () => {
       const result = await service.validateRow({
         badgeTemplateId: 'template-123',
         recipientEmail: 'not-an-email',
-        evidenceUrl: '',
         narrativeJustification: '',
       });
       expect(result.valid).toBe(false);
@@ -311,22 +308,10 @@ describe('CsvValidationService', () => {
       ).toBe(true);
     });
 
-    it('should reject row with invalid URL', async () => {
-      const result = await service.validateRow({
-        badgeTemplateId: 'template-123',
-        recipientEmail: 'john@company.com',
-        evidenceUrl: 'ftp://invalid',
-        narrativeJustification: '',
-      });
-      expect(result.valid).toBe(false);
-      expect(result.errors.some((e) => e.includes('URL'))).toBe(true);
-    });
-
     it('should reject row with narrativeJustification too long', async () => {
       const result = await service.validateRow({
         badgeTemplateId: 'template-123',
         recipientEmail: 'john@company.com',
-        evidenceUrl: '',
         narrativeJustification: 'a'.repeat(501),
       });
       expect(result.valid).toBe(false);
@@ -340,11 +325,10 @@ describe('CsvValidationService', () => {
       const result = await service.validateRow({
         badgeTemplateId: '',
         recipientEmail: 'not-an-email',
-        evidenceUrl: 'ftp://bad',
         narrativeJustification: 'a'.repeat(501),
       });
       expect(result.valid).toBe(false);
-      expect(result.errors.length).toBeGreaterThanOrEqual(3);
+      expect(result.errors.length).toBeGreaterThanOrEqual(2);
     });
   });
 
@@ -440,7 +424,6 @@ describe('CsvValidationService', () => {
         {
           badgeTemplateId: 'leadership-excellence',
           recipientEmail: 'john@company.com',
-          evidenceUrl: 'https://docs.example.com',
           narrativeJustification: 'Great work',
         },
         txClient,
@@ -466,7 +449,6 @@ describe('CsvValidationService', () => {
         {
           badgeTemplateId: 'tpl-1',
           recipientEmail: 'john@company.com',
-          evidenceUrl: '',
           narrativeJustification: '',
         },
         txClient,
@@ -488,7 +470,6 @@ describe('CsvValidationService', () => {
         {
           badgeTemplateId: 'nonexistent',
           recipientEmail: 'john@company.com',
-          evidenceUrl: '',
           narrativeJustification: '',
         },
         txClient,
@@ -512,7 +493,6 @@ describe('CsvValidationService', () => {
         {
           badgeTemplateId: 'tpl-1',
           recipientEmail: 'unknown@company.com',
-          evidenceUrl: '',
           narrativeJustification: '',
         },
         txClient,
@@ -534,7 +514,6 @@ describe('CsvValidationService', () => {
         {
           badgeTemplateId: 'EXAMPLE-DELETE-THIS-ROW',
           recipientEmail: 'example-john@company.com',
-          evidenceUrl: '',
           narrativeJustification: '',
         },
         txClient,
@@ -554,14 +533,13 @@ describe('CsvValidationService', () => {
         {
           badgeTemplateId: '',
           recipientEmail: 'not-an-email',
-          evidenceUrl: 'ftp://bad',
           narrativeJustification: 'a'.repeat(501),
         },
         txClient,
       );
 
       expect(result.valid).toBe(false);
-      expect(result.errors.length).toBeGreaterThanOrEqual(3);
+      expect(result.errors.length).toBeGreaterThanOrEqual(2);
     });
   });
 });

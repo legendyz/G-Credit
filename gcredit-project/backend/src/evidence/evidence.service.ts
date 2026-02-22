@@ -13,6 +13,7 @@ import {
 } from './dto/upload-evidence.dto';
 import { randomUUID } from 'crypto';
 import { validateMagicBytes } from '../common/utils/magic-byte-validator';
+import { EvidenceType } from '@prisma/client';
 
 @Injectable()
 export class EvidenceService {
@@ -120,6 +121,67 @@ export class EvidenceService {
       mimeType: evidenceFile.mimeType,
       blobUrl: evidenceFile.blobUrl,
       uploadedAt: evidenceFile.uploadedAt,
+      type: 'FILE',
+    };
+  }
+
+  /**
+   * Story 12.5: Add URL-type evidence
+   */
+  async addUrlEvidence(
+    badgeId: string,
+    sourceUrl: string,
+    userId: string,
+    userRole?: string,
+  ): Promise<EvidenceFileResponse> {
+    // Validate badge exists
+    const badge = await this.prisma.badge.findUnique({
+      where: { id: badgeId },
+    });
+
+    if (!badge) {
+      throw new NotFoundException(`Badge ${badgeId} not found`);
+    }
+
+    // IDOR protection: issuer or ADMIN only
+    if (userRole !== 'ADMIN' && badge.issuerId !== userId) {
+      throw new ForbiddenException(
+        'You can only add evidence for badges you issued',
+      );
+    }
+
+    // Validate URL
+    try {
+      new URL(sourceUrl);
+    } catch {
+      throw new BadRequestException('Invalid URL format');
+    }
+
+    // Create URL-type evidence record
+    const evidenceFile = await this.prisma.evidenceFile.create({
+      data: {
+        badgeId,
+        type: EvidenceType.URL,
+        sourceUrl,
+        fileName: '',
+        originalName: new URL(sourceUrl).hostname,
+        fileSize: 0,
+        mimeType: '',
+        blobUrl: '',
+        uploadedBy: userId,
+      },
+    });
+
+    return {
+      id: evidenceFile.id,
+      fileName: evidenceFile.fileName,
+      originalName: evidenceFile.originalName,
+      fileSize: evidenceFile.fileSize,
+      mimeType: evidenceFile.mimeType,
+      blobUrl: evidenceFile.blobUrl,
+      uploadedAt: evidenceFile.uploadedAt,
+      type: 'URL',
+      sourceUrl: evidenceFile.sourceUrl ?? undefined,
     };
   }
 
@@ -158,6 +220,8 @@ export class EvidenceService {
       mimeType: file.mimeType,
       blobUrl: file.blobUrl,
       uploadedAt: file.uploadedAt,
+      type: file.type, // Story 12.5: FILE or URL
+      sourceUrl: file.sourceUrl ?? undefined, // Story 12.5: For URL-type
     }));
   }
 
@@ -189,6 +253,13 @@ export class EvidenceService {
 
     if (!evidenceFile || evidenceFile.badgeId !== badgeId) {
       throw new NotFoundException('Evidence file not found');
+    }
+
+    // Story 12.5: URL-type evidence doesn't support download/preview
+    if (evidenceFile.type === EvidenceType.URL) {
+      throw new BadRequestException(
+        'URL-type evidence does not support download/preview. Use the source URL directly.',
+      );
     }
 
     // AC 3.6: Generate SAS token (5-minute expiry, read-only)

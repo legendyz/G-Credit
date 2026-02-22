@@ -158,7 +158,6 @@ describe('BulkIssuanceService', () => {
 
       expect(headerLine).toContain('badgeTemplateId');
       expect(headerLine).toContain('recipientEmail');
-      expect(headerLine).toContain('evidenceUrl');
       expect(headerLine).toContain('narrativeJustification');
     });
 
@@ -169,7 +168,6 @@ describe('BulkIssuanceService', () => {
       expect(template).toContain('# Field Specifications:');
       expect(template).toContain('# badgeTemplateId');
       expect(template).toContain('# recipientEmail');
-      expect(template).toContain('# evidenceUrl');
       expect(template).toContain('# narrativeJustification');
       expect(template).toContain('# Tips:');
       expect(template).toContain('Maximum 20 badges per upload');
@@ -197,8 +195,8 @@ describe('BulkIssuanceService', () => {
 
   describe('createSession', () => {
     it('should create a session with valid CSV data', async () => {
-      const csvContent = `badgeTemplateId,recipientEmail,evidenceUrl
-template-123,user@company.com,https://example.com/evidence`;
+      const csvContent = `badgeTemplateId,recipientEmail
+template-123,user@company.com`;
 
       const result = await service.createSession(csvContent, 'issuer-123');
 
@@ -213,8 +211,8 @@ template-123,user@company.com,https://example.com/evidence`;
       mockPrismaService.badgeTemplate.findFirst.mockResolvedValue(null);
       mockPrismaService.user.findFirst.mockResolvedValue(null);
 
-      const csvContent = `badgeTemplateId,recipientEmail,evidenceUrl
-EXAMPLE-DELETE-THIS-ROW,example-john@company.com,`;
+      const csvContent = `badgeTemplateId,recipientEmail
+EXAMPLE-DELETE-THIS-ROW,example-john@company.com`;
 
       const result = await service.createSession(csvContent, 'issuer-123');
 
@@ -379,7 +377,8 @@ EXAMPLE-DELETE,example@company.com`;
 
   describe('CRLF line ending support', () => {
     it('should parse CRLF line endings correctly', async () => {
-      const csvContent = `badgeTemplateId,recipientEmail,evidenceUrl\r\ntemplate-123,user@company.com,https://example.com/evidence`;
+      const csvContent = `badgeTemplateId,recipientEmail
+\ntemplate-123,user@company.com`;
 
       const result = await service.createSession(csvContent, 'issuer-123');
 
@@ -431,7 +430,7 @@ EXAMPLE-DELETE,example@company.com`;
 
   describe('XSS sanitization (ARCH-C7)', () => {
     it('should sanitize XSS payloads in narrativeJustification before validation', async () => {
-      const csvContent = `badgeTemplateId,recipientEmail,evidenceUrl,narrativeJustification\ntemplate-123,user@company.com,,<script>alert('xss')</script>Good work`;
+      const csvContent = `badgeTemplateId,recipientEmail,narrativeJustification\ntemplate-123,user@company.com,,<script>alert('xss')</script>Good work`;
 
       const result = await service.createSession(csvContent, 'issuer-123');
 
@@ -995,12 +994,11 @@ template-123,user3@company.com`;
       expect(result.results[0].error).toContain('No active user found');
     });
 
-    it('should pass evidenceUrl through to issueBadge', async () => {
+    it('should pass expiresIn through to issueBadge when no evidenceUrl', async () => {
       const sessionId = createValidatedSession([
         {
           badgeTemplateId: 'Leadership Excellence',
           recipientEmail: 'user@company.com',
-          evidenceUrl: 'https://storage.azure.com/evidence/cert.pdf',
         },
       ]);
 
@@ -1010,7 +1008,6 @@ template-123,user3@company.com`;
         expect.objectContaining({
           templateId: 'template-uuid-1',
           recipientId: 'user-uuid-1',
-          evidenceUrl: 'https://storage.azure.com/evidence/cert.pdf',
         }),
         'owner-123',
       );

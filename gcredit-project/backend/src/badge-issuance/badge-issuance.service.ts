@@ -29,6 +29,17 @@ import { randomUUID } from 'crypto';
 import { MilestonesService } from '../milestones/milestones.service';
 import sharp from 'sharp';
 
+// Story 12.5: Unified evidence item
+interface EvidenceItem {
+  id: string;
+  type: 'FILE' | 'URL';
+  name: string;
+  url: string;
+  size?: number;
+  mimeType?: string;
+  uploadedAt: string;
+}
+
 @Injectable()
 export class BadgeIssuanceService {
   private readonly logger = new Logger(BadgeIssuanceService.name);
@@ -113,7 +124,7 @@ export class BadgeIssuanceService {
           templateId: dto.templateId,
           recipientId: dto.recipientId,
           issuerId,
-          evidenceUrl: dto.evidenceUrl,
+          evidenceUrl: dto.evidenceUrl, // KEEP for backward compat (1 sprint)
           issuedAt,
           expiresAt,
           status: BadgeStatus.PENDING,
@@ -130,11 +141,38 @@ export class BadgeIssuanceService {
         },
       });
 
-      // 7. Generate Open Badges 2.0 assertion with real IDs
-      const evidenceUrls =
-        created.evidenceFiles?.map((e) => e.blobUrl) || // Sprint 4: blobUrl field
-        (dto.evidenceUrl ? [dto.evidenceUrl] : []);
+      // Story 12.5: Create EvidenceFile(type=URL) for URL evidence
+      if (dto.evidenceUrl) {
+        await tx.evidenceFile.create({
+          data: {
+            badgeId: created.id,
+            type: 'URL',
+            sourceUrl: dto.evidenceUrl,
+            fileName: '',
+            originalName: new URL(dto.evidenceUrl).hostname,
+            fileSize: 0,
+            mimeType: '',
+            blobUrl: '',
+            uploadedBy: issuerId,
+            uploadedAt: issuedAt,
+          },
+        });
+      }
 
+      // Story 12.5: Build evidence URLs from unified EvidenceFile records
+      // Re-query to include the newly created URL evidence
+      const badgeWithEvidence = dto.evidenceUrl
+        ? await tx.badge.findUnique({
+            where: { id: created.id },
+            include: { evidenceFiles: true },
+          })
+        : created;
+
+      const evidenceUrls = (badgeWithEvidence?.evidenceFiles || []).map((e) =>
+        e.type === 'URL' ? e.sourceUrl! : e.blobUrl,
+      );
+
+      // 7. Generate Open Badges 2.0 assertion with real IDs
       const assertion = this.assertionGenerator.generateAssertion({
         badgeId: created.id,
         verificationId: created.verificationId, // Sprint 5: Use auto-generated verificationId
@@ -143,7 +181,7 @@ export class BadgeIssuanceService {
         issuer: issuer!,
         issuedAt,
         expiresAt: expiresAt || undefined,
-        evidenceUrls, // Sprint 5: Multiple evidence URLs
+        evidenceUrls: evidenceUrls.length > 0 ? evidenceUrls : undefined,
       });
 
       // Sprint 5 Story 6.5: Compute metadata hash for integrity
@@ -896,6 +934,8 @@ export class BadgeIssuanceService {
         issuer: true,
         // Story 9.3: Include revoker for badge details
         revoker: true,
+        // Story 12.5: Include evidence files for unified evidence list
+        evidenceFiles: true,
       },
     });
 
@@ -911,9 +951,26 @@ export class BadgeIssuanceService {
       badge.status !== BadgeStatus.REVOKED;
     const effectiveStatus = isExpired ? 'EXPIRED' : badge.status;
 
+    // Story 12.5: Build unified evidence list
+    const evidence: EvidenceItem[] = (badge.evidenceFiles || []).map((ef) => ({
+      id: ef.id,
+      type: ef.type as 'FILE' | 'URL',
+      name:
+        ef.type === 'URL'
+          ? ef.sourceUrl
+            ? new URL(ef.sourceUrl).hostname
+            : 'URL'
+          : ef.originalName,
+      url: ef.type === 'URL' ? ef.sourceUrl! : ef.blobUrl,
+      ...(ef.type === 'FILE' && { size: ef.fileSize, mimeType: ef.mimeType }),
+      uploadedAt: ef.uploadedAt.toISOString(),
+    }));
+
     const response: Record<string, unknown> = {
       ...badge,
       status: effectiveStatus,
+      evidence, // Story 12.5: unified evidence list
+      // evidenceUrl kept for backward compat (1 sprint)
     };
 
     // Story 9.3 AC2: Add categorized revocation details
@@ -990,7 +1047,6 @@ export class BadgeIssuanceService {
           {
             templateId: row.templateId,
             recipientId: recipient.id,
-            evidenceUrl: row.evidenceUrl,
             expiresIn: row.expiresIn,
           },
           issuerId,
@@ -1434,6 +1490,8 @@ export class BadgeIssuanceService {
         evidenceFiles: {
           select: {
             blobUrl: true,
+            type: true, // Story 12.5: Include type for FILE vs URL
+            sourceUrl: true, // Story 12.5: Include sourceUrl for URL-type
           },
         },
       },

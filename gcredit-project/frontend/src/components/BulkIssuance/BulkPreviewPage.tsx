@@ -14,7 +14,6 @@ interface PreviewRow {
   rowNumber: number;
   badgeTemplateId: string;
   recipientEmail: string;
-  evidenceUrl?: string;
   isValid: boolean;
   error?: string;
   badgeName?: string;

@@ -39,7 +39,7 @@ export class CSVParserService {
    */
   private validateHeaders(firstRow: Record<string, string>) {
     const requiredHeaders = ['recipientEmail', 'templateId'];
-    const optionalHeaders = ['evidenceUrl', 'expiresIn'];
+    const optionalHeaders = ['expiresIn'];
     const allHeaders = [...requiredHeaders, ...optionalHeaders];
 
     const actualHeaders = Object.keys(firstRow);
@@ -80,11 +80,6 @@ export class CSVParserService {
       errors.push(`Invalid templateId: ${row.templateId}`);
     }
 
-    // Validate evidenceUrl (optional)
-    if (row.evidenceUrl && !this.isValidURL(row.evidenceUrl)) {
-      errors.push(`Invalid evidenceUrl: ${row.evidenceUrl}`);
-    }
-
     // Validate expiresIn (optional)
     if (row.expiresIn) {
       const days = parseInt(row.expiresIn);
@@ -102,7 +97,6 @@ export class CSVParserService {
     return {
       recipientEmail: row.recipientEmail.toLowerCase().trim(),
       templateId: row.templateId.trim(),
-      evidenceUrl: row.evidenceUrl?.trim() || undefined,
       expiresIn: row.expiresIn ? parseInt(row.expiresIn) : undefined,
     };
   }

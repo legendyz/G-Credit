@@ -1270,5 +1270,37 @@ Frontend currently reads both `badge.evidenceUrl` (badge detail) and `badge.evid
 
 ## Dev Agent Record
 ### Agent Model Used
+Claude Opus 4.6 (GitHub Copilot)
+
 ### Completion Notes
+All 8 tasks completed:
+1. Prisma schema: EvidenceType enum + type/sourceUrl fields on EvidenceFile. Migration `20260222010445_evidence_unification_type_field` applied.
+2. Data migration scripts: `migrate-evidence.ts` (up) and `migrate-evidence-down.ts` (down) with --dry-run support.
+3. issueBadge(): Creates EvidenceFile(type=URL) in transaction when evidenceUrl provided. Evidence URLs built from unified EvidenceFile records.
+4. findOne(): Returns unified `evidence: EvidenceItem[]` array with FILE/URL distinction. evidenceUrl kept for backward compat.
+5. generateBakedBadge(): evidenceFiles query updated to include type + sourceUrl.
+6. Evidence controller: New POST `/url` endpoint, AddUrlEvidenceDto, addUrlEvidence() service method. listEvidence() returns type/sourceUrl. Download/preview rejects URL-type with clear error.
+7. Bulk CSV: Removed evidenceUrl from csv-parser, BulkIssuanceRow DTO, bulkIssueBadges() call, BulkPreviewTable.tsx, BulkPreviewPage.tsx interface, bulk-issuance.service.ts (PreviewRow, template, createSession, confirmBulkIssuance), csv-validation.service.ts (validateRow, validateRowInTransaction).
+8. Tests: 7 new tests added (addUrlEvidence, URL evidence IDOR, URL validation, NotFoundException, ADMIN access, unified listEvidence, URL-type download rejection). All existing tests fixed and passing (844 tests, 46 suites). TSC clean (BE+FE). ESLint clean (0 warnings).
+
 ### File List
+- backend/prisma/schema.prisma (modified: EvidenceType enum + type/sourceUrl on EvidenceFile)
+- backend/prisma/migrations/20260222010445_evidence_unification_type_field/migration.sql (created)
+- backend/scripts/migrate-evidence.ts (created)
+- backend/scripts/migrate-evidence-down.ts (created)
+- backend/src/badge-issuance/badge-issuance.service.ts (modified: EvidenceItem interface, issueBadge URL evidence, findOne unified evidence, bulkIssueBadges no evidenceUrl)
+- backend/src/badge-issuance/badge-issuance.service.spec.ts (modified: tx mock with evidenceFile, mockCreatedBadge with evidenceFiles)
+- backend/src/badge-issuance/dto/bulk-issue-badges.dto.ts (modified: removed evidenceUrl)
+- backend/src/badge-issuance/services/csv-parser.service.ts (modified: removed evidenceUrl from optionalHeaders, validateRow, return)
+- backend/src/evidence/evidence.service.ts (modified: addUrlEvidence, listEvidence type/sourceUrl, download URL-type guard)
+- backend/src/evidence/evidence.controller.ts (modified: POST /url endpoint, AddUrlEvidenceDto import)
+- backend/src/evidence/dto/upload-evidence.dto.ts (modified: AddUrlEvidenceDto, type/sourceUrl on EvidenceFileResponse)
+- backend/src/evidence/evidence.service.spec.ts (modified: 7 new tests for Story 12.5)
+- backend/src/bulk-issuance/bulk-issuance.service.ts (modified: removed evidenceUrl from PreviewRow, template, createSession, confirmBulkIssuance)
+- backend/src/bulk-issuance/csv-validation.service.ts (modified: removed evidenceUrl validation calls)
+- backend/src/bulk-issuance/bulk-issuance.service.spec.ts (modified: removed evidenceUrl from test data)
+- backend/src/bulk-issuance/csv-validation.service.spec.ts (modified: removed evidenceUrl from test data)
+- frontend/src/components/BulkIssuance/BulkPreviewTable.tsx (modified: removed evidenceUrl column)
+- frontend/src/components/BulkIssuance/BulkPreviewPage.tsx (modified: removed evidenceUrl from PreviewRow)
+- frontend/src/components/BulkIssuance/__tests__/BulkPreviewTable.test.tsx (modified: removed evidenceUrl from mock/assertions)
+- gcredit-project/docs/sprints/sprint-status.yaml (modified: 12-5 → review)
