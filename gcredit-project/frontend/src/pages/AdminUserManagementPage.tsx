@@ -40,8 +40,8 @@ type SortByField = 'name' | 'email' | 'role' | 'department' | 'status' | 'lastLo
 type StatusFilterValue = 'ALL' | 'ACTIVE' | 'LOCKED' | 'INACTIVE';
 type SourceFilterValue = 'ALL' | 'M365' | 'LOCAL';
 
-const DEFAULT_PAGE_SIZE = 25;
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
+const DEFAULT_PAGE_SIZE = 20;
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 const ROLES: (UserRole | 'ALL')[] = ['ALL', 'ADMIN', 'ISSUER', 'MANAGER', 'EMPLOYEE'];
 
 export function AdminUserManagementPage() {
@@ -360,28 +360,28 @@ export function AdminUserManagementPage() {
             onSort={handleSort}
           />
 
-          {/* Pagination */}
-          {data.meta.totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-neutral-200 pt-4">
-              <div className="flex items-center gap-3">
-                <p className="text-sm text-neutral-500">
-                  Showing {(page - 1) * pageSize + 1} to{' '}
-                  {Math.min(page * pageSize, data.meta.total)} of {data.meta.total} users
-                </p>
-                {/* Page size selector (12.3b AC #9) */}
-                <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
-                  <SelectTrigger className="w-[80px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PAGE_SIZE_OPTIONS.map((size) => (
-                      <SelectItem key={size} value={String(size)}>
-                        {size}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+          {/* Pagination — always visible for user count + page size control */}
+          <div className="flex items-center justify-between border-t border-neutral-200 pt-4">
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-neutral-500">
+                Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, data.meta.total)}{' '}
+                of {data.meta.total} users
+              </p>
+              {/* Page size selector (12.3b AC #9) */}
+              <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
+                <SelectTrigger className="w-[80px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PAGE_SIZE_OPTIONS.map((size) => (
+                    <SelectItem key={size} value={String(size)}>
+                      {size}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {data.meta.totalPages > 1 && (
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -402,8 +402,8 @@ export function AdminUserManagementPage() {
                   Next
                 </Button>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </>
       )}
 
