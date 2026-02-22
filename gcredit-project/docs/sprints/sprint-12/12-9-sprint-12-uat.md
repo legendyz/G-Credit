@@ -104,7 +104,7 @@ So that I can confirm the new admin management UIs and unified evidence system w
 |--------|--------------|-------------------|
 | M365 tenant | Admin → Users → "Sync Users" button → syncs from Azure AD | UAT-S12-015d (sync panel), UAT-S12-013b (M365 row actions), UAT-S12-014 (lock notice), UAT-S12-015 (M365 detail panel) |
 
-> **Note:** M365 users have `passwordHash=''` and **cannot log in via password** (AC #32 from Story 12.3). They appear in the Admin user table after sync but require SSO for actual login (deferred to future sprint).
+> **Note:** M365 users are synced with a temporary default password `password123` (decision NEW-006). They can log in locally for testing until SSO is implemented in a future sprint.
 
 ## Tasks / Subtasks
 

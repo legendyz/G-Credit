@@ -1,5 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Client } from '@microsoft/microsoft-graph-client';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../common/prisma.service';
 import { GraphTokenProviderService } from '../microsoft-graph/services/graph-token-provider.service';
 import {
@@ -613,10 +614,14 @@ export class M365SyncService {
         return { success: true, action: 'updated' };
       } else {
         // Create new user
+        // NEW-006: Assign temporary default password until SSO is implemented
+        const defaultPassword =
+          process.env.DEFAULT_USER_PASSWORD || 'password123';
+        const passwordHash = await bcrypt.hash(defaultPassword, 10);
         await this.prisma.user.create({
           data: {
             ...userData,
-            passwordHash: '', // Empty - user will authenticate via SSO
+            passwordHash,
             isActive: true,
             role: resolvedRole,
           },

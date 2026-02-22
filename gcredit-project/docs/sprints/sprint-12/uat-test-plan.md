@@ -76,7 +76,7 @@
 |--------|--------------|
 | M365 tenant | Admin → Users → "Sync Users" button → full sync from Azure AD |
 
-> **Note:** M365 users have `passwordHash=''` and cannot log in via password. They appear in the Admin user table after sync.
+> **Note:** M365 users synced with temporary default password `password123` (decision NEW-006). They can log in locally for testing until SSO is implemented in a future sprint.
 
 ---
 
