@@ -29,6 +29,12 @@ interface ProfileData {
   lastLoginAt: string | null;
   createdAt: string;
   updatedAt: string;
+  manager?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  } | null;
 }
 
 export function ProfilePage() {
@@ -251,6 +257,23 @@ export function ProfilePage() {
               <Input
                 id="department"
                 value={profile?.department || 'N/A'}
+                disabled
+                className="bg-neutral-50 text-neutral-500"
+              />
+            </div>
+
+            {/* Manager - readonly */}
+            <div className="space-y-1.5">
+              <Label htmlFor="manager" className="text-sm font-medium text-neutral-700">
+                Manager
+              </Label>
+              <Input
+                id="manager"
+                value={
+                  profile?.manager
+                    ? `${profile.manager.firstName} ${profile.manager.lastName} (${profile.manager.email})`
+                    : 'N/A'
+                }
                 disabled
                 className="bg-neutral-50 text-neutral-500"
               />

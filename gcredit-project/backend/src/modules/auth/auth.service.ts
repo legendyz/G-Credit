@@ -485,6 +485,14 @@ export class AuthService {
         lastLoginAt: true,
         createdAt: true,
         updatedAt: true,
+        manager: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
       },
     });
 
