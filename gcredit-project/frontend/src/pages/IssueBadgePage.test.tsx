@@ -1,5 +1,6 @@
 /**
  * IssueBadgePage Tests - Story 10.6b: Single Badge Issuance UI
+ * Updated in Story 12.6: Evidence Unification UI
  */
 
 import React from 'react';
@@ -32,6 +33,22 @@ vi.mock('react-router-dom', async () => {
 const mockIssueBadge = vi.fn();
 vi.mock('@/lib/badgesApi', () => ({
   issueBadge: (...args: unknown[]) => mockIssueBadge(...args),
+}));
+
+// Mock evidence API
+const mockUploadEvidenceFile = vi.fn();
+const mockAddUrlEvidence = vi.fn();
+vi.mock('@/lib/evidenceApi', () => ({
+  uploadEvidenceFile: (...args: unknown[]) => mockUploadEvidenceFile(...args),
+  addUrlEvidence: (...args: unknown[]) => mockAddUrlEvidence(...args),
+  validateEvidenceFile: () => null,
+  MAX_FILE_SIZE: 10 * 1024 * 1024,
+  MAX_EVIDENCE_ITEMS: 5,
+  ALLOWED_MIME_TYPES: ['application/pdf', 'image/png', 'image/jpeg'],
+  ALLOWED_EXTENSIONS: ['.pdf', '.png', '.jpg', '.jpeg', '.docx'],
+  formatFileSize: (b: number) => `${(b / 1024 / 1024).toFixed(1)} MB`,
+  getFileIcon: () => '📄',
+  truncateUrl: (u: string) => u.substring(0, 50),
 }));
 
 // Note: IssueBadgePage now uses fetch('/badges/recipients') instead of getAdminUsers
@@ -177,7 +194,6 @@ describe('IssueBadgePage', () => {
     // Form labels
     expect(screen.getByText(/Badge Template/)).toBeInTheDocument();
     expect(screen.getByText(/Recipient/)).toBeInTheDocument();
-    expect(screen.getByText(/Evidence URL/)).toBeInTheDocument();
     expect(screen.getByText(/Expiry/)).toBeInTheDocument();
 
     // Submit button
@@ -225,20 +241,13 @@ describe('IssueBadgePage', () => {
     expect(mockIssueBadge).not.toHaveBeenCalled();
   });
 
-  it('shows validation error for invalid evidence URL', async () => {
-    const user = userEvent.setup();
+  it('renders evidence attachment area', async () => {
     renderPage();
 
     await waitFor(() => expect(mockFetch).toHaveBeenCalled());
 
-    // Set template and recipient via internal state by triggering select change
-    // Since Select is a complex RadixUI component, we test URL validation via direct input
-    const evidenceInput = screen.getByLabelText(/Evidence URL/i);
-    await user.type(evidenceInput, 'not-a-url');
-
-    // Submit will first fail on template, but if we test URL validation logic directly:
-    // This tests that the form renders and accepts input
-    expect(evidenceInput).toHaveValue('not-a-url');
+    // Evidence attachment panel should be present
+    expect(screen.getByText(/Drag files here/i)).toBeInTheDocument();
   });
 
   it('submits the form successfully and navigates', async () => {

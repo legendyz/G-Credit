@@ -7,6 +7,7 @@ import ErrorCorrectionPanel from './ErrorCorrectionPanel';
 import ConfirmationModal from './ConfirmationModal';
 import EmptyPreviewState from './EmptyPreviewState';
 import ProcessingComplete from './ProcessingComplete';
+import BulkResultPage from './BulkResultPage';
 import ProcessingModal from './ProcessingModal';
 import { apiFetch } from '../../lib/apiFetch';
 
@@ -77,6 +78,8 @@ export default function BulkPreviewPage() {
       badgeName: string;
       status: 'success' | 'failed';
       error?: string;
+      badgeId?: string;
+      emailError?: string;
     }>;
   } | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -178,6 +181,8 @@ export default function BulkPreviewPage() {
           badgeName: string;
           status: 'success' | 'failed';
           error?: string;
+          badgeId?: string;
+          emailError?: string;
         }>;
       } = await response.json();
       setProcessingResults({
@@ -235,8 +240,27 @@ export default function BulkPreviewPage() {
     );
   }
 
-  // Processing complete view
+  // Processing complete view — navigate to result page for evidence attachment
   if (processingComplete && processingResults) {
+    // If there are successful badges with IDs, show the evidence attachment flow
+    const hasSuccessfulBadges = processingResults.results.some(
+      (r) => r.status === 'success' && r.badgeId
+    );
+    if (hasSuccessfulBadges) {
+      return (
+        <BulkResultPage
+          success={processingResults.success}
+          failed={processingResults.failed}
+          results={processingResults.results}
+          sessionId={sessionId}
+          onDone={() => navigate('/admin/badges')}
+          onRetryFailed={
+            processingResults.failed > 0 ? () => navigate('/admin/bulk-issuance') : undefined
+          }
+        />
+      );
+    }
+    // Fallback: no evidence-eligible badges — show original ProcessingComplete
     return (
       <ProcessingComplete
         success={processingResults.success}

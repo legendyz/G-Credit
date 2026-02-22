@@ -8,7 +8,7 @@ import ModalHero from './ModalHero';
 import BadgeInfo from './BadgeInfo';
 import TimelineSection from './TimelineSection';
 import VerificationSection from './VerificationSection';
-import EvidenceSection from './EvidenceSection';
+import EvidenceList from '../evidence/EvidenceList';
 import SimilarBadgesSection from './SimilarBadgesSection';
 import ReportIssueForm from './ReportIssueForm';
 import BadgeAnalytics from './BadgeAnalytics';
@@ -300,8 +300,15 @@ const BadgeDetailModal: React.FC = () => {
                   criteria={badge.template.issuanceCriteria}
                 />
 
-                {/* AC 4.4: Evidence Files Section (from Story 4.3) */}
-                <EvidenceSection badgeId={badge.id} />
+                {/* AC 4.4: Evidence Files Section (Story 12.6: unified evidence list) */}
+                {badge.evidence && badge.evidence.length > 0 && (
+                  <section className="px-6 py-6 border-b">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Evidence ({badge.evidence.length})
+                    </h3>
+                    <EvidenceList items={badge.evidence} editable={false} badgeId={badge.id} />
+                  </section>
+                )}
 
                 {/* Story 9.3 AC2: Revocation Details Section */}
                 {badge.status === BadgeStatus.REVOKED &&

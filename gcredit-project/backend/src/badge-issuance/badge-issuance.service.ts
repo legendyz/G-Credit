@@ -846,6 +846,10 @@ export class BadgeIssuanceService {
             lastName: true,
           },
         },
+        // Story 12.6: Evidence count for badge management table
+        _count: {
+          select: { evidenceFiles: true },
+        },
       },
     });
 
@@ -865,6 +869,7 @@ export class BadgeIssuanceService {
         revocationNotes: badge.revocationNotes,
         revokedBy: badge.revokedBy,
         evidenceUrl: badge.evidenceUrl,
+        evidenceCount: badge._count.evidenceFiles, // Story 12.6
         // Story 8.2: Template includes skillIds directly
         template: badge.template,
         recipient: {

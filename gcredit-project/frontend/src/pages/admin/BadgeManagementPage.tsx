@@ -28,6 +28,7 @@ import {
   ArrowUp,
   ArrowDown,
   ArrowUpDown,
+  Paperclip,
 } from 'lucide-react';
 import { useSkills } from '@/hooks/useSkills';
 import { useBadgeSearch } from '@/hooks/useBadgeSearch';
@@ -544,9 +545,19 @@ export function BadgeManagementPage({
                           </div>
                           <StatusBadge status={badge.status} />
                         </div>
-                        {/* Action Row */}
+                        {/* Evidence & Action Row */}
                         <div className="mt-3 flex items-center justify-between">
-                          <span className="text-xs text-neutral-500">{badge.recipient.email}</span>
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs text-neutral-500">
+                              {badge.recipient.email}
+                            </span>
+                            {!!badge.evidenceCount && (
+                              <span className="inline-flex items-center gap-1 text-xs text-neutral-500">
+                                <Paperclip className="h-3 w-3" />
+                                {badge.evidenceCount}
+                              </span>
+                            )}
+                          </div>
                           {canRevokeBadge(badge) ? (
                             <Button
                               size="sm"
@@ -585,11 +596,12 @@ export function BadgeManagementPage({
                 <div className="hidden md:block overflow-x-auto">
                   <table className="w-full table-fixed">
                     <colgroup>
+                      <col className="w-[20%]" />
+                      <col className="w-[16%]" />
+                      <col className="w-[13%]" />
+                      <col className="w-[11%]" />
                       <col className="w-[22%]" />
-                      <col className="w-[18%]" />
-                      <col className="w-[14%]" />
-                      <col className="w-[12%]" />
-                      <col className="w-[24%]" />
+                      <col className="w-[8%]" />
                       <col className="w-[10%]" />
                     </colgroup>
                     <thead className="bg-neutral-100">
@@ -629,6 +641,9 @@ export function BadgeManagementPage({
                             </span>
                           </th>
                         ))}
+                        <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-neutral-500">
+                          Evidence
+                        </th>
                         <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-neutral-500">
                           Actions
                         </th>
@@ -693,6 +708,16 @@ export function BadgeManagementPage({
                                   by {getRevokerName(badge)}
                                   {badge.revokedAt ? ` · ${formatDate(badge.revokedAt)}` : ''}
                                 </div>
+                              )}
+                            </td>
+                            <td className="px-4 py-4 text-center">
+                              {badge.evidenceCount ? (
+                                <span className="inline-flex items-center gap-1 text-sm text-neutral-600">
+                                  <Paperclip className="h-3.5 w-3.5" />
+                                  {badge.evidenceCount}
+                                </span>
+                              ) : (
+                                <span className="text-xs text-neutral-400">—</span>
                               )}
                             </td>
                             <td className="whitespace-nowrap px-4 py-4 text-right">

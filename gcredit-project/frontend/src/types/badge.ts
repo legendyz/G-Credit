@@ -7,6 +7,17 @@ export const BadgeStatus = {
 
 export type BadgeStatus = (typeof BadgeStatus)[keyof typeof BadgeStatus];
 
+// Story 12.6: Unified evidence item (used across all pages)
+export interface EvidenceItem {
+  id: string;
+  type: 'FILE' | 'URL';
+  name: string;
+  url: string;
+  size?: number;
+  mimeType?: string;
+  uploadedAt: string;
+}
+
 export interface BadgeDetail {
   id: string;
   status: BadgeStatus;
@@ -15,6 +26,8 @@ export interface BadgeDetail {
   claimedAt: string | null;
   expiresAt: string | null;
   verificationId: string;
+  // Story 12.6: Unified evidence list
+  evidence?: EvidenceItem[];
   // Story 9.3: Revocation fields (only present when status = REVOKED)
   revokedAt?: string;
   revocationReason?: string;
@@ -81,6 +94,10 @@ export interface VerificationResponse {
     filename: string;
     blobUrl: string;
     uploadedAt: string;
+    type?: 'FILE' | 'URL';
+    sourceUrl?: string;
+    fileSize?: number;
+    mimeType?: string;
   }>;
   assertionJson: Record<string, unknown>; // Open Badges 2.0 JSON-LD
 }

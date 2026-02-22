@@ -548,6 +548,7 @@ export class BulkIssuanceService {
       status: 'success' | 'failed';
       error?: string;
       emailError?: string;
+      badgeId?: string;
     }>;
   }> {
     const session = await this.loadSession(sessionId, currentUserId);
@@ -588,6 +589,7 @@ export class BulkIssuanceService {
       status: 'success' | 'failed';
       error?: string;
       emailError?: string;
+      badgeId?: string;
     }> = [];
     let processed = 0;
     let failed = 0;
@@ -636,6 +638,7 @@ export class BulkIssuanceService {
           recipientEmail: row.recipientEmail,
           badgeName: template.name,
           status: 'success',
+          badgeId: issueResult.id,
           ...(issueResult.emailError
             ? { emailError: issueResult.emailError }
             : {}),

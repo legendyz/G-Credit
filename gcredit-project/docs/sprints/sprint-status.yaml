@@ -101,7 +101,7 @@ sprint-12: planning
 
 # --- Wave 2: Evidence Unification ---
 12-5-evidence-unification-data-model: done
-12-6-evidence-unification-ui: backlog
+12-6-evidence-unification-ui: review
 
 # --- Wave 3: Quick Fixes ---
 12-7-admin-activity-feed-formatting: backlog
