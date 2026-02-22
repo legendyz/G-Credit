@@ -1,6 +1,6 @@
 # Story 12.5: Evidence Unification — Data Model + Migration
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 

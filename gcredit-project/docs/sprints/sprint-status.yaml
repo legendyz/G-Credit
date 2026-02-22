@@ -97,10 +97,10 @@ sprint-12: planning
 12-1-skill-category-management-ui: done
 12-2-skill-management-ui: done
 12-3-user-management-ui-enhancement: done
-12-4-milestone-admin-ui: review
+12-4-milestone-admin-ui: done
 
 # --- Wave 2: Evidence Unification ---
-12-5-evidence-unification-data-model: review
+12-5-evidence-unification-data-model: done
 12-6-evidence-unification-ui: backlog
 
 # --- Wave 3: Quick Fixes ---

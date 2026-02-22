@@ -10,9 +10,9 @@
 
 ## Verdict
 
-**Approved with Notes.**
+**Approved.**
 
-The implementation is consistent with Story 12.5 goals and acceptance criteria. No blocking defects were found in the reviewed scope. Schema migration, evidence unification behavior, and bulk CSV `evidenceUrl` removal are implemented and validated.
+Re-review confirms the previously noted low-severity items are now addressed. The implementation is consistent with Story 12.5 goals and acceptance criteria, with no remaining blocking or follow-up issues in this review scope.
 
 ## What Was Verified
 
@@ -46,10 +46,14 @@ None.
 
 ### Non-Blocking Recommendations
 
-1. **Type safety (low):** `EvidenceFileResponse.type` in `upload-evidence.dto.ts` is `string`; prefer union type `'FILE' | 'URL'`.
-2. **Defense-in-depth (low):** `addUrlEvidence()` service-level URL validation currently uses `new URL(...)`; consider explicitly constraining protocol to `http/https` in service as well (even though controller DTO validates).
-3. **Code hygiene (low):** `CSVParserService.isValidURL()` remains unused after CSV `evidenceUrl` removal.
-4. **Down migration UX (low):** `migrate-evidence-down.ts --dry-run` could log per-record details (currently summary-only behavior is functional but less transparent).
+None after re-review.
+
+### Re-Review Confirmations
+
+1. ✅ `EvidenceFileResponse.type` now uses union type `'FILE' | 'URL'`.
+2. ✅ `addUrlEvidence()` now enforces `http/https` protocol at service layer (defense in depth).
+3. ✅ Unused `CSVParserService.isValidURL()` helper has been removed.
+4. ✅ `migrate-evidence-down.ts --dry-run` now logs per-record details.
 
 ## AC Coverage Summary
 
@@ -70,7 +74,7 @@ Executed in workspace:
 - `backend`: `npm run lint` ✅
 - `frontend`: `npm run build` ✅
 - `frontend`: `npm run lint` ✅
-- `backend`: `npm test -- evidence.service.spec.ts --runInBand` ✅ (18/18)
+- `backend`: `npm test -- evidence.service.spec.ts --runInBand` ✅ (19/19)
 - `backend`: `npm test -- badge-issuance.service.spec.ts --runInBand` ✅ (31/31)
 - `backend`: `npm test -- bulk-issuance.service.spec.ts --runInBand` ✅ (57/57)
 - `backend`: `npm test -- csv-validation.service.spec.ts --runInBand` ✅ (58/58)
@@ -79,6 +83,6 @@ Executed in workspace:
 
 ## Approval Decision
 
-**Approved with Notes**
+**Approved**
 
-Story 12.5 is ready to proceed. The listed recommendations can be tracked as follow-up cleanup items (non-blocking).
+Story 12.5 passes re-review and is ready to proceed.
