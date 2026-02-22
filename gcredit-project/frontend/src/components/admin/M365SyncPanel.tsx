@@ -151,9 +151,9 @@ export function M365SyncPanel() {
                 <p className="text-sm">No sync history yet</p>
               </div>
             ) : (
-              <div className="rounded-md border">
+              <div className="rounded-md border max-h-[280px] overflow-y-auto">
                 <Table>
-                  <TableHeader>
+                  <TableHeader className="sticky top-0 bg-background z-10">
                     <TableRow>
                       <TableHead className="w-[160px]">Date</TableHead>
                       <TableHead>Type</TableHead>
