@@ -1,6 +1,6 @@
 # Story 12.9: Sprint 12 UAT — Management UIs + Evidence Unification
 
-Status: backlog
+Status: in-progress
 
 ## Story
 
@@ -18,7 +18,7 @@ So that I can confirm the new admin management UIs and unified evidence system w
 
 ## Acceptance Criteria
 
-1. [ ] UAT test plan document created (`sprint-12/uat-test-plan.md`)
+1. [x] UAT test plan document created (`sprint-12/uat-test-plan.md`) — 41 test cases (4 CRITICAL, 22 HIGH, 15 MEDIUM)
 2. [ ] Seed data updated to include new management entities (categories, skills, milestones)
 3. [ ] All Sprint 12 UAT test cases executed
 4. [ ] All CRITICAL/HIGH test cases PASS
@@ -152,10 +152,10 @@ So that I can confirm the new admin management UIs and unified evidence system w
   - [ ] **Step 5:** Re-run script → confirm `0 migrated, N skipped, 0 failed` (idempotency)
   - [ ] **Step 6 (optional):** `npx ts-node scripts/migrate-evidence-down.ts --dry-run` — verify reversibility
   - [ ] **Result:** PASS → proceed to UAT; FAIL → fix script before UAT continues
-- [ ] Task 1: Create UAT test plan document (2h)
-  - [ ] Define detailed test steps for each UAT case
-  - [ ] Prepare pre-conditions and expected results
-  - [ ] Document environment setup steps
+- [x] Task 1: Create UAT test plan document (2h) — ✅ 2026-02-22
+  - [x] Define detailed test steps for each UAT case (41 cases)
+  - [x] Prepare pre-conditions and expected results
+  - [x] Document environment setup steps
 - [ ] Task 2: Prepare seed data for Sprint 12 features (1h)
   - [ ] Add sample skill categories (3-level tree, include system-defined)
   - [ ] Add sample skills with category assignments
