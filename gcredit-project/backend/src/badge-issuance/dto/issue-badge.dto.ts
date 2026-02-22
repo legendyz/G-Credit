@@ -1,4 +1,4 @@
-import { IsUUID, IsOptional, IsUrl, IsInt, Min, Max } from 'class-validator';
+import { IsUUID, IsOptional, IsInt, Min, Max } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class IssueBadgeDto {

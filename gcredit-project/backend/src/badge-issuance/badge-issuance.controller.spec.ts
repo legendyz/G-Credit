@@ -162,6 +162,7 @@ describe('BadgeIssuanceController', () => {
       it('POST /bulk route removed — superseded by BulkIssuanceService', () => {
         // Legacy bulkIssueBadges route has been removed.
         // Bulk issuance now handled by POST /api/bulk-issuance/upload
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect((proto as any).bulkIssueBadges).toBeUndefined();
       });
 

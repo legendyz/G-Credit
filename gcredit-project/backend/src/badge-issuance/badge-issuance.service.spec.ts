@@ -295,9 +295,7 @@ describe('BadgeIssuanceService', () => {
 
       mockPrismaService.badge.create.mockResolvedValue(mockCreatedBadge);
       mockPrismaService.badge.update.mockResolvedValue(mockCreatedBadge);
-      mockPrismaService.badge.findUnique.mockResolvedValue(
-        mockCreatedBadge,
-      );
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockCreatedBadge);
 
       // Act
       const result = await service.issueBadge(issueDto, mockIssuer.id);
@@ -482,9 +480,7 @@ describe('BadgeIssuanceService', () => {
 
       mockPrismaService.badge.create.mockResolvedValue(mockCreatedBadge);
       mockPrismaService.badge.update.mockResolvedValue(mockCreatedBadge);
-      mockPrismaService.badge.findUnique.mockResolvedValue(
-        mockCreatedBadge,
-      );
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockCreatedBadge);
 
       // Act
       const result = await service.issueBadge(issueDto, mockIssuer.id);
