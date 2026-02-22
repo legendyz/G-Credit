@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import FileUploadZone from './FileUploadZone';
 import EvidenceList from './EvidenceList';
-import { type EvidenceItem, MAX_EVIDENCE_ITEMS, formatFileSize } from '@/lib/evidenceApi';
+import { MAX_EVIDENCE_ITEMS, formatFileSize } from '@/lib/evidenceApi';
 
 /** A pending file that hasn't been uploaded yet */
 export interface PendingFile {
@@ -14,29 +14,6 @@ export interface PendingFile {
   progress: number; // 0–100
   status: 'pending' | 'uploading' | 'done' | 'error';
   error?: string;
-}
-
-/** Converts pending items to EvidenceItem[] for display */
-function pendingToDisplayItems(pendingFiles: PendingFile[], pendingUrls: string[]): EvidenceItem[] {
-  const fileItems: EvidenceItem[] = pendingFiles.map((pf) => ({
-    id: pf.id,
-    type: 'FILE' as const,
-    name: pf.file.name,
-    url: '',
-    size: pf.file.size,
-    mimeType: pf.file.type,
-    uploadedAt: new Date().toISOString(),
-  }));
-
-  const urlItems: EvidenceItem[] = pendingUrls.map((url, i) => ({
-    id: `pending-url-${i}`,
-    type: 'URL' as const,
-    name: url,
-    url,
-    uploadedAt: new Date().toISOString(),
-  }));
-
-  return [...fileItems, ...urlItems];
 }
 
 interface EvidenceAttachmentPanelProps {
@@ -117,8 +94,6 @@ const EvidenceAttachmentPanel: React.FC<EvidenceAttachmentPanelProps> = ({
     [onRemoveFile, onRemoveUrl]
   );
 
-  const displayItems = pendingToDisplayItems(pendingFiles, pendingUrls);
-
   return (
     <div className="space-y-3">
       {/* File upload zone */}
@@ -164,7 +139,7 @@ const EvidenceAttachmentPanel: React.FC<EvidenceAttachmentPanelProps> = ({
       </div>
 
       {/* Pending evidence list */}
-      {displayItems.length > 0 && (
+      {(pendingFiles.length > 0 || pendingUrls.length > 0) && (
         <div>
           <p className="text-xs font-medium text-neutral-600 mb-2">
             📋 Attached Evidence ({totalCount}/{MAX_EVIDENCE_ITEMS}):

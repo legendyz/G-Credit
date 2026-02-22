@@ -35,8 +35,6 @@ interface Recipient {
   department?: string;
 }
 
-let fileIdCounter = 0;
-
 export function IssueBadgePage() {
   const navigate = useNavigate();
 
@@ -96,7 +94,7 @@ export function IssueBadgePage() {
   // Evidence handlers (Story 12.6)
   const handleAddFiles = useCallback((files: File[]) => {
     const newPending: PendingFile[] = files.map((file) => ({
-      id: `pf-${++fileIdCounter}`,
+      id: crypto.randomUUID(),
       file,
       progress: 0,
       status: 'pending' as const,

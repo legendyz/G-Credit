@@ -7,16 +7,9 @@ export const BadgeStatus = {
 
 export type BadgeStatus = (typeof BadgeStatus)[keyof typeof BadgeStatus];
 
-// Story 12.6: Unified evidence item (used across all pages)
-export interface EvidenceItem {
-  id: string;
-  type: 'FILE' | 'URL';
-  name: string;
-  url: string;
-  size?: number;
-  mimeType?: string;
-  uploadedAt: string;
-}
+// Story 12.6: Re-export canonical EvidenceItem from evidenceApi to avoid duplication
+import type { EvidenceItem } from '../lib/evidenceApi';
+export type { EvidenceItem } from '../lib/evidenceApi';
 
 export interface BadgeDetail {
   id: string;
@@ -91,13 +84,15 @@ export interface VerificationResponse {
     role: string;
   };
   evidenceFiles: Array<{
+    id: string;
     filename: string;
+    originalName: string;
     blobUrl: string;
     uploadedAt: string;
-    type?: 'FILE' | 'URL';
-    sourceUrl?: string;
-    fileSize?: number;
-    mimeType?: string;
+    type: 'FILE' | 'URL';
+    sourceUrl?: string | null;
+    fileSize: number;
+    mimeType: string;
   }>;
   assertionJson: Record<string, unknown>; // Open Badges 2.0 JSON-LD
 }

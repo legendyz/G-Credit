@@ -52,7 +52,7 @@ const EvidenceList: React.FC<EvidenceListProps> = ({
 
       try {
         const { url } = await getEvidencePreviewUrl(badgeId, item.id);
-        window.open(url, '_blank');
+        window.open(url, '_blank', 'noopener,noreferrer');
       } catch {
         toast.error('Preview failed', {
           description: 'Unable to preview file. Please try again.',
@@ -67,7 +67,7 @@ const EvidenceList: React.FC<EvidenceListProps> = ({
       if (!badgeId) return;
       try {
         const { url } = await getEvidenceDownloadUrl(badgeId, item.id);
-        window.open(url, '_blank');
+        window.open(url, '_blank', 'noopener,noreferrer');
       } catch {
         toast.error('Download failed', {
           description: 'Unable to download file. Please try again.',

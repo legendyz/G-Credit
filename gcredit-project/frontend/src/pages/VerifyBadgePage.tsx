@@ -330,13 +330,16 @@ export function VerifyBadgePage() {
           {badge.evidenceFiles &&
             badge.evidenceFiles.length > 0 &&
             (() => {
-              const evidenceItems: EvidenceItem[] = badge.evidenceFiles.map((f, idx) => ({
-                id: f.blobUrl || `evidence-${idx}`,
-                type: f.type || ('FILE' as const),
-                name: f.type === 'URL' ? f.sourceUrl || f.filename : f.filename,
-                url: f.type === 'URL' ? f.sourceUrl || f.blobUrl : f.blobUrl,
-                size: f.fileSize,
-                mimeType: f.mimeType,
+              const evidenceItems: EvidenceItem[] = badge.evidenceFiles.map((f) => ({
+                id: f.id,
+                type: f.type === 'URL' ? 'URL' : ('FILE' as const),
+                name:
+                  f.type === 'URL'
+                    ? f.sourceUrl || f.originalName || f.filename
+                    : f.originalName || f.filename,
+                url: f.type === 'URL' ? (f.sourceUrl ?? f.blobUrl) : f.blobUrl,
+                size: f.type === 'URL' ? undefined : f.fileSize,
+                mimeType: f.type === 'URL' ? undefined : f.mimeType,
                 uploadedAt: f.uploadedAt,
               }));
               return (

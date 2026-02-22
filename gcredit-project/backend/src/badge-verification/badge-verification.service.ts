@@ -67,8 +67,13 @@ export class BadgeVerificationService {
           select: {
             id: true,
             fileName: true,
+            originalName: true,
+            fileSize: true,
+            mimeType: true,
             blobUrl: true,
             uploadedAt: true,
+            type: true,
+            sourceUrl: true,
           },
         },
       },
@@ -195,11 +200,17 @@ export class BadgeVerificationService {
           : null,
       }),
 
-      // Evidence files from Sprint 4
+      // Evidence files — Story 12.6: include type/sourceUrl for URL evidence
       evidenceFiles: badge.evidenceFiles.map((file) => ({
+        id: file.id,
         filename: file.fileName,
+        originalName: file.originalName,
+        fileSize: file.fileSize,
+        mimeType: file.mimeType,
         blobUrl: file.blobUrl,
         uploadedAt: file.uploadedAt,
+        type: file.type,
+        sourceUrl: file.sourceUrl,
       })),
 
       // Open Badges 2.0 assertion (from Story 6.1)

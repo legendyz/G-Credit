@@ -1,6 +1,6 @@
 # Story 12.6: Evidence Unification �?UI Integration
 
-Status: review
+Status: approved
 
 ## Story
 
@@ -210,13 +210,16 @@ All 11 tasks and 13 ACs implemented. Frontend: 684 tests pass. Backend: 845 test
 - `frontend/src/components/evidence/__tests__/FileUploadZone.test.tsx` — FileUploadZone tests (5)
 - `frontend/src/components/BulkIssuance/__tests__/BulkResultPage.test.tsx` — BulkResultPage tests (13)
 #### Modified Files
-- `frontend/src/types/badge.ts` — Added EvidenceItem interface, evidence field on BadgeDetail, enhanced VerificationResponse.evidenceFiles
-- `frontend/src/pages/IssueBadgePage.tsx` — Major: stacked upload + two-step flow
+- `frontend/src/types/badge.ts` — EvidenceItem re-exported from evidenceApi (deduplicated), enhanced VerificationResponse.evidenceFiles
+- `frontend/src/pages/IssueBadgePage.tsx` — Major: stacked upload + two-step flow, crypto.randomUUID for file IDs
 - `frontend/src/pages/IssueBadgePage.test.tsx` — Updated for new evidence attachment
 - `frontend/src/components/BadgeDetailModal/BadgeDetailModal.tsx` — Replaced EvidenceSection with EvidenceList
-- `frontend/src/pages/VerifyBadgePage.tsx` — Replaced inline evidence with EvidenceList
-- `frontend/src/pages/admin/BadgeManagementPage.tsx` — Added evidence count column (desktop + mobile)
+- `frontend/src/pages/VerifyBadgePage.tsx` — Replaced inline evidence with EvidenceList, type-aware FILE/URL mapping
+- `frontend/src/pages/VerifyBadgePage.test.tsx` — New: verify evidence type-aware rendering tests (4)
+- `frontend/src/pages/admin/BadgeManagementPage.tsx` — Evidence count column with click-to-expand evidence list
+- `frontend/src/pages/admin/BadgeManagementPage.test.tsx` — Evidence expansion tests (3)
 - `frontend/src/lib/badgesApi.ts` — Added evidenceCount to Badge interface
 - `frontend/src/components/BulkIssuance/BulkPreviewPage.tsx` — Added BulkResultPage integration, badgeId in types
 - `backend/src/badge-issuance/badge-issuance.service.ts` — Added _count.evidenceFiles to getIssuedBadges, evidenceCount mapping
 - `backend/src/bulk-issuance/bulk-issuance.service.ts` — Added badgeId to confirmBulkIssuance results
+- `backend/src/badge-verification/badge-verification.service.ts` — Expanded evidenceFiles to include id, type, sourceUrl, originalName, fileSize, mimeType
