@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
-import { useCreateUser } from '@/hooks/useAdminUsers';
+import { useCreateUser, useAdminUsers } from '@/hooks/useAdminUsers';
 import type { UserRole } from '@/lib/adminUsersApi';
 
 interface CreateUserDialogProps {
@@ -50,6 +50,7 @@ export function CreateUserDialog({ isOpen, onClose }: CreateUserDialogProps) {
   const [lastName, setLastName] = useState('');
   const [department, setDepartment] = useState('');
   const [role, setRole] = useState<UserRole>('EMPLOYEE');
+  const [managerId, setManagerId] = useState<string>('');
   const [errors, setErrors] = useState<FormErrors>({});
 
   const dialogRef = useFocusTrap<HTMLDivElement>({
@@ -60,6 +61,15 @@ export function CreateUserDialog({ isOpen, onClose }: CreateUserDialogProps) {
 
   const createUserMutation = useCreateUser();
 
+  // Fetch active users for Manager dropdown
+  const { data: usersData } = useAdminUsers({
+    limit: 200,
+    statusFilter: 'ACTIVE',
+    sortBy: 'name',
+    sortOrder: 'asc',
+  });
+  const potentialManagers = usersData?.data ?? [];
+
   // Reset form when dialog opens
   useEffect(() => {
     if (isOpen) {
@@ -68,6 +78,7 @@ export function CreateUserDialog({ isOpen, onClose }: CreateUserDialogProps) {
       setLastName('');
       setDepartment('');
       setRole('EMPLOYEE');
+      setManagerId('');
       setErrors({});
     }
   }, [isOpen]);
@@ -111,6 +122,7 @@ export function CreateUserDialog({ isOpen, onClose }: CreateUserDialogProps) {
         lastName: lastName.trim(),
         department: department.trim() || undefined,
         role,
+        managerId: managerId && managerId !== '__none__' ? managerId : undefined,
       });
 
       toast.success('User created successfully');
@@ -126,7 +138,17 @@ export function CreateUserDialog({ isOpen, onClose }: CreateUserDialogProps) {
         toast.error('Failed to create user');
       }
     }
-  }, [email, firstName, lastName, department, role, validate, createUserMutation, onClose]);
+  }, [
+    email,
+    firstName,
+    lastName,
+    department,
+    role,
+    managerId,
+    validate,
+    createUserMutation,
+    onClose,
+  ]);
 
   if (!isOpen) return null;
 
@@ -272,6 +294,24 @@ export function CreateUserDialog({ isOpen, onClose }: CreateUserDialogProps) {
               </SelectContent>
             </Select>
             {errors.role && <p className="mt-1 text-xs text-red-600">{errors.role}</p>}
+          </div>
+
+          {/* Manager */}
+          <div>
+            <Label htmlFor="create-manager">Manager</Label>
+            <Select value={managerId} onValueChange={setManagerId}>
+              <SelectTrigger id="create-manager" className="w-full">
+                <SelectValue placeholder="None (no manager)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">None</SelectItem>
+                {potentialManagers.map((u) => (
+                  <SelectItem key={u.id} value={u.id}>
+                    {u.firstName} {u.lastName} ({u.email})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
