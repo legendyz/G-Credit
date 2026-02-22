@@ -578,11 +578,20 @@ export class AdminUsersService {
           firstName: true,
           lastName: true,
           role: true,
+          managerId: true,
         },
       });
       if (!manager) {
         throw new BadRequestException('Selected manager does not exist');
       }
+
+      // Circular hierarchy detection: walk up the manager chain from the
+      // selected manager. If we ever encounter dto.managerId again, it's a
+      // cycle. For createUser the new user doesn't exist yet, so cycles are
+      // unlikely, but this guard future-proofs for updateManager scenarios.
+      // Max depth = 50 to prevent infinite loops on corrupt data.
+      await this.detectManagerCycle(dto.managerId, null);
+
       // Strong constraint: auto-upgrade to MANAGER if currently EMPLOYEE
       if (manager.role === UserRole.EMPLOYEE) {
         managerNeedsUpgrade = true;
@@ -737,6 +746,46 @@ export class AdminUsersService {
   }
 
   // Helper methods
+
+  /**
+   * Detect circular manager hierarchy.
+   * Walks up the manager chain from `managerId`. If `userId` is encountered
+   * in the chain, it means assigning this manager would create a cycle.
+   * For createUser, `userId` is null (new user doesn't exist yet, no cycle possible).
+   * For future updateManager, `userId` is the user being reassigned.
+   * Max depth = 50 to guard against corrupt data causing infinite loops.
+   */
+  private async detectManagerCycle(
+    managerId: string,
+    userId: string | null,
+  ): Promise<void> {
+    const MAX_DEPTH = 50;
+    let currentId: string | null = managerId;
+    const visited = new Set<string>();
+
+    for (let depth = 0; depth < MAX_DEPTH && currentId; depth++) {
+      if (userId && currentId === userId) {
+        throw new BadRequestException(
+          'Circular manager hierarchy detected. This assignment would create a cycle.',
+        );
+      }
+      if (visited.has(currentId)) {
+        // Existing cycle in data — log warning but don't block
+        this.logger.warn(
+          `Existing circular manager chain detected at user ${currentId}`,
+        );
+        break;
+      }
+      visited.add(currentId);
+
+      const user: { managerId: string | null } | null =
+        await this.prisma.user.findUnique({
+          where: { id: currentId },
+          select: { managerId: true },
+        });
+      currentId = user?.managerId ?? null;
+    }
+  }
 
   /**
    * 12.3b: Map raw DB user to API response — strips azureId, computes source field
