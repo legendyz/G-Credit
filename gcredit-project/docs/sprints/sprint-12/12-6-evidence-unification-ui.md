@@ -1,6 +1,6 @@
 # Story 12.6: Evidence Unification �?UI Integration
 
-Status: approved
+Status: done
 
 ## Story
 

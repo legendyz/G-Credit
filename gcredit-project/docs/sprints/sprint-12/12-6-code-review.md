@@ -44,6 +44,14 @@ Re-review confirms previously blocking gaps are fixed and Story 12.6 acceptance 
   - verify page maps FILE/URL evidence type-aware rendering correctly
   - badge management evidence count is clickable and expands/collapses inline evidence list
 
+### Follow-up re-review (2026-02-22)
+
+- ✅ `EvidenceItem` type duplication resolved: `frontend/src/types/badge.ts` now imports `EvidenceItem` from `frontend/src/lib/evidenceApi.ts`
+- ✅ Frontend lint passes after type consolidation (`npm run lint`)
+- ✅ Frontend targeted tests pass after type consolidation:
+  - `src/pages/VerifyBadgePage.test.tsx` (4/4)
+  - `src/pages/admin/BadgeManagementPage.test.tsx` (25/25)
+
 ## Blocking Findings (Resolved)
 
 ### B1 — Verify flow cannot correctly render URL-type evidence ✅ Resolved
@@ -60,9 +68,9 @@ Re-review confirms previously blocking gaps are fixed and Story 12.6 acceptance 
 - **File:** `frontend/src/pages/admin/BadgeManagementPage.tsx`
 - **Resolution:** Evidence count is now interactive in both desktop and mobile layouts, supports expand/collapse state, fetches evidence on-demand, and renders inline `EvidenceList` content.
 
-## Non-Blocking Findings (Should Fix)
+## Non-Blocking Findings
 
-1. **Duplicate `EvidenceItem` type** still exists in both `frontend/src/lib/evidenceApi.ts` and `frontend/src/types/badge.ts` (maintenance drift risk).
+No remaining non-blocking findings in Story 12.6 scope.
 
 ## AC Coverage Summary
 
@@ -73,3 +81,4 @@ Re-review confirms previously blocking gaps are fixed and Story 12.6 acceptance 
 **Approved**
 
 Story 12.6 is approved after re-review. Remaining non-blocking cleanup can be handled in follow-up refactor.
+Story 12.6 is approved after re-review, with all previously identified findings closed.
