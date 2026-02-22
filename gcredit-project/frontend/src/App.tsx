@@ -1,9 +1,10 @@
 import { lazy, Suspense } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Layout } from '@/components/layout/Layout';
+import { queryClient } from '@/lib/queryClient';
 
 // Lazy-load all page components (TD-013: route-based code splitting)
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
@@ -47,8 +48,6 @@ function LoadingFallback() {
     </div>
   );
 }
-
-const queryClient = new QueryClient();
 
 function App() {
   return (
