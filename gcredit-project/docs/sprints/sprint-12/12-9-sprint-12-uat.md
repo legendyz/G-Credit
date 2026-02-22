@@ -108,6 +108,33 @@ So that I can confirm the new admin management UIs and unified evidence system w
 
 ## Tasks / Subtasks
 
+- [ ] Task -1: Clean Environment Reset (0.5h) — **Execute FIRST, before all other tasks**
+  - [ ] **Why:** Sprint 12 changed data models significantly (skill categories 3-level tree, dual-mode user provisioning, evidence unification, milestones). Stale data from previous sprints may cause false failures or mask real bugs.
+  - [ ] **Step 1: Stop backend** — `Ctrl-C` on running NestJS server
+  - [ ] **Step 2: Reset database** — Drop and recreate all tables with fresh schema:
+    ```bash
+    cd backend
+    npx prisma migrate reset --force
+    ```
+    This runs all migrations from scratch + executes the seed script automatically.
+  - [ ] **Step 3: Clear Azure Blob Storage** — Remove old evidence files uploaded during dev/testing:
+    ```bash
+    # Option A: Azure Portal → Storage Account → Containers → "evidence" → Delete all blobs
+    # Option B: Azure CLI
+    az storage blob delete-batch --source evidence --account-name <storage-account> --auth-mode login
+    ```
+  - [ ] **Step 4: Run UAT seed** — If `prisma migrate reset` doesn't auto-seed, run manually:
+    ```bash
+    npx ts-node prisma/seed-uat.ts
+    ```
+  - [ ] **Step 5: Verify clean state:**
+    - [ ] `SELECT count(*) FROM "User"` → 5 local users (admin, issuer, manager, employee, employee2)
+    - [ ] `SELECT count(*) FROM "SkillCategory"` → seed categories present
+    - [ ] `SELECT count(*) FROM "EvidenceFile"` → 0 (clean)
+    - [ ] `SELECT count(*) FROM "Milestone"` → seed milestones present (if seeded)
+    - [ ] Azure Blob "evidence" container → empty
+  - [ ] **Step 6: Start backend** — `npm run start:dev`
+  - [ ] **Result:** Clean environment ready for UAT
 - [ ] Task 0: Pre-UAT Code Hygiene Check (2h) — **Execute before UAT begins**
   - [ ] **Stale `evidenceUrl` references:** `grep -rn "evidenceUrl" backend/src/ frontend/src/` — verify 12.5+12.6 cleaned up all consumers; frontend should use unified `evidence[]`
   - [ ] **Legacy `bulkIssueBadges()` in badge-issuance.service.ts:** confirm no active controller route calls it (replaced by `BulkIssuanceService`); if dead code → remove or mark with TODO for Sprint 13
