@@ -255,8 +255,11 @@ describe('IssueBadgePage', () => {
     const user = userEvent.setup();
     renderPage();
 
-    // Wait for data to load (both templates and recipients via fetch)
-    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2));
+    // Wait for data to load AND render into the DOM (not just fetch calls)
+    await waitFor(() => {
+      const selects = screen.getAllByTestId('native-select');
+      expect(selects[0]).not.toBeDisabled();
+    });
 
     // Select template and recipient via native <select> (mocked)
     const selects = screen.getAllByTestId('native-select');
@@ -289,8 +292,11 @@ describe('IssueBadgePage', () => {
     const user = userEvent.setup();
     renderPage();
 
-    // Wait for data to load (both templates and recipients via fetch)
-    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2));
+    // Wait for data to load AND render into the DOM
+    await waitFor(() => {
+      const selects = screen.getAllByTestId('native-select');
+      expect(selects[0]).not.toBeDisabled();
+    });
 
     // Select template and recipient
     const selects = screen.getAllByTestId('native-select');
