@@ -7,9 +7,7 @@ export const BadgeStatus = {
 
 export type BadgeStatus = (typeof BadgeStatus)[keyof typeof BadgeStatus];
 
-// Story 12.6: Re-export canonical EvidenceItem from evidenceApi to avoid duplication
 import type { EvidenceItem } from '../lib/evidenceApi';
-export type { EvidenceItem } from '../lib/evidenceApi';
 
 export interface BadgeDetail {
   id: string;

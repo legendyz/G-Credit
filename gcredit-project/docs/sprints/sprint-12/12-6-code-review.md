@@ -10,9 +10,9 @@
 
 ## Verdict
 
-**Request Changes (Not approved yet).**
+**Approved.**
 
-The implementation is strong overall (shared evidence components, two-step issuance orchestration, bulk result UX, and minimal backend deltas), but there are blocking correctness gaps against Story 12.6 ACs.
+Re-review confirms previously blocking gaps are fixed and Story 12.6 acceptance criteria are now satisfied.
 
 ## What Was Verified
 
@@ -34,43 +34,42 @@ The implementation is strong overall (shared evidence components, two-step issua
 - ✅ Backend: `npm run lint`
 - ✅ Backend targeted tests: `badge-issuance.service.spec.ts` (31/31), `bulk-issuance.service.spec.ts` (57/57), `badge-verification.controller.spec.ts` (4/4)
 
-## Blocking Findings (Must Fix)
+### Re-review validation (2026-02-22)
 
-### B1 — Verify flow cannot correctly render URL-type evidence
+- ✅ Frontend targeted tests: `src/pages/VerifyBadgePage.test.tsx` (4/4)
+- ✅ Frontend targeted tests: `src/pages/admin/BadgeManagementPage.test.tsx` (25/25; includes evidence expansion behaviors)
+- ✅ Backend targeted tests: `src/badge-verification/badge-verification.service.spec.ts` (11/11)
+- ✅ Manual code re-check confirms:
+  - verify payload now carries canonical evidence fields (`id`, `originalName`, `fileSize`, `mimeType`, `type`, `sourceUrl`)
+  - verify page maps FILE/URL evidence type-aware rendering correctly
+  - badge management evidence count is clickable and expands/collapses inline evidence list
+
+## Blocking Findings (Resolved)
+
+### B1 — Verify flow cannot correctly render URL-type evidence ✅ Resolved
 
 - **Severity:** Medium
 - **Files:**
   - `backend/src/badge-verification/badge-verification.service.ts`
   - `frontend/src/pages/VerifyBadgePage.tsx`
-- **Issue:** Verify UI logic expects evidence items with type-aware fields (`type`, `sourceUrl`) to distinguish FILE vs URL and route actions correctly. However, backend verify service currently returns `_meta.evidenceFiles` with only `{ fileName, blobUrl, uploadedAt }`.
-- **Impact:** URL evidence cannot be rendered as direct links on verify page (AC #5). Current mapping falls back to FILE and can produce empty/invalid URL behavior for URL-type records.
-- **Required fix:** Include `type` and `sourceUrl` (and preferably stable `id`, `originalName`, `fileSize`, `mimeType`) in verify service evidence payload, then map from those canonical fields in `VerifyBadgePage`.
+- **Resolution:** `badge-verification.service` now selects/maps `type` + `sourceUrl` and full canonical evidence fields; `VerifyBadgePage` maps FILE/URL evidence using these fields and renders URL evidence with direct open-link behavior.
 
-### B2 — AC #4 “click to expand/view evidence list” not implemented in badge management
+### B2 — AC #4 “click to expand/view evidence list” not implemented in badge management ✅ Resolved
 
 - **Severity:** Medium
 - **File:** `frontend/src/pages/admin/BadgeManagementPage.tsx`
-- **Issue:** Evidence column currently displays count only (`Paperclip + evidenceCount`) with no click interaction, inline expansion, or popover/detail view.
-- **Impact:** Story AC #4 is only partially satisfied.
-- **Required fix:** Add click affordance for evidence count and show evidence list/details (inline row expansion or popover/modal) as specified.
+- **Resolution:** Evidence count is now interactive in both desktop and mobile layouts, supports expand/collapse state, fetches evidence on-demand, and renders inline `EvidenceList` content.
 
 ## Non-Blocking Findings (Should Fix)
 
-1. **Duplicate `EvidenceItem` type** exists in both `frontend/src/lib/evidenceApi.ts` and `frontend/src/types/badge.ts` (maintenance drift risk).
-2. **Module-level mutable counter** in `IssueBadgePage` (`let fileIdCounter = 0`) is functional but non-idiomatic; use `useRef` or UUID.
-3. **`pendingToDisplayItems()` dead code** in `EvidenceAttachmentPanel.tsx` (computed but not used in render path).
-4. **Security consistency:** FILE preview/download in `EvidenceList` opens new tab without `noopener,noreferrer` (URL path already uses both).
-5. **Tests:** no dedicated coverage for shared evidence fan-out API behavior and verify-page type-aware evidence mapping.
+1. **Duplicate `EvidenceItem` type** still exists in both `frontend/src/lib/evidenceApi.ts` and `frontend/src/types/badge.ts` (maintenance drift risk).
 
 ## AC Coverage Summary
 
-- **Met:** AC #1, #2, #3, #6, #7, #8, #9, #10, #11, #12, #13
-- **Not fully met:**
-  - **AC #4** (evidence count click-to-view behavior missing)
-  - **AC #5** (verify evidence type handling incomplete due backend payload contract)
+- **Met:** AC #1 through AC #13
 
 ## Approval Decision
 
-**Request Changes**
+**Approved**
 
-Please resolve **B1** and **B2**, then re-run targeted checks for verify evidence rendering and badge management evidence interaction. After those are fixed, Story 12.6 should be ready for approval.
+Story 12.6 is approved after re-review. Remaining non-blocking cleanup can be handled in follow-up refactor.

@@ -10,8 +10,6 @@ import {
   getEvidenceDownloadUrl,
 } from '@/lib/evidenceApi';
 
-export type { EvidenceItem } from '@/lib/evidenceApi';
-
 interface EvidenceListProps {
   items: EvidenceItem[];
   editable?: boolean;
