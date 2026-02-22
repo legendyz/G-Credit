@@ -62,9 +62,9 @@ export function CreateUserDialog({ isOpen, onClose }: CreateUserDialogProps) {
   const createUserMutation = useCreateUser();
 
   // Fetch active LOCAL users for Manager dropdown
-  // M365 users' manager relationships are managed by M365 sync, not manually
-  const { data: usersData } = useAdminUsers({
-    limit: 200,
+  // Local users are isolated from M365 — only local users can manage local users
+  const { data: usersData, isLoading: managersLoading } = useAdminUsers({
+    limit: 100,
     statusFilter: 'ACTIVE',
     sourceFilter: 'LOCAL',
     sortBy: 'name',
@@ -307,6 +307,9 @@ export function CreateUserDialog({ isOpen, onClose }: CreateUserDialogProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none__">None</SelectItem>
+                {managersLoading && (
+                  <div className="px-2 py-1.5 text-sm text-gray-500">Loading...</div>
+                )}
                 {potentialManagers.map((u) => (
                   <SelectItem key={u.id} value={u.id}>
                     {u.firstName} {u.lastName} ({u.email})
