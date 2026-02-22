@@ -391,6 +391,56 @@ First SSO login → azureId not found in DB → JIT create (azureId = token.oid)
 
 ---
 
+### DEC-011-18: MANAGER Role–managerId Strong Consistency Constraint
+
+**Date Added:** 2026-02-23  
+**Context:** During Sprint 12 UAT, a design inconsistency was discovered between MANAGER role and `managerId` relationship:
+
+- **M365 side:** `directReports > 0` → automatically becomes MANAGER (DEC-011-02 Priority 3)
+- **Local side:** `role` and `managerId` were managed independently — an EMPLOYEE could be assigned as someone's manager (inconsistent), or a MANAGER could have zero subordinates (meaningless)
+
+This created two problematic scenarios:
+
+| Scenario | Result |
+|---|---|
+| User A: role=MANAGER, no one's managerId points to A | A can access Manager Dashboard but **team list is empty** |
+| User B: role=EMPLOYEE, someone's managerId points to B | B has subordinates but **cannot access Manager Dashboard** |
+
+**Decision:** Enforce strong consistency between MANAGER role and `managerId` relationship for **all user sources** (LOCAL and M365):
+
+**Rule 1 — Auto-Upgrade on managerId Assignment:**
+When a user is assigned as someone's manager (via `managerId`), and that user's current role is EMPLOYEE, their role is automatically upgraded to MANAGER.
+
+- Applies during: `createUser` (with managerId), future `updateManager` endpoint
+- Audit log records: `ROLE_CHANGED` with note "Auto-upgraded to MANAGER: assigned as manager of {email}"
+- API response includes `managerAutoUpgraded` field so frontend can display info toast
+- Does NOT auto-upgrade ISSUER or ADMIN (only EMPLOYEE → MANAGER)
+
+**Rule 2 — Block MANAGER Downgrade with Subordinates:**
+Cannot change a user's role from MANAGER to EMPLOYEE or ISSUER if they have `directReportsCount > 0`. Admin must reassign subordinates first.
+
+- Backend returns 400: `"Cannot change role from MANAGER: this user has N subordinate(s). Please reassign their subordinates first."`
+- MANAGER → ADMIN is allowed (ADMIN supersedes MANAGER privileges)
+
+**Rationale:**
+
+1. **Alignment with M365 behavior:** M365 sync already derives MANAGER from `directReports > 0`. Local users should follow the same principle for consistency.
+2. **Avoided alternatives:**
+   - *Weak constraint (UI warning only):* Doesn't prevent the inconsistency, just surfaces it. MANAGER with empty team still exists.
+   - *Merge (eliminate MANAGER role):* Would require fundamental RBAC refactor across guards, dashboards, analytics, frontend routing. Disproportionate effort for the benefit.
+   - *Strong constraint* was chosen as the pragmatic middle ground — minimal code changes, maximum consistency.
+3. **Implicit vs explicit upgrade:** Toast notification ensures admin is informed of the side effect, not surprised by it.
+
+**Impact on future modules:**
+- Any endpoint that modifies `managerId` must check and auto-upgrade the target user's role
+- Bulk operations (import CSV, bulk reassign) must enforce the same constraint
+- Org chart / hierarchy features can rely on MANAGER role ↔ has subordinates being consistent
+- Role downgrade UI should pre-check subordinate count and show warning before API call
+
+**Implementation:** Commit `fcf1c4a` (Sprint 12, 2026-02-23)
+
+---
+
 ## Consequences
 
 ### Positive
@@ -429,6 +479,6 @@ First SSO login → azureId not found in DB → JIT create (azureId = token.oid)
 
 ---
 
-**Last Updated:** 2026-02-20
+**Last Updated:** 2026-02-23 (DEC-011-18 added)
 **Maintained By:** SM / Project Lead
 **Review Frequency:** When user management architecture changes
