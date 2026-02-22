@@ -61,10 +61,12 @@ export function CreateUserDialog({ isOpen, onClose }: CreateUserDialogProps) {
 
   const createUserMutation = useCreateUser();
 
-  // Fetch active users for Manager dropdown
+  // Fetch active LOCAL users for Manager dropdown
+  // M365 users' manager relationships are managed by M365 sync, not manually
   const { data: usersData } = useAdminUsers({
     limit: 200,
     statusFilter: 'ACTIVE',
+    sourceFilter: 'LOCAL',
     sortBy: 'name',
     sortOrder: 'asc',
   });
