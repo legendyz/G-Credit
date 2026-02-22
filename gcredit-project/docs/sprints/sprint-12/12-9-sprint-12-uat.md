@@ -97,6 +97,13 @@ So that I can confirm the new admin management UIs and unified evidence system w
 
 ## Tasks / Subtasks
 
+- [ ] Task 0: Pre-UAT Code Hygiene Check (2h) — **Execute before UAT begins**
+  - [ ] **Stale `evidenceUrl` references:** `grep -rn "evidenceUrl" backend/src/ frontend/src/` — verify 12.5+12.6 cleaned up all consumers; frontend should use unified `evidence[]`
+  - [ ] **Legacy `bulkIssueBadges()` in badge-issuance.service.ts:** confirm no active controller route calls it (replaced by `BulkIssuanceService`); if dead code → remove or mark with TODO for Sprint 13
+  - [ ] **Dead imports / unused variables:** `npx tsc --noEmit` (BE + FE) — zero errors; `npx eslint src/ --max-warnings=0` (BE) — zero warnings
+  - [ ] **Cross-story API consistency:** verify 12.5 `EvidenceItem` interface matches what 12.6 frontend consumes; check no duplicated type definitions
+  - [ ] **Orphaned test mocks:** grep for test files still referencing removed fields (e.g., `evidenceUrl` in bulk issuance specs)
+  - [ ] **Result:** clean → proceed to UAT; findings → fix inline or record as D-5+ in Sprint 13 deferred items
 - [ ] Task 1: Create UAT test plan document (2h)
   - [ ] Define detailed test steps for each UAT case
   - [ ] Prepare pre-conditions and expected results
@@ -129,6 +136,6 @@ So that I can confirm the new admin management UIs and unified evidence system w
 
 ✅ Phase 2 Review Complete (2026-02-19) — Added during final planning audit
 
-**Estimate:** 5h  
+**Estimate:** 7h (was 5h; +2h for Pre-UAT Code Hygiene Check — PO decision 2026-02-22)  
 **Priority:** 🟡 Medium  
 **Dependencies:** All Stories 12.1–12.8 must be complete before UAT execution
