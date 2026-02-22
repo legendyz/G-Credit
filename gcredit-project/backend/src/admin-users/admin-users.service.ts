@@ -626,11 +626,8 @@ export class AdminUsersService {
           userId: created.id,
           performedBy: adminId,
           action: 'USER_CREATED',
-          newValue: JSON.stringify({
-            email: dto.email.toLowerCase(),
-            role: dto.role,
-            department: dto.department || null,
-          }),
+          newValue: dto.role,
+          note: `Created local user ${dto.email.toLowerCase()} (department: ${dto.department || 'none'})`,
         },
       });
 
@@ -728,11 +725,12 @@ export class AdminUsersService {
           userId,
           performedBy: adminId,
           action: 'USER_DELETED',
-          oldValue: JSON.stringify({
-            email: user.email,
-            directReportsCount: user._count.directReports,
-          }),
+          oldValue: user.email.slice(0, 50),
           newValue: 'DELETED',
+          note:
+            user._count.directReports > 0
+              ? `Had ${user._count.directReports} subordinate(s) — their managerId cleared`
+              : undefined,
         },
       });
 
