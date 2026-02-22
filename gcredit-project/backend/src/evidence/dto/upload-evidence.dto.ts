@@ -21,7 +21,7 @@ export interface EvidenceFileResponse {
   mimeType: string;
   blobUrl: string;
   uploadedAt: Date;
-  type?: string; // Story 12.5: 'FILE' | 'URL'
+  type?: 'FILE' | 'URL'; // Story 12.5
   sourceUrl?: string; // Story 12.5: For URL-type evidence
 }
 

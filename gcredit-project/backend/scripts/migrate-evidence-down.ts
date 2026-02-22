@@ -48,7 +48,7 @@ async function main() {
 
       restored++;
       console.log(
-        `  ✓ Badge ${evidence.badgeId}: restored ${evidence.sourceUrl}`,
+        `  ${isDryRun ? '[DRY RUN] ' : ''}✓ Badge ${evidence.badgeId}: restored ${evidence.sourceUrl}`,
       );
     } catch (error) {
       failed++;

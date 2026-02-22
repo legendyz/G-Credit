@@ -394,6 +394,22 @@ describe('EvidenceService - Story 4.3', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
+    it('should reject non-http/https protocols', async () => {
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+
+      await expect(
+        service.addUrlEvidence(
+          'badge-123',
+          'ftp://example.com/file',
+          'user-admin',
+        ),
+      ).rejects.toThrow(BadRequestException);
+
+      await expect(
+        service.addUrlEvidence('badge-123', 'file:///etc/passwd', 'user-admin'),
+      ).rejects.toThrow(BadRequestException);
+    });
+
     it('should enforce IDOR protection (issuer or ADMIN)', async () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
 

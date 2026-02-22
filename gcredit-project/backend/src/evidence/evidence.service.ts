@@ -150,11 +150,16 @@ export class EvidenceService {
       );
     }
 
-    // Validate URL
+    // Validate URL (defense-in-depth: restrict to http/https)
     try {
-      new URL(sourceUrl);
+      const parsed = new URL(sourceUrl);
+      if (!['http:', 'https:'].includes(parsed.protocol)) {
+        throw new Error('unsupported protocol');
+      }
     } catch {
-      throw new BadRequestException('Invalid URL format');
+      throw new BadRequestException(
+        'Invalid URL format — only http and https URLs are accepted',
+      );
     }
 
     // Create URL-type evidence record
