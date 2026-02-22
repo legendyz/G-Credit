@@ -69,3 +69,25 @@ All 5 ACs met. 3 source files changed, 3 test files updated. 8 new tests added. 
 - `frontend/src/hooks/useSkills.test.tsx` — 4 new `useSkillNamesMap` tests
 - `frontend/src/utils/searchFilters.test.ts` — 2 new skill chip fallback tests
 - `frontend/src/components/BadgeDetailModal/BadgeInfo.test.tsx` — 2 new muted styling tests
+
+## SM Acceptance Record
+
+- **Date**: 2026-02-22
+- **SM Agent**: Claude Opus 4.6 (Bob)
+- **Verdict**: ✅ **ACCEPTED**
+
+### Verification Summary
+
+| AC | Description | Verdict |
+|----|-------------|--------|
+| #1 | All pages show skill names, never UUIDs | ✅ PASS |
+| #2 | Fallback "Unknown Skill" with muted styling | ✅ PASS |
+| #3 | `useSkillNamesMap()` is single source | ✅ PASS |
+| #4 | Verify page resolves via backend | ✅ PASS |
+| #5 | All tests pass (699 FE) | ✅ PASS |
+
+### Notes
+
+- Code review: Approved — no blocking findings, 2 follow-up refactors (constant extraction + Map optimization) applied in `b48e224` and `167d5bb`
+- `UNKNOWN_SKILL_LABEL` constant in `@/lib/constants.ts` — clean cross-module sharing
+- 66 test files, 699 tests pass
