@@ -24,6 +24,8 @@ export interface AdminUser {
   badgeCount: number;
   lastSyncAt: string | null;
   managerId: string | null;
+  managerName: string | null;
+  managerEmail: string | null;
   failedLoginAttempts: number;
   lockedUntil: string | null;
   directReportsCount: number;

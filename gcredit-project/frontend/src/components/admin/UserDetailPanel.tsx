@@ -93,6 +93,15 @@ export function UserDetailPanel({ user, isOpen, onClose }: UserDetailPanelProps)
                 </dd>
               </div>
               <div className="flex items-center justify-between">
+                <dt className="text-sm text-gray-500 dark:text-gray-400">Manager</dt>
+                <dd
+                  className="text-sm text-gray-900 dark:text-white"
+                  title={user.managerEmail || undefined}
+                >
+                  {user.managerName ? `${user.managerName} (${user.managerEmail})` : '\u2014'}
+                </dd>
+              </div>
+              <div className="flex items-center justify-between">
                 <dt className="text-sm text-gray-500 dark:text-gray-400">Role Set Manually</dt>
                 <dd className="text-sm text-gray-900 dark:text-white">
                   {user.roleSetManually ? 'Yes' : 'No'}

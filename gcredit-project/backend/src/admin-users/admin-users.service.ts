@@ -45,6 +45,8 @@ export interface UserListItem {
   badgeCount: number;
   lastSyncAt: Date | null;
   managerId: string | null;
+  managerName: string | null;
+  managerEmail: string | null;
   failedLoginAttempts: number;
   lockedUntil: Date | null;
   directReportsCount?: number;
@@ -649,7 +651,12 @@ export class AdminUsersService {
    * 12.3b: Map raw DB user to API response — strips azureId, computes source field
    */
   private mapUserToResponse(user: Record<string, unknown>): UserListItem {
-    const { azureId, _count, ...rest } = user;
+    const { azureId, _count, manager, ...rest } = user;
+    const mgr = manager as {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+    } | null;
     return {
       ...rest,
       source: azureId ? 'M365' : 'LOCAL',
@@ -657,6 +664,10 @@ export class AdminUsersService {
       badgeCount: (_count as { badgesReceived?: number })?.badgesReceived ?? 0,
       directReportsCount:
         (_count as { directReports?: number })?.directReports ?? 0,
+      managerName: mgr
+        ? [mgr.firstName, mgr.lastName].filter(Boolean).join(' ') || null
+        : null,
+      managerEmail: mgr?.email ?? null,
     } as UserListItem;
   }
 
@@ -679,6 +690,14 @@ export class AdminUsersService {
       azureId: true,
       lastSyncAt: true,
       managerId: true,
+      manager: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
       failedLoginAttempts: true,
       lockedUntil: true,
       _count: {
