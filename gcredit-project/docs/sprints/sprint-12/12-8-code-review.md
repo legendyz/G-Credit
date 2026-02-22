@@ -7,12 +7,15 @@
 - Review Prompt: `docs/sprints/sprint-12/12-8-code-review-prompt.md`
 - Base commit: `8452a3a`
 - Reviewed commit: `a2a0199`
+- Re-review commit: `b48e224` (follow-up refactor for prior observations)
 
 ## Verdict
 
 **Approved with Follow-ups.**
 
 No blocking defects found. The implementation meets Story 12.8 acceptance criteria and closes the UUID leakage paths in scoped frontend flows.
+
+Re-review confirms prior NB2/NB3 follow-ups are implemented correctly in `b48e224` with no functional regression.
 
 ## What Was Verified
 
@@ -41,6 +44,17 @@ No blocking defects found. The implementation meets Story 12.8 acceptance criter
 - ✅ `npx tsc --noEmit` passed
 - ✅ `npm run lint` passed
 
+### Re-review Validation (commit `b48e224`)
+
+- ✅ `useSkillNamesMap()` now uses shared constant `UNKNOWN_SKILL_LABEL` (magic string coupling reduced)
+- ✅ Skill lookup path optimized from repeated `find()` to `Map`-based lookup (addresses O(n×m) concern)
+- ✅ `searchFilters.ts` and `BadgeInfo.tsx` consume the shared fallback constant
+- ✅ Targeted regression checks all pass:
+  - `src/hooks/useSkills.test.tsx` (7/7)
+  - `src/utils/searchFilters.test.ts` (33/33)
+  - `src/components/BadgeDetailModal/BadgeInfo.test.tsx` (11/11)
+  - `npx tsc --noEmit`, `npm run lint`
+
 ## AC Coverage
 
 - ✅ **AC #1**: Skill displays no longer fall back to UUID in reviewed frontend paths
@@ -51,10 +65,9 @@ No blocking defects found. The implementation meets Story 12.8 acceptance criter
 
 ## Non-Blocking Observations
 
-1. **Loading-state UX flash risk (minor):** `useSkillNamesMap()` intentionally returns `"Unknown Skill"` before skills query resolves. This prevents UUID leakage but may briefly show muted unknown chips before names hydrate.
-2. **Magic string coupling:** `"Unknown Skill"` is hardcoded across hook/component/tests. Consider extracting to a shared constant if this pattern expands.
-3. **Lookup complexity:** `skills.find()` inside `skillIds.reduce()` is O(n×m). Current scale is small, but can be optimized with a prebuilt map if skill volume grows.
+1. **Loading-state UX flash risk (minor):** `useSkillNamesMap()` intentionally returns fallback labels before skills query resolves. This prevents UUID leakage but may briefly show muted unknown chips before names hydrate.
+2. **Layering note (minor):** `searchFilters.ts` now imports fallback constant from `useSkills.ts` (hook module). Consider moving shared label constants to a neutral constants module to avoid cross-layer coupling.
 
 ## Recommendation
 
-Keep current implementation as-is for Story 12.8 completion. Track the three observations as optional follow-up refactors, not blockers.
+Keep current implementation as-is for Story 12.8 completion. Remaining observations are optional refinements, not blockers.

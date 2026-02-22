@@ -78,8 +78,10 @@ export function useSkills(options: UseSkillsOptions = {}) {
   });
 }
 
-/** Shared fallback label for unresolved skill IDs (Story 12.8) */
-export const UNKNOWN_SKILL_LABEL = 'Unknown Skill';
+import { UNKNOWN_SKILL_LABEL } from '@/lib/constants';
+
+// Re-export for backward compatibility
+export { UNKNOWN_SKILL_LABEL } from '@/lib/constants';
 
 /**
  * Get a map of skill IDs to skill names for chip display

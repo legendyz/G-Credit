@@ -1,6 +1,6 @@
 import React from 'react';
 import { getCategoryColorClasses } from '@/lib/categoryColors';
-import { UNKNOWN_SKILL_LABEL } from '@/hooks/useSkills';
+import { UNKNOWN_SKILL_LABEL } from '@/lib/constants';
 
 type SkillItem = string | { name: string; categoryColor?: string | null };
 

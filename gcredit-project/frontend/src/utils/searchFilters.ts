@@ -9,7 +9,7 @@
  * - ≥50 badges: server-side search (API call)
  */
 
-import { UNKNOWN_SKILL_LABEL } from '@/hooks/useSkills';
+import { UNKNOWN_SKILL_LABEL } from '@/lib/constants';
 
 export interface BadgeForFilter {
   id: string;
