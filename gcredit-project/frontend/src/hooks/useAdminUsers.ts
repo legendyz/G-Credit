@@ -17,6 +17,7 @@ import {
   type UpdateStatusRequest,
   type UpdateDepartmentRequest,
   type CreateUserRequest,
+  type CreateUserResponse,
 } from '@/lib/adminUsersApi';
 
 // Query key factory
@@ -93,7 +94,7 @@ export function useUpdateUserDepartment() {
 export function useCreateUser() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<CreateUserResponse, Error, CreateUserRequest>({
     mutationFn: (data: CreateUserRequest) => createUser(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminUsersKeys.lists() });

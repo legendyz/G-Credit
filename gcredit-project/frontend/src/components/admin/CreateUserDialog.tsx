@@ -118,7 +118,7 @@ export function CreateUserDialog({ isOpen, onClose }: CreateUserDialogProps) {
     setErrors({});
 
     try {
-      await createUserMutation.mutateAsync({
+      const result = await createUserMutation.mutateAsync({
         email: email.trim(),
         firstName: firstName.trim(),
         lastName: lastName.trim(),
@@ -128,6 +128,16 @@ export function CreateUserDialog({ isOpen, onClose }: CreateUserDialogProps) {
       });
 
       toast.success('User created successfully');
+
+      // Show auto-upgrade notification if manager was promoted
+      if (result.managerAutoUpgraded) {
+        const { managerName, previousRole } = result.managerAutoUpgraded;
+        toast.info(
+          `${managerName} has been automatically upgraded from ${previousRole} to MANAGER`,
+          { duration: 6000 }
+        );
+      }
+
       onClose();
     } catch (error) {
       if (error instanceof Error) {

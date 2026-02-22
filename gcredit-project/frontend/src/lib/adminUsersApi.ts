@@ -75,6 +75,15 @@ export interface CreateUserRequest {
   managerId?: string;
 }
 
+export interface CreateUserResponse extends AdminUser {
+  managerAutoUpgraded?: {
+    managerId: string;
+    managerEmail: string;
+    managerName: string;
+    previousRole: UserRole;
+  };
+}
+
 export interface UpdateRoleRequest {
   role: UserRole;
   auditNote?: string;
@@ -219,7 +228,7 @@ export async function updateUserStatus(
 /**
  * Create a local user (12.3b)
  */
-export async function createUser(data: CreateUserRequest): Promise<AdminUser> {
+export async function createUser(data: CreateUserRequest): Promise<CreateUserResponse> {
   const response = await apiFetch('/admin/users', {
     method: 'POST',
     body: JSON.stringify(data),

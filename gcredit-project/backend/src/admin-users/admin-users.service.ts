@@ -88,6 +88,15 @@ export interface DepartmentUpdateResponse {
   department: string;
 }
 
+export interface CreateUserResponse extends UserListItem {
+  managerAutoUpgraded?: {
+    managerId: string;
+    managerEmail: string;
+    managerName: string;
+    previousRole: UserRole;
+  };
+}
+
 @Injectable()
 export class AdminUsersService {
   private readonly logger = new Logger(AdminUsersService.name);
@@ -298,6 +307,23 @@ export class AdminUsersService {
         'M365 user roles are managed via Security Group membership. ' +
           "To change this user's role, update their Security Group in Azure AD.",
       );
+    }
+
+    // Strong constraint: block downgrade from MANAGER if user has subordinates
+    if (
+      currentUser.role === UserRole.MANAGER &&
+      dto.role !== UserRole.MANAGER &&
+      dto.role !== UserRole.ADMIN
+    ) {
+      const subordinateCount = await this.prisma.user.count({
+        where: { managerId: userId },
+      });
+      if (subordinateCount > 0) {
+        throw new BadRequestException(
+          `Cannot change role from MANAGER: this user has ${subordinateCount} subordinate(s). ` +
+            'Please reassign their subordinates first.',
+        );
+      }
     }
 
     // AC5: Optimistic locking - check version match
@@ -534,12 +560,33 @@ export class AdminUsersService {
     }
 
     // Validate managerId if provided
+    let managerNeedsUpgrade = false;
+    let managerBeforeUpgrade: {
+      id: string;
+      email: string;
+      firstName: string | null;
+      lastName: string | null;
+      role: UserRole;
+    } | null = null;
+
     if (dto.managerId) {
       const manager = await this.prisma.user.findUnique({
         where: { id: dto.managerId },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+        },
       });
       if (!manager) {
         throw new BadRequestException('Selected manager does not exist');
+      }
+      // Strong constraint: auto-upgrade to MANAGER if currently EMPLOYEE
+      if (manager.role === UserRole.EMPLOYEE) {
+        managerNeedsUpgrade = true;
+        managerBeforeUpgrade = manager;
       }
     }
 
@@ -578,6 +625,35 @@ export class AdminUsersService {
         },
       });
 
+      // Auto-upgrade manager to MANAGER role if needed
+      if (managerNeedsUpgrade && managerBeforeUpgrade) {
+        await tx.user.update({
+          where: { id: managerBeforeUpgrade.id },
+          data: {
+            role: UserRole.MANAGER,
+            roleSetManually: true,
+            roleUpdatedAt: new Date(),
+            roleUpdatedBy: adminId,
+            roleVersion: { increment: 1 },
+          },
+        });
+
+        await tx.userRoleAuditLog.create({
+          data: {
+            userId: managerBeforeUpgrade.id,
+            performedBy: adminId,
+            action: 'ROLE_CHANGED',
+            oldValue: managerBeforeUpgrade.role,
+            newValue: UserRole.MANAGER,
+            note: `Auto-upgraded to MANAGER: assigned as manager of new user ${dto.email.toLowerCase()}`,
+          },
+        });
+
+        this.logger.log(
+          `Auto-upgraded ${managerBeforeUpgrade.email} from ${managerBeforeUpgrade.role} to MANAGER (assigned as manager of ${dto.email.toLowerCase()})`,
+        );
+      }
+
       return created;
     });
 
@@ -585,7 +661,22 @@ export class AdminUsersService {
       `Local user created: ${dto.email.toLowerCase()} (role: ${dto.role}) by admin ${adminId}`,
     );
 
-    return this.mapUserToResponse(user as unknown as Record<string, unknown>);
+    const response: CreateUserResponse = this.mapUserToResponse(
+      user as unknown as Record<string, unknown>,
+    ) as CreateUserResponse;
+
+    if (managerNeedsUpgrade && managerBeforeUpgrade) {
+      response.managerAutoUpgraded = {
+        managerId: managerBeforeUpgrade.id,
+        managerEmail: managerBeforeUpgrade.email,
+        managerName:
+          `${managerBeforeUpgrade.firstName || ''} ${managerBeforeUpgrade.lastName || ''}`.trim() ||
+          managerBeforeUpgrade.email,
+        previousRole: managerBeforeUpgrade.role,
+      };
+    }
+
+    return response;
   }
 
   /**
