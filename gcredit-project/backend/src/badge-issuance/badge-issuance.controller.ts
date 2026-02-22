@@ -12,8 +12,6 @@ import {
   GoneException,
   HttpCode,
   HttpStatus,
-  UseInterceptors,
-  UploadedFile,
   BadRequestException,
   Res,
   Logger,
@@ -23,10 +21,9 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
-  ApiConsumes,
-  ApiBody,
+
 } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
+
 import type { Response } from 'express';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -324,37 +321,7 @@ export class BadgeIssuanceController {
     return badge.assertionJson;
   }
 
-  @Post('bulk')
-  @Roles(UserRole.ADMIN, UserRole.ISSUER)
-  @UseInterceptors(FileInterceptor('file'))
-  @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: 'Bulk issue badges from CSV file' })
-  @ApiBody({
-    description:
-      'CSV file with columns: recipientEmail, templateId, expiresIn (optional)',
-    schema: {
-      type: 'object',
-      properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
-  @ApiResponse({ status: 201, description: 'Bulk issuance completed' })
-  @ApiResponse({ status: 400, description: 'Invalid CSV format' })
-  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
-  async bulkIssueBadges(
-    @UploadedFile() file: Express.Multer.File,
-    @Request() req: RequestWithUser,
-  ) {
-    if (!file) {
-      throw new BadRequestException('CSV file is required');
-    }
-
-    return this.badgeService.bulkIssueBadges(file.buffer, req.user.userId);
-  }
+  // Legacy POST /bulk route removed — superseded by BulkIssuanceService (POST /api/bulk-issuance/upload)
 
   @Get(':id/similar')
   @ApiOperation({ summary: 'Get similar badge recommendations' })

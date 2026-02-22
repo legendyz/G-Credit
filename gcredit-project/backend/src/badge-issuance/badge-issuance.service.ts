@@ -17,7 +17,7 @@ import { GraphEmailService } from '../microsoft-graph/services/graph-email.servi
 import { ConfigService } from '@nestjs/config';
 import { IssueBadgeDto } from './dto/issue-badge.dto';
 import { QueryBadgeDto } from './dto/query-badge.dto';
-import { BulkIssuanceResult } from './dto/bulk-issue-badges.dto';
+
 import {
   WalletQueryDto,
   WalletResponse,
@@ -1002,94 +1002,7 @@ export class BadgeIssuanceService {
   /**
    * Revoke a badge (ADMIN only)
    */
-  /**
-   * Bulk issue badges from CSV file
-   */
-  async bulkIssueBadges(
-    fileBuffer: Buffer,
-    issuerId: string,
-  ): Promise<BulkIssuanceResult> {
-    // 1. Parse CSV
-    let rows;
-    try {
-      rows = this.csvParser.parseBulkIssuanceCSV(fileBuffer);
-    } catch (error) {
-      throw new BadRequestException(
-        `CSV parsing failed: ${(error as Error).message}`,
-      );
-    }
-
-    // 2. Limit to 1000 badges per upload
-    if (rows.length > 1000) {
-      throw new BadRequestException(
-        `Too many rows (${rows.length}). Maximum 1000 badges per upload.`,
-      );
-    }
-
-    this.logger.log(`Processing bulk issuance: ${rows.length} badges`);
-
-    // 3. Process each row (no transaction - partial failures allowed)
-    const results: BulkIssuanceResult['results'] = [];
-    let successCount = 0;
-    let failCount = 0;
-
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
-      const rowNumber = i + 2; // +2 for header row
-
-      try {
-        // Find recipient by email
-        const recipient = await this.prisma.user.findUnique({
-          where: { email: row.recipientEmail },
-        });
-
-        if (!recipient) {
-          throw new Error(`Recipient not found: ${row.recipientEmail}`);
-        }
-
-        // Issue badge (reuse existing method)
-        const badge = await this.issueBadge(
-          {
-            templateId: row.templateId,
-            recipientId: recipient.id,
-            expiresIn: row.expiresIn,
-          },
-          issuerId,
-        );
-
-        results.push({
-          row: rowNumber,
-          email: row.recipientEmail,
-          success: true,
-          badgeId: badge.id,
-        });
-        successCount++;
-      } catch (error) {
-        results.push({
-          row: rowNumber,
-          email: row.recipientEmail,
-          success: false,
-          error: (error as Error).message,
-        });
-        failCount++;
-        this.logger.warn(
-          `Row ${rowNumber} failed: ${(error as Error).message}`,
-        );
-      }
-    }
-
-    this.logger.log(
-      `Bulk issuance complete: ${successCount} successful, ${failCount} failed`,
-    );
-
-    // 4. Return summary
-    return {
-      total: rows.length,
-      successful: successCount,
-      failed: failCount,
-      results,
-    };
-  }
+  // Legacy bulkIssueBadges() removed — superseded by BulkIssuanceService
 
   /**
    * Get wallet badges for authenticated user (Story 4.1)
