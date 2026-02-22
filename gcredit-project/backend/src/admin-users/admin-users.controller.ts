@@ -45,12 +45,14 @@ import {
   RoleUpdateResponse,
   StatusUpdateResponse,
   DepartmentUpdateResponse,
+  ManagerUpdateResponse,
 } from './admin-users.service';
 import { AdminUsersQueryDto } from './dto/admin-users-query.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import { UpdateUserDepartmentDto } from './dto/update-user-department.dto';
+import { UpdateUserManagerDto } from './dto/update-user-manager.dto';
 import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
 
 @ApiTags('admin-users')
@@ -277,6 +279,36 @@ export class AdminUsersController {
       `Admin user:${req.user.userId} updating department for user ${id} to "${dto.department}"`,
     );
     return this.adminUsersService.updateDepartment(id, dto, req.user.userId);
+  }
+
+  /**
+   * Update user's manager assignment
+   * PATCH /api/admin/users/:id/manager
+   */
+  @Patch(':id/manager')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update user manager assignment' })
+  @ApiParam({ name: 'id', type: String, description: 'User ID (UUID)' })
+  @ApiResponse({
+    status: 200,
+    description: 'User manager updated successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid manager or circular hierarchy',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async updateManager(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateUserManagerDto,
+    @Request() req: RequestWithUser,
+  ): Promise<ManagerUpdateResponse> {
+    this.logger.log(
+      `Admin user:${req.user.userId} updating manager for user ${id} to ${dto.managerId || '(none)'}`,
+    );
+    return this.adminUsersService.updateManager(id, dto, req.user.userId);
   }
 
   /**

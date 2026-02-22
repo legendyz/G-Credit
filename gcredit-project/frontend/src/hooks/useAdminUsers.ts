@@ -10,12 +10,15 @@ import {
   updateUserRole,
   updateUserStatus,
   updateUserDepartment,
+  updateUserManager,
   createUser,
   deleteUser,
   type AdminUsersQueryParams,
   type UpdateRoleRequest,
   type UpdateStatusRequest,
   type UpdateDepartmentRequest,
+  type UpdateManagerRequest,
+  type UpdateManagerResponse,
   type CreateUserRequest,
   type CreateUserResponse,
 } from '@/lib/adminUsersApi';
@@ -96,6 +99,20 @@ export function useCreateUser() {
 
   return useMutation<CreateUserResponse, Error, CreateUserRequest>({
     mutationFn: (data: CreateUserRequest) => createUser(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminUsersKeys.lists() });
+    },
+  });
+}
+
+/**
+ * Hook to update user manager (12.5)
+ */
+export function useUpdateUserManager() {
+  const queryClient = useQueryClient();
+
+  return useMutation<UpdateManagerResponse, Error, { userId: string; data: UpdateManagerRequest }>({
+    mutationFn: ({ userId, data }) => updateUserManager(userId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminUsersKeys.lists() });
     },

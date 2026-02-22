@@ -122,6 +122,27 @@ export interface UpdateDepartmentResponse {
   department: string;
 }
 
+export interface UpdateManagerRequest {
+  managerId: string | null;
+  auditNote?: string;
+}
+
+export interface UpdateManagerResponse {
+  id: string;
+  email: string;
+  managerId: string | null;
+  managerName: string | null;
+  managerAutoUpgraded?: {
+    managerId: string;
+    managerName: string;
+    previousRole: UserRole;
+  };
+  managerAutoDowngraded?: {
+    managerId: string;
+    managerName: string;
+  };
+}
+
 import { apiFetch } from './apiFetch';
 
 /**
@@ -276,6 +297,32 @@ export async function updateUserDepartment(
     }
     const error = await response.json().catch(() => ({}));
     throw new Error(error.message || 'Failed to update department');
+  }
+
+  return response.json();
+}
+
+/**
+ * Update user manager assignment
+ */
+export async function updateUserManager(
+  userId: string,
+  data: UpdateManagerRequest
+): Promise<UpdateManagerResponse> {
+  const response = await apiFetch(`/admin/users/${userId}/manager`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    if (response.status === 400) {
+      const error = await response.json();
+      throw new Error(error.message || 'Invalid manager assignment');
+    }
+    if (response.status === 404) {
+      throw new Error('User not found');
+    }
+    throw new Error('Failed to update manager');
   }
 
   return response.json();

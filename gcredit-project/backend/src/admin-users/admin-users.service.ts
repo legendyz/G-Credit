@@ -21,6 +21,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import { UpdateUserDepartmentDto } from './dto/update-user-department.dto';
+import { UpdateUserManagerDto } from './dto/update-user-manager.dto';
 import { UserRole, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
@@ -86,6 +87,22 @@ export interface DepartmentUpdateResponse {
   id: string;
   email: string;
   department: string;
+}
+
+export interface ManagerUpdateResponse {
+  id: string;
+  email: string;
+  managerId: string | null;
+  managerName: string | null;
+  managerAutoUpgraded?: {
+    managerId: string;
+    managerName: string;
+    previousRole: UserRole;
+  };
+  managerAutoDowngraded?: {
+    managerId: string;
+    managerName: string;
+  };
 }
 
 export interface CreateUserResponse extends UserListItem {
@@ -542,6 +559,237 @@ export class AdminUsersService {
       email: result.email,
       department: result.department!,
     };
+  }
+
+  /**
+   * Update user's manager (managerId).
+   * Handles auto-upgrade/downgrade of MANAGER role:
+   * - New manager auto-upgraded EMPLOYEE → MANAGER if needed
+   * - Old manager auto-downgraded MANAGER → EMPLOYEE if they lose last subordinate
+   * - Circular hierarchy detection
+   */
+  async updateManager(
+    userId: string,
+    dto: UpdateUserManagerDto,
+    adminId: string,
+  ): Promise<ManagerUpdateResponse> {
+    const currentUser = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        managerId: true,
+        azureId: true,
+        manager: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
+    });
+
+    if (!currentUser) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    // Cannot assign yourself as your own manager
+    if (dto.managerId === userId) {
+      throw new BadRequestException(
+        'Cannot assign a user as their own manager',
+      );
+    }
+
+    // No change
+    if (currentUser.managerId === dto.managerId) {
+      const mgrName = currentUser.manager
+        ? [currentUser.manager.firstName, currentUser.manager.lastName]
+            .filter(Boolean)
+            .join(' ') || currentUser.manager.email
+        : null;
+      return {
+        id: currentUser.id,
+        email: currentUser.email,
+        managerId: currentUser.managerId,
+        managerName: mgrName,
+      };
+    }
+
+    // Validate new manager exists
+    let newManager: {
+      id: string;
+      email: string;
+      firstName: string | null;
+      lastName: string | null;
+      role: UserRole;
+    } | null = null;
+
+    if (dto.managerId) {
+      newManager = await this.prisma.user.findUnique({
+        where: { id: dto.managerId },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+        },
+      });
+      if (!newManager) {
+        throw new BadRequestException('Selected manager does not exist');
+      }
+
+      // Circular hierarchy detection
+      await this.detectManagerCycle(dto.managerId, userId);
+    }
+
+    const oldManagerId = currentUser.managerId;
+    const response: ManagerUpdateResponse = {
+      id: currentUser.id,
+      email: currentUser.email,
+      managerId: dto.managerId,
+      managerName: newManager
+        ? [newManager.firstName, newManager.lastName]
+            .filter(Boolean)
+            .join(' ') || newManager.email
+        : null,
+    };
+
+    await this.prisma.$transaction(async (tx) => {
+      // Update managerId
+      await tx.user.update({
+        where: { id: userId },
+        data: { managerId: dto.managerId },
+      });
+
+      // Audit log
+      const oldMgrName = currentUser.manager
+        ? [currentUser.manager.firstName, currentUser.manager.lastName]
+            .filter(Boolean)
+            .join(' ') || currentUser.manager.email
+        : '(none)';
+      const newMgrName = newManager
+        ? [newManager.firstName, newManager.lastName]
+            .filter(Boolean)
+            .join(' ') || newManager.email
+        : '(none)';
+
+      await tx.userRoleAuditLog.create({
+        data: {
+          userId,
+          performedBy: adminId,
+          action: 'MANAGER_CHANGED',
+          oldValue: (oldMgrName || '(none)').slice(0, 50),
+          newValue: (newMgrName || '(none)').slice(0, 50),
+          note: dto.auditNote,
+        },
+      });
+
+      // Auto-upgrade new manager: EMPLOYEE → MANAGER
+      if (newManager && newManager.role === UserRole.EMPLOYEE) {
+        await tx.user.update({
+          where: { id: newManager.id },
+          data: {
+            role: UserRole.MANAGER,
+            roleSetManually: true,
+            roleUpdatedAt: new Date(),
+            roleUpdatedBy: adminId,
+            roleVersion: { increment: 1 },
+          },
+        });
+
+        await tx.userRoleAuditLog.create({
+          data: {
+            userId: newManager.id,
+            performedBy: adminId,
+            action: 'ROLE_CHANGED',
+            oldValue: UserRole.EMPLOYEE,
+            newValue: UserRole.MANAGER,
+            note: `Auto-upgraded to MANAGER: assigned as manager of ${currentUser.email}`,
+          },
+        });
+
+        const mgrDisplayName =
+          [newManager.firstName, newManager.lastName]
+            .filter(Boolean)
+            .join(' ') || newManager.email;
+
+        response.managerAutoUpgraded = {
+          managerId: newManager.id,
+          managerName: mgrDisplayName,
+          previousRole: UserRole.EMPLOYEE,
+        };
+
+        this.logger.log(
+          `Auto-upgraded ${newManager.email} from EMPLOYEE to MANAGER (assigned as manager of ${currentUser.email})`,
+        );
+      }
+
+      // Auto-downgrade old manager: if MANAGER with 0 remaining subordinates → EMPLOYEE
+      if (oldManagerId) {
+        const oldMgr = await tx.user.findUnique({
+          where: { id: oldManagerId },
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            role: true,
+            _count: { select: { directReports: true } },
+          },
+        });
+
+        if (
+          oldMgr &&
+          oldMgr.role === UserRole.MANAGER &&
+          oldMgr._count.directReports === 0
+        ) {
+          await tx.user.update({
+            where: { id: oldMgr.id },
+            data: {
+              role: UserRole.EMPLOYEE,
+              roleSetManually: true,
+              roleUpdatedAt: new Date(),
+              roleUpdatedBy: adminId,
+              roleVersion: { increment: 1 },
+            },
+          });
+
+          await tx.userRoleAuditLog.create({
+            data: {
+              userId: oldMgr.id,
+              performedBy: adminId,
+              action: 'ROLE_CHANGED',
+              oldValue: UserRole.MANAGER,
+              newValue: UserRole.EMPLOYEE,
+              note: `Auto-downgraded: last subordinate ${currentUser.email} reassigned`,
+            },
+          });
+
+          const oldMgrDisplayName =
+            [oldMgr.firstName, oldMgr.lastName].filter(Boolean).join(' ') ||
+            oldMgr.email;
+
+          response.managerAutoDowngraded = {
+            managerId: oldMgr.id,
+            managerName: oldMgrDisplayName,
+          };
+
+          this.logger.log(
+            `Auto-downgraded ${oldMgr.email} from MANAGER to EMPLOYEE (last subordinate reassigned)`,
+          );
+        }
+      }
+    });
+
+    this.logger.log(
+      `Manager updated for ${currentUser.email}: ${oldManagerId || '(none)'} → ${dto.managerId || '(none)'} by admin ${adminId}`,
+    );
+
+    return response;
   }
 
   /**
