@@ -575,9 +575,9 @@ describe('Badge Issuance (e2e)', () => {
   describe('POST /api/badges/bulk', () => {
     it('should issue badges from valid CSV', async () => {
       // Create CSV content with 2 valid badges using actual test user emails
-      const csvContent = `recipientEmail,templateId,evidenceUrl,expiresIn
-${recipientUser.user.email},${templateId},https://example.com/evidence1.pdf,365
-${employeeUser.user.email},${templateId},https://example.com/evidence2.pdf,730`;
+      const csvContent = `recipientEmail,templateId,expiresIn
+${recipientUser.user.email},${templateId},365
+${employeeUser.user.email},${templateId},730`;
 
       const response = await request(ctx.app.getHttpServer() as App)
         .post('/api/badges/bulk')
@@ -617,10 +617,10 @@ test@example.com,${templateId}`;
     });
 
     it('should handle partial failures gracefully', async () => {
-      const csvContent = `recipientEmail,templateId,evidenceUrl
-${recipientUser.user.email},${templateId},https://example.com/valid.pdf
-nonexistent-${Date.now()}@test.com,${templateId},https://example.com/fail.pdf
-${employeeUser.user.email},00000000-0000-0000-0000-000000000000,https://example.com/badtemplate.pdf`;
+      const csvContent = `recipientEmail,templateId
+${recipientUser.user.email},${templateId}
+nonexistent-${Date.now()}@test.com,${templateId}
+${employeeUser.user.email},00000000-0000-0000-0000-000000000000`;
 
       const response = await request(ctx.app.getHttpServer() as App)
         .post('/api/badges/bulk')

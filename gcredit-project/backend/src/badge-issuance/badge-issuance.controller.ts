@@ -331,7 +331,7 @@ export class BadgeIssuanceController {
   @ApiOperation({ summary: 'Bulk issue badges from CSV file' })
   @ApiBody({
     description:
-      'CSV file with columns: recipientEmail, templateId, evidenceUrl (optional), expiresIn (optional)',
+      'CSV file with columns: recipientEmail, templateId, expiresIn (optional)',
     schema: {
       type: 'object',
       properties: {
