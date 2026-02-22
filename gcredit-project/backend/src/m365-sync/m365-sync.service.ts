@@ -104,7 +104,16 @@ export class M365SyncService {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         // Graph SDK uses relative paths (without https://graph.microsoft.com/v1.0)
-        const relativePath = url.startsWith('/') ? url : `/${url}`;
+        let relativePath = url;
+        if (relativePath.startsWith('https://graph.microsoft.com/v1.0')) {
+          relativePath = relativePath.replace(
+            'https://graph.microsoft.com/v1.0',
+            '',
+          );
+        }
+        if (!relativePath.startsWith('/')) {
+          relativePath = `/${relativePath}`;
+        }
         return (await client.api(relativePath).get()) as T;
       } catch (error) {
         lastError = error as Error;
