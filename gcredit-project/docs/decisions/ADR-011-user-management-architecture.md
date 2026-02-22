@@ -422,6 +422,20 @@ Cannot change a user's role from MANAGER to EMPLOYEE or ISSUER if they have `dir
 - Backend returns 400: `"Cannot change role from MANAGER: this user has N subordinate(s). Please reassign their subordinates first."`
 - MANAGER → ADMIN is allowed (ADMIN supersedes MANAGER privileges)
 
+**Rule 3 — Auto-Downgrade on Last Subordinate Removal:**
+When a MANAGER's last subordinate is deleted (or, in future, reassigned), and their `directReportsCount` drops to 0, their role is automatically downgraded from MANAGER to EMPLOYEE.
+
+- Applies during: `deleteUser` (if deleted user's managerId points to a MANAGER), future `updateManager` endpoint
+- Audit log records: `ROLE_CHANGED` with note "Auto-downgraded: last subordinate {email} was deleted"
+- Does NOT auto-downgrade ADMIN or ISSUER (only MANAGER → EMPLOYEE)
+
+**Rule 4 — MANAGER/EMPLOYEE Not Manually Assignable:**
+The Edit Role UI only offers ADMIN and ISSUER. MANAGER and EMPLOYEE are entirely derived from subordinate relationships. Backend rejects API calls attempting to manually set MANAGER or EMPLOYEE via `updateRole`.
+
+- Create User UI: only EMPLOYEE and ISSUER selectable (ADMIN excluded per AC #33, MANAGER auto-managed)
+- Edit Role UI: only ADMIN and ISSUER selectable
+- Backend guard: returns 400 if `dto.role` is MANAGER or EMPLOYEE
+
 **Rationale:**
 
 1. **Alignment with M365 behavior:** M365 sync already derives MANAGER from `directReports > 0`. Local users should follow the same principle for consistency.
@@ -437,7 +451,7 @@ Cannot change a user's role from MANAGER to EMPLOYEE or ISSUER if they have `dir
 - Org chart / hierarchy features can rely on MANAGER role ↔ has subordinates being consistent
 - Role downgrade UI should pre-check subordinate count and show warning before API call
 
-**Implementation:** Commit `fcf1c4a` (Sprint 12, 2026-02-23)
+**Implementation:** Commits `fcf1c4a` (Rules 1-2), updated (Rules 3-4, auto-downgrade + manual assignment block)
 
 ---
 

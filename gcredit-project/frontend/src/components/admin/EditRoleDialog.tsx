@@ -39,7 +39,11 @@ interface EditRoleDialogProps {
   triggerRef?: React.RefObject<HTMLElement | null>;
 }
 
-const ROLES: UserRole[] = ['ADMIN', 'ISSUER', 'MANAGER', 'EMPLOYEE'];
+// MANAGER and EMPLOYEE are auto-managed via managerId relationships:
+// - Assigning subordinates → auto-upgrade to MANAGER
+// - Losing all subordinates → auto-downgrade to EMPLOYEE
+// Only ADMIN and ISSUER are manually assignable.
+const ROLES: UserRole[] = ['ADMIN', 'ISSUER'];
 
 export function EditRoleDialog({
   user,

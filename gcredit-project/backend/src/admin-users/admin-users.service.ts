@@ -309,12 +309,18 @@ export class AdminUsersService {
       );
     }
 
-    // Strong constraint: block downgrade from MANAGER if user has subordinates
-    if (
-      currentUser.role === UserRole.MANAGER &&
-      dto.role !== UserRole.MANAGER &&
-      dto.role !== UserRole.ADMIN
-    ) {
+    // MANAGER and EMPLOYEE are auto-managed via managerId relationships.
+    // Only ADMIN and ISSUER can be manually assigned.
+    if (dto.role === UserRole.MANAGER || dto.role === UserRole.EMPLOYEE) {
+      throw new BadRequestException(
+        `Cannot manually assign ${dto.role} role. ` +
+          'MANAGER/EMPLOYEE roles are automatically managed based on subordinate assignments.',
+      );
+    }
+
+    // Strong constraint: block role change from MANAGER if user has subordinates
+    // (ADMIN promotion is allowed — ADMIN supersedes MANAGER)
+    if (currentUser.role === UserRole.MANAGER && dto.role !== UserRole.ADMIN) {
       const subordinateCount = await this.prisma.user.count({
         where: { managerId: userId },
       });
@@ -549,6 +555,14 @@ export class AdminUsersService {
       );
     }
 
+    // MANAGER is auto-managed — cannot be directly assigned
+    if (dto.role === UserRole.MANAGER) {
+      throw new BadRequestException(
+        'Cannot create users with MANAGER role directly. ' +
+          'Assign subordinates to automatically promote to MANAGER.',
+      );
+    }
+
     // AC #17: Email uniqueness
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email.toLowerCase() },
@@ -698,6 +712,7 @@ export class AdminUsersService {
         id: true,
         azureId: true,
         email: true,
+        managerId: true,
         _count: { select: { directReports: true } },
       },
     });
@@ -736,6 +751,52 @@ export class AdminUsersService {
 
       // onDelete: SetNull in schema handles subordinate managerId clearing
       await tx.user.delete({ where: { id: userId } });
+
+      // Auto-downgrade: if this user's manager is a MANAGER and now has 0
+      // remaining subordinates (after this deletion), downgrade to EMPLOYEE.
+      if (user.managerId) {
+        const mgr = await tx.user.findUnique({
+          where: { id: user.managerId },
+          select: {
+            id: true,
+            email: true,
+            role: true,
+            _count: { select: { directReports: true } },
+          },
+        });
+
+        if (
+          mgr &&
+          mgr.role === UserRole.MANAGER &&
+          mgr._count.directReports === 0
+        ) {
+          await tx.user.update({
+            where: { id: mgr.id },
+            data: {
+              role: UserRole.EMPLOYEE,
+              roleSetManually: true,
+              roleUpdatedAt: new Date(),
+              roleUpdatedBy: adminId,
+              roleVersion: { increment: 1 },
+            },
+          });
+
+          await tx.userRoleAuditLog.create({
+            data: {
+              userId: mgr.id,
+              performedBy: adminId,
+              action: 'ROLE_CHANGED',
+              oldValue: UserRole.MANAGER,
+              newValue: UserRole.EMPLOYEE,
+              note: `Auto-downgraded: last subordinate ${user.email} was deleted`,
+            },
+          });
+
+          this.logger.log(
+            `Auto-downgraded ${mgr.email} from MANAGER to EMPLOYEE (last subordinate deleted)`,
+          );
+        }
+      }
     });
 
     this.logger.log(`User ${user.email} deleted by admin ${adminId}`);

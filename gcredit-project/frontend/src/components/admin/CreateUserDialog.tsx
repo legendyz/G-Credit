@@ -34,8 +34,8 @@ interface CreateUserDialogProps {
   onClose: () => void;
 }
 
-// ADMIN is excluded per AC #3
-const ALLOWED_ROLES: UserRole[] = ['EMPLOYEE', 'ISSUER', 'MANAGER'];
+// ADMIN excluded per AC #33. MANAGER is auto-managed via managerId assignment.
+const ALLOWED_ROLES: UserRole[] = ['EMPLOYEE', 'ISSUER'];
 
 interface FormErrors {
   email?: string;
