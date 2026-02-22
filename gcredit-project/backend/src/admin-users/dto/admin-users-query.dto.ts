@@ -83,6 +83,8 @@ export class AdminUsersQueryDto {
       'status',
       'lastLogin',
       'createdAt',
+      'source',
+      'badgeCount',
     ],
     default: 'name',
   })
@@ -95,7 +97,9 @@ export class AdminUsersQueryDto {
     | 'department'
     | 'status'
     | 'lastLogin'
-    | 'createdAt' = 'name';
+    | 'createdAt'
+    | 'source'
+    | 'badgeCount' = 'name';
 
   @ApiPropertyOptional({
     description: 'Sort order',

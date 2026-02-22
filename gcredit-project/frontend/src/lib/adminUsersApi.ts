@@ -52,7 +52,16 @@ export interface AdminUsersQueryParams {
   roleFilter?: UserRole;
   statusFilter?: 'ACTIVE' | 'LOCKED' | 'INACTIVE';
   sourceFilter?: 'M365' | 'LOCAL';
-  sortBy?: 'name' | 'email' | 'role' | 'department' | 'status' | 'lastLogin' | 'createdAt';
+  sortBy?:
+    | 'name'
+    | 'email'
+    | 'role'
+    | 'department'
+    | 'status'
+    | 'lastLogin'
+    | 'createdAt'
+    | 'source'
+    | 'badgeCount';
   sortOrder?: 'asc' | 'desc';
   cursor?: string;
 }

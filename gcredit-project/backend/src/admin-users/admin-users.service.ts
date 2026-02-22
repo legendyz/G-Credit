@@ -728,6 +728,15 @@ export class AdminUsersService {
         return [{ lastLoginAt: order }];
       case 'createdAt':
         return [{ createdAt: order }];
+      case 'source':
+        // source is computed from azureId: null = LOCAL, non-null = M365
+        return [
+          {
+            azureId: { sort: order, nulls: order === 'asc' ? 'last' : 'first' },
+          },
+        ];
+      case 'badgeCount':
+        return [{ badgesReceived: { _count: order } }];
       case 'name':
       default:
         // Sort by lastName, then firstName

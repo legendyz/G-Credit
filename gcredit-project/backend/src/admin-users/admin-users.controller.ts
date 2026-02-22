@@ -103,7 +103,17 @@ export class AdminUsersController {
   @ApiQuery({
     name: 'sortBy',
     required: false,
-    enum: ['name', 'email', 'role', 'lastLogin', 'createdAt'],
+    enum: [
+      'name',
+      'email',
+      'role',
+      'department',
+      'status',
+      'lastLogin',
+      'createdAt',
+      'source',
+      'badgeCount',
+    ],
     description: 'Sort field',
   })
   @ApiQuery({
