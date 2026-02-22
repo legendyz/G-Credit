@@ -19,7 +19,7 @@ So that I can confirm the new admin management UIs and unified evidence system w
 ## Acceptance Criteria
 
 1. [x] UAT test plan document created (`sprint-12/uat-test-plan.md`) — 41 test cases (4 CRITICAL, 22 HIGH, 15 MEDIUM)
-2. [ ] Seed data updated to include new management entities (categories, skills, milestones)
+2. [x] Seed data updated to include new management entities (categories, skills, milestones)
 3. [ ] All Sprint 12 UAT test cases executed
 4. [ ] All CRITICAL/HIGH test cases PASS
 5. [ ] Regression test cases PASS (existing features not broken)
@@ -156,11 +156,11 @@ So that I can confirm the new admin management UIs and unified evidence system w
   - [x] Define detailed test steps for each UAT case (41 cases)
   - [x] Prepare pre-conditions and expected results
   - [x] Document environment setup steps
-- [ ] Task 2: Prepare seed data for Sprint 12 features (1h)
-  - [ ] Add sample skill categories (3-level tree, include system-defined)
-  - [ ] Add sample skills with category assignments
-  - [ ] Add sample milestones (multiple types)
-  - [ ] Ensure evidence migration data is present (Task 0.5 inserts test badges with `evidenceUrl` for migration verification)
+- [x] Task 2: Prepare seed data for Sprint 12 features (1h) — ✅ 2026-02-22
+  - [x] Add sample skill categories (3-level tree, include system-defined)
+  - [x] Add sample skills with category assignments
+  - [x] Add sample milestones (multiple types)
+  - [x] Ensure evidence migration data is present (Task 0.5 inserts test badges with `evidenceUrl` for migration verification)
 - [ ] Task 3: Execute UAT test cases (2h)
   - [ ] New feature tests: ~31 cases
   - [ ] Regression tests: ~6 cases

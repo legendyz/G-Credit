@@ -80,6 +80,337 @@
 
 ---
 
+## 1A. Seed Data Quick Reference
+
+> All data created by `seed-uat.ts`. Use this section to know **exactly** what to expect on each page.
+
+### Users (5)
+
+| Name | Email | Role | Dept | Manager | Badges (CLAIMED/PENDING/REVOKED) |
+|------|-------|------|------|---------|----------------------------------|
+| Admin User | admin@gcredit.com | ADMIN | IT | — | 1 CLAIMED (Team Player), 1 PENDING (Cloud Expert) |
+| Demo Issuer | issuer@gcredit.com | ISSUER | HR | — | 0 |
+| Team Manager | manager@gcredit.com | MANAGER | Engineering | — | 2 CLAIMED (Leadership, Innovation) + 1 EXPIRED (Security) |
+| Demo Employee | employee@gcredit.com | EMPLOYEE | Engineering | Team Manager | 4 CLAIMED + 1 PENDING + 1 REVOKED = 6 total |
+| Demo Employee2 | employee2@gcredit.com | EMPLOYEE | Development | Team Manager | 0 |
+
+> **Manager hierarchy:** Employee + Employee2 → Manager (2 subordinates). Admin, Issuer have no manager.
+
+### Skill Categories (12) — Tree View
+
+```
+├─ 🔒 技术技能 / Technical Skills (blue, L1)         ← system-defined
+│   ├─ 🔒 编程语言 / Programming Languages (blue, L2)
+│   │      Skills: TypeScript (INT), AI (INT)
+│   └─ 🔒 云平台 / Cloud Platforms (cyan, L2)
+│       │  Skills: Azure Cloud (ADV), Docker (INT)
+│       └─ AWS / Amazon Web Services (orange, L3)     ← user-defined, editable
+│              Skills: (none)
+├─ 🔒 软技能 / Soft Skills (amber, L1)
+│   ├─ 🔒 沟通能力 / Communication (amber, L2)
+│   │      Skills: Public Speaking (BEG), Negotiation (ADV)
+│   └─ 🔒 领导力 / Leadership (orange, L2)
+│          Skills: Team Leadership (EXP)
+├─ 🔒 行业知识 / Domain Knowledge (emerald, L1)       ← no sub-categories, no skills
+├─ 🔒 公司特定能力 / Company-Specific (violet, L1)    ← no sub-categories, no skills
+├─ 🔒 通用职业技能 / Professional Skills (cyan, L1)
+│      Skills: Project Management (ADV)
+├─ Internal Tools (rose, L1)                          ← user-defined, editable
+│      Skills: G-Credit Platform (BEG)
+└─ Experimental (lime, L1)                            ← user-defined, empty → deletable
+       Skills: (none)
+```
+
+- 🔒 = `isSystemDefined=true` → lock icon, no delete, no edit name
+- L1 × 7 (5 system + 2 custom), L2 × 4 (system), L3 × 1 (user-defined)
+- Colors: blue, amber, emerald, violet, cyan, rose, lime, orange
+
+### Skills (9)
+
+| Skill Name | Category (L2/L1) | Level | Used by Templates | Deletable? |
+|------------|-------------------|-------|-------------------|-----------|
+| TypeScript | Programming Lang. | INT | tmpl1, tmpl6, tmpl7 | ❌ |
+| Azure Cloud | Cloud Platforms | ADV | tmpl1, tmpl6 | ❌ |
+| Docker | Cloud Platforms | INT | tmpl1, tmpl6 | ❌ |
+| AI | Programming Lang. | INT | tmpl1, tmpl7 | ❌ |
+| Public Speaking | Communication | BEG | tmpl2, tmpl8, tmpl9 | ❌ |
+| Team Leadership | Leadership | EXP | tmpl2, tmpl8 | ❌ |
+| Project Management | Professional Skills | ADV | tmpl5, tmpl8, tmpl9 | ❌ |
+| **Negotiation** | Communication | ADV | **NONE** | **✅ — use for UAT-S12-010 delete test** |
+| **G-Credit Platform** | Internal Tools | BEG | **NONE** | **✅ — but category has skill → category delete blocked** |
+
+### Badge Templates (9, all ACTIVE)
+
+| # | Name | Category | Skills | Created By |
+|---|------|----------|--------|------------|
+| tmpl1 | Cloud Expert Certification | certification | TypeScript, Azure Cloud, Docker, AI | Issuer |
+| tmpl2 | Leadership Excellence | achievement | Team Leadership, Public Speaking | Issuer |
+| tmpl3 | Innovation Champion | achievement | (none) | Admin |
+| tmpl4 | Security Specialist | certification | (none) | Admin |
+| tmpl5 | Team Player Award | participation | Project Management | Issuer |
+| tmpl6 | DevOps Engineer Certification | skill | Azure Cloud, Docker, TypeScript | Issuer |
+| tmpl7 | AI & Machine Learning Pioneer | skill | AI, TypeScript | Admin |
+| tmpl8 | Mentor of the Year | achievement | Team Leadership, Public Speaking, Project Mgmt | Issuer |
+| tmpl9 | Customer Success Champion | participation | Public Speaking, Project Mgmt | Admin |
+
+### Badges (11)
+
+| Badge | Template | Recipient | Status | Evidence | VerificationId (last 4) |
+|-------|----------|-----------|--------|----------|------------------------|
+| badge1 | Cloud Expert | Employee | CLAIMED | 📄 cloud-cert-2026.pdf | ...0001 |
+| badge2 | Leadership Excellence | Employee | CLAIMED | 🔗 learn.microsoft.com/certifications/leadership | ...0002 |
+| badge3 | Innovation Champion | Employee | CLAIMED | 📄 innovation-proposal-q1.pdf | ...0003 |
+| badge4 | Team Player Award | Employee | CLAIMED | (none) | ...0004 |
+| badge5 | Security Specialist | Employee | ⏳ PENDING | (none) | ...0005 |
+| badge6 | Cloud Expert | Employee | 🚫 REVOKED | (none) | ...0006 |
+| badge7 | Leadership Excellence | Manager | CLAIMED | (none) | ...0007 |
+| badge8 | Innovation Champion | Manager | CLAIMED | (none) | ...0008 |
+| badge9 | Security Specialist | Manager | CLAIMED (**EXPIRED**) | (none) | ...0009 |
+| badge10 | Team Player Award | Admin | CLAIMED | (none) | ...0010 |
+| badge11 | Cloud Expert | Admin | ⏳ PENDING | (none) | ...0011 |
+
+**Verification URLs (copy-paste for testing):**
+- CLAIMED badge: `http://localhost:5173/verify/00000000-0000-4000-a000-000300000001`
+- PENDING badge: `http://localhost:5173/verify/00000000-0000-4000-a000-000300000005`
+- REVOKED badge: `http://localhost:5173/verify/00000000-0000-4000-a000-000300000006`
+- EXPIRED badge: `http://localhost:5173/verify/00000000-0000-4000-a000-000300000009`
+
+### Evidence Files (3)
+
+| Evidence | Badge | Type | File/URL | Uploaded By |
+|----------|-------|------|----------|-------------|
+| evidence1 | badge1 (Cloud Expert) | FILE | cloud-cert-2026.pdf (240KB, PDF) | Employee |
+| evidence2 | badge3 (Innovation) | FILE | innovation-proposal-q1.pdf (500KB, PDF) | Employee |
+| evidence3 | badge2 (Leadership) | URL | https://learn.microsoft.com/certifications/leadership | Employee |
+
+### Milestones (5)
+
+| Milestone | Type | Scope | Threshold | Active | Icon |
+|-----------|------|-------|-----------|--------|------|
+| First Badge | BADGE_COUNT | global | 1 | ✅ | 🏆 |
+| Badge Collector | BADGE_COUNT | global | 5 | ✅ | ⭐ |
+| Well-Rounded Learner | CATEGORY_COUNT | global | 3 | ✅ | 🌟 |
+| Cloud Specialist | BADGE_COUNT | category (技术技能) | 3 | ✅ | ☁️ |
+| Badge Master | BADGE_COUNT | global | 10 | ❌ inactive | 👑 |
+
+### Milestone Progress per User (expected)
+
+| User | CLAIMED Badges | First Badge (≥1) | Badge Collector (≥5) | Well-Rounded (≥3 cats) | Cloud Specialist (≥3 Tech) |
+|------|---------------|-------------------|---------------------|------------------------|--------------------------|
+| Employee | 4 | ✅ ACHIEVED | ❌ 4/5 (80%) | depends on impl. | depends on impl. |
+| Manager | 2 | ✅ ACHIEVED | ❌ 2/5 (40%) | depends on impl. | ❌ |
+| Admin | 1 | ✅ ACHIEVED | ❌ 1/5 (20%) | ❌ | ❌ |
+| Issuer | 0 | ❌ 0/1 (0%) | ❌ 0/5 (0%) | ❌ | ❌ |
+| Employee2 | 0 | ❌ 0/1 (0%) | ❌ 0/5 (0%) | ❌ | ❌ |
+
+> **UAT-S12-018b tip:** Login as Employee → Dashboard should show **"Badge Collector" at 80% progress** (4/5). Issue 1 more badge to Employee and claim it → CelebrationModal should fire.
+
+### Audit Logs (9)
+
+| Action | Entity | Actor | When |
+|--------|--------|-------|------|
+| ISSUED (badge1 Cloud Expert) | Badge | Issuer | ~2 months ago |
+| CLAIMED (badge1) | Badge | Employee | ~2 months ago |
+| ISSUED (badge2 Leadership) | Badge | Issuer | ~1 month ago |
+| CLAIMED (badge2) | Badge | Employee | ~1 month ago |
+| ISSUED (badge6 Cloud Expert) | Badge | Issuer | ~2 months ago |
+| CLAIMED (badge6) | Badge | Employee | ~2 months ago |
+| REVOKED (badge6) | Badge | Manager | ~1 week ago |
+| CREATED (tmpl1 Cloud Expert) | BadgeTemplate | Issuer | ~2+ months ago |
+| UPDATED (Employee role) | User | Admin | ~1 week ago |
+
+---
+
+## 1B. Recommended Execution Order
+
+> Follow this order to avoid dependency issues. Each phase builds on the previous one.
+
+### Phase 1: View & Verify Seed Data (10 min)
+> Goal: Confirm the environment is correct before making any changes.
+
+| Step | Test Case(s) | Login As | What to Check |
+|------|-------------|----------|---------------|
+| 1 | UAT-S12-001 | Admin | Category tree shows 3 levels: 技术技能 → 云平台 → AWS |
+| 2 | UAT-S12-007 | Admin | System categories (5 L1 + 4 L2) show 🔒 icon, no delete |
+| 3 | UAT-S12-008 | Admin | Skills page: click 编程语言 → shows TypeScript + AI |
+| 4 | UAT-S12-011 | Admin | Skill tags show colored badges matching category tree colors |
+| 5 | UAT-S12-012 | Admin | Users table: 5 rows, all Source=Local (gray badge) |
+| 6 | UAT-S12-016 | Admin | Milestones: 3 global cards + 1 category card (Cloud Specialist). Badge Master is grayed/hidden (inactive) |
+| 7 | UAT-S12-023 | Admin | Dashboard activity feed: human-readable (not JSON) |
+| 8 | UAT-S12-024 | Admin | Check badge detail → skill names shown (not UUIDs) |
+
+### Phase 2: CRUD Operations (20 min)
+> Goal: Test create/edit/delete workflows.
+
+| Step | Test Case(s) | Login As | What to Do |
+|------|-------------|----------|------------|
+| 9 | UAT-S12-002 | Admin | Create top-level category "Test Category" |
+| 10 | UAT-S12-003 | Admin | Create subcategory under it; create sub-sub under that; try L4 → blocked |
+| 11 | UAT-S12-004 | Admin | Edit "Experimental" name → verify; try edit 🔒 category → 403 |
+| 12 | UAT-S12-005 | Admin | Drag-reorder categories at same level |
+| 13 | UAT-S12-006 | Admin | Try delete "Internal Tools" (has skill G-Credit Platform) → blocked |
+| 14 | — | Admin | Delete "Experimental" (empty custom) → should succeed |
+| 15 | UAT-S12-009 | Admin | Click category in tree → "Add Skill" inline → type name → Tab |
+| 16 | UAT-S12-010 | Admin | Edit a skill name → save. Delete "Negotiation" (unreferenced) → success. Delete "TypeScript" (referenced) → blocked |
+| 17 | UAT-S12-015b | Admin | Create local user test@example.com → success. Same email again → 409 |
+| 18 | UAT-S12-017 | Admin | Create milestone: badge_count × global, threshold=2. Create another: badge_count × category |
+| 19 | UAT-S12-018 | Admin | Toggle Badge Master active → observe. Toggle back off. Edit Cloud Specialist → metric/scope disabled |
+
+### Phase 3: Evidence (15 min)
+> Goal: Test file + URL evidence during badge issuance.
+
+| Step | Test Case(s) | Login As | What to Do |
+|------|-------------|----------|------------|
+| 20 | UAT-S12-019 | Issuer | Issue badge → upload PDF file evidence → observe progress bar |
+| 21 | UAT-S12-020 | Issuer | Issue another badge → add URL evidence (https://example.com/cert) |
+| 22 | UAT-S12-021 | Admin → Employee | Check badge detail in Admin; login as Employee → Wallet → same badge; open /verify/... in incognito |
+| 23 | UAT-S12-022 | Employee | Open badge1 (has FILE evidence) and badge2 (has URL evidence) → both display correctly |
+
+### Phase 4: User Management Advanced (15 min)
+> Goal: Test dual-mode user provisioning features.
+
+| Step | Test Case(s) | Login As | M365? | What to Do |
+|------|-------------|----------|-------|------------|
+| 24 | UAT-S12-012b | Admin | No | Search "Demo" → filters to 3 users. Filter Role=MANAGER → 1 result. Filter Status=Active → 5. Change page size |
+| 25 | UAT-S12-013 | Admin | No | Edit Employee's role to MANAGER → confirm dialog → success |
+| 26 | UAT-S12-015c | Admin | No | Delete test@example.com (created in step 17). Try delete Employee → warning "manages 0–2 employees" |
+| 27 | UAT-S12-014 | Admin | No | Lock Employee2 → confirm → status=Locked. Unlock → Active |
+| 28 | UAT-S12-015 | Admin | No | Click view on Employee → Sheet panel with profile + badge summary |
+| 29 | UAT-S12-015d | Admin | **YES** | Open M365 Sync panel → "Sync Users" → observe. Check sync history |
+| 30 | UAT-S12-013b | Admin | **YES** | Observe M365 user row: only view+lock. Local user row: edit+view+lock+delete |
+| 31 | UAT-S12-R08 | Admin | **YES** | DevTools Network → GET /api/admin/users → check `source` field, no `azureId` |
+
+### Phase 5: Dashboard & Wallet (10 min)
+> Goal: Milestone progress + timeline rendering.
+
+| Step | Test Case(s) | Login As | What to Do |
+|------|-------------|----------|------------|
+| 32 | UAT-S12-018b | Employee | Dashboard → milestone progress shows "Badge Collector" at 4/5 (80%) |
+| 33 | — | Issuer→Employee | **(optional)** Issue 1 more badge to Employee → Employee claims → CelebrationModal fires |
+| 34 | UAT-S12-018c | Employee | Wallet → timeline → MilestoneTimelineCard for "First Badge" achieved |
+| 35 | UAT-S12-011b | Admin | Badge Template create → skill picker → skills grouped by category with color dots |
+| 36 | UAT-S12-011c | — | Badge detail + /verify page → skill tags with category colors |
+
+### Phase 6: Regression (10 min)
+> Goal: Existing features not broken.
+
+| Step | Test Case(s) | Login As | What to Do |
+|------|-------------|----------|------------|
+| 37 | UAT-S12-R01 | Issuer | Single badge issuance → success. Bulk CSV → download template → upload → preview → confirm |
+| 38 | UAT-S12-R02 | Employee→Mgr | Employee claim badge5 (PENDING). Open verify URL. Manager revoke it |
+| 39 | UAT-S12-R03 | Admin→Manager | Admin dashboard = global stats. Manager dashboard = team stats (2 direct reports) |
+| 40 | UAT-S12-R04 | Employee | Wallet → badge cards in timeline |
+| 41 | UAT-S12-R05 | Employee | Badge detail → Share via Email → send |
+| 42 | UAT-S12-R06 | Employee→Issuer | Employee → /admin/badges/issue → blocked. Issuer → /admin/users → blocked |
+| 43 | UAT-S12-R07 | Manager | Badge issuance/issued list → only direct reports visible |
+
+---
+
+## 1C. M365 Dependency Guide
+
+### Cases Requiring M365 Tenant (6 cases)
+
+These test cases **require a configured M365 Dev Tenant** in `.env` (`AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`). If no M365 tenant is available, **skip with justification "No M365 tenant configured"**.
+
+| Test Case | Why M365 Required | Degraded Testing Without M365 |
+|-----------|-------------------|-------------------------------|
+| UAT-S12-012b (partial) | Source filter "M365" needs synced users | ⚠️ Test search + role/status filters only, skip Source=M365 filter |
+| UAT-S12-013b | M365 row has restricted actions | ❌ Cannot verify M365 row action restrictions |
+| UAT-S12-014 (partial) | M365 lock notice text | ⚠️ Test local lock/unlock only, skip M365 notice |
+| UAT-S12-015 (partial) | M365 detail panel shows "Identity managed by..." | ⚠️ Test local user detail only |
+| UAT-S12-015d | Sync Users + Sync Roles buttons | ❌ Cannot test sync functionality |
+| UAT-S12-R08 | `source: 'M365'` in API response | ⚠️ Verify `source: 'LOCAL'` only |
+
+### Cases Fully Testable Without M365 (35 cases)
+
+All other test cases work with **local-only** users. No M365 configuration needed.
+
+### How to Enable M365 Testing
+
+1. Ensure `.env` has valid Azure AD credentials:
+   ```
+   AZURE_TENANT_ID=your-tenant-id
+   AZURE_CLIENT_ID=your-client-id
+   AZURE_CLIENT_SECRET=your-client-secret
+   AZURE_ADMIN_GROUP_ID=your-admin-group-id
+   ```
+2. Restart backend after `.env` change
+3. Login as Admin → Users → "Sync Users" → wait for sync to complete
+4. Verify M365 users appear in table with blue "M365" source badge
+5. Proceed with M365-dependent test cases
+
+---
+
+## 1D. Specific Verification Checklist
+
+> Quick-reference numbers for manual testing. Use alongside the test cases below.
+
+### When Viewing Skill Category Tree (UAT-S12-001)
+- Expect **7 top-level** nodes (5 system 🔒 + 2 custom)
+- Expand **技术技能** → 2 children (编程语言, 云平台)
+- Expand **云平台** → 1 child (AWS) — this proves **3 levels**
+- Expand **软技能** → 2 children (沟通能力, 领导力)
+- Skill counts per node: 编程语言=2, 云平台=2, 沟通能力=2, 领导力=1, Professional Skills=1, Internal Tools=1
+
+### When Viewing Users Table (UAT-S12-012)
+- Expect **5 rows**: Admin User (ADMIN), Demo Issuer (ISSUER), Team Manager (MANAGER), Demo Employee (EMPLOYEE), Demo Employee2 (EMPLOYEE)
+- All Source badges = **gray "Local"**
+- Badge counts: Admin=2, Issuer=0, Manager=3, Employee=6, Employee2=0
+
+### When Viewing Milestones Grid (UAT-S12-016)
+- **Global Milestones** section: 3 cards (First Badge 🏆, Badge Collector ⭐, Well-Rounded Learner 🌟)
+- **Category Milestones** section: 1 card (Cloud Specialist ☁️)
+- Badge Master (👑) should be **hidden or grayed** (inactive)
+
+### When Testing Evidence Display (UAT-S12-021)
+| Badge | What to See |
+|-------|-------------|
+| badge1 (Cloud Expert, Employee) | 📄 "cloud-certification-exam-results.pdf" (240KB) with download link |
+| badge2 (Leadership, Employee) | 🔗 "https://learn.microsoft.com/certifications/leadership" clickable link |
+| badge3 (Innovation, Employee) | 📄 "innovation-proposal-q1-2026.pdf" (500KB) with download link |
+| badge4 (Team Player, Employee) | No evidence section (or "No evidence attached") |
+
+### When Testing Dashboard Milestone Progress (UAT-S12-018b)
+
+**Login as Employee (4 CLAIMED badges):**
+- "First Badge" (threshold=1): ✅ ACHIEVED — should not show in progress bar (already done)
+- "Badge Collector" (threshold=5): **4/5 = 80%** — next goal, progress bar visible
+- "Well-Rounded Learner" (threshold=3): depends on category counting implementation
+
+**Login as Manager (2 CLAIMED badges + 1 expired):**
+- Expired badges typically don't count → effectively 2 badges
+- "First Badge": ✅ ACHIEVED
+- "Badge Collector": 2/5 = 40%
+
+**Login as Admin (1 CLAIMED + 1 PENDING):**
+- PENDING doesn't count as earned → effectively 1 badge
+- "First Badge": ✅ ACHIEVED
+- "Badge Collector": 1/5 = 20%
+
+### When Testing Activity Feed (UAT-S12-023)
+- Expect at least **9 entries** in audit log
+- Latest first (reverse chronological): REVOKED → UPDATED → CLAIMED → ISSUED → ...
+- Human-readable format examples:
+  - "Issued Cloud Expert Certification badge to employee@gcredit.com"
+  - "employee@gcredit.com claimed a badge"
+  - "manager@gcredit.com revoked a badge — Reason: Certification expired..."
+
+### When Testing RBAC (UAT-S12-R06)
+
+| Role | Can Access | Blocked From |
+|------|-----------|--------------|
+| ADMIN | All admin pages | — |
+| ISSUER | `/admin/badges/issue`, `/admin/badges` | `/admin/users`, `/admin/milestones`, `/admin/skills/categories` |
+| MANAGER | Dashboard (team), Wallet | All `/admin/*` pages |
+| EMPLOYEE | Dashboard, Wallet | All `/admin/*` pages |
+
+### When Testing Manager Scoping (UAT-S12-R03, R07)
+- Manager "Team Manager" has **2 direct reports**: Demo Employee, Demo Employee2
+- Manager dashboard should show: badges issued to these 2 employees only
+- Admin dashboard should show: all 11 badges across all users
+
+---
+
 ## 2. Test Cases
 
 ### 2.1 Skill Category Management — Story 12.1 (7 cases)
