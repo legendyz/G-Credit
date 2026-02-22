@@ -69,7 +69,7 @@ So that I can confirm the new admin management UIs and unified evidence system w
 - UAT-S12-019: Issuer uploads file evidence during badge issuance
 - UAT-S12-020: Issuer adds URL evidence during badge issuance
 - UAT-S12-021: Evidence displays consistently across Badge Management, Wallet, Verify pages
-- UAT-S12-022: Existing badges with old evidence still display correctly (migration)
+- UAT-S12-022: Existing badges with old evidence still display correctly (migration) — **requires Task 0.5 data migration completed first**
 
 **Quick Fixes (Stories 12.7–12.8):**
 - UAT-S12-023: Activity feed shows human-readable descriptions (not JSON/UUID)
@@ -104,6 +104,16 @@ So that I can confirm the new admin management UIs and unified evidence system w
   - [ ] **Cross-story API consistency:** verify 12.5 `EvidenceItem` interface matches what 12.6 frontend consumes; check no duplicated type definitions
   - [ ] **Orphaned test mocks:** grep for test files still referencing removed fields (e.g., `evidenceUrl` in bulk issuance specs)
   - [ ] **Result:** clean → proceed to UAT; findings → fix inline or record as D-5+ in Sprint 13 deferred items
+- [ ] Task 0.5: Evidence Data Migration Verification (0.5h) — **Execute after Task 0, before UAT testing**
+  - [ ] UAT seed data has NO `Badge.evidenceUrl` values — migration script needs test data to validate AC #2/#8
+  - [ ] **Step 0:** Insert 2–3 test badges with `evidenceUrl` via SQL: `UPDATE badges SET "evidenceUrl" = 'https://example.com/evidence-N.pdf' WHERE id IN (...)` (pick existing badges)
+  - [ ] **Step 1:** `npx prisma migrate deploy` — applies DDL (EvidenceType enum + columns), auto if not yet applied
+  - [ ] **Step 2:** `npx ts-node scripts/migrate-evidence.ts --dry-run` — verify script finds the test badges, logs count
+  - [ ] **Step 3:** `npx ts-node scripts/migrate-evidence.ts` — execute migration, confirm `N migrated, 0 skipped, 0 failed`
+  - [ ] **Step 4:** Verify via API: `GET /api/badges/:id` for migrated badges → `evidence[]` includes `{ type: 'URL', sourceUrl: '...' }` entries
+  - [ ] **Step 5:** Re-run script → confirm `0 migrated, N skipped, 0 failed` (idempotency)
+  - [ ] **Step 6 (optional):** `npx ts-node scripts/migrate-evidence-down.ts --dry-run` — verify reversibility
+  - [ ] **Result:** PASS → proceed to UAT; FAIL → fix script before UAT continues
 - [ ] Task 1: Create UAT test plan document (2h)
   - [ ] Define detailed test steps for each UAT case
   - [ ] Prepare pre-conditions and expected results
@@ -112,7 +122,7 @@ So that I can confirm the new admin management UIs and unified evidence system w
   - [ ] Add sample skill categories (3-level tree, include system-defined)
   - [ ] Add sample skills with category assignments
   - [ ] Add sample milestones (multiple types)
-  - [ ] Ensure evidence migration data is present
+  - [ ] Ensure evidence migration data is present (Task 0.5 inserts test badges with `evidenceUrl` for migration verification)
 - [ ] Task 3: Execute UAT test cases (2h)
   - [ ] New feature tests: ~31 cases
   - [ ] Regression tests: ~6 cases
@@ -136,6 +146,6 @@ So that I can confirm the new admin management UIs and unified evidence system w
 
 ✅ Phase 2 Review Complete (2026-02-19) — Added during final planning audit
 
-**Estimate:** 7h (was 5h; +2h for Pre-UAT Code Hygiene Check — PO decision 2026-02-22)  
+**Estimate:** 7.5h (was 7h; +0.5h for Evidence Data Migration Verification — SM decision 2026-02-22)  
 **Priority:** 🟡 Medium  
 **Dependencies:** All Stories 12.1–12.8 must be complete before UAT execution
