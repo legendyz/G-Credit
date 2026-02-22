@@ -120,9 +120,13 @@ export class M365SyncService {
         const isRetryable = this.isRetryableError(error);
 
         if (!isRetryable || attempt === maxRetries) {
-          this.logger.error(
-            `Graph API error (attempt ${attempt + 1}/${maxRetries + 1}): ${(error as Error).message}`,
-          );
+          // 404 is expected for some endpoints (e.g., user has no manager)
+          const statusCode = (error as { statusCode?: number })?.statusCode;
+          if (statusCode !== 404) {
+            this.logger.error(
+              `Graph API error (attempt ${attempt + 1}/${maxRetries + 1}): ${(error as Error).message}`,
+            );
+          }
           throw error;
         }
 
