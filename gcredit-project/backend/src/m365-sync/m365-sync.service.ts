@@ -220,6 +220,34 @@ export class M365SyncService {
   }
 
   /**
+   * Batch-fetch all members of a Security Group by group ID.
+   * Returns a Set of Azure AD user IDs for O(1) membership checks.
+   *
+   * @param groupId Azure AD Security Group object ID
+   * @returns Set of member azureIds
+   */
+  private async getGroupMembers(groupId: string): Promise<Set<string>> {
+    const members = new Set<string>();
+    try {
+      const url = `https://graph.microsoft.com/v1.0/groups/${groupId}/members?$select=id`;
+      const response = await this.fetchWithRetry<{
+        value: Array<{ id: string }>;
+      }>(url);
+
+      for (const member of response.value) {
+        members.add(member.id);
+      }
+
+      this.logger.log(`Fetched ${members.size} members from group ${groupId}`);
+    } catch (error) {
+      this.logger.warn(
+        `Failed to fetch group members for ${groupId}: ${(error as Error).message}`,
+      );
+    }
+    return members;
+  }
+
+  /**
    * Story 12.3a AC #23: Link manager relationships using Graph API /manager endpoint.
    * Must run AFTER all users are created/updated (Pass 1).
    *
@@ -837,6 +865,21 @@ export class M365SyncService {
     });
 
     try {
+      // Batch-fetch Security Group members (2 API calls instead of N)
+      const adminGroupId = process.env.AZURE_ADMIN_GROUP_ID;
+      const issuerGroupId = process.env.AZURE_ISSUER_GROUP_ID;
+
+      const adminMembers = adminGroupId
+        ? await this.getGroupMembers(adminGroupId)
+        : new Set<string>();
+      const issuerMembers = issuerGroupId
+        ? await this.getGroupMembers(issuerGroupId)
+        : new Set<string>();
+
+      this.logger.log(
+        `Security Groups loaded: Admin=${adminMembers.size}, Issuer=${issuerMembers.size}`,
+      );
+
       // Get all M365 users from local DB (azureId != null, isActive = true)
       const m365Users = await this.prisma.user.findMany({
         where: { azureId: { not: null }, isActive: true },
@@ -845,7 +888,6 @@ export class M365SyncService {
           azureId: true,
           role: true,
           managerId: true,
-          roleSetManually: true,
         },
       });
 
@@ -857,8 +899,20 @@ export class M365SyncService {
         if (!user.azureId) continue;
 
         try {
-          // Check Security Group membership
-          const groupRole = await this.getUserRoleFromGroups(user.azureId);
+          // Determine role from batch group membership (O(1) lookup)
+          let newRole: UserRole;
+          if (adminMembers.has(user.azureId)) {
+            newRole = UserRole.ADMIN;
+          } else if (issuerMembers.has(user.azureId)) {
+            newRole = UserRole.ISSUER;
+          } else {
+            // Not in any Security Group — check directReports
+            const directReportsCount = await this.prisma.user.count({
+              where: { managerId: user.id },
+            });
+            newRole =
+              directReportsCount > 0 ? UserRole.MANAGER : UserRole.EMPLOYEE;
+          }
 
           // Check manager
           let newManagerId: string | null | undefined;
@@ -886,21 +940,10 @@ export class M365SyncService {
             }
           }
 
-          // Determine role update
+          // Apply role + manager updates
           const updateData: Record<string, unknown> = {};
-          let newRole = groupRole;
 
-          if (!newRole && !user.roleSetManually) {
-            // Check if user has directReports
-            const directReportsCount = await this.prisma.user.count({
-              where: { managerId: user.id },
-            });
-            if (directReportsCount > 0) {
-              newRole = UserRole.MANAGER;
-            }
-          }
-
-          if (newRole && newRole !== user.role) {
+          if (newRole !== user.role) {
             updateData.role = newRole;
             roleChanges++;
           }
