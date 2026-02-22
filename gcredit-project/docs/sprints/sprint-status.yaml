@@ -104,7 +104,7 @@ sprint-12: planning
 	12-6-evidence-unification-ui: done
 
 # --- Wave 3: Quick Fixes ---
-12-7-admin-activity-feed-formatting: backlog
+12-7-admin-activity-feed-formatting: done
 12-8-skills-uuid-fallback-hardening: backlog
 
 # --- Wave 4: UAT ---
