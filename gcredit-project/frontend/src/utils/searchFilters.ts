@@ -9,6 +9,8 @@
  * - ≥50 badges: server-side search (API call)
  */
 
+import { UNKNOWN_SKILL_LABEL } from '@/hooks/useSkills';
+
 export interface BadgeForFilter {
   id: string;
   template: {
@@ -205,7 +207,9 @@ export function filtersToChips(
   }
 
   if (filters.skills && filters.skills.length > 0) {
-    const skillLabels = filters.skills.map((id) => options?.skillNames?.[id] || 'Unknown Skill');
+    const skillLabels = filters.skills.map(
+      (id) => options?.skillNames?.[id] || UNKNOWN_SKILL_LABEL
+    );
     chips.push({
       id: 'skills',
       label:

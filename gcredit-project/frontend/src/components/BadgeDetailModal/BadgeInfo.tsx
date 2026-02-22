@@ -1,5 +1,6 @@
 import React from 'react';
 import { getCategoryColorClasses } from '@/lib/categoryColors';
+import { UNKNOWN_SKILL_LABEL } from '@/hooks/useSkills';
 
 type SkillItem = string | { name: string; categoryColor?: string | null };
 
@@ -49,7 +50,7 @@ const BadgeInfo: React.FC<BadgeInfoProps> = ({ description, skills, criteria }) 
               const isObject = typeof skill === 'object';
               const name = isObject ? skill.name : skill;
               const color = isObject ? getCategoryColorClasses(skill.categoryColor) : null;
-              const isUnknown = name === 'Unknown Skill';
+              const isUnknown = name === UNKNOWN_SKILL_LABEL;
               return (
                 <span
                   key={index}

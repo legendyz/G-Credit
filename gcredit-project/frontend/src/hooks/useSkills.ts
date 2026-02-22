@@ -78,6 +78,9 @@ export function useSkills(options: UseSkillsOptions = {}) {
   });
 }
 
+/** Shared fallback label for unresolved skill IDs (Story 12.8) */
+export const UNKNOWN_SKILL_LABEL = 'Unknown Skill';
+
 /**
  * Get a map of skill IDs to skill names for chip display
  */
@@ -87,21 +90,23 @@ export function useSkillNamesMap(skillIds?: string[]): Record<string, string> {
   if (!skillIds) return {};
 
   if (!skills) {
-    // Skills not yet loaded — return "Unknown Skill" for all IDs
+    // Skills not yet loaded — return fallback for all IDs
     return skillIds.reduce(
       (acc, id) => {
-        acc[id] = 'Unknown Skill';
+        acc[id] = UNKNOWN_SKILL_LABEL;
         return acc;
       },
       {} as Record<string, string>
     );
   }
 
-  // Map all requested IDs — fallback to "Unknown Skill" for unresolved ones
+  // Build O(1) lookup map from fetched skills
+  const skillMap = new Map(skills.map((s) => [s.id, s.name]));
+
+  // Map all requested IDs — fallback for unresolved ones
   return skillIds.reduce(
     (acc, id) => {
-      const found = skills.find((s) => s.id === id);
-      acc[id] = found ? found.name : 'Unknown Skill';
+      acc[id] = skillMap.get(id) ?? UNKNOWN_SKILL_LABEL;
       return acc;
     },
     {} as Record<string, string>
