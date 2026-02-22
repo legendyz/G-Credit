@@ -110,7 +110,6 @@ describe.skip('BadgeIssuanceService - Teams Integration', () => {
     claimedAt: null,
     revokedAt: null,
     revokedReason: null,
-    evidenceUrl: null,
     claimToken: 'claim-token-abc',
     recipientHash: 'hash-abc',
     assertionJson: {},
@@ -185,7 +184,6 @@ describe.skip('BadgeIssuanceService - Teams Integration', () => {
     const issueDto: IssueBadgeDto = {
       templateId: 'template-123',
       recipientId: 'user-123',
-      evidenceUrl: 'https://example.com/evidence.pdf',
     };
 
     beforeEach(() => {

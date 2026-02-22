@@ -562,7 +562,6 @@ export class BulkIssuanceService {
     const sessionValidRows = session.validRows as unknown as Array<{
       badgeTemplateId: string;
       recipientEmail: string;
-      evidenceUrl?: string;
     }>;
 
     // MVP limit: 20 badges max

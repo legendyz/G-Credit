@@ -17,14 +17,6 @@ export class IssueBadgeDto {
   recipientId: string;
 
   @ApiPropertyOptional({
-    description: 'Evidence URL (Azure Blob Storage)',
-    example: 'https://storage.azure.com/evidence/cert-12345.pdf',
-  })
-  @IsOptional()
-  @IsUrl()
-  evidenceUrl?: string;
-
-  @ApiPropertyOptional({
     description: 'Expiration in days (null = no expiration)',
     example: 365,
     minimum: 1,

@@ -508,7 +508,7 @@ EXAMPLE-DELETE,example@company.com`;
     });
 
     it('should handle multiline quoted fields in CSV upload end-to-end', async () => {
-      const csvContent = `badgeTemplateId,recipientEmail,evidenceUrl,narrativeJustification\ntemplate-123,user@company.com,,"Completed training\nwith distinction"`;
+      const csvContent = `badgeTemplateId,recipientEmail,narrativeJustification\ntemplate-123,user@company.com,"Completed training\nwith distinction"`;
 
       const result = await service.createSession(csvContent, 'issuer-123');
 
@@ -747,7 +747,6 @@ template-123,user3@company.com`;
       validRows: Array<{
         badgeTemplateId: string;
         recipientEmail: string;
-        evidenceUrl?: string;
       }>,
     ) => {
       const sessionId = 'session-confirm-test';
@@ -994,7 +993,7 @@ template-123,user3@company.com`;
       expect(result.results[0].error).toContain('No active user found');
     });
 
-    it('should pass expiresIn through to issueBadge when no evidenceUrl', async () => {
+    it('should pass expiresIn through to issueBadge', async () => {
       const sessionId = createValidatedSession([
         {
           badgeTemplateId: 'Leadership Excellence',

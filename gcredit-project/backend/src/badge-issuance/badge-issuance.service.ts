@@ -124,7 +124,6 @@ export class BadgeIssuanceService {
           templateId: dto.templateId,
           recipientId: dto.recipientId,
           issuerId,
-          evidenceUrl: dto.evidenceUrl, // KEEP for backward compat (1 sprint)
           issuedAt,
           expiresAt,
           status: BadgeStatus.PENDING,
@@ -141,34 +140,8 @@ export class BadgeIssuanceService {
         },
       });
 
-      // Story 12.5: Create EvidenceFile(type=URL) for URL evidence
-      if (dto.evidenceUrl) {
-        await tx.evidenceFile.create({
-          data: {
-            badgeId: created.id,
-            type: 'URL',
-            sourceUrl: dto.evidenceUrl,
-            fileName: '',
-            originalName: new URL(dto.evidenceUrl).hostname,
-            fileSize: 0,
-            mimeType: '',
-            blobUrl: '',
-            uploadedBy: issuerId,
-            uploadedAt: issuedAt,
-          },
-        });
-      }
-
       // Story 12.5: Build evidence URLs from unified EvidenceFile records
-      // Re-query to include the newly created URL evidence
-      const badgeWithEvidence = dto.evidenceUrl
-        ? await tx.badge.findUnique({
-            where: { id: created.id },
-            include: { evidenceFiles: true },
-          })
-        : created;
-
-      const evidenceUrls = (badgeWithEvidence?.evidenceFiles || []).map((e) =>
+      const evidenceUrls = (created.evidenceFiles || []).map((e) =>
         e.type === 'URL' ? e.sourceUrl! : e.blobUrl,
       );
 
@@ -694,7 +667,6 @@ export class BadgeIssuanceService {
         issuedAt: badge.issuedAt,
         claimedAt: badge.claimedAt,
         expiresAt: badge.expiresAt,
-        evidenceUrl: badge.evidenceUrl,
         // Story 8.2: Template includes skillIds directly
         template: badge.template,
         issuer: {
@@ -868,7 +840,6 @@ export class BadgeIssuanceService {
         revocationReason: badge.revocationReason,
         revocationNotes: badge.revocationNotes,
         revokedBy: badge.revokedBy,
-        evidenceUrl: badge.evidenceUrl,
         evidenceCount: badge._count.evidenceFiles, // Story 12.6
         // Story 8.2: Template includes skillIds directly
         template: badge.template,
@@ -975,7 +946,6 @@ export class BadgeIssuanceService {
       ...badge,
       status: effectiveStatus,
       evidence, // Story 12.5: unified evidence list
-      // evidenceUrl kept for backward compat (1 sprint)
     };
 
     // Story 9.3 AC2: Add categorized revocation details

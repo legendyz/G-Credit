@@ -206,44 +206,6 @@ describe('CsvValidationService', () => {
     });
   });
 
-  describe('validateEvidenceUrl', () => {
-    it('should return valid for null value', () => {
-      const result = service.validateEvidenceUrl(null);
-      expect(result.valid).toBe(true);
-    });
-
-    it('should return valid for empty string', () => {
-      const result = service.validateEvidenceUrl('');
-      expect(result.valid).toBe(true);
-    });
-
-    it('should accept valid HTTP URL', () => {
-      const result = service.validateEvidenceUrl('http://example.com/evidence');
-      expect(result.valid).toBe(true);
-    });
-
-    it('should accept valid HTTPS URL', () => {
-      const result = service.validateEvidenceUrl(
-        'https://company.com/docs/evidence.pdf',
-      );
-      expect(result.valid).toBe(true);
-    });
-
-    it('should reject invalid URL format', () => {
-      const result = service.validateEvidenceUrl('not-a-url');
-      expect(result.valid).toBe(false);
-      expect(result.error).toContain('HTTP/HTTPS URL');
-    });
-
-    it('should reject ftp URL', () => {
-      const result = service.validateEvidenceUrl(
-        'ftp://files.example.com/doc.pdf',
-      );
-      expect(result.valid).toBe(false);
-      expect(result.error).toContain('HTTP/HTTPS URL');
-    });
-  });
-
   describe('validateNotes', () => {
     it('should return valid for null value', () => {
       const result = service.validateNotes(null);

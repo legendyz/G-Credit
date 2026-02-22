@@ -57,8 +57,7 @@ export class AssertionGeneratorService {
     issuer: User;
     issuedAt: Date;
     expiresAt?: Date;
-    evidenceUrl?: string;
-    evidenceUrls?: string[]; // Sprint 5: Support multiple evidence files
+    evidenceUrls?: string[];
   }) {
     const {
       badgeId,
@@ -68,7 +67,6 @@ export class AssertionGeneratorService {
       issuer: _issuer,
       issuedAt,
       expiresAt,
-      evidenceUrl,
       evidenceUrls,
     } = params;
 
@@ -111,11 +109,6 @@ export class AssertionGeneratorService {
       ...(evidenceUrls &&
         evidenceUrls.length > 0 && {
           evidence: evidenceUrls,
-        }),
-      // Backward compatibility: single evidenceUrl
-      ...(evidenceUrl &&
-        !evidenceUrls && {
-          evidence: [evidenceUrl],
         }),
     };
 

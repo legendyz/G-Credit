@@ -252,7 +252,6 @@ describe('BadgeIssuanceService', () => {
     const issueDto = {
       templateId: 'template-uuid',
       recipientId: 'recipient-uuid',
-      evidenceUrl: 'https://example.com/evidence.pdf',
       expiresIn: 365,
     };
 
@@ -286,7 +285,6 @@ describe('BadgeIssuanceService', () => {
         template: mockTemplate,
         recipient: mockRecipient,
         issuer: mockIssuer,
-        evidenceUrl: issueDto.evidenceUrl,
         claimedAt: null,
         revokedAt: null,
         revocationReason: null,
@@ -295,25 +293,10 @@ describe('BadgeIssuanceService', () => {
         evidenceFiles: [],
       };
 
-      // Story 12.5: Mock findUnique for re-query after URL evidence creation
-      const mockBadgeWithEvidence = {
-        ...mockCreatedBadge,
-        evidenceFiles: issueDto.evidenceUrl
-          ? [
-              {
-                id: 'evidence-uuid-1',
-                type: 'URL',
-                sourceUrl: issueDto.evidenceUrl,
-                blobUrl: '',
-              },
-            ]
-          : [],
-      };
-
       mockPrismaService.badge.create.mockResolvedValue(mockCreatedBadge);
       mockPrismaService.badge.update.mockResolvedValue(mockCreatedBadge);
       mockPrismaService.badge.findUnique.mockResolvedValue(
-        mockBadgeWithEvidence,
+        mockCreatedBadge,
       );
 
       // Act
@@ -412,7 +395,6 @@ describe('BadgeIssuanceService', () => {
         templateId: issueDto.templateId,
         recipientId: issueDto.recipientId,
         issuerId: mockIssuer.id,
-        evidenceUrl: null,
         claimedAt: null,
         revokedAt: null,
         revocationReason: null,
@@ -490,7 +472,6 @@ describe('BadgeIssuanceService', () => {
         templateId: issueDto.templateId,
         recipientId: issueDto.recipientId,
         issuerId: mockIssuer.id,
-        evidenceUrl: issueDto.evidenceUrl,
         claimedAt: null,
         revokedAt: null,
         revocationReason: null,
@@ -499,25 +480,10 @@ describe('BadgeIssuanceService', () => {
         evidenceFiles: [],
       };
 
-      // Story 12.5: Mock findUnique for re-query after URL evidence creation
-      const mockBadgeWithEvidence = {
-        ...mockCreatedBadge,
-        evidenceFiles: issueDto.evidenceUrl
-          ? [
-              {
-                id: 'ev-1',
-                type: 'URL',
-                sourceUrl: issueDto.evidenceUrl,
-                blobUrl: '',
-              },
-            ]
-          : [],
-      };
-
       mockPrismaService.badge.create.mockResolvedValue(mockCreatedBadge);
       mockPrismaService.badge.update.mockResolvedValue(mockCreatedBadge);
       mockPrismaService.badge.findUnique.mockResolvedValue(
-        mockBadgeWithEvidence,
+        mockCreatedBadge,
       );
 
       // Act

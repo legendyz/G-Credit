@@ -188,7 +188,6 @@ export async function getBadgeById(badgeId: string): Promise<Badge> {
 export interface IssueBadgeRequest {
   templateId: string;
   recipientId: string;
-  evidenceUrl?: string;
   expiresIn?: number;
 }
 
