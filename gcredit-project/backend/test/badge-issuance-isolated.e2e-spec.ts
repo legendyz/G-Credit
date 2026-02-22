@@ -65,7 +65,6 @@ describe('Badge Issuance (e2e) - Isolated', () => {
         .send({
           templateId: templateId,
           recipientId: recipientUser.user.id,
-          evidenceUrl: 'https://example.com/evidence.pdf',
           expiresIn: 365,
         })
         .expect(201);
