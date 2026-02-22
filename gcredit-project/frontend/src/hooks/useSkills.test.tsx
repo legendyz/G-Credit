@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import { useSkills } from './useSkills';
+import { useSkills, useSkillNamesMap } from './useSkills';
 
 // Mock apiFetch
 const mockApiFetch = vi.fn();
@@ -90,5 +90,78 @@ describe('useSkills', () => {
     expect(skills[0].badgeCount).toBe(2);
     expect(skills[1].badgeCount).toBe(0);
     expect(skills[2].badgeCount).toBe(0); // undefined from API → defaults to 0
+  });
+});
+
+describe('useSkillNamesMap', () => {
+  const mockApiData = [
+    {
+      id: 's1',
+      name: 'React',
+      category: { id: 'cat-1', name: 'Frontend', color: 'emerald' },
+    },
+    {
+      id: 's2',
+      name: 'Node.js',
+      category: { id: 'cat-2', name: 'Backend', color: 'blue' },
+    },
+  ];
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('returns resolved names for known IDs', async () => {
+    mockApiFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockApiData),
+    });
+
+    const { result } = renderHook(() => useSkillNamesMap(['s1', 's2']), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current['s1']).toBe('React'));
+    expect(result.current['s2']).toBe('Node.js');
+  });
+
+  it('returns "Unknown Skill" for IDs not found in skills list', async () => {
+    mockApiFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockApiData),
+    });
+
+    const { result } = renderHook(() => useSkillNamesMap(['s1', 'deleted-uuid']), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current['s1']).toBe('React'));
+    expect(result.current['deleted-uuid']).toBe('Unknown Skill');
+  });
+
+  it('returns "Unknown Skill" for all IDs when skills not yet loaded', () => {
+    // Never resolve the fetch — skills stay undefined
+    mockApiFetch.mockReturnValue(new Promise(() => {}));
+
+    const { result } = renderHook(() => useSkillNamesMap(['s1', 's2']), {
+      wrapper: createWrapper(),
+    });
+
+    // Before skills load, all entries should be "Unknown Skill"
+    expect(result.current['s1']).toBe('Unknown Skill');
+    expect(result.current['s2']).toBe('Unknown Skill');
+  });
+
+  it('returns empty object when skillIds is undefined', async () => {
+    mockApiFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockApiData),
+    });
+
+    const { result } = renderHook(() => useSkillNamesMap(undefined), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current).toEqual({}));
   });
 });

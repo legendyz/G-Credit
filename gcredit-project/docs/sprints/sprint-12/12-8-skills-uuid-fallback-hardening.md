@@ -1,6 +1,6 @@
 # Story 12.8: Skills UUID Fallback Hardening
 
-Status: backlog
+Status: done
 
 ## Story
 
@@ -17,30 +17,31 @@ So that no page ever shows raw UUIDs to users, even when the skill lookup fails.
 
 ## Acceptance Criteria
 
-1. [ ] All pages displaying skills show skill names (never UUIDs)
-2. [ ] Fallback: if skill name cannot be resolved, show "Unknown Skill" with muted styling
-3. [ ] `useSkillNamesMap()` hook is the single source for skill name resolution
-4. [ ] Verification page (public, no auth) resolves skills via backend-provided names
-5. [ ] No existing tests break
+1. [x] All pages displaying skills show skill names (never UUIDs)
+2. [x] Fallback: if skill name cannot be resolved, show "Unknown Skill" with muted styling
+3. [x] `useSkillNamesMap()` hook is the single source for skill name resolution
+4. [x] Verification page (public, no auth) resolves skills via backend-provided names
+5. [x] No existing tests break
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Audit all skill display locations
-  - [ ] `BadgeDetailModal/BadgeInfo.tsx` — check status
-  - [ ] `VerifyBadgePage.tsx` — check status
-  - [ ] `EmbedBadgePage.tsx` — check status
-  - [ ] `IssueBadgePage.tsx` template preview — check status
-  - [ ] Any other skill pill/tag rendering
-- [ ] Task 2: Fix remaining gaps (AC: #1, #2, #3)
-  - [ ] Apply `useSkillNamesMap()` where missing
-  - [ ] Add "Unknown Skill" fallback with `text-muted-foreground italic` styling — subtle but honest
-- [ ] Task 3: Backend — include skill names in verification response (AC: #4)
-  - [ ] `GET /api/verify/:verificationId` should return resolved skill names
-  - [ ] Public endpoint — no auth needed, skill names from template join
-  - [ ] This is the critical fix: public pages can't call skill API (no auth)
-- [ ] Task 4: Tests (AC: #5)
-  - [ ] Test fallback rendering ("Unknown Skill" with muted italic styling)
-  - [ ] Test verification page skill display
+- [x] Task 1: Audit all skill display locations
+  - [x] `BadgeDetailModal/BadgeInfo.tsx` — partial fix, needs muted styling (F3/F4)
+  - [x] `VerifyBadgePage.tsx` — already correct (backend resolves skills)
+  - [x] `EmbedBadgePage.tsx` — does not exist
+  - [x] `IssueBadgePage.tsx` template preview — no skill display
+  - [x] `filtersToChips()` — UUID fallback in chips (F2/F5/F6)
+- [x] Task 2: Fix remaining gaps (AC: #1, #2, #3)
+  - [x] `useSkillNamesMap()` returns "Unknown Skill" for all unresolved IDs (F1)
+  - [x] `filtersToChips()` falls back to "Unknown Skill" instead of raw UUID (F2)
+  - [x] `BadgeInfo.tsx` renders "Unknown Skill" with `text-muted-foreground italic bg-muted` (F3/F4)
+- [x] Task 3: Backend — include skill names in verification response (AC: #4)
+  - [x] Already correct — `badge-verification.service.ts` resolves skill names via Prisma join
+- [x] Task 4: Tests (AC: #5)
+  - [x] `useSkillNamesMap` — 4 tests: resolved names, unknown fallback, loading fallback, undefined IDs
+  - [x] `filtersToChips` — 2 tests: empty map fallback, undefined options fallback
+  - [x] `BadgeInfo` — 2 tests: string "Unknown Skill" muted styling, object "Unknown Skill" muted styling
+  - [x] Full suite: 699 tests pass (66 files)
 
 ## Dev Notes
 
@@ -58,5 +59,13 @@ So that no page ever shows raw UUIDs to users, even when the skill lookup fails.
 
 ## Dev Agent Record
 ### Agent Model Used
+Claude Opus 4.6 (GitHub Copilot)
 ### Completion Notes
+All 5 ACs met. 3 source files changed, 3 test files updated. 8 new tests added. 699/699 frontend tests pass. TSC clean.
 ### File List
+- `frontend/src/hooks/useSkills.ts` — `useSkillNamesMap()` now returns "Unknown Skill" for all unresolved/loading IDs
+- `frontend/src/utils/searchFilters.ts` — `filtersToChips()` skill fallback changed from raw UUID to "Unknown Skill"
+- `frontend/src/components/BadgeDetailModal/BadgeInfo.tsx` — muted italic styling for "Unknown Skill" pills
+- `frontend/src/hooks/useSkills.test.tsx` — 4 new `useSkillNamesMap` tests
+- `frontend/src/utils/searchFilters.test.ts` — 2 new skill chip fallback tests
+- `frontend/src/components/BadgeDetailModal/BadgeInfo.test.tsx` — 2 new muted styling tests

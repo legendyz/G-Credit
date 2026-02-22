@@ -205,7 +205,7 @@ export function filtersToChips(
   }
 
   if (filters.skills && filters.skills.length > 0) {
-    const skillLabels = filters.skills.map((id) => options?.skillNames?.[id] || id);
+    const skillLabels = filters.skills.map((id) => options?.skillNames?.[id] || 'Unknown Skill');
     chips.push({
       id: 'skills',
       label:

@@ -81,18 +81,27 @@ export function useSkills(options: UseSkillsOptions = {}) {
 /**
  * Get a map of skill IDs to skill names for chip display
  */
-export function useSkillNamesMap(skillIds?: string[]) {
+export function useSkillNamesMap(skillIds?: string[]): Record<string, string> {
   const { data: skills } = useSkills({ enabled: true });
 
-  if (!skills || !skillIds) {
-    return {};
+  if (!skillIds) return {};
+
+  if (!skills) {
+    // Skills not yet loaded — return "Unknown Skill" for all IDs
+    return skillIds.reduce(
+      (acc, id) => {
+        acc[id] = 'Unknown Skill';
+        return acc;
+      },
+      {} as Record<string, string>
+    );
   }
 
-  return skills.reduce(
-    (acc, skill) => {
-      if (skillIds.includes(skill.id)) {
-        acc[skill.id] = skill.name;
-      }
+  // Map all requested IDs — fallback to "Unknown Skill" for unresolved ones
+  return skillIds.reduce(
+    (acc, id) => {
+      const found = skills.find((s) => s.id === id);
+      acc[id] = found ? found.name : 'Unknown Skill';
       return acc;
     },
     {} as Record<string, string>

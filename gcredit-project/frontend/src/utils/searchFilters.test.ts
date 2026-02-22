@@ -383,4 +383,18 @@ describe('filtersToChips', () => {
     expect(chips).toHaveLength(1);
     expect(chips[0].label).toContain('John Doe');
   });
+
+  // Story 12.8: Skill UUID fallback hardening
+  it('shows "Unknown Skill" instead of UUID when skillNames map is empty', () => {
+    const chips = filtersToChips({ skills: ['some-uuid-1234'] }, { skillNames: {} });
+    expect(chips).toHaveLength(1);
+    expect(chips[0].label).toBe('Unknown Skill');
+    expect(chips[0].label).not.toContain('some-uuid');
+  });
+
+  it('shows "Unknown Skill" when skillNames option is undefined', () => {
+    const chips = filtersToChips({ skills: ['some-uuid'] });
+    expect(chips).toHaveLength(1);
+    expect(chips[0].label).toBe('Unknown Skill');
+  });
 });

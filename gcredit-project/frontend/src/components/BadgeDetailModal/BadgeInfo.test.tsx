@@ -91,5 +91,29 @@ describe('BadgeInfo', () => {
       expect(chip.className).toContain('bg-blue-600');
       expect(chip.className).toContain('text-white');
     });
+
+    // Story 12.8: Muted styling for "Unknown Skill"
+    it('renders "Unknown Skill" with muted italic styling', () => {
+      render(<BadgeInfo description="Test" skills={['Unknown Skill']} criteria={null} />);
+      const pill = screen.getByText('Unknown Skill');
+      expect(pill.className).toContain('text-muted-foreground');
+      expect(pill.className).toContain('italic');
+      expect(pill.className).toContain('bg-muted');
+      expect(pill.className).not.toContain('bg-blue-600');
+    });
+
+    it('renders "Unknown Skill" object with muted italic styling', () => {
+      render(
+        <BadgeInfo
+          description="Test"
+          skills={[{ name: 'Unknown Skill', categoryColor: null }]}
+          criteria={null}
+        />
+      );
+      const pill = screen.getByText('Unknown Skill');
+      expect(pill.className).toContain('text-muted-foreground');
+      expect(pill.className).toContain('italic');
+      expect(pill.className).not.toContain('bg-blue-600');
+    });
   });
 });

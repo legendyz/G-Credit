@@ -49,11 +49,16 @@ const BadgeInfo: React.FC<BadgeInfoProps> = ({ description, skills, criteria }) 
               const isObject = typeof skill === 'object';
               const name = isObject ? skill.name : skill;
               const color = isObject ? getCategoryColorClasses(skill.categoryColor) : null;
+              const isUnknown = name === 'Unknown Skill';
               return (
                 <span
                   key={index}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-full ${
-                    color ? `${color.bg} ${color.text}` : 'bg-blue-600 text-white'
+                  className={`px-3 py-1.5 text-sm rounded-full ${
+                    isUnknown
+                      ? 'text-muted-foreground italic bg-muted'
+                      : color
+                        ? `${color.bg} ${color.text} font-medium`
+                        : 'bg-blue-600 text-white font-medium'
                   }`}
                 >
                   {name}
