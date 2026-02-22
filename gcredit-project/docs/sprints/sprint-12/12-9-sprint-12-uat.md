@@ -88,12 +88,23 @@ So that I can confirm the new admin management UIs and unified evidence system w
 
 ### Test Accounts
 
+**Pre-seeded (local) users** — created by `seed-uat.ts`:
+
 | Role | Email | Password | Sprint 12 Features |
 |------|-------|----------|-------------------|
-| Admin | admin@gcredit.com | password123 | All new admin pages, user management |
+| Admin | admin@gcredit.com | password123 | All new admin pages, user management, M365 sync |
 | Issuer | issuer@gcredit.com | password123 | Evidence upload during issuance |
-| Manager | manager@gcredit.com | password123 | Regression: revocation |
-| Employee | M365DevAdmin@2wjh85.onmicrosoft.com | password123 | Regression: wallet, evidence display |
+| Manager | manager@gcredit.com | password123 | Regression: revocation, team scoping |
+| Employee | employee@gcredit.com | password123 | Regression: wallet, evidence display |
+| Employee2 | employee2@gcredit.com | password123 | Regression: wallet |
+
+**M365 users** — imported via Story 12.3 M365 Sync (NOT pre-seeded):
+
+| Source | How to obtain | Sprint 12 Features |
+|--------|--------------|-------------------|
+| M365 tenant | Admin → Users → "Sync Users" button → syncs from Azure AD | UAT-S12-015d (sync panel), UAT-S12-013b (M365 row actions), UAT-S12-014 (lock notice), UAT-S12-015 (M365 detail panel) |
+
+> **Note:** M365 users have `passwordHash=''` and **cannot log in via password** (AC #32 from Story 12.3). They appear in the Admin user table after sync but require SSO for actual login (deferred to future sprint).
 
 ## Tasks / Subtasks
 
