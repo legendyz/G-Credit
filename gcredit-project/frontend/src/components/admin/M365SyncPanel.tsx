@@ -94,7 +94,10 @@ export function M365SyncPanel() {
             )}
           </div>
           {status && (
-            <Badge variant={status.available ? 'default' : 'destructive'} className="text-xs">
+            <Badge
+              variant={status.available ? 'default' : 'destructive'}
+              className={`text-xs ${status.available ? 'bg-green-600 hover:bg-green-700 text-white' : ''}`}
+            >
               {status.available ? 'Connected' : 'Unavailable'}
             </Badge>
           )}
