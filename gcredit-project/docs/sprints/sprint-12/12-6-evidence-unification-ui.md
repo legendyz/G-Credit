@@ -223,3 +223,33 @@ All 11 tasks and 13 ACs implemented. Frontend: 684 tests pass. Backend: 845 test
 - `backend/src/badge-issuance/badge-issuance.service.ts` — Added _count.evidenceFiles to getIssuedBadges, evidenceCount mapping
 - `backend/src/bulk-issuance/bulk-issuance.service.ts` — Added badgeId to confirmBulkIssuance results
 - `backend/src/badge-verification/badge-verification.service.ts` — Expanded evidenceFiles to include id, type, sourceUrl, originalName, fileSize, mimeType
+## SM Acceptance Record
+
+- **Date**: 2026-02-22
+- **SM Agent**: Claude Opus 4.6 (Bob)
+- **Verdict**: ✅ **ACCEPTED**
+
+### Verification Summary
+
+| AC | Description | Verdict |
+|----|-------------|---------|
+| #1 | File upload (drag & drop + browse) + URL on IssueBadgePage | ✅ PASS |
+| #2 | Up to 5 evidence items (mix of files and URLs) | ✅ PASS |
+| #3 | BadgeDetailModal displays unified EvidenceList | ✅ PASS |
+| #4 | Badge Management evidence count column with click-to-expand | ✅ PASS |
+| #5 | VerifyBadgePage displays FILE (SAS) and URL evidence | ✅ PASS |
+| #6 | Reusable EvidenceList component (used in 5 locations) | ✅ PASS |
+| #7 | Progress bar + 10MB size limit + file type validation | ✅ PASS |
+| #8 | All tests pass (691 FE / 845 BE) | ✅ PASS |
+| #9 | Bulk result page groups badges by template | ✅ PASS |
+| #10 | Shared evidence area per template group | ✅ PASS |
+| #11 | Fan-out logic applies shared evidence to all badges | ✅ PASS |
+| #12 | Individual evidence button per badge | ✅ PASS |
+| #13 | Skip flow — complete without evidence | ✅ PASS |
+
+### Notes
+
+- All 13 ACs verified against source code
+- Code review: Approved (2 blocking findings B1+B2 resolved before acceptance)
+- Frontend: 66 test files, 691 tests pass; Backend: 46 suites, 845 tests pass
+- Minor housekeeping: legacy `EvidenceSection.tsx` is orphaned (low priority cleanup)
