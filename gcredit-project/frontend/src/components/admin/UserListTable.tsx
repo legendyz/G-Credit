@@ -567,19 +567,21 @@ export function UserListTable({
                         <Eye className="h-4 w-4" />
                         <span className="sr-only">View details</span>
                       </Button>
-                      {/* Edit role — local users only */}
-                      {user.source === 'LOCAL' && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="min-h-[44px] min-w-[44px] focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                          onClick={(e) => openRoleDialog(user, e.currentTarget)}
-                          title="Edit role"
-                        >
-                          <Pencil className="h-4 w-4" />
-                          <span className="sr-only">Edit role</span>
-                        </Button>
-                      )}
+                      {/* Edit role — local users only; invisible placeholder for M365 */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={`min-h-[44px] min-w-[44px] focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                          user.source !== 'LOCAL' ? 'invisible' : ''
+                        }`}
+                        onClick={(e) => openRoleDialog(user, e.currentTarget)}
+                        title="Edit role"
+                        disabled={user.source !== 'LOCAL'}
+                        tabIndex={user.source !== 'LOCAL' ? -1 : undefined}
+                      >
+                        <Pencil className="h-4 w-4" />
+                        <span className="sr-only">Edit role</span>
+                      </Button>
                       {/* Lock/Unlock — all users */}
                       <Button
                         variant="ghost"
@@ -599,19 +601,21 @@ export function UserListTable({
                         )}
                         <span className="sr-only">{user.isActive ? 'Deactivate' : 'Activate'}</span>
                       </Button>
-                      {/* Delete — local users only */}
-                      {user.source === 'LOCAL' && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="min-h-[44px] min-w-[44px] text-red-600 hover:text-red-700 hover:bg-red-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:hover:bg-red-900/20"
-                          onClick={(e) => openDeleteDialog(user, e.currentTarget)}
-                          title="Delete user"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Delete user</span>
-                        </Button>
-                      )}
+                      {/* Delete — local users only; invisible placeholder for M365 */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={`min-h-[44px] min-w-[44px] text-red-600 hover:text-red-700 hover:bg-red-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:hover:bg-red-900/20 ${
+                          user.source !== 'LOCAL' ? 'invisible' : ''
+                        }`}
+                        onClick={(e) => openDeleteDialog(user, e.currentTarget)}
+                        title="Delete user"
+                        disabled={user.source !== 'LOCAL'}
+                        tabIndex={user.source !== 'LOCAL' ? -1 : undefined}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Delete user</span>
+                      </Button>
                     </div>
                   </td>
                 </tr>
