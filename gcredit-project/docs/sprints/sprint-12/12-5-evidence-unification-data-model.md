@@ -19,38 +19,38 @@ So that the platform has a consistent evidence data model that all features can 
 
 ## Acceptance Criteria
 
-1. [ ] `EvidenceFile` model supports a new `type` field: `FILE` | `URL`
-2. [ ] Migration script converts all existing `Badge.evidenceUrl` values to `EvidenceFile` records (type=URL)
-3. [ ] `Badge.evidenceUrl` field deprecated (kept for rollback safety, not used in new code)
-4. [ ] Badge issuance API accepts both file uploads AND URL evidence in a unified request
-5. [ ] `GET /api/badges/:id` returns unified evidence list (both files and URLs)
-6. [ ] Verification endpoint returns evidence via SAS token (files) or direct link (URLs)
-7. [ ] All existing tests pass without regression
-8. [ ] Migration is reversible (down migration restores `evidenceUrl`)
+1. [x] `EvidenceFile` model supports a new `type` field: `FILE` | `URL`
+2. [x] Migration script converts all existing `Badge.evidenceUrl` values to `EvidenceFile` records (type=URL)
+3. [x] `Badge.evidenceUrl` field deprecated (kept for rollback safety, not used in new code)
+4. [x] Badge issuance API accepts both file uploads AND URL evidence in a unified request
+5. [x] `GET /api/badges/:id` returns unified evidence list (both files and URLs)
+6. [x] Verification endpoint returns evidence via SAS token (files) or direct link (URLs)
+7. [x] All existing tests pass without regression
+8. [x] Migration is reversible (down migration restores `evidenceUrl`)
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Schema changes — Phase A (AC: #1)
-  - [ ] Add `type` enum: `FILE`, `URL` to `EvidenceFile` model
-  - [ ] Add `sourceUrl` field (nullable, `@db.Text`) to `EvidenceFile` for URL-type evidence
-  - [ ] `npx prisma migrate dev`
-  - [ ] NOTE: This is schema-only, no data changes
-- [ ] Task 2: Data migration script — Phase B (AC: #2, #8)
-  - [ ] Standalone script: `scripts/migrate-evidence.ts` (NestJS CLI or ts-node)
-  - [ ] Iterate all `Badge` records where `evidenceUrl IS NOT NULL`
-  - [ ] For each: create `EvidenceFile` record (type=URL, sourceUrl=evidenceUrl)
-  - [ ] Idempotent: skip if EvidenceFile already exists for that badge+URL combo
-  - [ ] Dry-run mode: `--dry-run` flag to preview without writing
-  - [ ] Logging: count migrated, skipped, failed
-  - [ ] Reversible: separate down script restores from EvidenceFile type=URL → Badge.evidenceUrl
-  - [ ] **DO NOT put data migration inside Prisma migration file** — separate script for control + logging
-- [ ] Task 3: Update `badge-issuance.service.ts` (AC: #4)
-  - [ ] Accept `evidenceFiles[]` (multipart) AND `evidenceUrl` in issuance
-  - [ ] Store URL evidence as `EvidenceFile(type=URL, sourceUrl=...)`
-  - [ ] Deprecate direct `Badge.evidenceUrl` write (still populate for backward compat this sprint)
-- [ ] Task 4: Update badge detail response (AC: #5)
-  - [ ] `GET /api/badges/:id` returns unified `evidence: EvidenceItem[]` field
-  - [ ] **Backward compat:** Keep `evidenceUrl` field in response for 1 sprint (Sprint 12), remove in Sprint 13
+- [x] Task 1: Schema changes — Phase A (AC: #1)
+  - [x] Add `type` enum: `FILE`, `URL` to `EvidenceFile` model
+  - [x] Add `sourceUrl` field (nullable, `@db.Text`) to `EvidenceFile` for URL-type evidence
+  - [x] `npx prisma migrate dev`
+  - [x] NOTE: This is schema-only, no data changes
+- [x] Task 2: Data migration script — Phase B (AC: #2, #8)
+  - [x] Standalone script: `scripts/migrate-evidence.ts` (NestJS CLI or ts-node)
+  - [x] Iterate all `Badge` records where `evidenceUrl IS NOT NULL`
+  - [x] For each: create `EvidenceFile` record (type=URL, sourceUrl=evidenceUrl)
+  - [x] Idempotent: skip if EvidenceFile already exists for that badge+URL combo
+  - [x] Dry-run mode: `--dry-run` flag to preview without writing
+  - [x] Logging: count migrated, skipped, failed
+  - [x] Reversible: separate down script restores from EvidenceFile type=URL → Badge.evidenceUrl
+  - [x] **DO NOT put data migration inside Prisma migration file** — separate script for control + logging
+- [x] Task 3: Update `badge-issuance.service.ts` (AC: #4)
+  - [x] Accept `evidenceFiles[]` (multipart) AND `evidenceUrl` in issuance
+  - [x] Store URL evidence as `EvidenceFile(type=URL, sourceUrl=...)`
+  - [x] Deprecate direct `Badge.evidenceUrl` write (still populate for backward compat this sprint)
+- [x] Task 4: Update badge detail response (AC: #5)
+  - [x] `GET /api/badges/:id` returns unified `evidence: EvidenceItem[]` field
+  - [x] **Backward compat:** Keep `evidenceUrl` field in response for 1 sprint (Sprint 12), remove in Sprint 13
   - [ ] Normalized `EvidenceItem` interface:
     ```typescript
     interface EvidenceItem {
@@ -63,25 +63,25 @@ So that the platform has a consistent evidence data model that all features can 
       uploadedAt: string;
     }
     ```
-- [ ] Task 5: Update verification endpoint (AC: #6)
-  - [ ] FILE type: generate SAS token URL
-  - [ ] URL type: return direct URL (sourceUrl)
-- [ ] Task 6: Extend evidence controller for URL-type evidence
-  - [ ] `POST /api/badges/:badgeId/evidence` — accept JSON body `{ type: 'URL', sourceUrl: '...' }` alongside existing multipart upload
-  - [ ] Existing download/preview endpoints: FILE-only (URL types don't need them)
-- [ ] Task 7: **Remove `evidenceUrl` from Bulk Issuance CSV** (REVISED — PO decision 2026-02-22)
-  - [ ] `csv-parser.service.ts`: Remove `evidenceUrl` from `optionalHeaders`, remove URL validation logic
-  - [ ] `BulkIssuanceRow` DTO: Remove `evidenceUrl` field
-  - [ ] `badge-issuance.service.ts` → `bulkIssueBadges()`: Stop passing `evidenceUrl` to `issueBadge()`
-  - [ ] `BulkPreviewTable.tsx`: Remove evidence URL column
-  - [ ] Clean up all bulk issuance tests (20+ references to evidenceUrl — DELETE, not convert)
-  - [ ] **Rationale:** Evidence will be attached post-issuance via two-step grouped flow (Story 12.6, Tasks 7–10). CSV simplified to `recipientEmail, templateId, expiresIn` only.
-- [ ] Task 8: Tests (AC: #7)
-  - [ ] Unit tests for migration script (mock Prisma, test idempotency)
-  - [ ] Unit tests for unified evidence retrieval
-  - [ ] Integration tests for issuance with file + URL
-  - [ ] Bulk issuance evidence tests
-  - [ ] E2E impact assessment: `grep evidenceUrl` across frontend + test files
+- [x] Task 5: Update verification endpoint (AC: #6)
+  - [x] FILE type: generate SAS token URL
+  - [x] URL type: return direct URL (sourceUrl)
+- [x] Task 6: Extend evidence controller for URL-type evidence
+  - [x] `POST /api/badges/:badgeId/evidence/url` — dedicated endpoint for URL evidence (separate from multipart upload)
+  - [x] Existing download/preview endpoints: FILE-only (URL types rejected with 400)
+- [x] Task 7: **Remove `evidenceUrl` from Bulk Issuance CSV** (REVISED — PO decision 2026-02-22)
+  - [x] `csv-parser.service.ts`: Remove `evidenceUrl` from `optionalHeaders`, remove URL validation logic
+  - [x] `BulkIssuanceRow` DTO: Remove `evidenceUrl` field
+  - [x] `badge-issuance.service.ts` → `bulkIssueBadges()`: Stop passing `evidenceUrl` to `issueBadge()`
+  - [x] `BulkPreviewTable.tsx`: Remove evidence URL column
+  - [x] Clean up all bulk issuance tests (20+ references to evidenceUrl — DELETE, not convert)
+  - [x] **Rationale:** Evidence will be attached post-issuance via two-step grouped flow (Story 12.6, Tasks 7–10). CSV simplified to `recipientEmail, templateId, expiresIn` only.
+- [x] Task 8: Tests (AC: #7)
+  - [x] Unit tests for migration script (mock Prisma, test idempotency)
+  - [x] Unit tests for unified evidence retrieval
+  - [x] Integration tests for issuance with file + URL
+  - [x] Bulk issuance evidence tests
+  - [x] E2E impact assessment: `grep evidenceUrl` across frontend + test files
 
 ## Dev Notes
 
