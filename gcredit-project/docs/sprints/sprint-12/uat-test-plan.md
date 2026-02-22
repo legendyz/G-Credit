@@ -23,27 +23,28 @@
 ### Steps
 
 1. **Database reset & seed:**
-   ```bash
-   cd gcredit-project/backend
+   ```powershell
+   cd c:\G_Credit\CODE\gcredit-project\backend
    npx prisma migrate reset --force
    ```
    This runs all migrations + executes the seed script automatically.
 
 2. **Start backend:**
-   ```bash
+   ```powershell
+   cd c:\G_Credit\CODE\gcredit-project\backend
    npm run start:dev
    # Verify: http://localhost:3000/health returns { status: "ok" }
    ```
 
 3. **Start frontend:**
-   ```bash
-   cd gcredit-project/frontend
+   ```powershell
+   cd c:\G_Credit\CODE\gcredit-project\frontend
    npm run dev
    # Verify: http://localhost:5173 loads login page
    ```
 
 4. **JWT Token expiry (optional):**
-   - For extended UAT sessions, edit `backend/.env`:
+   - For extended UAT sessions, edit `c:\G_Credit\CODE\gcredit-project\backend\.env`:
      ```
      JWT_ACCESS_EXPIRES_IN="4h"
      ```
@@ -99,21 +100,21 @@
 ### Skill Categories (12) — Tree View
 
 ```
-├─ 🔒 技术技能 / Technical Skills (blue, L1)         ← system-defined
-│   ├─ 🔒 编程语言 / Programming Languages (blue, L2)
+├─ 🔒 Technical Skills (blue, L1)                          ← system-defined
+│   ├─ 🔒 Programming Languages (blue, L2)
 │   │      Skills: TypeScript (INT), AI (INT)
-│   └─ 🔒 云平台 / Cloud Platforms (cyan, L2)
+│   └─ 🔒 Cloud Platforms (cyan, L2)
 │       │  Skills: Azure Cloud (ADV), Docker (INT)
 │       └─ AWS / Amazon Web Services (orange, L3)     ← user-defined, editable
 │              Skills: (none)
-├─ 🔒 软技能 / Soft Skills (amber, L1)
-│   ├─ 🔒 沟通能力 / Communication (amber, L2)
+├─ 🔒 Soft Skills (amber, L1)
+│   ├─ 🔒 Communication (amber, L2)
 │   │      Skills: Public Speaking (BEG), Negotiation (ADV)
-│   └─ 🔒 领导力 / Leadership (orange, L2)
+│   └─ 🔒 Leadership (orange, L2)
 │          Skills: Team Leadership (EXP)
-├─ 🔒 行业知识 / Domain Knowledge (emerald, L1)       ← no sub-categories, no skills
-├─ 🔒 公司特定能力 / Company-Specific (violet, L1)    ← no sub-categories, no skills
-├─ 🔒 通用职业技能 / Professional Skills (cyan, L1)
+├─ 🔒 Domain Knowledge (emerald, L1)                 ← no sub-categories, no skills
+├─ 🔒 Company-Specific Competencies (violet, L1)     ← no sub-categories, no skills
+├─ 🔒 Professional Skills (cyan, L1)
 │      Skills: Project Management (ADV)
 ├─ Internal Tools (rose, L1)                          ← user-defined, editable
 │      Skills: G-Credit Platform (BEG)
@@ -129,10 +130,10 @@
 
 | Skill Name | Category (L2/L1) | Level | Used by Templates | Deletable? |
 |------------|-------------------|-------|-------------------|-----------|
-| TypeScript | Programming Lang. | INT | tmpl1, tmpl6, tmpl7 | ❌ |
+| TypeScript | Programming Languages | INT | tmpl1, tmpl6, tmpl7 | ❌ |
 | Azure Cloud | Cloud Platforms | ADV | tmpl1, tmpl6 | ❌ |
 | Docker | Cloud Platforms | INT | tmpl1, tmpl6 | ❌ |
-| AI | Programming Lang. | INT | tmpl1, tmpl7 | ❌ |
+| AI | Programming Languages | INT | tmpl1, tmpl7 | ❌ |
 | Public Speaking | Communication | BEG | tmpl2, tmpl8, tmpl9 | ❌ |
 | Team Leadership | Leadership | EXP | tmpl2, tmpl8 | ❌ |
 | Project Management | Professional Skills | ADV | tmpl5, tmpl8, tmpl9 | ❌ |
@@ -190,7 +191,7 @@
 | First Badge | BADGE_COUNT | global | 1 | ✅ | 🏆 |
 | Badge Collector | BADGE_COUNT | global | 5 | ✅ | ⭐ |
 | Well-Rounded Learner | CATEGORY_COUNT | global | 3 | ✅ | 🌟 |
-| Cloud Specialist | BADGE_COUNT | category (技术技能) | 3 | ✅ | ☁️ |
+| Cloud Specialist | BADGE_COUNT | category (Technical Skills) | 3 | ✅ | ☁️ |
 | Badge Master | BADGE_COUNT | global | 10 | ❌ inactive | 👑 |
 
 ### Milestone Progress per User (expected)
@@ -230,9 +231,9 @@
 
 | Step | Test Case(s) | Login As | What to Check |
 |------|-------------|----------|---------------|
-| 1 | UAT-S12-001 | Admin | Category tree shows 3 levels: 技术技能 → 云平台 → AWS |
+| 1 | UAT-S12-001 | Admin | Category tree shows 3 levels: Technical Skills → Cloud Platforms → AWS |
 | 2 | UAT-S12-007 | Admin | System categories (5 L1 + 4 L2) show 🔒 icon, no delete |
-| 3 | UAT-S12-008 | Admin | Skills page: click 编程语言 → shows TypeScript + AI |
+| 3 | UAT-S12-008 | Admin | Skills page: click Programming Languages → shows TypeScript + AI |
 | 4 | UAT-S12-011 | Admin | Skill tags show colored badges matching category tree colors |
 | 5 | UAT-S12-012 | Admin | Users table: 5 rows, all Source=Local (gray badge) |
 | 6 | UAT-S12-016 | Admin | Milestones: 3 global cards + 1 category card (Cloud Specialist). Badge Master is grayed/hidden (inactive) |
@@ -347,10 +348,10 @@ All other test cases work with **local-only** users. No M365 configuration neede
 
 ### When Viewing Skill Category Tree (UAT-S12-001)
 - Expect **7 top-level** nodes (5 system 🔒 + 2 custom)
-- Expand **技术技能** → 2 children (编程语言, 云平台)
-- Expand **云平台** → 1 child (AWS) — this proves **3 levels**
-- Expand **软技能** → 2 children (沟通能力, 领导力)
-- Skill counts per node: 编程语言=2, 云平台=2, 沟通能力=2, 领导力=1, Professional Skills=1, Internal Tools=1
+- Expand **Technical Skills** → 2 children (Programming Languages, Cloud Platforms)
+- Expand **Cloud Platforms** → 1 child (AWS) — this proves **3 levels**
+- Expand **Soft Skills** → 2 children (Communication, Leadership)
+- Skill counts per node: Programming Languages=2, Cloud Platforms=2, Communication=2, Leadership=1, Professional Skills=1, Internal Tools=1
 
 ### When Viewing Users Table (UAT-S12-012)
 - Expect **5 rows**: Admin User (ADMIN), Demo Issuer (ISSUER), Team Manager (MANAGER), Demo Employee (EMPLOYEE), Demo Employee2 (EMPLOYEE)

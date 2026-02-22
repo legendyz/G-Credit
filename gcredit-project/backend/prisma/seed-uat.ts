@@ -346,9 +346,9 @@ async function main() {
     prisma.skillCategory.create({
       data: {
         id: IDS.scatTech,
-        name: '技术技能',
+        name: 'Technical Skills',
         nameEn: 'Technical Skills',
-        description: '编程、开发工具、云平台等技术相关能力',
+        description: 'Programming, development tools, cloud platforms and other technical competencies',
         color: 'blue',
         level: 1,
         isSystemDefined: true,
@@ -359,9 +359,9 @@ async function main() {
     prisma.skillCategory.create({
       data: {
         id: IDS.scatSoft,
-        name: '软技能',
+        name: 'Soft Skills',
         nameEn: 'Soft Skills',
-        description: '沟通、领导力、团队协作等人际交往能力',
+        description: 'Communication, leadership, teamwork and other interpersonal competencies',
         color: 'amber',
         level: 1,
         isSystemDefined: true,
@@ -372,9 +372,9 @@ async function main() {
     prisma.skillCategory.create({
       data: {
         id: IDS.scatDomain,
-        name: '行业知识',
+        name: 'Domain Knowledge',
         nameEn: 'Domain Knowledge',
-        description: '特定行业的专业知识与经验',
+        description: 'Industry-specific professional knowledge and experience',
         color: 'emerald',
         level: 1,
         isSystemDefined: true,
@@ -385,9 +385,9 @@ async function main() {
     prisma.skillCategory.create({
       data: {
         id: IDS.scatCompany,
-        name: '公司特定能力',
+        name: 'Company-Specific Competencies',
         nameEn: 'Company-Specific Competencies',
-        description: '企业文化、内部流程、专有工具等公司特有的能力要求',
+        description: 'Corporate culture, internal processes, proprietary tools and other company-specific competencies',
         color: 'violet',
         level: 1,
         isSystemDefined: true,
@@ -398,9 +398,9 @@ async function main() {
     prisma.skillCategory.create({
       data: {
         id: IDS.scatProfessional,
-        name: '通用职业技能',
+        name: 'Professional Skills',
         nameEn: 'Professional Skills',
-        description: '项目管理、数据分析等跨行业的通用职业技能',
+        description: 'Project management, data analysis and other cross-industry professional skills',
         color: 'cyan',
         level: 1,
         isSystemDefined: true,
@@ -418,7 +418,7 @@ async function main() {
     prisma.skillCategory.create({
       data: {
         id: IDS.scatProgramming,
-        name: '编程语言',
+        name: 'Programming Languages',
         nameEn: 'Programming Languages',
         color: 'blue',
         level: 2,
@@ -431,7 +431,7 @@ async function main() {
     prisma.skillCategory.create({
       data: {
         id: IDS.scatCloud,
-        name: '云平台',
+        name: 'Cloud Platforms',
         nameEn: 'Cloud Platforms',
         color: 'cyan',
         level: 2,
@@ -444,7 +444,7 @@ async function main() {
     prisma.skillCategory.create({
       data: {
         id: IDS.scatCommunication,
-        name: '沟通能力',
+        name: 'Communication',
         nameEn: 'Communication',
         color: 'amber',
         level: 2,
@@ -457,7 +457,7 @@ async function main() {
     prisma.skillCategory.create({
       data: {
         id: IDS.scatLeadership,
-        name: '领导力',
+        name: 'Leadership',
         nameEn: 'Leadership',
         color: 'orange',
         level: 2,

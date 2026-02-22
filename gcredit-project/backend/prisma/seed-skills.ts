@@ -6,89 +6,89 @@ const prisma = new PrismaClient();
  * Sprint 2: Seed 5 System-Defined Skill Categories
  * 
  * Categories:
- * 1. 技术技能 (Technical Skills)
- * 2. 软技能 (Soft Skills)
- * 3. 行业知识 (Domain Knowledge)
- * 4. 公司特定能力 (Company-Specific Competencies) - User's custom addition
- * 5. 通用职业技能 (Professional Skills)
+ * 1. Technical Skills
+ * 2. Soft Skills
+ * 3. Domain Knowledge
+ * 4. Company-Specific Competencies - User's custom addition
+ * 5. Professional Skills
  */
 async function seedSkillCategories() {
   console.log('🌱 Seeding skill categories...\n');
 
   const categories = [
     {
-      name: '技术技能',
+      name: 'Technical Skills',
       nameEn: 'Technical Skills',
-      description: '编程、开发工具、云平台等技术相关能力',
+      description: 'Programming, development tools, cloud platforms and other technical competencies',
       level: 1,
       isSystemDefined: true,
       isEditable: false,
       displayOrder: 1,
       children: [
-        { name: '编程语言', nameEn: 'Programming Languages', level: 2, displayOrder: 1 },
-        { name: '开发工具', nameEn: 'Development Tools', level: 2, displayOrder: 2 },
-        { name: '云平台', nameEn: 'Cloud Platforms', level: 2, displayOrder: 3 },
-        { name: '数据库', nameEn: 'Databases', level: 2, displayOrder: 4 },
+        { name: 'Programming Languages', nameEn: 'Programming Languages', level: 2, displayOrder: 1 },
+        { name: 'Development Tools', nameEn: 'Development Tools', level: 2, displayOrder: 2 },
+        { name: 'Cloud Platforms', nameEn: 'Cloud Platforms', level: 2, displayOrder: 3 },
+        { name: 'Databases', nameEn: 'Databases', level: 2, displayOrder: 4 },
       ],
     },
     {
-      name: '软技能',
+      name: 'Soft Skills',
       nameEn: 'Soft Skills',
-      description: '沟通、领导力、团队协作等人际交往能力',
+      description: 'Communication, leadership, teamwork and other interpersonal competencies',
       level: 1,
       isSystemDefined: true,
       isEditable: false,
       displayOrder: 2,
       children: [
-        { name: '沟通能力', nameEn: 'Communication', level: 2, displayOrder: 1 },
-        { name: '领导力', nameEn: 'Leadership', level: 2, displayOrder: 2 },
-        { name: '团队协作', nameEn: 'Teamwork', level: 2, displayOrder: 3 },
-        { name: '问题解决', nameEn: 'Problem Solving', level: 2, displayOrder: 4 },
+        { name: 'Communication', nameEn: 'Communication', level: 2, displayOrder: 1 },
+        { name: 'Leadership', nameEn: 'Leadership', level: 2, displayOrder: 2 },
+        { name: 'Teamwork', nameEn: 'Teamwork', level: 2, displayOrder: 3 },
+        { name: 'Problem Solving', nameEn: 'Problem Solving', level: 2, displayOrder: 4 },
       ],
     },
     {
-      name: '行业知识',
+      name: 'Domain Knowledge',
       nameEn: 'Domain Knowledge',
-      description: '特定行业的专业知识与经验',
+      description: 'Industry-specific professional knowledge and experience',
       level: 1,
       isSystemDefined: true,
       isEditable: false,
       displayOrder: 3,
       children: [
-        { name: '金融', nameEn: 'Finance', level: 2, displayOrder: 1 },
-        { name: '医疗', nameEn: 'Healthcare', level: 2, displayOrder: 2 },
-        { name: '教育', nameEn: 'Education', level: 2, displayOrder: 3 },
-        { name: '制造', nameEn: 'Manufacturing', level: 2, displayOrder: 4 },
+        { name: 'Finance', nameEn: 'Finance', level: 2, displayOrder: 1 },
+        { name: 'Healthcare', nameEn: 'Healthcare', level: 2, displayOrder: 2 },
+        { name: 'Education', nameEn: 'Education', level: 2, displayOrder: 3 },
+        { name: 'Manufacturing', nameEn: 'Manufacturing', level: 2, displayOrder: 4 },
       ],
     },
     {
-      name: '公司特定能力',
+      name: 'Company-Specific Competencies',
       nameEn: 'Company-Specific Competencies',
-      description: '企业文化、内部流程、专有工具等公司特有的能力要求',
+      description: 'Corporate culture, internal processes, proprietary tools and other company-specific competencies',
       level: 1,
       isSystemDefined: true,
       isEditable: false,
       displayOrder: 4,
       children: [
-        { name: '企业文化', nameEn: 'Corporate Culture', level: 2, displayOrder: 1 },
-        { name: '内部流程', nameEn: 'Internal Processes', level: 2, displayOrder: 2 },
-        { name: '专有工具', nameEn: 'Proprietary Tools', level: 2, displayOrder: 3 },
-        { name: '合规要求', nameEn: 'Compliance', level: 2, displayOrder: 4 },
+        { name: 'Corporate Culture', nameEn: 'Corporate Culture', level: 2, displayOrder: 1 },
+        { name: 'Internal Processes', nameEn: 'Internal Processes', level: 2, displayOrder: 2 },
+        { name: 'Proprietary Tools', nameEn: 'Proprietary Tools', level: 2, displayOrder: 3 },
+        { name: 'Compliance', nameEn: 'Compliance', level: 2, displayOrder: 4 },
       ],
     },
     {
-      name: '通用职业技能',
+      name: 'Professional Skills',
       nameEn: 'Professional Skills',
-      description: '项目管理、数据分析等跨行业的通用职业技能',
+      description: 'Project management, data analysis and other cross-industry professional skills',
       level: 1,
       isSystemDefined: true,
       isEditable: false,
       displayOrder: 5,
       children: [
-        { name: '项目管理', nameEn: 'Project Management', level: 2, displayOrder: 1 },
-        { name: '数据分析', nameEn: 'Data Analysis', level: 2, displayOrder: 2 },
-        { name: '商务演讲', nameEn: 'Business Presentation', level: 2, displayOrder: 3 },
-        { name: '时间管理', nameEn: 'Time Management', level: 2, displayOrder: 4 },
+        { name: 'Project Management', nameEn: 'Project Management', level: 2, displayOrder: 1 },
+        { name: 'Data Analysis', nameEn: 'Data Analysis', level: 2, displayOrder: 2 },
+        { name: 'Business Presentation', nameEn: 'Business Presentation', level: 2, displayOrder: 3 },
+        { name: 'Time Management', nameEn: 'Time Management', level: 2, displayOrder: 4 },
       ],
     },
   ];
@@ -126,13 +126,13 @@ async function seedSkillCategories() {
 async function seedSampleSkills() {
   console.log('🌱 Seeding sample skills...\n');
 
-  // Find "编程语言" category
+  // Find "Programming Languages" category
   const programmingCategory = await prisma.skillCategory.findFirst({
-    where: { name: '编程语言' },
+    where: { name: 'Programming Languages' },
   });
 
   if (programmingCategory) {
-    console.log('📁 Creating skills for: 编程语言');
+    console.log('📁 Creating skills for: Programming Languages');
     
     const skills = [
       { name: 'JavaScript', level: 'INTERMEDIATE' },
@@ -154,13 +154,13 @@ async function seedSampleSkills() {
     }
   }
 
-  // Find "云平台" category
+  // Find "Cloud Platforms" category
   const cloudCategory = await prisma.skillCategory.findFirst({
-    where: { name: '云平台' },
+    where: { name: 'Cloud Platforms' },
   });
 
   if (cloudCategory) {
-    console.log('\n📁 Creating skills for: 云平台');
+    console.log('\n📁 Creating skills for: Cloud Platforms');
     
     const skills = [
       { name: 'Azure', level: 'INTERMEDIATE' },
