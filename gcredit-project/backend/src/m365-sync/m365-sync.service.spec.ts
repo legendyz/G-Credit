@@ -1347,10 +1347,8 @@ describe('M365SyncService', () => {
       const mockGet = jest
         .fn()
         .mockResolvedValueOnce({
-          value: [
-            { id: ADMIN_GROUP_ID, '@odata.type': '#microsoft.graph.group' },
-          ],
-        }) // getUserRoleFromGroups
+          value: [{ id: 'azure-id-123' }],
+        }) // getGroupMembers (batch) — returns member azureIds
         .mockRejectedValueOnce({ statusCode: 404 }); // /manager
       const mockApi = jest.fn().mockReturnValue({ get: mockGet });
       (Client.initWithMiddleware as jest.Mock).mockReturnValue({
