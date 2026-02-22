@@ -38,6 +38,8 @@ describe('AdminUsersController', () => {
     badgeCount: 0,
     lastSyncAt: null,
     managerId: null,
+    managerName: null,
+    managerEmail: null,
     failedLoginAttempts: 0,
     lockedUntil: null,
   };
