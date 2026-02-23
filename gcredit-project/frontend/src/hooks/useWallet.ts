@@ -41,6 +41,7 @@ export interface Badge {
 export interface Milestone {
   type: 'milestone';
   milestoneId: string;
+  icon?: string;
   title: string;
   description: string;
   achievedAt: string;

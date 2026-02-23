@@ -1129,7 +1129,8 @@ export class BadgeIssuanceService {
       sortDate: m.achievedAt,
       data: {
         milestoneId: m.milestoneId,
-        title: `${m.milestone.icon} ${m.milestone.title}`,
+        icon: m.milestone.icon || '🏅',
+        title: m.milestone.title,
         description: m.milestone.description,
         achievedAt: m.achievedAt,
       },
