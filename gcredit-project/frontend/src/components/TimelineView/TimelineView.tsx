@@ -34,6 +34,7 @@ function isBadge(item: { type?: string }): item is Badge {
 
 export function TimelineView() {
   const [viewMode, setViewMode] = useState<ViewMode>('timeline');
+  const [selectedDateGroup, setSelectedDateGroup] = useState<string | null>(null);
 
   // Fetch all badges initially (status filter will be handled by search)
   const { data, isLoading, error } = useWallet({});
@@ -118,6 +119,36 @@ export function TimelineView() {
     const filteredIds = new Set(filteredBadges.map((b) => b.id));
     return data.data.filter(isBadge).filter((badge) => filteredIds.has(badge.id));
   }, [data, filteredBadges]);
+
+  // Grid view: further filter by selected date group
+  const gridDisplayBadges: Badge[] = useMemo(() => {
+    if (!selectedDateGroup) return displayBadges;
+    return displayBadges.filter((badge) => {
+      const date = new Date(badge.issuedAt);
+      const label = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+      return label === selectedDateGroup;
+    });
+  }, [displayBadges, selectedDateGroup]);
+
+  // Handle date group click: scroll in timeline mode, filter in grid mode
+  const handleDateGroupClick = useCallback(
+    (label: string) => {
+      if (viewMode === 'grid') {
+        setSelectedDateGroup((prev) => (prev === label ? null : label));
+      } else {
+        const element = document.getElementById(`group-${label}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    },
+    [viewMode]
+  );
+
+  // Clear date group selection when switching view modes
+  useEffect(() => {
+    setSelectedDateGroup(null);
+  }, [viewMode]);
 
   // Story 12.4: Extract milestone items from wallet data for timeline rendering
   const milestoneItems: Milestone[] = useMemo(() => {
@@ -227,6 +258,8 @@ export function TimelineView() {
         {/* Date Navigation Sidebar - AC 1.6 (hidden on mobile, visible on desktop) */}
         <DateNavigationSidebar
           dateGroups={dateGroups}
+          selectedLabel={selectedDateGroup}
+          onSelect={handleDateGroupClick}
           className="hidden lg:block w-60 flex-shrink-0"
         />
 
@@ -360,7 +393,7 @@ export function TimelineView() {
                   ))}
                 </div>
               )}
-              <GridView badges={displayBadges} />
+              <GridView badges={gridDisplayBadges} />
             </>
           )}
         </div>
