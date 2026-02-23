@@ -35,9 +35,10 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
-    // 1. Check if email already exists
+    // 1. Check if email already exists (case-insensitive)
+    const normalizedEmail = dto.email.toLowerCase();
     const existingUser = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+      where: { email: normalizedEmail },
     });
 
     if (existingUser) {
@@ -51,7 +52,7 @@ export class AuthService {
     // Privilege escalation must go through admin approval workflow
     const user = await this.prisma.user.create({
       data: {
-        email: dto.email,
+        email: normalizedEmail,
         passwordHash,
         firstName: dto.firstName,
         lastName: dto.lastName,
@@ -100,9 +101,10 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    // 1. Find user by email
+    // 1. Find user by email (case-insensitive — M365 sync stores lowercase)
+    const normalizedEmail = dto.email.toLowerCase();
     const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+      where: { email: normalizedEmail },
     });
 
     if (!user) {
