@@ -37,6 +37,7 @@ import {
   Lock,
   User as UserIcon,
   Eye,
+  Award,
 } from 'lucide-react';
 
 type StatusFilter = 'ALL' | TemplateStatus;
@@ -392,6 +393,19 @@ export function BadgeTemplateListPage() {
                       ? `Valid for ${template.validityPeriod} days`
                       : '\u00A0'}
                   </p>
+
+                  {/* Badge Stats */}
+                  {template.badgeStats && template.badgeStats.total > 0 && (
+                    <div className="flex items-center gap-1.5 text-xs text-neutral-600 mt-1">
+                      <Award className="h-3.5 w-3.5 text-brand-500 flex-shrink-0" />
+                      <span>{template.badgeStats.total} issued</span>
+                      {template.badgeStats.pending > 0 && (
+                        <span className="text-amber-600 font-medium">
+                          · {template.badgeStats.pending} pending
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   {/* Actions - always at bottom */}
                   <div className="flex items-center gap-2 pt-2 mt-auto border-t border-neutral-100">

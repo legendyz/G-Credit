@@ -161,12 +161,46 @@ export class BadgeTemplatesService {
           updater: {
             select: this.userSelect,
           },
+          _count: {
+            select: {
+              badges: true,
+            },
+          },
         },
       }),
       this.prisma.badgeTemplate.count({ where }),
     ]);
 
-    return createPaginatedResponse(data, total, page, limit);
+    // Fetch pending counts for templates that have badges
+    const templateIds = data
+      .filter((t) => t._count.badges > 0)
+      .map((t) => t.id);
+
+    let pendingMap: Record<string, number> = {};
+    if (templateIds.length > 0) {
+      const pendingCounts = await this.prisma.badge.groupBy({
+        by: ['templateId'],
+        where: {
+          templateId: { in: templateIds },
+          status: 'PENDING',
+        },
+        _count: true,
+      });
+      pendingMap = Object.fromEntries(
+        pendingCounts.map((r) => [r.templateId, r._count]),
+      );
+    }
+
+    // Merge badge stats into response
+    const dataWithStats = data.map((t) => ({
+      ...t,
+      badgeStats: {
+        total: t._count.badges,
+        pending: pendingMap[t.id] ?? 0,
+      },
+    }));
+
+    return createPaginatedResponse(dataWithStats, total, page, limit);
   }
 
   /**

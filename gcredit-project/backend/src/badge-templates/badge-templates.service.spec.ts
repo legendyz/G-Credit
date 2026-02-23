@@ -41,7 +41,7 @@ describe('BadgeTemplatesService', () => {
       count: jest.Mock;
     };
     skill: { findMany: jest.Mock };
-    badge: { count: jest.Mock };
+    badge: { count: jest.Mock; groupBy: jest.Mock };
   };
   let blobStorage: {
     uploadImage: jest.Mock;
@@ -96,7 +96,7 @@ describe('BadgeTemplatesService', () => {
               count: jest.fn(),
             },
             skill: { findMany: jest.fn() },
-            badge: { count: jest.fn() },
+            badge: { count: jest.fn(), groupBy: jest.fn() },
           },
         },
         {
@@ -270,13 +270,24 @@ describe('BadgeTemplatesService', () => {
 
   // ==================== findAll ====================
   describe('findAll', () => {
+    const mockTemplateWithCount = {
+      ...mockTemplate,
+      _count: { badges: 0 },
+    };
+
+    beforeEach(() => {
+      // Default: no pending badges for any template
+      prisma.badge.groupBy.mockResolvedValue([]);
+    });
+
     it('should return paginated results with default params', async () => {
-      prisma.badgeTemplate.findMany.mockResolvedValue([mockTemplate]);
+      prisma.badgeTemplate.findMany.mockResolvedValue([mockTemplateWithCount]);
       prisma.badgeTemplate.count.mockResolvedValue(1);
 
       const result = await service.findAll({ page: 1, limit: 10 });
 
       expect(result.data).toHaveLength(1);
+      expect(result.data[0].badgeStats).toEqual({ total: 0, pending: 0 });
       expect(result.meta).toEqual({
         page: 1,
         limit: 10,
@@ -376,7 +387,7 @@ describe('BadgeTemplatesService', () => {
 
     it('should calculate pagination meta correctly', async () => {
       prisma.badgeTemplate.findMany.mockResolvedValue(
-        Array(10).fill(mockTemplate),
+        Array(10).fill(mockTemplateWithCount),
       );
       prisma.badgeTemplate.count.mockResolvedValue(25);
 
@@ -401,6 +412,31 @@ describe('BadgeTemplatesService', () => {
       expect(result.data).toEqual([]);
       expect(result.meta.total).toBe(0);
       expect(result.meta.totalPages).toBe(0);
+    });
+
+    it('should include badgeStats with pending count', async () => {
+      const templateWithBadges = {
+        ...mockTemplate,
+        _count: { badges: 5 },
+      };
+      prisma.badgeTemplate.findMany.mockResolvedValue([templateWithBadges]);
+      prisma.badgeTemplate.count.mockResolvedValue(1);
+      prisma.badge.groupBy.mockResolvedValue([
+        { templateId: 'tmpl-1', _count: 2 },
+      ]);
+
+      const result = await service.findAll({ page: 1, limit: 10 });
+
+      expect(result.data[0].badgeStats).toEqual({ total: 5, pending: 2 });
+      expect(prisma.badge.groupBy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          by: ['templateId'],
+          where: {
+            templateId: { in: ['tmpl-1'] },
+            status: 'PENDING',
+          },
+        }),
+      );
     });
 
     it('should apply sort order', async () => {
