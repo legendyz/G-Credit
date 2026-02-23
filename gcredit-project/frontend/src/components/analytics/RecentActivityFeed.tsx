@@ -17,7 +17,9 @@ const ACTIVITY_CONFIG: Record<ActivityType, { icon: string; verb: string }> = {
   BADGE_REVOKED: { icon: '🚫', verb: 'revoked' },
   BADGE_SHARED: { icon: '📤', verb: 'shared' },
   TEMPLATE_CREATED: { icon: '📝', verb: 'created template' },
+  TEMPLATE_UPDATED: { icon: '✏️', verb: 'updated template' },
   USER_REGISTERED: { icon: '👤', verb: 'registered' },
+  USER_UPDATED: { icon: '🔧', verb: 'updated user' },
 };
 
 function formatRelativeTime(isoStr: string): string {
@@ -36,24 +38,41 @@ function formatRelativeTime(isoStr: string): string {
 }
 
 function buildDescription(activity: ActivityItem): string {
-  const config = ACTIVITY_CONFIG[activity.type] || { verb: activity.type };
   const actor = activity.actor.name;
   const templateName = activity.target?.badgeTemplateName || activity.target?.templateName || '';
   const targetName = activity.target?.name || '';
 
   switch (activity.type) {
     case 'BADGE_ISSUED':
-      return `${actor} ${config.verb} "${templateName}" to ${targetName}`;
+      return templateName && targetName
+        ? `${actor} issued "${templateName}" to ${targetName}`
+        : templateName
+          ? `${actor} issued "${templateName}"`
+          : `${actor} issued a badge`;
     case 'BADGE_CLAIMED':
-      return `${actor} ${config.verb} "${templateName}"`;
+      return templateName ? `${actor} claimed "${templateName}"` : `${actor} claimed a badge`;
     case 'BADGE_REVOKED':
-      return `${actor} ${config.verb} "${templateName}" from ${targetName}`;
+      return templateName && targetName
+        ? `${actor} revoked "${templateName}" from ${targetName}`
+        : templateName
+          ? `${actor} revoked "${templateName}"`
+          : `${actor} revoked a badge`;
     case 'BADGE_SHARED':
-      return `${actor} ${config.verb} "${templateName}" via email`;
+      return templateName
+        ? `${actor} shared "${templateName}" via email`
+        : `${actor} shared a badge via email`;
     case 'TEMPLATE_CREATED':
-      return `${actor} ${config.verb} "${templateName}"`;
+      return templateName
+        ? `${actor} created template "${templateName}"`
+        : `${actor} created a template`;
+    case 'TEMPLATE_UPDATED':
+      return templateName
+        ? `${actor} updated template "${templateName}"`
+        : `${actor} updated a template`;
     case 'USER_REGISTERED':
-      return `${actor} ${config.verb}`;
+      return `${actor} registered`;
+    case 'USER_UPDATED':
+      return `${actor} updated user settings`;
     default:
       return `${actor} performed ${activity.type}`;
   }

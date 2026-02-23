@@ -507,6 +507,34 @@ export class AnalyticsService {
       ]),
     );
 
+    // Batch-fetch badge details (template name + recipient name) for Badge entities
+    const badgeEntityIds = [
+      ...new Set(
+        auditLogs
+          .filter((l) => l.entityType === 'Badge')
+          .map((l) => l.entityId),
+      ),
+    ];
+    const badges =
+      badgeEntityIds.length > 0
+        ? await this.prisma.badge.findMany({
+            where: { id: { in: badgeEntityIds } },
+            select: {
+              id: true,
+              template: { select: { name: true } },
+              recipient: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                },
+              },
+            },
+          })
+        : [];
+    const badgeMap = new Map(badges.map((b) => [b.id, b]));
+
     // Transform to activity items
     const activities = auditLogs.map((log) => {
       // Map action to activity type
@@ -516,12 +544,35 @@ export class AnalyticsService {
         REVOKED: 'BADGE_REVOKED',
         SHARED: 'BADGE_SHARED',
         CREATED:
-          log.entityType === 'Template'
+          log.entityType === 'BadgeTemplate' || log.entityType === 'Template'
             ? 'TEMPLATE_CREATED'
             : 'USER_REGISTERED',
+        UPDATED:
+          log.entityType === 'BadgeTemplate' || log.entityType === 'Template'
+            ? 'TEMPLATE_UPDATED'
+            : 'USER_UPDATED',
       };
 
       const metadata = log.metadata as Record<string, unknown> | null;
+      const badge = badgeMap.get(log.entityId);
+
+      // Resolve template name from metadata or badge lookup
+      const templateName =
+        (metadata?.templateName as string) ||
+        (metadata?.badgeName as string) ||
+        badge?.template?.name ||
+        undefined;
+
+      // Resolve recipient name from metadata or badge lookup
+      const recipientName =
+        (metadata?.recipientName as string) ||
+        (badge?.recipient
+          ? `${badge.recipient.firstName || ''} ${badge.recipient.lastName || ''}`.trim() ||
+            badge.recipient.email
+          : undefined);
+
+      const recipientId =
+        (metadata?.recipientId as string) || badge?.recipient?.id || undefined;
 
       return {
         id: log.id,
@@ -530,14 +581,23 @@ export class AnalyticsService {
           userId: log.actorId,
           name: actorMap.get(log.actorId) || log.actorEmail || 'Unknown',
         },
-        target: metadata
-          ? {
-              userId: metadata.recipientId as string | undefined,
-              name: metadata.recipientName as string | undefined,
-              badgeTemplateName: metadata.templateName as string | undefined,
-              templateName: metadata.templateName as string | undefined,
-            }
-          : undefined,
+        target:
+          templateName || recipientName
+            ? {
+                userId: recipientId,
+                name: recipientName,
+                badgeTemplateName: templateName,
+                templateName: templateName,
+              }
+            : metadata
+              ? {
+                  userId: undefined,
+                  name: undefined,
+                  badgeTemplateName:
+                    (metadata.templateName as string) || undefined,
+                  templateName: (metadata.templateName as string) || undefined,
+                }
+              : undefined,
         timestamp: log.timestamp.toISOString(),
       };
     });

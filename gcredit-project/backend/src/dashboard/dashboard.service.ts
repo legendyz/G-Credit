@@ -43,14 +43,14 @@ export class DashboardService {
     // (Code Review #3: avoid emitting strings like 'Badge "" issued to ')
     switch (action) {
       case 'ISSUED': {
-        const name = s('badgeName');
+        const name = s('badgeName') || s('templateName');
         const email = s('recipientEmail');
         return name && email ? `Badge "${name}" issued to ${email}` : action;
       }
       case 'CLAIMED':
         return `Badge status changed: ${s('oldStatus') || '?'} → ${s('newStatus') || '?'}`;
       case 'REVOKED': {
-        const name = s('badgeName');
+        const name = s('badgeName') || s('templateName');
         return name
           ? `Revoked "${name}" — ${s('reason') || 'no reason given'}`
           : action;

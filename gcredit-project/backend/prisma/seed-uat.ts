@@ -1197,7 +1197,7 @@ async function main() {
   console.log('✅ 5 milestone configs created (3 active global, 1 active category, 1 inactive)');
 
   // ========================================
-  // 6. AUDIT LOGS (3 entries for revocation)
+  // 6. AUDIT LOGS (9 entries covering all action types)
   // ========================================
 
   await prisma.auditLog.createMany({
@@ -1210,8 +1210,11 @@ async function main() {
         actorEmail: 'issuer@gcredit.com',
         timestamp: twoMonthsAgo,
         metadata: {
+          badgeName: 'Cloud Expert Certification',
           templateName: 'Cloud Expert Certification',
           recipientEmail: 'employee@gcredit.com',
+          recipientName: 'Demo Employee',
+          templateId: IDS.tmpl1,
         },
       },
       {
@@ -1221,7 +1224,12 @@ async function main() {
         actorId: employee.id,
         actorEmail: 'employee@gcredit.com',
         timestamp: new Date(twoMonthsAgo.getTime() + 2 * 24 * 60 * 60 * 1000),
-        metadata: { oldStatus: 'PENDING', newStatus: 'CLAIMED' },
+        metadata: {
+          oldStatus: 'PENDING',
+          newStatus: 'CLAIMED',
+          badgeName: 'Cloud Expert Certification',
+          templateName: 'Cloud Expert Certification',
+        },
       },
       {
         entityType: 'Badge',
@@ -1231,8 +1239,11 @@ async function main() {
         actorEmail: 'issuer@gcredit.com',
         timestamp: oneMonthAgo,
         metadata: {
+          badgeName: 'Leadership Excellence',
           templateName: 'Leadership Excellence',
           recipientEmail: 'employee@gcredit.com',
+          recipientName: 'Demo Employee',
+          templateId: IDS.tmpl2,
         },
       },
       {
@@ -1242,7 +1253,12 @@ async function main() {
         actorId: employee.id,
         actorEmail: 'employee@gcredit.com',
         timestamp: new Date(oneMonthAgo.getTime() + 1 * 24 * 60 * 60 * 1000),
-        metadata: { oldStatus: 'PENDING', newStatus: 'CLAIMED' },
+        metadata: {
+          oldStatus: 'PENDING',
+          newStatus: 'CLAIMED',
+          badgeName: 'Leadership Excellence',
+          templateName: 'Leadership Excellence',
+        },
       },
       {
         entityType: 'Badge',
@@ -1252,8 +1268,11 @@ async function main() {
         actorEmail: 'issuer@gcredit.com',
         timestamp: twoMonthsAgo,
         metadata: {
+          badgeName: 'Cloud Expert Certification',
           templateName: 'Cloud Expert Certification',
           recipientEmail: 'employee@gcredit.com',
+          recipientName: 'Demo Employee',
+          templateId: IDS.tmpl1,
         },
       },
       {
@@ -1263,7 +1282,12 @@ async function main() {
         actorId: employee.id,
         actorEmail: 'employee@gcredit.com',
         timestamp: new Date(twoMonthsAgo.getTime() + 1 * 24 * 60 * 60 * 1000),
-        metadata: { oldStatus: 'PENDING', newStatus: 'CLAIMED' },
+        metadata: {
+          oldStatus: 'PENDING',
+          newStatus: 'CLAIMED',
+          badgeName: 'Cloud Expert Certification',
+          templateName: 'Cloud Expert Certification',
+        },
       },
       {
         entityType: 'Badge',
@@ -1275,6 +1299,10 @@ async function main() {
         metadata: {
           oldStatus: 'CLAIMED',
           newStatus: 'REVOKED',
+          badgeName: 'Cloud Expert Certification',
+          templateName: 'Cloud Expert Certification',
+          recipientName: 'Demo Employee',
+          recipientEmail: 'employee@gcredit.com',
           reason:
             'Certification expired - employee did not renew within grace period',
           notes: 'UAT test data: revoked badge for verification page testing',

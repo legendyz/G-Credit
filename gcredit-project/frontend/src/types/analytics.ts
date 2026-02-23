@@ -102,7 +102,9 @@ export type ActivityType =
   | 'BADGE_REVOKED'
   | 'BADGE_SHARED'
   | 'TEMPLATE_CREATED'
-  | 'USER_REGISTERED';
+  | 'TEMPLATE_UPDATED'
+  | 'USER_REGISTERED'
+  | 'USER_UPDATED';
 
 export interface ActivityItem {
   id: string;
