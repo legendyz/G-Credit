@@ -93,3 +93,4 @@ model SystemSetting {
 
 - Sprint 12 UAT: Skill category `isSystemDefined` protection discussion
 - ADR-011: User Management Architecture (similar protection patterns for user provisioning modes)
+- ADR-013: Milestone Lifecycle Rules (same pattern: achievement-aware protection based on data dependencies)
