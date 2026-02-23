@@ -109,9 +109,14 @@ export class SkillCategoriesService {
       }
 
       level = parent.level + 1;
+
+      // Inherit parent color when not explicitly provided
+      if (!data.color) {
+        data.color = parent.color;
+      }
     }
 
-    // Auto-assign color if not provided
+    // Auto-assign color for L1 categories (round-robin from palette)
     if (!data.color) {
       const existingCount = await this.prisma.skillCategory.count();
       data.color =

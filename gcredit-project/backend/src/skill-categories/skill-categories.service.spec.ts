@@ -81,6 +81,7 @@ describe('SkillCategoriesService', () => {
         id: 'parent-id',
         name: 'Parent',
         level: 1,
+        color: 'blue',
         isSystemDefined: false,
       };
       const createDto: CreateSkillCategoryDto = {
@@ -92,6 +93,7 @@ describe('SkillCategoriesService', () => {
         name: 'Child Category',
         parentId: 'parent-id',
         level: 2,
+        color: 'blue',
         isSystemDefined: false,
         isEditable: true,
         displayOrder: 0,
@@ -112,6 +114,37 @@ describe('SkillCategoriesService', () => {
           name: 'Child Category',
           parentId: 'parent-id',
           level: 2,
+          color: 'blue', // inherited from parent
+        }),
+        include: { parent: true },
+      });
+      // Should NOT call count — color inherited, no round-robin needed
+      expect(prisma.skillCategory.count).not.toHaveBeenCalled();
+    });
+
+    it('should auto-assign color via round-robin for L1 category without color', async () => {
+      prisma.skillCategory.count.mockResolvedValue(3);
+      const createDto: CreateSkillCategoryDto = { name: 'New L1' };
+      const createdCategory = {
+        id: 'new-id',
+        name: 'New L1',
+        parentId: null,
+        level: 1,
+        color: 'amber',
+        isSystemDefined: false,
+        isEditable: true,
+        displayOrder: 0,
+        parent: null,
+      };
+
+      prisma.skillCategory.create.mockResolvedValue(createdCategory);
+
+      await service.create(createDto);
+
+      expect(prisma.skillCategory.count).toHaveBeenCalled();
+      expect(prisma.skillCategory.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          color: 'amber', // index 3 in CATEGORY_COLORS
         }),
         include: { parent: true },
       });
