@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useSkillCategoryFlat } from '@/hooks/useSkillCategories';
+import { sortCategoriesTreeWalk } from '@/lib/categoryTreeSort';
 import type {
   SkillCategory,
   CreateSkillCategoryInput,
@@ -53,29 +54,10 @@ export function CategoryFormDialog({
   const { data: flatCategories } = useSkillCategoryFlat();
 
   // Filter parent options: only show level 1 and level 2 (max level 3)
-  // Then sort into tree-walk order (parent followed by its children)
-  const parentOptions = (() => {
-    const eligible = (flatCategories || []).filter((c) => c.level < 3 && c.id !== category?.id);
-    const l1 = eligible
-      .filter((c) => c.level === 1)
-      .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
-    const childrenByParent = new Map<string, typeof eligible>();
-    for (const c of eligible) {
-      if (c.level === 2 && c.parentId) {
-        const arr = childrenByParent.get(c.parentId) || [];
-        arr.push(c);
-        childrenByParent.set(c.parentId, arr);
-      }
-    }
-    const result: typeof eligible = [];
-    for (const parent of l1) {
-      result.push(parent);
-      const children = childrenByParent.get(parent.id) || [];
-      children.sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
-      result.push(...children);
-    }
-    return result;
-  })();
+  // Sorted in tree-walk order (parent followed by its children)
+  const parentOptions = sortCategoriesTreeWalk(
+    (flatCategories || []).filter((c) => c.level < 3 && c.id !== category?.id)
+  );
 
   // Reset form when dialog opens
   useEffect(() => {

@@ -34,6 +34,7 @@ import { useSkills } from '@/hooks/useSkills';
 import type { Skill } from '@/components/search/SkillsFilter';
 import { useCreateSkill, useUpdateSkill, useDeleteSkill } from '@/hooks/useSkillMutations';
 import { getCategoryColorClasses } from '@/lib/categoryColors';
+import { sortCategoriesTreeWalk } from '@/lib/categoryTreeSort';
 
 const PAGE_SIZE = 10;
 const SKILL_LEVELS = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'] as const;
@@ -45,7 +46,8 @@ export default function SkillManagementPage() {
     isLoading: treeLoading,
     isError: treeError,
   } = useSkillCategoryTree();
-  const { data: flatCategories = [] } = useSkillCategoryFlat();
+  const { data: rawFlatCategories = [] } = useSkillCategoryFlat();
+  const flatCategories = sortCategoriesTreeWalk(rawFlatCategories);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>();
 
   // --- Skills data ---
@@ -297,7 +299,10 @@ export default function SkillManagementPage() {
               <SelectItem value="__all__">All Categories</SelectItem>
               {flatCategories.map((cat) => (
                 <SelectItem key={cat.id} value={cat.id}>
-                  {'—'.repeat(cat.level - 1)} {cat.name}
+                  <span style={{ paddingLeft: `${(cat.level - 1) * 16}px` }}>
+                    {cat.level > 1 && <span className="text-muted-foreground mr-1">└</span>}
+                    {cat.name}
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -623,7 +628,10 @@ export default function SkillManagementPage() {
                 <SelectContent>
                   {flatCategories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>
-                      {'—'.repeat(cat.level - 1)} {cat.name}
+                      <span style={{ paddingLeft: `${(cat.level - 1) * 16}px` }}>
+                        {cat.level > 1 && <span className="text-muted-foreground mr-1">└</span>}
+                        {cat.name}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
