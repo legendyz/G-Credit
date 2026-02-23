@@ -505,16 +505,27 @@ export function BadgeTemplateListPage() {
                       )}
 
                       {/* Delete */}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(template)}
-                        disabled={!canModify || actionLoading === template.id}
-                        title={!canModify ? 'You can only delete templates you created' : undefined}
-                        className="min-h-[44px] text-error hover:bg-error-light"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                      {(() => {
+                        const hasBadges = template.badgeStats && template.badgeStats.total > 0;
+                        const isDisabled = !canModify || actionLoading === template.id || hasBadges;
+                        const tooltip = !canModify
+                          ? 'You can only delete templates you created'
+                          : hasBadges
+                            ? `Cannot delete: ${template.badgeStats!.total} badge(s) issued. Use Archive instead.`
+                            : undefined;
+                        return (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(template)}
+                            disabled={!!isDisabled}
+                            title={tooltip}
+                            className={`min-h-[44px] ${hasBadges ? 'text-neutral-400 cursor-not-allowed' : 'text-error hover:bg-error-light'}`}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        );
+                      })()}
                     </div>
                   </div>
                 </CardContent>
