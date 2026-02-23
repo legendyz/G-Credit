@@ -343,7 +343,25 @@ export function TimelineView() {
           )}
 
           {/* Grid View - With keyboard navigation (Story 8.3 UX-P1-005) */}
-          {viewMode === 'grid' && !showNoResults && <GridView badges={displayBadges} />}
+          {viewMode === 'grid' && !showNoResults && (
+            <>
+              {milestoneItems.length > 0 && (
+                <div className="flex flex-wrap gap-3 mb-4">
+                  {milestoneItems.map((m) => (
+                    <div
+                      key={m.milestoneId}
+                      className="flex items-center gap-2 rounded-full bg-amber-50 border border-amber-200 px-3 py-1.5"
+                      title={`${m.description}\nAchieved ${new Date(m.achievedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}`}
+                    >
+                      <span className="text-lg">{m.icon || '🏅'}</span>
+                      <span className="text-sm font-medium text-amber-800">{m.title}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <GridView badges={displayBadges} />
+            </>
+          )}
         </div>
 
         {/* Badge Detail Modal - renders via Portal to document.body */}
