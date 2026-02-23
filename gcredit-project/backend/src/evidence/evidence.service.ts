@@ -207,8 +207,12 @@ export class EvidenceService {
       throw new NotFoundException(`Badge ${badgeId} not found`);
     }
 
-    // AC 3.8: RBAC - Badge owner or ADMIN
-    if (badge.recipientId !== userId && userRole !== 'ADMIN') {
+    // AC 3.8: RBAC - Badge recipient, issuer, or ADMIN
+    if (
+      badge.recipientId !== userId &&
+      badge.issuerId !== userId &&
+      userRole !== 'ADMIN'
+    ) {
       throw new ForbiddenException('You do not have access to this badge');
     }
 
@@ -247,8 +251,12 @@ export class EvidenceService {
       throw new NotFoundException(`Badge ${badgeId} not found`);
     }
 
-    // AC 3.9: RBAC - Badge owner or ADMIN
-    if (badge.recipientId !== userId && userRole !== 'ADMIN') {
+    // AC 3.9: RBAC - Badge recipient, issuer, or ADMIN
+    if (
+      badge.recipientId !== userId &&
+      badge.issuerId !== userId &&
+      userRole !== 'ADMIN'
+    ) {
       throw new ForbiddenException('You do not have access to this badge');
     }
 

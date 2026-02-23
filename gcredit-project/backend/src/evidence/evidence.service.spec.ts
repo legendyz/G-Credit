@@ -179,6 +179,7 @@ describe('EvidenceService - Story 4.3', () => {
     const mockBadge = {
       id: 'badge-123',
       recipientId: 'user-123',
+      issuerId: 'user-issuer',
     };
 
     const mockEvidenceFiles = [
@@ -229,7 +230,22 @@ describe('EvidenceService - Story 4.3', () => {
       expect(result).toHaveLength(1);
     });
 
-    it('should reject non-owner non-admin (AC 3.8)', async () => {
+    it('should allow ISSUER who issued the badge to list evidence', async () => {
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+      mockPrismaService.evidenceFile.findMany.mockResolvedValue(
+        mockEvidenceFiles,
+      );
+
+      const result = await service.listEvidence(
+        'badge-123',
+        'user-issuer',
+        'ISSUER',
+      );
+
+      expect(result).toHaveLength(1);
+    });
+
+    it('should reject non-owner non-issuer non-admin (AC 3.8)', async () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
 
       await expect(
@@ -245,6 +261,7 @@ describe('EvidenceService - Story 4.3', () => {
     const mockBadge = {
       id: 'badge-123',
       recipientId: 'user-123',
+      issuerId: 'user-issuer',
     };
 
     const mockEvidenceFile = {
@@ -315,6 +332,32 @@ describe('EvidenceService - Story 4.3', () => {
           'EMPLOYEE',
         ),
       ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should allow ISSUER who issued the badge to download evidence', async () => {
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+      mockPrismaService.evidenceFile.findUnique.mockResolvedValue({
+        id: 'file-1',
+        badgeId: 'badge-123',
+        fileName: 'badge-123/file-1-cert.pdf',
+        mimeType: 'application/pdf',
+      });
+
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+      mockStorageService.generateEvidenceSasUrl.mockReturnValue({
+        url: 'https://storage.blob.core.windows.net/evidence/...?sasToken=...',
+        expiresAt,
+      });
+
+      const result = await service.generateDownloadSas(
+        'badge-123',
+        'file-1',
+        'user-issuer',
+        'ISSUER',
+      );
+
+      expect(result.url).toContain('sasToken');
+      expect(result.expiresAt).toBeDefined();
     });
 
     it('should reject download/preview for URL-type evidence (Story 12.5)', async () => {
