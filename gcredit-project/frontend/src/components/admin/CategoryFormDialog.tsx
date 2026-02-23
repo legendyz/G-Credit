@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -117,6 +118,22 @@ export function CategoryFormDialog({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          {/* Warning: editing a category with associated skills */}
+          {mode === 'edit' &&
+            (() => {
+              const skillCount = category?._count?.skills ?? category?.skills?.length ?? 0;
+              return skillCount > 0 ? (
+                <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                  <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+                  <span>
+                    This category has <strong>{skillCount}</strong> associated skill
+                    {skillCount === 1 ? '' : 's'}. Changes to the category name will apply to all of
+                    them.
+                  </span>
+                </div>
+              ) : null;
+            })()}
+
           {/* Name field */}
           <div className="space-y-2">
             <Label htmlFor="category-name">
