@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Info, Lock } from 'lucide-react';
 import { useSkillCategoryTree } from '@/hooks/useSkillCategories';
 import type {
   MilestoneConfig,
@@ -236,6 +237,17 @@ export function MilestoneFormSheet({
         </SheetHeader>
 
         <div className="space-y-5 mt-6">
+          {/* Edit-mode info banner */}
+          {mode === 'edit' && (
+            <div className="flex items-start gap-2 rounded-lg bg-blue-50 border border-blue-200 px-3 py-2.5 text-sm text-blue-800">
+              <Info className="h-4 w-4 mt-0.5 shrink-0" />
+              <span>
+                <strong>Metric</strong> and <strong>Scope</strong> cannot be changed after creation
+                to preserve the accuracy of existing achievement records.
+              </span>
+            </div>
+          )}
+
           {/* Icon Picker */}
           <div>
             <Label>Icon</Label>
@@ -271,7 +283,10 @@ export function MilestoneFormSheet({
 
           {/* Metric Radio */}
           <div>
-            <Label>Metric</Label>
+            <Label className="flex items-center gap-1.5">
+              Metric
+              {mode === 'edit' && <Lock className="h-3 w-3 text-neutral-400" />}
+            </Label>
             <div className="flex gap-3 mt-1">
               <label
                 className={`flex-1 flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-colors ${
@@ -308,15 +323,15 @@ export function MilestoneFormSheet({
                 <span className="text-sm font-medium">Category Coverage</span>
               </label>
             </div>
-            {mode === 'edit' && (
-              <p className="text-xs text-neutral-500 mt-1">Cannot change metric after creation</p>
-            )}
           </div>
 
           {/* Scope Radio (hidden for category_count) */}
           {metric === 'badge_count' && (
             <div>
-              <Label>Scope</Label>
+              <Label className="flex items-center gap-1.5">
+                Scope
+                {mode === 'edit' && <Lock className="h-3 w-3 text-neutral-400" />}
+              </Label>
               <div className="flex gap-3 mt-1">
                 <label
                   className={`flex-1 flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-colors ${
@@ -351,9 +366,6 @@ export function MilestoneFormSheet({
                   <span className="text-sm font-medium">Specific Category</span>
                 </label>
               </div>
-              {mode === 'edit' && (
-                <p className="text-xs text-neutral-500 mt-1">Cannot change scope after creation</p>
-              )}
             </div>
           )}
 
