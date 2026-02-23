@@ -6,6 +6,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { DashboardService } from './dashboard.service';
 import { PrismaService } from '../common/prisma.service';
 import { MilestonesService } from '../milestones/milestones.service';
+import { formatAuditDescription } from '../common/utils/audit-log.utils';
 import { BadgeStatus } from '@prisma/client';
 
 describe('DashboardService', () => {
@@ -384,7 +385,7 @@ describe('DashboardService', () => {
       // Assert
       expect(result.recentActivity).toHaveLength(1);
       expect(result.recentActivity[0].actorName).toBe('Admin User');
-      expect(result.recentActivity[0].type).toBe('ISSUED');
+      expect(result.recentActivity[0].type).toBe('BADGE_ISSUED');
     });
 
     it('should handle empty audit logs', async () => {
@@ -423,18 +424,27 @@ describe('DashboardService', () => {
     });
   });
 
-  // Story 11.24 AC-C1: formatActivityDescription tests
-  describe('formatActivityDescription', () => {
+  // Story 11.24 AC-C1: formatAuditDescription tests (shared utility)
+  describe('formatAuditDescription', () => {
     it('should format ISSUED action with badge name and recipient', () => {
-      const result = DashboardService.formatActivityDescription('ISSUED', {
+      const result = formatAuditDescription('ISSUED', {
         badgeName: 'Cloud Expert',
         recipientEmail: 'user@test.com',
       });
       expect(result).toBe('Badge "Cloud Expert" issued to user@test.com');
     });
 
-    it('should format CLAIMED action with status change', () => {
-      const result = DashboardService.formatActivityDescription('CLAIMED', {
+    it('should format CLAIMED action with template name', () => {
+      const result = formatAuditDescription('CLAIMED', {
+        badgeName: 'Cloud Expert',
+        oldStatus: 'ISSUED',
+        newStatus: 'CLAIMED',
+      });
+      expect(result).toBe('Badge "Cloud Expert" claimed');
+    });
+
+    it('should format CLAIMED action with status change when no name', () => {
+      const result = formatAuditDescription('CLAIMED', {
         oldStatus: 'ISSUED',
         newStatus: 'CLAIMED',
       });
@@ -442,7 +452,7 @@ describe('DashboardService', () => {
     });
 
     it('should format REVOKED action with reason', () => {
-      const result = DashboardService.formatActivityDescription('REVOKED', {
+      const result = formatAuditDescription('REVOKED', {
         badgeName: 'Cloud Expert',
         reason: 'Employee left',
       });
@@ -450,69 +460,63 @@ describe('DashboardService', () => {
     });
 
     it('should format NOTIFICATION_SENT action', () => {
-      const result = DashboardService.formatActivityDescription(
-        'NOTIFICATION_SENT',
-        {
-          notificationType: 'Email',
-          recipientEmail: 'user@test.com',
-        },
-      );
+      const result = formatAuditDescription('NOTIFICATION_SENT', {
+        notificationType: 'Email',
+        recipientEmail: 'user@test.com',
+      });
       expect(result).toBe('Email notification sent to user@test.com');
     });
 
     it('should format CREATED action with template name', () => {
-      const result = DashboardService.formatActivityDescription('CREATED', {
+      const result = formatAuditDescription('CREATED', {
         templateName: 'New Template',
       });
       expect(result).toBe('Template "New Template" created');
     });
 
     it('should format UPDATED action with template name', () => {
-      const result = DashboardService.formatActivityDescription('UPDATED', {
+      const result = formatAuditDescription('UPDATED', {
         templateName: 'Updated Template',
       });
       expect(result).toBe('Template "Updated Template" updated');
     });
 
     it('should return action string for unknown action types', () => {
-      const result = DashboardService.formatActivityDescription(
-        'CUSTOM_ACTION',
-        { foo: 'bar' },
-      );
+      const result = formatAuditDescription('CUSTOM_ACTION', { foo: 'bar' });
       expect(result).toBe('CUSTOM_ACTION');
     });
 
     it('should return action string when metadata is null', () => {
-      const result = DashboardService.formatActivityDescription('ISSUED', null);
+      const result = formatAuditDescription('ISSUED', null);
       expect(result).toBe('ISSUED');
     });
 
     it('should fall back to raw action when critical metadata fields are empty', () => {
-      const result = DashboardService.formatActivityDescription('ISSUED', {});
+      const result = formatAuditDescription('ISSUED', {});
       expect(result).toBe('ISSUED');
     });
 
     it('should fall back to raw action when only some ISSUED fields present', () => {
-      const result = DashboardService.formatActivityDescription('ISSUED', {
+      const result = formatAuditDescription('ISSUED', {
         badgeName: 'Cloud Expert',
       });
-      expect(result).toBe('ISSUED');
+      expect(result).toBe('Badge "Cloud Expert" issued');
     });
 
     it('should fall back to raw action when REVOKED has no badgeName', () => {
-      const result = DashboardService.formatActivityDescription('REVOKED', {
+      const result = formatAuditDescription('REVOKED', {
         reason: 'Policy violation',
       });
       expect(result).toBe('REVOKED');
     });
 
     it('should show placeholder for missing CLAIMED statuses', () => {
-      const result = DashboardService.formatActivityDescription('CLAIMED', {});
+      const result = formatAuditDescription('CLAIMED', {});
       expect(result).toBe('Badge status changed: ? → ?');
     });
 
     it('should show fallback reason when REVOKED has name but no reason', () => {
-      const result = DashboardService.formatActivityDescription('REVOKED', {
+      const result = formatAuditDescription('REVOKED', {
         badgeName: 'Cloud Expert',
       });
       expect(result).toBe('Revoked "Cloud Expert" — no reason given');

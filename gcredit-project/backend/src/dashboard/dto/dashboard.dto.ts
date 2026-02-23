@@ -256,8 +256,11 @@ export class AdminActivityDto {
       'BADGE_ISSUED',
       'BADGE_CLAIMED',
       'BADGE_REVOKED',
-      'USER_CREATED',
+      'BADGE_SHARED',
       'TEMPLATE_CREATED',
+      'TEMPLATE_UPDATED',
+      'USER_REGISTERED',
+      'USER_UPDATED',
     ],
   })
   type: string;

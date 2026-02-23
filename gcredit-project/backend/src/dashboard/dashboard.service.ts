@@ -7,6 +7,11 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
+import {
+  formatAuditDescription,
+  resolveActivityType,
+  buildActorMap,
+} from '../common/utils/audit-log.utils';
 import { MilestonesService } from '../milestones/milestones.service';
 import {
   EmployeeDashboardDto,
@@ -23,55 +28,6 @@ import {
 @Injectable()
 export class DashboardService {
   private readonly logger = new Logger(DashboardService.name);
-
-  /**
-   * Convert audit log action + metadata into human-readable description.
-   * Story 11.24 AC-C1: Admin Dashboard shows readable activity descriptions.
-   */
-  static formatActivityDescription(
-    action: string,
-    metadata: Record<string, unknown> | null,
-  ): string {
-    if (!metadata) return action;
-
-    const s = (key: string): string => {
-      const val = metadata[key];
-      return typeof val === 'string' ? val : '';
-    };
-
-    // Build the description; fall back to raw action if critical fields are empty
-    // (Code Review #3: avoid emitting strings like 'Badge "" issued to ')
-    switch (action) {
-      case 'ISSUED': {
-        const name = s('badgeName') || s('templateName');
-        const email = s('recipientEmail');
-        return name && email ? `Badge "${name}" issued to ${email}` : action;
-      }
-      case 'CLAIMED':
-        return `Badge status changed: ${s('oldStatus') || '?'} → ${s('newStatus') || '?'}`;
-      case 'REVOKED': {
-        const name = s('badgeName') || s('templateName');
-        return name
-          ? `Revoked "${name}" — ${s('reason') || 'no reason given'}`
-          : action;
-      }
-      case 'NOTIFICATION_SENT': {
-        const type = s('notificationType');
-        const email = s('recipientEmail');
-        return type && email ? `${type} notification sent to ${email}` : action;
-      }
-      case 'CREATED': {
-        const name = s('templateName');
-        return name ? `Template "${name}" created` : action;
-      }
-      case 'UPDATED': {
-        const name = s('templateName');
-        return name ? `Template "${name}" updated` : action;
-      }
-      default:
-        return action;
-    }
-  }
 
   constructor(
     private readonly prisma: PrismaService,
@@ -440,18 +396,13 @@ export class DashboardService {
       where: { id: { in: actorIds } },
       select: { id: true, firstName: true, lastName: true, email: true },
     });
-    const actorMap = new Map(
-      actors.map((a) => [
-        a.id,
-        `${a.firstName || ''} ${a.lastName || ''}`.trim() || a.email,
-      ]),
-    );
+    const actorMap = buildActorMap(actors);
 
     // Transform audit logs to activity DTOs
     const recentActivity: AdminActivityDto[] = recentActivityRaw.map((log) => ({
       id: log.id,
-      type: log.action,
-      description: DashboardService.formatActivityDescription(
+      type: resolveActivityType(log.action, log.entityType),
+      description: formatAuditDescription(
         log.action,
         log.metadata as Record<string, unknown>,
       ),

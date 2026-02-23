@@ -58,8 +58,11 @@ export class ActivityItemDto {
       'BADGE_ISSUED',
       'BADGE_CLAIMED',
       'BADGE_REVOKED',
+      'BADGE_SHARED',
       'TEMPLATE_CREATED',
+      'TEMPLATE_UPDATED',
       'USER_REGISTERED',
+      'USER_UPDATED',
     ],
   })
   type: string;

@@ -1,6 +1,12 @@
 import { Injectable, Logger, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import {
+  resolveActivityType,
+  resolveTemplateName,
+  resolveRecipientName,
+  buildActorMap,
+} from '../common/utils/audit-log.utils';
+import {
   SystemOverviewDto,
   IssuanceTrendsDto,
   TopPerformersDto,
@@ -500,12 +506,7 @@ export class AnalyticsService {
       where: { id: { in: actorIds } },
       select: { id: true, firstName: true, lastName: true, email: true },
     });
-    const actorMap = new Map(
-      actors.map((u) => [
-        u.id,
-        `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email,
-      ]),
-    );
+    const actorMap = buildActorMap(actors);
 
     // Batch-fetch badge details (template name + recipient name) for Badge entities
     const badgeEntityIds = [
@@ -537,35 +538,16 @@ export class AnalyticsService {
 
     // Transform to activity items
     const activities = auditLogs.map((log) => {
-      // Map action to activity type
-      const typeMap: Record<string, string> = {
-        ISSUED: 'BADGE_ISSUED',
-        CLAIMED: 'BADGE_CLAIMED',
-        REVOKED: 'BADGE_REVOKED',
-        SHARED: 'BADGE_SHARED',
-        CREATED:
-          log.entityType === 'BadgeTemplate' || log.entityType === 'Template'
-            ? 'TEMPLATE_CREATED'
-            : 'USER_REGISTERED',
-        UPDATED:
-          log.entityType === 'BadgeTemplate' || log.entityType === 'Template'
-            ? 'TEMPLATE_UPDATED'
-            : 'USER_UPDATED',
-      };
-
       const metadata = log.metadata as Record<string, unknown> | null;
       const badge = badgeMap.get(log.entityId);
 
       // Resolve template name from metadata or badge lookup
       const templateName =
-        (metadata?.templateName as string) ||
-        (metadata?.badgeName as string) ||
-        badge?.template?.name ||
-        undefined;
+        resolveTemplateName(metadata) || badge?.template?.name || undefined;
 
       // Resolve recipient name from metadata or badge lookup
       const recipientName =
-        (metadata?.recipientName as string) ||
+        resolveRecipientName(metadata) ||
         (badge?.recipient
           ? `${badge.recipient.firstName || ''} ${badge.recipient.lastName || ''}`.trim() ||
             badge.recipient.email
@@ -576,7 +558,7 @@ export class AnalyticsService {
 
       return {
         id: log.id,
-        type: typeMap[log.action] || log.action,
+        type: resolveActivityType(log.action, log.entityType),
         actor: {
           userId: log.actorId,
           name: actorMap.get(log.actorId) || log.actorEmail || 'Unknown',
@@ -589,15 +571,7 @@ export class AnalyticsService {
                 badgeTemplateName: templateName,
                 templateName: templateName,
               }
-            : metadata
-              ? {
-                  userId: undefined,
-                  name: undefined,
-                  badgeTemplateName:
-                    (metadata.templateName as string) || undefined,
-                  templateName: (metadata.templateName as string) || undefined,
-                }
-              : undefined,
+            : undefined,
         timestamp: log.timestamp.toISOString(),
       };
     });
