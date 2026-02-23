@@ -99,21 +99,39 @@ export class MilestonesService {
   }
 
   /**
-   * Soft delete milestone (set isActive=false)
+   * Delete milestone:
+   * - Hard delete if no achievements exist (safe to remove entirely)
+   * - Soft delete (isActive=false) if achievements exist (preserve history)
    */
   async deleteMilestone(id: string) {
     const milestone = await this.prisma.milestoneConfig.findUnique({
       where: { id },
+      include: { _count: { select: { achievements: true } } },
     });
 
     if (!milestone) {
       throw new NotFoundException(`Milestone config ${id} not found`);
     }
 
-    const result = await this.prisma.milestoneConfig.update({
-      where: { id },
-      data: { isActive: false },
-    });
+    let result;
+    if (milestone._count.achievements === 0) {
+      // No one has achieved this — safe to hard delete
+      result = await this.prisma.milestoneConfig.delete({
+        where: { id },
+      });
+      this.logger.log(
+        `Hard-deleted milestone "${milestone.title}" (no achievements)`,
+      );
+    } else {
+      // Has achievements — soft delete to preserve history
+      result = await this.prisma.milestoneConfig.update({
+        where: { id },
+        data: { isActive: false },
+      });
+      this.logger.log(
+        `Soft-deleted milestone "${milestone.title}" (${milestone._count.achievements} achievements preserved)`,
+      );
+    }
 
     // Invalidate cache
     this.lastCacheRefresh = 0;

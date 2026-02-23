@@ -18,6 +18,7 @@ const mockPrismaService = {
     findMany: jest.fn(),
     findUnique: jest.fn(),
     update: jest.fn(),
+    delete: jest.fn(),
   },
   milestoneAchievement: {
     findMany: jest.fn(),
@@ -218,12 +219,34 @@ describe('MilestonesService', () => {
   });
 
   describe('deleteMilestone', () => {
-    it('should soft delete by setting isActive=false', async () => {
+    it('should hard delete when no achievements exist', async () => {
       const milestone = {
         id: 'ms-1',
         type: MilestoneType.BADGE_COUNT,
         title: 'T',
         isActive: true,
+        _count: { achievements: 0 },
+      };
+
+      mockPrismaService.milestoneConfig.findUnique.mockResolvedValue(milestone);
+      mockPrismaService.milestoneConfig.delete.mockResolvedValue(milestone);
+
+      const result = await service.deleteMilestone('ms-1');
+
+      expect(mockPrismaService.milestoneConfig.delete).toHaveBeenCalledWith({
+        where: { id: 'ms-1' },
+      });
+      expect(mockPrismaService.milestoneConfig.update).not.toHaveBeenCalled();
+      expect(result).toEqual(milestone);
+    });
+
+    it('should soft delete (deactivate) when achievements exist', async () => {
+      const milestone = {
+        id: 'ms-1',
+        type: MilestoneType.BADGE_COUNT,
+        title: 'T',
+        isActive: true,
+        _count: { achievements: 3 },
       };
 
       mockPrismaService.milestoneConfig.findUnique.mockResolvedValue(milestone);
@@ -239,6 +262,7 @@ describe('MilestonesService', () => {
         where: { id: 'ms-1' },
         data: { isActive: false },
       });
+      expect(mockPrismaService.milestoneConfig.delete).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException for non-existent id', async () => {
@@ -251,10 +275,10 @@ describe('MilestonesService', () => {
     it('should invalidate cache after delete', async () => {
       mockPrismaService.milestoneConfig.findUnique.mockResolvedValue({
         id: 'ms-1',
+        _count: { achievements: 0 },
       });
-      mockPrismaService.milestoneConfig.update.mockResolvedValue({
+      mockPrismaService.milestoneConfig.delete.mockResolvedValue({
         id: 'ms-1',
-        isActive: false,
       });
       service['lastCacheRefresh'] = Date.now();
 

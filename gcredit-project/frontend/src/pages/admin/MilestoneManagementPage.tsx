@@ -189,14 +189,22 @@ export function MilestoneManagementPage() {
         isLoading={createMutation.isPending || updateMutation.isPending}
       />
 
-      {/* Delete Confirm Dialog */}
+      {/* Delete / Deactivate Confirm Dialog */}
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={(v) => !v && setDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
-        title="Deactivate Milestone"
-        description={`Are you sure you want to deactivate "${deletingMilestone?.title}"? This will set isActive to false.`}
-        confirmLabel="Deactivate"
+        title={
+          (deletingMilestone?._count?.achievements ?? 0) > 0
+            ? 'Deactivate Milestone'
+            : 'Delete Milestone'
+        }
+        description={
+          (deletingMilestone?._count?.achievements ?? 0) > 0
+            ? `"${deletingMilestone?.title}" has been achieved by ${deletingMilestone?._count?.achievements} user(s). It will be deactivated (hidden) but achievement records are preserved.`
+            : `Are you sure you want to permanently delete "${deletingMilestone?.title}"? No users have achieved this milestone, so it can be safely removed.`
+        }
+        confirmLabel={(deletingMilestone?._count?.achievements ?? 0) > 0 ? 'Deactivate' : 'Delete'}
         variant="danger"
         loading={deleteMutation.isPending}
       />
@@ -242,8 +250,10 @@ function MilestoneCard({ milestone, onEdit, onDelete, onToggle }: MilestoneCardP
           <button
             onClick={() => onDelete(milestone)}
             className="p-1 rounded hover:bg-red-50 text-neutral-400 hover:text-red-600 transition-colors"
-            aria-label={`Deactivate ${milestone.title}`}
-            title="Deactivate"
+            aria-label={
+              achievementCount > 0 ? `Deactivate ${milestone.title}` : `Delete ${milestone.title}`
+            }
+            title={achievementCount > 0 ? 'Deactivate (has achievements)' : 'Delete'}
           >
             <Trash2 className="h-4 w-4" />
           </button>

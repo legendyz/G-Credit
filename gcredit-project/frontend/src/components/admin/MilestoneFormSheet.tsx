@@ -223,6 +223,8 @@ export function MilestoneFormSheet({
   };
 
   const achievementCount = milestone?._count?.achievements ?? 0;
+  // Lock metric/scope only when achievements exist (history must be preserved)
+  const isMetricLocked = mode === 'edit' && achievementCount > 0;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -237,13 +239,14 @@ export function MilestoneFormSheet({
         </SheetHeader>
 
         <div className="space-y-5 mt-6">
-          {/* Edit-mode info banner */}
-          {mode === 'edit' && (
+          {/* Info banner: locked fields when achievements exist */}
+          {isMetricLocked && (
             <div className="flex items-start gap-2 rounded-lg bg-blue-50 border border-blue-200 px-3 py-2.5 text-sm text-blue-800">
               <Info className="h-4 w-4 mt-0.5 shrink-0" />
               <span>
-                <strong>Metric</strong> and <strong>Scope</strong> cannot be changed after creation
-                to preserve the accuracy of existing achievement records.
+                <strong>Metric</strong> and <strong>Scope</strong> cannot be changed because{' '}
+                {achievementCount} user{achievementCount === 1 ? ' has' : 's have'} already achieved
+                this milestone.
               </span>
             </div>
           )}
@@ -285,13 +288,13 @@ export function MilestoneFormSheet({
           <div>
             <Label className="flex items-center gap-1.5">
               Metric
-              {mode === 'edit' && <Lock className="h-3 w-3 text-neutral-400" />}
+              {isMetricLocked && <Lock className="h-3 w-3 text-neutral-400" />}
             </Label>
             <div className="flex gap-3 mt-1">
               <label
                 className={`flex-1 flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-colors ${
                   metric === 'badge_count' ? 'border-brand-600 bg-brand-50' : 'border-neutral-200'
-                } ${mode === 'edit' ? 'opacity-60 cursor-not-allowed' : ''}`}
+                } ${isMetricLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
                 <input
                   type="radio"
@@ -299,7 +302,7 @@ export function MilestoneFormSheet({
                   value="badge_count"
                   checked={metric === 'badge_count'}
                   onChange={() => setMetric('badge_count')}
-                  disabled={mode === 'edit'}
+                  disabled={isMetricLocked}
                   className="sr-only"
                 />
                 <span className="text-sm font-medium">Badge Count</span>
@@ -309,7 +312,7 @@ export function MilestoneFormSheet({
                   metric === 'category_count'
                     ? 'border-brand-600 bg-brand-50'
                     : 'border-neutral-200'
-                } ${mode === 'edit' ? 'opacity-60 cursor-not-allowed' : ''}`}
+                } ${isMetricLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
                 <input
                   type="radio"
@@ -317,7 +320,7 @@ export function MilestoneFormSheet({
                   value="category_count"
                   checked={metric === 'category_count'}
                   onChange={() => setMetric('category_count')}
-                  disabled={mode === 'edit'}
+                  disabled={isMetricLocked}
                   className="sr-only"
                 />
                 <span className="text-sm font-medium">Category Coverage</span>
@@ -330,13 +333,13 @@ export function MilestoneFormSheet({
             <div>
               <Label className="flex items-center gap-1.5">
                 Scope
-                {mode === 'edit' && <Lock className="h-3 w-3 text-neutral-400" />}
+                {isMetricLocked && <Lock className="h-3 w-3 text-neutral-400" />}
               </Label>
               <div className="flex gap-3 mt-1">
                 <label
                   className={`flex-1 flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-colors ${
                     scope === 'global' ? 'border-brand-600 bg-brand-50' : 'border-neutral-200'
-                  } ${mode === 'edit' ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  } ${isMetricLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
                 >
                   <input
                     type="radio"
@@ -344,7 +347,7 @@ export function MilestoneFormSheet({
                     value="global"
                     checked={scope === 'global'}
                     onChange={() => setScope('global')}
-                    disabled={mode === 'edit'}
+                    disabled={isMetricLocked}
                     className="sr-only"
                   />
                   <span className="text-sm font-medium">Global (all badges)</span>
@@ -352,7 +355,7 @@ export function MilestoneFormSheet({
                 <label
                   className={`flex-1 flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-colors ${
                     scope === 'category' ? 'border-brand-600 bg-brand-50' : 'border-neutral-200'
-                  } ${mode === 'edit' ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  } ${isMetricLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
                 >
                   <input
                     type="radio"
@@ -360,7 +363,7 @@ export function MilestoneFormSheet({
                     value="category"
                     checked={scope === 'category'}
                     onChange={() => setScope('category')}
-                    disabled={mode === 'edit'}
+                    disabled={isMetricLocked}
                     className="sr-only"
                   />
                   <span className="text-sm font-medium">Specific Category</span>

@@ -54,10 +54,10 @@ export function useDeleteMilestone() {
     mutationFn: (id: string) => deleteMilestone(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-milestones'] });
-      toast.success('Milestone deactivated');
+      toast.success('Milestone removed');
     },
     onError: (error: Error) => {
-      toast.error(`Failed to delete milestone: ${error.message}`);
+      toast.error(`Failed to remove milestone: ${error.message}`);
     },
   });
 }

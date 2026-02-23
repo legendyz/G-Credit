@@ -122,10 +122,14 @@ export class MilestonesController {
 
   @Delete('admin/milestones/:id')
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Delete milestone configuration (Admin only)' })
+  @ApiOperation({
+    summary:
+      'Delete milestone (hard delete if no achievements, soft delete otherwise)',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Milestone config deleted (soft delete)',
+    description:
+      'Milestone removed (hard delete) or deactivated (soft delete if achievements exist)',
   })
   @ApiResponse({ status: 404, description: 'Milestone config not found' })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
