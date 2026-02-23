@@ -514,16 +514,17 @@ export function BadgeTemplateListPage() {
                             ? `Cannot delete: ${template.badgeStats!.total} badge(s) issued. Use Archive instead.`
                             : undefined;
                         return (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDelete(template)}
-                            disabled={!!isDisabled}
-                            title={tooltip}
-                            className={`min-h-[44px] ${hasBadges ? 'text-neutral-400 cursor-not-allowed' : 'text-error hover:bg-error-light'}`}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
+                          <div title={tooltip} className="flex">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDelete(template)}
+                              disabled={!!isDisabled}
+                              className={`min-h-[44px] ${hasBadges ? 'text-neutral-400 cursor-not-allowed' : 'text-error hover:bg-error-light'}`}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
                         );
                       })()}
                     </div>
