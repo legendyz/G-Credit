@@ -114,6 +114,27 @@ function makeAssertion(verificationId: string) {
   };
 }
 
+/** Canonical JSON with recursively sorted keys — matches AssertionGeneratorService */
+function canonicalJson(obj: unknown): string {
+  return JSON.stringify(obj, (_key, value) =>
+    value && typeof value === 'object' && !Array.isArray(value)
+      ? Object.keys(value)
+          .sort()
+          .reduce(
+            (sorted, k) => {
+              sorted[k] = (value as Record<string, unknown>)[k];
+              return sorted;
+            },
+            {} as Record<string, unknown>,
+          )
+      : value,
+  );
+}
+
+function hashAssertion(assertion: object): string {
+  return crypto.createHash('sha256').update(canonicalJson(assertion)).digest('hex');
+}
+
 async function main() {
   console.log('🌱 Starting UAT seed data...\n');
 
@@ -815,10 +836,7 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-001-000000000000',
       verificationId: IDS.verify1,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge1-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify1)),
       recipientHash: hashEmail('employee@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify1),
       issuedAt: twoMonthsAgo,
@@ -837,10 +855,7 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-002-000000000000',
       verificationId: IDS.verify2,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge2-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify2)),
       recipientHash: hashEmail('employee@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify2),
       issuedAt: oneMonthAgo,
@@ -859,10 +874,7 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-003-000000000000',
       verificationId: IDS.verify3,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge3-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify3)),
       recipientHash: hashEmail('employee@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify3),
       issuedAt: oneWeekAgo,
@@ -881,10 +893,7 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-004-000000000000',
       verificationId: IDS.verify4,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge4-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify4)),
       recipientHash: hashEmail('employee@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify4),
       issuedAt: threeDaysAgo,
@@ -903,10 +912,7 @@ async function main() {
       status: BadgeStatus.PENDING,
       claimToken: 'uat-claim-token-005-pending00000',
       verificationId: IDS.verify5,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge5-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify5)),
       recipientHash: hashEmail('employee@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify5),
       issuedAt: now,
@@ -925,10 +931,7 @@ async function main() {
       status: BadgeStatus.REVOKED,
       claimToken: 'uat-claim-token-006-000000000000',
       verificationId: IDS.verify6,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge6-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify6)),
       recipientHash: hashEmail('employee@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify6),
       issuedAt: twoMonthsAgo,
@@ -955,10 +958,7 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-007-000000000000',
       verificationId: IDS.verify7,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge7-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify7)),
       recipientHash: hashEmail('manager@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify7),
       issuedAt: oneMonthAgo,
@@ -977,10 +977,7 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-008-000000000000',
       verificationId: IDS.verify8,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge8-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify8)),
       recipientHash: hashEmail('manager@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify8),
       issuedAt: twoMonthsAgo,
@@ -999,10 +996,7 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-009-000000000000',
       verificationId: IDS.verify9,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge9-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify9)),
       recipientHash: hashEmail('manager@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify9),
       issuedAt: twoMonthsAgo,
@@ -1023,10 +1017,7 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-010-000000000000',
       verificationId: IDS.verify10,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge10-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify10)),
       recipientHash: hashEmail('admin@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify10),
       issuedAt: oneWeekAgo,
@@ -1045,10 +1036,7 @@ async function main() {
       status: BadgeStatus.PENDING,
       claimToken: 'uat-claim-token-011-pending00000',
       verificationId: IDS.verify11,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge11-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify11)),
       recipientHash: hashEmail('admin@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify11),
       issuedAt: now,
