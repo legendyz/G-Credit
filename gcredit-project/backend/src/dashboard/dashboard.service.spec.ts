@@ -90,6 +90,19 @@ describe('DashboardService', () => {
         percentage: 60,
         icon: '🏆',
       }),
+      getUserAchievements: jest.fn().mockResolvedValue([
+        {
+          id: 'ach-1',
+          achievedAt: new Date('2026-01-15'),
+          milestone: {
+            id: 'ms-1',
+            type: 'BADGE_COUNT',
+            title: 'First Badge',
+            description: 'Earned your first badge',
+            icon: '🏆',
+          },
+        },
+      ]),
     };
 
     const module: TestingModule = await Test.createTestingModule({

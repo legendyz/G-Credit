@@ -41,6 +41,15 @@ describe('DashboardController', () => {
       percentage: 60,
       icon: '🏆',
     },
+    achievedMilestones: [
+      {
+        id: 'ach-1',
+        title: 'First Badge',
+        description: 'Earned your first badge',
+        icon: '🏆',
+        achievedAt: new Date('2026-01-15'),
+      },
+    ],
     recentBadges: [
       {
         id: 'badge-1',

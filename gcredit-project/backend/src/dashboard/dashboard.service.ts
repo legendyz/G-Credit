@@ -114,6 +114,30 @@ export class DashboardService {
       icon: '🏆',
     };
 
+    // Get achieved milestones (already filtered by isActive)
+    let achievedMilestones: Array<{
+      id: string;
+      title: string;
+      description: string;
+      icon: string;
+      achievedAt: Date;
+    }> = [];
+    try {
+      const achievements =
+        await this.milestonesService.getUserAchievements(userId);
+      achievedMilestones = achievements.map((a) => ({
+        id: a.id,
+        title: a.milestone.title,
+        description: a.milestone.description,
+        icon: a.milestone.icon,
+        achievedAt: a.achievedAt,
+      }));
+    } catch (error: unknown) {
+      this.logger.error(
+        `Achieved milestones fetch failed for ${userId}: ${(error as Error).message}`,
+      );
+    }
+
     return {
       badgeSummary: {
         total: totalBadges,
@@ -122,6 +146,7 @@ export class DashboardService {
         latestBadge,
       },
       currentMilestone,
+      achievedMilestones,
       recentBadges,
     };
   }
