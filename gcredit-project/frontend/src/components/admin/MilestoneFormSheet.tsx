@@ -370,7 +370,8 @@ export function MilestoneFormSheet({
                 <option value="">Select category...</option>
                 {flatCategories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
-                    {'  '.repeat(cat.level)}
+                    {'\u00A0\u00A0\u00A0\u00A0'.repeat(cat.level)}
+                    {cat.level > 0 ? '└ ' : ''}
                     {cat.name}
                   </option>
                 ))}
