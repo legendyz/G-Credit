@@ -468,7 +468,7 @@ export default function SkillManagementPage() {
                         <td className="px-4 py-3 text-center text-sm text-neutral-600 hidden sm:table-cell">
                           {(skill.badgeCount ?? 0) > 0 ? (
                             <span className="relative group/tmpl cursor-help">
-                              <span className="underline decoration-dotted underline-offset-2">
+                              <span className="inline-flex items-center justify-center min-w-[1.5rem] px-1.5 py-0.5 rounded-full text-xs font-semibold bg-brand-100 text-brand-700 border border-brand-200">
                                 {skill.badgeCount}
                               </span>
                               <span className="invisible group-hover/tmpl:visible absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs px-3 py-2 rounded-lg bg-neutral-800 text-white text-xs shadow-lg whitespace-pre-line">
@@ -496,25 +496,31 @@ export default function SkillManagementPage() {
                             >
                               <Pencil className="h-3.5 w-3.5" />
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => setDeletingSkill(skill)}
-                              disabled={(skill.badgeCount ?? 0) > 0}
-                              title={
-                                (skill.badgeCount ?? 0) > 0
-                                  ? `Cannot delete: used by ${skill.badgeCount} badge template(s)`
-                                  : undefined
-                              }
-                              className={`h-7 w-7 p-0 ${
-                                (skill.badgeCount ?? 0) > 0
-                                  ? 'text-neutral-300 cursor-not-allowed'
-                                  : 'text-red-600 hover:text-red-700 hover:bg-red-50'
-                              }`}
-                              aria-label={`Delete ${skill.name}`}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
+                            {(skill.badgeCount ?? 0) > 0 ? (
+                              <span
+                                title={`Cannot delete: used by ${skill.badgeCount} badge template(s)`}
+                              >
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  disabled
+                                  className="h-7 w-7 p-0 text-neutral-300 cursor-not-allowed"
+                                  aria-label={`Delete ${skill.name}`}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </span>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setDeletingSkill(skill)}
+                                className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                aria-label={`Delete ${skill.name}`}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
                           </div>
                         </td>
                       </tr>
