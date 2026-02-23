@@ -1,7 +1,8 @@
 # G-Credit Sprint 12 — UAT Test Plan
 
-**Version:** 1.0
+**Version:** 1.1
 **Created:** 2026-02-22
+**Updated:** 2026-02-23
 **Sprint:** 12
 **Story:** 12.9
 **Tester(s):** _______________
@@ -100,21 +101,21 @@
 ### Skill Categories (12) — Tree View
 
 ```
-├─ 🔒 Technical Skills (blue, L1)                          ← system-defined
-│   ├─ 🔒 Programming Languages (blue, L2)
+├─ ⓢ Technical Skills (blue, L1)                          ← system-defined
+│   ├─ ⓢ Programming Languages (blue, L2)                 ← inherits parent color
 │   │      Skills: TypeScript (INT), AI (INT)
-│   └─ 🔒 Cloud Platforms (cyan, L2)
+│   └─ ⓢ Cloud Platforms (blue, L2)                       ← inherits parent color
 │       │  Skills: Azure Cloud (ADV), Docker (INT)
-│       └─ AWS / Amazon Web Services (orange, L3)     ← user-defined, editable
+│       └─ AWS / Amazon Web Services (blue, L3)            ← inherits grandparent color
 │              Skills: (none)
-├─ 🔒 Soft Skills (amber, L1)
-│   ├─ 🔒 Communication (amber, L2)
+├─ ⓢ Soft Skills (amber, L1)
+│   ├─ ⓢ Communication (amber, L2)                        ← inherits parent color
 │   │      Skills: Public Speaking (BEG), Negotiation (ADV)
-│   └─ 🔒 Leadership (orange, L2)
+│   └─ ⓢ Leadership (amber, L2)                           ← inherits parent color
 │          Skills: Team Leadership (EXP)
-├─ 🔒 Domain Knowledge (emerald, L1)                 ← no sub-categories, no skills
-├─ 🔒 Company-Specific Competencies (violet, L1)     ← no sub-categories, no skills
-├─ 🔒 Professional Skills (cyan, L1)
+├─ ⓢ Domain Knowledge (emerald, L1)                 ← no sub-categories, no skills
+├─ ⓢ Company-Specific Competencies (violet, L1)     ← no sub-categories, no skills
+├─ ⓢ Professional Skills (cyan, L1)
 │      Skills: Project Management (ADV)
 ├─ Internal Tools (rose, L1)                          ← user-defined, editable
 │      Skills: G-Credit Platform (BEG)
@@ -122,9 +123,16 @@
        Skills: (none)
 ```
 
-- 🔒 = `isSystemDefined=true` → lock icon, no delete, no edit name
+- ⓢ = `isSystemDefined=true` → shows "System" badge (informational only, ADR-012)
+- **ADR-012:** `isSystemDefined` is informational only — NOT used for access control.
+  Edit and delete are allowed for all categories; protection is association-based:
+  - Cannot delete if has children (sub-categories)
+  - Cannot delete if has associated skills
+- Category names render as **colored pills** (background color) in both sidebar and management views
+- Child categories **auto-inherit parent color** on creation (no explicit color needed)
 - L1 × 7 (5 system + 2 custom), L2 × 4 (system), L3 × 1 (user-defined)
-- Colors: blue, amber, emerald, violet, cyan, rose, lime, orange
+- Colors: blue, amber, emerald, violet, cyan, rose, lime
+- **Parent dropdown** in create/edit shows **tree-walk order** with `└` indent prefix
 
 ### Skills (9)
 
@@ -347,11 +355,16 @@ All other test cases work with **local-only** users. No M365 configuration neede
 > Quick-reference numbers for manual testing. Use alongside the test cases below.
 
 ### When Viewing Skill Category Tree (UAT-S12-001)
-- Expect **7 top-level** nodes (5 system 🔒 + 2 custom)
-- Expand **Technical Skills** → 2 children (Programming Languages, Cloud Platforms)
-- Expand **Cloud Platforms** → 1 child (AWS) — this proves **3 levels**
-- Expand **Soft Skills** → 2 children (Communication, Leadership)
-- Skill counts per node: Programming Languages=2, Cloud Platforms=2, Communication=2, Leadership=1, Professional Skills=1, Internal Tools=1
+- Expect **7 top-level** nodes (5 system ⓢ + 2 custom)
+- System categories show "System" badge (informational, ADR-012) — **not** a lock icon
+- All categories are editable and deletable (if no children/skills), regardless of `isSystemDefined`
+- Category names displayed as **colored pills** with background color
+- Child categories share **same color** as parent (color inheritance)
+- Expand **Technical Skills** → 2 children (Programming Languages, Cloud Platforms) — all blue pills
+- Expand **Cloud Platforms** → 1 child (AWS) — also blue pill — this proves **3 levels + color inheritance**
+- Expand **Soft Skills** → 2 children (Communication, Leadership) — all amber pills
+- Skill counts per node shown as **brand-colored pill** (blue bg): Programming Languages=2, Cloud Platforms=2, Communication=2, Leadership=1, Professional Skills=1, Internal Tools=1
+- **Hover** on skill count pill → tooltip lists associated skill names (e.g., "• TypeScript • AI")
 
 ### When Viewing Users Table (UAT-S12-012)
 - Expect **5 rows**: Admin User (ADMIN), Demo Issuer (ISSUER), Team Manager (MANAGER), Demo Employee (EMPLOYEE), Demo Employee2 (EMPLOYEE)
@@ -418,22 +431,22 @@ All other test cases work with **local-only** users. No M365 configuration neede
 
 | ID | Priority | Scenario | Pre-condition | Steps | Expected Result | Pass/Fail |
 |----|----------|----------|---------------|-------|-----------------|-----------|
-| UAT-S12-001 | HIGH | Admin views skill category tree (3 levels) | Logged in as Admin, seed categories exist | 1. Navigate to `/admin/skills/categories` 2. Observe tree structure | Tree displays with expand/collapse chevrons. 3 levels visible (e.g., Technology → Cloud → AWS). Each node shows skill count badge. `<AdminPageShell>` wrapper with title + description. | |
-| UAT-S12-002 | HIGH | Admin creates top-level category | On category management page | 1. Click "Add Category" (top-level) 2. Enter name: "Test Category" 3. Enter description: "UAT test" 4. Submit | New Level 1 category appears at bottom of tree. Sonner toast: "Category created successfully". No `parentId` in request. | |
-| UAT-S12-003 | HIGH | Admin creates subcategory under existing category | Top-level category exists | 1. Hover a Level 1 category → click "+" action 2. Enter name: "Sub Category" 3. Submit 4. Repeat: hover the new Level 2 → click "+" 5. Enter name: "Sub-Sub Category" | Level 2 category nested under parent. Level 3 nested under Level 2. Attempting to add a child to Level 3 is blocked (max 3 levels). | |
-| UAT-S12-004 | MEDIUM | Admin edits category name/description | Categories exist | 1. Click edit icon on any category 2. Change name to "Updated Name" 3. Change description 4. Save | Name and description updated in tree. Toast: success. System-defined categories: edit name/description is blocked (403 from backend). | |
+| UAT-S12-001 | HIGH | Admin views skill category tree (3 levels) | Logged in as Admin, seed categories exist | 1. Navigate to `/admin/skills/categories` 2. Observe tree structure | Tree displays with expand/collapse chevrons. 3 levels visible (e.g., Technical Skills → Cloud Platforms → AWS). Each node shows category name as **colored pill** (background color). Skill count shown as **brand-colored badge** — hover shows tooltip listing skill names. `<AdminPageShell>` wrapper with title + description. | |
+| UAT-S12-002 | HIGH | Admin creates top-level category | On category management page | 1. Click "Add Category" (top-level) 2. Enter name: "Test Category" 3. Enter description: "UAT test" 4. Submit | New Level 1 category appears at bottom of tree with **auto-assigned color** (round-robin from palette). Sonner toast: "Category created successfully". No `parentId` in request. | |
+| UAT-S12-003 | HIGH | Admin creates subcategory under existing category | Top-level category exists | 1. Hover a Level 1 category → click "+" action 2. Enter name: "Sub Category" 3. Submit 4. Repeat: hover the new Level 2 → click "+" 5. Enter name: "Sub-Sub Category" | Level 2 category nested under parent with **same color as parent** (auto-inherited). Level 3 nested under Level 2 with same color. Attempting to add a child to Level 3 is blocked (max 3 levels). **Parent dropdown** shows categories in tree-walk order with `└` indent for children. | |
+| UAT-S12-004 | MEDIUM | Admin edits category name/description | Categories exist | 1. Click edit icon on any category (including system-defined) 2. Change name to "Updated Name" 3. Change description 4. Save | Name and description updated in tree. Toast: success. **All categories are editable** regardless of `isSystemDefined` (ADR-012). If category has associated skills, **amber warning banner** shows: "This category has N associated skills. Changes to the category name will apply to all of them." | |
 | UAT-S12-005 | MEDIUM | Admin drag-and-drop reorders categories (same level) | Multiple same-level categories exist | 1. Grab drag handle (⠿) on a category 2. Drag to new position within same level 3. Release | Category reordered. `displayOrder` updated. Only same-level reorder works — cross-level reparenting is not supported. | |
-| UAT-S12-006 | HIGH | Admin delete blocked for category with skills | Category has skills assigned | 1. Click delete icon on a category that has skills 2. Observe | `<ConfirmDialog>` shows warning: category has N skills and cannot be deleted. Delete button disabled or action rejected by backend. | |
-| UAT-S12-007 | MEDIUM | System-defined category shows lock icon, no delete | Seed includes `isSystemDefined=true` categories | 1. Observe system-defined category in tree | Lock icon (🔒) displayed. No delete action available. Edit of name/description blocked. Backend returns 403 on attempted update/delete. | |
+| UAT-S12-006 | HIGH | Admin delete blocked for category with children or skills | Category has skills or sub-categories | 1. Click delete icon on a category that has skills 2. Observe tooltip 3. Click delete icon on a category that has children | Delete button is **disabled** with hover tooltip: "Cannot delete: has N skill(s)" or "Cannot delete: has N sub-categories". Delete button enabled only for categories with no children AND no skills. Backend returns 400 on attempted delete of non-empty category. | |
+| UAT-S12-007 | MEDIUM | System-defined category shows "System" badge (ADR-012) | Seed includes `isSystemDefined=true` categories | 1. Observe system-defined category in tree | **"System" badge** (shield icon + text) displayed next to category name in management view. Badge is **informational only** — does NOT restrict edit or delete. In filter sidebar, System badge is hidden for compact display. Protection is association-based: cannot delete if has children or skills. | |
 
 ### 2.2 Skill Management — Story 12.2 (6 cases)
 
 | ID | Priority | Scenario | Pre-condition | Steps | Expected Result | Pass/Fail |
 |----|----------|----------|---------------|-------|-----------------|-----------|
-| UAT-S12-008 | HIGH | Admin views skills filtered by category | Logged in as Admin, seed skills exist | 1. Navigate to `/admin/skills` 2. Observe split layout: category tree (left) + skills table (right) 3. Click a category in tree | Skills table filters to show only skills in selected category. Table columns: Skill Name, Description, Category, Level, Badge Count, Actions. On <1024px: tree collapses into dropdown selector above table. | |
+| UAT-S12-008 | HIGH | Admin views skills filtered by category | Logged in as Admin, seed skills exist | 1. Navigate to `/admin/skills` 2. Observe split layout: category tree (left) + skills table (right) 3. Click a category in tree | Skills table filters to show only skills in selected category. Table columns: Skill Name, Description, Category (colored pill), Level, Badge Templates (count with brand-colored pill for non-zero), Actions. Category sidebar shows categories as colored pills with skill count badges. On <1024px: tree collapses into dropdown selector above table. | |
 | UAT-S12-009 | HIGH | Admin creates skill with inline add (Tab-to-submit) | Category selected in tree | 1. Click "Add Skill" row at top of table 2. Type skill name: "UAT Skill" 3. Enter description 4. Press Tab | Skill created under selected category. Toast: success. Row becomes normal table row. Press Escape cancels without creating. | |
-| UAT-S12-010 | HIGH | Admin edits/deletes skill | Skills exist, some referenced by badge templates | 1. Hover a skill row → click edit (pencil icon) 2. Change name → save 3. Hover another skill → click delete 4. If skill has badge template references: observe blocked delete | Edit: name updated, toast success. Delete (no references): skill removed. Delete (with references): blocked with message showing which templates reference it. | |
-| UAT-S12-011 | MEDIUM | Skill tags show category color | Skills with different categories | 1. View skills table 2. Observe category column | Each category tag has its assigned color from 10-color palette (blue, emerald, amber, rose, etc.). Colors match `categoryColors.ts` mapping. | |
+| UAT-S12-010 | HIGH | Admin edits/deletes skill | Skills exist, some referenced by badge templates | 1. Hover a skill row → click edit (pencil icon) 2. Change name → save 3. Hover another skill → click delete 4. If skill has badge template references: observe blocked delete | Edit: name updated, toast success. **Edit dialog** category dropdown shows tree-walk order with `└` indent. Delete (no references): skill removed. Delete (with references): button **disabled** with hover tooltip "Cannot delete: used by N badge template(s)". | |
+| UAT-S12-011 | MEDIUM | Skill tags show category color | Skills with different categories | 1. View skills table 2. Observe category column | Each category tag rendered as **colored pill** (background color) matching category's color. Colors match `categoryColors.ts` mapping. Child categories share parent's color. | |
 | UAT-S12-011b | MEDIUM | Badge Template form groups skills by category | Navigate to Badge Template create/edit | 1. Navigate to Badge Templates → Create Template 2. Open skill picker 3. Observe grouping | Skills grouped under category headers in the picker. Each group header shows category name with color dot. | |
 | UAT-S12-011c | MEDIUM | Badge detail + verify page show category-colored skill tags | Badge with skills exists | 1. Open badge detail modal in Admin 2. Observe skill tags 3. Navigate to `/verify/{verificationId}` 4. Observe skill tags | Both pages display skill tags with category-matching colors. Skill names shown (never UUIDs). Unknown skills render as "Unknown Skill" with muted styling. | |
 
