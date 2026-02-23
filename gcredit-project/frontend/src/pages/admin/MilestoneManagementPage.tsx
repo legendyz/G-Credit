@@ -5,7 +5,7 @@
  * Card grid layout grouped by scope, with create/edit/toggle/delete actions.
  */
 import { useState, useCallback } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, PowerOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -249,13 +249,21 @@ function MilestoneCard({ milestone, onEdit, onDelete, onToggle }: MilestoneCardP
         >
           <button
             onClick={() => onDelete(milestone)}
-            className="p-1 rounded hover:bg-red-50 text-neutral-400 hover:text-red-600 transition-colors"
+            className={`p-1 rounded transition-colors ${
+              achievementCount > 0
+                ? 'hover:bg-amber-50 text-neutral-400 hover:text-amber-600'
+                : 'hover:bg-red-50 text-neutral-400 hover:text-red-600'
+            }`}
             aria-label={
               achievementCount > 0 ? `Deactivate ${milestone.title}` : `Delete ${milestone.title}`
             }
             title={achievementCount > 0 ? 'Deactivate (has achievements)' : 'Delete'}
           >
-            <Trash2 className="h-4 w-4" />
+            {achievementCount > 0 ? (
+              <PowerOff className="h-4 w-4" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
           </button>
           <Switch
             checked={milestone.isActive}
