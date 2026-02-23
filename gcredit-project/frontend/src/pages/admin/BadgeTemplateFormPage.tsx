@@ -33,6 +33,7 @@ import {
 } from '@/lib/badgeTemplatesApi';
 import { useSkills } from '@/hooks/useSkills';
 import { SkillsFilter } from '@/components/search/SkillsFilter';
+import { useSkillCategoryTree } from '@/hooks/useSkillCategories';
 import { LayoutGrid, Save, Loader2, Upload, X, AlertCircle } from 'lucide-react';
 
 const CATEGORIES: { value: TemplateCategory; label: string }[] = [
@@ -70,6 +71,7 @@ export function BadgeTemplateFormPage() {
 
   // Skills data
   const { data: availableSkills = [] } = useSkills();
+  const { data: categoryTree } = useSkillCategoryTree();
 
   // Preserve original criteria shape from backend (edit mode)
   const [originalCriteria, setOriginalCriteria] = useState<Record<string, unknown> | null>(null);
@@ -419,6 +421,7 @@ export function BadgeTemplateFormPage() {
                 selectedSkills={selectedSkills}
                 onChange={setSelectedSkills}
                 groupByCategory={true}
+                categoryTree={categoryTree}
                 searchable={true}
                 showClearButton={true}
                 disabled={isReadOnly}

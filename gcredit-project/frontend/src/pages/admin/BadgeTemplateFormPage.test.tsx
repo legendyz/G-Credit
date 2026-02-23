@@ -37,6 +37,15 @@ vi.mock('@/hooks/useSkills', () => ({
   })),
 }));
 
+// Mock useSkillCategoryTree hook (used by BadgeTemplateFormPage for SkillsFilter)
+vi.mock('@/hooks/useSkillCategories', () => ({
+  useSkillCategoryTree: vi.fn(() => ({
+    data: undefined,
+    isLoading: false,
+    isError: false,
+  })),
+}));
+
 // Mock sonner
 vi.mock('sonner', () => ({
   toast: {

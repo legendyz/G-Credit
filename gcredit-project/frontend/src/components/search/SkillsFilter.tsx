@@ -16,6 +16,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronDown, ChevronRight, Check, X, Search } from 'lucide-react';
 import { getCategoryColorClasses } from '@/lib/categoryColors';
+import type { SkillCategory } from '@/hooks/useSkillCategories';
 
 export interface Skill {
   id: string;
@@ -78,6 +79,9 @@ export interface SkillsFilterProps {
   searchable?: boolean;
   /** Whether to group skills by category */
   groupByCategory?: boolean;
+  /** Category tree from API — when provided, tree structure comes from this
+   *  instead of being reconstructed from skill data */
+  categoryTree?: SkillCategory[];
   /** Whether to show clear button */
   showClearButton?: boolean;
   /** Whether loading skills */
@@ -96,6 +100,7 @@ export function SkillsFilter({
   label,
   searchable = false,
   groupByCategory = false,
+  categoryTree,
   showClearButton = false,
   isLoading = false,
   className = '',
@@ -127,9 +132,49 @@ export function SkillsFilter({
     {} as Record<string, Skill[]>
   );
 
-  // Build hierarchical groups when root/sub category data is available
+  // Build a map of categoryId → skills for quick lookup
+  const skillsByCategoryId = ((): Map<string, Skill[]> => {
+    const map = new Map<string, Skill[]>();
+    for (const skill of filteredSkills) {
+      const cid = skill.categoryId;
+      if (!cid) continue;
+      const arr = map.get(cid) ?? [];
+      arr.push(skill);
+      map.set(cid, arr);
+    }
+    return map;
+  })();
+
+  // Build hierarchy from category tree (authoritative source) or from skill data (fallback)
   const hierarchicalGroups = ((): HierarchyGroup[] | null => {
     if (!groupByCategory) return null;
+
+    // When categoryTree is provided, build from the tree structure
+    if (categoryTree && categoryTree.length > 0) {
+      return categoryTree.map((l1) => {
+        const l1Skills = skillsByCategoryId.get(l1.id) ?? [];
+        const subGroups: SubGroup[] = (l1.children ?? []).map((l2) => {
+          const l2Skills = skillsByCategoryId.get(l2.id) ?? [];
+          const l3Groups: L3Group[] = (l2.children ?? []).map((l3) => ({
+            name: l3.name,
+            skills: skillsByCategoryId.get(l3.id) ?? [],
+          }));
+          return {
+            name: l2.name,
+            directSkills: l2Skills,
+            l3Groups,
+          };
+        });
+        return {
+          rootName: l1.name,
+          rootColor: l1.color,
+          subGroups,
+          directSkills: l1Skills,
+        };
+      });
+    }
+
+    // Fallback: reconstruct hierarchy from skill data
     const hasHierarchy = filteredSkills.some((s) => s.rootCategoryName);
     if (!hasHierarchy) return null;
 
