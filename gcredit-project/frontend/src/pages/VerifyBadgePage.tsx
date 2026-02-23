@@ -350,17 +350,19 @@ export function VerifyBadgePage() {
               );
             })()}
 
-          {/* Story 9.2 AC5: Download Button - disabled for revoked badges */}
+          {/* Story 9.2 AC5: Download Button - disabled for revoked/pending badges */}
           <div className="flex justify-center">
             <Button
               onClick={downloadAssertion}
               className="gap-2"
               variant="outline"
-              disabled={!badge.assertionJson || isRevoked}
+              disabled={!badge.assertionJson || isRevoked || isPending}
               title={
                 isRevoked
                   ? 'This badge has been revoked and cannot be downloaded'
-                  : 'Download Open Badges 2.0 JSON-LD'
+                  : isPending
+                    ? 'This badge has not been claimed yet'
+                    : 'Download Open Badges 2.0 JSON-LD'
               }
             >
               <Download className="h-4 w-4" />
