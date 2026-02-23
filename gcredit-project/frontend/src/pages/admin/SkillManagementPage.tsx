@@ -261,7 +261,7 @@ export default function SkillManagementPage() {
     >
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Left panel: Category Tree (desktop only) */}
-        <aside className="hidden lg:block w-72 shrink-0">
+        <aside className="hidden lg:block w-80 shrink-0">
           <div className="rounded-lg border border-neutral-200 bg-white p-4">
             <h3 className="text-sm font-semibold text-neutral-700 mb-3">Categories</h3>
             <button

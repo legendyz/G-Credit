@@ -304,10 +304,13 @@ function CategoryTreeNodeInner({
           <span className="w-5" /> // spacer for alignment
         )}
 
-        {/* Category name as colored pill */}
-        <div className="flex-1 flex items-center gap-2 min-w-0">
+        {/* Category name */}
+        <div className="flex-1 flex items-center gap-1.5 min-w-0">
+          {/* Compact colored pill (both modes) */}
           <span
-            className={`text-sm font-medium truncate px-2.5 py-0.5 rounded-full ${
+            className={`text-sm font-medium truncate rounded-full ${
+              editable ? 'px-2.5 py-0.5' : 'px-2 py-0.5'
+            } ${
               category.color
                 ? `${colorClasses.bg} ${colorClasses.text}`
                 : 'bg-neutral-100 text-neutral-800'
@@ -319,13 +322,17 @@ function CategoryTreeNodeInner({
 
         {/* Skill count badge */}
         {skillCount > 0 && (
-          <span className="text-xs text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-full">
-            {skillCount} {skillCount === 1 ? 'skill' : 'skills'}
+          <span
+            className={`text-xs text-neutral-400 ${
+              editable ? 'bg-neutral-100 px-2 py-0.5 rounded-full' : ''
+            }`}
+          >
+            {editable ? `${skillCount} ${skillCount === 1 ? 'skill' : 'skills'}` : skillCount}
           </span>
         )}
 
-        {/* System-recommended badge (informational only, ADR-012) */}
-        {category.isSystemDefined && (
+        {/* System-recommended badge (editable/management mode only, ADR-012) */}
+        {editable && category.isSystemDefined && (
           <span
             className="inline-flex items-center gap-0.5 text-[10px] font-medium text-brand-600 bg-brand-50 border border-brand-200 px-1.5 py-0.5 rounded-full"
             data-testid="system-badge"

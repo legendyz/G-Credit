@@ -89,14 +89,14 @@ describe('CategoryTree', () => {
   });
 
   it('shows skill count per node', () => {
-    render(<CategoryTree categories={mockCategories} />);
+    render(<CategoryTree categories={mockCategories} editable />);
 
     expect(screen.getByText('2 skills')).toBeInTheDocument(); // Frontend has 2 skills
     expect(screen.getByText('1 skill')).toBeInTheDocument(); // Soft Skills has 1 skill
   });
 
-  it('shows system badge for system-defined categories', () => {
-    render(<CategoryTree categories={mockCategories} />);
+  it('shows system badge for system-defined categories (editable mode)', () => {
+    render(<CategoryTree categories={mockCategories} editable />);
 
     const systemBadges = screen.getAllByTestId('system-badge');
     // Technical Skills + Frontend are system-defined
