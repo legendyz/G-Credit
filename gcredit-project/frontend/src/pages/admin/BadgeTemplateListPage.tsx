@@ -394,18 +394,24 @@ export function BadgeTemplateListPage() {
                       : '\u00A0'}
                   </p>
 
-                  {/* Badge Stats */}
-                  {template.badgeStats && template.badgeStats.total > 0 && (
-                    <div className="flex items-center gap-1.5 text-xs text-neutral-600 mt-1">
-                      <Award className="h-3.5 w-3.5 text-brand-500 flex-shrink-0" />
-                      <span>{template.badgeStats.total} issued</span>
-                      {template.badgeStats.pending > 0 && (
-                        <span className="text-amber-600 font-medium">
-                          · {template.badgeStats.pending} pending
+                  {/* Badge Stats — always rendered for vertical alignment */}
+                  <div className="flex items-center gap-1.5 text-xs mt-1 min-h-[1.25rem]">
+                    {template.badgeStats && template.badgeStats.total > 0 ? (
+                      <>
+                        <Award className="h-3.5 w-3.5 text-brand-500 flex-shrink-0" />
+                        <span className="font-semibold text-neutral-700">
+                          {template.badgeStats.total} issued
                         </span>
-                      )}
-                    </div>
-                  )}
+                        {template.badgeStats.pending > 0 && (
+                          <span className="text-amber-600 font-semibold">
+                            · {template.badgeStats.pending} pending
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-neutral-400">No badges issued</span>
+                    )}
+                  </div>
 
                   {/* Actions - always at bottom */}
                   <div className="flex items-center gap-2 pt-2 mt-auto border-t border-neutral-100">
