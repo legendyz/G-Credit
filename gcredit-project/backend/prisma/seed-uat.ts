@@ -95,6 +95,11 @@ const IDS = {
   // Extra milestones
   milestone4: '00000000-0000-4000-a000-000500000004',
   milestone5: '00000000-0000-4000-a000-000500000005',
+  // Milestone Achievements (type=0005, seq=1x)
+  mAchieve1: '00000000-0000-4000-a000-000500000011', // Employee × First Badge
+  mAchieve2: '00000000-0000-4000-a000-000500000012', // Employee × Well-Rounded
+  mAchieve3: '00000000-0000-4000-a000-000500000013', // Manager  × First Badge
+  mAchieve4: '00000000-0000-4000-a000-000500000014', // Admin    × First Badge
 };
 
 const UAT_SALT = 'gcredit-uat-salt';
@@ -1103,6 +1108,15 @@ async function main() {
   // 5. MILESTONE CONFIGS (2 milestones)
   // ========================================
 
+  // Clean up achievements first (cascade should handle it, but explicit is safer for re-runs)
+  await prisma.milestoneAchievement.deleteMany({
+    where: {
+      id: {
+        in: [IDS.mAchieve1, IDS.mAchieve2, IDS.mAchieve3, IDS.mAchieve4],
+      },
+    },
+  });
+
   await prisma.milestoneConfig.deleteMany({
     where: {
       id: {
@@ -1195,6 +1209,59 @@ async function main() {
   });
 
   console.log('✅ 5 milestone configs created (3 active global, 1 active category, 1 inactive)');
+
+  // 5b. MILESTONE ACHIEVEMENTS
+  // Seed data bypasses badge issuance flow (checkMilestones),
+  // so we manually create achievement records for qualifying users.
+  //
+  // First Badge (badge_count ≥ 1, global):
+  //   Employee (4 CLAIMED) ✅, Manager (3 CLAIMED) ✅, Admin (1 CLAIMED) ✅
+  // Badge Collector (badge_count ≥ 5): nobody qualifies
+  // Well-Rounded Learner (category_count ≥ 3):
+  //   Employee → 5 distinct skill categories (Programming, Cloud, Leadership, Communication, Professional) ✅
+  // Cloud Specialist (badge_count ≥ 3 in Technical Skills): nobody qualifies (Employee has 1 matching badge)
+  // Badge Master (inactive): skipped
+
+  await Promise.all([
+    // Employee × First Badge
+    prisma.milestoneAchievement.create({
+      data: {
+        id: IDS.mAchieve1,
+        milestoneId: IDS.milestone1,
+        userId: employee.id,
+        achievedAt: new Date(twoMonthsAgo.getTime() + 2 * 24 * 60 * 60 * 1000), // when first badge was claimed
+      },
+    }),
+    // Employee × Well-Rounded Learner
+    prisma.milestoneAchievement.create({
+      data: {
+        id: IDS.mAchieve2,
+        milestoneId: IDS.milestone3,
+        userId: employee.id,
+        achievedAt: new Date(threeDaysAgo.getTime() + 6 * 60 * 60 * 1000), // when 4th badge (Team Player) was claimed, crossing 3-category threshold
+      },
+    }),
+    // Manager × First Badge
+    prisma.milestoneAchievement.create({
+      data: {
+        id: IDS.mAchieve3,
+        milestoneId: IDS.milestone1,
+        userId: manager.id,
+        achievedAt: new Date(oneMonthAgo.getTime() + 2 * 24 * 60 * 60 * 1000), // when first badge (Leadership) was claimed
+      },
+    }),
+    // Admin × First Badge
+    prisma.milestoneAchievement.create({
+      data: {
+        id: IDS.mAchieve4,
+        milestoneId: IDS.milestone1,
+        userId: admin.id,
+        achievedAt: new Date(oneWeekAgo.getTime() + 4 * 60 * 60 * 1000), // when Team Player badge was claimed
+      },
+    }),
+  ]);
+
+  console.log('✅ 4 milestone achievements created (3 First Badge + 1 Well-Rounded)');
 
   // ========================================
   // 6. AUDIT LOGS (9 entries covering all action types)
