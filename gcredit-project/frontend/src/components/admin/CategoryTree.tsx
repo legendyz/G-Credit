@@ -19,6 +19,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Button } from '@/components/ui/button';
+import { getCategoryColorClasses } from '@/lib/categoryColors';
 import type { SkillCategory } from '@/hooks/useSkillCategories';
 
 interface CategoryTreeProps {
@@ -216,6 +217,7 @@ function CategoryTreeNodeInner({
   const isExpanded = expanded.has(category.id);
   const isSelected = selectedId === category.id;
   const skillCount = category._count?.skills ?? category.skills?.length ?? 0;
+  const colorClasses = getCategoryColorClasses(category.color);
 
   const handleChildDragEnd = useCallback(
     (event: DragEndEvent) => {
@@ -294,8 +296,18 @@ function CategoryTreeNodeInner({
           <span className="w-5" /> // spacer for alignment
         )}
 
-        {/* Category name */}
-        <span className="flex-1 text-sm font-medium text-neutral-800">{category.name}</span>
+        {/* Category name + color */}
+        <div className="flex-1 flex items-center gap-2 min-w-0">
+          <span className="text-sm font-medium text-neutral-800 truncate">{category.name}</span>
+          {category.color && (
+            <span
+              className={`text-[11px] font-medium px-1.5 py-0.5 rounded-full border ${colorClasses.bg} ${colorClasses.text} ${colorClasses.border}`}
+              title={`Category color: ${category.color}`}
+            >
+              {category.color}
+            </span>
+          )}
+        </div>
 
         {/* Skill count badge */}
         {skillCount > 0 && (

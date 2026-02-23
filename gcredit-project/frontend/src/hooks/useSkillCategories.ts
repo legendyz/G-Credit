@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 export interface SkillCategory {
   id: string;
   name: string;
+  color?: string | null;
   nameEn?: string;
   description?: string;
   parentId?: string;
