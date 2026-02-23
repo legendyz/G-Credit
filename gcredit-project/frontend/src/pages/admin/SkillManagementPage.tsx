@@ -461,7 +461,24 @@ export default function SkillManagementPage() {
                           {skill.level || '—'}
                         </td>
                         <td className="px-4 py-3 text-center text-sm text-neutral-600 hidden sm:table-cell">
-                          {skill.badgeCount ?? 0}
+                          {(skill.badgeCount ?? 0) > 0 ? (
+                            <span className="relative group/tmpl cursor-help">
+                              <span className="underline decoration-dotted underline-offset-2">
+                                {skill.badgeCount}
+                              </span>
+                              <span className="invisible group-hover/tmpl:visible absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs px-3 py-2 rounded-lg bg-neutral-800 text-white text-xs shadow-lg whitespace-pre-line">
+                                <span className="font-semibold">Used by:</span>
+                                {skill.templateNames?.map((name) => (
+                                  <span key={name} className="block mt-0.5">
+                                    • {name}
+                                  </span>
+                                ))}
+                                <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-neutral-800" />
+                              </span>
+                            </span>
+                          ) : (
+                            <span className="text-neutral-400">0</span>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">

@@ -31,38 +31,46 @@ export class SkillsService {
       },
     });
 
-    // Compute badge template count for each skill (skillIds is String[])
+    // Compute badge template references for each skill (skillIds is String[])
     const skillIds = skills.map((s) => s.id);
-    const badgeCounts = await this.computeBadgeCounts(skillIds);
+    const templateRefs = await this.computeTemplateRefs(skillIds);
 
-    return skills.map((s) => ({
-      ...s,
-      badgeCount: badgeCounts.get(s.id) ?? 0,
-    }));
+    return skills.map((s) => {
+      const ref = templateRefs.get(s.id);
+      return {
+        ...s,
+        badgeCount: ref?.count ?? 0,
+        templateNames: ref?.names ?? [],
+      };
+    });
   }
 
   /**
-   * Count how many badge templates reference each skill ID.
+   * Find badge templates referencing each skill ID.
+   * Returns count and template names per skill.
    */
-  private async computeBadgeCounts(
+  private async computeTemplateRefs(
     skillIds: string[],
-  ): Promise<Map<string, number>> {
+  ): Promise<Map<string, { count: number; names: string[] }>> {
     if (skillIds.length === 0) return new Map();
 
     const templates = await this.prisma.badgeTemplate.findMany({
       where: { skillIds: { hasSome: skillIds } },
-      select: { skillIds: true },
+      select: { skillIds: true, name: true },
     });
 
-    const counts = new Map<string, number>();
+    const refs = new Map<string, { count: number; names: string[] }>();
     for (const t of templates) {
       for (const sid of t.skillIds) {
         if (skillIds.includes(sid)) {
-          counts.set(sid, (counts.get(sid) ?? 0) + 1);
+          const entry = refs.get(sid) ?? { count: 0, names: [] };
+          entry.count += 1;
+          entry.names.push(t.name);
+          refs.set(sid, entry);
         }
       }
     }
-    return counts;
+    return refs;
   }
 
   /**
@@ -239,11 +247,15 @@ export class SkillsService {
     });
 
     const skillIds = skills.map((s) => s.id);
-    const badgeCounts = await this.computeBadgeCounts(skillIds);
+    const templateRefs = await this.computeTemplateRefs(skillIds);
 
-    return skills.map((s) => ({
-      ...s,
-      badgeCount: badgeCounts.get(s.id) ?? 0,
-    }));
+    return skills.map((s) => {
+      const ref = templateRefs.get(s.id);
+      return {
+        ...s,
+        badgeCount: ref?.count ?? 0,
+        templateNames: ref?.names ?? [],
+      };
+    });
   }
 }

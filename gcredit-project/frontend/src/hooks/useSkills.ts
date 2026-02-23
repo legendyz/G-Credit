@@ -15,6 +15,7 @@ interface SkillApiResponse {
   description?: string;
   level?: string;
   badgeCount?: number;
+  templateNames?: string[];
   category?: {
     id: string;
     name: string;
@@ -71,6 +72,7 @@ export function useSkills(options: UseSkillsOptions = {}) {
         description: skill.description, // NEW: for admin table
         level: skill.level, // NEW: for admin table
         badgeCount: skill.badgeCount ?? 0, // NEW: badge template reference count
+        templateNames: skill.templateNames ?? [], // NEW: template names for hover tooltip
       }));
     },
     enabled,
