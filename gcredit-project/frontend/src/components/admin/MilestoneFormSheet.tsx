@@ -377,14 +377,14 @@ export function MilestoneFormSheet({
                 ))}
               </select>
 
-              <label className="flex items-center gap-2 mt-2 text-sm">
+              <label className="flex items-center gap-2 mt-2 text-sm text-neutral-600">
                 <input
                   type="checkbox"
                   checked={includeSubCategories}
                   onChange={(e) => setIncludeSubCategories(e.target.checked)}
                   className="rounded"
                 />
-                Include sub-categories
+                Count badges from sub-categories too
               </label>
             </div>
           )}
