@@ -53,7 +53,29 @@ export function CategoryFormDialog({
   const { data: flatCategories } = useSkillCategoryFlat();
 
   // Filter parent options: only show level 1 and level 2 (max level 3)
-  const parentOptions = (flatCategories || []).filter((c) => c.level < 3 && c.id !== category?.id);
+  // Then sort into tree-walk order (parent followed by its children)
+  const parentOptions = (() => {
+    const eligible = (flatCategories || []).filter((c) => c.level < 3 && c.id !== category?.id);
+    const l1 = eligible
+      .filter((c) => c.level === 1)
+      .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+    const childrenByParent = new Map<string, typeof eligible>();
+    for (const c of eligible) {
+      if (c.level === 2 && c.parentId) {
+        const arr = childrenByParent.get(c.parentId) || [];
+        arr.push(c);
+        childrenByParent.set(c.parentId, arr);
+      }
+    }
+    const result: typeof eligible = [];
+    for (const parent of l1) {
+      result.push(parent);
+      const children = childrenByParent.get(parent.id) || [];
+      children.sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+      result.push(...children);
+    }
+    return result;
+  })();
 
   // Reset form when dialog opens
   useEffect(() => {
@@ -194,8 +216,10 @@ export function CategoryFormDialog({
                   <SelectItem value="__none__">No parent (Top-level category)</SelectItem>
                   {parentOptions.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>
-                      {'  '.repeat(cat.level - 1)}
-                      {cat.name}
+                      <span style={{ paddingLeft: `${(cat.level - 1) * 20}px` }}>
+                        {cat.level > 1 && <span className="text-muted-foreground mr-1">└</span>}
+                        {cat.name}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>

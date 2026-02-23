@@ -111,7 +111,7 @@ export class SkillCategoriesService {
       level = parent.level + 1;
 
       // Inherit parent color when not explicitly provided
-      if (!data.color) {
+      if (!data.color && parent.color) {
         data.color = parent.color;
       }
     }
