@@ -167,38 +167,35 @@ describe('SkillCategoryManagementPage', () => {
     ).toBeInTheDocument();
   });
 
-  it('delete button on category with skills shows blocked message', () => {
+  it('delete button on category with skills is disabled with tooltip', () => {
     render(<SkillCategoryManagementPage />, { wrapper: createWrapper() });
 
-    // Click delete on "Frontend" (has 1 skill)
+    // "Frontend" has 1 skill — delete button should be disabled
     const deleteButton = screen.getByLabelText('Delete Frontend');
-    fireEvent.click(deleteButton);
+    expect(deleteButton).toBeDisabled();
 
-    expect(screen.getByText('Cannot Delete Category')).toBeInTheDocument();
-    expect(
-      screen.getByText("Cannot delete 'Frontend' — it has 1 skill assigned. Reassign them first.")
-    ).toBeInTheDocument();
+    // Tooltip wrapper with reason
+    const tooltipSpan = deleteButton.closest('span[title]');
+    expect(tooltipSpan).toHaveAttribute('title', 'Cannot delete: has 1 skill(s)');
   });
 
-  it('delete button on category with children shows blocked message', () => {
+  it('delete button on category with children is disabled with tooltip', () => {
     render(<SkillCategoryManagementPage />, { wrapper: createWrapper() });
 
-    // Technical Skills has children (Frontend) — but delete is disabled because system-defined
-    // Let's test via the handleDeleteRequest path — the system-defined check is on the button,
-    // but the children check is in the handler. We can test by looking at our mock data.
-    // "Soft Skills" has no children, "Technical Skills" is system-defined (disabled).
-    // Since Technical Skills button is disabled, we skip this test path
-    // — it's covered by the component-level behavior (disabled button for system-defined).
-  });
-
-  it('system-defined category shows lock icon and delete disabled', () => {
-    render(<SkillCategoryManagementPage />, { wrapper: createWrapper() });
-
-    const lockIcons = screen.getAllByTestId('lock-icon');
-    expect(lockIcons.length).toBeGreaterThan(0);
-
+    // "Technical Skills" has children (Frontend) — delete button should be disabled
     const deleteButton = screen.getByLabelText('Delete Technical Skills');
     expect(deleteButton).toBeDisabled();
+
+    // Tooltip wrapper with reason
+    const tooltipSpan = deleteButton.closest('span[title]');
+    expect(tooltipSpan).toHaveAttribute('title', 'Cannot delete: has 1 sub-category');
+  });
+
+  it('system-defined category shows System badge', () => {
+    render(<SkillCategoryManagementPage />, { wrapper: createWrapper() });
+
+    const badges = screen.getAllByTestId('system-badge');
+    expect(badges.length).toBeGreaterThan(0);
   });
 
   it('loading state shows spinner via AdminPageShell', () => {
