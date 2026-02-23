@@ -304,10 +304,14 @@ function CategoryTreeNodeInner({
           <span className="w-5" /> // spacer for alignment
         )}
 
-        {/* Category name (colored by category color) */}
+        {/* Category name as colored pill */}
         <div className="flex-1 flex items-center gap-2 min-w-0">
           <span
-            className={`text-sm font-medium truncate ${category.color ? colorClasses.text : 'text-neutral-800'}`}
+            className={`text-sm font-medium truncate px-2.5 py-0.5 rounded-full ${
+              category.color
+                ? `${colorClasses.bg} ${colorClasses.text}`
+                : 'bg-neutral-100 text-neutral-800'
+            }`}
           >
             {category.name}
           </span>
