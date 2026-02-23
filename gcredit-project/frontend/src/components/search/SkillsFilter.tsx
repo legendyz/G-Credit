@@ -26,15 +26,22 @@ export interface Skill {
   rootCategoryName?: string;
   rootCategoryColor?: string | null;
   subCategoryName?: string;
+  l3CategoryName?: string;
   description?: string;
   level?: string;
   badgeCount?: number;
   templateNames?: string[];
 }
 
-interface SubGroup {
+interface L3Group {
   name: string;
   skills: Skill[];
+}
+
+interface SubGroup {
+  name: string;
+  l3Groups: L3Group[];
+  directSkills: Skill[];
 }
 
 interface HierarchyGroup {
@@ -133,10 +140,20 @@ export function SkillsFilter({
       if (subName) {
         let subGroup = group.subGroups.find((sg) => sg.name === subName);
         if (!subGroup) {
-          subGroup = { name: subName, skills: [] };
+          subGroup = { name: subName, l3Groups: [], directSkills: [] };
           group.subGroups.push(subGroup);
         }
-        subGroup.skills.push(skill);
+        const l3Name = skill.l3CategoryName;
+        if (l3Name) {
+          let l3Group = subGroup.l3Groups.find((g) => g.name === l3Name);
+          if (!l3Group) {
+            l3Group = { name: l3Name, skills: [] };
+            subGroup.l3Groups.push(l3Group);
+          }
+          l3Group.skills.push(skill);
+        } else {
+          subGroup.directSkills.push(skill);
+        }
       } else {
         group.directSkills.push(skill);
       }
@@ -362,8 +379,17 @@ export function SkillsFilter({
                         <div className="pl-7 pr-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400">
                           {sub.name}
                         </div>
-                        {/* Skills under sub-category */}
-                        {sub.skills.map((skill) => renderSkillItem(skill, 'pl-9'))}
+                        {/* Direct skills under L2 (no L3 sub-category) */}
+                        {sub.directSkills.map((skill) => renderSkillItem(skill, 'pl-9'))}
+                        {/* L3 sub-sub-category groups */}
+                        {sub.l3Groups.map((l3) => (
+                          <div key={l3.name}>
+                            <div className="pl-9 pr-3 py-1 text-xs text-gray-400 dark:text-gray-500 italic">
+                              {l3.name}
+                            </div>
+                            {l3.skills.map((skill) => renderSkillItem(skill, 'pl-11'))}
+                          </div>
+                        ))}
                       </div>
                     ))}
                   </div>

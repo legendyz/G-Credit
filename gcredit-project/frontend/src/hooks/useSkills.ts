@@ -81,14 +81,17 @@ export function useSkills(options: UseSkillsOptions = {}) {
         let rootCategoryColor: string | null | undefined;
         let subCategoryName: string | undefined;
 
+        let l3CategoryName: string | undefined;
+
         if (cat) {
           if (cat.parent?.parent) {
-            // Level 3 category: grandparent (L1) > parent (L2) > this
+            // Level 3 category: grandparent (L1) > parent (L2) > this (L3)
             rootCategoryName = cat.parent.parent.name;
             rootCategoryColor = cat.parent.parent.color;
             subCategoryName = cat.parent.name;
+            l3CategoryName = cat.name;
           } else if (cat.parent) {
-            // Level 2 category: parent (L1) > this
+            // Level 2 category: parent (L1) > this (L2)
             rootCategoryName = cat.parent.name;
             rootCategoryColor = cat.parent.color;
             subCategoryName = cat.name;
@@ -108,6 +111,7 @@ export function useSkills(options: UseSkillsOptions = {}) {
           rootCategoryName,
           rootCategoryColor,
           subCategoryName,
+          l3CategoryName,
           description: skill.description,
           level: skill.level,
           badgeCount: skill.badgeCount ?? 0,
