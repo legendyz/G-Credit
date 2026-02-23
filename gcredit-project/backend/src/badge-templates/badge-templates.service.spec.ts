@@ -3,7 +3,11 @@ import { BadgeTemplatesService } from './badge-templates.service';
 import { PrismaService } from '../common/prisma.service';
 import { BlobStorageService } from '../common/services/blob-storage.service';
 import { IssuanceCriteriaValidatorService } from '../common/services/issuance-criteria-validator.service';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { TemplateStatus } from '@prisma/client';
 import { CreateBadgeTemplateDto } from './dto/badge-template.dto';
 import {
@@ -37,6 +41,7 @@ describe('BadgeTemplatesService', () => {
       count: jest.Mock;
     };
     skill: { findMany: jest.Mock };
+    badge: { count: jest.Mock };
   };
   let blobStorage: {
     uploadImage: jest.Mock;
@@ -91,6 +96,7 @@ describe('BadgeTemplatesService', () => {
               count: jest.fn(),
             },
             skill: { findMany: jest.fn() },
+            badge: { count: jest.fn() },
           },
         },
         {
@@ -668,6 +674,7 @@ describe('BadgeTemplatesService', () => {
   describe('remove', () => {
     it('should delete a template without image', async () => {
       prisma.badgeTemplate.findUnique.mockResolvedValue(mockTemplate);
+      prisma.badge.count.mockResolvedValue(0);
       prisma.badgeTemplate.delete.mockResolvedValue(mockTemplate);
 
       const result = await service.remove('tmpl-1');
@@ -677,17 +684,20 @@ describe('BadgeTemplatesService', () => {
       expect(blobStorage.deleteImage).not.toHaveBeenCalled();
     });
 
-    it('should delete template and its image', async () => {
+    it('should delete template and its image after successful deletion', async () => {
       const withImage = {
         ...mockTemplate,
         imageUrl: 'https://blob.test/img.png',
       };
       prisma.badgeTemplate.findUnique.mockResolvedValue(withImage);
+      prisma.badge.count.mockResolvedValue(0);
       blobStorage.deleteImage.mockResolvedValue(undefined);
       prisma.badgeTemplate.delete.mockResolvedValue(withImage);
 
       await service.remove('tmpl-1');
 
+      // Image deletion happens AFTER template deletion
+      expect(prisma.badgeTemplate.delete).toHaveBeenCalled();
       expect(blobStorage.deleteImage).toHaveBeenCalledWith(
         'https://blob.test/img.png',
       );
@@ -699,11 +709,25 @@ describe('BadgeTemplatesService', () => {
         imageUrl: 'https://blob.test/img.png',
       };
       prisma.badgeTemplate.findUnique.mockResolvedValue(withImage);
+      prisma.badge.count.mockResolvedValue(0);
       blobStorage.deleteImage.mockRejectedValue(new Error('Delete failed'));
       prisma.badgeTemplate.delete.mockResolvedValue(withImage);
 
       // Should not throw
       await expect(service.remove('tmpl-1')).resolves.toBeDefined();
+    });
+
+    it('should throw ConflictException when badges exist', async () => {
+      prisma.badgeTemplate.findUnique.mockResolvedValue(mockTemplate);
+      prisma.badge.count.mockResolvedValue(3);
+
+      await expect(service.remove('tmpl-1')).rejects.toThrow(ConflictException);
+      await expect(service.remove('tmpl-1')).rejects.toThrow(
+        /3 badge\(s\) have been issued/,
+      );
+      // Must NOT attempt to delete template or image
+      expect(prisma.badgeTemplate.delete).not.toHaveBeenCalled();
+      expect(blobStorage.deleteImage).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException when template not found', async () => {
