@@ -1,11 +1,11 @@
 /**
  * SkillsFilter Component - Story 8.2 (AC4)
  *
- * Multi-select dropdown for filtering by skills:
- * - Checkbox-based selection
- * - Search within skills list
- * - Selected count badge
- * - Clear selection
+ * Multi-select dropdown for filtering by skills with collapsible category tree.
+ * - L1 categories shown by default (collapsed), expand to L2 → L3 → skills
+ * - Search auto-expands and shows flat matching results
+ * - Color dots on L1 category headers
+ * - Checkbox selection with count badge
  *
  * WCAG Compliance:
  * - Proper listbox semantics
@@ -14,7 +14,7 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { ChevronDown, Check, X, Search } from 'lucide-react';
+import { ChevronDown, ChevronRight, Check, X, Search } from 'lucide-react';
 import { getCategoryColorClasses } from '@/lib/categoryColors';
 
 export interface Skill {
@@ -49,6 +49,18 @@ interface HierarchyGroup {
   rootColor?: string | null;
   subGroups: SubGroup[];
   directSkills: Skill[];
+}
+
+/** Count total skills in a SubGroup (direct + all L3 groups) */
+function countSubGroupSkills(sub: SubGroup): number {
+  return sub.directSkills.length + sub.l3Groups.reduce((n, g) => n + g.skills.length, 0);
+}
+
+/** Count total skills in a HierarchyGroup */
+function countGroupSkills(group: HierarchyGroup): number {
+  return (
+    group.directSkills.length + group.subGroups.reduce((n, s) => n + countSubGroupSkills(s), 0)
+  );
 }
 
 export interface SkillsFilterProps {
@@ -91,8 +103,11 @@ export function SkillsFilter({
 }: SkillsFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const isSearching = searchTerm.length > 0;
 
   // Filter skills by search term
   const filteredSkills = skills.filter((skill) =>
@@ -115,7 +130,6 @@ export function SkillsFilter({
   // Build hierarchical groups when root/sub category data is available
   const hierarchicalGroups = ((): HierarchyGroup[] | null => {
     if (!groupByCategory) return null;
-    // Check if any skill has rootCategoryName (indicates hierarchy data is available)
     const hasHierarchy = filteredSkills.some((s) => s.rootCategoryName);
     if (!hasHierarchy) return null;
 
@@ -161,6 +175,21 @@ export function SkillsFilter({
 
     return Array.from(groupMap.values());
   })();
+
+  // Toggle expand/collapse for a tree node
+  const toggleExpand = useCallback((key: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  }, []);
+
+  const isExpanded = (key: string) => isSearching || expanded.has(key);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -208,7 +237,7 @@ export function SkillsFilter({
         type="button"
         onClick={() => toggleSkill(skill.id)}
         className={`
-          w-full ${paddingClass} pr-3 py-2
+          w-full ${paddingClass} pr-3 py-1.5
           flex items-center gap-2
           text-sm text-left
           hover:bg-gray-100 dark:hover:bg-gray-700
@@ -230,6 +259,124 @@ export function SkillsFilter({
         <span className="text-gray-900 dark:text-white">{skill.name}</span>
       </button>
     );
+  };
+
+  // Render the collapsible tree for hierarchical data
+  const renderHierarchicalTree = (groups: HierarchyGroup[]) => {
+    return groups.map((group) => {
+      const colorClasses = getCategoryColorClasses(group.rootColor);
+      const l1Key = `l1:${group.rootName}`;
+      const l1Open = isExpanded(l1Key);
+      const skillCount = countGroupSkills(group);
+
+      return (
+        <div key={group.rootName}>
+          {/* L1 category row — clickable to expand/collapse */}
+          <button
+            type="button"
+            onClick={() => toggleExpand(l1Key)}
+            className="w-full px-3 py-2 flex items-center gap-2 text-left
+                       bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800
+                       border-b border-gray-100 dark:border-gray-800
+                       focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-800"
+          >
+            {l1Open ? (
+              <ChevronDown className="h-4 w-4 text-gray-400 shrink-0" />
+            ) : (
+              <ChevronRight className="h-4 w-4 text-gray-400 shrink-0" />
+            )}
+            <span
+              className={`inline-block w-2.5 h-2.5 rounded-full shrink-0 ${colorClasses.dot}`}
+              aria-hidden="true"
+            />
+            <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex-1">
+              {group.rootName}
+            </span>
+            <span className="text-xs text-gray-400 tabular-nums">{skillCount}</span>
+          </button>
+
+          {/* L1 expanded contents */}
+          {l1Open && (
+            <div>
+              {/* Direct skills under L1 */}
+              {group.directSkills.map((skill) => renderSkillItem(skill, 'pl-10'))}
+
+              {/* L2 sub-categories */}
+              {group.subGroups.map((sub) => {
+                const l2Key = `l2:${group.rootName}/${sub.name}`;
+                const l2Open = isExpanded(l2Key);
+                const subCount = countSubGroupSkills(sub);
+
+                return (
+                  <div key={sub.name}>
+                    {/* L2 row */}
+                    <button
+                      type="button"
+                      onClick={() => toggleExpand(l2Key)}
+                      className="w-full pl-8 pr-3 py-1.5 flex items-center gap-1.5 text-left
+                                 hover:bg-gray-50 dark:hover:bg-gray-800
+                                 focus:outline-none focus:bg-gray-50 dark:focus:bg-gray-800"
+                    >
+                      {l2Open ? (
+                        <ChevronDown className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                      ) : (
+                        <ChevronRight className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                      )}
+                      <span className="text-xs font-medium text-gray-600 dark:text-gray-400 flex-1">
+                        {sub.name}
+                      </span>
+                      <span className="text-xs text-gray-400 tabular-nums">{subCount}</span>
+                    </button>
+
+                    {/* L2 expanded contents */}
+                    {l2Open && (
+                      <div>
+                        {/* Direct skills under L2 */}
+                        {sub.directSkills.map((skill) => renderSkillItem(skill, 'pl-14'))}
+
+                        {/* L3 sub-sub-categories */}
+                        {sub.l3Groups.map((l3) => {
+                          const l3Key = `l3:${group.rootName}/${sub.name}/${l3.name}`;
+                          const l3Open = isExpanded(l3Key);
+
+                          return (
+                            <div key={l3.name}>
+                              {/* L3 row */}
+                              <button
+                                type="button"
+                                onClick={() => toggleExpand(l3Key)}
+                                className="w-full pl-12 pr-3 py-1 flex items-center gap-1.5 text-left
+                                           hover:bg-gray-50 dark:hover:bg-gray-800
+                                           focus:outline-none focus:bg-gray-50 dark:focus:bg-gray-800"
+                              >
+                                {l3Open ? (
+                                  <ChevronDown className="h-3 w-3 text-gray-400 shrink-0" />
+                                ) : (
+                                  <ChevronRight className="h-3 w-3 text-gray-400 shrink-0" />
+                                )}
+                                <span className="text-xs text-gray-500 dark:text-gray-500 flex-1">
+                                  {l3.name}
+                                </span>
+                                <span className="text-xs text-gray-400 tabular-nums">
+                                  {l3.skills.length}
+                                </span>
+                              </button>
+
+                              {/* L3 expanded skills */}
+                              {l3Open && l3.skills.map((skill) => renderSkillItem(skill, 'pl-16'))}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      );
+    });
   };
 
   // Get display text
@@ -320,7 +467,7 @@ export function SkillsFilter({
             bg-white dark:bg-gray-800
             border border-gray-200 dark:border-gray-700
             rounded-lg shadow-lg
-            max-h-72 overflow-hidden
+            max-h-96 overflow-hidden
           "
           role="listbox"
           id="skills-listbox"
@@ -351,50 +498,58 @@ export function SkillsFilter({
           )}
 
           {/* Skills list */}
-          <div className="overflow-y-auto max-h-52">
+          <div className="overflow-y-auto max-h-80">
             {isLoading ? (
               <div className="p-4 text-center text-gray-500">Loading skills...</div>
             ) : filteredSkills.length === 0 ? (
               <div className="p-4 text-center text-gray-500">No skills found</div>
-            ) : hierarchicalGroups ? (
-              /* Hierarchical 3-tier display: Root Category > Sub Category > Skill */
-              hierarchicalGroups.map((group) => {
-                const colorClasses = getCategoryColorClasses(group.rootColor);
+            ) : isSearching ? (
+              /* Search mode: flat list with category breadcrumb */
+              filteredSkills.map((skill) => {
+                const breadcrumb = [
+                  skill.rootCategoryName,
+                  skill.subCategoryName,
+                  skill.l3CategoryName,
+                ]
+                  .filter(Boolean)
+                  .join(' › ');
+                const isSelected = selectedSkills.includes(skill.id);
                 return (
-                  <div key={group.rootName}>
-                    {/* Level 1 header with color dot */}
-                    <div className="px-3 py-1.5 flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-900">
-                      <span
-                        className={`inline-block w-2.5 h-2.5 rounded-full shrink-0 ${colorClasses.dot}`}
-                        aria-hidden="true"
-                      />
-                      {group.rootName}
+                  <button
+                    key={skill.id}
+                    type="button"
+                    onClick={() => toggleSkill(skill.id)}
+                    className={`
+                      w-full px-3 py-2 flex items-center gap-2 text-left
+                      hover:bg-gray-100 dark:hover:bg-gray-700
+                      focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700
+                      ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
+                    `}
+                    role="option"
+                    aria-selected={isSelected}
+                  >
+                    <div
+                      className={`
+                        w-4 h-4 flex items-center justify-center border rounded shrink-0
+                        ${isSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300 dark:border-gray-600'}
+                      `}
+                    >
+                      {isSelected && <Check className="h-3 w-3 text-white" />}
                     </div>
-                    {/* Direct skills under L1 (no sub-category) */}
-                    {group.directSkills.map((skill) => renderSkillItem(skill, 'pl-7'))}
-                    {/* Sub-category groups */}
-                    {group.subGroups.map((sub) => (
-                      <div key={sub.name}>
-                        {/* Level 2 sub-header */}
-                        <div className="pl-7 pr-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400">
-                          {sub.name}
-                        </div>
-                        {/* Direct skills under L2 (no L3 sub-category) */}
-                        {sub.directSkills.map((skill) => renderSkillItem(skill, 'pl-9'))}
-                        {/* L3 sub-sub-category groups */}
-                        {sub.l3Groups.map((l3) => (
-                          <div key={l3.name}>
-                            <div className="pl-9 pr-3 py-1 text-xs text-gray-400 dark:text-gray-500 italic">
-                              {l3.name}
-                            </div>
-                            {l3.skills.map((skill) => renderSkillItem(skill, 'pl-11'))}
-                          </div>
-                        ))}
-                      </div>
-                    ))}
-                  </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-sm text-gray-900 dark:text-white truncate">
+                        {skill.name}
+                      </span>
+                      {breadcrumb && (
+                        <span className="text-xs text-gray-400 truncate">{breadcrumb}</span>
+                      )}
+                    </div>
+                  </button>
                 );
               })
+            ) : hierarchicalGroups ? (
+              /* Tree mode: collapsible category hierarchy */
+              renderHierarchicalTree(hierarchicalGroups)
             ) : (
               /* Flat grouped display (fallback when hierarchy data not available) */
               Object.entries(groupedSkills).map(([category, categorySkills]) => {
