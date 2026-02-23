@@ -367,26 +367,37 @@ function CategoryTreeNodeInner({
               </Button>
             )}
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete?.(category);
-              }}
-              disabled={hasChildren || skillCount > 0}
-              aria-label={`Delete ${category.name}`}
-              title={
-                hasChildren
-                  ? `Cannot delete: has ${category.children!.length} sub-categories`
-                  : skillCount > 0
-                    ? `Cannot delete: has ${skillCount} skill(s)`
-                    : undefined
-              }
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
+            {(() => {
+              const deleteDisabled = hasChildren || skillCount > 0;
+              const deleteReason = hasChildren
+                ? `Cannot delete: has ${category.children!.length} sub-categor${category.children!.length === 1 ? 'y' : 'ies'}`
+                : skillCount > 0
+                  ? `Cannot delete: has ${skillCount} skill(s)`
+                  : undefined;
+              const btn = (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete?.(category);
+                  }}
+                  disabled={deleteDisabled}
+                  aria-label={`Delete ${category.name}`}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              );
+              // Wrap in span so native title tooltip works on disabled buttons
+              return deleteDisabled ? (
+                <span title={deleteReason} className="inline-flex">
+                  {btn}
+                </span>
+              ) : (
+                btn
+              );
+            })()}
           </div>
         )}
       </div>
