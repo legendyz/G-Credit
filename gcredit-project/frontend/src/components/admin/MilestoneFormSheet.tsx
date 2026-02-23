@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Info, Lock } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { useSkillCategoryTree } from '@/hooks/useSkillCategories';
 import type {
   MilestoneConfig,
@@ -223,30 +223,41 @@ export function MilestoneFormSheet({
   };
 
   const achievementCount = milestone?._count?.achievements ?? 0;
-  // Lock metric/scope only when achievements exist (history must be preserved)
-  const isMetricLocked = mode === 'edit' && achievementCount > 0;
+  // When achievements exist, entire milestone is frozen (ADR-013)
+  const isFullyLocked = mode === 'edit' && achievementCount > 0;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="overflow-y-auto sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle>{mode === 'create' ? 'Create Milestone' : 'Edit Milestone'}</SheetTitle>
+          <SheetTitle>
+            {mode === 'create'
+              ? 'Create Milestone'
+              : isFullyLocked
+                ? 'View Milestone'
+                : 'Edit Milestone'}
+          </SheetTitle>
           <SheetDescription>
             {mode === 'create'
               ? 'Configure a new achievement milestone'
-              : 'Update milestone settings'}
+              : isFullyLocked
+                ? 'This milestone has achievements and cannot be modified'
+                : 'Update milestone settings'}
           </SheetDescription>
         </SheetHeader>
 
         <div className="space-y-5 mt-6">
-          {/* Info banner: locked fields when achievements exist */}
-          {isMetricLocked && (
-            <div className="flex items-start gap-2 rounded-lg bg-blue-50 border border-blue-200 px-3 py-2.5 text-sm text-blue-800">
-              <Info className="h-4 w-4 mt-0.5 shrink-0" />
+          {/* Info banner: fully locked when achievements exist */}
+          {isFullyLocked && (
+            <div className="flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2.5 text-sm text-amber-800">
+              <Lock className="h-4 w-4 mt-0.5 shrink-0" />
               <span>
-                <strong>Metric</strong> and <strong>Scope</strong> cannot be changed because{' '}
-                {achievementCount} user{achievementCount === 1 ? ' has' : 's have'} already achieved
-                this milestone.
+                This milestone has been achieved by{' '}
+                <strong>
+                  {achievementCount} user{achievementCount === 1 ? '' : 's'}
+                </strong>
+                . All fields are locked to preserve achievement integrity. You can only
+                activate/deactivate it via the toggle switch.
               </span>
             </div>
           )}
@@ -254,12 +265,15 @@ export function MilestoneFormSheet({
           {/* Icon Picker */}
           <div>
             <Label>Icon</Label>
-            <div className="flex flex-wrap gap-2 mt-1">
+            <div
+              className={`flex flex-wrap gap-2 mt-1 ${isFullyLocked ? 'pointer-events-none opacity-60' : ''}`}
+            >
               {MILESTONE_ICONS.map((emoji) => (
                 <button
                   key={emoji}
                   type="button"
                   onClick={() => setIcon(emoji)}
+                  disabled={isFullyLocked}
                   className={`text-2xl w-10 h-10 rounded-lg border-2 flex items-center justify-center transition-colors ${
                     icon === emoji
                       ? 'border-brand-600 bg-brand-50'
@@ -281,6 +295,7 @@ export function MilestoneFormSheet({
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Badge Collector"
               maxLength={200}
+              disabled={isFullyLocked}
             />
           </div>
 
@@ -288,13 +303,13 @@ export function MilestoneFormSheet({
           <div>
             <Label className="flex items-center gap-1.5">
               Metric
-              {isMetricLocked && <Lock className="h-3 w-3 text-neutral-400" />}
+              {isFullyLocked && <Lock className="h-3 w-3 text-neutral-400" />}
             </Label>
             <div className="flex gap-3 mt-1">
               <label
                 className={`flex-1 flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-colors ${
                   metric === 'badge_count' ? 'border-brand-600 bg-brand-50' : 'border-neutral-200'
-                } ${isMetricLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
+                } ${isFullyLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
                 <input
                   type="radio"
@@ -302,7 +317,7 @@ export function MilestoneFormSheet({
                   value="badge_count"
                   checked={metric === 'badge_count'}
                   onChange={() => setMetric('badge_count')}
-                  disabled={isMetricLocked}
+                  disabled={isFullyLocked}
                   className="sr-only"
                 />
                 <span className="text-sm font-medium">Badge Count</span>
@@ -312,7 +327,7 @@ export function MilestoneFormSheet({
                   metric === 'category_count'
                     ? 'border-brand-600 bg-brand-50'
                     : 'border-neutral-200'
-                } ${isMetricLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
+                } ${isFullyLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
                 <input
                   type="radio"
@@ -320,7 +335,7 @@ export function MilestoneFormSheet({
                   value="category_count"
                   checked={metric === 'category_count'}
                   onChange={() => setMetric('category_count')}
-                  disabled={isMetricLocked}
+                  disabled={isFullyLocked}
                   className="sr-only"
                 />
                 <span className="text-sm font-medium">Category Coverage</span>
@@ -333,13 +348,13 @@ export function MilestoneFormSheet({
             <div>
               <Label className="flex items-center gap-1.5">
                 Scope
-                {isMetricLocked && <Lock className="h-3 w-3 text-neutral-400" />}
+                {isFullyLocked && <Lock className="h-3 w-3 text-neutral-400" />}
               </Label>
               <div className="flex gap-3 mt-1">
                 <label
                   className={`flex-1 flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-colors ${
                     scope === 'global' ? 'border-brand-600 bg-brand-50' : 'border-neutral-200'
-                  } ${isMetricLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  } ${isFullyLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
                 >
                   <input
                     type="radio"
@@ -347,7 +362,7 @@ export function MilestoneFormSheet({
                     value="global"
                     checked={scope === 'global'}
                     onChange={() => setScope('global')}
-                    disabled={isMetricLocked}
+                    disabled={isFullyLocked}
                     className="sr-only"
                   />
                   <span className="text-sm font-medium">Global (all badges)</span>
@@ -355,7 +370,7 @@ export function MilestoneFormSheet({
                 <label
                   className={`flex-1 flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-colors ${
                     scope === 'category' ? 'border-brand-600 bg-brand-50' : 'border-neutral-200'
-                  } ${isMetricLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  } ${isFullyLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
                 >
                   <input
                     type="radio"
@@ -363,7 +378,7 @@ export function MilestoneFormSheet({
                     value="category"
                     checked={scope === 'category'}
                     onChange={() => setScope('category')}
-                    disabled={isMetricLocked}
+                    disabled={isFullyLocked}
                     className="sr-only"
                   />
                   <span className="text-sm font-medium">Specific Category</span>
@@ -380,7 +395,8 @@ export function MilestoneFormSheet({
                 id="milestone-category"
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="mt-1 w-full rounded-md border border-neutral-300 bg-background px-3 py-2 text-sm"
+                disabled={isFullyLocked}
+                className="mt-1 w-full rounded-md border border-neutral-300 bg-background px-3 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <option value="">Select category...</option>
                 {flatCategories.map((cat) => (
@@ -397,6 +413,7 @@ export function MilestoneFormSheet({
                   type="checkbox"
                   checked={includeSubCategories}
                   onChange={(e) => setIncludeSubCategories(e.target.checked)}
+                  disabled={isFullyLocked}
                   className="rounded"
                 />
                 Count badges from sub-categories too
@@ -413,6 +430,7 @@ export function MilestoneFormSheet({
               min={1}
               value={threshold}
               onChange={(e) => setThreshold(Math.max(1, Number(e.target.value)))}
+              disabled={isFullyLocked}
             />
           </div>
 
@@ -428,8 +446,9 @@ export function MilestoneFormSheet({
               }}
               placeholder="Auto-generated from metric settings..."
               rows={2}
+              disabled={isFullyLocked}
             />
-            {descriptionManual && autoDesc && description !== autoDesc && (
+            {!isFullyLocked && descriptionManual && autoDesc && description !== autoDesc && (
               <button
                 type="button"
                 onClick={() => {
@@ -444,7 +463,7 @@ export function MilestoneFormSheet({
           </div>
 
           {/* Edit mode: achievement info */}
-          {mode === 'edit' && achievementCount > 0 && (
+          {mode === 'edit' && achievementCount > 0 && !isFullyLocked && (
             <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-800">
               This milestone has been achieved by {achievementCount} user
               {achievementCount === 1 ? '' : 's'}
@@ -478,11 +497,13 @@ export function MilestoneFormSheet({
           {/* Submit */}
           <div className="flex gap-3 pt-2">
             <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
-              Cancel
+              {isFullyLocked ? 'Close' : 'Cancel'}
             </Button>
-            <Button className="flex-1" disabled={!isValid || isLoading} onClick={handleSubmit}>
-              {isLoading ? 'Saving...' : mode === 'create' ? 'Create Milestone' : 'Save Changes'}
-            </Button>
+            {!isFullyLocked && (
+              <Button className="flex-1" disabled={!isValid || isLoading} onClick={handleSubmit}>
+                {isLoading ? 'Saving...' : mode === 'create' ? 'Create Milestone' : 'Save Changes'}
+              </Button>
+            )}
           </div>
         </div>
       </SheetContent>

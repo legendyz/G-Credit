@@ -1,7 +1,7 @@
 ﻿import { Test, TestingModule } from '@nestjs/testing';
 import { MilestonesService } from './milestones.service';
 import { PrismaService } from '../common/prisma.service';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import {
   CreateMilestoneDto,
   MilestoneMetric,
@@ -188,9 +188,10 @@ describe('MilestonesService', () => {
       isActive: true,
       createdBy: 'admin',
       createdAt: new Date(),
+      _count: { achievements: 0 },
     };
 
-    it('should update title and description', async () => {
+    it('should update title and description when no achievements', async () => {
       const updateDto = { title: 'New Title', description: 'New desc' };
       const updated = { ...existing, ...updateDto };
 
@@ -199,6 +200,41 @@ describe('MilestonesService', () => {
 
       const result = await service.updateMilestone('ms-1', updateDto);
       expect(result.title).toBe('New Title');
+    });
+
+    it('should reject field changes when achievements exist', async () => {
+      const withAchievements = { ...existing, _count: { achievements: 3 } };
+      mockPrismaService.milestoneConfig.findUnique.mockResolvedValue(
+        withAchievements,
+      );
+
+      await expect(
+        service.updateMilestone('ms-1', { title: 'Changed' }),
+      ).rejects.toThrow(BadRequestException);
+
+      await expect(
+        service.updateMilestone('ms-1', { description: 'Changed' }),
+      ).rejects.toThrow(BadRequestException);
+
+      await expect(
+        service.updateMilestone('ms-1', { icon: '🎯' }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should allow isActive toggle even when achievements exist', async () => {
+      const withAchievements = { ...existing, _count: { achievements: 3 } };
+      mockPrismaService.milestoneConfig.findUnique.mockResolvedValue(
+        withAchievements,
+      );
+      mockPrismaService.milestoneConfig.update.mockResolvedValue({
+        ...withAchievements,
+        isActive: false,
+      });
+
+      const result = await service.updateMilestone('ms-1', {
+        isActive: false,
+      });
+      expect(result.isActive).toBe(false);
     });
 
     it('should throw NotFoundException for non-existent id', async () => {

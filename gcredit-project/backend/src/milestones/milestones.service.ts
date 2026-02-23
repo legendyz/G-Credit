@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { CreateMilestoneDto, UpdateMilestoneDto } from './dto/milestone.dto';
 import type { MilestoneConfig, Prisma } from '@prisma/client';
@@ -70,14 +75,30 @@ export class MilestonesService {
 
   /**
    * Update milestone configuration (Admin only)
+   * When achievements exist, only isActive toggle is permitted.
    */
   async updateMilestone(id: string, dto: UpdateMilestoneDto) {
     const milestone = await this.prisma.milestoneConfig.findUnique({
       where: { id },
+      include: { _count: { select: { achievements: true } } },
     });
 
     if (!milestone) {
       throw new NotFoundException(`Milestone config ${id} not found`);
+    }
+
+    // When achievements exist, only isActive toggle is allowed (ADR-013)
+    if (milestone._count.achievements > 0) {
+      const hasFieldChanges =
+        dto.title !== undefined ||
+        dto.description !== undefined ||
+        dto.trigger !== undefined ||
+        dto.icon !== undefined;
+      if (hasFieldChanges) {
+        throw new BadRequestException(
+          `Cannot modify milestone "${milestone.title}" — it has been achieved by ${milestone._count.achievements} user(s). Only activation/deactivation is allowed.`,
+        );
+      }
     }
 
     const result = await this.prisma.milestoneConfig.update({

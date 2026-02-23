@@ -35,28 +35,35 @@ During Sprint 12 UAT, we identified two UX/data-integrity issues with milestone 
 | Condition | Metric & Scope | Other Fields |
 |-----------|---------------|--------------|
 | `achievementCount === 0` | ✅ Fully editable | ✅ Fully editable |
-| `achievementCount > 0` | 🔒 Locked (with info banner) | ✅ Editable (title, description, threshold, icon) |
+| Condition | All Fields | Allowed Action |
+|-----------|-----------|----------------|
+| `achievementCount === 0` | ✅ Fully editable | Edit, Delete (hard) |
+| `achievementCount > 0` | 🔒 All locked (read-only view) | Only activate/deactivate toggle |
 
 ### UX Adaptations
 
-- **Info banner** (edit form): Only shown when achievements exist. Displays: "Metric and Scope cannot be changed because N user(s) have already achieved this milestone."
-- **Lock icons**: Appear on Metric/Scope labels only when locked.
+- **Lock banner** (edit form → becomes "View Milestone"): Amber banner with Lock icon: "This milestone has been achieved by N user(s). All fields are locked to preserve achievement integrity. You can only activate/deactivate it via the toggle switch."
+- **Form behavior**: When locked, title reads "View Milestone", all inputs disabled, submit button hidden, only "Close" button shown.
 - **Delete dialog**: Adapts title, description, and confirm button text:
   - 0 achievements → "Delete Milestone" / "permanently delete" / [Delete]
   - \>0 achievements → "Deactivate Milestone" / "will be deactivated (hidden) but achievement records are preserved" / [Deactivate]
 - **Card delete button tooltip**: Shows "Delete" or "Deactivate (has achievements)" accordingly.
+- **Backend enforcement**: `updateMilestone()` rejects any field change (title, description, trigger, icon) with 400 Bad Request when achievements > 0. Only `isActive` toggle passes through.
 
 ---
 
 ## Rationale
 
-1. **Data integrity**: Changing a milestone's measurement criteria (metric/scope) after users have achieved it would retroactively invalidate those achievements. A "Badge Collector (5 badges globally)" milestone that gets changed to "Category Coverage" would make existing achievements semantically incorrect.
+1. **Data integrity**: Once users have achieved a milestone, its entire definition (metric, scope, threshold, title) becomes part of the achievement record's meaning. Changing *any* field would alter the semantics of what users earned. For example:
+   - Changing threshold from 5 → 10: users who earned it at 5 see "10" and feel cheated
+   - Changing title: achievement history becomes confusing
+   - Changing metric/scope: completely invalidates what was measured
 
-2. **Admin flexibility**: Before anyone achieves a milestone, it's effectively a draft. Admins should be free to iterate on its configuration without having to delete and recreate.
+2. **Admin flexibility**: Before anyone achieves a milestone, it's effectively a draft. Admins should be free to iterate on its entire configuration — including deleting and recreating.
 
-3. **Clean data**: Hard-deleting unused milestones prevents database clutter from abandoned configurations, while soft-deleting achieved milestones preserves the audit trail.
+3. **Simplicity**: A single rule ("achieved = frozen") is easier to understand than partial locking ("these fields are editable but those aren't").
 
-4. **Clear communication**: Adapting dialog text and showing achievement counts in the lock banner helps admins understand *why* a restriction exists, reducing confusion.
+4. **Clean data**: Hard-deleting unused milestones prevents database clutter from abandoned configurations, while soft-deleting achieved milestones preserves the audit trail.
 
 ---
 
@@ -88,13 +95,33 @@ async deleteMilestone(id: string) {
 
 ```typescript
 const achievementCount = milestone?._count?.achievements ?? 0;
-const isMetricLocked = mode === 'edit' && achievementCount > 0;
-// Lock metric/scope inputs only when isMetricLocked is true
+const isFullyLocked = mode === 'edit' && achievementCount > 0;
+// ALL inputs disabled when isFullyLocked
+// Title: "View Milestone", no submit button, only "Close"
+```
+
+### Backend (`milestones.service.ts` — update guard)
+
+```typescript
+if (milestone._count.achievements > 0) {
+  const hasFieldChanges =
+    dto.title !== undefined ||
+    dto.description !== undefined ||
+    dto.trigger !== undefined ||
+    dto.icon !== undefined;
+  if (hasFieldChanges) {
+    throw new BadRequestException(
+      `Cannot modify — achieved by ${milestone._count.achievements} user(s)`,
+    );
+  }
+}
+// Only isActive toggle passes through
 ```
 
 ### Tests
 
-- Backend: 4 delete test cases (hard delete, soft delete, not-found, cache invalidation)
+- Backend: 6 update tests (no-achievement edit, achievement-locked reject ×3, isActive toggle allowed, not-found, cache)
+- Backend: 4 delete tests (hard delete, soft delete, not-found, cache)
 - Frontend: 702 tests pass (no regressions)
 
 ---
@@ -102,14 +129,16 @@ const isMetricLocked = mode === 'edit' && achievementCount > 0;
 ## Consequences
 
 ### Positive
+- Simple mental model: "earned = frozen" — no ambiguity about which fields are editable
 - Admins can freely configure milestones until first achievement (draft-like flexibility)
-- Achievement history is never lost for milestones users have earned
-- Clear, context-aware UX messaging reduces admin confusion
+- Achievement history is immutable — what was earned is exactly what's displayed
+- Backend enforces the rule even if frontend is bypassed
 - Cleaner database — no orphaned deactivated milestones nobody ever achieved
 
 ### Negative
-- Slightly more complex delete logic (branching on achievement count)
-- Frontend must check `_count.achievements` for both edit form and delete dialog
+- Admins cannot fix typos in achieved milestone titles (must deactivate and create new)
+- Slightly more complex update/delete logic (branching on achievement count)
+- Frontend must check `_count.achievements` for edit form, delete dialog, and card behavior
 
 ### Risks
 - If `_count.achievements` is ever not included in the API response, the frontend would default to 0 (unlocked). Mitigated by the backend `getAllMilestones()` always including `_count`.
