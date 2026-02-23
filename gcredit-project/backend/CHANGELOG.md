@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] - 2026-02-23 (Sprint 12 — Management UIs & Evidence)
+
+### Sprint 12 UAT Fixes & Enhancements (2026-02-23)
+
+Issues discovered and fixed during Sprint 12 UAT testing session.
+
+#### Audit Log — Shared Utility Refactoring (10e5d2d)
+
+- **New `common/utils/audit-log.utils.ts`:** Single source of truth for audit-log type mapping, metadata resolution, and description formatting
+  - `resolveActivityType()`: maps raw DB actions (`ISSUED`) to display types (`BADGE_ISSUED`), entity-type–aware for `CREATED`/`UPDATED`
+  - `resolveTemplateName()`: checks both `badgeName` and `templateName` metadata keys
+  - `resolveRecipientName()` / `resolveRecipientEmail()`: metadata field accessors
+  - `formatAuditDescription()`: complete description builder with empty-field guards (moved from `DashboardService.formatActivityDescription`)
+  - `buildActorMap()`: reusable userId→displayName map builder
+- **`analytics.service.ts`:** Replaced inline `typeMap`, `actorMap`, and metadata resolution with shared utils; batch-fetches badge→template+recipient from DB as fallback
+- **`dashboard.service.ts`:** Removed duplicated `formatActivityDescription()`; now returns mapped types (BADGE_ISSUED) consistent with Analytics API
+- **DTOs:** Synced `ActivityItemDto` and `AdminActivityDto` enum values to include `BADGE_SHARED`, `TEMPLATE_UPDATED`, `USER_UPDATED`
+- **Tests:** Updated `dashboard.service.spec.ts` — all 31 tests pass with shared utility
+
+#### Assertion Integrity Fix (a6384bd)
+
+- **Canonical JSON Hashing:** Added `canonicalJson()` to `assertion-generator.service.ts` — recursively sorts keys before hashing to prevent PostgreSQL `jsonb` key reordering from breaking `INTEGRITY_VIOLATION` checks
+- **Seed Hash Fix:** Replaced 11 placeholder `'badgeN-meta'` hashes in `seed-uat.ts` with actual computed hashes using `hashAssertion(makeAssertion(...))`
+
+#### Audit Log Completeness (823a78c)
+
+- **Badge Enrichment:** `getRecentActivity()` batch-fetches badge→template name + recipient from DB when metadata is incomplete
+- **Seed Data:** Added `badgeName`, `recipientName`, `templateName` to ISSUED/CLAIMED/REVOKED audit log metadata; `entityType: 'BadgeTemplate'` for template entries
+
+---
+
 ## [1.1.0] - 2026-02-14 (Sprint 11 — Security & Quality Hardening)
 
 ### Sprint 11 Summary — Post-MVP Hardening

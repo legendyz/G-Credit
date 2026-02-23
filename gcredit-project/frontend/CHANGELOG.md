@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] - 2026-02-23 (Sprint 12 — Management UIs & Evidence)
+
+### Sprint 12 UAT Fixes & Enhancements (2026-02-23)
+
+Issues discovered and fixed during Sprint 12 UAT testing session.
+
+#### Audit Activity — Shared Utility Refactoring (10e5d2d)
+
+- **New `utils/audit-activity.utils.ts`:** Single source of truth for activity icons, verbs, and description formatting
+  - `ACTIVITY_CONFIG`: icon + verb mapping for all 8 activity types
+  - `getActivityIcon()`: safe icon lookup with fallback for unknown types
+  - `buildActivityDescription()`: safe description builder with empty-field guards (no empty `""`, no dangling "to"/"from")
+- **`RecentActivityFeed.tsx`:** Removed local `ACTIVITY_CONFIG` and `buildDescription()`, imports from shared utils
+- **`AdminDashboard.tsx`:** Removed inline `actionIcons` map, imports `getActivityIcon()` from shared utils; shows description directly instead of raw type + description
+- **`analytics.ts`:** Added `TEMPLATE_UPDATED` and `USER_UPDATED` to `ActivityType` union
+
+#### Skill Management (4c802f8, 74f0e48, 1011d40)
+
+- **Delete Protection:** Disable trash icon when skill is referenced by badge templates (`badgeCount > 0`), grey style + tooltip
+- **Column Rename:** "Badges" → "Badge Templates" for clarity
+- **Template Hover:** Badge count shows dotted-underline with tooltip listing referencing template names
+
+#### Badge Verification (b00fd50)
+
+- **Download Restriction:** JSON-LD download now disabled for both PENDING and REVOKED badges (was REVOKED-only)
+
+#### Milestone Form UX (b3de40c, 16b3b6a)
+
+- **Category Hierarchy:** Dropdown shows visual indentation (`└` prefix + NBSP) instead of flat list
+- **Label Clarification:** "Include sub-categories" → "Count badges from sub-categories too"
+
+#### Navigation (6c650b1)
+
+- **Navbar Optimization:** Reduced padding (`px-4→px-2.5`), shortened labels (Badge Templates→Templates, etc.), centered nav with `flex-1 justify-center`, extracted `navCls()` helper (302→238 lines)
+
+---
+
 ## [1.1.0] - 2026-02-14 (Sprint 11 — Security & Quality Hardening)
 
 ### Sprint 11 Summary — Post-MVP Hardening
