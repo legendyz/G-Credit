@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
-  ForbiddenException,
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
@@ -140,7 +139,8 @@ export class SkillCategoriesService {
 
   /**
    * Update an existing category
-   * - Cannot update system-defined top-level categories
+   * All categories (including system-defined) can be edited.
+   * ADR-012: isSystemDefined retained as label only, not for access control.
    */
   async update(id: string, updateDto: UpdateSkillCategoryDto) {
     // Check if category exists
@@ -150,18 +150,6 @@ export class SkillCategoriesService {
 
     if (!category) {
       throw new NotFoundException(`Skill category with ID ${id} not found`);
-    }
-
-    // Cannot edit system-defined top-level categories
-    if (category.isSystemDefined && category.level === 1) {
-      throw new ForbiddenException(
-        'Cannot edit system-defined top-level categories',
-      );
-    }
-
-    // Cannot edit if not editable
-    if (!category.isEditable) {
-      throw new ForbiddenException('This category is marked as non-editable');
     }
 
     // Update category
@@ -178,10 +166,10 @@ export class SkillCategoriesService {
   }
 
   /**
-   * Delete a custom category
-   * - Cannot delete system-defined categories
-   * - Cannot delete if has children
+   * Delete a category (system-defined or user-created)
+   * - Cannot delete if has children (must delete/move them first)
    * - Cannot delete if has skills (must reassign first)
+   * ADR-012: isSystemDefined retained as label only, not for access control.
    */
   async remove(id: string) {
     // Check if category exists
@@ -195,11 +183,6 @@ export class SkillCategoriesService {
 
     if (!category) {
       throw new NotFoundException(`Skill category with ID ${id} not found`);
-    }
-
-    // Cannot delete system-defined categories
-    if (category.isSystemDefined) {
-      throw new ForbiddenException('Cannot delete system-defined categories');
     }
 
     // Cannot delete if has children

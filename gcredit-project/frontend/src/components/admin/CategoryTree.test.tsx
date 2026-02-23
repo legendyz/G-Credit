@@ -95,12 +95,12 @@ describe('CategoryTree', () => {
     expect(screen.getByText('1 skill')).toBeInTheDocument(); // Soft Skills has 1 skill
   });
 
-  it('shows lock icon for system-defined categories', () => {
+  it('shows system badge for system-defined categories', () => {
     render(<CategoryTree categories={mockCategories} />);
 
-    const lockIcons = screen.getAllByTestId('lock-icon');
+    const systemBadges = screen.getAllByTestId('system-badge');
     // Technical Skills + Frontend are system-defined
-    expect(lockIcons.length).toBe(2);
+    expect(systemBadges.length).toBe(2);
   });
 
   it('calls onEdit when edit button clicked', () => {
@@ -112,13 +112,13 @@ describe('CategoryTree', () => {
     expect(onEdit).toHaveBeenCalledWith(mockCategories[0]);
   });
 
-  it('calls onDelete when delete button clicked', () => {
+  it('calls onDelete when delete button clicked on empty category', () => {
     const onDelete = vi.fn();
     render(<CategoryTree categories={mockCategories} editable onDelete={onDelete} />);
 
-    const deleteButtons = screen.getAllByLabelText(/^Delete/);
-    // Click delete on a non-system category
-    fireEvent.click(deleteButtons[deleteButtons.length - 1]);
+    // Backend is an empty non-system category with no children and no skills
+    const deleteButton = screen.getByLabelText('Delete Backend');
+    fireEvent.click(deleteButton);
     expect(onDelete).toHaveBeenCalled();
   });
 
@@ -131,11 +131,28 @@ describe('CategoryTree', () => {
     expect(onAddChild).toHaveBeenCalledWith(mockCategories[0]);
   });
 
-  it('delete button disabled for system-defined categories', () => {
+  it('delete button disabled for categories with children', () => {
     render(<CategoryTree categories={mockCategories} editable />);
 
+    // Technical Skills has children (Frontend, Backend)
     const deleteButton = screen.getByLabelText('Delete Technical Skills');
     expect(deleteButton).toBeDisabled();
+  });
+
+  it('delete button disabled for categories with skills', () => {
+    render(<CategoryTree categories={mockCategories} editable />);
+
+    // Frontend has 2 skills
+    const deleteButton = screen.getByLabelText('Delete Frontend');
+    expect(deleteButton).toBeDisabled();
+  });
+
+  it('delete button enabled for empty categories', () => {
+    render(<CategoryTree categories={mockCategories} editable />);
+
+    // Backend has no children and no skills
+    const deleteButton = screen.getByLabelText('Delete Backend');
+    expect(deleteButton).not.toBeDisabled();
   });
 
   it('hides action buttons in read-only mode', () => {

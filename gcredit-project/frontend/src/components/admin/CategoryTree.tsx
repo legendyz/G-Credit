@@ -1,5 +1,13 @@
 import { useState, useCallback } from 'react';
-import { ChevronRight, ChevronDown, GripVertical, Pencil, Trash2, Plus, Lock } from 'lucide-react';
+import {
+  ChevronRight,
+  ChevronDown,
+  GripVertical,
+  Pencil,
+  Trash2,
+  Plus,
+  ShieldCheck,
+} from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -316,9 +324,16 @@ function CategoryTreeNodeInner({
           </span>
         )}
 
-        {/* System-defined lock icon */}
+        {/* System-recommended badge (informational only, ADR-012) */}
         {category.isSystemDefined && (
-          <Lock className="h-3.5 w-3.5 text-neutral-400" data-testid="lock-icon" />
+          <span
+            className="inline-flex items-center gap-0.5 text-[10px] font-medium text-brand-600 bg-brand-50 border border-brand-200 px-1.5 py-0.5 rounded-full"
+            data-testid="system-badge"
+            title="System recommended category"
+          >
+            <ShieldCheck className="h-3 w-3" />
+            System
+          </span>
         )}
 
         {/* Action buttons (editable mode only, shown on hover) */}
@@ -360,10 +375,14 @@ function CategoryTreeNodeInner({
                 e.stopPropagation();
                 onDelete?.(category);
               }}
-              disabled={category.isSystemDefined}
+              disabled={hasChildren || skillCount > 0}
               aria-label={`Delete ${category.name}`}
               title={
-                category.isSystemDefined ? 'System-defined categories cannot be deleted' : undefined
+                hasChildren
+                  ? `Cannot delete: has ${category.children!.length} sub-categories`
+                  : skillCount > 0
+                    ? `Cannot delete: has ${skillCount} skill(s)`
+                    : undefined
               }
             >
               <Trash2 className="h-3.5 w-3.5" />
