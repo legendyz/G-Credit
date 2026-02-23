@@ -164,7 +164,10 @@ export class MilestonesService {
    */
   async getUserAchievements(userId: string) {
     return this.prisma.milestoneAchievement.findMany({
-      where: { userId },
+      where: {
+        userId,
+        milestone: { isActive: true },
+      },
       include: {
         milestone: {
           select: {

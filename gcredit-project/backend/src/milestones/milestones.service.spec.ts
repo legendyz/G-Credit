@@ -351,7 +351,10 @@ describe('MilestonesService', () => {
       expect(
         mockPrismaService.milestoneAchievement.findMany,
       ).toHaveBeenCalledWith({
-        where: { userId: 'user-1' },
+        where: {
+          userId: 'user-1',
+          milestone: { isActive: true },
+        },
         include: {
           milestone: {
             select: {
