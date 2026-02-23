@@ -478,7 +478,17 @@ export default function SkillManagementPage() {
                               size="sm"
                               variant="ghost"
                               onClick={() => setDeletingSkill(skill)}
-                              className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              disabled={(skill.badgeCount ?? 0) > 0}
+                              title={
+                                (skill.badgeCount ?? 0) > 0
+                                  ? `Cannot delete: used by ${skill.badgeCount} badge template(s)`
+                                  : undefined
+                              }
+                              className={`h-7 w-7 p-0 ${
+                                (skill.badgeCount ?? 0) > 0
+                                  ? 'text-neutral-300 cursor-not-allowed'
+                                  : 'text-red-600 hover:text-red-700 hover:bg-red-50'
+                              }`}
                               aria-label={`Delete ${skill.name}`}
                             >
                               <Trash2 className="h-3.5 w-3.5" />
