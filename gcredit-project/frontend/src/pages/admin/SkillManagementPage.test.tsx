@@ -168,7 +168,7 @@ describe('SkillManagementPage', () => {
   it('renders Badge Count column with values', () => {
     render(<SkillManagementPage />, { wrapper: createWrapper() });
     // Header
-    expect(screen.getByText('Badges')).toBeInTheDocument();
+    expect(screen.getByText('Badge Templates')).toBeInTheDocument();
     // Values — React has 3, TypeScript has 1, Node.js has 0
     expect(screen.getByText('3')).toBeInTheDocument();
   });
@@ -206,22 +206,28 @@ describe('SkillManagementPage', () => {
     expect(document.getElementById('edit-category')).toBeInTheDocument();
   });
 
-  it('clicking delete opens confirm dialog', () => {
+  it('delete button is disabled for skills with badge references', () => {
     render(<SkillManagementPage />, { wrapper: createWrapper() });
     const deleteButton = screen.getByLabelText('Delete React');
+    expect(deleteButton).toBeDisabled();
+  });
+
+  it('clicking delete opens confirm dialog for unreferenced skill', () => {
+    render(<SkillManagementPage />, { wrapper: createWrapper() });
+    const deleteButton = screen.getByLabelText('Delete Node.js');
     fireEvent.click(deleteButton);
-    expect(screen.getByText('Delete "React"?')).toBeInTheDocument();
+    expect(screen.getByText('Delete "Node.js"?')).toBeInTheDocument();
     expect(screen.getByText('This skill will be permanently removed.')).toBeInTheDocument();
   });
 
   it('confirm delete calls deleteSkill mutation', () => {
     render(<SkillManagementPage />, { wrapper: createWrapper() });
-    const deleteButton = screen.getByLabelText('Delete React');
+    const deleteButton = screen.getByLabelText('Delete Node.js');
     fireEvent.click(deleteButton);
 
     const confirmButton = screen.getByText('Delete');
     fireEvent.click(confirmButton);
-    expect(mockDeleteMutate).toHaveBeenCalledWith('s1', expect.any(Object));
+    expect(mockDeleteMutate).toHaveBeenCalledWith('s3', expect.any(Object));
   });
 
   it('empty skills shows empty message', () => {
