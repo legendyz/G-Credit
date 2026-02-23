@@ -14,6 +14,7 @@ import BadgeDetailModal from '../BadgeDetailModal/BadgeDetailModal';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useBadgeDetailModal } from '../../stores/badgeDetailModal';
 import { BadgeSearchBar } from '../search/BadgeSearchBar';
+import { StatusBadge } from '../ui/StatusBadge';
 import { PageTemplate } from '../layout/PageTemplate';
 import type { BadgeForFilter } from '../../utils/searchFilters';
 import type { Badge, Milestone } from '../../hooks/useWallet';
@@ -379,6 +380,7 @@ export function TimelineView() {
 interface GridViewProps {
   badges: Array<{
     id: string;
+    status: string;
     template: {
       imageUrl?: string | null;
       name: string;
@@ -443,6 +445,7 @@ function GridView({ badges }: GridViewProps) {
     >
       {badges.map((badge, index) => {
         const itemProps = getItemProps(index);
+        const isInactive = badge.status === 'REVOKED' || badge.status === 'EXPIRED';
         return (
           <div
             key={badge.id}
@@ -464,6 +467,7 @@ function GridView({ badges }: GridViewProps) {
               active:bg-neutral-50
               focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2
               ${focusedIndex === index ? 'border-brand-400 shadow-md' : 'border-neutral-200'}
+              ${isInactive ? 'opacity-50' : ''}
             `}
           >
             <img
@@ -475,9 +479,12 @@ function GridView({ badges }: GridViewProps) {
             <h3 className="font-semibold text-center text-sm md:text-base">
               {badge.template.name}
             </h3>
-            <p className="text-xs md:text-sm text-neutral-500 text-center">
+            <p className="text-xs md:text-sm text-neutral-500 text-center mb-2">
               {badge.template.category}
             </p>
+            <div className="flex justify-center">
+              <StatusBadge status={badge.status as 'CLAIMED' | 'PENDING' | 'REVOKED' | 'EXPIRED'} />
+            </div>
           </div>
         );
       })}
