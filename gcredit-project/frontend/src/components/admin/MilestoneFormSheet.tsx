@@ -17,7 +17,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Lock } from 'lucide-react';
+import { Lock, AlertTriangle } from 'lucide-react';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useSkillCategoryTree } from '@/hooks/useSkillCategories';
 import type {
   MilestoneConfig,
@@ -101,6 +102,7 @@ export function MilestoneFormSheet({
   const [threshold, setThreshold] = useState(5);
   const [categoryId, setCategoryId] = useState('');
   const [includeSubCategories, setIncludeSubCategories] = useState(true);
+  const [showCreateConfirm, setShowCreateConfirm] = useState(false);
 
   // Reset form when opening / milestone changes
   useEffect(() => {
@@ -194,6 +196,19 @@ export function MilestoneFormSheet({
   const handleSubmit = () => {
     if (!isValid) return;
 
+    // In create mode, show confirmation dialog first
+    if (mode === 'create') {
+      setShowCreateConfirm(true);
+      return;
+    }
+
+    doSubmit();
+  };
+
+  const doSubmit = () => {
+    if (!isValid) return;
+    setShowCreateConfirm(false);
+
     const trigger: MilestoneTrigger = {
       metric,
       scope,
@@ -247,6 +262,18 @@ export function MilestoneFormSheet({
         </SheetHeader>
 
         <div className="space-y-5 mt-6">
+          {/* Create mode: irreversibility warning */}
+          {mode === 'create' && (
+            <div className="flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2.5 text-sm text-amber-800">
+              <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+              <span>
+                Once users achieve this milestone,{' '}
+                <strong>all fields will be permanently locked</strong> and it can only be
+                deactivated — not deleted or modified. Please review carefully before creating.
+              </span>
+            </div>
+          )}
+
           {/* Info banner: fully locked when achievements exist */}
           {isFullyLocked && (
             <div className="flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2.5 text-sm text-amber-800">
@@ -506,6 +533,18 @@ export function MilestoneFormSheet({
             )}
           </div>
         </div>
+
+        {/* Create confirmation dialog */}
+        <ConfirmDialog
+          open={showCreateConfirm}
+          onOpenChange={setShowCreateConfirm}
+          title="Create Milestone?"
+          description="Once users achieve this milestone, all fields will be permanently locked and it cannot be deleted — only deactivated. Are you sure you want to create it?"
+          confirmLabel="Yes, Create Milestone"
+          cancelLabel="Review Again"
+          onConfirm={doSubmit}
+          loading={isLoading}
+        />
       </SheetContent>
     </Sheet>
   );
