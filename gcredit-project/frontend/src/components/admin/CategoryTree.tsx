@@ -322,12 +322,27 @@ function CategoryTreeNodeInner({
 
         {/* Skill count badge */}
         {skillCount > 0 && (
-          <span
-            className={`text-xs text-neutral-400 ${
-              editable ? 'bg-neutral-100 px-2 py-0.5 rounded-full' : ''
-            }`}
-          >
-            {editable ? `${skillCount} ${skillCount === 1 ? 'skill' : 'skills'}` : skillCount}
+          <span className="relative group/skill cursor-help">
+            <span
+              className={`inline-flex items-center justify-center min-w-[1.5rem] px-1.5 py-0.5 rounded-full text-xs font-semibold ${
+                editable
+                  ? 'bg-brand-100 text-brand-700 border border-brand-200'
+                  : 'bg-brand-100 text-brand-700'
+              }`}
+            >
+              {editable ? `${skillCount} ${skillCount === 1 ? 'skill' : 'skills'}` : skillCount}
+            </span>
+            {category.skills && category.skills.length > 0 && (
+              <span className="invisible group-hover/skill:visible absolute z-50 bottom-full right-0 mb-2 w-max max-w-xs px-3 py-2 rounded-lg bg-neutral-800 text-white text-xs shadow-lg whitespace-pre-line">
+                <span className="font-semibold">Associated skills:</span>
+                {category.skills.map((s) => (
+                  <span key={s.id} className="block mt-0.5">
+                    • {s.name}
+                  </span>
+                ))}
+                <span className="absolute top-full right-4 border-4 border-transparent border-t-neutral-800" />
+              </span>
+            )}
           </span>
         )}
 
