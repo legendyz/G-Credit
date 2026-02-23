@@ -15,6 +15,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronDown, Check, X, Search } from 'lucide-react';
+import { getCategoryColorClasses } from '@/lib/categoryColors';
 
 export interface Skill {
   id: string;
@@ -22,10 +23,25 @@ export interface Skill {
   categoryName?: string;
   categoryColor?: string | null;
   categoryId?: string;
+  rootCategoryName?: string;
+  rootCategoryColor?: string | null;
+  subCategoryName?: string;
   description?: string;
   level?: string;
   badgeCount?: number;
   templateNames?: string[];
+}
+
+interface SubGroup {
+  name: string;
+  skills: Skill[];
+}
+
+interface HierarchyGroup {
+  rootName: string;
+  rootColor?: string | null;
+  subGroups: SubGroup[];
+  directSkills: Skill[];
 }
 
 export interface SkillsFilterProps {
@@ -76,7 +92,7 @@ export function SkillsFilter({
     skill.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Group skills by category if available
+  // Group skills by category if available (flat — for non-hierarchical callers)
   const groupedSkills = filteredSkills.reduce(
     (groups, skill) => {
       const category = skill.categoryName || 'Other';
@@ -88,6 +104,46 @@ export function SkillsFilter({
     },
     {} as Record<string, Skill[]>
   );
+
+  // Build hierarchical groups when root/sub category data is available
+  const hierarchicalGroups = ((): HierarchyGroup[] | null => {
+    if (!groupByCategory) return null;
+    // Check if any skill has rootCategoryName (indicates hierarchy data is available)
+    const hasHierarchy = filteredSkills.some((s) => s.rootCategoryName);
+    if (!hasHierarchy) return null;
+
+    const groupMap = new Map<string, HierarchyGroup>();
+
+    for (const skill of filteredSkills) {
+      const rootName = skill.rootCategoryName || skill.categoryName || 'Other';
+      const rootColor = skill.rootCategoryColor ?? skill.categoryColor;
+      const subName = skill.subCategoryName;
+
+      if (!groupMap.has(rootName)) {
+        groupMap.set(rootName, {
+          rootName,
+          rootColor,
+          subGroups: [],
+          directSkills: [],
+        });
+      }
+
+      const group = groupMap.get(rootName)!;
+
+      if (subName) {
+        let subGroup = group.subGroups.find((sg) => sg.name === subName);
+        if (!subGroup) {
+          subGroup = { name: subName, skills: [] };
+          group.subGroups.push(subGroup);
+        }
+        subGroup.skills.push(skill);
+      } else {
+        group.directSkills.push(skill);
+      }
+    }
+
+    return Array.from(groupMap.values());
+  })();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -125,6 +181,39 @@ export function SkillsFilter({
     onChange([]);
     setIsOpen(false);
   }, [onChange]);
+
+  // Render a single skill checkbox item
+  const renderSkillItem = (skill: Skill, paddingClass: string) => {
+    const isSelected = selectedSkills.includes(skill.id);
+    return (
+      <button
+        key={skill.id}
+        type="button"
+        onClick={() => toggleSkill(skill.id)}
+        className={`
+          w-full ${paddingClass} pr-3 py-2
+          flex items-center gap-2
+          text-sm text-left
+          hover:bg-gray-100 dark:hover:bg-gray-700
+          focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700
+          ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
+        `}
+        role="option"
+        aria-selected={isSelected}
+      >
+        <div
+          className={`
+            w-4 h-4 flex items-center justify-center
+            border rounded shrink-0
+            ${isSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300 dark:border-gray-600'}
+          `}
+        >
+          {isSelected && <Check className="h-3 w-3 text-white" />}
+        </div>
+        <span className="text-gray-900 dark:text-white">{skill.name}</span>
+      </button>
+    );
+  };
 
   // Get display text
   const displayText =
@@ -250,53 +339,58 @@ export function SkillsFilter({
               <div className="p-4 text-center text-gray-500">Loading skills...</div>
             ) : filteredSkills.length === 0 ? (
               <div className="p-4 text-center text-gray-500">No skills found</div>
-            ) : (
-              Object.entries(groupedSkills).map(([category, categorySkills]) => (
-                <div key={category}>
-                  {/* Category header - only show if groupByCategory and multiple categories */}
-                  {groupByCategory && Object.keys(groupedSkills).length > 1 && (
-                    <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900">
-                      {category}
+            ) : hierarchicalGroups ? (
+              /* Hierarchical 3-tier display: Root Category > Sub Category > Skill */
+              hierarchicalGroups.map((group) => {
+                const colorClasses = getCategoryColorClasses(group.rootColor);
+                return (
+                  <div key={group.rootName}>
+                    {/* Level 1 header with color dot */}
+                    <div className="px-3 py-1.5 flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-900">
+                      <span
+                        className={`inline-block w-2.5 h-2.5 rounded-full shrink-0 ${colorClasses.dot}`}
+                        aria-hidden="true"
+                      />
+                      {group.rootName}
                     </div>
-                  )}
-                  {/* Skills in category */}
-                  {categorySkills.map((skill) => {
-                    const isSelected = selectedSkills.includes(skill.id);
-                    return (
-                      <button
-                        key={skill.id}
-                        type="button"
-                        onClick={() => toggleSkill(skill.id)}
-                        className={`
-                          w-full px-3 py-2
-                          flex items-center gap-2
-                          text-sm text-left
-                          hover:bg-gray-100 dark:hover:bg-gray-700
-                          focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700
-                          ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
-                        `}
-                        role="option"
-                        aria-selected={isSelected}
-                      >
-                        <div
-                          className={`
-                            w-4 h-4 flex items-center justify-center
-                            border rounded
-                            ${
-                              isSelected
-                                ? 'bg-blue-600 border-blue-600'
-                                : 'border-gray-300 dark:border-gray-600'
-                            }
-                          `}
-                        >
-                          {isSelected && <Check className="h-3 w-3 text-white" />}
+                    {/* Direct skills under L1 (no sub-category) */}
+                    {group.directSkills.map((skill) => renderSkillItem(skill, 'pl-7'))}
+                    {/* Sub-category groups */}
+                    {group.subGroups.map((sub) => (
+                      <div key={sub.name}>
+                        {/* Level 2 sub-header */}
+                        <div className="pl-7 pr-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                          {sub.name}
                         </div>
-                        <span className="text-gray-900 dark:text-white">{skill.name}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              ))
+                        {/* Skills under sub-category */}
+                        {sub.skills.map((skill) => renderSkillItem(skill, 'pl-9'))}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })
+            ) : (
+              /* Flat grouped display (fallback when hierarchy data not available) */
+              Object.entries(groupedSkills).map(([category, categorySkills]) => {
+                const firstSkill = categorySkills[0];
+                const colorClasses = getCategoryColorClasses(firstSkill?.categoryColor);
+                return (
+                  <div key={category}>
+                    {/* Category header with color dot */}
+                    {groupByCategory && Object.keys(groupedSkills).length > 1 && (
+                      <div className="px-3 py-1.5 flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900">
+                        <span
+                          className={`inline-block w-2.5 h-2.5 rounded-full shrink-0 ${colorClasses.dot}`}
+                          aria-hidden="true"
+                        />
+                        {category}
+                      </div>
+                    )}
+                    {/* Skills in category */}
+                    {categorySkills.map((skill) => renderSkillItem(skill, 'px-3'))}
+                  </div>
+                );
+              })
             )}
           </div>
 

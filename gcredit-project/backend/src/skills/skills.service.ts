@@ -24,7 +24,13 @@ export class SkillsService {
     const skills = await this.prisma.skill.findMany({
       where,
       include: {
-        category: true,
+        category: {
+          include: {
+            parent: {
+              include: { parent: true },
+            },
+          },
+        },
       },
       orderBy: {
         name: 'asc',
@@ -241,7 +247,13 @@ export class SkillsService {
         },
       },
       include: {
-        category: true,
+        category: {
+          include: {
+            parent: {
+              include: { parent: true },
+            },
+          },
+        },
       },
       take: 20, // Limit results
     });

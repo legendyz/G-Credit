@@ -9,6 +9,14 @@ import { useQuery } from '@tanstack/react-query';
 import type { Skill } from '@/components/search/SkillsFilter';
 import { apiFetch } from '@/lib/apiFetch';
 
+interface CategoryParent {
+  id: string;
+  name: string;
+  color?: string | null;
+  level?: number;
+  parent?: CategoryParent | null;
+}
+
 interface SkillApiResponse {
   id: string;
   name: string;
@@ -20,6 +28,9 @@ interface SkillApiResponse {
     id: string;
     name: string;
     color?: string | null;
+    level?: number;
+    parentId?: string | null;
+    parent?: CategoryParent | null;
   };
 }
 
@@ -63,17 +74,46 @@ export function useSkills(options: UseSkillsOptions = {}) {
       const data: SkillApiResponse[] = await response.json();
 
       // Transform to Skill type for filter component
-      return data.map((skill) => ({
-        id: skill.id,
-        name: skill.name,
-        categoryName: skill.category?.name, // FIX: was `category` (Story 12.2)
-        categoryColor: skill.category?.color, // NEW: category color for pills
-        categoryId: skill.category?.id, // NEW: for admin page filtering
-        description: skill.description, // NEW: for admin table
-        level: skill.level, // NEW: for admin table
-        badgeCount: skill.badgeCount ?? 0, // NEW: badge template reference count
-        templateNames: skill.templateNames ?? [], // NEW: template names for hover tooltip
-      }));
+      return data.map((skill) => {
+        const cat = skill.category;
+        // Build hierarchy path: rootCategory (L1) > subCategory (L2) > category (L3)
+        let rootCategoryName: string | undefined;
+        let rootCategoryColor: string | null | undefined;
+        let subCategoryName: string | undefined;
+
+        if (cat) {
+          if (cat.parent?.parent) {
+            // Level 3 category: grandparent (L1) > parent (L2) > this
+            rootCategoryName = cat.parent.parent.name;
+            rootCategoryColor = cat.parent.parent.color;
+            subCategoryName = cat.parent.name;
+          } else if (cat.parent) {
+            // Level 2 category: parent (L1) > this
+            rootCategoryName = cat.parent.name;
+            rootCategoryColor = cat.parent.color;
+            subCategoryName = cat.name;
+          } else {
+            // Level 1 category: skill directly under top-level
+            rootCategoryName = cat.name;
+            rootCategoryColor = cat.color;
+          }
+        }
+
+        return {
+          id: skill.id,
+          name: skill.name,
+          categoryName: cat?.name,
+          categoryColor: cat?.color,
+          categoryId: cat?.id,
+          rootCategoryName,
+          rootCategoryColor,
+          subCategoryName,
+          description: skill.description,
+          level: skill.level,
+          badgeCount: skill.badgeCount ?? 0,
+          templateNames: skill.templateNames ?? [],
+        };
+      });
     },
     enabled,
     staleTime: 5 * 60 * 1000, // Skills rarely change, cache for 5 minutes
