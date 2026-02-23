@@ -304,17 +304,13 @@ function CategoryTreeNodeInner({
           <span className="w-5" /> // spacer for alignment
         )}
 
-        {/* Category name + color */}
+        {/* Category name (colored by category color) */}
         <div className="flex-1 flex items-center gap-2 min-w-0">
-          <span className="text-sm font-medium text-neutral-800 truncate">{category.name}</span>
-          {category.color && (
-            <span
-              className={`text-[11px] font-medium px-1.5 py-0.5 rounded-full border ${colorClasses.bg} ${colorClasses.text} ${colorClasses.border}`}
-              title={`Category color: ${category.color}`}
-            >
-              {category.color}
-            </span>
-          )}
+          <span
+            className={`text-sm font-medium truncate ${category.color ? colorClasses.text : 'text-neutral-800'}`}
+          >
+            {category.name}
+          </span>
         </div>
 
         {/* Skill count badge */}
