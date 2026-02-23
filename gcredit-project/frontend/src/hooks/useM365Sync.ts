@@ -6,6 +6,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { triggerSync, getSyncLogs, getIntegrationStatus } from '@/lib/m365SyncApi';
+import { adminUsersKeys } from './useAdminUsers';
 
 // Query key factory
 export const m365SyncKeys = {
@@ -49,6 +50,8 @@ export function useTriggerSync() {
       // Invalidate sync logs + status to refetch
       queryClient.invalidateQueries({ queryKey: m365SyncKeys.logs() });
       queryClient.invalidateQueries({ queryKey: m365SyncKeys.status() });
+      // Refresh user list since sync may have created/updated users
+      queryClient.invalidateQueries({ queryKey: adminUsersKeys.lists() });
     },
   });
 }
