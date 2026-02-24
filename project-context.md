@@ -181,13 +181,9 @@ gcredit-project/docs/
 │   ├── sprint-7/         # Badge revocation & lifecycle UAT
 │   ├── sprint-8/         # Production-ready MVP
 │   ├── sprint-9/         # ✅ COMPLETE - Bulk badge issuance + TD cleanup
-│   └── sprint-10/        # ✅ COMPLETE - v1.0.0 Release Sprint (12 stories, UAT PASSED)
-│       ├── backlog.md    # Sprint 6 backlog (1,317 lines)
-│       ├── version-manifest.md  # ✅ CREATED 2026-01-29 (dependency versions)
-│       ├── kickoff-readiness.md # Preparation tasks checklist
-│       ├── ux-audit-report.md   # Existing pages UX audit
-│       ├── email-template-specs.md  # Email template design
-│       └── adaptive-card-specs.md   # Teams card design
+│   ├── sprint-10/        # ✅ COMPLETE - v1.0.0 Release Sprint (12 stories, UAT PASSED)
+│   ├── sprint-11/        # ✅ COMPLETE - Security & Quality Hardening (25 stories, v1.1.0)
+│   └── sprint-12/        # ✅ COMPLETE - Management UIs & Evidence Unification (8 stories, v1.2.0)
 ├── decisions/            # Architecture Decision Records
 │   ├── 002-lodash-security-risk-acceptance.md
 │   ├── 003-badge-assertion-format.md

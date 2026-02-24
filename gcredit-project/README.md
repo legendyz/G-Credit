@@ -299,6 +299,8 @@ Remove-Item -Recurse -Force backend\.git
 - [Sprint 8 Documentation](docs/sprints/sprint-8/) ✅ Complete (Production-Ready MVP)
 - [Sprint 9 Documentation](docs/sprints/sprint-9/) ✅ Complete (Bulk Badge Issuance + TD Cleanup)
 - [Sprint 10 Documentation](docs/sprints/sprint-10/) ✅ Complete (v1.0.0 Release)
+- [Sprint 11 Documentation](docs/sprints/sprint-11/) ✅ Complete (Security & Quality Hardening, v1.1.0)
+- [Sprint 12 Documentation](docs/sprints/sprint-12/) ✅ Complete (Management UIs & Evidence, v1.2.0)
 - [v1.0.0 Release Notes](docs/sprints/sprint-10/v1.0.0-release-notes.md)
 - [All Sprints Index](docs/sprints/README.md)
 

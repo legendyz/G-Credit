@@ -1,8 +1,8 @@
 # API Usage Guide
 
 **G-Credit Badge Platform REST API**  
-**Version:** 1.1.0 (Sprint 11 - v1.1.0 Released)  
-**Last Updated:** 2026-02-18
+**Version:** 1.2.0 (Sprint 12 - v1.2.0 Management UIs & Evidence)  
+**Last Updated:** 2026-02-24
 
 ---
 
@@ -2162,12 +2162,12 @@ Import this collection into Postman for quick API testing:
 
 ---
 
-**Last Updated:** 2026-02-18  
-**API Version:** 1.1.0 (Sprint 11 — Security & Quality Hardening)  
+**Last Updated:** 2026-02-24  
+**API Version:** 1.2.0 (Sprint 12 — Management UIs & Evidence Unification)  
 **Author:** G-Credit Development Team  
-**Coverage:** Sprint 0-11 (Authentication, Templates, Issuance, Verification, Sharing, Revocation, Analytics, Admin Users, M365 Sync, Bulk Issuance, Dashboard, Evidence, Milestones, Teams, CSV Export)  
-**Total Routes:** ~78 across 16 modules  
-**Sprint 11 Changes:** httpOnly cookie auth, account lockout, analytics CSV export, PaginatedResponse<T>
+**Coverage:** Sprint 0-12 (Authentication, Templates, Issuance, Verification, Sharing, Revocation, Analytics, Admin Users, M365 Sync, Bulk Issuance, Dashboard, Evidence, Milestones, Teams, CSV Export, Skill Categories, Skills)  
+**Total Routes:** ~97 across 19 modules  
+**Sprint 12 Changes:** Skill Category CRUD, Skill CRUD (enhanced), User Management (8 endpoints), Milestone Admin UI, Evidence Unification, Activity Feed Formatting, UUID Hardening
 
 **See Also:**
 - [API Module Index](./api/README.md) - Quick reference table

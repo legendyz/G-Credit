@@ -1,8 +1,8 @@
 # Sprint Documentation Index
 
-**Last Updated:** 2026-02-11  
-**Current Sprint:** Sprint 10 Complete — v1.0.0 Released  
-**Total Sprints:** 11 (Sprint 0-10)
+**Last Updated:** 2026-02-24  
+**Current Sprint:** Sprint 12 Complete — v1.2.0 Released  
+**Total Sprints:** 13 (Sprint 0-12)
 
 ---
 
@@ -21,6 +21,8 @@
 | [Sprint 8](./sprint-8/) | Production-Ready MVP | ✅ Complete | 3 days | 12 items | 876 tests | v0.8.0 |
 | [Sprint 9](./sprint-9/) | Bulk Badge Issuance + TD Cleanup | ✅ Complete | 3 days | 5 stories | 1087 tests | v0.9.0 |
 | [Sprint 10](./sprint-10/) | v1.0.0 Release Sprint | ✅ Complete | 3 days | 12 stories | 1061 tests | v1.0.0 |
+| [Sprint 11](./sprint-11/) | Security & Quality Hardening | ✅ Complete | 7 days | 25 stories | 1,307 tests | v1.1.0 |
+| [Sprint 12](./sprint-12/) | Management UIs & Evidence Unification | ✅ Complete | 6 days | 8 stories | 1,549 tests | v1.2.0 |
 
 ---
 

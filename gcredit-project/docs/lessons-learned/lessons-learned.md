@@ -2,10 +2,10 @@
 
 **Project:** G-Credit Digital Credentialing System  
 **Purpose:** Capture key learnings and establish best practices for efficient development  
-**Last Updated:** 2026-02-18 (Sprint 11 v1.1.0 Released — documentation maintenance sync)  
+**Last Updated:** 2026-02-24 (Sprint 12 v1.2.0 — Management UIs & Evidence Unification)  
 **Status:** Living document - update after each Sprint Retrospective  
-**Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 → Sprint 6 → Sprint 7 → Sprint 8 → Sprint 9 → Sprint 10 → Sprint 11 (Complete, v1.1.0 Released) + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
-**Total Lessons:** 43 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 8, Sprint 7: 3, Sprint 8: 3, Sprint 9: 3, Sprint 10: 3, Sprint 11: 4)
+**Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 → Sprint 6 → Sprint 7 → Sprint 8 → Sprint 9 → Sprint 10 → Sprint 11 → Sprint 12 (Complete, v1.2.0)  + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
+**Total Lessons:** 45 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 8, Sprint 7: 3, Sprint 8: 3, Sprint 9: 3, Sprint 10: 3, Sprint 11: 4, Sprint 12: 2)
 
 ---
 

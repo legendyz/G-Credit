@@ -1,6 +1,6 @@
 # G-Credit Infrastructure Inventory
 
-**Last Updated:** 2026-01-28  
+**Last Updated:** 2026-02-24  
 **Project:** G-Credit - Enterprise Internal Digital Credentialing System  
 **Environment:** Development
 
@@ -558,6 +558,28 @@ AZURE_STORAGE_CONTAINER_EVIDENCE="evidence"
 ---
 
 ## 📝 Change Log
+
+### 2026-02-24 (Sprint 12 Completion)
+- ✅ EvidenceFile model enhanced: added `type` (FILE|URL), `sourceUrl`, `badgeTemplateId` fields
+- ✅ Two-phase migration: Prisma schema + standalone data migration script
+- ✅ New admin endpoints: Skill Category CRUD (6), Skill CRUD (enhanced), User Management (8), Milestones (5), Evidence (4)
+- ✅ Total: 19 controllers, 97 API endpoints
+- ✅ 1,549 tests (847 BE + 702 FE), 100% pass rate
+- ✅ Tagged v1.2.0
+
+### 2026-02-18 (Sprint 11 Completion)
+- ✅ Added `failedLoginAttempts` and `lockedUntil` fields to User model (account lockout)
+- ✅ Added `isPublic` field to Badge model (visibility toggle)
+- ✅ JWT migrated from localStorage to httpOnly cookies (SameSite=Lax)
+- ✅ Security: Magic-byte validation, PII log sanitization, HTML sanitization pipe
+- ✅ 1,307 tests (756 BE + 551 FE), 100% pass rate
+- ✅ Tagged v1.1.0
+
+### 2026-02-11 (Sprint 10 Completion)
+- ✅ v1.0.0 Released (UAT 33/33 PASS)
+- ✅ ESLint zero-tolerance CI gate (0 errors, 0 warnings)
+- ✅ 1,061 tests (534 BE + 527 FE)
+- ✅ Tagged v1.0.0
 
 ### 2026-01-28 (Sprint 4 Completion)
 - ✅ Added 3 database tables: evidence_files, milestone_configs, milestone_achievements

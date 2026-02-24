@@ -1,9 +1,9 @@
 # GCredit API Documentation
 
-**Version:** 1.0.0 (v1.0.0 Released)  
+**Version:** 1.2.0 (v1.2.0 Released)  
 **Base URL:** `http://localhost:3000`  
 **API Prefix:** `/api` (all endpoints, including `/api/auth`)  
-**Last Updated:** 2026-02-11
+**Last Updated:** 2026-02-24
 
 ## Overview
 
@@ -102,9 +102,9 @@ See [Authentication API](./authentication.md) for detailed endpoint documentatio
 - **Endpoints:** Download Template, Upload CSV, Preview, Confirm, Error Report
 - **Limits:** 20 badges per session, 100KB file size, 30-min session expiry
 
-### 13. Admin User Management (4 routes)
+### 13. Admin User Management (8 routes)
 - **Path:** `/api/admin/users`
-- **Endpoints:** List Users, Get User, Update Role (optimistic locking), Update Status
+- **Endpoints:** List Users, Get User, Search/Filter, Update Role (optimistic locking), Update Status, Lock/Unlock, User Detail, Stats
 
 ### 14. M365 Sync (4 routes)
 - **Path:** `/api/admin/m365-sync`
@@ -297,11 +297,11 @@ Interactive API documentation available at:
 | Dashboard | `/api/dashboard` | Yes | 4 |
 | Analytics | `/api/analytics` | Admin | 5 |
 | Bulk Issuance | `/api/bulk-issuance` | Yes | 5 |
-| Admin Users | `/api/admin/users` | Admin | 4 |
+| Admin Users | `/api/admin/users` | Admin | 8 |
 | M365 Sync | `/api/admin/m365-sync` | Admin | 4 |
 | Milestones | `/api/admin/milestones` | Admin | 5 |
 | Teams Actions | `/api/teams/actions` | Yes | 1 |
-| **Total** | | | **~77** |
+| **Total** | | | **~97** |
 
 ## Support
 
@@ -312,6 +312,6 @@ For questions or issues:
 
 ---
 
-**Last Updated:** February 9, 2026  
-**Version:** 1.0.0-dev (Sprint 10 In Progress)  
+**Last Updated:** February 24, 2026  
+**Version:** 1.2.0 (Sprint 12 Complete)  
 **Maintained By:** GCredit Development Team

@@ -1,7 +1,7 @@
 ﻿﻿# G-Credit - Enterprise Internal Digital Credentialing System
 
-[![Status](https://img.shields.io/badge/Status-v1.1.0%20Released-brightgreen)]()
-[![Phase](https://img.shields.io/badge/Phase-Post--MVP%20Hardening%20Complete-brightgreen)]()
+[![Status](https://img.shields.io/badge/Status-v1.2.0%20Released-brightgreen)]()
+[![Phase](https://img.shields.io/badge/Phase-2.0%20Management%20UIs%20Complete-brightgreen)]()
 [![Sprint0](https://img.shields.io/badge/Sprint%200-Complete%20(100%25)-success)]()
 [![Sprint1](https://img.shields.io/badge/Sprint%201-Complete%20(100%25)-brightgreen)]()
 [![Sprint2](https://img.shields.io/badge/Sprint%202-Complete%20(100%25)-brightgreen)]()
@@ -14,8 +14,8 @@
 [![Sprint9](https://img.shields.io/badge/Sprint%209-Complete%20(100%25)-brightgreen)]()
 [![Sprint10](https://img.shields.io/badge/Sprint%2010-Complete%20(100%25)-brightgreen)]()
 [![Sprint11](https://img.shields.io/badge/Sprint%2011-Complete%20(100%25)-brightgreen)]()
-[![Version](https://img.shields.io/badge/Version-v1.1.0-blue)]()
-[![Tests](https://img.shields.io/badge/Tests-1307%20Total%2C%201307%20Passing-success)]()
+[![Version](https://img.shields.io/badge/Version-v1.2.0-blue)]()
+[![Tests](https://img.shields.io/badge/Tests-1549%20Total%2C%201549%20Passing-success)]()
 
 > **G-Credit** is an enterprise-grade internal digital badging platform designed to securely recognize, verify, and analyze employee skills and achievements. Compliant with Open Badges 2.0 standards, it aims to replace fragmented certificate management and reduce dependency on external platforms.
 
@@ -26,7 +26,7 @@
 **Project Name:** G-Credit  
 **Project Type:** Enterprise Internal Platform (Greenfield Development)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
-**Current Status:** ✅ v1.1.0 Released — Post-MVP Hardening Complete (11 Sprints, 1,307 tests, UAT PASSED)  
+**Current Status:** ✅ v1.2.0 Released — Management UIs & Evidence Unification (12 Sprints, 1,549 tests)  
 **Sprint 0:** ✅ Complete (100%, actual 9.5h / estimated 10h, 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, actual 21h / estimated 21h, 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, actual 29h / estimated 32h, 2026-01-26)  
@@ -280,8 +280,8 @@
 - **Total: 8 stories, 3 waves, 72h estimated**
 - **Testing:** 1,549 tests (BE 847 + FE 702), 100% pass rate (+242 from v1.1.0)
 - **Branch:** sprint-12/management-uis-evidence (merged to main via PR #7)
-- **Git Tag:** v1.1.0
-- **GitHub Release:** [v1.1.0](https://github.com/legendyz/G-Credit/releases/tag/v1.1.0)
+- **Git Tag:** v1.2.0
+- **GitHub Release:** [v1.2.0](https://github.com/legendyz/G-Credit/releases/tag/v1.2.0)
 
 ---
 
@@ -318,10 +318,10 @@ gcredit-project/
 │  └─ package.json
 ├─ docs/                 # Project documentation & knowledge base
 │  ├─ architecture/      # System architecture docs
-│  ├─ sprints/           # Sprint documentation (0-11)
+│  ├── sprints/           # Sprint documentation (0-12)
 │  ├─ planning/          # Product planning (epics, UX)
 │  ├─ decisions/         # Architectural Decision Records
-│  ├─ lessons-learned/   # 44 lessons from 11 sprints
+│  ├── lessons-learned/   # 45 lessons from 12 sprints
 │  └─ security/          # Security documentation
 └─ README.md             # Project quick start
 ```
@@ -531,9 +531,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Last Updated:** 2026-02-18
-**Status:** ✅ v1.1.0 Released — Post-MVP Hardening Complete
-**Version:** v1.1.0 (Released 2026-02-18, 1,307 tests, UAT 152/153 PASS)
+**Last Updated:** 2026-02-24
+**Status:** ✅ v1.2.0 Released — Management UIs & Evidence Unification Complete
+**Version:** v1.2.0 (Released 2026-02-24, 1,549 tests, 19 controllers, 97 endpoints)
 **Sprint 0:** ✅ Complete (actual 9.5h / estimated 10h, 95%) - [Retrospective](./_bmad-output/implementation-artifacts/sprint-0-retrospective.md)  
 **Sprint 1:** ✅ Complete (actual 21h / estimated 21h, 100%) - [Retrospective](./_bmad-output/implementation-artifacts/sprint-1-retrospective.md)  
 **Sprint 2:** ✅ Complete (actual 29h / estimated 32h, 110%) - [Final Report](./gcredit-project/backend/docs/sprints/sprint-2/final-report.md) | [Retrospective](./gcredit-project/backend/docs/sprints/sprint-2/retrospective.md)  
