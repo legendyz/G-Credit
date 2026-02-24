@@ -1,4 +1,4 @@
-import { IsUUID, IsOptional, IsUrl, IsInt, Min, Max } from 'class-validator';
+import { IsUUID, IsOptional, IsInt, Min, Max } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class IssueBadgeDto {
@@ -15,14 +15,6 @@ export class IssueBadgeDto {
   })
   @IsUUID()
   recipientId: string;
-
-  @ApiPropertyOptional({
-    description: 'Evidence URL (Azure Blob Storage)',
-    example: 'https://storage.azure.com/evidence/cert-12345.pdf',
-  })
-  @IsOptional()
-  @IsUrl()
-  evidenceUrl?: string;
 
   @ApiPropertyOptional({
     description: 'Expiration in days (null = no expiration)',

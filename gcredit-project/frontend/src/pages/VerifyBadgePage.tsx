@@ -11,7 +11,6 @@ import {
   AlertTriangle,
   Clock,
   Download,
-  ExternalLink,
   Calendar,
   User,
   Building2,
@@ -19,7 +18,10 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { apiFetch } from '../lib/apiFetch';
+import { getCategoryColorClasses } from '../lib/categoryColors';
 import { RevokedBadgeAlert } from '../components/badges/RevokedBadgeAlert';
+import EvidenceList from '../components/evidence/EvidenceList';
+import type { EvidenceItem } from '../lib/evidenceApi';
 
 export function VerifyBadgePage() {
   const { verificationId } = useParams<{ verificationId: string }>();
@@ -307,52 +309,60 @@ export function VerifyBadgePage() {
                 Skills & Competencies
               </div>
               <div className="flex flex-wrap gap-2">
-                {badge.badge.skills.map((skill: { id: string; name: string }) => (
-                  <span
-                    key={skill.id}
-                    className="px-3 py-1 bg-brand-100 text-brand-800 rounded-full text-sm"
-                  >
-                    {skill.name}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Evidence Files */}
-          {badge.evidenceFiles && badge.evidenceFiles.length > 0 && (
-            <div>
-              <div className="font-semibold text-sm text-neutral-500 mb-2">Evidence</div>
-              <div className="space-y-2">
-                {badge.evidenceFiles.map(
-                  (file: { blobUrl: string; filename: string }, index: number) => (
-                    <a
-                      key={index}
-                      href={file.blobUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-brand-600 hover:text-brand-800 hover:underline"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      {file.filename}
-                    </a>
-                  )
+                {badge.badge.skills.map(
+                  (skill: { id: string; name: string; categoryColor?: string }) => {
+                    const color = getCategoryColorClasses(skill.categoryColor);
+                    return (
+                      <span
+                        key={skill.id}
+                        className={`px-3 py-1 rounded-full text-sm ${color.bg} ${color.text}`}
+                      >
+                        {skill.name}
+                      </span>
+                    );
+                  }
                 )}
               </div>
             </div>
           )}
 
-          {/* Story 9.2 AC5: Download Button - disabled for revoked badges */}
+          {/* Evidence Files — unified EvidenceList */}
+          {badge.evidenceFiles &&
+            badge.evidenceFiles.length > 0 &&
+            (() => {
+              const evidenceItems: EvidenceItem[] = badge.evidenceFiles.map((f) => ({
+                id: f.id,
+                type: f.type === 'URL' ? 'URL' : ('FILE' as const),
+                name:
+                  f.type === 'URL'
+                    ? f.sourceUrl || f.originalName || f.filename
+                    : f.originalName || f.filename,
+                url: f.type === 'URL' ? (f.sourceUrl ?? f.blobUrl) : f.blobUrl,
+                size: f.type === 'URL' ? undefined : f.fileSize,
+                mimeType: f.type === 'URL' ? undefined : f.mimeType,
+                uploadedAt: f.uploadedAt,
+              }));
+              return (
+                <div>
+                  <div className="font-semibold text-sm text-neutral-500 mb-2">Evidence</div>
+                  <EvidenceList items={evidenceItems} editable={false} badgeId={badge.id} />
+                </div>
+              );
+            })()}
+
+          {/* Story 9.2 AC5: Download Button - disabled for revoked/pending badges */}
           <div className="flex justify-center">
             <Button
               onClick={downloadAssertion}
               className="gap-2"
               variant="outline"
-              disabled={!badge.assertionJson || isRevoked}
+              disabled={!badge.assertionJson || isRevoked || isPending}
               title={
                 isRevoked
                   ? 'This badge has been revoked and cannot be downloaded'
-                  : 'Download Open Badges 2.0 JSON-LD'
+                  : isPending
+                    ? 'This badge has not been claimed yet'
+                    : 'Download Open Badges 2.0 JSON-LD'
               }
             >
               <Download className="h-4 w-4" />

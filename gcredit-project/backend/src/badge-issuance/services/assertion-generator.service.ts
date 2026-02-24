@@ -57,8 +57,7 @@ export class AssertionGeneratorService {
     issuer: User;
     issuedAt: Date;
     expiresAt?: Date;
-    evidenceUrl?: string;
-    evidenceUrls?: string[]; // Sprint 5: Support multiple evidence files
+    evidenceUrls?: string[];
   }) {
     const {
       badgeId,
@@ -68,7 +67,6 @@ export class AssertionGeneratorService {
       issuer: _issuer,
       issuedAt,
       expiresAt,
-      evidenceUrl,
       evidenceUrls,
     } = params;
 
@@ -111,11 +109,6 @@ export class AssertionGeneratorService {
       ...(evidenceUrls &&
         evidenceUrls.length > 0 && {
           evidence: evidenceUrls,
-        }),
-      // Backward compatibility: single evidenceUrl
-      ...(evidenceUrl &&
-        !evidenceUrls && {
-          evidence: [evidenceUrl],
         }),
     };
 
@@ -164,13 +157,35 @@ export class AssertionGeneratorService {
   }
 
   /**
-   * Compute SHA-256 hash of assertion JSON for integrity verification
+   * Produce a canonical JSON string with recursively sorted keys.
+   * This ensures the same hash regardless of JS/PostgreSQL key ordering.
+   */
+  private canonicalJson(obj: unknown): string {
+    return JSON.stringify(obj, (_key, value: unknown) =>
+      value && typeof value === 'object' && !Array.isArray(value)
+        ? Object.keys(value as Record<string, unknown>)
+            .sort()
+            .reduce(
+              (sorted, k) => {
+                sorted[k] = (value as Record<string, unknown>)[k];
+                return sorted;
+              },
+              {} as Record<string, unknown>,
+            )
+        : value,
+    );
+  }
+
+  /**
+   * Compute SHA-256 hash of assertion JSON for integrity verification.
+   * Uses canonical (sorted-key) JSON to be independent of key ordering,
+   * since PostgreSQL jsonb columns do not preserve insertion order.
    * Sprint 5 Story 6.5: Metadata immutability
    */
   computeAssertionHash(assertion: any): string {
     return crypto
       .createHash('sha256')
-      .update(JSON.stringify(assertion))
+      .update(this.canonicalJson(assertion))
       .digest('hex');
   }
 

@@ -5,7 +5,7 @@
 **Project Type:** Enterprise Internal Platform (Greenfield)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
 **License:** MIT License (Open Source)  
-**Status:** ✅ Sprint 11 COMPLETE — 25/25 stories, v1.1.0 Released  
+**Status:** ✅ Sprint 12 COMPLETE — 8/8 dev stories, v1.2.0  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, committed 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, committed 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, committed 2026-01-26)  
@@ -18,8 +18,8 @@
 **Sprint 9:** ✅ Complete (5/5 stories, 37h/51h, branch: sprint-9/epic-8-bulk-issuance-td-cleanup, 1087 tests, v0.9.0-dev)  
 **Sprint 10:** ✅ Complete (12/12 stories, branch: sprint-10/v1-release, 1061 tests, UAT 33/33 PASS, v1.0.0)  
 **Sprint 11:** ✅ Complete (25/25 stories, 7 waves, branch: sprint-11/security-quality-hardening, 1,307 tests, UAT 152/153 PASS, v1.1.0)  
-**Last Updated:** 2026-02-18 (Sprint 11 COMPLETE — merged to main, tagged v1.1.0, GitHub Release published)
-
+**Sprint 12:** ✅ Complete (8/8 dev stories, 3 waves, branch: sprint-12/management-uis-evidence, 1,549 tests, v1.2.0)
+**Last Updated:** 2026-02-24 (Sprint 12 COMPLETE — 8/8 dev stories, Management UIs + Evidence Unification)
 ---
 
 ## 🚨 Maintenance Protocol - How to Keep This Document Current
@@ -319,6 +319,18 @@ _bmad-output/
 - **Security:** 2 HIGH → 0 HIGH findings resolved
 - **Pre-push hook:** Fully aligned with CI pipeline — `npm run lint` (not bare eslint), `npm run build` for both BE/FE, Jest `--forceExit` exit code tolerance
 
+### Phase 2.0 - Management UIs + Evidence Unification (Sprint 12, 2026-02) ✅ COMPLETE
+- ✅ Skill Category Management UI (3-level hierarchical tree, drag-and-drop reorder, system-category protection)
+- ✅ Skill Management UI (split layout, CRUD, colored skill tags with 10-color palette, category filter)
+- ✅ User Management UI Enhancement (search/filter/sort, role edit, lock/unlock, user detail panel)
+- ✅ Milestone Admin UI (card grid, dynamic form per type, active/inactive toggle, achievement count)
+- ✅ Evidence Unification (EvidenceFile model, two-phase migration, unified API, file upload in issuance)
+- ✅ Activity feed formatting (human-readable descriptions replacing raw JSON)
+- ✅ Skills UUID fallback hardening (useSkillNamesMap, "Unknown Skill" label)
+- **Tests:** 1,307 → 1,549 (+242, +19%), 0 regressions
+- **Tech Debt Resolved:** TD-009 (Milestone Admin UI), TD-010 (Evidence System), TD-016 (Dashboard JSON), TD-017 (Skills UUID)
+- **Shared Components:** `<AdminPageShell>`, `<ConfirmDialog>`, `<CategoryTree>`, `<EvidenceList>`, `<EvidenceAttachmentPanel>`
+
 ### Phase 2 - Automation (Target: Q2 2026)
 - LMS integration (auto-issuance on course completion)
 - HRIS integration (employee sync)
@@ -386,11 +398,12 @@ _bmad-output/
 | → Sprint 10 | 2 weeks | v1.0.0 Release (TD + UAT + Release) | ✅ COMPLETE (2026-02-09→02-11, 12 stories, 1061 tests, UAT 33/33 PASS, v1.0.0) |
 | Post-MVP Audit | 1 day | 6 comprehensive audits (PRD, Arch, Security, CQ, UX) | ✅ COMPLETE (2026-02-11, 6 reports, ~2,000 lines) |
 | → Sprint 11 | 7 days | Security Hardening + Code Quality + Feature Polish | ✅ COMPLETE (2026-02-12→02-18, 25/25 stories, 7 waves, 1,307 tests, UAT 152/153 PASS, v1.1.0 Released) |
+| → Sprint 12 | 6 days | Management UIs + Evidence Unification | ✅ COMPLETE (2026-02-19→02-24, 8/8 dev stories, 3 waves, 1,549 tests, v1.2.0) |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ Pending |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
 
-**Current Status:** ✅ Sprint 11 Complete, v1.1.0 Released — All 25 stories delivered across 7 waves. UAT 152/153 PASS (99.3%). Merged to main, tagged v1.1.0, GitHub Release published.
+**Current Status:** ✅ Sprint 12 Complete — All 8 development stories (12.1–12.8) delivered across 3 waves. Skill Category UI, Skill UI, User Management UI, Milestone Admin UI, Evidence Unification (Data Model + UI), Activity Feed Formatting, UUID Fallback Hardening. Total: 1,549 tests (847 BE + 702 FE). 4 tech debt items resolved (TD-009, TD-010, TD-016, TD-017). Branch: `sprint-12/management-uis-evidence`.
 
 ---
 
@@ -426,7 +439,7 @@ _bmad-output/
 | **TD-015: ESLint Warnings** | Medium | ✅ Sprint 9 Done | **Resolved:** 1303 → 282 warnings (78% reduction). Completed as standalone story (2026-02-07). Note: 8.4 regressed to 423 warnings — Sprint 10 cleanup. |
 | **TD-017: tsc Test-Only Errors** | Low | ✅ Sprint 10 Done | **Resolved:** 114 tsc errors in test files fixed. Completed in Story 10.1 (2026-02-09). |
 | **ESLint Warning Regression** | Medium | ✅ Sprint 10 Done | **Resolved:** ESLint 423 warnings → 0 errors + 0 warnings (backend + frontend). CI `--max-warnings=0` gate on both. Completed in Stories 10.2 + 10.3b (2026-02-09). |
-| **TD-016: Async Bulk Processing** | Low | 📋 Deferred (P3) | **Issue:** Bulk issuance limited to 20 badges synchronously. **Plan:** Add Redis + Bull Queue for >20 badge async processing. **Effort:** 8h. **Trigger:** When user feedback validates need for >20 badges per batch. |
+| **TD-016: Async Bulk Processing** | Low | 📋 Deferred (P3) | **Issue:** Bulk issuance limited to 20 badges synchronously. **Plan:** Add Redis + Bull Queue for >20 badge async processing. **Effort:** 8h. **Trigger:** When user feedback validates need for >20 badges per batch. **Note:** TD-016 (Dashboard JSON display) resolved by Sprint 12 Story 12.7. This TD-016 (Async Bulk) is a separate item. |
 | **TD-023: CI Chinese Character Gate** | Low | ✅ Sprint 11 Done | **Resolved:** CI workflow grep for Chinese chars in both BE/FE jobs. `scripts/check-chinese.sh` created. 1 fix (方案B→Option B). Completed in Story 11.21 (2026-02-14). |
 | **TD-024: CI console.log Gate** | Low | ✅ Sprint 11 Done | **Resolved:** ESLint `no-console: 'error'` in both BE/FE configs with test overrides. ErrorBoundary eslint-disable. Completed in Story 11.21 (2026-02-14). |
 | **TD-025: Husky Pre-commit Hooks** | Low | ✅ Sprint 11 Done | **Resolved:** Husky v9 + lint-staged pre-commit (ESLint + Chinese check). Pre-push mirrors full CI pipeline (Lesson 40). Root package.json created. Completed in Story 11.22 (2026-02-14). **Updated (11.24):** Pre-push further aligned — uses `npm run lint` (covers src+test), adds `npm run build` for BE/FE, tolerates Jest `--forceExit` exit code via grep-based pass/fail parsing. |
@@ -434,12 +447,21 @@ _bmad-output/
 | **TD-029: Decorator Metadata Guard Tests** | Low | ✅ Sprint 11 Done | **Resolved:** Added `Reflect.getMetadata()` unit tests verifying `@Public()` and `@Roles()` decorators on security-critical endpoints. Catches accidental decorator removal during refactoring. Runs locally without database. Badge Issuance: 11 tests, Badge Verification: 3 tests. Added in Story 11.24 (2026-02-15). |
 | **TD-026: SM Audit Triage Workflow** | Medium | 📋 Post-Sprint 11 | **Issue:** Audit recommendations not systematically converted to stories. **Plan:** SM agent `[AT]` menu item. **Effort:** 1h. |
 | **TD-027: Playwright Visual Regression in CI** | Low | 📋 Post-Sprint 11 | **Issue:** No automated visual regression testing. **Plan:** Playwright screenshot comparison in CI. **Effort:** 4h. |
-| **TD-030: LinkedIn Dynamic OG Meta Tags** | P2 | 📋 Deferred Sprint 12 | **Issue:** LinkedIn crawler gets static generic OG meta tags for all `/verify/:id` share links — all previews show identical card. **Root Cause:** SPA with no SSR; LinkedIn bot doesn't execute JS. **Plan:** Backend middleware detecting crawler User-Agent and returning pre-rendered HTML with dynamic `og:title`, `og:description`, `og:image`. **Effort:** 4-6h. Documented as sprint-11/technical-debt.md TD-018. |
+| **TD-009: Milestone Admin UI** | P2 | ✅ Sprint 12 Done | **Resolved:** Full Milestone Admin UI with card grid, dynamic form per type (BADGE_COUNT, SKILL_TRACK, ANNIVERSARY, CUSTOM), active/inactive toggle, achievement count. Story 12.4 (2026-02-22). |
+| **TD-010: Evidence System Unification** | P1 | ✅ Sprint 12 Done | **Resolved:** Two-phase unification — (1) EvidenceFile model + Prisma migration + data migration script (Story 12.5), (2) Unified UI — EvidenceList, EvidenceAttachmentPanel, file upload in IssueBadgePage, evidence column in BadgeManagement (Story 12.6). 2026-02-23. |
+| **TD-016b: Dashboard JSON Display** | P2 | ✅ Sprint 12 Done | **Resolved:** `formatAuditDescription()` + `buildActivityDescription()` replace raw JSON in Admin Dashboard activity feed with human-readable descriptions for all action types. Story 12.7 (2026-02-23). |
+| **TD-017: Skills UUID Fallback** | P2 | ✅ Sprint 12 Done | **Resolved:** `useSkillNamesMap()` hook + `UNKNOWN_SKILL_LABEL` constant ensures no UUID ever shown to users. Audited all skill display locations. Story 12.8 (2026-02-23). |
+| **TD-030: LinkedIn Dynamic OG Meta Tags** | P2 | 📋 Deferred | **Issue:** LinkedIn crawler gets static generic OG meta tags for all `/verify/:id` share links — all previews show identical card. **Root Cause:** SPA with no SSR; LinkedIn bot doesn't execute JS. **Plan:** Backend middleware detecting crawler User-Agent and returning pre-rendered HTML with dynamic `og:title`, `og:description`, `og:image`. **Effort:** 4-6h. Documented as sprint-11/technical-debt.md TD-018. |
 | **TD-018: Code TODO Cleanup** | Low | ✅ Sprint 10 Done | **Resolved:** 14 TODO/FIXME markers resolved (6 backend, 5 frontend, 3 test). Hardcoded localhost URLs centralized to apiConfig.ts. Dead nav links fixed. 404 catch-all added. Completed in Story 10.3 (2026-02-08). |
 | **TD-019: Frontend ESLint Cleanup** | High | ✅ Sprint 10 Done | **Resolved:** Frontend ESLint 49 errors + 21,363 warnings → 0 errors + 0 warnings. Added `.gitattributes` (LF normalization), fixed 49 errors (react-hooks, typescript, a11y), 13 eslint-disable with justifications. CI `npm run lint --max-warnings=0` gate added to frontend-tests job. 135 files changed. Completed in Story 10.3b (2026-02-09, commit `80b693e`). |
 | **TD-020: CI E2E Job Missing Frontend Dependency** | Medium | ✅ Resolved (Story 10.4, `0ba885e`) | **Resolved:** `e2e-tests` job now has `needs: [lint-and-unit, frontend-tests]`. Frontend lint/test failures correctly block E2E execution. Completed in Story 10.4 (2026-02-09). |
 | **TD-021: react-hooks/set-state-in-effect Inline Suppressions** | Low | ✅ Resolved (Story 10.4, `0ba885e`) | **Resolved:** Project-level override `react-hooks/set-state-in-effect: 'off'` added in `eslint.config.js`. All 9 inline `eslint-disable` suppressions removed. Completed in Story 10.4 (2026-02-09). |
 | **TD-022: API Path Mismatches** | Critical | ✅ Resolved (Story 10.3c, `69aa5b3`+`414de4c`) | **Issue:** 5 CRITICAL API path mismatches found in SM audit. (1) 4 backend controllers (`auth`, `badge-templates`, `skills`, `skill-categories`) missing `api/` prefix — frontend calls `/api/...` but backend routes don't have `api/` prefix. (2) EvidenceSection.tsx evidence download/preview paths missing `/badges` segment. (3) badgeShareApi.ts Teams share path order reversed (`/teams/share` vs `/share/teams`). (4) 8 frontend files hardcode `/api/...` bypassing `API_BASE_URL`. **Resolution:** Added `api/` prefix to 4 controllers, fixed 3 frontend path bugs, unified 8 hardcoded URLs to `API_BASE_URL`. All tests pass. **Code Review Finding:** BadgeEmbedPage.tsx has pre-existing hardcoded `/api/` in widget embed URL (MEDIUM, out of scope). |
+| **TD-031: Time-Based Milestone Metrics** | P3 | 📋 Deferred | **Issue:** Current milestone engine (Story 12.4) supports `badge_count` and `category_count` metrics only. Three time-related capabilities are missing: (1) **Time Window Filter** — "Earn N badges within M days" — adds optional `timeWindowDays` to trigger JSON, ~4h. (2) **Streak** — "Earn badges in N consecutive months" — new `streak` metric with `streakPeriod`/`minPerPeriod` fields, time-series grouping evaluator, ~8h. (3) **Tenure** — "N days since first badge / account creation" — new `tenure` metric with `anchor` field, requires login-time evaluation trigger (lazy, not cron), ~5h. **Architecture Impact:** Minimal — all three leverage existing `metric + scope + threshold` orthogonal model and JSON trigger column (no Prisma schema migration needed, only enum value additions). Time Window is a scope filter modifier (not a new metric). Streak and Tenure add evaluator cases following existing pattern. Only Tenure introduces a new trigger point (login guard). **Total Effort:** ~17h. **Suggested Phasing:** Time Window + Tenure together (9h, one story), Streak separately (8h, one story). **Reference:** `docs/sprints/sprint-12/milestone-engine-design-notes-20260221.md` |
+| **TD-032: M365 Sync Performance at Scale** | P3 | 📋 Deferred | **Issue:** FULL sync (Sync Users) processes users serially — each user requires 2 Graph API calls (memberOf + manager), totaling ~1.2s/user. 17 users = ~20s; 10,000 users = ~3-4 hours, plus Graph API throttling (10,000 req/10 min limit). **Partial Fix (Sprint 12):** GROUPS_ONLY sync (Sync Roles) already optimized — batch group member queries reduced role-check API calls from N to 2 (`81e6b3c`). **Remaining Optimizations:** (1) **Batch Group Query for FULL sync** — apply same `getGroupMembers()` pattern to `resolveUserRole()`, replacing per-user `/memberOf` calls, ~2h. (2) **Concurrent Processing (p-limit)** — parallelize `syncSingleUser` with concurrency pool (e.g., 10 parallel), ~3h. (3) **Graph $batch API** — bundle up to 20 requests per HTTP call for manager queries, ~4h. (4) **Delta Query** — use `/users/delta` endpoint to sync only changed users instead of full list, ~6h. (5) **Redis caching** — cache group members and Graph responses to avoid redundant calls across sync runs (ties into TD-016), ~3h. **Trigger Conditions:** User count exceeds 500 OR FULL sync takes >2 minutes. **Total Effort:** ~18h. **Suggested Phasing:** Phase 1 (batch group + concurrency, 5h) at 200+ users; Phase 2 ($batch + delta query, 10h) at 1000+ users; Phase 3 (Redis, 3h) with TD-016. |
+| **TD-033: Manager Delegation (Acting Manager)** | P3 | 📋 Deferred | **Issue:** Current architecture supports only a single fixed `managerId` per user. No mechanism exists for a manager to delegate their management responsibilities (e.g., dashboard access, approval rights) to another user during absence or for workload distribution. **Scope:** (1) **Schema** — new `ManagerDelegation` model (delegatorId, delegateId, startDate, endDate, scope enum, isActive), ~2h. (2) **Backend API** — CRUD endpoints for creating/revoking/querying delegations, ~4h. (3) **Permission Guards** — extend MANAGER role checks with OR logic: "is manager OR is active delegate of a manager", ~4h. (4) **Frontend UI** — delegation management UI on Manager Dashboard + delegate context switcher, ~6h. (5) **Audit** — delegation lifecycle audit logging + delegate attribution on proxied actions, ~3h. **Total Effort:** ~19h. **Dependencies:** Builds on DEC-011-18 (MANAGER role-managerId strong constraint). **Trigger:** When organizational workflows require manager absence coverage or team co-management. |
+| **TD-034: Role Model Refactor — Dual-Dimension Identity** | P2 | 📋 Deferred | **Issue:** Current single `role` enum (`ADMIN \| ISSUER \| MANAGER \| EMPLOYEE`) conflates two orthogonal dimensions: (1) **Organization identity** (Manager/Employee) — derived from `directReportsCount > 0`, and (2) **Permission role** (Admin/Issuer/None) — manually assigned. This makes role combinations impossible (e.g., an Issuer who manages people must choose one role). **Proposed Model:** `role` field stores only permission dimension: `ADMIN \| ISSUER \| EMPLOYEE` (EMPLOYEE = no extra permission). Organization identity (`Manager` vs `Employee`) is purely derived from subordinate count at query time. MANAGER removed from enum. **Scope:** (1) **Schema migration** — remove MANAGER from UserRole enum, migrate existing MANAGER rows to EMPLOYEE, ~2h. (2) **Backend RBAC guards** — all `role === 'MANAGER'` checks → `directReportsCount > 0` or JWT `isManager` claim, ~6h. (3) **JWT token** — add `isManager: boolean` claim derived at login/sync, ~2h. (4) **M365 sync** — role derivation no longer sets MANAGER, only ADMIN/ISSUER/EMPLOYEE based on Security Groups, ~3h. (5) **Frontend** — Role column shows combined tags `[Manager] [Issuer]`, RoleBadge component updated, route guards updated, ~4h. (6) **Audit log migration** — historical `MANAGER` entries preserved as-is with note, ~1h. **Total Effort:** ~18h. **Dependencies:** TD-035 (Dashboard overhaul) should follow. **Trigger:** When role combination requirements become blocking for user workflows. |
+| **TD-035: Dashboard Composite View — Permission Stacking** | P2 | 📋 Deferred | **Issue:** Current dashboard routing is mutually exclusive — each role sees one dashboard. With dual-dimension identity (TD-034), users should see **stacked** sections based on their combined permissions. **Proposed Design:** Every user sees Employee section (My Badges/Wallet). Manager section added if `directReportsCount > 0`. Issuer section (Badge Issuance) added if `permissionRole ∈ {ISSUER, ADMIN}`. Admin section added if `permissionRole = ADMIN`. **Scope:** (1) **Dashboard layout** — tabbed or sectioned composite view replacing role-switched routing, ~8h. (2) **Backend endpoints** — ensure all dashboard APIs accept permission checks rather than role enum, ~3h. (3) **Navigation** — sidebar shows combined menu items based on effective permissions, ~3h. (4) **Testing** — all 6 valid combinations (Employee, Manager, Employee+Issuer, Manager+Issuer, Admin, Admin+Manager), ~4h. **Total Effort:** ~18h. **Dependencies:** TD-034 (role model refactor) must be completed first. **Trigger:** After TD-034 is implemented. |
 
 ---
 
@@ -1505,11 +1527,11 @@ Sprint 0-2 established this pattern:
    - Story 11.25: Cookie Auth Hardening — 8 httpOnly migration issues fixed
    
    **Technical Debt (5 items, ~53-77h):**
-   - TD-009: Milestone Admin UI (P2, 16-24h)
-   - TD-010: Evidence System Unification (P1, 24-40h)
-   - TD-016: Dashboard JSON display (P2, 3-4h)
-   - TD-017: Skills UUID fallback (P2, 2-3h, partial fix)
-   - TD-018: LinkedIn OG meta tags (P2, 4-6h)
+   - TD-009: Milestone Admin UI (P2, 16-24h) → ✅ RESOLVED by Story 12.4
+   - TD-010: Evidence System Unification (P1, 24-40h) → ✅ RESOLVED by Stories 12.5 + 12.6
+   - TD-016: Dashboard JSON display (P2, 3-4h) → ✅ RESOLVED by Story 12.7
+   - TD-017: Skills UUID fallback (P2, 2-3h, partial fix) → ✅ RESOLVED by Story 12.8
+   - TD-018: LinkedIn OG meta tags (P2, 4-6h) → renamed TD-030, deferred
    
    **Evaluation:** Grade A+ (4.95/5.0) — see sprint-11-evaluation.md
    
@@ -1517,24 +1539,59 @@ Sprint 0-2 established this pattern:
    
    **Sprint Docs:** summary.md, retrospective.md, backlog.md, sprint-11-evaluation.md, 25 story files, 7 wave code reviews, uat-plan-v1.1.0.md
 
-21. 🔜 **Next Actions (Post-Sprint 11 — Sprint 12 Planning)**
+21. ✅ **Sprint 12 — Management UIs + Evidence Unification (COMPLETE - 2026-02-24)**
+   - **Branch:** `sprint-12/management-uis-evidence`
+   - **Duration:** 2026-02-19 to 2026-02-24 (6 days)
+   - **Capacity:** 72h estimated
+   - **Stories:** 8/8 development stories delivered across 3 Waves
+     - Wave 1: Admin Management UIs (12.1 Skill Category, 12.2 Skill, 12.3 User, 12.4 Milestone) — ✅
+     - Wave 2: Evidence Unification (12.5 Data Model, 12.6 UI) — ✅
+     - Wave 3: Quick Fixes (12.7 Activity Feed, 12.8 UUID Hardening) — ✅
+   
+   **Key Achievements:**
+   - Management UIs: 4 new admin pages (Skill Categories, Skills, Users, Milestones) — all admin ops now through UI
+   - Evidence: Dual system → unified EvidenceFile model with two-phase migration (schema + data)
+   - Shared Components: `<AdminPageShell>`, `<ConfirmDialog>`, `<CategoryTree>`, `<EvidenceList>`, `<EvidenceAttachmentPanel>`
+   - Skill Tags: 10-color palette auto-assigned per category, propagated to 3 existing pages
+   - Tests: 1,307 → 1,549 (+242, +19%), 0 regressions (847 BE + 702 FE)
+   - Tech Debt: 4 items resolved (TD-009, TD-010, TD-016, TD-017)
+   - DX: Drag-and-drop category reorder (@dnd-kit), dotted leader lines in tree UI
+   
+   **Controllers/Endpoints:** 19 controllers, 97 API endpoints (up from Sprint 10's 88)
+   
+   **DoD Verification:**
+   - Backend: build ✅, lint ✅ (0 warnings), 847 tests passed (28 skipped = TD-006)
+   - Frontend: build ✅, lint ✅ (0 issues), 702 tests passed (66 test files)
+   - Pre-push hook: PASS
+   
+   **Deferred to Sprint 13 (4 items, ~7h):**
+   - D-1: Responsive tree→dropdown (<1024px) ~2h
+   - D-2: Blue insertion line (DnD visual feedback) ~1h
+   - D-3: Cross-level "Move to..." action ~3h
+   - D-4: Remove deprecated `Badge.evidenceUrl` field ~1h
+   
+   **Future Enhancement Candidates Added:**
+   - F-1: Fine-Grained RBAC (8-60h, 3 levels)
+   - F-2: Config Lifecycle Management (28-44h, 2 phases)
+   - F-3: Multi-tenant / Data Isolation (16-120h, 3 paths)
+   - F-4: AI Agent 对话式交互层 (3-10 days, 3 tiers)
+   
+   **Sprint Docs:** summary.md, retrospective.md, backlog.md, 8 story files
+
+22. 🔜 **Next Actions (Post-Sprint 12 — Sprint 13 Planning)**
    - Phase 4 Pilot planning (L&D program pilot)
-   - FEAT-008: User Management enhancements (manual add, M365 sync UI) — P1
-     > ⚠️ **依赖 FR27:** M365 同步用户 passwordHash 为空，无法用当前 JWT 密码登录。需先决定 SSO 优先还是临时密码方案。
-   - FR27: Azure AD SSO (Entra ID OAuth 2.0 替代密码登录) — P3, 16-24h
-     > ⚠️ **与 FEAT-008 关联:** 若先做 SSO 则 M365 用户可直接登录；否则 FEAT-008 需增加临时密码生成逻辑。
+   - Sprint 13 deferred items: D-1 through D-4 (~7h carry-forward)
+   - FEAT-008: User Management enhancements — manual add, M365 sync UI (P1)
+   - FR27: Azure AD SSO (Entra ID OAuth 2.0) — P3, 16-24h
    - FEAT-007: Session management (idle timeout, centralized HTTP client) — P2
-   - FEAT-004: Role model refactor (Issuer as permission flag) — P2
-   - TD-006: Teams Channel Permissions (requires tenant admin approval) — External
-   - TD-016: Async Bulk Processing (Redis + Bull Queue for >20 badges) — P3
+   - FEAT-004: Role model refactor (see TD-034) — P2
+   - TD-006: Teams Channel Permissions (requires tenant admin approval) — External blocker
+   - TD-030: LinkedIn Dynamic OG Meta Tags — P2, 4-6h
    - TD-027: Playwright Visual Regression in CI — P3
-   - **Sprint 12 待决策 (PO):**
-     - DEC-001: 登录页 UX 方案（双入口/SSO优先/统一SSO/智能路由）
-     - DEC-002: 是否保留密码登录（pilot 兜底 vs GA 下线）
-     - DEC-003: 手工创建用户的长期定位（迁移关闭 vs 长期并存）
-     - DEC-004: FEAT-008 与 FR27 执行顺序（详见 Sprint 11 backlog 待决策清单）
-     - DEC-005: Admin 初始化机制（M365 同步默认 EMPLOYEE，无生产级 Admin bootstrap，需决定环境变量/Azure AD Group/CLI 方案）
-     - DEC-006: Badge 邮件分享送达率（发件域 `2wjh85.onmicrosoft.com` 被外部拦截，需配置自定义域名+SPF/DKIM/DMARC 或接入 SendGrid）
+   - FEAT-009: Invite-to-Claim (External Email Recipients) — P3, ~8h
+   - **Future Enhancement Candidates (F-1 through F-4):** Recorded in Sprint 12 backlog, pending PO/Architect decision
+   - **Sprint 12 待决策 (carried forward):**
+     - DEC-001 through DEC-006 (see Sprint 12 backlog for details)
 
 ---
 

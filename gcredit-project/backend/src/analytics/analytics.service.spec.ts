@@ -347,10 +347,7 @@ describe('AnalyticsService', () => {
       expect(result.topPerformers.length).toBe(5);
     });
 
-    it('should filter by department for MANAGER role', async () => {
-      mockPrismaService.user.findUnique.mockResolvedValue({
-        department: 'Engineering',
-      });
+    it('should filter by managerId for MANAGER role (Story 12.3a)', async () => {
       mockPrismaService.user.findMany.mockResolvedValue([]);
 
       await service.getTopPerformers(undefined, 10, 'manager-1', 'MANAGER');
@@ -358,28 +355,30 @@ describe('AnalyticsService', () => {
       expect(mockPrismaService.user.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: containing({
-            department: 'Engineering',
+            managerId: 'manager-1',
           }),
         }),
       );
     });
 
-    it('should throw ForbiddenException if MANAGER requests different team', async () => {
-      mockPrismaService.user.findUnique.mockResolvedValue({
-        department: 'Engineering',
-      });
-
+    it('should throw ForbiddenException if MANAGER requests teamId (Story 12.3a)', async () => {
       await expect(
         service.getTopPerformers('Sales', 10, 'manager-1', 'MANAGER'),
       ).rejects.toThrow(ForbiddenException);
     });
 
-    it('should throw ForbiddenException if MANAGER has no department', async () => {
-      mockPrismaService.user.findUnique.mockResolvedValue({ department: null });
+    it('should return empty list for MANAGER with no direct reports (Story 12.3a)', async () => {
+      mockPrismaService.user.findMany.mockResolvedValue([]);
 
-      await expect(
-        service.getTopPerformers(undefined, 10, 'manager-1', 'MANAGER'),
-      ).rejects.toThrow(ForbiddenException);
+      const result = await service.getTopPerformers(
+        undefined,
+        10,
+        'manager-1',
+        'MANAGER',
+      );
+
+      expect(result.topPerformers).toEqual([]);
+      expect(result.teamName).toBe('Direct Reports');
     });
   });
 

@@ -15,6 +15,11 @@ export interface TemplateUser {
   lastName?: string;
 }
 
+export interface BadgeStats {
+  total: number;
+  pending: number;
+}
+
 export interface BadgeTemplate {
   id: string;
   name: string;
@@ -31,6 +36,7 @@ export interface BadgeTemplate {
   updater?: TemplateUser | null;
   createdAt: string;
   updatedAt: string;
+  badgeStats?: BadgeStats;
 }
 
 export interface BadgeTemplateListResponse {

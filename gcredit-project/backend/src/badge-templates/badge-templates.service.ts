@@ -3,6 +3,7 @@ import {
   Logger,
   NotFoundException,
   BadRequestException,
+  ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { BlobStorageService } from '../common/services/blob-storage.service';
@@ -160,12 +161,46 @@ export class BadgeTemplatesService {
           updater: {
             select: this.userSelect,
           },
+          _count: {
+            select: {
+              badges: true,
+            },
+          },
         },
       }),
       this.prisma.badgeTemplate.count({ where }),
     ]);
 
-    return createPaginatedResponse(data, total, page, limit);
+    // Fetch pending counts for templates that have badges
+    const templateIds = data
+      .filter((t) => t._count.badges > 0)
+      .map((t) => t.id);
+
+    let pendingMap: Record<string, number> = {};
+    if (templateIds.length > 0) {
+      const pendingCounts = await this.prisma.badge.groupBy({
+        by: ['templateId'],
+        where: {
+          templateId: { in: templateIds },
+          status: 'PENDING',
+        },
+        _count: true,
+      });
+      pendingMap = Object.fromEntries(
+        pendingCounts.map((r) => [r.templateId, r._count]),
+      );
+    }
+
+    // Merge badge stats into response
+    const dataWithStats = data.map((t) => ({
+      ...t,
+      badgeStats: {
+        total: t._count.badges,
+        pending: pendingMap[t.id] ?? 0,
+      },
+    }));
+
+    return createPaginatedResponse(dataWithStats, total, page, limit);
   }
 
   /**
@@ -348,7 +383,8 @@ export class BadgeTemplatesService {
   }
 
   /**
-   * Delete a badge template
+   * Delete a badge template.
+   * Refuses deletion if any badges (PENDING, CLAIMED, REVOKED, etc.) reference it.
    */
   async remove(id: string) {
     // Check if template exists
@@ -360,7 +396,25 @@ export class BadgeTemplatesService {
       throw new NotFoundException(`Badge template with ID ${id} not found`);
     }
 
-    // Delete image if exists
+    // Check for associated badges — refuse deletion if any exist
+    const badgeCount = await this.prisma.badge.count({
+      where: { templateId: id },
+    });
+
+    if (badgeCount > 0) {
+      throw new ConflictException(
+        `Cannot delete template: ${badgeCount} badge(s) have been issued from it. ` +
+          `Consider setting its status to ARCHIVED instead.`,
+      );
+    }
+
+    // Delete template first, then clean up image
+    // (template delete is the critical operation; image cleanup is best-effort)
+    await this.prisma.badgeTemplate.delete({
+      where: { id },
+    });
+
+    // Delete image after successful template deletion
     if (template.imageUrl) {
       try {
         await this.blobStorage.deleteImage(template.imageUrl);
@@ -368,11 +422,6 @@ export class BadgeTemplatesService {
         this.logger.error('Failed to delete image:', error);
       }
     }
-
-    // Delete template
-    await this.prisma.badgeTemplate.delete({
-      where: { id },
-    });
 
     return { message: 'Badge template deleted successfully', id };
   }

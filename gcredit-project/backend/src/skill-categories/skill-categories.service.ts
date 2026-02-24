@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
-  ForbiddenException,
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
@@ -14,6 +13,21 @@ import {
 @Injectable()
 export class SkillCategoriesService {
   private readonly logger = new Logger(SkillCategoriesService.name);
+
+  /** Color palette for auto-assigning to new categories */
+  private static readonly CATEGORY_COLORS = [
+    'slate',
+    'blue',
+    'emerald',
+    'amber',
+    'rose',
+    'violet',
+    'cyan',
+    'orange',
+    'pink',
+    'lime',
+  ] as const;
+
   constructor(private prisma: PrismaService) {}
 
   /**
@@ -67,36 +81,56 @@ export class SkillCategoriesService {
 
   /**
    * Create a new custom skill category
-   * - Must have a parentId (cannot create top-level categories)
+   * - parentId optional: omit to create top-level (Level 1) category
    * - Max 3 levels of nesting
    */
   async create(createDto: CreateSkillCategoryDto) {
     const { parentId, ...data } = createDto;
 
-    // Verify parent exists
-    const parent = await this.prisma.skillCategory.findUnique({
-      where: { id: parentId },
-    });
+    let level = 1;
 
-    if (!parent) {
-      throw new NotFoundException(
-        `Parent category with ID ${parentId} not found`,
-      );
+    if (parentId) {
+      // Verify parent exists
+      const parent = await this.prisma.skillCategory.findUnique({
+        where: { id: parentId },
+      });
+
+      if (!parent) {
+        throw new NotFoundException(
+          `Parent category with ID ${parentId} not found`,
+        );
+      }
+
+      // Check nesting level (max 3 levels)
+      if (parent.level >= 3) {
+        throw new BadRequestException(
+          'Cannot create subcategory: maximum nesting level (3) reached',
+        );
+      }
+
+      level = parent.level + 1;
+
+      // Inherit parent color when not explicitly provided
+      if (!data.color && parent.color) {
+        data.color = parent.color;
+      }
     }
 
-    // Check nesting level (max 3 levels)
-    if (parent.level >= 3) {
-      throw new BadRequestException(
-        'Cannot create subcategory: maximum nesting level (3) reached',
-      );
+    // Auto-assign color for L1 categories (round-robin from palette)
+    if (!data.color) {
+      const existingCount = await this.prisma.skillCategory.count();
+      data.color =
+        SkillCategoriesService.CATEGORY_COLORS[
+          existingCount % SkillCategoriesService.CATEGORY_COLORS.length
+        ];
     }
 
     // Create category
     const category = await this.prisma.skillCategory.create({
       data: {
         ...data,
-        parentId,
-        level: parent.level + 1,
+        parentId: parentId || null,
+        level,
         isSystemDefined: false,
         isEditable: true,
       },
@@ -110,7 +144,8 @@ export class SkillCategoriesService {
 
   /**
    * Update an existing category
-   * - Cannot update system-defined top-level categories
+   * All categories (including system-defined) can be edited.
+   * ADR-012: isSystemDefined retained as label only, not for access control.
    */
   async update(id: string, updateDto: UpdateSkillCategoryDto) {
     // Check if category exists
@@ -120,18 +155,6 @@ export class SkillCategoriesService {
 
     if (!category) {
       throw new NotFoundException(`Skill category with ID ${id} not found`);
-    }
-
-    // Cannot edit system-defined top-level categories
-    if (category.isSystemDefined && category.level === 1) {
-      throw new ForbiddenException(
-        'Cannot edit system-defined top-level categories',
-      );
-    }
-
-    // Cannot edit if not editable
-    if (!category.isEditable) {
-      throw new ForbiddenException('This category is marked as non-editable');
     }
 
     // Update category
@@ -148,10 +171,10 @@ export class SkillCategoriesService {
   }
 
   /**
-   * Delete a custom category
-   * - Cannot delete system-defined categories
-   * - Cannot delete if has children
+   * Delete a category (system-defined or user-created)
+   * - Cannot delete if has children (must delete/move them first)
    * - Cannot delete if has skills (must reassign first)
+   * ADR-012: isSystemDefined retained as label only, not for access control.
    */
   async remove(id: string) {
     // Check if category exists
@@ -165,11 +188,6 @@ export class SkillCategoriesService {
 
     if (!category) {
       throw new NotFoundException(`Skill category with ID ${id} not found`);
-    }
-
-    // Cannot delete system-defined categories
-    if (category.isSystemDefined) {
-      throw new ForbiddenException('Cannot delete system-defined categories');
     }
 
     // Cannot delete if has children

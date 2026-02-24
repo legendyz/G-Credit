@@ -1,9 +1,10 @@
 import { lazy, Suspense } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Layout } from '@/components/layout/Layout';
+import { queryClient } from '@/lib/queryClient';
 
 // Lazy-load all page components (TD-013: route-based code splitting)
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
@@ -22,6 +23,9 @@ const BadgeEmbedPage = lazy(() => import('@/pages/BadgeEmbedPage'));
 const AdminAnalyticsPage = lazy(() => import('@/pages/AdminAnalyticsPage'));
 const BadgeManagementPage = lazy(() => import('@/pages/admin/BadgeManagementPage'));
 const AdminUserManagementPage = lazy(() => import('@/pages/AdminUserManagementPage'));
+const SkillCategoryManagementPage = lazy(() => import('@/pages/admin/SkillCategoryManagementPage'));
+const SkillManagementPage = lazy(() => import('@/pages/admin/SkillManagementPage'));
+const MilestoneManagementPage = lazy(() => import('@/pages/admin/MilestoneManagementPage'));
 const BulkIssuancePage = lazy(() => import('@/pages/BulkIssuancePage'));
 const BulkPreviewPage = lazy(() => import('@/components/BulkIssuance/BulkPreviewPage'));
 const IssueBadgePage = lazy(() =>
@@ -44,8 +48,6 @@ function LoadingFallback() {
     </div>
   );
 }
-
-const queryClient = new QueryClient();
 
 function App() {
   return (
@@ -174,6 +176,36 @@ function App() {
                 <ProtectedRoute requiredRoles={['ADMIN']}>
                   <Layout pageTitle="User Management">
                     <AdminUserManagementPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/skills/categories"
+              element={
+                <ProtectedRoute requiredRoles={['ADMIN']}>
+                  <Layout pageTitle="Skill Categories">
+                    <SkillCategoryManagementPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/skills"
+              element={
+                <ProtectedRoute requiredRoles={['ADMIN']}>
+                  <Layout pageTitle="Skill Management">
+                    <SkillManagementPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/milestones"
+              element={
+                <ProtectedRoute requiredRoles={['ADMIN']}>
+                  <Layout pageTitle="Milestone Management">
+                    <MilestoneManagementPage />
                   </Layout>
                 </ProtectedRoute>
               }

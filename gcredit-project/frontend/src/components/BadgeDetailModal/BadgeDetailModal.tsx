@@ -8,7 +8,7 @@ import ModalHero from './ModalHero';
 import BadgeInfo from './BadgeInfo';
 import TimelineSection from './TimelineSection';
 import VerificationSection from './VerificationSection';
-import EvidenceSection from './EvidenceSection';
+import EvidenceList from '../evidence/EvidenceList';
 import SimilarBadgesSection from './SimilarBadgesSection';
 import ReportIssueForm from './ReportIssueForm';
 import BadgeAnalytics from './BadgeAnalytics';
@@ -16,10 +16,11 @@ import BadgeShareModal from '../BadgeShareModal';
 import RevocationSection from './RevocationSection';
 import ExpirationSection from './ExpirationSection';
 import ClaimSuccessModal from '../ClaimSuccessModal';
+import { MilestoneReachedCelebration } from '../common/CelebrationModal';
 import { Globe, Lock, Loader2 } from 'lucide-react';
 import { apiFetch } from '../../lib/apiFetch';
 import { useCurrentUser } from '../../stores/authStore';
-import { useSkillNamesMap } from '../../hooks/useSkills';
+import { useSkillNamesMap, useSkills } from '../../hooks/useSkills';
 
 const BadgeDetailModal: React.FC = () => {
   const { isOpen, badgeId, closeModal } = useBadgeDetailModal();
@@ -32,15 +33,24 @@ const BadgeDetailModal: React.FC = () => {
   const [downloading, setDownloading] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [claimSuccessOpen, setClaimSuccessOpen] = useState(false);
+  const [milestoneCelebration, setMilestoneCelebration] = useState<{
+    isOpen: boolean;
+    name: string;
+    description?: string;
+  }>({ isOpen: false, name: '' });
   const [isToggling, setIsToggling] = useState(false);
   const [localVisibility, setLocalVisibility] = useState<'PUBLIC' | 'PRIVATE'>('PUBLIC');
 
-  // Resolve skill UUIDs to human-readable names
+  // Resolve skill UUIDs to human-readable names with category colors
   const skillNamesMap = useSkillNamesMap(badge?.template?.skillIds);
-  // Story 11.24 AC-M13: Fallback to 'Unknown Skill' instead of raw UUID
-  const resolvedSkillNames = (badge?.template?.skillIds || []).map(
-    (id) => skillNamesMap[id] || 'Unknown Skill'
-  );
+  const { data: allSkills = [] } = useSkills();
+  // Story 12.2: Pass objects with categoryColor to BadgeInfo for colored pills
+  const resolvedSkills = (badge?.template?.skillIds || []).map((id) => {
+    const found = allSkills.find((s) => s.id === id);
+    return found
+      ? { name: found.name, categoryColor: found.categoryColor }
+      : { name: skillNamesMap[id] || 'Unknown Skill', categoryColor: null };
+  });
 
   useEffect(() => {
     if (!isOpen || !badgeId) return;
@@ -155,8 +165,8 @@ const BadgeDetailModal: React.FC = () => {
         throw new Error(errorData.message || 'Failed to claim badge');
       }
 
-      // Parse response (we don't need the full badge, just confirmation)
-      await response.json();
+      // Parse response to check for new milestones
+      const claimData = await response.json();
 
       // Update local badge state
       setBadge((prev) =>
@@ -168,6 +178,18 @@ const BadgeDetailModal: React.FC = () => {
 
       // Show celebration modal
       setClaimSuccessOpen(true);
+
+      // Story 12.4: Show milestone celebration if new milestones achieved
+      if (claimData.newMilestones?.length > 0) {
+        // Show milestone celebration after a brief delay (after claim celebration)
+        setTimeout(() => {
+          setMilestoneCelebration({
+            isOpen: true,
+            name: claimData.newMilestones[0].title,
+            description: claimData.newMilestones[0].description,
+          });
+        }, 1500);
+      }
 
       toast.success('Badge claimed!', {
         description: `You've successfully claimed the ${badge.template.name} badge.`,
@@ -274,12 +296,19 @@ const BadgeDetailModal: React.FC = () => {
                 {/* AC 4.4: Badge Info */}
                 <BadgeInfo
                   description={badge.template.description}
-                  skills={resolvedSkillNames}
+                  skills={resolvedSkills}
                   criteria={badge.template.issuanceCriteria}
                 />
 
-                {/* AC 4.4: Evidence Files Section (from Story 4.3) */}
-                <EvidenceSection badgeId={badge.id} />
+                {/* AC 4.4: Evidence Files Section (Story 12.6: unified evidence list) */}
+                {badge.evidence && badge.evidence.length > 0 && (
+                  <section className="px-6 py-6 border-b">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Evidence ({badge.evidence.length})
+                    </h3>
+                    <EvidenceList items={badge.evidence} editable={false} badgeId={badge.id} />
+                  </section>
+                )}
 
                 {/* Story 9.3 AC2: Revocation Details Section */}
                 {badge.status === BadgeStatus.REVOKED &&
@@ -528,6 +557,14 @@ const BadgeDetailModal: React.FC = () => {
           badgeName={badge.template.name}
         />
       )}
+
+      {/* Story 12.4: Milestone Reached Celebration */}
+      <MilestoneReachedCelebration
+        isOpen={milestoneCelebration.isOpen}
+        onClose={() => setMilestoneCelebration({ isOpen: false, name: '' })}
+        milestoneName={milestoneCelebration.name}
+        description={milestoneCelebration.description}
+      />
     </>
   );
 };

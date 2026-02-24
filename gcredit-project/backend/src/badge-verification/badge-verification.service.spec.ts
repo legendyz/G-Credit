@@ -87,8 +87,8 @@ describe('BadgeVerificationService - Story 6.3', () => {
 
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
       mockPrismaService.skill.findMany.mockResolvedValue([
-        { id: 'skill-1', name: 'JavaScript' },
-        { id: 'skill-2', name: 'TypeScript' },
+        { id: 'skill-1', name: 'JavaScript', category: { color: null } },
+        { id: 'skill-2', name: 'TypeScript', category: { color: null } },
       ]);
 
       // Act
@@ -99,9 +99,10 @@ describe('BadgeVerificationService - Story 6.3', () => {
       expect(result?.verificationId).toBe(mockVerificationId);
       expect(result?.badge.name).toBe('Excellence Badge');
       // Story 11.18: Skills should be resolved objects, not UUIDs
+      // Story 12.2: categoryColor added to skill resolution
       expect(result?.badge.skills).toEqual([
-        { id: 'skill-1', name: 'JavaScript' },
-        { id: 'skill-2', name: 'TypeScript' },
+        { id: 'skill-1', name: 'JavaScript', categoryColor: null },
+        { id: 'skill-2', name: 'TypeScript', categoryColor: null },
       ]);
       expect(result?.recipient.name).toBe('John Doe');
       expect(result?.recipient.email).toMatch(/^j\*\*\*@/); // Masked email

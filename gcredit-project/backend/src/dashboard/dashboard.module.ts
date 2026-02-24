@@ -8,9 +8,10 @@ import { Module } from '@nestjs/common';
 import { DashboardController } from './dashboard.controller';
 import { DashboardService } from './dashboard.service';
 import { PrismaModule } from '../common/prisma.module';
+import { MilestonesModule } from '../milestones/milestones.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, MilestonesModule],
   controllers: [DashboardController],
   providers: [DashboardService],
   exports: [DashboardService],

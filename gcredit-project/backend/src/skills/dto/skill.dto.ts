@@ -73,6 +73,14 @@ export class UpdateSkillDto {
   @IsOptional()
   @IsEnum(SkillLevel)
   level?: SkillLevel;
+
+  @ApiPropertyOptional({
+    example: 'uuid',
+    description: 'Category ID (reassign skill to different category)',
+  })
+  @IsOptional()
+  @IsUUID()
+  categoryId?: string;
 }
 
 export class SkillResponseDto {

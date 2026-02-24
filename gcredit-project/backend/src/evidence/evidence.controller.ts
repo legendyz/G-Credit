@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Param,
+  Body,
   UseGuards,
   Request,
   UseInterceptors,
@@ -24,6 +25,7 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { EvidenceService } from './evidence.service';
+import { AddUrlEvidenceDto } from './dto/upload-evidence.dto';
 import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
 
 @ApiTags('Evidence Files')
@@ -83,6 +85,36 @@ export class EvidenceController {
     return this.evidenceService.uploadEvidence(
       badgeId,
       file,
+      req.user.userId,
+      req.user.role,
+    );
+  }
+
+  @Post('url')
+  @Roles(UserRole.ADMIN, UserRole.ISSUER)
+  @ApiOperation({ summary: 'Add URL evidence (Story 12.5)' })
+  @ApiBody({
+    description: 'URL evidence for a badge',
+    schema: {
+      type: 'object',
+      required: ['sourceUrl'],
+      properties: {
+        sourceUrl: { type: 'string', format: 'uri' },
+      },
+    },
+  })
+  @ApiResponse({ status: 201, description: 'URL evidence added' })
+  @ApiResponse({ status: 400, description: 'Invalid URL' })
+  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  @ApiResponse({ status: 404, description: 'Badge not found' })
+  async addUrlEvidence(
+    @Param('badgeId') badgeId: string,
+    @Body() body: AddUrlEvidenceDto,
+    @Request() req: RequestWithUser,
+  ) {
+    return this.evidenceService.addUrlEvidence(
+      badgeId,
+      body.sourceUrl,
       req.user.userId,
       req.user.role,
     );

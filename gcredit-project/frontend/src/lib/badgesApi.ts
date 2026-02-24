@@ -50,6 +50,7 @@ export interface Badge {
   revocationReason?: string;
   revocationNotes?: string;
   revokedBy?: string;
+  evidenceCount?: number; // Story 12.6
   template: {
     id: string;
     name: string;
@@ -187,7 +188,6 @@ export async function getBadgeById(badgeId: string): Promise<Badge> {
 export interface IssueBadgeRequest {
   templateId: string;
   recipientId: string;
-  evidenceUrl?: string;
   expiresIn?: number;
 }
 

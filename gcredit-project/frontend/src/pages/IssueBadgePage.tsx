@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { PageTemplate } from '@/components/layout/PageTemplate';
@@ -14,7 +14,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { issueBadge } from '@/lib/badgesApi';
+import { uploadEvidenceFile, addUrlEvidence, MAX_EVIDENCE_ITEMS } from '@/lib/evidenceApi';
 import { apiFetch } from '@/lib/apiFetch';
+import EvidenceAttachmentPanel, {
+  type PendingFile,
+} from '@/components/evidence/EvidenceAttachmentPanel';
 import { Award, Send, Loader2 } from 'lucide-react';
 
 interface BadgeTemplate {
@@ -31,24 +35,20 @@ interface Recipient {
   department?: string;
 }
 
-function isValidUrl(str: string): boolean {
-  try {
-    new URL(str);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 export function IssueBadgePage() {
   const navigate = useNavigate();
 
   // Form state
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [selectedRecipientId, setSelectedRecipientId] = useState('');
-  const [evidenceUrl, setEvidenceUrl] = useState('');
   const [expiresIn, setExpiresIn] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAttachingEvidence, setIsAttachingEvidence] = useState(false);
+
+  // Evidence state (Story 12.6)
+  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
+  const [pendingUrls, setPendingUrls] = useState<string[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
 
   // Data state
   const [templates, setTemplates] = useState<BadgeTemplate[]>([]);
@@ -91,6 +91,29 @@ export function IssueBadgePage() {
     fetchUsers();
   }, []);
 
+  // Evidence handlers (Story 12.6)
+  const handleAddFiles = useCallback((files: File[]) => {
+    const newPending: PendingFile[] = files.map((file) => ({
+      id: crypto.randomUUID(),
+      file,
+      progress: 0,
+      status: 'pending' as const,
+    }));
+    setPendingFiles((prev) => [...prev, ...newPending]);
+  }, []);
+
+  const handleAddUrl = useCallback((url: string) => {
+    setPendingUrls((prev) => [...prev, url]);
+  }, []);
+
+  const handleRemoveFile = useCallback((id: string) => {
+    setPendingFiles((prev) => prev.filter((pf) => pf.id !== id));
+  }, []);
+
+  const handleRemoveUrl = useCallback((index: number) => {
+    setPendingUrls((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -102,10 +125,6 @@ export function IssueBadgePage() {
       toast.error('Please select a recipient');
       return;
     }
-    if (evidenceUrl && !isValidUrl(evidenceUrl)) {
-      toast.error('Please enter a valid URL for evidence');
-      return;
-    }
     if (expiresIn !== '' && (Number(expiresIn) < 1 || Number(expiresIn) > 3650)) {
       toast.error('Expiry must be between 1 and 3650 days');
       return;
@@ -113,18 +132,60 @@ export function IssueBadgePage() {
 
     setIsSubmitting(true);
     try {
-      await issueBadge({
+      // Step 1: Issue badge (no evidence yet)
+      const badge = await issueBadge({
         templateId: selectedTemplateId,
         recipientId: selectedRecipientId,
-        ...(evidenceUrl ? { evidenceUrl } : {}),
         ...(expiresIn !== '' ? { expiresIn: Number(expiresIn) } : {}),
       });
+
+      // Step 2: Attach evidence (files + URLs)
+      const hasEvidence = pendingFiles.length > 0 || pendingUrls.length > 0;
+      if (hasEvidence) {
+        setIsAttachingEvidence(true);
+
+        // Upload files with per-file progress
+        for (const pf of pendingFiles) {
+          setPendingFiles((prev) =>
+            prev.map((f) => (f.id === pf.id ? { ...f, status: 'uploading' as const } : f))
+          );
+          try {
+            await uploadEvidenceFile(badge.id, pf.file, (pct) => {
+              setUploadProgress((prev) => ({ ...prev, [pf.id]: pct }));
+            });
+            setPendingFiles((prev) =>
+              prev.map((f) =>
+                f.id === pf.id ? { ...f, status: 'done' as const, progress: 100 } : f
+              )
+            );
+          } catch (err) {
+            setPendingFiles((prev) =>
+              prev.map((f) =>
+                f.id === pf.id
+                  ? { ...f, status: 'error' as const, error: (err as Error).message }
+                  : f
+              )
+            );
+          }
+        }
+
+        // Add URL evidence
+        for (const url of pendingUrls) {
+          try {
+            await addUrlEvidence(badge.id, url);
+          } catch (err) {
+            toast.error(`Failed to add URL evidence: ${(err as Error).message}`);
+          }
+        }
+      }
+
       toast.success('Badge issued successfully!');
       navigate('/admin/badges');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to issue badge');
     } finally {
       setIsSubmitting(false);
+      setIsAttachingEvidence(false);
     }
   };
 
@@ -209,18 +270,23 @@ export function IssueBadgePage() {
               </Select>
             </div>
 
-            {/* Evidence URL */}
+            {/* Evidence (Story 12.6: stacked file + URL upload) */}
             <div className="space-y-2">
-              <Label htmlFor="evidenceUrl" className="text-body font-medium text-neutral-700">
-                Evidence URL <span className="text-neutral-500">(optional)</span>
+              <Label className="text-body font-medium text-neutral-700">
+                Evidence{' '}
+                <span className="text-neutral-500">
+                  (optional, up to {MAX_EVIDENCE_ITEMS} items)
+                </span>
               </Label>
-              <Input
-                id="evidenceUrl"
-                type="url"
-                placeholder="https://example.com/evidence"
-                value={evidenceUrl}
-                onChange={(e) => setEvidenceUrl(e.target.value)}
-                className="min-h-[44px] focus:ring-brand-500"
+              <EvidenceAttachmentPanel
+                pendingFiles={pendingFiles}
+                pendingUrls={pendingUrls}
+                onAddFiles={handleAddFiles}
+                onAddUrl={handleAddUrl}
+                onRemoveFile={handleRemoveFile}
+                onRemoveUrl={handleRemoveUrl}
+                uploadProgress={uploadProgress}
+                disabled={isSubmitting}
               />
             </div>
 
@@ -251,7 +317,7 @@ export function IssueBadgePage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Issuing...
+                    {isAttachingEvidence ? 'Attaching evidence...' : 'Issuing...'}
                   </>
                 ) : (
                   <>

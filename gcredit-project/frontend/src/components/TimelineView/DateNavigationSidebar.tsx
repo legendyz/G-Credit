@@ -2,14 +2,28 @@ import type { DateGroup } from '../../hooks/useWallet';
 
 interface DateNavigationSidebarProps {
   dateGroups: DateGroup[];
+  /** Currently selected date group label (for grid filtering) */
+  selectedLabel?: string | null;
+  /** Callback when a date group is clicked */
+  onSelect?: (label: string) => void;
   className?: string;
 }
 
-export function DateNavigationSidebar({ dateGroups, className = '' }: DateNavigationSidebarProps) {
-  const handleScrollToGroup = (label: string) => {
-    const element = document.getElementById(`group-${label}`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+export function DateNavigationSidebar({
+  dateGroups,
+  selectedLabel,
+  onSelect,
+  className = '',
+}: DateNavigationSidebarProps) {
+  const handleClick = (label: string) => {
+    if (onSelect) {
+      onSelect(label);
+    } else {
+      // Fallback: scroll to group
+      const element = document.getElementById(`group-${label}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   };
 
@@ -40,8 +54,12 @@ export function DateNavigationSidebar({ dateGroups, className = '' }: DateNaviga
                 return (
                   <li key={group.label}>
                     <button
-                      onClick={() => handleScrollToGroup(group.label)}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 rounded transition-colors flex justify-between items-center"
+                      onClick={() => handleClick(group.label)}
+                      className={`w-full text-left px-3 py-2 text-sm rounded transition-colors flex justify-between items-center ${
+                        selectedLabel === group.label
+                          ? 'bg-brand-100 text-brand-700 font-medium'
+                          : 'hover:bg-blue-50 hover:text-blue-700'
+                      }`}
                     >
                       <span>• {month}</span>
                       <span className="text-gray-500">({group.count})</span>

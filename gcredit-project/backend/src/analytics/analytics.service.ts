@@ -1,6 +1,12 @@
 import { Injectable, Logger, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import {
+  resolveActivityType,
+  resolveTemplateName,
+  resolveRecipientName,
+  buildActorMap,
+} from '../common/utils/audit-log.utils';
+import {
   SystemOverviewDto,
   IssuanceTrendsDto,
   TopPerformersDto,
@@ -312,24 +318,14 @@ export class AnalyticsService {
     currentUserId?: string,
     currentUserRole?: string,
   ): Promise<TopPerformersDto> {
-    // MANAGER can only see their own department
+    // Story 12.3a: MANAGER scoped to direct reports (managerId-based)
+    let filterManagerId: string | undefined;
     let filterDepartment: string | undefined;
 
     if (currentUserRole === 'MANAGER') {
-      // Get manager's department
-      const manager = await this.prisma.user.findUnique({
-        where: { id: currentUserId },
-        select: { department: true },
-      });
-
-      if (!manager?.department) {
-        throw new ForbiddenException('Manager has no assigned department');
-      }
-
-      filterDepartment = manager.department;
-
-      // If teamId provided, verify it matches manager's department
-      if (teamId && teamId !== filterDepartment) {
+      // Manager can only see their direct reports
+      filterManagerId = currentUserId;
+      if (teamId) {
         throw new ForbiddenException('You can only view your own team');
       }
     } else if (teamId) {
@@ -340,8 +336,8 @@ export class AnalyticsService {
     // Query users with badge counts
     const usersWithBadges = await this.prisma.user.findMany({
       where: {
-        role: 'EMPLOYEE',
         isActive: true,
+        ...(filterManagerId && { managerId: filterManagerId }),
         ...(filterDepartment && { department: filterDepartment }),
       },
       select: {
@@ -388,8 +384,8 @@ export class AnalyticsService {
       .slice(0, limit);
 
     return {
-      teamId: filterDepartment,
-      teamName: filterDepartment, // Department name = team name for MVP
+      teamId: filterManagerId || filterDepartment,
+      teamName: filterManagerId ? 'Direct Reports' : filterDepartment, // Story 12.3a
       period: 'allTime',
       topPerformers: performers,
     };
@@ -510,44 +506,72 @@ export class AnalyticsService {
       where: { id: { in: actorIds } },
       select: { id: true, firstName: true, lastName: true, email: true },
     });
-    const actorMap = new Map(
-      actors.map((u) => [
-        u.id,
-        `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email,
-      ]),
-    );
+    const actorMap = buildActorMap(actors);
+
+    // Batch-fetch badge details (template name + recipient name) for Badge entities
+    const badgeEntityIds = [
+      ...new Set(
+        auditLogs
+          .filter((l) => l.entityType === 'Badge')
+          .map((l) => l.entityId),
+      ),
+    ];
+    const badges =
+      badgeEntityIds.length > 0
+        ? await this.prisma.badge.findMany({
+            where: { id: { in: badgeEntityIds } },
+            select: {
+              id: true,
+              template: { select: { name: true } },
+              recipient: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                },
+              },
+            },
+          })
+        : [];
+    const badgeMap = new Map(badges.map((b) => [b.id, b]));
 
     // Transform to activity items
     const activities = auditLogs.map((log) => {
-      // Map action to activity type
-      const typeMap: Record<string, string> = {
-        ISSUED: 'BADGE_ISSUED',
-        CLAIMED: 'BADGE_CLAIMED',
-        REVOKED: 'BADGE_REVOKED',
-        SHARED: 'BADGE_SHARED',
-        CREATED:
-          log.entityType === 'Template'
-            ? 'TEMPLATE_CREATED'
-            : 'USER_REGISTERED',
-      };
-
       const metadata = log.metadata as Record<string, unknown> | null;
+      const badge = badgeMap.get(log.entityId);
+
+      // Resolve template name from metadata or badge lookup
+      const templateName =
+        resolveTemplateName(metadata) || badge?.template?.name || undefined;
+
+      // Resolve recipient name from metadata or badge lookup
+      const recipientName =
+        resolveRecipientName(metadata) ||
+        (badge?.recipient
+          ? `${badge.recipient.firstName || ''} ${badge.recipient.lastName || ''}`.trim() ||
+            badge.recipient.email
+          : undefined);
+
+      const recipientId =
+        (metadata?.recipientId as string) || badge?.recipient?.id || undefined;
 
       return {
         id: log.id,
-        type: typeMap[log.action] || log.action,
+        type: resolveActivityType(log.action, log.entityType),
         actor: {
           userId: log.actorId,
           name: actorMap.get(log.actorId) || log.actorEmail || 'Unknown',
         },
-        target: metadata
-          ? {
-              userId: metadata.recipientId as string | undefined,
-              name: metadata.recipientName as string | undefined,
-              badgeTemplateName: metadata.templateName as string | undefined,
-              templateName: metadata.templateName as string | undefined,
-            }
-          : undefined,
+        target:
+          templateName || recipientName
+            ? {
+                userId: recipientId,
+                name: recipientName,
+                badgeTemplateName: templateName,
+                templateName: templateName,
+              }
+            : undefined,
         timestamp: log.timestamp.toISOString(),
       };
     });

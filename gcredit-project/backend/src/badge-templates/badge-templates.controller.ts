@@ -306,6 +306,10 @@ export class BadgeTemplatesController {
     description: 'Forbidden - Cannot delete templates created by others',
   })
   @ApiResponse({ status: 404, description: 'Badge template not found' })
+  @ApiResponse({
+    status: 409,
+    description: 'Conflict - Template has issued badges and cannot be deleted',
+  })
   async remove(@Param('id') id: string, @Request() req: RequestWithUser) {
     // ARCH-P1-004: Ownership check - ISSUER can only delete own templates
     const userId = req.user.userId;

@@ -94,15 +94,18 @@ sprint-11: done
 sprint-12: planning
 
 # --- Wave 1: Admin Management UIs ---
-12-1-skill-category-management-ui: backlog
-12-2-skill-management-ui: backlog
-12-3-user-management-ui-enhancement: backlog
-12-4-milestone-admin-ui: backlog
+12-1-skill-category-management-ui: done
+12-2-skill-management-ui: done
+12-3-user-management-ui-enhancement: done
+12-4-milestone-admin-ui: done
 
 # --- Wave 2: Evidence Unification ---
-12-5-evidence-unification-data-model: backlog
-12-6-evidence-unification-ui: backlog
+12-5-evidence-unification-data-model: done
+	12-6-evidence-unification-ui: done
 
 # --- Wave 3: Quick Fixes ---
-12-7-admin-activity-feed-formatting: backlog
-12-8-skills-uuid-fallback-hardening: backlog
+12-7-admin-activity-feed-formatting: done
+12-8-skills-uuid-fallback-hardening: done
+
+# --- Wave 4: UAT ---
+12-9-sprint-12-uat: backlog

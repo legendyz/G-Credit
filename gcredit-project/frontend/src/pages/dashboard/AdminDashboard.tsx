@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { PageLoader } from '../../components/common/LoadingSpinner';
 import { ErrorDisplay } from '../../components/common/ErrorDisplay';
 import { EmptyState, NoActivityState } from '../../components/common/EmptyState';
+import { getActivityIcon } from '../../utils/audit-activity.utils';
 import { PageTemplate } from '../../components/layout/PageTemplate';
 import { cn } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -247,23 +248,13 @@ interface ActivityItemProps {
 }
 
 const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
-  const actionIcons: Record<string, string> = {
-    ISSUED: '📤',
-    CLAIMED: '✅',
-    REVOKED: '🚫',
-    CREATED: '➕',
-    UPDATED: '✏️',
-    DELETED: '🗑️',
-  };
-
   return (
     <div className="flex items-start gap-3 p-3 rounded-lg border bg-card">
       <span className="text-xl" aria-hidden="true">
-        {actionIcons[activity.type] || '📋'}
+        {getActivityIcon(activity.type)}
       </span>
       <div className="flex-1 min-w-0">
-        <p className="font-medium">{activity.type}</p>
-        <p className="text-sm text-muted-foreground truncate">{activity.description}</p>
+        <p className="text-sm text-gray-800 leading-snug">{activity.description}</p>
         <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
           <span>{activity.actorName}</span>
           <span>•</span>

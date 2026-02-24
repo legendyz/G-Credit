@@ -59,7 +59,7 @@ describe('Bulk Issuance Template (e2e)', () => {
 
     expect(headerLine).toContain('badgeTemplateId');
     expect(headerLine).toContain('recipientEmail');
-    expect(headerLine).toContain('evidenceUrl');
+    expect(headerLine).not.toContain('evidenceUrl');
     expect(headerLine).toContain('narrativeJustification');
   });
 

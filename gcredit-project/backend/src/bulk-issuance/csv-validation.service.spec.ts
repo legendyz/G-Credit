@@ -206,44 +206,6 @@ describe('CsvValidationService', () => {
     });
   });
 
-  describe('validateEvidenceUrl', () => {
-    it('should return valid for null value', () => {
-      const result = service.validateEvidenceUrl(null);
-      expect(result.valid).toBe(true);
-    });
-
-    it('should return valid for empty string', () => {
-      const result = service.validateEvidenceUrl('');
-      expect(result.valid).toBe(true);
-    });
-
-    it('should accept valid HTTP URL', () => {
-      const result = service.validateEvidenceUrl('http://example.com/evidence');
-      expect(result.valid).toBe(true);
-    });
-
-    it('should accept valid HTTPS URL', () => {
-      const result = service.validateEvidenceUrl(
-        'https://company.com/docs/evidence.pdf',
-      );
-      expect(result.valid).toBe(true);
-    });
-
-    it('should reject invalid URL format', () => {
-      const result = service.validateEvidenceUrl('not-a-url');
-      expect(result.valid).toBe(false);
-      expect(result.error).toContain('HTTP/HTTPS URL');
-    });
-
-    it('should reject ftp URL', () => {
-      const result = service.validateEvidenceUrl(
-        'ftp://files.example.com/doc.pdf',
-      );
-      expect(result.valid).toBe(false);
-      expect(result.error).toContain('HTTP/HTTPS URL');
-    });
-  });
-
   describe('validateNotes', () => {
     it('should return valid for null value', () => {
       const result = service.validateNotes(null);
@@ -277,7 +239,6 @@ describe('CsvValidationService', () => {
       const result = await service.validateRow({
         badgeTemplateId: 'leadership-excellence',
         recipientEmail: 'john@company.com',
-        evidenceUrl: 'https://docs.company.com/evidence',
         narrativeJustification: 'Great leadership demonstrated',
       });
       expect(result.valid).toBe(true);
@@ -288,7 +249,6 @@ describe('CsvValidationService', () => {
       const result = await service.validateRow({
         badgeTemplateId: '',
         recipientEmail: 'john@company.com',
-        evidenceUrl: '',
         narrativeJustification: '',
       });
       expect(result.valid).toBe(false);
@@ -302,7 +262,6 @@ describe('CsvValidationService', () => {
       const result = await service.validateRow({
         badgeTemplateId: 'template-123',
         recipientEmail: 'not-an-email',
-        evidenceUrl: '',
         narrativeJustification: '',
       });
       expect(result.valid).toBe(false);
@@ -311,22 +270,10 @@ describe('CsvValidationService', () => {
       ).toBe(true);
     });
 
-    it('should reject row with invalid URL', async () => {
-      const result = await service.validateRow({
-        badgeTemplateId: 'template-123',
-        recipientEmail: 'john@company.com',
-        evidenceUrl: 'ftp://invalid',
-        narrativeJustification: '',
-      });
-      expect(result.valid).toBe(false);
-      expect(result.errors.some((e) => e.includes('URL'))).toBe(true);
-    });
-
     it('should reject row with narrativeJustification too long', async () => {
       const result = await service.validateRow({
         badgeTemplateId: 'template-123',
         recipientEmail: 'john@company.com',
-        evidenceUrl: '',
         narrativeJustification: 'a'.repeat(501),
       });
       expect(result.valid).toBe(false);
@@ -340,11 +287,10 @@ describe('CsvValidationService', () => {
       const result = await service.validateRow({
         badgeTemplateId: '',
         recipientEmail: 'not-an-email',
-        evidenceUrl: 'ftp://bad',
         narrativeJustification: 'a'.repeat(501),
       });
       expect(result.valid).toBe(false);
-      expect(result.errors.length).toBeGreaterThanOrEqual(3);
+      expect(result.errors.length).toBeGreaterThanOrEqual(2);
     });
   });
 
@@ -440,7 +386,6 @@ describe('CsvValidationService', () => {
         {
           badgeTemplateId: 'leadership-excellence',
           recipientEmail: 'john@company.com',
-          evidenceUrl: 'https://docs.example.com',
           narrativeJustification: 'Great work',
         },
         txClient,
@@ -466,7 +411,6 @@ describe('CsvValidationService', () => {
         {
           badgeTemplateId: 'tpl-1',
           recipientEmail: 'john@company.com',
-          evidenceUrl: '',
           narrativeJustification: '',
         },
         txClient,
@@ -488,7 +432,6 @@ describe('CsvValidationService', () => {
         {
           badgeTemplateId: 'nonexistent',
           recipientEmail: 'john@company.com',
-          evidenceUrl: '',
           narrativeJustification: '',
         },
         txClient,
@@ -512,7 +455,6 @@ describe('CsvValidationService', () => {
         {
           badgeTemplateId: 'tpl-1',
           recipientEmail: 'unknown@company.com',
-          evidenceUrl: '',
           narrativeJustification: '',
         },
         txClient,
@@ -534,7 +476,6 @@ describe('CsvValidationService', () => {
         {
           badgeTemplateId: 'EXAMPLE-DELETE-THIS-ROW',
           recipientEmail: 'example-john@company.com',
-          evidenceUrl: '',
           narrativeJustification: '',
         },
         txClient,
@@ -554,14 +495,13 @@ describe('CsvValidationService', () => {
         {
           badgeTemplateId: '',
           recipientEmail: 'not-an-email',
-          evidenceUrl: 'ftp://bad',
           narrativeJustification: 'a'.repeat(501),
         },
         txClient,
       );
 
       expect(result.valid).toBe(false);
-      expect(result.errors.length).toBeGreaterThanOrEqual(3);
+      expect(result.errors.length).toBeGreaterThanOrEqual(2);
     });
   });
 });

@@ -7,11 +7,13 @@
  * Implements AC1, AC2, AC4, AC5
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Badge as BadgeType } from '@/lib/badgesApi';
 import { BadgeStatus, getAllBadges, getIssuedBadges } from '@/lib/badgesApi';
+import { listEvidence, type EvidenceItem } from '@/lib/evidenceApi';
+import EvidenceList from '@/components/evidence/EvidenceList';
 import { RevokeBadgeModal } from '@/components/admin/RevokeBadgeModal';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -28,6 +30,7 @@ import {
   ArrowUp,
   ArrowDown,
   ArrowUpDown,
+  Paperclip,
 } from 'lucide-react';
 import { useSkills } from '@/hooks/useSkills';
 import { useBadgeSearch } from '@/hooks/useBadgeSearch';
@@ -165,6 +168,11 @@ export function BadgeManagementPage({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
+  // Story 12.6: Evidence expansion state
+  const [expandedEvidenceBadgeId, setExpandedEvidenceBadgeId] = useState<string | null>(null);
+  const [evidenceCache, setEvidenceCache] = useState<Record<string, EvidenceItem[]>>({});
+  const [evidenceLoading, setEvidenceLoading] = useState<string | null>(null);
 
   // Toggle sort on column click: asc → desc → clear
   const handleSort = useCallback(
@@ -373,6 +381,29 @@ export function BadgeManagementPage({
     setSelectedBadge(null);
   }, []);
 
+  // Story 12.6: Toggle evidence detail expansion
+  const toggleEvidenceExpansion = useCallback(
+    async (badgeId: string) => {
+      if (expandedEvidenceBadgeId === badgeId) {
+        setExpandedEvidenceBadgeId(null);
+        return;
+      }
+      setExpandedEvidenceBadgeId(badgeId);
+      if (!evidenceCache[badgeId]) {
+        setEvidenceLoading(badgeId);
+        try {
+          const items = await listEvidence(badgeId);
+          setEvidenceCache((prev) => ({ ...prev, [badgeId]: items }));
+        } catch {
+          setEvidenceCache((prev) => ({ ...prev, [badgeId]: [] }));
+        } finally {
+          setEvidenceLoading(null);
+        }
+      }
+    },
+    [expandedEvidenceBadgeId, evidenceCache]
+  );
+
   // Handle successful revocation
   const handleRevocationSuccess = useCallback(() => {
     // Invalidate and refetch badges query
@@ -544,9 +575,31 @@ export function BadgeManagementPage({
                           </div>
                           <StatusBadge status={badge.status} />
                         </div>
-                        {/* Action Row */}
+                        {/* Evidence & Action Row */}
                         <div className="mt-3 flex items-center justify-between">
-                          <span className="text-xs text-neutral-500">{badge.recipient.email}</span>
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs text-neutral-500">
+                              {badge.recipient.email}
+                            </span>
+                            {!!badge.evidenceCount && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleEvidenceExpansion(badge.id);
+                                }}
+                                className={`inline-flex items-center gap-1 text-xs cursor-pointer rounded px-1.5 py-0.5 transition-colors ${
+                                  expandedEvidenceBadgeId === badge.id
+                                    ? 'text-brand-700 bg-brand-50 font-medium'
+                                    : 'text-neutral-500 hover:text-brand-600 hover:bg-neutral-100'
+                                }`}
+                                aria-label={`${expandedEvidenceBadgeId === badge.id ? 'Hide' : 'View'} evidence`}
+                                aria-expanded={expandedEvidenceBadgeId === badge.id}
+                              >
+                                <Paperclip className="h-3 w-3" />
+                                {badge.evidenceCount}
+                              </button>
+                            )}
+                          </div>
                           {canRevokeBadge(badge) ? (
                             <Button
                               size="sm"
@@ -576,6 +629,29 @@ export function BadgeManagementPage({
                             )}
                           </div>
                         )}
+                        {expandedEvidenceBadgeId === badge.id && (
+                          <div className="mt-3 pt-3 border-t border-neutral-200">
+                            <p className="text-xs font-medium text-neutral-500 mb-2">
+                              Evidence ({badge.evidenceCount})
+                            </p>
+                            {evidenceLoading === badge.id ? (
+                              <div className="flex items-center gap-2 text-sm text-neutral-500 py-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Loading evidence…
+                              </div>
+                            ) : evidenceCache[badge.id]?.length ? (
+                              <EvidenceList
+                                items={evidenceCache[badge.id]}
+                                badgeId={badge.id}
+                                editable={false}
+                              />
+                            ) : (
+                              <p className="text-sm text-neutral-400 py-1">
+                                No evidence items found.
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -585,11 +661,12 @@ export function BadgeManagementPage({
                 <div className="hidden md:block overflow-x-auto">
                   <table className="w-full table-fixed">
                     <colgroup>
+                      <col className="w-[20%]" />
+                      <col className="w-[16%]" />
+                      <col className="w-[13%]" />
+                      <col className="w-[11%]" />
                       <col className="w-[22%]" />
-                      <col className="w-[18%]" />
-                      <col className="w-[14%]" />
-                      <col className="w-[12%]" />
-                      <col className="w-[24%]" />
+                      <col className="w-[8%]" />
                       <col className="w-[10%]" />
                     </colgroup>
                     <thead className="bg-neutral-100">
@@ -629,6 +706,9 @@ export function BadgeManagementPage({
                             </span>
                           </th>
                         ))}
+                        <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-neutral-500">
+                          Evidence
+                        </th>
                         <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-neutral-500">
                           Actions
                         </th>
@@ -637,81 +717,129 @@ export function BadgeManagementPage({
                     <tbody className="divide-y divide-neutral-200">
                       {paginatedBadges.map((badge) => {
                         const isRevoked = badge.status === BadgeStatus.REVOKED;
+                        const isEvidenceExpanded = expandedEvidenceBadgeId === badge.id;
                         return (
-                          <tr
-                            key={badge.id}
-                            className={
-                              isRevoked ? 'bg-neutral-50 opacity-60' : 'hover:bg-neutral-50'
-                            }
-                          >
-                            <td className="px-4 py-4">
-                              <div className="flex items-center gap-3">
-                                {badge.template.imageUrl && (
-                                  <img
-                                    src={badge.template.imageUrl}
-                                    alt=""
-                                    className="h-10 w-10 rounded object-cover flex-shrink-0"
-                                  />
-                                )}
-                                <div className="min-w-0">
-                                  <div className="font-medium text-neutral-900 truncate">
-                                    {badge.template.name}
-                                  </div>
-                                  {badge.template.category && (
-                                    <div className="text-xs text-neutral-500 truncate">
-                                      {badge.template.category}
-                                    </div>
+                          <React.Fragment key={badge.id}>
+                            <tr
+                              className={
+                                isRevoked ? 'bg-neutral-50 opacity-60' : 'hover:bg-neutral-50'
+                              }
+                            >
+                              <td className="px-4 py-4">
+                                <div className="flex items-center gap-3">
+                                  {badge.template.imageUrl && (
+                                    <img
+                                      src={badge.template.imageUrl}
+                                      alt=""
+                                      className="h-10 w-10 rounded object-cover flex-shrink-0"
+                                    />
                                   )}
+                                  <div className="min-w-0">
+                                    <div className="font-medium text-neutral-900 truncate">
+                                      {badge.template.name}
+                                    </div>
+                                    {badge.template.category && (
+                                      <div className="text-xs text-neutral-500 truncate">
+                                        {badge.template.category}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            </td>
-                            <td className="px-4 py-4">
-                              <div className="text-sm text-neutral-900 truncate">
-                                {getRecipientName(badge)}
-                              </div>
-                              <div className="text-xs text-neutral-500 truncate">
-                                {badge.recipient.email}
-                              </div>
-                            </td>
-                            <td className="px-4 py-4">
-                              <div className="text-sm text-neutral-900 truncate">
-                                {getIssuerName(badge)}
-                              </div>
-                            </td>
-                            <td className="px-4 py-4 text-sm text-neutral-600">
-                              {formatDate(badge.issuedAt)}
-                            </td>
-                            <td className="px-4 py-4 align-top">
-                              <StatusBadge status={badge.status} />
-                              {isRevoked && badge.revocationReason && (
-                                <div className="mt-1 text-xs text-neutral-500 break-words">
-                                  {badge.revocationReason}
+                              </td>
+                              <td className="px-4 py-4">
+                                <div className="text-sm text-neutral-900 truncate">
+                                  {getRecipientName(badge)}
                                 </div>
-                              )}
-                              {isRevoked && getRevokerName(badge) && (
-                                <div className="mt-1 text-xs text-neutral-400">
-                                  by {getRevokerName(badge)}
-                                  {badge.revokedAt ? ` · ${formatDate(badge.revokedAt)}` : ''}
+                                <div className="text-xs text-neutral-500 truncate">
+                                  {badge.recipient.email}
                                 </div>
-                              )}
-                            </td>
-                            <td className="whitespace-nowrap px-4 py-4 text-right">
-                              {canRevokeBadge(badge) ? (
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => handleRevokeClick(badge)}
-                                  aria-label={`Revoke badge ${badge.template.name} for ${getRecipientName(badge)}`}
-                                >
-                                  Revoke
-                                </Button>
-                              ) : isRevoked ? (
-                                <span className="text-xs text-neutral-400">Revoked</span>
-                              ) : (
-                                <span className="text-xs text-neutral-400">—</span>
-                              )}
-                            </td>
-                          </tr>
+                              </td>
+                              <td className="px-4 py-4">
+                                <div className="text-sm text-neutral-900 truncate">
+                                  {getIssuerName(badge)}
+                                </div>
+                              </td>
+                              <td className="px-4 py-4 text-sm text-neutral-600">
+                                {formatDate(badge.issuedAt)}
+                              </td>
+                              <td className="px-4 py-4 align-top">
+                                <StatusBadge status={badge.status} />
+                                {isRevoked && badge.revocationReason && (
+                                  <div className="mt-1 text-xs text-neutral-500 break-words">
+                                    {badge.revocationReason}
+                                  </div>
+                                )}
+                                {isRevoked && getRevokerName(badge) && (
+                                  <div className="mt-1 text-xs text-neutral-400">
+                                    by {getRevokerName(badge)}
+                                    {badge.revokedAt ? ` · ${formatDate(badge.revokedAt)}` : ''}
+                                  </div>
+                                )}
+                              </td>
+                              <td className="px-4 py-4 text-center">
+                                {badge.evidenceCount ? (
+                                  <button
+                                    onClick={() => toggleEvidenceExpansion(badge.id)}
+                                    className={`inline-flex items-center gap-1 text-sm cursor-pointer rounded-md px-2 py-1 transition-colors ${
+                                      isEvidenceExpanded
+                                        ? 'text-brand-700 bg-brand-50 font-medium'
+                                        : 'text-neutral-600 hover:text-brand-600 hover:bg-neutral-100'
+                                    }`}
+                                    aria-label={`${isEvidenceExpanded ? 'Hide' : 'View'} evidence for ${badge.template.name}`}
+                                    aria-expanded={isEvidenceExpanded}
+                                  >
+                                    <Paperclip className="h-3.5 w-3.5" />
+                                    {badge.evidenceCount}
+                                  </button>
+                                ) : (
+                                  <span className="text-xs text-neutral-400">—</span>
+                                )}
+                              </td>
+                              <td className="whitespace-nowrap px-4 py-4 text-right">
+                                {canRevokeBadge(badge) ? (
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => handleRevokeClick(badge)}
+                                    aria-label={`Revoke badge ${badge.template.name} for ${getRecipientName(badge)}`}
+                                  >
+                                    Revoke
+                                  </Button>
+                                ) : isRevoked ? (
+                                  <span className="text-xs text-neutral-400">Revoked</span>
+                                ) : (
+                                  <span className="text-xs text-neutral-400">—</span>
+                                )}
+                              </td>
+                            </tr>
+                            {isEvidenceExpanded && (
+                              <tr className="bg-neutral-50/50">
+                                <td colSpan={7} className="px-6 py-4">
+                                  <div className="max-w-2xl">
+                                    <p className="text-xs font-medium text-neutral-500 mb-2">
+                                      Evidence ({badge.evidenceCount})
+                                    </p>
+                                    {evidenceLoading === badge.id ? (
+                                      <div className="flex items-center gap-2 text-sm text-neutral-500 py-2">
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        Loading evidence…
+                                      </div>
+                                    ) : evidenceCache[badge.id]?.length ? (
+                                      <EvidenceList
+                                        items={evidenceCache[badge.id]}
+                                        badgeId={badge.id}
+                                        editable={false}
+                                      />
+                                    ) : (
+                                      <p className="text-sm text-neutral-400 py-1">
+                                        No evidence items found.
+                                      </p>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
                         );
                       })}
                     </tbody>

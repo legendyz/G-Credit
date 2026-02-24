@@ -17,10 +17,13 @@ import {
 import { PrismaService } from '../common/prisma.service';
 import { createPaginatedResponse } from '../common/utils/pagination.util';
 import { AdminUsersQueryDto } from './dto/admin-users-query.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import { UpdateUserDepartmentDto } from './dto/update-user-department.dto';
+import { UpdateUserManagerDto } from './dto/update-user-manager.dto';
 import { UserRole, Prisma } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 // Response types
 export interface UserListItem {
@@ -37,6 +40,17 @@ export interface UserListItem {
   roleUpdatedBy: string | null;
   roleVersion: number;
   createdAt: Date;
+  // 12.3b additions
+  source: 'M365' | 'LOCAL';
+  sourceLabel: string;
+  badgeCount: number;
+  lastSyncAt: Date | null;
+  managerId: string | null;
+  managerName: string | null;
+  managerEmail: string | null;
+  failedLoginAttempts: number;
+  lockedUntil: Date | null;
+  directReportsCount?: number;
 }
 
 export interface PaginationInfo {
@@ -75,6 +89,31 @@ export interface DepartmentUpdateResponse {
   department: string;
 }
 
+export interface ManagerUpdateResponse {
+  id: string;
+  email: string;
+  managerId: string | null;
+  managerName: string | null;
+  managerAutoUpgraded?: {
+    managerId: string;
+    managerName: string;
+    previousRole: UserRole;
+  };
+  managerAutoDowngraded?: {
+    managerId: string;
+    managerName: string;
+  };
+}
+
+export interface CreateUserResponse extends UserListItem {
+  managerAutoUpgraded?: {
+    managerId: string;
+    managerEmail: string;
+    managerName: string;
+    previousRole: UserRole;
+  };
+}
+
 @Injectable()
 export class AdminUsersService {
   private readonly logger = new Logger(AdminUsersService.name);
@@ -107,6 +146,9 @@ export class AdminUsersService {
     // Build where clause
     const where: Prisma.UserWhereInput = {};
 
+    // Collect AND conditions to compose safely with search + status filters
+    const andConditions: Prisma.UserWhereInput[] = [];
+
     // Search filter: name, email, department, or role (case-insensitive)
     if (search) {
       const orConditions: Prisma.UserWhereInput[] = [
@@ -124,7 +166,7 @@ export class AdminUsersService {
         orConditions.push({ role: { in: matchingRoles } });
       }
 
-      where.OR = orConditions;
+      andConditions.push({ OR: orConditions });
     }
 
     // Role filter
@@ -132,9 +174,35 @@ export class AdminUsersService {
       where.role = roleFilter;
     }
 
-    // Status filter
-    if (statusFilter !== undefined) {
-      where.isActive = statusFilter;
+    // Status filter (12.3b: enum-based: ACTIVE/LOCKED/INACTIVE)
+    if (statusFilter === 'ACTIVE') {
+      where.isActive = true;
+      andConditions.push({
+        OR: [{ lockedUntil: null }, { lockedUntil: { lt: new Date() } }],
+      });
+      andConditions.push({ failedLoginAttempts: { lt: 5 } });
+    } else if (statusFilter === 'LOCKED') {
+      where.isActive = true;
+      andConditions.push({
+        OR: [
+          { lockedUntil: { gt: new Date() } },
+          { failedLoginAttempts: { gte: 5 } },
+        ],
+      });
+    } else if (statusFilter === 'INACTIVE') {
+      where.isActive = false;
+    }
+
+    // Apply composed AND conditions
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
+    }
+
+    // Source filter (12.3b AC #5)
+    if (query.sourceFilter === 'M365') {
+      where.azureId = { not: null };
+    } else if (query.sourceFilter === 'LOCAL') {
+      where.azureId = null;
     }
 
     // Build orderBy clause
@@ -147,7 +215,7 @@ export class AdminUsersService {
     const useCursorPagination =
       total >= this.CURSOR_PAGINATION_THRESHOLD && cursor;
 
-    let users: UserListItem[];
+    let users: Record<string, unknown>[];
 
     if (useCursorPagination && cursor) {
       // Cursor-based pagination for large datasets
@@ -176,7 +244,10 @@ export class AdminUsersService {
         this.encodeCursor(
           lastUser.id,
           sortBy || 'name',
-          this.getSortValue(lastUser, sortBy || 'name'),
+          this.getSortValue(
+            lastUser as unknown as UserListItem,
+            sortBy || 'name',
+          ),
         );
       }
     } else {
@@ -192,7 +263,8 @@ export class AdminUsersService {
       });
     }
 
-    return createPaginatedResponse(users, total, page!, limit!);
+    const mappedUsers = users.map((u) => this.mapUserToResponse(u));
+    return createPaginatedResponse(mappedUsers, total, page!, limit!);
   }
 
   /**
@@ -208,7 +280,7 @@ export class AdminUsersService {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
-    return user;
+    return this.mapUserToResponse(user as unknown as Record<string, unknown>);
   }
 
   /**
@@ -233,11 +305,48 @@ export class AdminUsersService {
     // Get current user state
     const currentUser = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true, role: true, roleVersion: true },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        roleVersion: true,
+        azureId: true,
+      },
     });
 
     if (!currentUser) {
       throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    // 12.3b AC #6: M365 users' roles are managed via Security Group
+    if (currentUser.azureId) {
+      throw new BadRequestException(
+        'M365 user roles are managed via Security Group membership. ' +
+          "To change this user's role, update their Security Group in Azure AD.",
+      );
+    }
+
+    // MANAGER and EMPLOYEE are auto-managed via managerId relationships.
+    // Only ADMIN and ISSUER can be manually assigned.
+    if (dto.role === UserRole.MANAGER || dto.role === UserRole.EMPLOYEE) {
+      throw new BadRequestException(
+        `Cannot manually assign ${dto.role} role. ` +
+          'MANAGER/EMPLOYEE roles are automatically managed based on subordinate assignments.',
+      );
+    }
+
+    // Strong constraint: block role change from MANAGER if user has subordinates
+    // (ADMIN promotion is allowed — ADMIN supersedes MANAGER)
+    if (currentUser.role === UserRole.MANAGER && dto.role !== UserRole.ADMIN) {
+      const subordinateCount = await this.prisma.user.count({
+        where: { managerId: userId },
+      });
+      if (subordinateCount > 0) {
+        throw new BadRequestException(
+          `Cannot change role from MANAGER: this user has ${subordinateCount} subordinate(s). ` +
+            'Please reassign their subordinates first.',
+        );
+      }
     }
 
     // AC5: Optimistic locking - check version match
@@ -452,7 +561,562 @@ export class AdminUsersService {
     };
   }
 
+  /**
+   * Update user's manager (managerId).
+   * Handles auto-upgrade/downgrade of MANAGER role:
+   * - New manager auto-upgraded EMPLOYEE → MANAGER if needed
+   * - Old manager auto-downgraded MANAGER → EMPLOYEE if they lose last subordinate
+   * - Circular hierarchy detection
+   */
+  async updateManager(
+    userId: string,
+    dto: UpdateUserManagerDto,
+    adminId: string,
+  ): Promise<ManagerUpdateResponse> {
+    const currentUser = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        managerId: true,
+        azureId: true,
+        manager: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
+    });
+
+    if (!currentUser) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    // Cannot assign yourself as your own manager
+    if (dto.managerId === userId) {
+      throw new BadRequestException(
+        'Cannot assign a user as their own manager',
+      );
+    }
+
+    // No change
+    if (currentUser.managerId === dto.managerId) {
+      const mgrName = currentUser.manager
+        ? [currentUser.manager.firstName, currentUser.manager.lastName]
+            .filter(Boolean)
+            .join(' ') || currentUser.manager.email
+        : null;
+      return {
+        id: currentUser.id,
+        email: currentUser.email,
+        managerId: currentUser.managerId,
+        managerName: mgrName,
+      };
+    }
+
+    // Validate new manager exists
+    let newManager: {
+      id: string;
+      email: string;
+      firstName: string | null;
+      lastName: string | null;
+      role: UserRole;
+    } | null = null;
+
+    if (dto.managerId) {
+      newManager = await this.prisma.user.findUnique({
+        where: { id: dto.managerId },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+        },
+      });
+      if (!newManager) {
+        throw new BadRequestException('Selected manager does not exist');
+      }
+
+      // Circular hierarchy detection
+      await this.detectManagerCycle(dto.managerId, userId);
+    }
+
+    const oldManagerId = currentUser.managerId;
+    const response: ManagerUpdateResponse = {
+      id: currentUser.id,
+      email: currentUser.email,
+      managerId: dto.managerId,
+      managerName: newManager
+        ? [newManager.firstName, newManager.lastName]
+            .filter(Boolean)
+            .join(' ') || newManager.email
+        : null,
+    };
+
+    await this.prisma.$transaction(async (tx) => {
+      // Update managerId
+      await tx.user.update({
+        where: { id: userId },
+        data: { managerId: dto.managerId },
+      });
+
+      // Audit log
+      const oldMgrName = currentUser.manager
+        ? [currentUser.manager.firstName, currentUser.manager.lastName]
+            .filter(Boolean)
+            .join(' ') || currentUser.manager.email
+        : '(none)';
+      const newMgrName = newManager
+        ? [newManager.firstName, newManager.lastName]
+            .filter(Boolean)
+            .join(' ') || newManager.email
+        : '(none)';
+
+      await tx.userRoleAuditLog.create({
+        data: {
+          userId,
+          performedBy: adminId,
+          action: 'MANAGER_CHANGED',
+          oldValue: (oldMgrName || '(none)').slice(0, 50),
+          newValue: (newMgrName || '(none)').slice(0, 50),
+          note: dto.auditNote,
+        },
+      });
+
+      // Auto-upgrade new manager: EMPLOYEE → MANAGER
+      if (newManager && newManager.role === UserRole.EMPLOYEE) {
+        await tx.user.update({
+          where: { id: newManager.id },
+          data: {
+            role: UserRole.MANAGER,
+            roleSetManually: true,
+            roleUpdatedAt: new Date(),
+            roleUpdatedBy: adminId,
+            roleVersion: { increment: 1 },
+          },
+        });
+
+        await tx.userRoleAuditLog.create({
+          data: {
+            userId: newManager.id,
+            performedBy: adminId,
+            action: 'ROLE_CHANGED',
+            oldValue: UserRole.EMPLOYEE,
+            newValue: UserRole.MANAGER,
+            note: `Auto-upgraded to MANAGER: assigned as manager of ${currentUser.email}`,
+          },
+        });
+
+        const mgrDisplayName =
+          [newManager.firstName, newManager.lastName]
+            .filter(Boolean)
+            .join(' ') || newManager.email;
+
+        response.managerAutoUpgraded = {
+          managerId: newManager.id,
+          managerName: mgrDisplayName,
+          previousRole: UserRole.EMPLOYEE,
+        };
+
+        this.logger.log(
+          `Auto-upgraded ${newManager.email} from EMPLOYEE to MANAGER (assigned as manager of ${currentUser.email})`,
+        );
+      }
+
+      // Auto-downgrade old manager: if MANAGER with 0 remaining subordinates → EMPLOYEE
+      if (oldManagerId) {
+        const oldMgr = await tx.user.findUnique({
+          where: { id: oldManagerId },
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            role: true,
+            _count: { select: { directReports: true } },
+          },
+        });
+
+        if (
+          oldMgr &&
+          oldMgr.role === UserRole.MANAGER &&
+          oldMgr._count.directReports === 0
+        ) {
+          await tx.user.update({
+            where: { id: oldMgr.id },
+            data: {
+              role: UserRole.EMPLOYEE,
+              roleSetManually: true,
+              roleUpdatedAt: new Date(),
+              roleUpdatedBy: adminId,
+              roleVersion: { increment: 1 },
+            },
+          });
+
+          await tx.userRoleAuditLog.create({
+            data: {
+              userId: oldMgr.id,
+              performedBy: adminId,
+              action: 'ROLE_CHANGED',
+              oldValue: UserRole.MANAGER,
+              newValue: UserRole.EMPLOYEE,
+              note: `Auto-downgraded: last subordinate ${currentUser.email} reassigned`,
+            },
+          });
+
+          const oldMgrDisplayName =
+            [oldMgr.firstName, oldMgr.lastName].filter(Boolean).join(' ') ||
+            oldMgr.email;
+
+          response.managerAutoDowngraded = {
+            managerId: oldMgr.id,
+            managerName: oldMgrDisplayName,
+          };
+
+          this.logger.log(
+            `Auto-downgraded ${oldMgr.email} from MANAGER to EMPLOYEE (last subordinate reassigned)`,
+          );
+        }
+      }
+    });
+
+    this.logger.log(
+      `Manager updated for ${currentUser.email}: ${oldManagerId || '(none)'} → ${dto.managerId || '(none)'} by admin ${adminId}`,
+    );
+
+    return response;
+  }
+
+  /**
+   * 12.3b AC #15, #16, #17, #18, #33: Create a local user
+   */
+  async createUser(dto: CreateUserDto, adminId: string): Promise<UserListItem> {
+    // AC #33: Validate ADMIN role blocked for manual creation
+    if (dto.role === UserRole.ADMIN) {
+      throw new BadRequestException(
+        'Cannot create users with ADMIN role directly. Use Security Group assignment.',
+      );
+    }
+
+    // MANAGER is auto-managed — cannot be directly assigned
+    if (dto.role === UserRole.MANAGER) {
+      throw new BadRequestException(
+        'Cannot create users with MANAGER role directly. ' +
+          'Assign subordinates to automatically promote to MANAGER.',
+      );
+    }
+
+    // AC #17: Email uniqueness
+    const existing = await this.prisma.user.findUnique({
+      where: { email: dto.email.toLowerCase() },
+    });
+    if (existing) {
+      throw new ConflictException(
+        `User with email ${dto.email} already exists`,
+      );
+    }
+
+    // Validate managerId if provided
+    let managerNeedsUpgrade = false;
+    let managerBeforeUpgrade: {
+      id: string;
+      email: string;
+      firstName: string | null;
+      lastName: string | null;
+      role: UserRole;
+    } | null = null;
+
+    if (dto.managerId) {
+      const manager = await this.prisma.user.findUnique({
+        where: { id: dto.managerId },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          managerId: true,
+        },
+      });
+      if (!manager) {
+        throw new BadRequestException('Selected manager does not exist');
+      }
+
+      // Circular hierarchy detection: walk up the manager chain from the
+      // selected manager. If we ever encounter dto.managerId again, it's a
+      // cycle. For createUser the new user doesn't exist yet, so cycles are
+      // unlikely, but this guard future-proofs for updateManager scenarios.
+      // Max depth = 50 to prevent infinite loops on corrupt data.
+      await this.detectManagerCycle(dto.managerId, null);
+
+      // Strong constraint: auto-upgrade to MANAGER if currently EMPLOYEE
+      if (manager.role === UserRole.EMPLOYEE) {
+        managerNeedsUpgrade = true;
+        managerBeforeUpgrade = manager;
+      }
+    }
+
+    // Hash default password
+    const defaultPassword = process.env.DEFAULT_USER_PASSWORD || 'password123';
+    const passwordHash = await bcrypt.hash(defaultPassword, 10);
+
+    // AC #16: Create with azureId=null, roleSetManually=true
+    const user = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.user.create({
+        data: {
+          email: dto.email.toLowerCase(),
+          passwordHash,
+          firstName: dto.firstName,
+          lastName: dto.lastName,
+          department: dto.department || null,
+          role: dto.role,
+          managerId: dto.managerId || null,
+          azureId: null,
+          roleSetManually: true,
+          isActive: true,
+        },
+        select: this.getUserSelect(),
+      });
+
+      await tx.userRoleAuditLog.create({
+        data: {
+          userId: created.id,
+          performedBy: adminId,
+          action: 'USER_CREATED',
+          newValue: dto.role,
+          note: `Created local user ${dto.email.toLowerCase()} (department: ${dto.department || 'none'})`,
+        },
+      });
+
+      // Auto-upgrade manager to MANAGER role if needed
+      if (managerNeedsUpgrade && managerBeforeUpgrade) {
+        await tx.user.update({
+          where: { id: managerBeforeUpgrade.id },
+          data: {
+            role: UserRole.MANAGER,
+            roleSetManually: true,
+            roleUpdatedAt: new Date(),
+            roleUpdatedBy: adminId,
+            roleVersion: { increment: 1 },
+          },
+        });
+
+        await tx.userRoleAuditLog.create({
+          data: {
+            userId: managerBeforeUpgrade.id,
+            performedBy: adminId,
+            action: 'ROLE_CHANGED',
+            oldValue: managerBeforeUpgrade.role,
+            newValue: UserRole.MANAGER,
+            note: `Auto-upgraded to MANAGER: assigned as manager of new user ${dto.email.toLowerCase()}`,
+          },
+        });
+
+        this.logger.log(
+          `Auto-upgraded ${managerBeforeUpgrade.email} from ${managerBeforeUpgrade.role} to MANAGER (assigned as manager of ${dto.email.toLowerCase()})`,
+        );
+      }
+
+      return created;
+    });
+
+    this.logger.log(
+      `Local user created: ${dto.email.toLowerCase()} (role: ${dto.role}) by admin ${adminId}`,
+    );
+
+    const response: CreateUserResponse = this.mapUserToResponse(
+      user as unknown as Record<string, unknown>,
+    ) as CreateUserResponse;
+
+    if (managerNeedsUpgrade && managerBeforeUpgrade) {
+      response.managerAutoUpgraded = {
+        managerId: managerBeforeUpgrade.id,
+        managerEmail: managerBeforeUpgrade.email,
+        managerName:
+          `${managerBeforeUpgrade.firstName || ''} ${managerBeforeUpgrade.lastName || ''}`.trim() ||
+          managerBeforeUpgrade.email,
+        previousRole: managerBeforeUpgrade.role,
+      };
+    }
+
+    return response;
+  }
+
+  /**
+   * 12.3b AC #34: Delete a local user (with subordinate guard)
+   */
+  async deleteUser(
+    userId: string,
+    adminId: string,
+  ): Promise<{ message: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        azureId: true,
+        email: true,
+        managerId: true,
+        _count: { select: { directReports: true } },
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User ${userId} not found`);
+    }
+
+    // Cannot delete M365 users
+    if (user.azureId) {
+      throw new BadRequestException(
+        'Cannot delete M365 users. Deactivate them instead, or remove from Azure AD.',
+      );
+    }
+
+    // Cannot delete self
+    if (userId === adminId) {
+      throw new BadRequestException('Cannot delete your own account');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      // Audit log
+      await tx.userRoleAuditLog.create({
+        data: {
+          userId,
+          performedBy: adminId,
+          action: 'USER_DELETED',
+          oldValue: user.email.slice(0, 50),
+          newValue: 'DELETED',
+          note:
+            user._count.directReports > 0
+              ? `Had ${user._count.directReports} subordinate(s) — their managerId cleared`
+              : undefined,
+        },
+      });
+
+      // onDelete: SetNull in schema handles subordinate managerId clearing
+      await tx.user.delete({ where: { id: userId } });
+
+      // Auto-downgrade: if this user's manager is a MANAGER and now has 0
+      // remaining subordinates (after this deletion), downgrade to EMPLOYEE.
+      if (user.managerId) {
+        const mgr = await tx.user.findUnique({
+          where: { id: user.managerId },
+          select: {
+            id: true,
+            email: true,
+            role: true,
+            _count: { select: { directReports: true } },
+          },
+        });
+
+        if (
+          mgr &&
+          mgr.role === UserRole.MANAGER &&
+          mgr._count.directReports === 0
+        ) {
+          await tx.user.update({
+            where: { id: mgr.id },
+            data: {
+              role: UserRole.EMPLOYEE,
+              roleSetManually: true,
+              roleUpdatedAt: new Date(),
+              roleUpdatedBy: adminId,
+              roleVersion: { increment: 1 },
+            },
+          });
+
+          await tx.userRoleAuditLog.create({
+            data: {
+              userId: mgr.id,
+              performedBy: adminId,
+              action: 'ROLE_CHANGED',
+              oldValue: UserRole.MANAGER,
+              newValue: UserRole.EMPLOYEE,
+              note: `Auto-downgraded: last subordinate ${user.email} was deleted`,
+            },
+          });
+
+          this.logger.log(
+            `Auto-downgraded ${mgr.email} from MANAGER to EMPLOYEE (last subordinate deleted)`,
+          );
+        }
+      }
+    });
+
+    this.logger.log(`User ${user.email} deleted by admin ${adminId}`);
+
+    return { message: 'User deleted successfully' };
+  }
+
   // Helper methods
+
+  /**
+   * Detect circular manager hierarchy.
+   * Walks up the manager chain from `managerId`. If `userId` is encountered
+   * in the chain, it means assigning this manager would create a cycle.
+   * For createUser, `userId` is null (new user doesn't exist yet, no cycle possible).
+   * For future updateManager, `userId` is the user being reassigned.
+   * Max depth = 50 to guard against corrupt data causing infinite loops.
+   */
+  private async detectManagerCycle(
+    managerId: string,
+    userId: string | null,
+  ): Promise<void> {
+    const MAX_DEPTH = 50;
+    let currentId: string | null = managerId;
+    const visited = new Set<string>();
+
+    for (let depth = 0; depth < MAX_DEPTH && currentId; depth++) {
+      if (userId && currentId === userId) {
+        throw new BadRequestException(
+          'Circular manager hierarchy detected. This assignment would create a cycle.',
+        );
+      }
+      if (visited.has(currentId)) {
+        // Existing cycle in data — log warning but don't block
+        this.logger.warn(
+          `Existing circular manager chain detected at user ${currentId}`,
+        );
+        break;
+      }
+      visited.add(currentId);
+
+      const user: { managerId: string | null } | null =
+        await this.prisma.user.findUnique({
+          where: { id: currentId },
+          select: { managerId: true },
+        });
+      currentId = user?.managerId ?? null;
+    }
+  }
+
+  /**
+   * 12.3b: Map raw DB user to API response — strips azureId, computes source field
+   */
+  private mapUserToResponse(user: Record<string, unknown>): UserListItem {
+    const { azureId, _count, manager, ...rest } = user;
+    const mgr = manager as {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+    } | null;
+    return {
+      ...rest,
+      source: azureId ? 'M365' : 'LOCAL',
+      sourceLabel: azureId ? 'Microsoft 365' : 'Local Account',
+      badgeCount: (_count as { badgesReceived?: number })?.badgesReceived ?? 0,
+      directReportsCount:
+        (_count as { directReports?: number })?.directReports ?? 0,
+      managerName: mgr
+        ? [mgr.firstName, mgr.lastName].filter(Boolean).join(' ') || null
+        : null,
+      managerEmail: mgr?.email ?? null,
+    } as UserListItem;
+  }
 
   private getUserSelect() {
     return {
@@ -469,6 +1133,26 @@ export class AdminUsersService {
       roleUpdatedBy: true,
       roleVersion: true,
       createdAt: true,
+      // 12.3b additions
+      azureId: true,
+      lastSyncAt: true,
+      managerId: true,
+      manager: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
+      failedLoginAttempts: true,
+      lockedUntil: true,
+      _count: {
+        select: {
+          badgesReceived: true,
+          directReports: true,
+        },
+      },
     };
   }
 
@@ -491,6 +1175,15 @@ export class AdminUsersService {
         return [{ lastLoginAt: order }];
       case 'createdAt':
         return [{ createdAt: order }];
+      case 'source':
+        // source is computed from azureId: null = LOCAL, non-null = M365
+        return [
+          {
+            azureId: { sort: order, nulls: order === 'asc' ? 'last' : 'first' },
+          },
+        ];
+      case 'badgeCount':
+        return [{ badgesReceived: { _count: order } }];
       case 'name':
       default:
         // Sort by lastName, then firstName

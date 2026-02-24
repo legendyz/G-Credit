@@ -1,8 +1,12 @@
 import React from 'react';
+import { getCategoryColorClasses } from '@/lib/categoryColors';
+import { UNKNOWN_SKILL_LABEL } from '@/lib/constants';
+
+type SkillItem = string | { name: string; categoryColor?: string | null };
 
 interface BadgeInfoProps {
   description: string;
-  skills: string[];
+  skills: SkillItem[];
   criteria: Record<string, unknown> | string | null;
 }
 
@@ -42,14 +46,26 @@ const BadgeInfo: React.FC<BadgeInfoProps> = ({ description, skills, criteria }) 
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-3">Skills Demonstrated</h3>
           <div className="flex flex-wrap gap-2">
-            {skills.map((skill, index) => (
-              <span
-                key={index}
-                className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 transition-colors cursor-pointer"
-              >
-                {skill}
-              </span>
-            ))}
+            {skills.map((skill, index) => {
+              const isObject = typeof skill === 'object';
+              const name = isObject ? skill.name : skill;
+              const color = isObject ? getCategoryColorClasses(skill.categoryColor) : null;
+              const isUnknown = name === UNKNOWN_SKILL_LABEL;
+              return (
+                <span
+                  key={index}
+                  className={`px-3 py-1.5 text-sm rounded-full ${
+                    isUnknown
+                      ? 'text-muted-foreground italic bg-muted'
+                      : color
+                        ? `${color.bg} ${color.text} font-medium`
+                        : 'bg-blue-600 text-white font-medium'
+                  }`}
+                >
+                  {name}
+                </span>
+              );
+            })}
           </div>
         </div>
       )}

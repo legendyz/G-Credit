@@ -41,6 +41,11 @@ model User {
   roleVersion     Int       @default(0) // Optimistic locking for role changes
   lastSyncAt      DateTime? // Last M365 sync timestamp
 
+  // Story 12.3a: Manager hierarchy self-relation
+  managerId     String?
+  manager       User?   @relation("ManagerReports", fields: [managerId], references: [id], onDelete: SetNull)
+  directReports User[]  @relation("ManagerReports")
+
   passwordResetTokens   PasswordResetToken[]
   refreshTokens         RefreshToken[]
   badgeTemplates        BadgeTemplate[]        @relation("TemplateCreator")
@@ -64,6 +69,7 @@ model User {
   @@index([azureId])
   @@index([isActive])
   @@index([roleUpdatedAt])
+  @@index([managerId])
   @@map("users")
 }
 
@@ -157,6 +163,7 @@ model SkillCategory {
   isSystemDefined Boolean          @default(false) // true=preset, false=custom
   isEditable      Boolean          @default(true)
   displayOrder    Int              @default(0)
+  color           String?          @db.VarChar(20) // Tailwind color name: blue, emerald, amber, etc.
   skills          Skill[]
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
@@ -239,9 +246,7 @@ model Badge {
 
 enum MilestoneType {
   BADGE_COUNT
-  SKILL_TRACK
-  ANNIVERSARY
-  CUSTOM
+  CATEGORY_COUNT
 }
 
 model MilestoneConfig {
@@ -278,19 +283,27 @@ model MilestoneAchievement {
 
 // Sprint 4: Evidence File Management
 
+// Sprint 12 Story 12.5: Evidence Unification
+enum EvidenceType {
+  FILE
+  URL
+}
+
 model EvidenceFile {
-  id           String   @id @default(uuid())
+  id           String       @id @default(uuid())
   badgeId      String
-  fileName     String   @db.VarChar(255)
-  originalName String   @db.VarChar(255)
-  fileSize     Int      // Bytes
-  mimeType     String   @db.VarChar(100)
-  blobUrl      String   @db.Text // Azure Blob URL
+  fileName     String       @db.VarChar(255)
+  originalName String       @db.VarChar(255)
+  fileSize     Int          // Bytes — 0 for URL-type
+  mimeType     String       @db.VarChar(100) // empty string for URL-type
+  blobUrl      String       @db.Text // Azure Blob URL — empty string for URL-type
   uploadedBy   String
-  uploadedAt   DateTime @default(now())
+  uploadedAt   DateTime     @default(now())
+  type         EvidenceType @default(FILE)        // Story 12.5: FILE or URL
+  sourceUrl    String?      @db.Text              // Story 12.5: For URL-type evidence
   
-  badge        Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
-  uploader     User     @relation("EvidenceUploader", fields: [uploadedBy], references: [id])
+  badge        Badge        @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  uploader     User         @relation("EvidenceUploader", fields: [uploadedBy], references: [id])
 
   @@index([badgeId])
   @@map("evidence_files")

@@ -1,4 +1,5 @@
 import { IsEmail, IsString, MinLength, Matches } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { SanitizeHtml } from '../../../common/decorators/sanitize-html.decorator';
 
 /**
@@ -12,6 +13,9 @@ import { SanitizeHtml } from '../../../common/decorators/sanitize-html.decorator
  */
 export class RegisterDto {
   @IsEmail({}, { message: 'Invalid email format' })
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.toLowerCase() : value,
+  )
   email: string;
 
   @IsString()

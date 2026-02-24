@@ -1,0 +1,324 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { Test, TestingModule } from '@nestjs/testing';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { SkillCategoriesService } from './skill-categories.service';
+import { PrismaService } from '../common/prisma.service';
+import {
+  CreateSkillCategoryDto,
+  UpdateSkillCategoryDto,
+} from './dto/skill-category.dto';
+
+describe('SkillCategoriesService', () => {
+  let service: SkillCategoriesService;
+  let prisma: {
+    skillCategory: {
+      findMany: jest.Mock;
+      findUnique: jest.Mock;
+      create: jest.Mock;
+      update: jest.Mock;
+      delete: jest.Mock;
+      count: jest.Mock;
+    };
+  };
+
+  beforeEach(async () => {
+    prisma = {
+      skillCategory: {
+        findMany: jest.fn(),
+        findUnique: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
+        delete: jest.fn(),
+        count: jest.fn().mockResolvedValue(0),
+      },
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        SkillCategoriesService,
+        { provide: PrismaService, useValue: prisma },
+      ],
+    }).compile();
+
+    service = module.get<SkillCategoriesService>(SkillCategoriesService);
+  });
+
+  describe('create', () => {
+    it('should create a Level 1 category without parentId', async () => {
+      const createDto: CreateSkillCategoryDto = { name: 'New Top Category' };
+      const createdCategory = {
+        id: 'new-id',
+        name: 'New Top Category',
+        parentId: null,
+        level: 1,
+        isSystemDefined: false,
+        isEditable: true,
+        displayOrder: 0,
+        parent: null,
+      };
+
+      prisma.skillCategory.create.mockResolvedValue(createdCategory);
+
+      const result = await service.create(createDto);
+
+      expect(result).toEqual(createdCategory);
+      expect(prisma.skillCategory.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          name: 'New Top Category',
+          parentId: null,
+          level: 1,
+          isSystemDefined: false,
+          isEditable: true,
+        }),
+        include: { parent: true },
+      });
+      // Should NOT call findUnique since no parentId
+      expect(prisma.skillCategory.findUnique).not.toHaveBeenCalled();
+    });
+
+    it('should create a subcategory with valid parentId (level = parent.level + 1)', async () => {
+      const parentCategory = {
+        id: 'parent-id',
+        name: 'Parent',
+        level: 1,
+        color: 'blue',
+        isSystemDefined: false,
+      };
+      const createDto: CreateSkillCategoryDto = {
+        name: 'Child Category',
+        parentId: 'parent-id',
+      };
+      const createdCategory = {
+        id: 'child-id',
+        name: 'Child Category',
+        parentId: 'parent-id',
+        level: 2,
+        color: 'blue',
+        isSystemDefined: false,
+        isEditable: true,
+        displayOrder: 0,
+        parent: parentCategory,
+      };
+
+      prisma.skillCategory.findUnique.mockResolvedValue(parentCategory);
+      prisma.skillCategory.create.mockResolvedValue(createdCategory);
+
+      const result = await service.create(createDto);
+
+      expect(result).toEqual(createdCategory);
+      expect(prisma.skillCategory.findUnique).toHaveBeenCalledWith({
+        where: { id: 'parent-id' },
+      });
+      expect(prisma.skillCategory.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          name: 'Child Category',
+          parentId: 'parent-id',
+          level: 2,
+          color: 'blue', // inherited from parent
+        }),
+        include: { parent: true },
+      });
+      // Should NOT call count — color inherited, no round-robin needed
+      expect(prisma.skillCategory.count).not.toHaveBeenCalled();
+    });
+
+    it('should auto-assign color via round-robin for L1 category without color', async () => {
+      prisma.skillCategory.count.mockResolvedValue(3);
+      const createDto: CreateSkillCategoryDto = { name: 'New L1' };
+      const createdCategory = {
+        id: 'new-id',
+        name: 'New L1',
+        parentId: null,
+        level: 1,
+        color: 'amber',
+        isSystemDefined: false,
+        isEditable: true,
+        displayOrder: 0,
+        parent: null,
+      };
+
+      prisma.skillCategory.create.mockResolvedValue(createdCategory);
+
+      await service.create(createDto);
+
+      expect(prisma.skillCategory.count).toHaveBeenCalled();
+      expect(prisma.skillCategory.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          color: 'amber', // index 3 in CATEGORY_COLORS
+        }),
+        include: { parent: true },
+      });
+    });
+
+    it('should throw BadRequestException when parent is at level 3', async () => {
+      const parentCategory = {
+        id: 'parent-id',
+        name: 'Level 3 Parent',
+        level: 3,
+      };
+
+      prisma.skillCategory.findUnique.mockResolvedValue(parentCategory);
+
+      const deepDto: CreateSkillCategoryDto = {
+        name: 'Too Deep',
+        parentId: 'parent-id',
+      };
+      await expect(service.create(deepDto)).rejects.toThrow(
+        BadRequestException,
+      );
+
+      prisma.skillCategory.findUnique.mockResolvedValue(parentCategory);
+      await expect(service.create(deepDto)).rejects.toThrow(
+        'Cannot create subcategory: maximum nesting level (3) reached',
+      );
+    });
+
+    it('should throw NotFoundException when parentId does not exist', async () => {
+      prisma.skillCategory.findUnique.mockResolvedValue(null);
+
+      const orphanDto: CreateSkillCategoryDto = {
+        name: 'Orphan',
+        parentId: 'non-existent-id',
+      };
+      await expect(service.create(orphanDto)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
+
+  describe('update', () => {
+    it('should update a non-system category successfully', async () => {
+      const existingCategory = {
+        id: 'cat-1',
+        name: 'Old Name',
+        level: 1,
+        isSystemDefined: false,
+        isEditable: true,
+      };
+      const updatedCategory = {
+        ...existingCategory,
+        name: 'New Name',
+        parent: null,
+        children: [],
+      };
+      const updateDto: UpdateSkillCategoryDto = { name: 'New Name' };
+
+      prisma.skillCategory.findUnique.mockResolvedValue(existingCategory);
+      prisma.skillCategory.update.mockResolvedValue(updatedCategory);
+
+      const result = await service.update('cat-1', updateDto);
+
+      expect(result).toEqual(updatedCategory);
+      expect(prisma.skillCategory.update).toHaveBeenCalledWith({
+        where: { id: 'cat-1' },
+        data: updateDto,
+        include: { parent: true, children: true },
+      });
+    });
+
+    it('should throw NotFoundException when category does not exist', async () => {
+      prisma.skillCategory.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.update('non-existent', { name: 'X' }),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should allow updating system-defined categories (ADR-012)', async () => {
+      prisma.skillCategory.findUnique.mockResolvedValue({
+        id: 'sys-1',
+        name: 'System',
+        level: 1,
+        isSystemDefined: true,
+        isEditable: true,
+      });
+      prisma.skillCategory.update.mockResolvedValue({
+        id: 'sys-1',
+        name: 'Renamed',
+        level: 1,
+        isSystemDefined: true,
+        isEditable: true,
+      });
+
+      const result = await service.update('sys-1', { name: 'Renamed' });
+      expect(result.name).toBe('Renamed');
+    });
+  });
+
+  describe('remove', () => {
+    it('should delete an empty, non-system category', async () => {
+      prisma.skillCategory.findUnique.mockResolvedValue({
+        id: 'cat-1',
+        name: 'Empty Category',
+        isSystemDefined: false,
+        children: [],
+        skills: [],
+      });
+      prisma.skillCategory.delete.mockResolvedValue({});
+
+      const result = await service.remove('cat-1');
+
+      expect(result).toEqual({
+        message: 'Category deleted successfully',
+        id: 'cat-1',
+      });
+      expect(prisma.skillCategory.delete).toHaveBeenCalledWith({
+        where: { id: 'cat-1' },
+      });
+    });
+
+    it('should allow deleting system-defined categories when empty (ADR-012)', async () => {
+      prisma.skillCategory.findUnique.mockResolvedValue({
+        id: 'sys-1',
+        name: 'System Cat',
+        isSystemDefined: true,
+        children: [],
+        skills: [],
+      });
+      prisma.skillCategory.delete.mockResolvedValue({});
+
+      const result = await service.remove('sys-1');
+
+      expect(result).toEqual({
+        message: 'Category deleted successfully',
+        id: 'sys-1',
+      });
+    });
+
+    it('should throw NotFoundException when category does not exist', async () => {
+      prisma.skillCategory.findUnique.mockResolvedValue(null);
+
+      await expect(service.remove('non-existent')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('should throw BadRequestException when category has children', async () => {
+      prisma.skillCategory.findUnique.mockResolvedValue({
+        id: 'parent-1',
+        name: 'Has Children',
+        isSystemDefined: false,
+        children: [{ id: 'child-1' }],
+        skills: [],
+      });
+
+      await expect(service.remove('parent-1')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should throw BadRequestException when category has skills', async () => {
+      prisma.skillCategory.findUnique.mockResolvedValue({
+        id: 'skilled-1',
+        name: 'Has Skills',
+        isSystemDefined: false,
+        children: [],
+        skills: [{ id: 'skill-1' }],
+      });
+
+      await expect(service.remove('skilled-1')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+  });
+});

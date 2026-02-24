@@ -40,10 +40,20 @@ export interface RecentAchievement {
   unlockedAt: string;
 }
 
+// Achieved Milestone
+export interface AchievedMilestone {
+  id: string;
+  title: string;
+  description: string;
+  icon?: string;
+  achievedAt: string;
+}
+
 // Employee Dashboard
 export interface EmployeeDashboard {
   badgeSummary: BadgeSummary;
   currentMilestone?: MilestoneProgress;
+  achievedMilestones?: AchievedMilestone[];
   recentBadges: BadgePreview[];
   recentAchievements?: RecentAchievement[];
 }

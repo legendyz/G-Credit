@@ -66,7 +66,6 @@ describe('Badge Issuance (e2e)', () => {
         .send({
           templateId: templateId,
           recipientId: recipientUser.user.id,
-          evidenceUrl: 'https://example.com/evidence.pdf',
           expiresIn: 365,
         })
         .expect(201)
@@ -158,7 +157,6 @@ describe('Badge Issuance (e2e)', () => {
         .send({
           templateId: templateId,
           recipientId: recipientUser.user.id,
-          evidenceUrl: 'https://example.com/evidence.pdf',
           expiresIn: 365,
         });
 
@@ -283,7 +281,6 @@ describe('Badge Issuance (e2e)', () => {
         .send({
           templateId: templateId,
           recipientId: recipientUser.user.id,
-          evidenceUrl: 'https://example.com/evidence1.pdf',
           expiresIn: 365,
         });
       const issue1Body = issueResponse1.body as {
@@ -297,7 +294,6 @@ describe('Badge Issuance (e2e)', () => {
         .send({
           templateId: templateId,
           recipientId: recipientUser.user.id,
-          evidenceUrl: 'https://example.com/evidence2.pdf',
           expiresIn: 365,
         });
 
@@ -572,130 +568,6 @@ describe('Badge Issuance (e2e)', () => {
     });
   });
 
-  describe('POST /api/badges/bulk', () => {
-    it('should issue badges from valid CSV', async () => {
-      // Create CSV content with 2 valid badges using actual test user emails
-      const csvContent = `recipientEmail,templateId,evidenceUrl,expiresIn
-${recipientUser.user.email},${templateId},https://example.com/evidence1.pdf,365
-${employeeUser.user.email},${templateId},https://example.com/evidence2.pdf,730`;
-
-      const response = await request(ctx.app.getHttpServer() as App)
-        .post('/api/badges/bulk')
-        .set('Authorization', `Bearer ${adminUser.token}`)
-        .attach('file', Buffer.from(csvContent), 'badges.csv')
-        .expect(201);
-
-      const body = response.body as {
-        total: number;
-        successful: number;
-        failed: number;
-        results: { success: boolean; badgeId?: string }[];
-      };
-      expect(body.total).toBe(2);
-      expect(body.successful).toBe(2);
-      expect(body.failed).toBe(0);
-      expect(body.results).toHaveLength(2);
-      expect(body.results[0].success).toBe(true);
-      expect(body.results[0].badgeId).toBeDefined();
-      expect(body.results[1].success).toBe(true);
-    });
-
-    it('should reject invalid CSV format (missing headers)', async () => {
-      const csvContent = `email,template
-test@example.com,${templateId}`;
-
-      return request(ctx.app.getHttpServer() as App)
-        .post('/api/badges/bulk')
-        .set('Authorization', `Bearer ${adminUser.token}`)
-        .attach('file', Buffer.from(csvContent), 'invalid.csv')
-        .expect(400)
-        .expect((res) => {
-          const body = res.body as { message: string };
-          expect(body.message).toContain('CSV parsing failed');
-          expect(body.message).toContain('Missing required headers');
-        });
-    });
-
-    it('should handle partial failures gracefully', async () => {
-      const csvContent = `recipientEmail,templateId,evidenceUrl
-${recipientUser.user.email},${templateId},https://example.com/valid.pdf
-nonexistent-${Date.now()}@test.com,${templateId},https://example.com/fail.pdf
-${employeeUser.user.email},00000000-0000-0000-0000-000000000000,https://example.com/badtemplate.pdf`;
-
-      const response = await request(ctx.app.getHttpServer() as App)
-        .post('/api/badges/bulk')
-        .set('Authorization', `Bearer ${adminUser.token}`)
-        .attach('file', Buffer.from(csvContent), 'mixed.csv')
-        .expect(201);
-
-      const body = response.body as {
-        total: number;
-        successful: number;
-        failed: number;
-        results: {
-          success: boolean;
-          email?: string;
-          badgeId?: string;
-          error?: string;
-        }[];
-      };
-      expect(body.total).toBe(3);
-      expect(body.successful).toBe(1);
-      expect(body.failed).toBe(2);
-
-      // Check successful row
-      const successRow = body.results.find(
-        (r: { success: boolean }) => r.success,
-      );
-      expect(successRow).toBeDefined();
-      expect(successRow!.email).toBe(recipientUser.user.email);
-      expect(successRow!.badgeId).toBeDefined();
-
-      // Check failed rows have error messages
-      const failedRows = body.results.filter(
-        (r: { success: boolean }) => !r.success,
-      );
-      expect(failedRows).toHaveLength(2);
-      expect(failedRows[0].error).toBeDefined();
-      expect(failedRows[1].error).toBeDefined();
-    });
-
-    it('should return 403 for non-authorized user (EMPLOYEE)', async () => {
-      const csvContent = `recipientEmail,templateId
-test@example.com,${templateId}`;
-
-      return request(ctx.app.getHttpServer() as App)
-        .post('/api/badges/bulk')
-        .set('Authorization', `Bearer ${employeeUser.token}`)
-        .attach('file', Buffer.from(csvContent), 'test.csv')
-        .expect(403);
-    });
-
-    it('should return 400 when no file is uploaded', async () => {
-      return request(ctx.app.getHttpServer() as App)
-        .post('/api/badges/bulk')
-        .set('Authorization', `Bearer ${adminUser.token}`)
-        .expect(400)
-        .expect((res) => {
-          const body = res.body as { message: string };
-          expect(body.message).toContain('CSV file is required');
-        });
-    });
-
-    it('should validate email format in CSV', async () => {
-      const csvContent = `recipientEmail,templateId
-invalid-email,${templateId}
-${recipientUser.user.email},${templateId}`;
-
-      const response = await request(ctx.app.getHttpServer() as App)
-        .post('/api/badges/bulk')
-        .set('Authorization', `Bearer ${adminUser.token}`)
-        .attach('file', Buffer.from(csvContent), 'invalid-email.csv')
-        .expect(400);
-
-      const body = response.body as { message: string };
-      expect(body.message).toContain('CSV parsing failed');
-      expect(body.message).toContain('Invalid email');
-    });
-  });
+  // Legacy POST /api/badges/bulk route removed — superseded by BulkIssuanceService
+  // See: test/bulk-issuance-*.e2e-spec.ts for new bulk issuance E2E tests
 });

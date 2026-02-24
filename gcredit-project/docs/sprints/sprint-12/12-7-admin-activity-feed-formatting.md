@@ -1,6 +1,6 @@
 # Story 12.7: Admin Activity Feed Formatting
 
-Status: backlog
+Status: done
 
 ## Story
 
@@ -17,27 +17,27 @@ So that I can quickly understand platform activity without parsing JSON strings.
 
 ## Acceptance Criteria
 
-1. [ ] Recent Activity on Admin Dashboard shows human-readable descriptions
-2. [ ] Covers all action types: ISSUED, CLAIMED, REVOKED, NOTIFICATION_SENT, CREATED, UPDATED
-3. [ ] Unknown action types gracefully degrade (show action name, not JSON)
-4. [ ] Original metadata preserved in audit log table (not modified)
-5. [ ] Unit tests for `formatActivityDescription()` function
-6. [ ] Analytics page `RecentActivityFeed` is not affected (uses different data source)
+1. [x] Recent Activity on Admin Dashboard shows human-readable descriptions
+2. [x] Covers all action types: ISSUED, CLAIMED, REVOKED, NOTIFICATION_SENT, CREATED, UPDATED
+3. [x] Unknown action types gracefully degrade (show action name, not JSON)
+4. [x] Original metadata preserved in audit log table (not modified)
+5. [x] Unit tests for `formatActivityDescription()` function
+6. [x] Analytics page `RecentActivityFeed` is not affected (uses different data source)
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create `formatActivityDescription()` in `dashboard.service.ts` (AC: #1, #2, #3)
-  - [ ] Switch statement by action type
-  - [ ] Extract key fields from metadata
-  - [ ] Description pattern: **"[User] [verbed] [object]"** e.g., "Jane Smith issued badge 'Cloud Expert' to john@example.com"
-  - [ ] Fallback: return action name for unknown types (not JSON)
-- [ ] Task 2: Apply formatter in `getAdminDashboard()` (AC: #1, #4)
-  - [ ] Replace `JSON.stringify(metadata)` with `formatActivityDescription(action, metadata)`
-  - [ ] Original metadata preserved in audit log table (not modified)
-- [ ] Task 3: Unit tests (AC: #5)
-  - [ ] Test each action type: ISSUED, CLAIMED, REVOKED, NOTIFICATION_SENT, CREATED, UPDATED
-  - [ ] Test unknown action fallback
-  - [ ] Test null metadata handling
+- [x] Task 1: Create `formatActivityDescription()` in `dashboard.service.ts` (AC: #1, #2, #3)
+  - [x] Switch statement by action type
+  - [x] Extract key fields from metadata
+  - [x] Description pattern: **"[User] [verbed] [object]"** e.g., "Jane Smith issued badge 'Cloud Expert' to john@example.com"
+  - [x] Fallback: return action name for unknown types (not JSON)
+- [x] Task 2: Apply formatter in `getAdminDashboard()` (AC: #1, #4)
+  - [x] Replace `JSON.stringify(metadata)` with `formatActivityDescription(action, metadata)`
+  - [x] Original metadata preserved in audit log table (not modified)
+- [x] Task 3: Unit tests (AC: #5)
+  - [x] Test each action type: ISSUED, CLAIMED, REVOKED, NOTIFICATION_SENT, CREATED, UPDATED
+  - [x] Test unknown action fallback
+  - [x] Test null metadata handling
 
 ## Dev Notes
 
@@ -58,5 +58,17 @@ So that I can quickly understand platform activity without parsing JSON strings.
 
 ## Dev Agent Record
 ### Agent Model Used
+N/A — Already implemented in Story 11.24
 ### Completion Notes
+All 6 ACs were already satisfied by Story 11.24 (AC-C1). `formatActivityDescription()` exists at `dashboard.service.ts` L31-76 with full switch/case coverage for all action types. 12 unit tests in `dashboard.service.spec.ts` L426-530. No additional code changes needed.
 ### File List
+No changes — pre-existing implementation:
+- `backend/src/dashboard/dashboard.service.ts` (L31-76: formatActivityDescription, L454: usage in getAdminDashboard)
+- `backend/src/dashboard/dashboard.service.spec.ts` (L426-530: 12 unit tests)
+
+## SM Acceptance Record
+- **Date**: 2026-02-22
+- **SM Agent**: Claude Opus 4.6 (Bob)
+- **Verdict**: ✅ **ACCEPTED** — Already fully implemented by Story 11.24
+- All 6 ACs verified against source code
+- 12 unit tests covering all action types + edge cases (null metadata, empty fields, unknown actions)

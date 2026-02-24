@@ -5,11 +5,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DashboardService } from './dashboard.service';
 import { PrismaService } from '../common/prisma.service';
+import { MilestonesService } from '../milestones/milestones.service';
+import { formatAuditDescription } from '../common/utils/audit-log.utils';
 import { BadgeStatus } from '@prisma/client';
 
 describe('DashboardService', () => {
   let service: DashboardService;
   let prisma: jest.Mocked<PrismaService>;
+  let milestonesService: jest.Mocked<MilestonesService>;
 
   const mockUser = {
     id: 'user-1',
@@ -79,6 +82,29 @@ describe('DashboardService', () => {
       $queryRaw: jest.fn().mockResolvedValue([1]),
     };
 
+    const mockMilestonesService = {
+      getNextMilestone: jest.fn().mockResolvedValue({
+        title: 'Badge Collector',
+        progress: 3,
+        target: 5,
+        percentage: 60,
+        icon: '🏆',
+      }),
+      getUserAchievements: jest.fn().mockResolvedValue([
+        {
+          id: 'ach-1',
+          achievedAt: new Date('2026-01-15'),
+          milestone: {
+            id: 'ms-1',
+            type: 'BADGE_COUNT',
+            title: 'First Badge',
+            description: 'Earned your first badge',
+            icon: '🏆',
+          },
+        },
+      ]),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DashboardService,
@@ -86,11 +112,16 @@ describe('DashboardService', () => {
           provide: PrismaService,
           useValue: mockPrisma,
         },
+        {
+          provide: MilestonesService,
+          useValue: mockMilestonesService,
+        },
       ],
     }).compile();
 
     service = module.get<DashboardService>(DashboardService);
     prisma = module.get(PrismaService);
+    milestonesService = module.get(MilestonesService);
   });
 
   describe('getEmployeeDashboard', () => {
@@ -112,7 +143,7 @@ describe('DashboardService', () => {
       expect(result.badgeSummary.pendingCount).toBe(2);
     });
 
-    it('should return milestone progress', async () => {
+    it('should return milestone progress from MilestonesService', async () => {
       // Arrange
       (prisma.badge.count as jest.Mock)
         .mockResolvedValueOnce(7) // totalBadges
@@ -124,9 +155,11 @@ describe('DashboardService', () => {
       const result = await service.getEmployeeDashboard('user-1');
 
       // Assert
+      expect(milestonesService.getNextMilestone).toHaveBeenCalledWith('user-1');
       expect(result.currentMilestone).toBeDefined();
       expect(result.currentMilestone?.title).toContain('Badge Collector');
-      expect(result.currentMilestone?.progress).toBeLessThanOrEqual(5);
+      expect(result.currentMilestone?.progress).toBe(3);
+      expect(result.currentMilestone?.target).toBe(5);
     });
 
     it('should return recent badges', async () => {
@@ -153,7 +186,21 @@ describe('DashboardService', () => {
       // Assert
       expect(result.badgeSummary.total).toBe(0);
       expect(result.recentBadges).toHaveLength(0);
-      expect(result.currentMilestone?.percentage).toBe(0);
+      expect(result.currentMilestone?.percentage).toBe(60);
+    });
+
+    it('should show all-achieved fallback when no next milestone', async () => {
+      // Arrange
+      (prisma.badge.count as jest.Mock).mockResolvedValue(10);
+      (prisma.badge.findMany as jest.Mock).mockResolvedValue([]);
+      milestonesService.getNextMilestone.mockResolvedValueOnce(null);
+
+      // Act
+      const result = await service.getEmployeeDashboard('user-1');
+
+      // Assert
+      expect(result.currentMilestone?.title).toBe('All milestones achieved!');
+      expect(result.currentMilestone?.percentage).toBe(100);
     });
   });
 
@@ -271,12 +318,8 @@ describe('DashboardService', () => {
       expect(result.revocationAlerts[0].reason).toBe('Policy violation');
     });
 
-    it('should handle manager without department', async () => {
-      // Arrange
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-        ...mockUser,
-        department: null,
-      });
+    it('should return empty team when manager has no direct reports (Story 12.3a)', async () => {
+      // Arrange — no findUnique needed; managerId-based scoping
       (prisma.user.findMany as jest.Mock).mockResolvedValue([]);
 
       // Act
@@ -285,6 +328,29 @@ describe('DashboardService', () => {
       // Assert
       expect(result.teamInsights.teamMembersCount).toBe(0);
       expect(result.revocationAlerts).toHaveLength(0);
+    });
+
+    it('should query by managerId for direct reports (Story 12.3a)', async () => {
+      // Arrange
+      (prisma.user.findMany as jest.Mock).mockResolvedValue([mockUser]);
+      (prisma.badge.count as jest.Mock).mockResolvedValue(3);
+      (prisma.badge.groupBy as jest.Mock).mockResolvedValue([]);
+      (prisma.badge.findMany as jest.Mock).mockResolvedValue([]);
+
+      // Act
+      await service.getManagerDashboard('manager-1');
+
+      // Assert — verify managerId-based query
+      /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+      expect(prisma.user.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            managerId: 'manager-1',
+            isActive: true,
+          }),
+        }),
+      );
+      /* eslint-enable @typescript-eslint/no-unsafe-assignment */
     });
   });
 
@@ -332,7 +398,7 @@ describe('DashboardService', () => {
       // Assert
       expect(result.recentActivity).toHaveLength(1);
       expect(result.recentActivity[0].actorName).toBe('Admin User');
-      expect(result.recentActivity[0].type).toBe('ISSUED');
+      expect(result.recentActivity[0].type).toBe('BADGE_ISSUED');
     });
 
     it('should handle empty audit logs', async () => {
@@ -371,18 +437,27 @@ describe('DashboardService', () => {
     });
   });
 
-  // Story 11.24 AC-C1: formatActivityDescription tests
-  describe('formatActivityDescription', () => {
+  // Story 11.24 AC-C1: formatAuditDescription tests (shared utility)
+  describe('formatAuditDescription', () => {
     it('should format ISSUED action with badge name and recipient', () => {
-      const result = DashboardService.formatActivityDescription('ISSUED', {
+      const result = formatAuditDescription('ISSUED', {
         badgeName: 'Cloud Expert',
         recipientEmail: 'user@test.com',
       });
       expect(result).toBe('Badge "Cloud Expert" issued to user@test.com');
     });
 
-    it('should format CLAIMED action with status change', () => {
-      const result = DashboardService.formatActivityDescription('CLAIMED', {
+    it('should format CLAIMED action with template name', () => {
+      const result = formatAuditDescription('CLAIMED', {
+        badgeName: 'Cloud Expert',
+        oldStatus: 'ISSUED',
+        newStatus: 'CLAIMED',
+      });
+      expect(result).toBe('Badge "Cloud Expert" claimed');
+    });
+
+    it('should format CLAIMED action with status change when no name', () => {
+      const result = formatAuditDescription('CLAIMED', {
         oldStatus: 'ISSUED',
         newStatus: 'CLAIMED',
       });
@@ -390,7 +465,7 @@ describe('DashboardService', () => {
     });
 
     it('should format REVOKED action with reason', () => {
-      const result = DashboardService.formatActivityDescription('REVOKED', {
+      const result = formatAuditDescription('REVOKED', {
         badgeName: 'Cloud Expert',
         reason: 'Employee left',
       });
@@ -398,69 +473,63 @@ describe('DashboardService', () => {
     });
 
     it('should format NOTIFICATION_SENT action', () => {
-      const result = DashboardService.formatActivityDescription(
-        'NOTIFICATION_SENT',
-        {
-          notificationType: 'Email',
-          recipientEmail: 'user@test.com',
-        },
-      );
+      const result = formatAuditDescription('NOTIFICATION_SENT', {
+        notificationType: 'Email',
+        recipientEmail: 'user@test.com',
+      });
       expect(result).toBe('Email notification sent to user@test.com');
     });
 
     it('should format CREATED action with template name', () => {
-      const result = DashboardService.formatActivityDescription('CREATED', {
+      const result = formatAuditDescription('CREATED', {
         templateName: 'New Template',
       });
       expect(result).toBe('Template "New Template" created');
     });
 
     it('should format UPDATED action with template name', () => {
-      const result = DashboardService.formatActivityDescription('UPDATED', {
+      const result = formatAuditDescription('UPDATED', {
         templateName: 'Updated Template',
       });
       expect(result).toBe('Template "Updated Template" updated');
     });
 
     it('should return action string for unknown action types', () => {
-      const result = DashboardService.formatActivityDescription(
-        'CUSTOM_ACTION',
-        { foo: 'bar' },
-      );
+      const result = formatAuditDescription('CUSTOM_ACTION', { foo: 'bar' });
       expect(result).toBe('CUSTOM_ACTION');
     });
 
     it('should return action string when metadata is null', () => {
-      const result = DashboardService.formatActivityDescription('ISSUED', null);
+      const result = formatAuditDescription('ISSUED', null);
       expect(result).toBe('ISSUED');
     });
 
     it('should fall back to raw action when critical metadata fields are empty', () => {
-      const result = DashboardService.formatActivityDescription('ISSUED', {});
+      const result = formatAuditDescription('ISSUED', {});
       expect(result).toBe('ISSUED');
     });
 
     it('should fall back to raw action when only some ISSUED fields present', () => {
-      const result = DashboardService.formatActivityDescription('ISSUED', {
+      const result = formatAuditDescription('ISSUED', {
         badgeName: 'Cloud Expert',
       });
-      expect(result).toBe('ISSUED');
+      expect(result).toBe('Badge "Cloud Expert" issued');
     });
 
     it('should fall back to raw action when REVOKED has no badgeName', () => {
-      const result = DashboardService.formatActivityDescription('REVOKED', {
+      const result = formatAuditDescription('REVOKED', {
         reason: 'Policy violation',
       });
       expect(result).toBe('REVOKED');
     });
 
     it('should show placeholder for missing CLAIMED statuses', () => {
-      const result = DashboardService.formatActivityDescription('CLAIMED', {});
+      const result = formatAuditDescription('CLAIMED', {});
       expect(result).toBe('Badge status changed: ? → ?');
     });
 
     it('should show fallback reason when REVOKED has name but no reason', () => {
-      const result = DashboardService.formatActivityDescription('REVOKED', {
+      const result = formatAuditDescription('REVOKED', {
         badgeName: 'Cloud Expert',
       });
       expect(result).toBe('Revoked "Cloud Expert" — no reason given');

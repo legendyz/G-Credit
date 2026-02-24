@@ -10,11 +10,11 @@ import {
   IsString,
   IsInt,
   IsEnum,
-  IsBoolean,
+  IsIn,
   Min,
   Max,
 } from 'class-validator';
-import { Type, Transform } from 'class-transformer';
+import { Type } from 'class-transformer';
 import { UserRole } from '@prisma/client';
 
 export class AdminUsersQueryDto {
@@ -58,12 +58,20 @@ export class AdminUsersQueryDto {
   roleFilter?: UserRole;
 
   @ApiPropertyOptional({
-    description: 'Filter by active status',
+    description: 'Filter by status',
+    enum: ['ACTIVE', 'LOCKED', 'INACTIVE'],
   })
   @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
-  @IsBoolean()
-  statusFilter?: boolean;
+  @IsIn(['ACTIVE', 'LOCKED', 'INACTIVE'])
+  statusFilter?: 'ACTIVE' | 'LOCKED' | 'INACTIVE';
+
+  @ApiPropertyOptional({
+    description: 'Filter by user source',
+    enum: ['M365', 'LOCAL'],
+  })
+  @IsOptional()
+  @IsIn(['M365', 'LOCAL'])
+  sourceFilter?: 'M365' | 'LOCAL';
 
   @ApiPropertyOptional({
     description: 'Sort field',
@@ -75,6 +83,8 @@ export class AdminUsersQueryDto {
       'status',
       'lastLogin',
       'createdAt',
+      'source',
+      'badgeCount',
     ],
     default: 'name',
   })
@@ -87,7 +97,9 @@ export class AdminUsersQueryDto {
     | 'department'
     | 'status'
     | 'lastLogin'
-    | 'createdAt' = 'name';
+    | 'createdAt'
+    | 'source'
+    | 'badgeCount' = 'name';
 
   @ApiPropertyOptional({
     description: 'Sort order',

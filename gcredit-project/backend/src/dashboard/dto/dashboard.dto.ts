@@ -90,6 +90,23 @@ export class MilestoneProgressDto {
   icon?: string;
 }
 
+export class AchievedMilestoneDto {
+  @ApiProperty({ description: 'Achievement record ID' })
+  id: string;
+
+  @ApiProperty({ description: 'Milestone title', example: 'First Badge' })
+  title: string;
+
+  @ApiProperty({ description: 'Milestone description' })
+  description: string;
+
+  @ApiPropertyOptional({ description: 'Milestone icon', example: '🏆' })
+  icon?: string;
+
+  @ApiProperty({ description: 'When the milestone was achieved' })
+  achievedAt: Date;
+}
+
 export class EmployeeDashboardDto {
   @ApiProperty({
     description: 'Badge summary statistics',
@@ -102,6 +119,12 @@ export class EmployeeDashboardDto {
     type: MilestoneProgressDto,
   })
   currentMilestone?: MilestoneProgressDto;
+
+  @ApiProperty({
+    description: 'Milestones the user has already achieved (active only)',
+    type: [AchievedMilestoneDto],
+  })
+  achievedMilestones: AchievedMilestoneDto[];
 
   @ApiProperty({
     description: 'Recent badge activity',
@@ -256,8 +279,11 @@ export class AdminActivityDto {
       'BADGE_ISSUED',
       'BADGE_CLAIMED',
       'BADGE_REVOKED',
-      'USER_CREATED',
+      'BADGE_SHARED',
       'TEMPLATE_CREATED',
+      'TEMPLATE_UPDATED',
+      'USER_REGISTERED',
+      'USER_UPDATED',
     ],
   })
   type: string;

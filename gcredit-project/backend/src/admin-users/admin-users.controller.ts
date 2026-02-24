@@ -13,7 +13,9 @@
 import {
   Controller,
   Get,
+  Post,
   Patch,
+  Delete,
   Param,
   Query,
   Body,
@@ -43,11 +45,14 @@ import {
   RoleUpdateResponse,
   StatusUpdateResponse,
   DepartmentUpdateResponse,
+  ManagerUpdateResponse,
 } from './admin-users.service';
 import { AdminUsersQueryDto } from './dto/admin-users-query.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import { UpdateUserDepartmentDto } from './dto/update-user-department.dto';
+import { UpdateUserManagerDto } from './dto/update-user-manager.dto';
 import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
 
 @ApiTags('admin-users')
@@ -94,13 +99,23 @@ export class AdminUsersController {
   @ApiQuery({
     name: 'statusFilter',
     required: false,
-    type: Boolean,
-    description: 'Filter by active status',
+    enum: ['ACTIVE', 'LOCKED', 'INACTIVE'],
+    description: 'Filter by status (ACTIVE, LOCKED, or INACTIVE)',
   })
   @ApiQuery({
     name: 'sortBy',
     required: false,
-    enum: ['name', 'email', 'role', 'lastLogin', 'createdAt'],
+    enum: [
+      'name',
+      'email',
+      'role',
+      'department',
+      'status',
+      'lastLogin',
+      'createdAt',
+      'source',
+      'badgeCount',
+    ],
     description: 'Sort field',
   })
   @ApiQuery({
@@ -152,6 +167,29 @@ export class AdminUsersController {
   ): Promise<UserListItem> {
     this.logger.log(`Admin user:${req.user.userId} retrieving user ${id}`);
     return this.adminUsersService.findOne(id);
+  }
+
+  /**
+   * 12.3b AC #18: Create a local user
+   * POST /api/admin/users
+   */
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a local user' })
+  @ApiResponse({ status: 201, description: 'User created successfully' })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid input or ADMIN role',
+  })
+  @ApiResponse({ status: 409, description: 'Email already exists' })
+  async createUser(
+    @Body() dto: CreateUserDto,
+    @Request() req: RequestWithUser,
+  ): Promise<UserListItem> {
+    this.logger.log(
+      `Admin user:${req.user.userId} creating local user ${dto.email}`,
+    );
+    return this.adminUsersService.createUser(dto, req.user.userId);
   }
 
   /**
@@ -241,5 +279,54 @@ export class AdminUsersController {
       `Admin user:${req.user.userId} updating department for user ${id} to "${dto.department}"`,
     );
     return this.adminUsersService.updateDepartment(id, dto, req.user.userId);
+  }
+
+  /**
+   * Update user's manager assignment
+   * PATCH /api/admin/users/:id/manager
+   */
+  @Patch(':id/manager')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update user manager assignment' })
+  @ApiParam({ name: 'id', type: String, description: 'User ID (UUID)' })
+  @ApiResponse({
+    status: 200,
+    description: 'User manager updated successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid manager or circular hierarchy',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async updateManager(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateUserManagerDto,
+    @Request() req: RequestWithUser,
+  ): Promise<ManagerUpdateResponse> {
+    this.logger.log(
+      `Admin user:${req.user.userId} updating manager for user ${id} to ${dto.managerId || '(none)'}`,
+    );
+    return this.adminUsersService.updateManager(id, dto, req.user.userId);
+  }
+
+  /**
+   * 12.3b AC #34: Delete a local user
+   * DELETE /api/admin/users/:id
+   */
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Delete a local user' })
+  @ApiParam({ name: 'id', type: String, description: 'User ID (UUID)' })
+  @ApiResponse({ status: 200, description: 'User deleted' })
+  @ApiResponse({ status: 400, description: 'Cannot delete M365 user or self' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async deleteUser(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Request() req: RequestWithUser,
+  ): Promise<{ message: string }> {
+    this.logger.log(`Admin user:${req.user.userId} deleting user ${id}`);
+    return this.adminUsersService.deleteUser(id, req.user.userId);
   }
 }

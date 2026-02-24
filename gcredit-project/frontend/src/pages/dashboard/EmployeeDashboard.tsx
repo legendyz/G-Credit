@@ -142,7 +142,7 @@ export const EmployeeDashboard: React.FC = () => {
     return <NoBadgesState onExplore={() => navigate('/wallet')} />;
   }
 
-  const { badgeSummary, currentMilestone, recentBadges } = data;
+  const { badgeSummary, currentMilestone, recentBadges, achievedMilestones } = data;
 
   return (
     <PageTemplate
@@ -248,6 +248,29 @@ export const EmployeeDashboard: React.FC = () => {
                   ? '🎉 Milestone completed!'
                   : `${currentMilestone.target - currentMilestone.progress} more to reach this milestone`}
               </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Achieved Milestones */}
+      {achievedMilestones && achievedMilestones.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">🎖️ Achieved Milestones</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-3">
+              {achievedMilestones.map((m) => (
+                <div
+                  key={m.id}
+                  className="flex items-center gap-2 rounded-full bg-green-50 border border-green-200 px-3 py-1.5"
+                  title={m.description}
+                >
+                  <span className="text-lg">{m.icon || '🏅'}</span>
+                  <span className="text-sm font-medium text-green-800">{m.title}</span>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

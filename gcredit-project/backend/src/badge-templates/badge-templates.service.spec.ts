@@ -3,7 +3,11 @@ import { BadgeTemplatesService } from './badge-templates.service';
 import { PrismaService } from '../common/prisma.service';
 import { BlobStorageService } from '../common/services/blob-storage.service';
 import { IssuanceCriteriaValidatorService } from '../common/services/issuance-criteria-validator.service';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { TemplateStatus } from '@prisma/client';
 import { CreateBadgeTemplateDto } from './dto/badge-template.dto';
 import {
@@ -37,6 +41,7 @@ describe('BadgeTemplatesService', () => {
       count: jest.Mock;
     };
     skill: { findMany: jest.Mock };
+    badge: { count: jest.Mock; groupBy: jest.Mock };
   };
   let blobStorage: {
     uploadImage: jest.Mock;
@@ -91,6 +96,7 @@ describe('BadgeTemplatesService', () => {
               count: jest.fn(),
             },
             skill: { findMany: jest.fn() },
+            badge: { count: jest.fn(), groupBy: jest.fn() },
           },
         },
         {
@@ -264,13 +270,24 @@ describe('BadgeTemplatesService', () => {
 
   // ==================== findAll ====================
   describe('findAll', () => {
+    const mockTemplateWithCount = {
+      ...mockTemplate,
+      _count: { badges: 0 },
+    };
+
+    beforeEach(() => {
+      // Default: no pending badges for any template
+      prisma.badge.groupBy.mockResolvedValue([]);
+    });
+
     it('should return paginated results with default params', async () => {
-      prisma.badgeTemplate.findMany.mockResolvedValue([mockTemplate]);
+      prisma.badgeTemplate.findMany.mockResolvedValue([mockTemplateWithCount]);
       prisma.badgeTemplate.count.mockResolvedValue(1);
 
       const result = await service.findAll({ page: 1, limit: 10 });
 
       expect(result.data).toHaveLength(1);
+      expect(result.data[0].badgeStats).toEqual({ total: 0, pending: 0 });
       expect(result.meta).toEqual({
         page: 1,
         limit: 10,
@@ -370,7 +387,7 @@ describe('BadgeTemplatesService', () => {
 
     it('should calculate pagination meta correctly', async () => {
       prisma.badgeTemplate.findMany.mockResolvedValue(
-        Array(10).fill(mockTemplate),
+        Array(10).fill(mockTemplateWithCount),
       );
       prisma.badgeTemplate.count.mockResolvedValue(25);
 
@@ -395,6 +412,31 @@ describe('BadgeTemplatesService', () => {
       expect(result.data).toEqual([]);
       expect(result.meta.total).toBe(0);
       expect(result.meta.totalPages).toBe(0);
+    });
+
+    it('should include badgeStats with pending count', async () => {
+      const templateWithBadges = {
+        ...mockTemplate,
+        _count: { badges: 5 },
+      };
+      prisma.badgeTemplate.findMany.mockResolvedValue([templateWithBadges]);
+      prisma.badgeTemplate.count.mockResolvedValue(1);
+      prisma.badge.groupBy.mockResolvedValue([
+        { templateId: 'tmpl-1', _count: 2 },
+      ]);
+
+      const result = await service.findAll({ page: 1, limit: 10 });
+
+      expect(result.data[0].badgeStats).toEqual({ total: 5, pending: 2 });
+      expect(prisma.badge.groupBy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          by: ['templateId'],
+          where: {
+            templateId: { in: ['tmpl-1'] },
+            status: 'PENDING',
+          },
+        }),
+      );
     });
 
     it('should apply sort order', async () => {
@@ -668,6 +710,7 @@ describe('BadgeTemplatesService', () => {
   describe('remove', () => {
     it('should delete a template without image', async () => {
       prisma.badgeTemplate.findUnique.mockResolvedValue(mockTemplate);
+      prisma.badge.count.mockResolvedValue(0);
       prisma.badgeTemplate.delete.mockResolvedValue(mockTemplate);
 
       const result = await service.remove('tmpl-1');
@@ -677,17 +720,20 @@ describe('BadgeTemplatesService', () => {
       expect(blobStorage.deleteImage).not.toHaveBeenCalled();
     });
 
-    it('should delete template and its image', async () => {
+    it('should delete template and its image after successful deletion', async () => {
       const withImage = {
         ...mockTemplate,
         imageUrl: 'https://blob.test/img.png',
       };
       prisma.badgeTemplate.findUnique.mockResolvedValue(withImage);
+      prisma.badge.count.mockResolvedValue(0);
       blobStorage.deleteImage.mockResolvedValue(undefined);
       prisma.badgeTemplate.delete.mockResolvedValue(withImage);
 
       await service.remove('tmpl-1');
 
+      // Image deletion happens AFTER template deletion
+      expect(prisma.badgeTemplate.delete).toHaveBeenCalled();
       expect(blobStorage.deleteImage).toHaveBeenCalledWith(
         'https://blob.test/img.png',
       );
@@ -699,11 +745,25 @@ describe('BadgeTemplatesService', () => {
         imageUrl: 'https://blob.test/img.png',
       };
       prisma.badgeTemplate.findUnique.mockResolvedValue(withImage);
+      prisma.badge.count.mockResolvedValue(0);
       blobStorage.deleteImage.mockRejectedValue(new Error('Delete failed'));
       prisma.badgeTemplate.delete.mockResolvedValue(withImage);
 
       // Should not throw
       await expect(service.remove('tmpl-1')).resolves.toBeDefined();
+    });
+
+    it('should throw ConflictException when badges exist', async () => {
+      prisma.badgeTemplate.findUnique.mockResolvedValue(mockTemplate);
+      prisma.badge.count.mockResolvedValue(3);
+
+      await expect(service.remove('tmpl-1')).rejects.toThrow(ConflictException);
+      await expect(service.remove('tmpl-1')).rejects.toThrow(
+        /3 badge\(s\) have been issued/,
+      );
+      // Must NOT attempt to delete template or image
+      expect(prisma.badgeTemplate.delete).not.toHaveBeenCalled();
+      expect(blobStorage.deleteImage).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException when template not found', async () => {

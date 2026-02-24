@@ -40,7 +40,6 @@ export interface PreviewRow {
   rowNumber: number;
   badgeTemplateId: string;
   recipientEmail: string;
-  evidenceUrl?: string;
   isValid: boolean;
   error?: string;
 }
@@ -131,7 +130,6 @@ export class BulkIssuanceService {
       '# Field Specifications:',
       '# badgeTemplateId       - Can be template name (e.g., "Leadership Excellence") or UUID (REQUIRED)',
       '# recipientEmail        - Must match registered user email addresses (REQUIRED)',
-      '# evidenceUrl            - (Optional) Link to supporting documentation, HTTP/HTTPS format',
       '# narrativeJustification - (Optional) Reason for awarding this badge, max 500 characters',
       '#',
       '# Tips:',
@@ -140,13 +138,12 @@ export class BulkIssuanceService {
       '# - recipientEmail must match existing user accounts',
     ].join('\n');
 
-    const headers =
-      'badgeTemplateId,recipientEmail,evidenceUrl,narrativeJustification';
+    const headers = 'badgeTemplateId,recipientEmail,narrativeJustification';
 
     const templateIdValue = templateId || 'EXAMPLE-DELETE-THIS-ROW';
     const exampleRows = [
-      `${templateIdValue},example-john@company.com,https://example.com/evidence1,"DELETE THIS EXAMPLE ROW BEFORE UPLOAD"`,
-      `${templateIdValue},example-jane@company.com,,"DELETE THIS EXAMPLE ROW BEFORE UPLOAD"`,
+      `${templateIdValue},example-john@company.com,"DELETE THIS EXAMPLE ROW BEFORE UPLOAD"`,
+      `${templateIdValue},example-jane@company.com,"DELETE THIS EXAMPLE ROW BEFORE UPLOAD"`,
     ].join('\n');
 
     return headerComments + '\n' + headers + '\n' + exampleRows;
@@ -292,9 +289,6 @@ export class BulkIssuanceService {
           row.badgeTemplateId = this.csvValidation.sanitizeTextInput(
             row.badgeTemplateId || '',
           );
-          row.evidenceUrl = this.csvValidation.sanitizeTextInput(
-            row.evidenceUrl || '',
-          );
 
           // Validate within transaction context (ARCH-C4)
           const rowValidation =
@@ -312,7 +306,6 @@ export class BulkIssuanceService {
               rowNumber,
               badgeTemplateId: row.badgeTemplateId,
               recipientEmail: row.recipientEmail,
-              evidenceUrl: row.evidenceUrl,
               isValid: false,
               error: errorMsg,
             });
@@ -322,7 +315,6 @@ export class BulkIssuanceService {
               rowNumber,
               badgeTemplateId: row.badgeTemplateId,
               recipientEmail: row.recipientEmail,
-              evidenceUrl: row.evidenceUrl,
               isValid: true,
             });
           }
@@ -556,6 +548,7 @@ export class BulkIssuanceService {
       status: 'success' | 'failed';
       error?: string;
       emailError?: string;
+      badgeId?: string;
     }>;
   }> {
     const session = await this.loadSession(sessionId, currentUserId);
@@ -569,7 +562,6 @@ export class BulkIssuanceService {
     const sessionValidRows = session.validRows as unknown as Array<{
       badgeTemplateId: string;
       recipientEmail: string;
-      evidenceUrl?: string;
     }>;
 
     // MVP limit: 20 badges max
@@ -596,6 +588,7 @@ export class BulkIssuanceService {
       status: 'success' | 'failed';
       error?: string;
       emailError?: string;
+      badgeId?: string;
     }> = [];
     let processed = 0;
     let failed = 0;
@@ -634,7 +627,6 @@ export class BulkIssuanceService {
           {
             templateId: template.id,
             recipientId: recipient.id,
-            evidenceUrl: row.evidenceUrl,
           },
           currentUserId,
         );
@@ -645,6 +637,7 @@ export class BulkIssuanceService {
           recipientEmail: row.recipientEmail,
           badgeName: template.name,
           status: 'success',
+          badgeId: issueResult.id,
           ...(issueResult.emailError
             ? { emailError: issueResult.emailError }
             : {}),

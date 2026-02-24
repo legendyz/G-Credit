@@ -4,6 +4,7 @@ import { Calendar } from 'lucide-react';
 interface MilestoneTimelineCardProps {
   milestone: {
     milestoneId: string;
+    icon?: string;
     title: string;
     description: string;
     achievedAt: string;
@@ -26,11 +27,12 @@ export function MilestoneTimelineCard({ milestone }: MilestoneTimelineCardProps)
         <div className="flex items-start gap-3">
           <div className="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
             <span className="text-2xl" role="img" aria-label="Milestone">
-              {milestone.title.charAt(0)}
+              {milestone.icon || '🏅'}
             </span>
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-gray-900 text-sm md:text-base truncate">
+              {milestone.icon ? `${milestone.icon} ` : ''}
               {milestone.title}
             </h3>
             <p className="text-gray-600 text-xs md:text-sm mt-1">{milestone.description}</p>

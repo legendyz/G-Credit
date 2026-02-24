@@ -14,7 +14,6 @@ describe('BadgeIssuanceController', () => {
 
   const mockBadgeIssuanceService = {
     issueBadge: jest.fn(),
-    bulkIssueBadges: jest.fn(),
     claimBadge: jest.fn(),
     claimBadgeById: jest.fn(),
     findAll: jest.fn(),
@@ -160,15 +159,11 @@ describe('BadgeIssuanceController', () => {
         expect(roles).toHaveLength(2);
       });
 
-      it('POST /bulk should require ADMIN or ISSUER', () => {
-        const roles = Reflect.getMetadata(
-          ROLES_KEY,
-          proto.bulkIssueBadges,
-        ) as string[];
-        expect(roles).toEqual(
-          expect.arrayContaining([UserRole.ADMIN, UserRole.ISSUER]),
-        );
-        expect(roles).toHaveLength(2);
+      it('POST /bulk route removed — superseded by BulkIssuanceService', () => {
+        // Legacy bulkIssueBadges route has been removed.
+        // Bulk issuance now handled by POST /api/bulk-issuance/upload
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect((proto as any).bulkIssueBadges).toBeUndefined();
       });
 
       it('POST /:id/revoke should require ADMIN, ISSUER, or MANAGER', () => {

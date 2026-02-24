@@ -12,6 +12,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { BadgeManagementPage } from './BadgeManagementPage';
 import * as badgesApi from '@/lib/badgesApi';
+import * as evidenceApi from '@/lib/evidenceApi';
 import type { Badge, BadgeListResponse } from '@/lib/badgesApi';
 
 // Mock the badgesApi module
@@ -22,6 +23,15 @@ vi.mock('@/lib/badgesApi', async () => {
     getAllBadges: vi.fn(),
     getIssuedBadges: vi.fn(),
     revokeBadge: vi.fn(),
+  };
+});
+
+// Mock evidenceApi for evidence expansion tests
+vi.mock('@/lib/evidenceApi', async () => {
+  const actual = await vi.importActual('@/lib/evidenceApi');
+  return {
+    ...actual,
+    listEvidence: vi.fn(),
   };
 });
 
@@ -473,6 +483,114 @@ describe('BadgeManagementPage', () => {
         expect(
           screen.getByRole('button', { name: /Revoke badge Excellence Award for John Doe/i })
         ).toBeInTheDocument();
+      });
+    });
+  });
+
+  // Story 12.6 code review fix: Evidence click-to-view expansion
+  describe('Evidence Column Expansion', () => {
+    const badgeWithEvidence = createMockBadge({
+      id: 'badge-ev-1',
+      status: 'CLAIMED',
+      evidenceCount: 3,
+    });
+
+    const evidenceResponse: BadgeListResponse = {
+      data: [badgeWithEvidence],
+      meta: {
+        total: 1,
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      },
+    };
+
+    it('renders evidence count as clickable button when count > 0', async () => {
+      vi.mocked(badgesApi.getAllBadges).mockResolvedValue(evidenceResponse);
+
+      render(<BadgeManagementPage userRole="ADMIN" />, { wrapper: createWrapper() });
+
+      // Wait for badge data to render
+      await waitFor(() => {
+        expect(screen.getAllByText('Excellence Award').length).toBeGreaterThanOrEqual(1);
+      });
+
+      const btns = screen.getAllByRole('button', { name: /view evidence/i });
+      expect(btns.length).toBeGreaterThanOrEqual(1);
+      expect(btns[0]).toHaveTextContent('3');
+    });
+
+    it('expands evidence list on click and fetches evidence', async () => {
+      vi.mocked(badgesApi.getAllBadges).mockResolvedValue(evidenceResponse);
+      vi.mocked(evidenceApi.listEvidence).mockResolvedValue([
+        {
+          id: 'ev-1',
+          type: 'FILE',
+          name: 'report.pdf',
+          url: 'https://blob.test/report.pdf',
+          size: 1024,
+          mimeType: 'application/pdf',
+          uploadedAt: '2026-01-20T00:00:00Z',
+        },
+        {
+          id: 'ev-2',
+          type: 'URL',
+          name: 'https://example.com/proof',
+          url: 'https://example.com/proof',
+          uploadedAt: '2026-01-20T00:00:00Z',
+        },
+      ]);
+
+      render(<BadgeManagementPage userRole="ADMIN" />, { wrapper: createWrapper() });
+
+      await waitFor(() => {
+        expect(screen.getAllByText('Excellence Award').length).toBeGreaterThanOrEqual(1);
+      });
+
+      const btns = screen.getAllByRole('button', { name: /view evidence/i });
+      await userEvent.click(btns[btns.length - 1]);
+
+      await waitFor(() => {
+        expect(evidenceApi.listEvidence).toHaveBeenCalledWith('badge-ev-1');
+        expect(screen.getAllByText('report.pdf').length).toBeGreaterThanOrEqual(1);
+      });
+    });
+
+    it('collapses evidence list on second click', async () => {
+      vi.mocked(badgesApi.getAllBadges).mockResolvedValue(evidenceResponse);
+      vi.mocked(evidenceApi.listEvidence).mockResolvedValue([
+        {
+          id: 'ev-1',
+          type: 'FILE',
+          name: 'report.pdf',
+          url: 'https://blob.test/report.pdf',
+          size: 1024,
+          mimeType: 'application/pdf',
+          uploadedAt: '2026-01-20T00:00:00Z',
+        },
+      ]);
+
+      render(<BadgeManagementPage userRole="ADMIN" />, { wrapper: createWrapper() });
+
+      await waitFor(() => {
+        expect(screen.getAllByText('Excellence Award').length).toBeGreaterThanOrEqual(1);
+      });
+
+      const viewBtns = screen.getAllByRole('button', { name: /view evidence/i });
+      await userEvent.click(viewBtns[viewBtns.length - 1]);
+
+      await waitFor(() => {
+        expect(screen.getAllByText('report.pdf').length).toBeGreaterThanOrEqual(1);
+      });
+
+      // Second click collapses
+      const hideBtns = screen.getAllByRole('button', { name: /hide evidence/i });
+      await userEvent.click(hideBtns[hideBtns.length - 1]);
+
+      await waitFor(() => {
+        expect(screen.queryByText('report.pdf')).not.toBeInTheDocument();
       });
     });
   });

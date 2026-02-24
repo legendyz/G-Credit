@@ -67,8 +67,13 @@ export class BadgeVerificationService {
           select: {
             id: true,
             fileName: true,
+            originalName: true,
+            fileSize: true,
+            mimeType: true,
             blobUrl: true,
             uploadedAt: true,
+            type: true,
+            sourceUrl: true,
           },
         },
       },
@@ -128,10 +133,15 @@ export class BadgeVerificationService {
     // Format response for frontend
 
     // Story 11.18: Resolve skill UUIDs to display names
+    // Story 12.2: Include category color for colored skill tags
     const skills = badge.template.skillIds?.length
       ? await this.prisma.skill.findMany({
           where: { id: { in: badge.template.skillIds } },
-          select: { id: true, name: true },
+          select: {
+            id: true,
+            name: true,
+            category: { select: { color: true } },
+          },
         })
       : [];
 
@@ -148,7 +158,11 @@ export class BadgeVerificationService {
           ((badge.template.issuanceCriteria as Record<string, unknown>)
             ?.description as string) || 'No criteria specified',
         category: badge.template.category,
-        skills: skills.map((s) => ({ id: s.id, name: s.name })),
+        skills: skills.map((s) => ({
+          id: s.id,
+          name: s.name,
+          categoryColor: s.category?.color ?? null,
+        })),
       },
 
       recipient: {
@@ -186,11 +200,17 @@ export class BadgeVerificationService {
           : null,
       }),
 
-      // Evidence files from Sprint 4
+      // Evidence files — Story 12.6: include type/sourceUrl for URL evidence
       evidenceFiles: badge.evidenceFiles.map((file) => ({
+        id: file.id,
         filename: file.fileName,
+        originalName: file.originalName,
+        fileSize: file.fileSize,
+        mimeType: file.mimeType,
         blobUrl: file.blobUrl,
         uploadedAt: file.uploadedAt,
+        type: file.type,
+        sourceUrl: file.sourceUrl,
       })),
 
       // Open Badges 2.0 assertion (from Story 6.1)

@@ -5,14 +5,15 @@ import { MilestoneTimelineCard } from './MilestoneTimelineCard';
 describe('MilestoneTimelineCard', () => {
   const mockMilestone = {
     milestoneId: 'milestone-1',
-    title: '🏆 First Badge Earned',
+    icon: '🏆',
+    title: 'First Badge Earned',
     description: 'Congratulations on earning your first badge!',
     achievedAt: '2026-01-15T10:00:00Z',
   };
 
   it('renders milestone title and description', () => {
     render(<MilestoneTimelineCard milestone={mockMilestone} />);
-    expect(screen.getByText('🏆 First Badge Earned')).toBeInTheDocument();
+    expect(screen.getByText(/First Badge Earned/)).toBeInTheDocument();
     expect(screen.getByText('Congratulations on earning your first badge!')).toBeInTheDocument();
   });
 

@@ -149,25 +149,6 @@ export class CsvValidationService {
   }
 
   /**
-   * Validate evidence URL format (optional field)
-   *
-   * @param url - The URL to validate (null/empty is valid since optional)
-   * @returns Validation result with error message if invalid
-   */
-  validateEvidenceUrl(url: string | null): { valid: boolean; error?: string } {
-    if (!url || url.trim() === '') return { valid: true }; // Optional field
-
-    const urlRegex = /^https?:\/\/.+/i;
-    if (!urlRegex.test(url)) {
-      return {
-        valid: false,
-        error: 'Evidence URL must be a valid HTTP/HTTPS URL',
-      };
-    }
-    return { valid: true };
-  }
-
-  /**
    * Validate narrative justification length (optional, max 500 chars)
    *
    * @param text - The notes text to validate
@@ -288,9 +269,6 @@ export class CsvValidationService {
     const emailResult = await this.validateRegisteredEmail(row.recipientEmail);
     if (!emailResult.valid) errors.push(emailResult.error!);
 
-    const urlResult = this.validateEvidenceUrl(row.evidenceUrl);
-    if (!urlResult.valid) errors.push(urlResult.error!);
-
     const notesResult = this.validateNotes(row.narrativeJustification);
     if (!notesResult.valid) errors.push(notesResult.error!);
 
@@ -360,9 +338,6 @@ export class CsvValidationService {
     }
 
     // Non-DB validations (same as regular validateRow)
-    const urlResult = this.validateEvidenceUrl(row.evidenceUrl);
-    if (!urlResult.valid) errors.push(urlResult.error!);
-
     const notesResult = this.validateNotes(row.narrativeJustification);
     if (!notesResult.valid) errors.push(notesResult.error!);
 

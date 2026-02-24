@@ -8,6 +8,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import {
+  formatAuditDescription,
+  resolveActivityType,
+  buildActorMap,
+} from '../common/utils/audit-log.utils';
+import { MilestonesService } from '../milestones/milestones.service';
+import {
   EmployeeDashboardDto,
   IssuerDashboardDto,
   ManagerDashboardDto,
@@ -23,56 +29,10 @@ import {
 export class DashboardService {
   private readonly logger = new Logger(DashboardService.name);
 
-  /**
-   * Convert audit log action + metadata into human-readable description.
-   * Story 11.24 AC-C1: Admin Dashboard shows readable activity descriptions.
-   */
-  static formatActivityDescription(
-    action: string,
-    metadata: Record<string, unknown> | null,
-  ): string {
-    if (!metadata) return action;
-
-    const s = (key: string): string => {
-      const val = metadata[key];
-      return typeof val === 'string' ? val : '';
-    };
-
-    // Build the description; fall back to raw action if critical fields are empty
-    // (Code Review #3: avoid emitting strings like 'Badge "" issued to ')
-    switch (action) {
-      case 'ISSUED': {
-        const name = s('badgeName');
-        const email = s('recipientEmail');
-        return name && email ? `Badge "${name}" issued to ${email}` : action;
-      }
-      case 'CLAIMED':
-        return `Badge status changed: ${s('oldStatus') || '?'} → ${s('newStatus') || '?'}`;
-      case 'REVOKED': {
-        const name = s('badgeName');
-        return name
-          ? `Revoked "${name}" — ${s('reason') || 'no reason given'}`
-          : action;
-      }
-      case 'NOTIFICATION_SENT': {
-        const type = s('notificationType');
-        const email = s('recipientEmail');
-        return type && email ? `${type} notification sent to ${email}` : action;
-      }
-      case 'CREATED': {
-        const name = s('templateName');
-        return name ? `Template "${name}" created` : action;
-      }
-      case 'UPDATED': {
-        const name = s('templateName');
-        return name ? `Template "${name}" updated` : action;
-      }
-      default:
-        return action;
-    }
-  }
-
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly milestonesService: MilestonesService,
+  ) {}
 
   /**
    * AC1: Get Employee Dashboard data
@@ -133,9 +93,50 @@ export class DashboardService {
     // Get latest badge for preview
     const latestBadge = recentBadges.length > 0 ? recentBadges[0] : undefined;
 
-    // Calculate milestone progress (simple: every 5 badges is a milestone)
-    const milestoneProgress = totalBadges % 5 || (totalBadges > 0 ? 5 : 0);
-    const milestonePercentage = Math.round((milestoneProgress / 5) * 100);
+    // Get real milestone progress from MilestonesService
+    // NB2: wrap in try/catch so milestone DB failure doesn't fail entire dashboard
+    let milestoneData: Awaited<
+      ReturnType<MilestonesService['getNextMilestone']>
+    > = null;
+    try {
+      milestoneData = await this.milestonesService.getNextMilestone(userId);
+    } catch (error: unknown) {
+      this.logger.error(
+        `Milestone progress fetch failed for ${userId}: ${(error as Error).message}`,
+      );
+    }
+
+    const currentMilestone = milestoneData ?? {
+      title: 'All milestones achieved!',
+      progress: 0,
+      target: 0,
+      percentage: 100,
+      icon: '🏆',
+    };
+
+    // Get achieved milestones (already filtered by isActive)
+    let achievedMilestones: Array<{
+      id: string;
+      title: string;
+      description: string;
+      icon: string;
+      achievedAt: Date;
+    }> = [];
+    try {
+      const achievements =
+        await this.milestonesService.getUserAchievements(userId);
+      achievedMilestones = achievements.map((a) => ({
+        id: a.id,
+        title: a.milestone.title,
+        description: a.milestone.description,
+        icon: a.milestone.icon,
+        achievedAt: a.achievedAt,
+      }));
+    } catch (error: unknown) {
+      this.logger.error(
+        `Achieved milestones fetch failed for ${userId}: ${(error as Error).message}`,
+      );
+    }
 
     return {
       badgeSummary: {
@@ -144,13 +145,8 @@ export class DashboardService {
         pendingCount: pendingBadges,
         latestBadge,
       },
-      currentMilestone: {
-        title: `Badge Collector Level ${Math.ceil(totalBadges / 5) || 1}`,
-        progress: milestoneProgress,
-        target: 5,
-        percentage: milestonePercentage,
-        icon: '🏆',
-      },
+      currentMilestone,
+      achievedMilestones,
       recentBadges,
     };
   }
@@ -264,30 +260,19 @@ export class DashboardService {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    // Get manager's department
-    const manager = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { department: true },
+    // Get direct reports (managerId-based scoping — Story 12.3a)
+    const teamMembers = await this.prisma.user.findMany({
+      where: {
+        managerId: userId,
+        isActive: true,
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+      },
     });
-
-    const department = manager?.department || null;
-
-    // Get team members (same department) - if no department, show empty
-    const teamMembers = department
-      ? await this.prisma.user.findMany({
-          where: {
-            department,
-            role: 'EMPLOYEE',
-            isActive: true,
-          },
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        })
-      : [];
 
     const teamMemberIds = teamMembers.map((m) => m.id);
 
@@ -436,18 +421,13 @@ export class DashboardService {
       where: { id: { in: actorIds } },
       select: { id: true, firstName: true, lastName: true, email: true },
     });
-    const actorMap = new Map(
-      actors.map((a) => [
-        a.id,
-        `${a.firstName || ''} ${a.lastName || ''}`.trim() || a.email,
-      ]),
-    );
+    const actorMap = buildActorMap(actors);
 
     // Transform audit logs to activity DTOs
     const recentActivity: AdminActivityDto[] = recentActivityRaw.map((log) => ({
       id: log.id,
-      type: log.action,
-      description: DashboardService.formatActivityDescription(
+      type: resolveActivityType(log.action, log.entityType),
+      description: formatAuditDescription(
         log.action,
         log.metadata as Record<string, unknown>,
       ),

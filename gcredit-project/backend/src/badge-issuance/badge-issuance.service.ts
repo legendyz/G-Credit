@@ -17,7 +17,7 @@ import { GraphEmailService } from '../microsoft-graph/services/graph-email.servi
 import { ConfigService } from '@nestjs/config';
 import { IssueBadgeDto } from './dto/issue-badge.dto';
 import { QueryBadgeDto } from './dto/query-badge.dto';
-import { BulkIssuanceResult } from './dto/bulk-issue-badges.dto';
+
 import {
   WalletQueryDto,
   WalletResponse,
@@ -28,6 +28,17 @@ import { BadgeStatus, Prisma, UserRole, BadgeVisibility } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { MilestonesService } from '../milestones/milestones.service';
 import sharp from 'sharp';
+
+// Story 12.5: Unified evidence item
+interface EvidenceItem {
+  id: string;
+  type: 'FILE' | 'URL';
+  name: string;
+  url: string;
+  size?: number;
+  mimeType?: string;
+  uploadedAt: string;
+}
 
 @Injectable()
 export class BadgeIssuanceService {
@@ -113,7 +124,6 @@ export class BadgeIssuanceService {
           templateId: dto.templateId,
           recipientId: dto.recipientId,
           issuerId,
-          evidenceUrl: dto.evidenceUrl,
           issuedAt,
           expiresAt,
           status: BadgeStatus.PENDING,
@@ -130,11 +140,12 @@ export class BadgeIssuanceService {
         },
       });
 
-      // 7. Generate Open Badges 2.0 assertion with real IDs
-      const evidenceUrls =
-        created.evidenceFiles?.map((e) => e.blobUrl) || // Sprint 4: blobUrl field
-        (dto.evidenceUrl ? [dto.evidenceUrl] : []);
+      // Story 12.5: Build evidence URLs from unified EvidenceFile records
+      const evidenceUrls = (created.evidenceFiles || []).map((e) =>
+        e.type === 'URL' ? e.sourceUrl! : e.blobUrl,
+      );
 
+      // 7. Generate Open Badges 2.0 assertion with real IDs
       const assertion = this.assertionGenerator.generateAssertion({
         badgeId: created.id,
         verificationId: created.verificationId, // Sprint 5: Use auto-generated verificationId
@@ -143,7 +154,7 @@ export class BadgeIssuanceService {
         issuer: issuer!,
         issuedAt,
         expiresAt: expiresAt || undefined,
-        evidenceUrls, // Sprint 5: Multiple evidence URLs
+        evidenceUrls: evidenceUrls.length > 0 ? evidenceUrls : undefined,
       });
 
       // Sprint 5 Story 6.5: Compute metadata hash for integrity
@@ -205,13 +216,14 @@ export class BadgeIssuanceService {
       );
     }
 
-    // 11. Check milestones (non-blocking)
-    this.milestonesService
+    // 11. Check milestones (awaited — include results in response)
+    const newMilestones = await this.milestonesService
       .checkMilestones(dto.recipientId)
       .catch((err: Error) => {
         this.logger.warn(
           `Milestone check failed after badge issuance: ${err.message}`,
         );
+        return [];
       });
 
     // 12. Return badge response
@@ -224,6 +236,7 @@ export class BadgeIssuanceService {
       claimUrl: this.assertionGenerator.getClaimUrl(badge.claimToken!),
       assertionUrl: this.assertionGenerator.getAssertionUrl(badge.id),
       emailError, // Story 8.4 AC6: Surface email failures in completion summary
+      newMilestones, // Story 12.4: Newly achieved milestones
       template: {
         id: badge.template.id,
         name: badge.template.name,
@@ -366,13 +379,14 @@ export class BadgeIssuanceService {
       },
     });
 
-    // 6b. Check milestones (non-blocking)
-    this.milestonesService
+    // 6b. Check milestones (awaited — include results in response)
+    const newMilestones = await this.milestonesService
       .checkMilestones(claimedBadge.recipientId)
       .catch((err: Error) => {
         this.logger.warn(
           `Milestone check failed after badge claim: ${err.message}`,
         );
+        return [];
       });
 
     // 7. Return badge details
@@ -386,6 +400,7 @@ export class BadgeIssuanceService {
         imageUrl: claimedBadge.template.imageUrl,
       },
       assertionUrl: this.assertionGenerator.getAssertionUrl(claimedBadge.id),
+      newMilestones, // Story 12.4: Newly achieved milestones
       message:
         'Badge claimed successfully! You can now view it in your wallet.',
     };
@@ -423,12 +438,9 @@ export class BadgeIssuanceService {
       actor.role === UserRole.ADMIN ||
       (actor.role === UserRole.ISSUER && badge.issuerId === actorId);
 
-    // BUG-006: MANAGER can revoke badges for recipients in their own department
+    // Story 12.3a: MANAGER can revoke badges for their direct reports (managerId-based)
     if (actor.role === UserRole.MANAGER) {
-      canRevoke =
-        !!actor.department &&
-        !!badge.recipient?.department &&
-        actor.department === badge.recipient.department;
+      canRevoke = badge.recipient?.managerId === actor.id;
     }
 
     if (!canRevoke) {
@@ -655,7 +667,6 @@ export class BadgeIssuanceService {
         issuedAt: badge.issuedAt,
         claimedAt: badge.claimedAt,
         expiresAt: badge.expiresAt,
-        evidenceUrl: badge.evidenceUrl,
         // Story 8.2: Template includes skillIds directly
         template: badge.template,
         issuer: {
@@ -689,18 +700,9 @@ export class BadgeIssuanceService {
     if (userRole === UserRole.ISSUER) {
       where.issuerId = userId;
     }
-    // MANAGER can only see badges for recipients in their department (BUG-006)
+    // Story 12.3a: MANAGER can only see badges for their direct reports (managerId-based)
     else if (userRole === UserRole.MANAGER) {
-      const manager = await this.prisma.user.findUnique({
-        where: { id: userId },
-        select: { department: true },
-      });
-      if (manager?.department) {
-        where.recipient = { department: manager.department };
-      } else {
-        // Manager without department sees nothing
-        where.id = 'none';
-      }
+      where.recipient = { managerId: userId };
     }
     // ADMIN can see all badges (no filter) - but Story 8.2 allows issuer filter
     else if (query.issuerId) {
@@ -816,6 +818,10 @@ export class BadgeIssuanceService {
             lastName: true,
           },
         },
+        // Story 12.6: Evidence count for badge management table
+        _count: {
+          select: { evidenceFiles: true },
+        },
       },
     });
 
@@ -834,7 +840,7 @@ export class BadgeIssuanceService {
         revocationReason: badge.revocationReason,
         revocationNotes: badge.revocationNotes,
         revokedBy: badge.revokedBy,
-        evidenceUrl: badge.evidenceUrl,
+        evidenceCount: badge._count.evidenceFiles, // Story 12.6
         // Story 8.2: Template includes skillIds directly
         template: badge.template,
         recipient: {
@@ -904,6 +910,8 @@ export class BadgeIssuanceService {
         issuer: true,
         // Story 9.3: Include revoker for badge details
         revoker: true,
+        // Story 12.5: Include evidence files for unified evidence list
+        evidenceFiles: true,
       },
     });
 
@@ -919,9 +927,25 @@ export class BadgeIssuanceService {
       badge.status !== BadgeStatus.REVOKED;
     const effectiveStatus = isExpired ? 'EXPIRED' : badge.status;
 
+    // Story 12.5: Build unified evidence list
+    const evidence: EvidenceItem[] = (badge.evidenceFiles || []).map((ef) => ({
+      id: ef.id,
+      type: ef.type as 'FILE' | 'URL',
+      name:
+        ef.type === 'URL'
+          ? ef.sourceUrl
+            ? new URL(ef.sourceUrl).hostname
+            : 'URL'
+          : ef.originalName,
+      url: ef.type === 'URL' ? ef.sourceUrl! : ef.blobUrl,
+      ...(ef.type === 'FILE' && { size: ef.fileSize, mimeType: ef.mimeType }),
+      uploadedAt: ef.uploadedAt.toISOString(),
+    }));
+
     const response: Record<string, unknown> = {
       ...badge,
       status: effectiveStatus,
+      evidence, // Story 12.5: unified evidence list
     };
 
     // Story 9.3 AC2: Add categorized revocation details
@@ -948,95 +972,7 @@ export class BadgeIssuanceService {
   /**
    * Revoke a badge (ADMIN only)
    */
-  /**
-   * Bulk issue badges from CSV file
-   */
-  async bulkIssueBadges(
-    fileBuffer: Buffer,
-    issuerId: string,
-  ): Promise<BulkIssuanceResult> {
-    // 1. Parse CSV
-    let rows;
-    try {
-      rows = this.csvParser.parseBulkIssuanceCSV(fileBuffer);
-    } catch (error) {
-      throw new BadRequestException(
-        `CSV parsing failed: ${(error as Error).message}`,
-      );
-    }
-
-    // 2. Limit to 1000 badges per upload
-    if (rows.length > 1000) {
-      throw new BadRequestException(
-        `Too many rows (${rows.length}). Maximum 1000 badges per upload.`,
-      );
-    }
-
-    this.logger.log(`Processing bulk issuance: ${rows.length} badges`);
-
-    // 3. Process each row (no transaction - partial failures allowed)
-    const results: BulkIssuanceResult['results'] = [];
-    let successCount = 0;
-    let failCount = 0;
-
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
-      const rowNumber = i + 2; // +2 for header row
-
-      try {
-        // Find recipient by email
-        const recipient = await this.prisma.user.findUnique({
-          where: { email: row.recipientEmail },
-        });
-
-        if (!recipient) {
-          throw new Error(`Recipient not found: ${row.recipientEmail}`);
-        }
-
-        // Issue badge (reuse existing method)
-        const badge = await this.issueBadge(
-          {
-            templateId: row.templateId,
-            recipientId: recipient.id,
-            evidenceUrl: row.evidenceUrl,
-            expiresIn: row.expiresIn,
-          },
-          issuerId,
-        );
-
-        results.push({
-          row: rowNumber,
-          email: row.recipientEmail,
-          success: true,
-          badgeId: badge.id,
-        });
-        successCount++;
-      } catch (error) {
-        results.push({
-          row: rowNumber,
-          email: row.recipientEmail,
-          success: false,
-          error: (error as Error).message,
-        });
-        failCount++;
-        this.logger.warn(
-          `Row ${rowNumber} failed: ${(error as Error).message}`,
-        );
-      }
-    }
-
-    this.logger.log(
-      `Bulk issuance complete: ${successCount} successful, ${failCount} failed`,
-    );
-
-    // 4. Return summary
-    return {
-      total: rows.length,
-      successful: successCount,
-      failed: failCount,
-      results,
-    };
-  }
+  // Legacy bulkIssueBadges() removed — superseded by BulkIssuanceService
 
   /**
    * Get wallet badges for authenticated user (Story 4.1)
@@ -1193,7 +1129,8 @@ export class BadgeIssuanceService {
       sortDate: m.achievedAt,
       data: {
         milestoneId: m.milestoneId,
-        title: `${m.milestone.icon} ${m.milestone.title}`,
+        icon: m.milestone.icon || '🏅',
+        title: m.milestone.title,
         description: m.milestone.description,
         achievedAt: m.achievedAt,
       },
@@ -1442,6 +1379,8 @@ export class BadgeIssuanceService {
         evidenceFiles: {
           select: {
             blobUrl: true,
+            type: true, // Story 12.5: Include type for FILE vs URL
+            sourceUrl: true, // Story 12.5: Include sourceUrl for URL-type
           },
         },
       },

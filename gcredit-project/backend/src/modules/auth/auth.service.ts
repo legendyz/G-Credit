@@ -14,6 +14,7 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../common/prisma.service';
 import { EmailService } from '../../common/email.service';
 import { maskEmailForLog } from '../../common/utils/log-sanitizer';
+import { M365SyncService } from '../../m365-sync/m365-sync.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -30,12 +31,14 @@ export class AuthService {
     private jwtService: JwtService,
     private config: ConfigService,
     private emailService: EmailService,
+    private m365SyncService: M365SyncService,
   ) {}
 
   async register(dto: RegisterDto) {
-    // 1. Check if email already exists
+    // 1. Check if email already exists (case-insensitive)
+    const normalizedEmail = dto.email.toLowerCase();
     const existingUser = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+      where: { email: normalizedEmail },
     });
 
     if (existingUser) {
@@ -49,7 +52,7 @@ export class AuthService {
     // Privilege escalation must go through admin approval workflow
     const user = await this.prisma.user.create({
       data: {
-        email: dto.email,
+        email: normalizedEmail,
         passwordHash,
         firstName: dto.firstName,
         lastName: dto.lastName,
@@ -98,9 +101,10 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    // 1. Find user by email
+    // 1. Find user by email (case-insensitive — M365 sync stores lowercase)
+    const normalizedEmail = dto.email.toLowerCase();
     const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+      where: { email: normalizedEmail },
     });
 
     if (!user) {
@@ -119,6 +123,11 @@ export class AuthService {
         throw new UnauthorizedException('Invalid credentials');
       }
       // Lock expired — will be fully reset on successful login below
+    }
+
+    // Story 12.3a AC #32: Empty passwordHash guard (M365 users with no local password)
+    if (!user.passwordHash) {
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     // 3. Verify password
@@ -156,11 +165,31 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // 4. Generate JWT tokens
+    // Story 12.3a AC #31: Login-time mini-sync for M365 users
+    let freshUser = user;
+    if (user.azureId) {
+      const syncResult = await this.m365SyncService.syncUserFromGraph({
+        id: user.id,
+        azureId: user.azureId,
+        lastSyncAt: user.lastSyncAt,
+      });
+      if (syncResult.rejected) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+      // Refresh user data after sync (role may have changed)
+      const updatedUser = await this.prisma.user.findUnique({
+        where: { id: user.id },
+      });
+      if (updatedUser) {
+        freshUser = updatedUser;
+      }
+    }
+
+    // 4. Generate JWT tokens — use FRESH role from synced user data
     const payload = {
-      sub: user.id,
-      email: user.email,
-      role: user.role,
+      sub: freshUser.id,
+      email: freshUser.email,
+      role: freshUser.role,
     };
 
     const accessToken = this.jwtService.sign(payload);
@@ -198,12 +227,12 @@ export class AuthService {
 
     // 8. Log successful login
     this.logger.log(
-      `Successful login: user:${user.id} (role: ${user.role})`,
+      `Successful login: user:${freshUser.id} (role: ${freshUser.role})`,
       'LoginSuccess',
     );
 
     // 9. Return tokens and user profile (without password hash)
-    const { passwordHash: _hash2, ...userProfile } = user;
+    const { passwordHash: _hash2, ...userProfile } = freshUser;
 
     return {
       accessToken,
@@ -458,6 +487,14 @@ export class AuthService {
         lastLoginAt: true,
         createdAt: true,
         updatedAt: true,
+        manager: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
       },
     });
 

@@ -1,11 +1,11 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../common/prisma.service';
 import {
-  CreateMilestoneDto,
-  UpdateMilestoneDto,
-  MilestoneTriggerType,
-} from './dto/milestone.dto';
-import { MilestoneType } from '@prisma/client';
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+import { PrismaService } from '../common/prisma.service';
+import { CreateMilestoneDto, UpdateMilestoneDto } from './dto/milestone.dto';
 import type { MilestoneConfig, Prisma } from '@prisma/client';
 
 @Injectable()
@@ -18,19 +18,33 @@ export class MilestonesService {
   constructor(private prisma: PrismaService) {}
 
   /**
-   * AC 2.4: Create milestone configuration (Admin only)
+   * Normalize legacy trigger format { type, value } → { metric, scope, threshold }.
+   * Shared helper used by checkMilestones() and getNextMilestone().
+   */
+  private normalizeTrigger(raw: Record<string, unknown>): {
+    metric: string;
+    scope: string;
+    threshold: number;
+    categoryId?: string;
+    includeSubCategories?: boolean;
+  } {
+    return {
+      metric: (raw.metric ?? raw.type ?? 'badge_count') as string,
+      scope: (raw.scope ?? 'global') as string,
+      threshold: (raw.threshold ?? raw.value ?? 1) as number,
+      categoryId: raw.categoryId as string | undefined,
+      includeSubCategories: raw.includeSubCategories as boolean | undefined,
+    };
+  }
+
+  /**
+   * Create milestone configuration (Admin only)
+   * DTO now sends MilestoneType enum directly — no typeMapping needed.
    */
   async createMilestone(dto: CreateMilestoneDto, adminId: string) {
-    // Convert DTO type to Prisma enum
-    const typeMapping: Record<string, MilestoneType> = {
-      badge_count: MilestoneType.BADGE_COUNT,
-      skill_track: MilestoneType.SKILL_TRACK,
-      anniversary: MilestoneType.ANNIVERSARY,
-    };
-
-    return this.prisma.milestoneConfig.create({
+    const result = await this.prisma.milestoneConfig.create({
       data: {
-        type: typeMapping[dto.type] || MilestoneType.BADGE_COUNT,
+        type: dto.type,
         title: dto.title,
         description: dto.description,
         trigger: dto.trigger as unknown as Prisma.InputJsonValue,
@@ -39,30 +53,55 @@ export class MilestonesService {
         createdBy: adminId,
       },
     });
+
+    // Invalidate cache
+    this.lastCacheRefresh = 0;
+    return result;
   }
 
   /**
-   * AC 2.5: List all milestone configurations (Admin only)
+   * List all milestone configurations with achievement count (Admin only)
    */
   async getAllMilestones() {
     return this.prisma.milestoneConfig.findMany({
       orderBy: { createdAt: 'desc' },
+      include: {
+        _count: {
+          select: { achievements: true },
+        },
+      },
     });
   }
 
   /**
-   * AC 2.6: Update milestone configuration (Admin only)
+   * Update milestone configuration (Admin only)
+   * When achievements exist, only isActive toggle is permitted.
    */
   async updateMilestone(id: string, dto: UpdateMilestoneDto) {
     const milestone = await this.prisma.milestoneConfig.findUnique({
       where: { id },
+      include: { _count: { select: { achievements: true } } },
     });
 
     if (!milestone) {
       throw new NotFoundException(`Milestone config ${id} not found`);
     }
 
-    return this.prisma.milestoneConfig.update({
+    // When achievements exist, only isActive toggle is allowed (ADR-013)
+    if (milestone._count.achievements > 0) {
+      const hasFieldChanges =
+        dto.title !== undefined ||
+        dto.description !== undefined ||
+        dto.trigger !== undefined ||
+        dto.icon !== undefined;
+      if (hasFieldChanges) {
+        throw new BadRequestException(
+          `Cannot modify milestone "${milestone.title}" — it has been achieved by ${milestone._count.achievements} user(s). Only activation/deactivation is allowed.`,
+        );
+      }
+    }
+
+    const result = await this.prisma.milestoneConfig.update({
       where: { id },
       data: {
         ...(dto.title && { title: dto.title }),
@@ -74,32 +113,61 @@ export class MilestonesService {
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
       } as Prisma.MilestoneConfigUpdateInput,
     });
+
+    // Invalidate cache
+    this.lastCacheRefresh = 0;
+    return result;
   }
 
   /**
-   * AC 2.7: Soft delete milestone (set isActive=false)
+   * Delete milestone:
+   * - Hard delete if no achievements exist (safe to remove entirely)
+   * - Soft delete (isActive=false) if achievements exist (preserve history)
    */
   async deleteMilestone(id: string) {
     const milestone = await this.prisma.milestoneConfig.findUnique({
       where: { id },
+      include: { _count: { select: { achievements: true } } },
     });
 
     if (!milestone) {
       throw new NotFoundException(`Milestone config ${id} not found`);
     }
 
-    return this.prisma.milestoneConfig.update({
-      where: { id },
-      data: { isActive: false },
-    });
+    let result;
+    if (milestone._count.achievements === 0) {
+      // No one has achieved this — safe to hard delete
+      result = await this.prisma.milestoneConfig.delete({
+        where: { id },
+      });
+      this.logger.log(
+        `Hard-deleted milestone "${milestone.title}" (no achievements)`,
+      );
+    } else {
+      // Has achievements — soft delete to preserve history
+      result = await this.prisma.milestoneConfig.update({
+        where: { id },
+        data: { isActive: false },
+      });
+      this.logger.log(
+        `Soft-deleted milestone "${milestone.title}" (${milestone._count.achievements} achievements preserved)`,
+      );
+    }
+
+    // Invalidate cache
+    this.lastCacheRefresh = 0;
+    return result;
   }
 
   /**
-   * AC 2.11: Get user's milestone achievements
+   * Get user's milestone achievements
    */
   async getUserAchievements(userId: string) {
     return this.prisma.milestoneAchievement.findMany({
-      where: { userId },
+      where: {
+        userId,
+        milestone: { isActive: true },
+      },
       include: {
         milestone: {
           select: {
@@ -116,10 +184,21 @@ export class MilestonesService {
   }
 
   /**
-   * AC 2.8: Check and award milestones for a user
-   * Called asynchronously after badge issuance/claiming
+   * Check and award milestones for a user.
+   * Returns newly achieved milestones so callers can include them in responses.
    */
-  async checkMilestones(userId: string): Promise<void> {
+  async checkMilestones(
+    userId: string,
+  ): Promise<
+    Array<{ id: string; title: string; description: string; icon: string }>
+  > {
+    const newAchievements: Array<{
+      id: string;
+      title: string;
+      description: string;
+      icon: string;
+    }> = [];
+
     try {
       const startTime = Date.now();
 
@@ -144,17 +223,12 @@ export class MilestonesService {
           continue;
         }
 
-        // Evaluate trigger
-        const triggerMet = await this.evaluateTrigger(
-          userId,
-          config.trigger as {
-            type: MilestoneTriggerType;
-            value?: number;
-            categoryId?: string;
-            requiredBadgeCount?: number;
-            months?: number;
-          },
+        // Evaluate trigger with unified metric × scope engine
+        const trigger = this.normalizeTrigger(
+          config.trigger as Record<string, unknown>,
         );
+
+        const triggerMet = await this.evaluateTrigger(userId, trigger);
 
         if (triggerMet) {
           // Create achievement record
@@ -165,6 +239,13 @@ export class MilestonesService {
             },
           });
 
+          newAchievements.push({
+            id: config.id,
+            title: config.title,
+            description: config.description,
+            icon: config.icon,
+          });
+
           this.logger.log(
             `✅ Milestone achieved: ${config.title} by user ${userId}`,
           );
@@ -172,7 +253,6 @@ export class MilestonesService {
       }
 
       const duration = Date.now() - startTime;
-      // AC 2.9: Ensure detection runs in <500ms
       if (duration > 500) {
         this.logger.warn(
           `⚠️ Milestone detection took ${duration}ms (target: <500ms)`,
@@ -181,12 +261,116 @@ export class MilestonesService {
         this.logger.debug(`Milestone detection completed in ${duration}ms`);
       }
     } catch (error: unknown) {
-      // AC 2.10: Log failures but don't block badge operations
       this.logger.error(
         `❌ Milestone detection failed for user ${userId}: ${(error as Error).message}`,
       );
       // Don't throw - milestone detection is non-critical
     }
+
+    return newAchievements;
+  }
+
+  /**
+   * Get the next un-achieved milestone for a user with progress data.
+   * Used by dashboard to show milestone progress.
+   */
+  async getNextMilestone(userId: string): Promise<{
+    title: string;
+    progress: number;
+    target: number;
+    percentage: number;
+    icon: string;
+  } | null> {
+    const configs = await this.getActiveMilestoneConfigs();
+
+    if (configs.length === 0) return null;
+
+    // Get user's existing achievements
+    const existingAchievements =
+      await this.prisma.milestoneAchievement.findMany({
+        where: { userId },
+        select: { milestoneId: true },
+      });
+
+    const achievedMilestoneIds = new Set(
+      existingAchievements.map((a) => a.milestoneId),
+    );
+
+    // Find un-achieved milestones, sorted by normalized threshold (lowest first)
+    const unachieved = configs
+      .filter((c) => !achievedMilestoneIds.has(c.id))
+      .sort((a, b) => {
+        const ta = this.normalizeTrigger(a.trigger as Record<string, unknown>);
+        const tb = this.normalizeTrigger(b.trigger as Record<string, unknown>);
+        // Group by metric first (badge_count before category_count),
+        // then by threshold within same metric
+        if (ta.metric !== tb.metric) {
+          return ta.metric === 'badge_count' ? -1 : 1;
+        }
+        return ta.threshold - tb.threshold;
+      });
+
+    if (unachieved.length === 0) return null;
+
+    const next = unachieved[0];
+    const trigger = this.normalizeTrigger(
+      next.trigger as Record<string, unknown>,
+    );
+
+    // Calculate current progress
+    let progress = 0;
+    const scopeFilter = await this.buildScopeFilter(trigger);
+
+    if (trigger.metric === 'badge_count') {
+      progress = await this.prisma.badge.count({
+        where: {
+          recipientId: userId,
+          status: 'CLAIMED',
+          ...scopeFilter,
+        },
+      });
+    } else if (trigger.metric === 'category_count') {
+      // Count distinct categories
+      const badges = await this.prisma.badge.findMany({
+        where: {
+          recipientId: userId,
+          status: 'CLAIMED',
+          ...scopeFilter,
+        },
+        select: {
+          template: { select: { skillIds: true } },
+        },
+      });
+
+      const allSkillIds = new Set<string>();
+      for (const badge of badges) {
+        for (const skillId of badge.template.skillIds) {
+          allSkillIds.add(skillId);
+        }
+      }
+
+      if (allSkillIds.size > 0) {
+        const categories = await this.prisma.skill.findMany({
+          where: { id: { in: Array.from(allSkillIds) } },
+          select: { categoryId: true },
+          distinct: ['categoryId'],
+        });
+        progress = categories.length;
+      }
+    }
+
+    const percentage = Math.min(
+      100,
+      Math.round((progress / trigger.threshold) * 100),
+    );
+
+    return {
+      title: next.title,
+      progress,
+      target: trigger.threshold,
+      percentage,
+      icon: next.icon,
+    };
   }
 
   /**
@@ -211,98 +395,160 @@ export class MilestonesService {
     return this.milestoneConfigsCache;
   }
 
+  // ========== Unified metric × scope evaluator ==========
+
   /**
-   * Evaluate milestone trigger for a user
-   * AC 2.8: Support BADGE_COUNT, SKILL_TRACK, ANNIVERSARY triggers
+   * Evaluate milestone trigger using orthogonal metric × scope dispatch.
    */
   private async evaluateTrigger(
     userId: string,
     trigger: {
-      type: MilestoneTriggerType;
-      value?: number;
+      metric: string;
+      scope: string;
+      threshold: number;
       categoryId?: string;
-      requiredBadgeCount?: number;
-      months?: number;
+      includeSubCategories?: boolean;
     },
   ): Promise<boolean> {
-    switch (trigger.type) {
-      case MilestoneTriggerType.BADGE_COUNT:
-        return this.evaluateBadgeCountTrigger(userId, trigger.value ?? 0);
+    const scopeFilter = await this.buildScopeFilter(trigger);
 
-      case MilestoneTriggerType.SKILL_TRACK:
-        return this.evaluateSkillTrackTrigger(
+    switch (trigger.metric) {
+      case 'badge_count':
+        return this.evaluateBadgeCount(userId, scopeFilter, trigger.threshold);
+      case 'category_count':
+        return this.evaluateCategoryCount(
           userId,
-          trigger.categoryId ?? '',
-          trigger.requiredBadgeCount ?? 0,
+          scopeFilter,
+          trigger.threshold,
         );
-
-      case MilestoneTriggerType.ANNIVERSARY:
-        return this.evaluateAnniversaryTrigger(userId, trigger.months ?? 0);
-
       default:
-        this.logger.warn(`Unknown trigger type: ${String(trigger.type)}`);
+        this.logger.warn(`Unknown metric: ${trigger.metric}`);
         return false;
     }
   }
 
   /**
-   * Evaluate BADGE_COUNT trigger: Count user's claimed badges
+   * Build a Prisma where-clause filter based on scope.
+   * Global → no filter. Category → resolves category → skill IDs.
    */
-  private async evaluateBadgeCountTrigger(
-    userId: string,
-    requiredCount: number,
-  ): Promise<boolean> {
-    const count = await this.prisma.badge.count({
-      where: {
-        recipientId: userId,
-        status: 'CLAIMED',
-      },
-    });
+  private async buildScopeFilter(trigger: {
+    scope: string;
+    categoryId?: string;
+    includeSubCategories?: boolean;
+  }): Promise<Record<string, unknown>> {
+    if (!trigger.scope || trigger.scope === 'global') {
+      return {};
+    }
 
-    return count >= requiredCount;
+    // Category scope: resolve skill IDs through category → skill chain
+    const categoryIds =
+      trigger.includeSubCategories !== false
+        ? await this.getDescendantCategoryIds(trigger.categoryId!)
+        : [trigger.categoryId!];
+
+    const skillIds = await this.getSkillIdsByCategories(categoryIds);
+
+    if (skillIds.length === 0) {
+      return { id: 'no-match' }; // No skills in category → no badges can match
+    }
+
+    return {
+      template: {
+        skillIds: { hasSome: skillIds },
+      },
+    };
   }
 
   /**
-   * Evaluate SKILL_TRACK trigger: Count claimed badges in specific category
+   * BFS traversal to get all descendant category IDs (including root).
    */
-  private async evaluateSkillTrackTrigger(
+  private async getDescendantCategoryIds(rootId: string): Promise<string[]> {
+    const allIds: string[] = [rootId];
+    let currentLevel = [rootId];
+
+    while (currentLevel.length > 0) {
+      const children = await this.prisma.skillCategory.findMany({
+        where: { parentId: { in: currentLevel } },
+        select: { id: true },
+      });
+
+      const childIds = children.map((c) => c.id);
+      allIds.push(...childIds);
+      currentLevel = childIds;
+    }
+
+    return allIds;
+  }
+
+  /**
+   * Get skill IDs belonging to the given categories.
+   */
+  private async getSkillIdsByCategories(
+    categoryIds: string[],
+  ): Promise<string[]> {
+    const skills = await this.prisma.skill.findMany({
+      where: { categoryId: { in: categoryIds } },
+      select: { id: true },
+    });
+    return skills.map((s) => s.id);
+  }
+
+  /**
+   * Count claimed badges matching scope filter, compare to threshold.
+   */
+  private async evaluateBadgeCount(
     userId: string,
-    categoryId: string,
-    requiredCount: number,
+    scopeFilter: Record<string, unknown>,
+    threshold: number,
   ): Promise<boolean> {
     const count = await this.prisma.badge.count({
       where: {
         recipientId: userId,
         status: 'CLAIMED',
+        ...scopeFilter,
+      },
+    });
+    return count >= threshold;
+  }
+
+  /**
+   * Count distinct categories across user's claimed badges via skill chain.
+   */
+  private async evaluateCategoryCount(
+    userId: string,
+    scopeFilter: Record<string, unknown>,
+    threshold: number,
+  ): Promise<boolean> {
+    const badges = await this.prisma.badge.findMany({
+      where: {
+        recipientId: userId,
+        status: 'CLAIMED',
+        ...scopeFilter,
+      },
+      select: {
         template: {
-          category: categoryId,
+          select: { skillIds: true },
         },
       },
     });
 
-    return count >= requiredCount;
-  }
-
-  /**
-   * Evaluate ANNIVERSARY trigger: Check user registration date
-   */
-  private async evaluateAnniversaryTrigger(
-    userId: string,
-    requiredMonths: number,
-  ): Promise<boolean> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { createdAt: true },
-    });
-
-    if (!user) {
-      return false;
+    // Collect all skill IDs from badges
+    const allSkillIds = new Set<string>();
+    for (const badge of badges) {
+      for (const skillId of badge.template.skillIds) {
+        allSkillIds.add(skillId);
+      }
     }
 
-    const monthsSinceRegistration = Math.floor(
-      (Date.now() - user.createdAt.getTime()) / (1000 * 60 * 60 * 24 * 30),
-    );
+    if (allSkillIds.size === 0) return false;
 
-    return monthsSinceRegistration >= requiredMonths;
+    // Find distinct categories for those skills
+    const categories = await this.prisma.skill.findMany({
+      where: { id: { in: Array.from(allSkillIds) } },
+      select: { categoryId: true },
+      distinct: ['categoryId'],
+    });
+
+    return categories.length >= threshold;
   }
 }

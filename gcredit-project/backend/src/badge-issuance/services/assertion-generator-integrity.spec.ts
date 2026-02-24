@@ -120,7 +120,7 @@ describe('AssertionGeneratorService - Integrity (Story 6.5)', () => {
       expect(originalHash).not.toBe(tamperedHash);
     });
 
-    it('should be sensitive to field order (JSON.stringify behavior)', () => {
+    it('should be insensitive to field order (canonical JSON)', () => {
       const assertion1 = {
         type: 'Assertion',
         id: 'test-id',
@@ -134,8 +134,8 @@ describe('AssertionGeneratorService - Integrity (Story 6.5)', () => {
       const hash1 = service.computeAssertionHash(assertion1);
       const hash2 = service.computeAssertionHash(assertion2);
 
-      // JSON.stringify preserves field order, so hashes will differ
-      expect(hash1).not.toBe(hash2);
+      // Canonical JSON sorts keys, so field order does not affect hash
+      expect(hash1).toBe(hash2);
     });
   });
 

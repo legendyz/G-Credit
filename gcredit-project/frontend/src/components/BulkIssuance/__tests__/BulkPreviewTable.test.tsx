@@ -16,7 +16,6 @@ describe('BulkPreviewTable', () => {
       badgeName: 'Leadership',
       recipientEmail: 'alice@company.com',
       recipientName: 'Alice Smith',
-      evidenceUrl: 'https://example.com/e1',
       isValid: true,
     },
     {
@@ -54,7 +53,6 @@ describe('BulkPreviewTable', () => {
     expect(screen.getByText('Badge Name')).toBeInTheDocument();
     expect(screen.getByText('Recipient Name')).toBeInTheDocument();
     expect(screen.getByText('Recipient Email')).toBeInTheDocument();
-    expect(screen.getByText('Evidence URL')).toBeInTheDocument();
     expect(screen.getByText('Status')).toBeInTheDocument();
   });
 

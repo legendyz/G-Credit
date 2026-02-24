@@ -179,6 +179,7 @@ describe('EvidenceService - Story 4.3', () => {
     const mockBadge = {
       id: 'badge-123',
       recipientId: 'user-123',
+      issuerId: 'user-issuer',
     };
 
     const mockEvidenceFiles = [
@@ -229,7 +230,22 @@ describe('EvidenceService - Story 4.3', () => {
       expect(result).toHaveLength(1);
     });
 
-    it('should reject non-owner non-admin (AC 3.8)', async () => {
+    it('should allow ISSUER who issued the badge to list evidence', async () => {
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+      mockPrismaService.evidenceFile.findMany.mockResolvedValue(
+        mockEvidenceFiles,
+      );
+
+      const result = await service.listEvidence(
+        'badge-123',
+        'user-issuer',
+        'ISSUER',
+      );
+
+      expect(result).toHaveLength(1);
+    });
+
+    it('should reject non-owner non-issuer non-admin (AC 3.8)', async () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
 
       await expect(
@@ -245,6 +261,7 @@ describe('EvidenceService - Story 4.3', () => {
     const mockBadge = {
       id: 'badge-123',
       recipientId: 'user-123',
+      issuerId: 'user-issuer',
     };
 
     const mockEvidenceFile = {
@@ -315,6 +332,225 @@ describe('EvidenceService - Story 4.3', () => {
           'EMPLOYEE',
         ),
       ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should allow ISSUER who issued the badge to download evidence', async () => {
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+      mockPrismaService.evidenceFile.findUnique.mockResolvedValue({
+        id: 'file-1',
+        badgeId: 'badge-123',
+        fileName: 'badge-123/file-1-cert.pdf',
+        mimeType: 'application/pdf',
+      });
+
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+      mockStorageService.generateEvidenceSasUrl.mockReturnValue({
+        url: 'https://storage.blob.core.windows.net/evidence/...?sasToken=...',
+        expiresAt,
+      });
+
+      const result = await service.generateDownloadSas(
+        'badge-123',
+        'file-1',
+        'user-issuer',
+        'ISSUER',
+      );
+
+      expect(result.url).toContain('sasToken');
+      expect(result.expiresAt).toBeDefined();
+    });
+
+    it('should reject download/preview for URL-type evidence (Story 12.5)', async () => {
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+      mockPrismaService.evidenceFile.findUnique.mockResolvedValue({
+        id: 'file-1',
+        badgeId: 'badge-123',
+        type: 'URL',
+        sourceUrl: 'https://example.com/evidence',
+        fileName: '',
+        blobUrl: '',
+      });
+
+      await expect(
+        service.generateDownloadSas(
+          'badge-123',
+          'file-1',
+          'user-123',
+          'EMPLOYEE',
+        ),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  // Story 12.5: URL-type evidence tests
+  describe('addUrlEvidence', () => {
+    const mockBadge = {
+      id: 'badge-123',
+      recipientId: 'user-123',
+      issuerId: 'user-admin',
+    };
+
+    it('should create URL-type evidence record', async () => {
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+      mockPrismaService.evidenceFile.create.mockResolvedValue({
+        id: 'ev-uuid-1',
+        badgeId: 'badge-123',
+        type: 'URL',
+        sourceUrl: 'https://example.com/evidence',
+        fileName: '',
+        originalName: 'example.com',
+        fileSize: 0,
+        mimeType: '',
+        blobUrl: '',
+        uploadedBy: 'user-admin',
+        uploadedAt: new Date(),
+      });
+
+      const result = await service.addUrlEvidence(
+        'badge-123',
+        'https://example.com/evidence',
+        'user-admin',
+      );
+
+      expect(result).toBeDefined();
+      expect(result.type).toBe('URL');
+      expect(result.sourceUrl).toBe('https://example.com/evidence');
+      expect(result.originalName).toBe('example.com');
+      expect(mockPrismaService.evidenceFile.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          data: expect.objectContaining({
+            type: 'URL',
+            sourceUrl: 'https://example.com/evidence',
+            fileName: '',
+            fileSize: 0,
+          }),
+        }),
+      );
+    });
+
+    it('should validate URL format', async () => {
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+
+      await expect(
+        service.addUrlEvidence('badge-123', 'not-a-url', 'user-admin'),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should reject non-http/https protocols', async () => {
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+
+      await expect(
+        service.addUrlEvidence(
+          'badge-123',
+          'ftp://example.com/file',
+          'user-admin',
+        ),
+      ).rejects.toThrow(BadRequestException);
+
+      await expect(
+        service.addUrlEvidence('badge-123', 'file:///etc/passwd', 'user-admin'),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should enforce IDOR protection (issuer or ADMIN)', async () => {
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+
+      await expect(
+        service.addUrlEvidence(
+          'badge-123',
+          'https://example.com/evidence',
+          'other-user',
+          'EMPLOYEE',
+        ),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should throw NotFoundException for invalid badge', async () => {
+      mockPrismaService.badge.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.addUrlEvidence(
+          'nonexistent',
+          'https://example.com/evidence',
+          'user-admin',
+        ),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should allow ADMIN to add URL evidence for any badge', async () => {
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+      mockPrismaService.evidenceFile.create.mockResolvedValue({
+        id: 'ev-uuid-2',
+        badgeId: 'badge-123',
+        type: 'URL',
+        sourceUrl: 'https://example.com/admin-evidence',
+        fileName: '',
+        originalName: 'example.com',
+        fileSize: 0,
+        mimeType: '',
+        blobUrl: '',
+        uploadedBy: 'admin-user',
+        uploadedAt: new Date(),
+      });
+
+      const result = await service.addUrlEvidence(
+        'badge-123',
+        'https://example.com/admin-evidence',
+        'admin-user',
+        'ADMIN',
+      );
+
+      expect(result).toBeDefined();
+      expect(result.type).toBe('URL');
+    });
+  });
+
+  describe('listEvidence - unified (Story 12.5)', () => {
+    const mockBadge = {
+      id: 'badge-123',
+      recipientId: 'user-123',
+      issuerId: 'user-admin',
+    };
+
+    it('should return both FILE and URL type evidence', async () => {
+      mockPrismaService.badge.findUnique.mockResolvedValue(mockBadge);
+      mockPrismaService.evidenceFile.findMany.mockResolvedValue([
+        {
+          id: 'file-1',
+          fileName: 'badge-123/cert.pdf',
+          originalName: 'cert.pdf',
+          fileSize: 12345,
+          mimeType: 'application/pdf',
+          blobUrl: 'https://storage.blob.core.windows.net/evidence/cert.pdf',
+          uploadedAt: new Date(),
+          type: 'FILE',
+          sourceUrl: null,
+        },
+        {
+          id: 'url-1',
+          fileName: '',
+          originalName: 'example.com',
+          fileSize: 0,
+          mimeType: '',
+          blobUrl: '',
+          uploadedAt: new Date(),
+          type: 'URL',
+          sourceUrl: 'https://example.com/evidence',
+        },
+      ]);
+
+      const result = await service.listEvidence(
+        'badge-123',
+        'user-123',
+        'EMPLOYEE',
+      );
+
+      expect(result).toHaveLength(2);
+      expect(result[0].type).toBe('FILE');
+      expect(result[0].sourceUrl).toBeUndefined();
+      expect(result[1].type).toBe('URL');
+      expect(result[1].sourceUrl).toBe('https://example.com/evidence');
     });
   });
 });

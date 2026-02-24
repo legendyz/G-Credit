@@ -61,6 +61,7 @@ const IDS = {
   // Milestones (type=0005)
   milestone1: '00000000-0000-4000-a000-000500000001',
   milestone2: '00000000-0000-4000-a000-000500000002',
+  milestone3: '00000000-0000-4000-a000-000500000003',
   // Skill Categories Level 1 (type=0006)
   scatTech: '00000000-0000-4000-a000-000600000001',
   scatSoft: '00000000-0000-4000-a000-000600000002',
@@ -72,6 +73,11 @@ const IDS = {
   scatCloud: '00000000-0000-4000-a000-000600000012',
   scatCommunication: '00000000-0000-4000-a000-000600000021',
   scatLeadership: '00000000-0000-4000-a000-000600000022',
+  // Skill Categories Level 3 — sub-sub-categories (type=0006, seq=1xx)
+  scatAws: '00000000-0000-4000-a000-000600000121',
+  // User-defined (non-system) categories for edit/delete UAT tests
+  scatCustom1: '00000000-0000-4000-a000-000600000031', // with skills (delete blocked)
+  scatCustomEmpty: '00000000-0000-4000-a000-000600000032', // empty (deletable)
   // Skills (must be valid UUID v4 — DTO validates @IsUUID('4'))
   skillTypescript: 'a0a00001-0001-4001-a001-000000000001',
   skillAzure: 'a0a00002-0002-4002-a002-000000000002',
@@ -80,6 +86,20 @@ const IDS = {
   skillTeamLeadership: 'a0a00005-0005-4005-a005-000000000005',
   skillProjectMgmt: 'a0a00006-0006-4006-a006-000000000006',
   skillAI: 'a0a00007-0007-4007-a007-000000000007',
+  // Unreferenced skill (no template uses it) — for UAT delete test
+  skillNegotiation: 'a0a00008-0008-4008-a008-000000000008',
+  // Skill under custom category (for delete-blocked test)
+  skillCustomTool: 'a0a00009-0009-4009-a009-000000000009',
+  // Evidence URL type
+  evidence3: '00000000-0000-4000-a000-000400000003',
+  // Extra milestones
+  milestone4: '00000000-0000-4000-a000-000500000004',
+  milestone5: '00000000-0000-4000-a000-000500000005',
+  // Milestone Achievements (type=0005, seq=1x)
+  mAchieve1: '00000000-0000-4000-a000-000500000011', // Employee × First Badge
+  mAchieve2: '00000000-0000-4000-a000-000500000012', // Employee × Well-Rounded
+  mAchieve3: '00000000-0000-4000-a000-000500000013', // Manager  × First Badge
+  mAchieve4: '00000000-0000-4000-a000-000500000014', // Admin    × First Badge
 };
 
 const UAT_SALT = 'gcredit-uat-salt';
@@ -97,6 +117,27 @@ function makeAssertion(verificationId: string) {
     type: 'Assertion',
     id: `http://localhost:3000/api/verification/${verificationId}/assertion`,
   };
+}
+
+/** Canonical JSON with recursively sorted keys — matches AssertionGeneratorService */
+function canonicalJson(obj: unknown): string {
+  return JSON.stringify(obj, (_key, value) =>
+    value && typeof value === 'object' && !Array.isArray(value)
+      ? Object.keys(value)
+          .sort()
+          .reduce(
+            (sorted, k) => {
+              sorted[k] = (value as Record<string, unknown>)[k];
+              return sorted;
+            },
+            {} as Record<string, unknown>,
+          )
+      : value,
+  );
+}
+
+function hashAssertion(assertion: object): string {
+  return crypto.createHash('sha256').update(canonicalJson(assertion)).digest('hex');
 }
 
 async function main() {
@@ -168,7 +209,7 @@ async function main() {
   });
 
   const employee2 = await prisma.user.upsert({
-    where: { email: 'M365DevAdmin@2wjh85.onmicrosoft.com' },
+    where: { email: 'employee2@gcredit.com' },
     update: {
       passwordHash,
       role: UserRole.EMPLOYEE,
@@ -176,10 +217,10 @@ async function main() {
       emailVerified: true,
     },
     create: {
-      email: 'M365DevAdmin@2wjh85.onmicrosoft.com',
+      email: 'employee2@gcredit.com',
       passwordHash,
-      firstName: 'M365Dev',
-      lastName: 'Admin',
+      firstName: 'Demo',
+      lastName: 'Employee2',
       role: UserRole.EMPLOYEE,
       department: 'Development',
       isActive: true,
@@ -210,6 +251,21 @@ async function main() {
   console.log('✅ 5 users created/updated');
 
   // ========================================
+  // 1b. LINK MANAGER HIERARCHY (Story 12.3a)
+  // ========================================
+  // Link employee → manager via managerId
+  await prisma.user.update({
+    where: { id: employee.id },
+    data: { managerId: manager.id },
+  });
+  // Link employee2 → manager too (2 subordinates for delete-manager warning test)
+  await prisma.user.update({
+    where: { id: employee2.id },
+    data: { managerId: manager.id },
+  });
+  console.log('✅ Employee + Employee2 linked to Manager via managerId');
+
+  // ========================================
   // CLEANUP: Delete existing UAT data in FK-safe order
   // Handles both old (uat-*) and new (00000000-*) ID formats
   // ========================================
@@ -217,7 +273,7 @@ async function main() {
   await prisma.evidenceFile.deleteMany({
     where: {
       OR: [
-        { id: { in: [IDS.evidence1, IDS.evidence2] } },
+        { id: { in: [IDS.evidence1, IDS.evidence2, IDS.evidence3] } },
         { badge: { claimToken: { startsWith: 'uat-claim-token-' } } },
         {
           badge: {
@@ -274,7 +330,11 @@ async function main() {
   // Clean skill data (skills before categories due to FK)
   await prisma.skill.deleteMany({
     where: {
-      id: { in: Object.values(IDS).filter((id) => id.startsWith('a0a0000')) },
+      id: {
+        in: [
+          ...Object.values(IDS).filter((id) => id.startsWith('a0a0000')),
+        ],
+      },
     },
   });
   // Skill categories: by new IDs and old uat-scat-* IDs
@@ -312,60 +372,65 @@ async function main() {
     prisma.skillCategory.create({
       data: {
         id: IDS.scatTech,
-        name: '技术技能',
+        name: 'Technical Skills',
         nameEn: 'Technical Skills',
-        description: '编程、开发工具、云平台等技术相关能力',
+        description: 'Programming, development tools, cloud platforms and other technical competencies',
+        color: 'blue',
         level: 1,
         isSystemDefined: true,
-        isEditable: false,
+        isEditable: true,
         displayOrder: 1,
       },
     }),
     prisma.skillCategory.create({
       data: {
         id: IDS.scatSoft,
-        name: '软技能',
+        name: 'Soft Skills',
         nameEn: 'Soft Skills',
-        description: '沟通、领导力、团队协作等人际交往能力',
+        description: 'Communication, leadership, teamwork and other interpersonal competencies',
+        color: 'amber',
         level: 1,
         isSystemDefined: true,
-        isEditable: false,
+        isEditable: true,
         displayOrder: 2,
       },
     }),
     prisma.skillCategory.create({
       data: {
         id: IDS.scatDomain,
-        name: '行业知识',
+        name: 'Domain Knowledge',
         nameEn: 'Domain Knowledge',
-        description: '特定行业的专业知识与经验',
+        description: 'Industry-specific professional knowledge and experience',
+        color: 'emerald',
         level: 1,
         isSystemDefined: true,
-        isEditable: false,
+        isEditable: true,
         displayOrder: 3,
       },
     }),
     prisma.skillCategory.create({
       data: {
         id: IDS.scatCompany,
-        name: '公司特定能力',
+        name: 'Company-Specific Competencies',
         nameEn: 'Company-Specific Competencies',
-        description: '企业文化、内部流程、专有工具等公司特有的能力要求',
+        description: 'Corporate culture, internal processes, proprietary tools and other company-specific competencies',
+        color: 'violet',
         level: 1,
         isSystemDefined: true,
-        isEditable: false,
+        isEditable: true,
         displayOrder: 4,
       },
     }),
     prisma.skillCategory.create({
       data: {
         id: IDS.scatProfessional,
-        name: '通用职业技能',
+        name: 'Professional Skills',
         nameEn: 'Professional Skills',
-        description: '项目管理、数据分析等跨行业的通用职业技能',
+        description: 'Project management, data analysis and other cross-industry professional skills',
+        color: 'cyan',
         level: 1,
         isSystemDefined: true,
-        isEditable: false,
+        isEditable: true,
         displayOrder: 5,
       },
     }),
@@ -379,55 +444,104 @@ async function main() {
     prisma.skillCategory.create({
       data: {
         id: IDS.scatProgramming,
-        name: '编程语言',
+        name: 'Programming Languages',
         nameEn: 'Programming Languages',
+        color: 'blue',
         level: 2,
         parentId: IDS.scatTech,
         isSystemDefined: true,
-        isEditable: false,
+        isEditable: true,
         displayOrder: 1,
       },
     }),
     prisma.skillCategory.create({
       data: {
         id: IDS.scatCloud,
-        name: '云平台',
+        name: 'Cloud Platforms',
         nameEn: 'Cloud Platforms',
+        color: 'blue',
         level: 2,
         parentId: IDS.scatTech,
         isSystemDefined: true,
-        isEditable: false,
+        isEditable: true,
         displayOrder: 3,
       },
     }),
     prisma.skillCategory.create({
       data: {
         id: IDS.scatCommunication,
-        name: '沟通能力',
+        name: 'Communication',
         nameEn: 'Communication',
+        color: 'amber',
         level: 2,
         parentId: IDS.scatSoft,
         isSystemDefined: true,
-        isEditable: false,
+        isEditable: true,
         displayOrder: 1,
       },
     }),
     prisma.skillCategory.create({
       data: {
         id: IDS.scatLeadership,
-        name: '领导力',
+        name: 'Leadership',
         nameEn: 'Leadership',
+        color: 'amber',
         level: 2,
         parentId: IDS.scatSoft,
         isSystemDefined: true,
-        isEditable: false,
+        isEditable: true,
         displayOrder: 2,
       },
     }),
   ]);
   console.log(`✅ ${subCategories.length} sub-categories created`);
 
-  // 2c. Create 6 skills across different categories and levels
+  // 2b2. Create 1 Level 3 sub-sub-category (for UAT-S12-001: 3-level tree)
+  await prisma.skillCategory.create({
+    data: {
+      id: IDS.scatAws,
+      name: 'AWS',
+      nameEn: 'Amazon Web Services',
+      color: 'blue',
+      level: 3,
+      parentId: IDS.scatCloud, // Cloud Platforms → AWS
+      isSystemDefined: false,
+      isEditable: true,
+      displayOrder: 1,
+    },
+  });
+  console.log('✅ 1 Level 3 sub-sub-category created (Cloud → AWS)');
+
+  // 2b3. Create 2 user-defined categories (non-system, for edit/delete UAT tests)
+  await prisma.skillCategory.create({
+    data: {
+      id: IDS.scatCustom1,
+      name: 'Internal Tools',
+      nameEn: 'Internal Tools',
+      description: 'Company-specific internal tools and platforms',
+      color: 'rose',
+      level: 1,
+      isSystemDefined: false,
+      isEditable: true,
+      displayOrder: 6,
+    },
+  });
+  await prisma.skillCategory.create({
+    data: {
+      id: IDS.scatCustomEmpty,
+      name: 'Experimental',
+      nameEn: 'Experimental',
+      description: 'Empty category for UAT delete testing',
+      color: 'lime',
+      level: 1,
+      isSystemDefined: false,
+      isEditable: true,
+      displayOrder: 7,
+    },
+  });
+  console.log('✅ 2 user-defined categories created (1 with skills, 1 empty)');
+
+  // 2c. Create skills across different categories and levels
   const skills = await Promise.all([
     prisma.skill.create({
       data: {
@@ -493,6 +607,26 @@ async function main() {
           'Artificial intelligence, machine learning, and generative AI technologies',
         categoryId: IDS.scatProgramming,
         level: SkillLevel.INTERMEDIATE,
+      },
+    }),
+    // Unreferenced skill (no template uses it) — for UAT-S12-010 delete test
+    prisma.skill.create({
+      data: {
+        id: IDS.skillNegotiation,
+        name: 'Negotiation',
+        description: 'Business negotiation and conflict resolution skills',
+        categoryId: IDS.scatCommunication,
+        level: SkillLevel.ADVANCED,
+      },
+    }),
+    // Skill under custom category — proves delete-blocked for non-empty category
+    prisma.skill.create({
+      data: {
+        id: IDS.skillCustomTool,
+        name: 'G-Credit Platform',
+        description: 'Internal G-Credit badge management platform operations',
+        categoryId: IDS.scatCustom1,
+        level: SkillLevel.BEGINNER,
       },
     }),
   ]);
@@ -707,10 +841,7 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-001-000000000000',
       verificationId: IDS.verify1,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge1-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify1)),
       recipientHash: hashEmail('employee@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify1),
       issuedAt: twoMonthsAgo,
@@ -729,10 +860,7 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-002-000000000000',
       verificationId: IDS.verify2,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge2-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify2)),
       recipientHash: hashEmail('employee@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify2),
       issuedAt: oneMonthAgo,
@@ -751,10 +879,7 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-003-000000000000',
       verificationId: IDS.verify3,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge3-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify3)),
       recipientHash: hashEmail('employee@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify3),
       issuedAt: oneWeekAgo,
@@ -773,10 +898,7 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-004-000000000000',
       verificationId: IDS.verify4,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge4-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify4)),
       recipientHash: hashEmail('employee@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify4),
       issuedAt: threeDaysAgo,
@@ -795,10 +917,7 @@ async function main() {
       status: BadgeStatus.PENDING,
       claimToken: 'uat-claim-token-005-pending00000',
       verificationId: IDS.verify5,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge5-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify5)),
       recipientHash: hashEmail('employee@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify5),
       issuedAt: now,
@@ -817,10 +936,7 @@ async function main() {
       status: BadgeStatus.REVOKED,
       claimToken: 'uat-claim-token-006-000000000000',
       verificationId: IDS.verify6,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge6-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify6)),
       recipientHash: hashEmail('employee@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify6),
       issuedAt: twoMonthsAgo,
@@ -847,10 +963,7 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-007-000000000000',
       verificationId: IDS.verify7,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge7-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify7)),
       recipientHash: hashEmail('manager@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify7),
       issuedAt: oneMonthAgo,
@@ -869,10 +982,7 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-008-000000000000',
       verificationId: IDS.verify8,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge8-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify8)),
       recipientHash: hashEmail('manager@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify8),
       issuedAt: twoMonthsAgo,
@@ -891,10 +1001,7 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-009-000000000000',
       verificationId: IDS.verify9,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge9-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify9)),
       recipientHash: hashEmail('manager@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify9),
       issuedAt: twoMonthsAgo,
@@ -915,10 +1022,7 @@ async function main() {
       status: BadgeStatus.CLAIMED,
       claimToken: 'uat-claim-token-010-000000000000',
       verificationId: IDS.verify10,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge10-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify10)),
       recipientHash: hashEmail('admin@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify10),
       issuedAt: oneWeekAgo,
@@ -937,10 +1041,7 @@ async function main() {
       status: BadgeStatus.PENDING,
       claimToken: 'uat-claim-token-011-pending00000',
       verificationId: IDS.verify11,
-      metadataHash: crypto
-        .createHash('sha256')
-        .update('badge11-meta')
-        .digest('hex'),
+      metadataHash: hashAssertion(makeAssertion(IDS.verify11)),
       recipientHash: hashEmail('admin@gcredit.com'),
       assertionJson: makeAssertion(IDS.verify11),
       issuedAt: now,
@@ -985,11 +1086,36 @@ async function main() {
     },
   });
 
-  console.log('✅ 2 evidence files created');
+  // URL-type evidence (Story 12.5) — for UAT-S12-021 unified display testing
+  await prisma.evidenceFile.create({
+    data: {
+      id: IDS.evidence3,
+      badgeId: IDS.badge2,
+      fileName: 'leadership-course-completion',
+      originalName: 'https://learn.microsoft.com/certifications/leadership',
+      fileSize: 0,
+      mimeType: '',
+      blobUrl: '',
+      type: 'URL',
+      sourceUrl: 'https://learn.microsoft.com/certifications/leadership',
+      uploadedBy: employee.id,
+    },
+  });
+
+  console.log('✅ 3 evidence files created (2 FILE + 1 URL)');
 
   // ========================================
   // 5. MILESTONE CONFIGS (2 milestones)
   // ========================================
+
+  // Clean up achievements first (cascade should handle it, but explicit is safer for re-runs)
+  await prisma.milestoneAchievement.deleteMany({
+    where: {
+      id: {
+        in: [IDS.mAchieve1, IDS.mAchieve2, IDS.mAchieve3, IDS.mAchieve4],
+      },
+    },
+  });
 
   await prisma.milestoneConfig.deleteMany({
     where: {
@@ -997,6 +1123,9 @@ async function main() {
         in: [
           IDS.milestone1,
           IDS.milestone2,
+          IDS.milestone3,
+          IDS.milestone4,
+          IDS.milestone5,
           // Old format IDs for migration cleanup
           'uat-mile-0001-0001-0001-000000000001',
           'uat-mile-0001-0001-0001-000000000002',
@@ -1012,7 +1141,7 @@ async function main() {
       title: 'First Badge',
       description:
         'Earned your very first badge! Welcome to the G-Credit community.',
-      trigger: { type: 'badge_count', value: 1 },
+      trigger: { metric: 'badge_count', scope: 'global', threshold: 1 },
       icon: '🏆',
       isActive: true,
       createdBy: admin.id,
@@ -1025,21 +1154,179 @@ async function main() {
       type: MilestoneType.BADGE_COUNT,
       title: 'Badge Collector',
       description: 'Earned 5 badges! You are a dedicated learner.',
-      trigger: { type: 'badge_count', value: 5 },
+      trigger: { metric: 'badge_count', scope: 'global', threshold: 5 },
       icon: '⭐',
       isActive: true,
       createdBy: admin.id,
     },
   });
 
-  console.log('✅ 2 milestone configs created');
+  await prisma.milestoneConfig.create({
+    data: {
+      id: IDS.milestone3,
+      type: MilestoneType.CATEGORY_COUNT,
+      title: 'Well-Rounded Learner',
+      description: 'Earned badges across 3 different skill categories.',
+      trigger: { metric: 'category_count', scope: 'global', threshold: 3 },
+      icon: '🌟',
+      isActive: true,
+      createdBy: admin.id,
+    },
+  });
+
+  // Category-scoped milestone (badge_count × category) — for UAT-S12-017
+  await prisma.milestoneConfig.create({
+    data: {
+      id: IDS.milestone4,
+      type: MilestoneType.BADGE_COUNT,
+      title: 'Cloud Specialist',
+      description: 'Earned 3 badges in the Technical Skills category.',
+      trigger: {
+        metric: 'badge_count',
+        scope: 'category',
+        threshold: 3,
+        categoryId: IDS.scatTech,
+        includeSubCategories: true,
+      },
+      icon: '☁️',
+      isActive: true,
+      createdBy: admin.id,
+    },
+  });
+
+  // Inactive milestone — for UAT-S12-018 toggle test
+  await prisma.milestoneConfig.create({
+    data: {
+      id: IDS.milestone5,
+      type: MilestoneType.BADGE_COUNT,
+      title: 'Badge Master',
+      description: 'Earned 10 badges — a true badge master!',
+      trigger: { metric: 'badge_count', scope: 'global', threshold: 10 },
+      icon: '👑',
+      isActive: false,
+      createdBy: admin.id,
+    },
+  });
+
+  console.log('✅ 5 milestone configs created (3 active global, 1 active category, 1 inactive)');
+
+  // 5b. MILESTONE ACHIEVEMENTS
+  // Seed data bypasses badge issuance flow (checkMilestones),
+  // so we manually create achievement records for qualifying users.
+  //
+  // First Badge (badge_count ≥ 1, global):
+  //   Employee (4 CLAIMED) ✅, Manager (3 CLAIMED) ✅, Admin (1 CLAIMED) ✅
+  // Badge Collector (badge_count ≥ 5): nobody qualifies
+  // Well-Rounded Learner (category_count ≥ 3):
+  //   Employee → 5 distinct skill categories (Programming, Cloud, Leadership, Communication, Professional) ✅
+  // Cloud Specialist (badge_count ≥ 3 in Technical Skills): nobody qualifies (Employee has 1 matching badge)
+  // Badge Master (inactive): skipped
+
+  await Promise.all([
+    // Employee × First Badge
+    prisma.milestoneAchievement.create({
+      data: {
+        id: IDS.mAchieve1,
+        milestoneId: IDS.milestone1,
+        userId: employee.id,
+        achievedAt: new Date(twoMonthsAgo.getTime() + 2 * 24 * 60 * 60 * 1000), // when first badge was claimed
+      },
+    }),
+    // Employee × Well-Rounded Learner
+    prisma.milestoneAchievement.create({
+      data: {
+        id: IDS.mAchieve2,
+        milestoneId: IDS.milestone3,
+        userId: employee.id,
+        achievedAt: new Date(threeDaysAgo.getTime() + 6 * 60 * 60 * 1000), // when 4th badge (Team Player) was claimed, crossing 3-category threshold
+      },
+    }),
+    // Manager × First Badge
+    prisma.milestoneAchievement.create({
+      data: {
+        id: IDS.mAchieve3,
+        milestoneId: IDS.milestone1,
+        userId: manager.id,
+        achievedAt: new Date(oneMonthAgo.getTime() + 2 * 24 * 60 * 60 * 1000), // when first badge (Leadership) was claimed
+      },
+    }),
+    // Admin × First Badge
+    prisma.milestoneAchievement.create({
+      data: {
+        id: IDS.mAchieve4,
+        milestoneId: IDS.milestone1,
+        userId: admin.id,
+        achievedAt: new Date(oneWeekAgo.getTime() + 4 * 60 * 60 * 1000), // when Team Player badge was claimed
+      },
+    }),
+  ]);
+
+  console.log('✅ 4 milestone achievements created (3 First Badge + 1 Well-Rounded)');
 
   // ========================================
-  // 6. AUDIT LOGS (3 entries for revocation)
+  // 6. AUDIT LOGS (9 entries covering all action types)
   // ========================================
 
   await prisma.auditLog.createMany({
     data: [
+      {
+        entityType: 'Badge',
+        entityId: IDS.badge1,
+        action: 'ISSUED',
+        actorId: issuer.id,
+        actorEmail: 'issuer@gcredit.com',
+        timestamp: twoMonthsAgo,
+        metadata: {
+          badgeName: 'Cloud Expert Certification',
+          templateName: 'Cloud Expert Certification',
+          recipientEmail: 'employee@gcredit.com',
+          recipientName: 'Demo Employee',
+          templateId: IDS.tmpl1,
+        },
+      },
+      {
+        entityType: 'Badge',
+        entityId: IDS.badge1,
+        action: 'CLAIMED',
+        actorId: employee.id,
+        actorEmail: 'employee@gcredit.com',
+        timestamp: new Date(twoMonthsAgo.getTime() + 2 * 24 * 60 * 60 * 1000),
+        metadata: {
+          oldStatus: 'PENDING',
+          newStatus: 'CLAIMED',
+          badgeName: 'Cloud Expert Certification',
+          templateName: 'Cloud Expert Certification',
+        },
+      },
+      {
+        entityType: 'Badge',
+        entityId: IDS.badge2,
+        action: 'ISSUED',
+        actorId: issuer.id,
+        actorEmail: 'issuer@gcredit.com',
+        timestamp: oneMonthAgo,
+        metadata: {
+          badgeName: 'Leadership Excellence',
+          templateName: 'Leadership Excellence',
+          recipientEmail: 'employee@gcredit.com',
+          recipientName: 'Demo Employee',
+          templateId: IDS.tmpl2,
+        },
+      },
+      {
+        entityType: 'Badge',
+        entityId: IDS.badge2,
+        action: 'CLAIMED',
+        actorId: employee.id,
+        actorEmail: 'employee@gcredit.com',
+        timestamp: new Date(oneMonthAgo.getTime() + 1 * 24 * 60 * 60 * 1000),
+        metadata: {
+          oldStatus: 'PENDING',
+          newStatus: 'CLAIMED',
+          badgeName: 'Leadership Excellence',
+          templateName: 'Leadership Excellence',
+        },
+      },
       {
         entityType: 'Badge',
         entityId: IDS.badge6,
@@ -1048,8 +1335,11 @@ async function main() {
         actorEmail: 'issuer@gcredit.com',
         timestamp: twoMonthsAgo,
         metadata: {
+          badgeName: 'Cloud Expert Certification',
           templateName: 'Cloud Expert Certification',
-          recipientEmail: 'M365DevAdmin@2wjh85.onmicrosoft.com',
+          recipientEmail: 'employee@gcredit.com',
+          recipientName: 'Demo Employee',
+          templateId: IDS.tmpl1,
         },
       },
       {
@@ -1057,9 +1347,14 @@ async function main() {
         entityId: IDS.badge6,
         action: 'CLAIMED',
         actorId: employee.id,
-        actorEmail: 'M365DevAdmin@2wjh85.onmicrosoft.com',
+        actorEmail: 'employee@gcredit.com',
         timestamp: new Date(twoMonthsAgo.getTime() + 1 * 24 * 60 * 60 * 1000),
-        metadata: { oldStatus: 'PENDING', newStatus: 'CLAIMED' },
+        metadata: {
+          oldStatus: 'PENDING',
+          newStatus: 'CLAIMED',
+          badgeName: 'Cloud Expert Certification',
+          templateName: 'Cloud Expert Certification',
+        },
       },
       {
         entityType: 'Badge',
@@ -1071,15 +1366,37 @@ async function main() {
         metadata: {
           oldStatus: 'CLAIMED',
           newStatus: 'REVOKED',
+          badgeName: 'Cloud Expert Certification',
+          templateName: 'Cloud Expert Certification',
+          recipientName: 'Demo Employee',
+          recipientEmail: 'employee@gcredit.com',
           reason:
             'Certification expired - employee did not renew within grace period',
           notes: 'UAT test data: revoked badge for verification page testing',
         },
       },
+      {
+        entityType: 'BadgeTemplate',
+        entityId: IDS.tmpl1,
+        action: 'CREATED',
+        actorId: issuer.id,
+        actorEmail: 'issuer@gcredit.com',
+        timestamp: new Date(twoMonthsAgo.getTime() - 7 * 24 * 60 * 60 * 1000),
+        metadata: { templateName: 'Cloud Expert Certification' },
+      },
+      {
+        entityType: 'User',
+        entityId: employee.id,
+        action: 'UPDATED',
+        actorId: admin.id,
+        actorEmail: 'admin@gcredit.com',
+        timestamp: oneWeekAgo,
+        metadata: { field: 'role', oldValue: 'EMPLOYEE', newValue: 'EMPLOYEE' },
+      },
     ],
   });
 
-  console.log('✅ 3 audit log entries created');
+  console.log('✅ 9 audit log entries created (ISSUED, CLAIMED, REVOKED, CREATED, UPDATED)');
 
   // ========================================
   // SUMMARY
@@ -1090,10 +1407,11 @@ async function main() {
   console.log('   Issuer:   issuer@gcredit.com / password123');
   console.log('   Manager:  manager@gcredit.com / password123');
   console.log('   Employee: employee@gcredit.com / password123');
-  console.log('   Employee: M365DevAdmin@2wjh85.onmicrosoft.com / password123');
+  console.log('   Employee: employee2@gcredit.com / password123');
   console.log('\n📊 Data Summary:');
-  console.log('   5 users, 5 templates, 11 badges, 2 evidence files');
-  console.log('   2 milestone configs, 3 audit logs');
+  console.log('   5 users (2 linked to manager), 9 templates, 11 badges, 3 evidence files');
+  console.log('   12 skill categories (5 L1 + 4 L2 + 1 L3 + 2 custom), 9 skills');
+  console.log('   5 milestone configs (3 global + 1 category + 1 inactive), 9 audit logs');
   console.log('\n🔗 Verification URLs:');
   console.log(`   CLAIMED:  http://localhost:5173/verify/${IDS.verify1}`);
   console.log(`   PENDING:  http://localhost:5173/verify/${IDS.verify5}`);

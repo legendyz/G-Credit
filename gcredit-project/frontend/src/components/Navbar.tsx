@@ -16,6 +16,12 @@ export function Navbar() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const isActive = (path: string) => pathname === path;
+  const navCls = (path: string) =>
+    `px-2.5 py-2 text-sm font-medium transition-colors rounded-lg min-h-[44px] flex items-center whitespace-nowrap ${
+      isActive(path)
+        ? 'text-brand-600 bg-brand-50'
+        : 'text-neutral-700 hover:text-brand-600 hover:bg-neutral-100 active:bg-neutral-200'
+    }`;
 
   const handleLogout = async () => {
     await logout();
@@ -40,16 +46,11 @@ export function Navbar() {
           </Link>
 
           {/* Navigation Links - Story 8.5: Touch-friendly padding */}
-          <ul className="hidden md:flex items-center space-x-1">
+          <ul className="hidden md:flex flex-1 items-center justify-center">
             <li>
               <Link
                 to="/"
-                className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
-                           flex items-center ${
-                             isActive('/')
-                               ? 'text-brand-600 bg-brand-50'
-                               : 'text-neutral-700 hover:text-brand-600 hover:bg-neutral-100 active:bg-neutral-200'
-                           }`}
+                className={navCls('/')}
                 aria-current={isActive('/') ? 'page' : undefined}
               >
                 Dashboard
@@ -58,15 +59,10 @@ export function Navbar() {
             <li>
               <Link
                 to="/wallet"
-                className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
-                           flex items-center ${
-                             isActive('/wallet')
-                               ? 'text-brand-600 bg-brand-50'
-                               : 'text-neutral-700 hover:text-brand-600 hover:bg-neutral-100 active:bg-neutral-200'
-                           }`}
+                className={navCls('/wallet')}
                 aria-current={isActive('/wallet') ? 'page' : undefined}
               >
-                My Wallet
+                Wallet
               </Link>
             </li>
 
@@ -76,54 +72,34 @@ export function Navbar() {
                 <li>
                   <Link
                     to="/admin/templates"
-                    className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
-                               flex items-center ${
-                                 isActive('/admin/templates')
-                                   ? 'text-brand-600 bg-brand-50'
-                                   : 'text-neutral-700 hover:text-brand-600 hover:bg-neutral-100 active:bg-neutral-200'
-                               }`}
+                    className={navCls('/admin/templates')}
                     aria-current={isActive('/admin/templates') ? 'page' : undefined}
                   >
-                    Badge Templates
+                    Templates
                   </Link>
                 </li>
                 <li>
                   <Link
                     to="/admin/badges"
-                    className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
-                               flex items-center ${
-                                 isActive('/admin/badges')
-                                   ? 'text-brand-600 bg-brand-50'
-                                   : 'text-neutral-700 hover:text-brand-600 hover:bg-neutral-100 active:bg-neutral-200'
-                               }`}
+                    className={navCls('/admin/badges')}
                     aria-current={isActive('/admin/badges') ? 'page' : undefined}
                   >
-                    Badge Management
+                    Badges
                   </Link>
                 </li>
                 <li>
                   <Link
                     to="/admin/bulk-issuance"
-                    className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
-                               flex items-center ${
-                                 isActive('/admin/bulk-issuance')
-                                   ? 'text-brand-600 bg-brand-50'
-                                   : 'text-neutral-700 hover:text-brand-600 hover:bg-neutral-100 active:bg-neutral-200'
-                               }`}
+                    className={navCls('/admin/bulk-issuance')}
                     aria-current={isActive('/admin/bulk-issuance') ? 'page' : undefined}
                   >
-                    Bulk Issuance
+                    Bulk Issue
                   </Link>
                 </li>
                 <li>
                   <Link
                     to="/admin/analytics"
-                    className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
-                               flex items-center ${
-                                 isActive('/admin/analytics')
-                                   ? 'text-brand-600 bg-brand-50'
-                                   : 'text-neutral-700 hover:text-brand-600 hover:bg-neutral-100 active:bg-neutral-200'
-                               }`}
+                    className={navCls('/admin/analytics')}
                     aria-current={isActive('/admin/analytics') ? 'page' : undefined}
                   >
                     Analytics
@@ -134,20 +110,44 @@ export function Navbar() {
 
             {/* Admin-only: User Management */}
             {user?.role === 'ADMIN' && (
-              <li>
-                <Link
-                  to="/admin/users"
-                  className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
-                             flex items-center ${
-                               isActive('/admin/users')
-                                 ? 'text-brand-600 bg-brand-50'
-                                 : 'text-neutral-700 hover:text-brand-600 hover:bg-neutral-100 active:bg-neutral-200'
-                             }`}
-                  aria-current={isActive('/admin/users') ? 'page' : undefined}
-                >
-                  Users
-                </Link>
-              </li>
+              <>
+                <li>
+                  <Link
+                    to="/admin/users"
+                    className={navCls('/admin/users')}
+                    aria-current={isActive('/admin/users') ? 'page' : undefined}
+                  >
+                    Users
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/admin/skills/categories"
+                    className={navCls('/admin/skills/categories')}
+                    aria-current={isActive('/admin/skills/categories') ? 'page' : undefined}
+                  >
+                    Categories
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/admin/skills"
+                    className={navCls('/admin/skills')}
+                    aria-current={isActive('/admin/skills') ? 'page' : undefined}
+                  >
+                    Skills
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/admin/milestones"
+                    className={navCls('/admin/milestones')}
+                    aria-current={isActive('/admin/milestones') ? 'page' : undefined}
+                  >
+                    Milestones
+                  </Link>
+                </li>
+              </>
             )}
 
             {/* Manager Links */}
@@ -155,15 +155,10 @@ export function Navbar() {
               <li>
                 <Link
                   to="/admin/badges"
-                  className={`px-4 py-3 text-sm font-medium transition-colors rounded-lg min-h-[44px]
-                             flex items-center ${
-                               isActive('/admin/badges')
-                                 ? 'text-brand-600 bg-brand-50'
-                                 : 'text-neutral-700 hover:text-brand-600 hover:bg-neutral-100 active:bg-neutral-200'
-                             }`}
+                  className={navCls('/admin/badges')}
                   aria-current={isActive('/admin/badges') ? 'page' : undefined}
                 >
-                  Badge Management
+                  Badges
                 </Link>
               </li>
             )}

@@ -4,6 +4,8 @@ import { useSkills } from '../../hooks/useSkills';
 import { useBadgeSearch } from '../../hooks/useBadgeSearch';
 import { TimelineLine } from './TimelineLine';
 import { BadgeTimelineCard } from './BadgeTimelineCard';
+// Story 12.4: MilestoneTimelineCard wired for rendering milestone achievements in timeline
+import { MilestoneTimelineCard } from './MilestoneTimelineCard';
 import { DateGroupHeader } from './DateGroupHeader';
 import { DateNavigationSidebar } from './DateNavigationSidebar';
 import { ViewToggle } from './ViewToggle';
@@ -12,22 +14,19 @@ import BadgeDetailModal from '../BadgeDetailModal/BadgeDetailModal';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useBadgeDetailModal } from '../../stores/badgeDetailModal';
 import { BadgeSearchBar } from '../search/BadgeSearchBar';
+import { StatusBadge } from '../ui/StatusBadge';
 import { PageTemplate } from '../layout/PageTemplate';
 import type { BadgeForFilter } from '../../utils/searchFilters';
-import type { Badge } from '../../hooks/useWallet';
+import type { Badge, Milestone } from '../../hooks/useWallet';
 
 export type ViewMode = 'timeline' | 'grid';
 
 /**
  * Type guard: distinguish Badge from Milestone in wallet items.
  *
- * Design decision (Story 11.24 / Code Review #1): Milestones are intentionally
- * filtered out of the TimelineView rendering path. MilestoneTimelineCard exists
- * as a component but is not wired in because:
- *  - Milestones lack search/filter support (no template, no issuer)
- *  - The wallet API returns them inline with badges, but the UI treats them
- *    as a future feature (render when milestone display is spec'd)
- *  - Keeping the component allows easy activation without re-implementation
+ * Story 12.4: MilestoneTimelineCard is now wired in for rendering.
+ * Milestones are still excluded from search/filter (they lack template data),
+ * but they render inline in the timeline when present in wallet data.
  */
 function isBadge(item: { type?: string }): item is Badge {
   return !('type' in item) || item.type !== 'milestone';
@@ -35,6 +34,7 @@ function isBadge(item: { type?: string }): item is Badge {
 
 export function TimelineView() {
   const [viewMode, setViewMode] = useState<ViewMode>('timeline');
+  const [selectedDateGroup, setSelectedDateGroup] = useState<string | null>(null);
 
   // Fetch all badges initially (status filter will be handled by search)
   const { data, isLoading, error } = useWallet({});
@@ -119,6 +119,44 @@ export function TimelineView() {
     const filteredIds = new Set(filteredBadges.map((b) => b.id));
     return data.data.filter(isBadge).filter((badge) => filteredIds.has(badge.id));
   }, [data, filteredBadges]);
+
+  // Grid view: further filter by selected date group
+  const gridDisplayBadges: Badge[] = useMemo(() => {
+    if (!selectedDateGroup) return displayBadges;
+    return displayBadges.filter((badge) => {
+      const date = new Date(badge.issuedAt);
+      const label = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+      return label === selectedDateGroup;
+    });
+  }, [displayBadges, selectedDateGroup]);
+
+  // Handle date group click: scroll in timeline mode, filter in grid mode
+  const handleDateGroupClick = useCallback(
+    (label: string) => {
+      if (viewMode === 'grid') {
+        setSelectedDateGroup((prev) => (prev === label ? null : label));
+      } else {
+        const element = document.getElementById(`group-${label}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    },
+    [viewMode]
+  );
+
+  // Clear date group selection when switching view modes
+  useEffect(() => {
+    setSelectedDateGroup(null);
+  }, [viewMode]);
+
+  // Story 12.4: Extract milestone items from wallet data for timeline rendering
+  const milestoneItems: Milestone[] = useMemo(() => {
+    if (!data?.data) return [];
+    return data.data.filter(
+      (item): item is Milestone => 'type' in item && item.type === 'milestone'
+    );
+  }, [data]);
 
   // Group badges by date for timeline display
   const dateGroups = useMemo(() => {
@@ -220,6 +258,8 @@ export function TimelineView() {
         {/* Date Navigation Sidebar - AC 1.6 (hidden on mobile, visible on desktop) */}
         <DateNavigationSidebar
           dateGroups={dateGroups}
+          selectedLabel={selectedDateGroup}
+          onSelect={handleDateGroupClick}
           className="hidden lg:block w-60 flex-shrink-0"
         />
 
@@ -306,6 +346,14 @@ export function TimelineView() {
           {viewMode === 'timeline' && !showNoResults && (
             <div className="relative">
               <TimelineLine />
+              {/* Story 12.4: Render milestone achievements at the top of the timeline */}
+              {milestoneItems.length > 0 && (
+                <div className="space-y-4 mb-8">
+                  {milestoneItems.map((milestone) => (
+                    <MilestoneTimelineCard key={milestone.milestoneId} milestone={milestone} />
+                  ))}
+                </div>
+              )}
               <div className="space-y-8">
                 {dateGroups.map((group) => {
                   const groupBadges = displayBadges.slice(
@@ -329,7 +377,25 @@ export function TimelineView() {
           )}
 
           {/* Grid View - With keyboard navigation (Story 8.3 UX-P1-005) */}
-          {viewMode === 'grid' && !showNoResults && <GridView badges={displayBadges} />}
+          {viewMode === 'grid' && !showNoResults && (
+            <>
+              {milestoneItems.length > 0 && (
+                <div className="flex flex-wrap gap-3 mb-4">
+                  {milestoneItems.map((m) => (
+                    <div
+                      key={m.milestoneId}
+                      className="flex items-center gap-2 rounded-full bg-amber-50 border border-amber-200 px-3 py-1.5"
+                      title={`${m.description}\nAchieved ${new Date(m.achievedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}`}
+                    >
+                      <span className="text-lg">{m.icon || '🏅'}</span>
+                      <span className="text-sm font-medium text-amber-800">{m.title}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <GridView badges={gridDisplayBadges} />
+            </>
+          )}
         </div>
 
         {/* Badge Detail Modal - renders via Portal to document.body */}
@@ -347,6 +413,7 @@ export function TimelineView() {
 interface GridViewProps {
   badges: Array<{
     id: string;
+    status: string;
     template: {
       imageUrl?: string | null;
       name: string;
@@ -411,6 +478,7 @@ function GridView({ badges }: GridViewProps) {
     >
       {badges.map((badge, index) => {
         const itemProps = getItemProps(index);
+        const isInactive = badge.status === 'REVOKED' || badge.status === 'EXPIRED';
         return (
           <div
             key={badge.id}
@@ -432,6 +500,7 @@ function GridView({ badges }: GridViewProps) {
               active:bg-neutral-50
               focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2
               ${focusedIndex === index ? 'border-brand-400 shadow-md' : 'border-neutral-200'}
+              ${isInactive ? 'opacity-50' : ''}
             `}
           >
             <img
@@ -443,9 +512,12 @@ function GridView({ badges }: GridViewProps) {
             <h3 className="font-semibold text-center text-sm md:text-base">
               {badge.template.name}
             </h3>
-            <p className="text-xs md:text-sm text-neutral-500 text-center">
+            <p className="text-xs md:text-sm text-neutral-500 text-center mb-2">
               {badge.template.category}
             </p>
+            <div className="flex justify-center">
+              <StatusBadge status={badge.status as 'CLAIMED' | 'PENDING' | 'REVOKED' | 'EXPIRED'} />
+            </div>
           </div>
         );
       })}

@@ -11,6 +11,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { apiFetch } from '../lib/apiFetch';
+import { queryClient } from '../lib/queryClient';
 
 export interface User {
   id: string;
@@ -65,6 +66,9 @@ export const useAuthStore = create<AuthState>()(
           }
 
           const data = await response.json();
+
+          // Clear stale query cache from previous user session
+          queryClient.clear();
 
           set({
             user: data.user,
@@ -128,6 +132,12 @@ export const useAuthStore = create<AuthState>()(
         // Clean up any legacy localStorage tokens (migration cleanup)
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
+
+        // Clear all cached query data from previous user session
+        queryClient.clear();
+
+        // Clear all cached query data from previous user session
+        queryClient.clear();
 
         try {
           await apiFetch('/auth/logout', { method: 'POST' });

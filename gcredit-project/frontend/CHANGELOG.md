@@ -7,6 +7,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] - 2026-02-24 (Sprint 12 — Management UIs & Evidence)
+
+### Sprint 12 Summary — Management UIs & Evidence Unification
+
+**Branch:** `sprint-12/management-uis-evidence`  
+**Stories:** 8/8 development stories complete (3 waves)  
+**Tests:** 702 tests (66 test files, 100% pass rate, +151 from v1.1.0)
+
+#### Wave 1: Admin Management UIs — 4 Stories
+
+- **Skill Category Management UI (12.1):** Hierarchical 3-level tree view with `@dnd-kit` drag-and-drop reorder (same-level). CRUD operations. System-defined category protection (lock icon, no delete). Shared `<AdminPageShell>`, `<ConfirmDialog>`, `<CategoryTree>` components. 70 new tests.
+- **Skill Management UI (12.2):** Split layout — category tree (left) + skills table (right). Skill CRUD with badge-usage guard. Colored skill tags (10-color palette, auto-assign per category, propagated to 3 existing pages). 32 new tests.
+- **User Management UI Enhancement (12.3):** Enhanced user table with search/filter/sort. Role edit modal. Account lock/unlock toggle. User detail slide-over panel. 62+ tests.
+- **Milestone Admin UI (12.4):** Card grid layout. Dynamic form per milestone type. Active/inactive toggle. Achievement count display. `<MilestoneFormSheet>` with Zod validation. 44+ tests.
+
+#### Wave 2: Evidence Unification — 2 Stories
+
+- **Evidence Data Model UI (12.5/12.6):** Shared `<EvidenceList>` and `<EvidenceAttachmentPanel>` components. File upload in `IssueBadgePage`. Evidence column in Badge Management table. SAS token fix for `VerifyBadgePage`. Unified evidence display across wallet, verification, and management pages.
+
+#### Wave 3: Quick Fixes — 2 Stories
+
+- **Activity Feed Formatting (12.7):** `buildActivityDescription()` utility in `RecentActivityFeed` and `AdminDashboard`. Human-readable descriptions for all action types. 12 tests.
+- **Skills UUID Hardening (12.8):** `useSkillNamesMap()` hook applied to all skill display locations. "Unknown Skill" fallback label. 8 tests.
+
+#### Bug Fixes (Session)
+
+- **Skill Category Cache Invalidation:** Added `['skill-categories']` invalidation to `useUpdateSkill` mutation (was missing, only invalidated `['skills']`)
+- **Category Tree Visual Alignment:** Added dotted leader line between name and right-side badges/actions, enhanced hover to `neutral-100/70`
+
+### Sprint 12 UAT Fixes & Enhancements (2026-02-23)
+
+Issues discovered and fixed during Sprint 12 UAT testing session.
+
+#### Audit Activity — Shared Utility Refactoring (10e5d2d)
+
+- **New `utils/audit-activity.utils.ts`:** Single source of truth for activity icons, verbs, and description formatting
+  - `ACTIVITY_CONFIG`: icon + verb mapping for all 8 activity types
+  - `getActivityIcon()`: safe icon lookup with fallback for unknown types
+  - `buildActivityDescription()`: safe description builder with empty-field guards (no empty `""`, no dangling "to"/"from")
+- **`RecentActivityFeed.tsx`:** Removed local `ACTIVITY_CONFIG` and `buildDescription()`, imports from shared utils
+- **`AdminDashboard.tsx`:** Removed inline `actionIcons` map, imports `getActivityIcon()` from shared utils; shows description directly instead of raw type + description
+- **`analytics.ts`:** Added `TEMPLATE_UPDATED` and `USER_UPDATED` to `ActivityType` union
+
+#### Skill Management (4c802f8, 74f0e48, 1011d40)
+
+- **Delete Protection:** Disable trash icon when skill is referenced by badge templates (`badgeCount > 0`), grey style + tooltip
+- **Column Rename:** "Badges" → "Badge Templates" for clarity
+- **Template Hover:** Badge count shows dotted-underline with tooltip listing referencing template names
+
+#### Badge Verification (b00fd50)
+
+- **Download Restriction:** JSON-LD download now disabled for both PENDING and REVOKED badges (was REVOKED-only)
+
+#### Milestone Form UX (b3de40c, 16b3b6a)
+
+- **Category Hierarchy:** Dropdown shows visual indentation (`└` prefix + NBSP) instead of flat list
+- **Label Clarification:** "Include sub-categories" → "Count badges from sub-categories too"
+
+#### Navigation (6c650b1)
+
+- **Navbar Optimization:** Reduced padding (`px-4→px-2.5`), shortened labels (Badge Templates→Templates, etc.), centered nav with `flex-1 justify-center`, extracted `navCls()` helper (302→238 lines)
+
+---
+
 ## [1.1.0] - 2026-02-14 (Sprint 11 — Security & Quality Hardening)
 
 ### Sprint 11 Summary — Post-MVP Hardening
