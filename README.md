@@ -39,7 +39,8 @@
 **Sprint 9:** ✅ Complete (100%, 5/5 stories, actual 37h / estimated 51h, 2026-02-08, v0.9.0-dev)  
 **Sprint 10:** ✅ Complete (12/12 stories, 109h, 1061 tests, UAT 33/33 PASS, 2026-02-09 to 2026-02-11, v1.0.0)  
 **Sprint 11:** ✅ Complete (25/25 stories, 7 waves, 1,307 tests, UAT 152/153 PASS, 2026-02-12 to 2026-02-15, v1.1.0)  
-**Version:** v1.1.0 (Post-MVP Hardening Released, 1,307 tests, 100% passing)
+**Sprint 12:** ✅ Complete (8/8 dev stories, 3 waves, 1,549 tests, 2026-02-19 to 2026-02-24, v1.2.0)  
+**Version:** v1.2.0 (Management UIs & Evidence Unification, 1,549 tests, 100% passing)
 - Badge catalog with search and categorization
 - ✅ Badge revocation with reason tracking
 
@@ -268,6 +269,17 @@
 - **Total: 25 stories, 7 waves, ~60h / 64-80h estimated**
 - **Testing:** 1,307 tests (BE 756 + FE 551), 100% pass rate (+246 from v1.0.0)
 - **Branch:** sprint-11/security-quality-hardening (merged to main via PR #6)
+
+**✅ Sprint 12 Complete (2026-02-24, v1.2.0):**
+- ✅ 8/8 development stories delivered across 3 waves (Management UIs & Evidence Unification)
+- ✅ Wave 1: Skill Category UI, Skill UI, User Management UI, Milestone Admin UI
+- ✅ Wave 2: Evidence Unification (EvidenceFile model + unified UI)
+- ✅ Wave 3: Activity Feed Formatting, Skills UUID Hardening
+- ✅ Tech Debt Resolved: TD-009, TD-010, TD-016, TD-017
+- ✅ Shared components: AdminPageShell, ConfirmDialog, CategoryTree, EvidenceList, EvidenceAttachmentPanel
+- **Total: 8 stories, 3 waves, 72h estimated**
+- **Testing:** 1,549 tests (BE 847 + FE 702), 100% pass rate (+242 from v1.1.0)
+- **Branch:** sprint-12/management-uis-evidence (merged to main via PR #7)
 - **Git Tag:** v1.1.0
 - **GitHub Release:** [v1.1.0](https://github.com/legendyz/G-Credit/releases/tag/v1.1.0)
 
@@ -416,6 +428,7 @@ This project uses the **BMAD (Business Model Agent Development) Framework** v6.0
 | → Sprint 10 | 3 days | v1.0.0 Release: TD Cleanup + UAT + Release Tag | ✅ Complete (2026-02-11, 12/12 stories, 109h/95h, 1061 tests, v1.0.0) |
 | **Post-MVP Hardening** | **7 days** | **Security, Quality, DX** | **✅ v1.1.0 Released** |
 | → Sprint 11 | 7 days | Security & Quality Hardening (25 stories, 7 waves) | ✅ Complete (2026-02-18, 25/25 stories, ~60h/51-66h, 1,307 tests, UAT 152/153 PASS, v1.1.0) |
+| → Sprint 12 | 6 days | Management UIs + Evidence Unification (8 stories, 3 waves) | ✅ Complete (2026-02-24, 8/8 stories, 72h, 1,549 tests, v1.2.0) |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ Pending |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
@@ -533,4 +546,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Sprint 9:** ✅ Complete (100%, 5/5 stories, actual 37h / estimated 51h, v0.9.0-dev) - [Sprint Status](./gcredit-project/docs/sprints/sprint-9/sprint-status.yaml) | [Backlog](./gcredit-project/docs/sprints/sprint-9/backlog.md)  
 **Sprint 10:** ✅ Complete (12/12 stories, 109h/95h, v1.0.0) - [Sprint Status](./gcredit-project/docs/sprints/sprint-10/sprint-status.yaml) | [Release Notes](./gcredit-project/docs/sprints/sprint-10/v1.0.0-release-notes.md)  
 **Sprint 11:** ✅ Complete (25/25 stories, 7 waves, v1.1.0) - [Summary](./gcredit-project/docs/sprints/sprint-11/summary.md) | [Retrospective](./gcredit-project/docs/sprints/sprint-11/retrospective.md)  
-**Release:** [v1.1.0 on GitHub](https://github.com/legendyz/G-Credit/releases/tag/v1.1.0)
+**Sprint 12:** ✅ Complete (8/8 stories, 3 waves, v1.2.0) - [Summary](./gcredit-project/docs/sprints/sprint-12/summary.md) | [Retrospective](./gcredit-project/docs/sprints/sprint-12/retrospective.md)  
+**Release:** [v1.2.0 on GitHub](https://github.com/legendyz/G-Credit/releases/tag/v1.2.0)

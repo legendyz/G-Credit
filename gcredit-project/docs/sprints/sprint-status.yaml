@@ -91,7 +91,7 @@ sprint-11: done
 # Goal: Complete admin management UIs and unify evidence system
 # Target: v1.2.0
 # ============================================
-sprint-12: planning
+sprint-12: done
 
 # --- Wave 1: Admin Management UIs ---
 12-1-skill-category-management-ui: done
@@ -108,4 +108,4 @@ sprint-12: planning
 12-8-skills-uuid-fallback-hardening: done
 
 # --- Wave 4: UAT ---
-12-9-sprint-12-uat: backlog
+12-9-sprint-12-uat: skipped  # Informal UAT done during development sessions

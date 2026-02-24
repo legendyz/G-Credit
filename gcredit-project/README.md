@@ -4,7 +4,8 @@
 
 ## 📊 Project Status
 
-**Version:** ✅ v1.1.0 Released (Post-MVP Hardening Complete)  
+**Version:** ✅ v1.2.0 Released (Management UIs & Evidence Unification)  
+**Sprint 12:** ✅ Complete (8/8 dev stories, 3 waves, 2026-02-19 to 2026-02-24, Management UIs + Evidence Unification, 1,549 tests, v1.2.0)  
 **Sprint 11:** ✅ Complete (25/25 stories, 7 waves, 2026-02-12 to 2026-02-15, Security + Quality Hardening, 1,307 tests, v1.1.0)  
 **Sprint 10:** ✅ Complete (12/12 stories, 2026-02-09 to 2026-02-11, UAT 33/33 PASS, v1.0.0)  
 **Sprint 9:** ✅ Complete (100%, 5/5 stories, actual 37h / estimated 51h, 2026-02-08, v0.9.0-dev)  
@@ -17,7 +18,7 @@
 **Sprint 2:** ✅ Complete (100%, 29h/32h, 2026-01-26, Badge Templates)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, 2026-01-25, Authentication)  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, 2026-01-24, Infrastructure)  
-**Tests:** 1,307 (Backend 756 + Frontend 551), 100% pass rate  
+**Tests:** 1,549 (Backend 847 + Frontend 702), 100% pass rate  
 **License:** MIT
 
 ## 🚀 Tech Stack
@@ -426,6 +427,7 @@ Remove-Item -Recurse -Force backend\.git
 - **Sprint 9:** ✅ Bulk Badge Issuance + TD Cleanup (Complete, 37h/51h, 1087 tests, v0.9.0)
 - **Sprint 10:** ✅ v1.0.0 Release — TD Cleanup + Feature Polish + UAT + Release (Complete, 1061 tests, UAT 33/33 PASS)
 - **Sprint 11:** ✅ v1.1.0 Release — Security & Quality Hardening (25/25 stories, 7 waves, 1,307 tests, UAT 152/153 PASS)
+- **Sprint 12:** ✅ v1.2.0 Release — Management UIs & Evidence Unification (8/8 stories, 3 waves, 1,549 tests)
 
 ## 📝 License
 
@@ -443,6 +445,6 @@ For issues and questions:
 
 ---
 
-**Last Updated:** 2026-02-18  
-**Version:** v1.1.0 (Released)  
-**Sprint Status:** Sprint 0-11 Complete ✅ | v1.1.0 Released 🎓
+**Last Updated:** 2026-02-24  
+**Version:** v1.2.0 (Released)  
+**Sprint Status:** Sprint 0-12 Complete ✅ | v1.2.0 Released 🎓
