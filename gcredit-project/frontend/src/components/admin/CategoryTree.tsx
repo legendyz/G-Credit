@@ -265,7 +265,7 @@ function CategoryTreeNodeInner({
     >
       <div
         className={`flex items-center gap-2 px-3 py-2 rounded-md group transition-colors ${
-          isSelected ? 'bg-brand-50 border border-brand-200' : 'hover:bg-neutral-50'
+          isSelected ? 'bg-brand-50 border border-brand-200' : 'hover:bg-neutral-100/70'
         }`}
         style={{ marginLeft: level > 0 ? `${level * 1.5}rem` : undefined }}
         onClick={() => onSelect?.(category)}
@@ -305,7 +305,7 @@ function CategoryTreeNodeInner({
         )}
 
         {/* Category name */}
-        <div className="flex-1 flex items-center gap-1.5 min-w-0">
+        <div className="flex items-center gap-1.5 min-w-0">
           {/* Compact colored pill (both modes) */}
           <span
             className={`text-sm font-medium truncate rounded-full ${
@@ -319,6 +319,9 @@ function CategoryTreeNodeInner({
             {category.name}
           </span>
         </div>
+
+        {/* Dotted leader line — visual connector between name and badges */}
+        <div className="flex-1 border-b border-dotted border-neutral-200 self-end mb-2 mx-1 min-w-[2rem]" />
 
         {/* Skill count badge */}
         {skillCount > 0 && (
