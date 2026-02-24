@@ -49,6 +49,7 @@ export function useUpdateSkill() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['skills'] });
+      qc.invalidateQueries({ queryKey: ['skill-categories'] });
       toast.success('Skill updated');
     },
     onError: (err: Error) => toast.error(err.message || 'Failed to update skill'),
