@@ -7,7 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.2.0] - 2026-02-23 (Sprint 12 — Management UIs & Evidence)
+## [1.2.0] - 2026-02-24 (Sprint 12 — Management UIs & Evidence)
+
+### Sprint 12 Summary — Management UIs & Evidence Unification
+
+**Branch:** `sprint-12/management-uis-evidence`  
+**Stories:** 8/8 development stories complete (3 waves)  
+**Tests:** 847 tests (100% pass rate, +91 from v1.1.0, 28 skipped = TD-006)
+
+#### Wave 1: Admin Management UIs — 4 Stories
+
+- **Skill Category Management (12.1):** Full CRUD API for hierarchical 3-level skill categories. System-defined category protection (403 on delete). Reorder endpoint for drag-and-drop. 6 new endpoints in `SkillCategoriesController`.
+- **Skill Management (12.2):** Skill CRUD with category association. `badgeCount` virtual field for delete protection. `categoryName` field fix in Prisma queries. 
+- **User Management Enhancement (12.3):** Enhanced `AdminUsersController` with 8 endpoints — search/filter/sort, role edit, lock/unlock toggle, user detail panel, M365 sync endpoints (full + groups-only).
+- **Milestone Admin UI (12.4):** Full milestone CRUD + activate/deactivate. Dynamic Zod validation per trigger type (BADGE_COUNT, CATEGORY_COUNT). Achievement count aggregation. 5 new endpoints. Resolves **TD-009**.
+
+#### Wave 2: Evidence Unification — 2 Stories
+
+- **Evidence Data Model (12.5):** New `EvidenceFile` Prisma model (type: FILE|URL, `sourceUrl` field). Two-phase migration: schema (Prisma) + standalone data migration script. Unified `EvidenceItem` API contract. Bulk issuance updated for new model. 20+ file references updated. Resolves **TD-010 Phase 1**.
+- **Evidence UI Support (12.6):** Evidence endpoints for file upload, list, download. SAS token generation for Azure Blob Storage evidence access. Resolves **TD-010 Phase 2**.
+
+#### Wave 3: Quick Fixes — 2 Stories
+
+- **Activity Feed Formatting (12.7):** `formatAuditDescription()` utility generates human-readable descriptions for all audit action types (ISSUED, CLAIMED, REVOKED, etc.). Replaces raw JSON in dashboard activity feed. Resolves **TD-016**.
+- **Skills UUID Hardening (12.8):** Hardened all skill name resolution paths. `UNKNOWN_SKILL_LABEL` constant for fallback. Resolves **TD-017**.
+
+#### Tech Debt Resolved
+- **TD-009:** Milestone Admin UI (P2) — Story 12.4
+- **TD-010:** Evidence System Unification (P1) — Stories 12.5 + 12.6
+- **TD-016:** Dashboard JSON Display (P2) — Story 12.7
+- **TD-017:** Skills UUID Fallback (P2) — Story 12.8
 
 ### Sprint 12 UAT Fixes & Enhancements (2026-02-23)
 

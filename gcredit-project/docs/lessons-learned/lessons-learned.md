@@ -24,12 +24,13 @@
 | Sprint 9 | 5/5 (100%) | 51h | 37h | 73% | ~7.4h/story |
 | Sprint 10 | 12/12 (100%) | 95h | 109h | 87% | ~9.1h/story | ⭐
 | Sprint 11 | 25/25 (100%) | 51.5-65.5h | ~60h | ~92-100% | ~2.4h/story | ⭐
+| Sprint 12 | 8/8 (100%) | 72h | — | — | ~9h/story | ⭐
 
 ### Quality Metrics
-- **Test Pass Rate:** 100% (1,307/1,307 tests — BE 756 + FE 551) ⭐
+- **Test Pass Rate:** 100% (1,549/1,549 tests — BE 847 + FE 702) ⭐
 - **UAT Pass Rate:** 99.3% (152/153 tests Sprint 11, 33/33 Sprint 10) ⭐
 - **Documentation Accuracy:** 95%+ (comprehensive guides created)
-- **Technical Debt:** 56 items tracked (17 P1 resolved Sprint 8, 7 TD resolved Sprint 10, 2 new Sprint 11: TD-009/TD-010) ⭐
+- **Technical Debt:** 56 items tracked (17 P1 resolved Sprint 8, 7 TD resolved Sprint 10, 4 TD resolved Sprint 12: TD-009/TD-010/TD-016/TD-017) ⭐
 - **Zero Production Bugs:** All issues caught in development/UAT
 
 ### Key Achievements
@@ -47,8 +48,9 @@
 - ✅ ESLint zero-tolerance & TypeScript strict cleanup ⭐ Sprint 9
 - ✅ v1.0.0 Release (UAT 33/33, full documentation, GitHub Release) ⭐ Sprint 10
 - ✅ v1.1.0 Security & Quality Hardening (25 stories, 7 waves, httpOnly cookies, Husky CI) ⭐ Sprint 11
+- ✅ v1.2.0 Management UIs & Evidence Unification (8 stories, 3 waves, 4 admin pages, evidence unified) ⭐ Sprint 12
 - ✅ Comprehensive documentation system (15+ guides created)
-- ✅ Well-organized test structure (1,307 tests, 100% pass rate) ⭐
+- ✅ Well-organized test structure (1,549 tests, 100% pass rate) ⭐
 
 ---
 
@@ -91,6 +93,9 @@
   - Lesson 41: Wave-Based Execution Handles Large Sprints Well
   - Lesson 42: Service Test Suites Are High-Value Technical Debt Items
   - Lesson 43: API Response Contract Changes Require E2E Impact Check 🔴
+- [Sprint 12 Lessons](#sprint-12-lessons-february-2026) - Shared Components, Doc Lag (2 lessons)
+  - Lesson 44: Shared Component Investment Pays Compound Returns
+  - Lesson 45: Documentation Should Be Updated Incrementally, Not Batched
 - [Cross-Sprint Patterns](#cross-sprint-patterns) - 13 patterns
 - [Development Checklists](#development-checklists)
 - [Common Pitfalls](#common-pitfalls-to-avoid)
@@ -3410,6 +3415,77 @@ git commit -m "fix(prisma): Revert schema format changes"
 - [ ] Create type-safe mock utilities using Prisma Payload types
 - [ ] Add pre-commit hook: `npm run build` before allowing commits
 - [ ] Document common Prisma gotchas in architecture guide
+
+---
+
+## Sprint 12 Lessons (February 2026)
+
+### Sprint 12: Lesson 44 — Shared Component Investment Pays Compound Returns
+
+**Date:** 2026-02-24  
+**Sprint:** Sprint 12 — Management UIs & Evidence Unification  
+**Severity:** 🟢 Positive Learning
+
+#### Context
+
+Sprint 12 required building 4 new admin management pages (Skill Categories, Skills, Users, Milestones) plus evidence unification UI. In Story 12.1 (the first UI story), we invested extra time (~2h over estimate) to extract shared components: `<AdminPageShell>`, `<ConfirmDialog>`, and `<CategoryTree>`.
+
+#### Outcome
+
+- Stories 12.2, 12.3, and 12.4 all reused `<AdminPageShell>` and `<ConfirmDialog>`, reducing boilerplate per page
+- `<CategoryTree>` was reused as the left panel in the Skill Management split layout (12.2)
+- `<EvidenceList>` and `<EvidenceAttachmentPanel>` (from 12.5/12.6) are reused across wallet, verification, and management pages
+- **Result:** Consistent look and feel across all admin pages with no duplicated layout code
+
+#### Lesson
+
+> **When building the first page in a series of similar pages, invest the extra 2-3 hours to extract shared components. The ROI compounds with each subsequent page. Budget this explicitly in the first story estimate.**
+
+#### Checklist Addition
+
+```markdown
+When building multiple similar pages in one sprint:
+- [ ] Identify common layout patterns before starting the first page
+- [ ] Extract shared components in the first story (budget +2-3h)
+- [ ] Document component API for subsequent story developers
+- [ ] Verify shared components work for edge cases (empty state, loading, error)
+```
+
+---
+
+### Sprint 12: Lesson 45 — Documentation Should Be Updated Incrementally, Not Batched
+
+**Date:** 2026-02-24  
+**Sprint:** Sprint 12 — Management UIs & Evidence Unification  
+**Severity:** 🟡 Process Improvement
+
+#### Context
+
+All 8 development stories in Sprint 12 were completed in code, with SM acceptance, before the sprint documentation was updated. The backlog showed stories as "Not Started" even though all code was done, reviewed, and merged. Sprint completion documentation (summary, retrospective, CHANGELOG entries, project-context.md updates) was all done in a single batch session.
+
+#### Problem
+
+- Backlog status didn't reflect reality for several days
+- When Sprint completion began, significant effort was needed to retroactively verify all stories were actually done
+- Required launching 4 parallel subagents to verify 6 stories at once
+
+#### Lesson
+
+> **Update story status in the backlog immediately after SM acceptance — not in a batch at sprint end. This keeps the backlog as a living document and makes sprint completion a verification step rather than a discovery step.**
+
+#### Recommended Process
+
+```markdown
+After SM accepts a story:
+1. Update story status in backlog.md to ✅ Done (30 seconds)
+2. Check off deliverable checkboxes (30 seconds)
+3. Update summary table row (30 seconds)
+Total: ~90 seconds per story, done incrementally
+```
+
+---
+
+**Next Review:** Sprint 13 Retrospective
 
 ---
 

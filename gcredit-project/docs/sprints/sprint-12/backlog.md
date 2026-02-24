@@ -13,13 +13,13 @@
 Deliver the remaining admin management interfaces (Skill Category, Skill, User, Milestone) and resolve the dual evidence system (TD-010), so that ALL admin operations can be performed through the UI without direct database access. Secondary: clean up activity feed formatting (TD-016) and skill UUID display (TD-017).
 
 **Success Criteria:**
-- [ ] Admin can CRUD Skill Categories (hierarchical, 3-level tree)
-- [ ] Admin can CRUD Skills within categories
-- [ ] Admin can manage users (role edit, lock/unlock, search)
-- [ ] Admin can manage Milestones (CRUD, activate/deactivate)
-- [ ] Evidence system unified — single EvidenceFile model, no more Dual paths
-- [ ] All existing tests pass + new tests for Sprint 12 features
-- [ ] Activity feed shows readable descriptions (not JSON)
+- [x] Admin can CRUD Skill Categories (hierarchical, 3-level tree)
+- [x] Admin can CRUD Skills within categories
+- [x] Admin can manage users (role edit, lock/unlock, search)
+- [x] Admin can manage Milestones (CRUD, activate/deactivate)
+- [x] Evidence system unified — single EvidenceFile model, no more Dual paths
+- [x] All existing tests pass + new tests for Sprint 12 features
+- [x] Activity feed shows readable descriptions (not JSON)
 
 ---
 
@@ -114,17 +114,17 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 #### Story 12.3: User Management UI Enhancement
 **Priority:** 🔴 High  
 **Estimate:** 10h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [12-3-user-management-ui-enhancement.md](sprint-12/12-3-user-management-ui-enhancement.md)
 
 **Quick Summary:** As an Admin, I want to manage users with role editing, account lock/unlock, and detail panels so that user administration is complete.
 
 **Key Deliverables:**
-- [ ] Enhanced user table with search, filter, sort
-- [ ] Role edit (inline or modal)
-- [ ] Account lock/unlock toggle
-- [ ] User detail slide-over panel
-- [ ] Tests
+- [x] Enhanced user table with search, filter, sort
+- [x] Role edit (inline or modal)
+- [x] Account lock/unlock toggle
+- [x] User detail slide-over panel
+- [x] Tests (62+ tests across backend + frontend)
 
 **Dependencies:** None
 
@@ -133,17 +133,17 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 #### Story 12.4: Milestone Admin UI
 **Priority:** 🟡 Medium  
 **Estimate:** 8h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [12-4-milestone-admin-ui.md](sprint-12/12-4-milestone-admin-ui.md)
 
 **Quick Summary:** As an Admin, I want to create and manage milestone configurations so that achievement tracking is configurable through the UI.
 
 **Key Deliverables:**
-- [ ] Milestone card grid layout
-- [ ] Dynamic form per milestone type (BADGE_COUNT, SKILL_TRACK, ANNIVERSARY, CUSTOM)
-- [ ] Active/inactive toggle
-- [ ] Achievement count display
-- [ ] Tests
+- [x] Milestone card grid layout
+- [x] Dynamic form per milestone type (BADGE_COUNT, SKILL_TRACK, ANNIVERSARY, CUSTOM)
+- [x] Active/inactive toggle
+- [x] Achievement count display
+- [x] Tests (44+ tests)
 
 **Dependencies:** None (resolves TD-009)
 
@@ -154,17 +154,17 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 #### Story 12.5: Evidence Unification — Data Model
 **Priority:** 🔴 High  
 **Estimate:** 14h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [12-5-evidence-unification-data-model.md](sprint-12/12-5-evidence-unification-data-model.md)
 
 **Quick Summary:** As a Developer, I want to unify the dual evidence system into a single EvidenceFile model with migration so that evidence is consistent across the platform.
 
 **Key Deliverables:**
-- [ ] EvidenceFile schema: type (FILE|URL), `sourceUrl` field
-- [ ] Two-phase migration: schema (Prisma) + data script (standalone)
-- [ ] Unified `EvidenceItem` API contract
-- [ ] Bulk issuance update (20+ file references)
-- [ ] Tests
+- [x] EvidenceFile schema: type (FILE|URL), `sourceUrl` field
+- [x] Two-phase migration: schema (Prisma) + data script (standalone)
+- [x] Unified `EvidenceItem` API contract
+- [x] Bulk issuance update (20+ file references)
+- [x] Tests
 
 **Dependencies:** None (resolves TD-010 Phase 1)
 
@@ -173,17 +173,17 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 #### Story 12.6: Evidence Unification — UI
 **Priority:** 🔴 High  
 **Estimate:** 10h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [12-6-evidence-unification-ui.md](sprint-12/12-6-evidence-unification-ui.md)
 
 **Quick Summary:** As an Admin/Issuer, I want badge issuance to support file uploads and all pages to display evidence uniformly.
 
 **Key Deliverables:**
-- [ ] Shared EvidenceList component
-- [ ] File upload in IssueBadgePage
-- [ ] Evidence column in Badge Management
-- [ ] SAS token fix for VerifyBadgePage
-- [ ] Tests
+- [x] Shared EvidenceList component
+- [x] File upload in IssueBadgePage
+- [x] Evidence column in Badge Management
+- [x] SAS token fix for VerifyBadgePage
+- [x] Tests
 
 **Dependencies:** Story 12.5 (resolves TD-010 Phase 2)
 
@@ -194,15 +194,15 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 #### Story 12.7: Admin Activity Feed Formatting
 **Priority:** 🟢 Low  
 **Estimate:** 3h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [12-7-admin-activity-feed-formatting.md](sprint-12/12-7-admin-activity-feed-formatting.md)
 
 **Quick Summary:** As an Admin, I want the dashboard activity feed to show human-readable descriptions instead of JSON.
 
 **Key Deliverables:**
-- [ ] `formatActivityDescription()` function
-- [ ] All action types: ISSUED, CLAIMED, REVOKED, etc.
-- [ ] Tests
+- [x] `formatActivityDescription()` function
+- [x] All action types: ISSUED, CLAIMED, REVOKED, etc.
+- [x] Tests (12 tests)
 
 **Dependencies:** None (resolves TD-016)
 
@@ -211,16 +211,16 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 #### Story 12.8: Skills UUID Fallback Hardening
 **Priority:** 🟢 Low  
 **Estimate:** 2h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [12-8-skills-uuid-fallback-hardening.md](sprint-12/12-8-skills-uuid-fallback-hardening.md)
 
 **Quick Summary:** As a Developer, I want to ensure no UUID is ever shown to users when skill name lookup fails.
 
 **Key Deliverables:**
-- [ ] Audit all skill display locations
-- [ ] Apply `useSkillNamesMap()` where missing
-- [ ] "Unknown Skill" fallback
-- [ ] Tests
+- [x] Audit all skill display locations
+- [x] Apply `useSkillNamesMap()` where missing
+- [x] "Unknown Skill" fallback
+- [x] Tests (8 tests)
 
 **Dependencies:** None (resolves TD-017)
 
@@ -253,12 +253,12 @@ Deliver the remaining admin management interfaces (Skill Category, Skill, User, 
 |----------|-------|----------|-------|--------|-----------|
 | 12.1 | Skill Category Management UI | 🔴 High | 10h | ✅ Done | — |
 | 12.2 | Skill Management UI | 🔴 High | 10h | ✅ Done | — |
-| 12.3 | User Management UI Enhancement | 🔴 High | 10h | 🔴 | — |
-| 12.4 | Milestone Admin UI | 🟡 Med | 8h | 🔴 | TD-009 |
-| 12.5 | Evidence Unification — Data Model | 🔴 High | 14h | 🔴 | TD-010 P1 |
-| 12.6 | Evidence Unification — UI | 🔴 High | 10h | 🔴 | TD-010 P2 |
-| 12.7 | Admin Activity Feed Formatting | 🟢 Low | 3h | 🔴 | TD-016 |
-| 12.8 | Skills UUID Fallback Hardening | 🟢 Low | 2h | 🔴 | TD-017 |
+| 12.3 | User Management UI Enhancement | 🔴 High | 10h | ✅ Done | — |
+| 12.4 | Milestone Admin UI | 🟡 Med | 8h | ✅ Done | TD-009 |
+| 12.5 | Evidence Unification — Data Model | 🔴 High | 14h | ✅ Done | TD-010 P1 |
+| 12.6 | Evidence Unification — UI | 🔴 High | 10h | ✅ Done | TD-010 P2 |
+| 12.7 | Admin Activity Feed Formatting | 🟢 Low | 3h | ✅ Done | TD-016 |
+| 12.8 | Skills UUID Fallback Hardening | 🟢 Low | 2h | ✅ Done | TD-017 |
 | 12.9 | Sprint 12 UAT | 🟡 Med | 5h | 🔴 | — |
 | **Total** | **9 stories** | — | **72h** | — | — |
 
@@ -373,6 +373,6 @@ All 8 stories reviewed by Architect (Winston) + UX Designer (Sally) on 2026-02-1
 
 ---
 
-**Last Updated:** 2026-02-20 — Story 12.2 completed (SM accepted), 2/9 stories done  
-**Status:** In Development — Stories 12.1–12.2 done, Story 12.3 next  
+**Last Updated:** 2026-02-24 — Stories 12.1–12.8 all verified complete, 8/9 stories done  
+**Status:** Development Complete — Only Story 12.9 (UAT) remains  
 **Template Version:** v1.2
