@@ -70,6 +70,9 @@ describe('AuthService', () => {
       findUnique: jest.fn(),
       update: jest.fn(),
     },
+    userAuditLog: {
+      create: jest.fn().mockResolvedValue({}),
+    },
     $transaction: jest.fn(),
   };
 
@@ -655,12 +658,33 @@ describe('AuthService', () => {
       expect('error' in result).toBe(false);
     });
 
-    it('should return { error: sso_no_account } when azureId not found', async () => {
-      mockPrismaService.user.findUnique.mockResolvedValue(null);
+    it('should JIT provision new user when azureId not found (Story 13.2 replaces sso_no_account)', async () => {
+      const createdJitUser = {
+        ...mockM365User,
+        id: 'jit-new-user',
+        passwordHash: '',
+        role: UserRole.EMPLOYEE,
+      };
+      // First findUnique (azureId lookup) → null, second (re-fetch after JIT) → created user
+      mockPrismaService.user.findUnique
+        .mockResolvedValueOnce(null) // lookup by azureId
+        .mockResolvedValueOnce(createdJitUser); // re-fetch after JIT + sync
+      mockPrismaService.user.create.mockResolvedValue(createdJitUser);
+      mockPrismaService.user.update.mockResolvedValue(createdJitUser);
 
       const result = await service.ssoLogin(mockSsoProfile);
 
-      expect(result).toEqual({ error: 'sso_no_account' });
+      expect(mockPrismaService.user.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            azureId: 'azure-oid-123',
+            passwordHash: '',
+            role: UserRole.EMPLOYEE,
+          }),
+        }),
+      );
+      expect(result).toHaveProperty('accessToken');
+      expect(result).not.toHaveProperty('error');
     });
 
     it('should return { error: account_disabled } for inactive user', async () => {

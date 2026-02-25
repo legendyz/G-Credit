@@ -709,6 +709,23 @@ describe('M365SyncService', () => {
       expect(result.success).toBe(false);
       expect(result.error).toContain('Unique constraint violation');
     });
+
+    // Story 13.2 AC #7: M365 sync no longer assigns DEFAULT_USER_PASSWORD
+    it('should create M365 user with empty passwordHash (no temp password)', async () => {
+      prisma.user.findFirst.mockResolvedValue(null);
+      prisma.user.create.mockResolvedValue({
+        id: 'sso-only-user',
+        email: mockAzureUser.mail,
+      } as any);
+
+      await service.syncSingleUser(mockAzureUser);
+
+      expect(prisma.user.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          passwordHash: '', // SSO-only — no temp password (DEC-011-13)
+        }) as unknown,
+      });
+    });
   });
 
   // ============================================================
