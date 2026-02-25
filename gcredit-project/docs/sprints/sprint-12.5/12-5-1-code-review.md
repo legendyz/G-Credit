@@ -9,12 +9,13 @@
 - Commits reviewed:
   - `408b4c2` — implementation
   - `e8490aa` — story status update
+  - `501fcfe` — fixes for prior review blockers (B1/B2)
 
 ## Verdict
 
-**Changes Requested.**
+**Approved.**
 
-Implementation quality is solid overall (backend reparent flow, responsive dropdown fallback, insertion line visuals, and good targeted test coverage), but there are two AC-level behavior gaps that should be resolved before approval.
+Implementation quality is solid overall (backend reparent flow, responsive dropdown fallback, insertion line visuals, and good targeted test coverage). Re-review confirms prior blockers are fixed.
 
 ## What Was Verified
 
@@ -43,26 +44,33 @@ Implementation quality is solid overall (backend reparent flow, responsive dropd
   - `npx tsc --noEmit` → passed
   - `npm run lint` → passed
 
-## Blocking Findings
+### Re-review Validation (commit `501fcfe`)
 
-### B1 — AC16 mismatch: system-defined categories are hidden from move action, not disabled with tooltip
+- ✅ `CategoryTree.tsx`: system-defined categories now show a **disabled** Move action with tooltip text (`System-defined categories cannot be moved`), matching AC16 intent.
+- ✅ `CategoryDropdown.tsx`: dropdown toolbar now includes Move action (`onMoveTo`), enabling D-3 flow in `<1024px` mode.
+- ✅ `CategoryTree.tsx`: mobile branch wires `onMoveTo={setMovingCategory}` and renders `MoveToDialog` in responsive mode.
+- ✅ New/updated tests validate both fixes:
+  - `CategoryTree.test.tsx` → **27/27 passed**
+  - `CategoryDropdown.test.tsx` → **16/16 passed**
+  - `MoveToDialog.test.tsx` → **9/9 passed**
+  - `SkillCategoryManagementPage.test.tsx` → **10/10 passed**
+  - `npx tsc --noEmit`, `npm run lint` → passed
+
+## Blocking Findings (Resolved)
+
+### B1 — AC16 mismatch on system-defined move action ✅ Resolved
 
 - **Severity:** Medium
 - **AC:** #16 (`isSystemDefined` cannot be moved **disabled + tooltip**)
 - **Where:** `frontend/src/components/admin/CategoryTree.tsx`
-- **Evidence:** Move button is conditionally **not rendered** for system-defined categories:
-  - `onMoveTo && !category.isSystemDefined && (...)`
-- **Impact:** User does not get explicit affordance/reason (“cannot move system category”), which does not match AC wording.
-- **Required fix:** Render the move action in disabled state for `isSystemDefined` with explanatory tooltip/title.
+- **Resolution:** Move button is now rendered for all categories; system-defined categories are disabled with tooltip reason.
 
-### B2 — Move action not accessible in responsive dropdown mode
+### B2 — Move action not accessible in responsive dropdown mode ✅ Resolved
 
 - **Severity:** Medium
 - **AC relation:** D-1 + D-3 combined behavior expectation on small screens
 - **Where:** `frontend/src/components/admin/CategoryDropdown.tsx`
-- **Evidence:** Dropdown toolbar exposes Edit / Add Child / Delete only; no Move action and no `onMoveTo` prop.
-- **Impact:** On `<1024px`, cross-level move flow (D-3) is unavailable, causing functional inconsistency between desktop and small-screen management mode.
-- **Required fix:** Add Move action support in `CategoryDropdown` (or documented explicit product decision to scope move to desktop-only and update AC/story accordingly).
+- **Resolution:** `CategoryDropdown` now supports Move action and `CategoryTree` mobile path opens `MoveToDialog`, making D-3 available in responsive mode.
 
 ## Non-Blocking Observations
 
@@ -72,12 +80,10 @@ Implementation quality is solid overall (backend reparent flow, responsive dropd
 
 ## AC Coverage Summary
 
-- **Met:** AC1–AC9, AC11–AC15, AC17
-- **Not fully met / ambiguous in current implementation:**
-  - **AC10/AC16 on small screens and system-defined interaction behavior** (see B1/B2)
+- **Met:** AC1–AC17
 
 ## Approval Decision
 
-**Changes Requested**
+**Approved**
 
-After addressing **B1** and **B2** (or explicitly aligning AC text with current intended UX), Story 12.5.1 should be ready for approval.
+Story 12.5.1 is approved after re-review; prior blockers are closed.
