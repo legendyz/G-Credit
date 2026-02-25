@@ -6,7 +6,7 @@
  */
 
 import { useMemo } from 'react';
-import { Pencil, Trash2, Plus } from 'lucide-react';
+import { Pencil, Trash2, Plus, FolderInput } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -25,6 +25,7 @@ interface CategoryDropdownProps {
   onEdit?: (category: SkillCategory) => void;
   onDelete?: (category: SkillCategory) => void;
   onAddChild?: (parent: SkillCategory) => void;
+  onMoveTo?: (category: SkillCategory) => void;
   onCreateRoot?: () => void;
 }
 
@@ -72,6 +73,7 @@ export function CategoryDropdown({
   onEdit,
   onDelete,
   onAddChild,
+  onMoveTo,
   onCreateRoot,
 }: CategoryDropdownProps) {
   const flatItems = useMemo(() => flattenCategories(categories), [categories]);
@@ -148,6 +150,24 @@ export function CategoryDropdown({
               Add Child
             </Button>
           )}
+
+          {onMoveTo &&
+            (() => {
+              const moveDisabled = selectedItem.isSystemDefined;
+              return (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onMoveTo(selectedItem.original)}
+                  disabled={moveDisabled}
+                  aria-label={`Move ${selectedItem.name}`}
+                  title={moveDisabled ? 'System-defined categories cannot be moved' : 'Move to...'}
+                >
+                  <FolderInput className="h-3.5 w-3.5 mr-1" />
+                  Move
+                </Button>
+              );
+            })()}
 
           {onDelete && (
             <Button

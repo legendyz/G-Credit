@@ -163,16 +163,29 @@ export function CategoryTree({
   // D-1: Responsive — render dropdown on mobile/tablet screens
   if (!isDesktop) {
     return (
-      <CategoryDropdown
-        categories={categories}
-        editable={editable}
-        selectedId={selectedId}
-        onSelect={onSelect}
-        onEdit={onEdit}
-        onDelete={onDelete}
-        onAddChild={onAddChild}
-        onCreateRoot={onCreateRoot}
-      />
+      <>
+        <CategoryDropdown
+          categories={categories}
+          editable={editable}
+          selectedId={selectedId}
+          onSelect={onSelect}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onAddChild={onAddChild}
+          onMoveTo={setMovingCategory}
+          onCreateRoot={onCreateRoot}
+        />
+        {movingCategory && (
+          <MoveToDialog
+            open={!!movingCategory}
+            onOpenChange={(open) => {
+              if (!open) setMovingCategory(null);
+            }}
+            category={movingCategory}
+            categories={categories}
+          />
+        )}
+      </>
     );
   }
 
@@ -517,22 +530,36 @@ function CategoryTreeNodeInner({
               </Button>
             )}
 
-            {/* D-3: Move to... button — hidden for system-defined categories */}
-            {onMoveTo && !category.isSystemDefined && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 w-7 p-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onMoveTo(category);
-                }}
-                aria-label={`Move ${category.name}`}
-                title="Move to..."
-              >
-                <FolderInput className="h-3.5 w-3.5" />
-              </Button>
-            )}
+            {/* D-3: Move to... button — disabled for system-defined categories */}
+            {onMoveTo &&
+              (() => {
+                const moveDisabled = category.isSystemDefined;
+                const btn = (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onMoveTo(category);
+                    }}
+                    disabled={moveDisabled}
+                    aria-label={`Move ${category.name}`}
+                  >
+                    <FolderInput className="h-3.5 w-3.5" />
+                  </Button>
+                );
+                // Wrap in span so native title tooltip works on disabled buttons
+                return moveDisabled ? (
+                  <span title="System-defined categories cannot be moved" className="inline-flex">
+                    {btn}
+                  </span>
+                ) : (
+                  <span title="Move to..." className="inline-flex">
+                    {btn}
+                  </span>
+                );
+              })()}
 
             {(() => {
               const deleteDisabled = hasChildren || skillCount > 0;

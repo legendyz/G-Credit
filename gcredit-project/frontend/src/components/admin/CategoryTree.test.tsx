@@ -168,6 +168,25 @@ describe('CategoryTree', () => {
     expect(screen.queryAllByLabelText(/^Edit/)).toHaveLength(0);
     expect(screen.queryAllByLabelText(/^Delete/)).toHaveLength(0);
     expect(screen.queryAllByLabelText(/^Add child/)).toHaveLength(0);
+    expect(screen.queryAllByLabelText(/^Move/)).toHaveLength(0);
+  });
+
+  // D-3 + B1: Move button disabled for system-defined categories
+  it('disables Move button for system-defined categories', () => {
+    render(<CategoryTree categories={mockCategories} editable onReorder={vi.fn()} />);
+
+    // Technical Skills is system-defined
+    const moveBtn = screen.getByLabelText('Move Technical Skills');
+    expect(moveBtn).toBeDisabled();
+  });
+
+  it('enables Move button for non-system categories', () => {
+    const onReorder = vi.fn();
+    render(<CategoryTree categories={mockCategories} editable onReorder={onReorder} />);
+
+    // Backend is not system-defined
+    const moveBtn = screen.getByLabelText('Move Backend');
+    expect(moveBtn).not.toBeDisabled();
   });
 
   it('hides drag handles in read-only mode', () => {

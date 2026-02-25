@@ -185,4 +185,42 @@ describe('CategoryDropdown', () => {
     fireEvent.click(createBtn);
     expect(onCreateRoot).toHaveBeenCalledTimes(1);
   });
+
+  // B2: Move button in dropdown toolbar
+  it('calls onMoveTo when Move button clicked on non-system category', () => {
+    const onMoveTo = vi.fn();
+    render(
+      <CategoryDropdown
+        categories={mockCategories}
+        editable
+        selectedId="cat-1-2"
+        onMoveTo={onMoveTo}
+      />
+    );
+
+    const moveBtn = screen.getByLabelText('Move Backend');
+    expect(moveBtn).not.toBeDisabled();
+    fireEvent.click(moveBtn);
+    expect(onMoveTo).toHaveBeenCalled();
+  });
+
+  it('disables Move button for system-defined categories', () => {
+    render(
+      <CategoryDropdown
+        categories={mockCategories}
+        editable
+        selectedId="cat-1"
+        onMoveTo={vi.fn()}
+      />
+    );
+
+    const moveBtn = screen.getByLabelText('Move Technical Skills');
+    expect(moveBtn).toBeDisabled();
+  });
+
+  it('does not render Move button when onMoveTo is not provided', () => {
+    render(<CategoryDropdown categories={mockCategories} editable selectedId="cat-1-2" />);
+
+    expect(screen.queryByLabelText('Move Backend')).not.toBeInTheDocument();
+  });
 });
