@@ -105,6 +105,15 @@ export class UpdateSkillCategoryDto {
   displayOrder?: number;
 
   @ApiPropertyOptional({
+    example: 'da721a77-18c0-40e7-a7aa-269efe8e26bb',
+    description:
+      'Move category to a new parent. Set to a valid UUID to reparent, or null to move to root (Level 1).',
+  })
+  @IsOptional()
+  @IsUUID()
+  parentId?: string | null;
+
+  @ApiPropertyOptional({
     example: 'blue',
     description: 'Tailwind color name for category tags',
   })

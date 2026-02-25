@@ -9,6 +9,7 @@ import {
   useSkillCategoryTree,
   useCreateSkillCategory,
   useUpdateSkillCategory,
+  useReorderSkillCategories,
   useDeleteSkillCategory,
   type SkillCategory,
   type CreateSkillCategoryInput,
@@ -34,6 +35,13 @@ export function SkillCategoryManagementPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingCategory, setDeletingCategory] = useState<SkillCategory | undefined>();
   const [deleteBlockMessage, setDeleteBlockMessage] = useState('');
+
+  // Selection state (used by responsive dropdown)
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>();
+
+  const handleSelect = useCallback((category: SkillCategory) => {
+    setSelectedCategoryId(category.id);
+  }, []);
 
   // Handlers
   const handleCreateRoot = useCallback(() => {
@@ -112,14 +120,13 @@ export function SkillCategoryManagementPage() {
     });
   }, [deletingCategory, deleteBlockMessage, deleteMutation]);
 
+  const reorderMutation = useReorderSkillCategories();
+
   const handleReorder = useCallback(
     (updates: Array<{ id: string; displayOrder: number }>) => {
-      // Batch: fire all reorder mutations concurrently
-      updates.forEach(({ id, displayOrder }) => {
-        updateMutation.mutate({ id, displayOrder });
-      });
+      reorderMutation.mutate(updates);
     },
-    [updateMutation]
+    [reorderMutation]
   );
 
   const isEmpty = !isLoading && !isError && (!categories || categories.length === 0);
@@ -153,6 +160,8 @@ export function SkillCategoryManagementPage() {
           <CategoryTree
             categories={categories}
             editable
+            selectedId={selectedCategoryId}
+            onSelect={handleSelect}
             onEdit={handleEdit}
             onDelete={handleDeleteRequest}
             onAddChild={handleAddChild}

@@ -5,6 +5,11 @@ import { MemoryRouter } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import SkillCategoryManagementPage from './SkillCategoryManagementPage';
 
+// Mock useIsDesktop to return true (desktop) so tree renders instead of dropdown
+vi.mock('@/hooks/useMediaQuery', () => ({
+  useIsDesktop: () => true,
+}));
+
 // Mock all hooks
 const mockTreeData = [
   {
@@ -85,6 +90,10 @@ vi.mock('@/hooks/useSkillCategories', () => ({
   }),
   useUpdateSkillCategory: () => ({
     mutate: mockUpdateMutate,
+    isPending: false,
+  }),
+  useReorderSkillCategories: () => ({
+    mutate: vi.fn(),
     isPending: false,
   }),
   useDeleteSkillCategory: () => ({

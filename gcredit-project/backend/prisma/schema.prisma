@@ -201,7 +201,6 @@ model Badge {
   templateId       String
   recipientId      String
   issuerId         String
-  evidenceUrl      String?       // Azure Blob Storage URL
   issuedAt         DateTime      @default(now())
   expiresAt        DateTime?     // Calculated from expiresIn
   status           BadgeStatus   @default(PENDING)

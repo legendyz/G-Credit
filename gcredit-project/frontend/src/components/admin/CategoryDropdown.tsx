@@ -1,0 +1,246 @@
+/**
+ * CategoryDropdown — D-1: Responsive dropdown alternative for CategoryTree
+ *
+ * Renders on screens <1024px as a flat dropdown with indented labels.
+ * Provides toolbar buttons for CRUD actions on the selected category.
+ */
+
+import { useMemo } from 'react';
+import { Pencil, Trash2, Plus, FolderInput } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Info } from 'lucide-react';
+import type { SkillCategory } from '@/hooks/useSkillCategories';
+
+interface CategoryDropdownProps {
+  categories: SkillCategory[];
+  editable?: boolean;
+  selectedId?: string;
+  onSelect?: (category: SkillCategory) => void;
+  onEdit?: (category: SkillCategory) => void;
+  onDelete?: (category: SkillCategory) => void;
+  onAddChild?: (parent: SkillCategory) => void;
+  onMoveTo?: (category: SkillCategory) => void;
+  onCreateRoot?: () => void;
+}
+
+interface FlatCategoryItem {
+  id: string;
+  name: string;
+  level: number;
+  hasChildren: boolean;
+  hasSkills: boolean;
+  isSystemDefined: boolean;
+  original: SkillCategory;
+}
+
+/**
+ * Flatten tree into ordered list preserving hierarchy for dropdown display
+ */
+function flattenCategories(categories: SkillCategory[]): FlatCategoryItem[] {
+  const items: FlatCategoryItem[] = [];
+  const walk = (cats: SkillCategory[]) => {
+    for (const cat of cats) {
+      const skillCount = cat._count?.skills ?? cat.skills?.length ?? 0;
+      items.push({
+        id: cat.id,
+        name: cat.name,
+        level: cat.level,
+        hasChildren: (cat.children?.length ?? 0) > 0,
+        hasSkills: skillCount > 0,
+        isSystemDefined: cat.isSystemDefined,
+        original: cat,
+      });
+      if (cat.children && cat.children.length > 0) {
+        walk(cat.children);
+      }
+    }
+  };
+  walk(categories);
+  return items;
+}
+
+export function CategoryDropdown({
+  categories,
+  editable = false,
+  selectedId,
+  onSelect,
+  onEdit,
+  onDelete,
+  onAddChild,
+  onMoveTo,
+  onCreateRoot,
+}: CategoryDropdownProps) {
+  const flatItems = useMemo(() => flattenCategories(categories), [categories]);
+
+  const selectedItem = useMemo(
+    () => flatItems.find((item) => item.id === selectedId),
+    [flatItems, selectedId]
+  );
+
+  const handleValueChange = (value: string) => {
+    if (value === '__all__') return;
+    const item = flatItems.find((i) => i.id === value);
+    if (item && onSelect) {
+      onSelect(item.original);
+    }
+  };
+
+  if (categories.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-10 gap-3">
+        <p className="text-body font-medium text-neutral-700">No categories found</p>
+        {onCreateRoot && (
+          <Button onClick={onCreateRoot} size="sm">
+            <Plus className="h-4 w-4 mr-1" />
+            Create Category
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2" data-testid="category-dropdown">
+      <Select value={selectedId || '__all__'} onValueChange={handleValueChange}>
+        <SelectTrigger className="w-full" aria-label="Select category">
+          <SelectValue placeholder="Select a category" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__all__">All Categories</SelectItem>
+          {flatItems.map((item) => (
+            <SelectItem
+              key={item.id}
+              value={item.id}
+              className="focus:bg-neutral-100 focus:text-foreground"
+            >
+              <span style={{ paddingLeft: `${(item.level - 1) * 16}px` }}>
+                {item.level > 1 && <span className="text-muted-foreground mr-1">└</span>}
+                {item.name}
+                {item.original.level >= 3 && (
+                  <span className="text-xs text-muted-foreground ml-1">(Max depth)</span>
+                )}
+              </span>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {/* Toolbar: CRUD actions on selected category */}
+      {editable && selectedItem && (
+        <div className="space-y-1.5">
+          <p className="text-xs text-muted-foreground px-1">
+            Selected: <span className="font-medium text-foreground">{selectedItem.name}</span>
+            <span className="ml-1">(Level {selectedItem.original.level})</span>
+          </p>
+          <div className="flex items-center gap-1" data-testid="dropdown-toolbar">
+            {onEdit && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onEdit(selectedItem.original)}
+                aria-label={`Edit ${selectedItem.name}`}
+              >
+                <Pencil className="h-3.5 w-3.5 mr-1" />
+                Edit
+              </Button>
+            )}
+
+            {onAddChild && selectedItem.original.level < 3 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onAddChild(selectedItem.original)}
+                aria-label={`Add child to ${selectedItem.name}`}
+              >
+                <Plus className="h-3.5 w-3.5 mr-1" />
+                Add Child
+              </Button>
+            )}
+
+            {onMoveTo &&
+              (() => {
+                const moveDisabled = selectedItem.isSystemDefined;
+                const moveTitle = moveDisabled
+                  ? 'System-defined categories cannot be moved'
+                  : 'Move to...';
+                const btn = (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onMoveTo(selectedItem.original)}
+                    disabled={moveDisabled}
+                    aria-label={`Move ${selectedItem.name}`}
+                  >
+                    <FolderInput className="h-3.5 w-3.5 mr-1" />
+                    Move
+                  </Button>
+                );
+                return moveDisabled ? (
+                  <span title={moveTitle} className="inline-flex">
+                    {btn}
+                  </span>
+                ) : (
+                  btn
+                );
+              })()}
+
+            {onDelete &&
+              (() => {
+                const deleteDisabled = selectedItem.hasChildren || selectedItem.hasSkills;
+                const skillCount =
+                  selectedItem.original._count?.skills ?? selectedItem.original.skills?.length ?? 0;
+                const childCount = selectedItem.original.children?.length ?? 0;
+                let deleteTitle = 'Delete category';
+                if (selectedItem.hasChildren) {
+                  deleteTitle = `Cannot delete: has ${childCount} sub-categor${childCount === 1 ? 'y' : 'ies'}`;
+                } else if (selectedItem.hasSkills) {
+                  deleteTitle = `Cannot delete: has ${skillCount} skill${skillCount === 1 ? '' : 's'}`;
+                }
+                const btn = (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onDelete(selectedItem.original)}
+                    disabled={deleteDisabled}
+                    aria-label={`Delete ${selectedItem.name}`}
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1" />
+                    Delete
+                  </Button>
+                );
+                // Wrap in span so native title tooltip works on disabled buttons
+                return deleteDisabled ? (
+                  <span title={deleteTitle} className="inline-flex">
+                    {btn}
+                  </span>
+                ) : (
+                  btn
+                );
+              })()}
+          </div>
+          {selectedItem.original.level >= 3 && (
+            <p className="flex items-center gap-1 text-xs text-amber-600 px-1">
+              <Info className="h-3 w-3 shrink-0" />
+              Maximum depth reached — cannot create sub-categories under this category
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Create root button when no item is selected */}
+      {editable && !selectedItem && onCreateRoot && (
+        <Button variant="outline" size="sm" onClick={onCreateRoot}>
+          <Plus className="h-4 w-4 mr-1" />
+          Create Category
+        </Button>
+      )}
+    </div>
+  );
+}
