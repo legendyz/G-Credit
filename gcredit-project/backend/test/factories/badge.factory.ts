@@ -16,7 +16,6 @@ export interface CreateBadgeOptions {
   issuerId: string; // Required: issuer user ID
   status?: BadgeStatus;
   claimToken?: string;
-  evidenceUrl?: string;
   expiresAt?: Date;
   claimedAt?: Date;
   revokedAt?: Date;
@@ -83,7 +82,6 @@ export class BadgeFactory {
    * Creates a badge with specified options
    */
   async createBadge(options: CreateBadgeOptions): Promise<Badge> {
-    const uniqueId = uuidv4().substring(0, 8);
     const badgeId = uuidv4(); // Generate badge ID upfront for assertion URL
     const status = options.status || BadgeStatus.PENDING;
     const verificationId = uuidv4(); // Generate verification ID for assertion
@@ -145,9 +143,6 @@ export class BadgeFactory {
         issuerId: options.issuerId,
         status,
         claimToken,
-        evidenceUrl:
-          options.evidenceUrl ||
-          `https://example.com/evidence/${this.testPrefix}-${uniqueId}.pdf`,
         expiresAt,
         claimedAt: options.claimedAt,
         revokedAt: options.revokedAt,
