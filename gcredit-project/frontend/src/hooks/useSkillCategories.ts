@@ -32,6 +32,7 @@ export interface UpdateSkillCategoryInput {
   nameEn?: string;
   description?: string;
   displayOrder?: number;
+  parentId?: string | null;
 }
 
 const QUERY_KEY = 'skill-categories';

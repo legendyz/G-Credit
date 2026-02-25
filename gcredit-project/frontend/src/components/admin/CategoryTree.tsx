@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import {
   ChevronRight,
   ChevronDown,
@@ -7,6 +7,7 @@ import {
   Trash2,
   Plus,
   ShieldCheck,
+  FolderInput,
 } from 'lucide-react';
 import {
   DndContext,
@@ -15,7 +16,10 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  DragOverlay,
   type DragEndEvent,
+  type DragStartEvent,
+  type DragOverEvent,
   type DraggableAttributes,
   type DraggableSyntheticListeners,
 } from '@dnd-kit/core';
@@ -29,6 +33,9 @@ import { CSS } from '@dnd-kit/utilities';
 import { Button } from '@/components/ui/button';
 import { getCategoryColorClasses } from '@/lib/categoryColors';
 import type { SkillCategory } from '@/hooks/useSkillCategories';
+import { useIsDesktop } from '@/hooks/useMediaQuery';
+import { CategoryDropdown } from './CategoryDropdown';
+import { MoveToDialog } from './MoveToDialog';
 
 interface CategoryTreeProps {
   categories: SkillCategory[];
@@ -53,12 +60,36 @@ export function CategoryTree({
   onSelect,
   onCreateRoot,
 }: CategoryTreeProps) {
+  const isDesktop = useIsDesktop();
+
   // Track expanded state — top-level nodes expanded by default
   const [expanded, setExpanded] = useState<Set<string>>(() => {
     const initial = new Set<string>();
     categories.forEach((cat) => initial.add(cat.id));
     return initial;
   });
+
+  // D-2: Track active drag and insertion position
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+  const [overTargetId, setOverTargetId] = useState<string | null>(null);
+
+  // D-3: Move dialog state
+  const [movingCategory, setMovingCategory] = useState<SkillCategory | null>(null);
+
+  const activeDragCategory = useMemo(() => {
+    if (!activeDragId) return null;
+    const find = (cats: SkillCategory[]): SkillCategory | null => {
+      for (const c of cats) {
+        if (c.id === activeDragId) return c;
+        if (c.children) {
+          const found = find(c.children);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    return find(categories);
+  }, [activeDragId, categories]);
 
   const toggleExpand = useCallback((id: string) => {
     setExpanded((prev) => {
@@ -77,8 +108,18 @@ export function CategoryTree({
     useSensor(KeyboardSensor)
   );
 
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveDragId(event.active.id as string);
+  }, []);
+
+  const handleDragOver = useCallback((event: DragOverEvent) => {
+    setOverTargetId(event.over ? (event.over.id as string) : null);
+  }, []);
+
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
+      setActiveDragId(null);
+      setOverTargetId(null);
       const { active, over } = event;
       if (!over || active.id === over.id || !onReorder) return;
 
@@ -119,30 +160,80 @@ export function CategoryTree({
     );
   }
 
+  // D-1: Responsive — render dropdown on mobile/tablet screens
+  if (!isDesktop) {
+    return (
+      <CategoryDropdown
+        categories={categories}
+        editable={editable}
+        selectedId={selectedId}
+        onSelect={onSelect}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onAddChild={onAddChild}
+        onCreateRoot={onCreateRoot}
+      />
+    );
+  }
+
   if (editable && onReorder) {
     return (
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={categories.map((c) => c.id)} strategy={verticalListSortingStrategy}>
-          <div className="space-y-0.5" role="tree" aria-label="Skill categories">
-            {categories.map((category) => (
-              <SortableTreeNode
-                key={category.id}
-                category={category}
-                editable={editable}
-                expanded={expanded}
-                onToggleExpand={toggleExpand}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                onAddChild={onAddChild}
-                onReorder={onReorder}
-                selectedId={selectedId}
-                onSelect={onSelect}
-                level={0}
-              />
-            ))}
-          </div>
-        </SortableContext>
-      </DndContext>
+      <>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={categories.map((c) => c.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-0.5" role="tree" aria-label="Skill categories">
+              {categories.map((category) => (
+                <SortableTreeNode
+                  key={category.id}
+                  category={category}
+                  editable={editable}
+                  expanded={expanded}
+                  onToggleExpand={toggleExpand}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  onAddChild={onAddChild}
+                  onReorder={onReorder}
+                  selectedId={selectedId}
+                  onSelect={onSelect}
+                  level={0}
+                  activeDragId={activeDragId}
+                  overTargetId={overTargetId}
+                  onMoveTo={setMovingCategory}
+                />
+              ))}
+            </div>
+          </SortableContext>
+          <DragOverlay dropAnimation={null}>
+            {activeDragCategory ? (
+              <div
+                className="rounded-md bg-white shadow-lg border border-blue-200 px-3 py-2 opacity-90"
+                data-testid="drag-overlay"
+              >
+                <span className="text-sm font-medium">{activeDragCategory.name}</span>
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+        {movingCategory && (
+          <MoveToDialog
+            open={!!movingCategory}
+            onOpenChange={(open) => {
+              if (!open) setMovingCategory(null);
+            }}
+            category={movingCategory}
+            categories={categories}
+          />
+        )}
+      </>
     );
   }
 
@@ -179,11 +270,14 @@ interface CategoryTreeNodeProps {
   selectedId?: string;
   onSelect?: (category: SkillCategory) => void;
   level: number;
+  activeDragId?: string | null;
+  overTargetId?: string | null;
+  onMoveTo?: (category: SkillCategory) => void;
 }
 
 // Sortable wrapper for drag-and-drop
 function SortableTreeNode(props: CategoryTreeNodeProps) {
-  const { category } = props;
+  const { category, activeDragId, overTargetId } = props;
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: category.id,
   });
@@ -191,11 +285,22 @@ function SortableTreeNode(props: CategoryTreeNodeProps) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : undefined,
+    opacity: isDragging ? 0.3 : undefined,
   };
+
+  // D-2: Show insertion line when this node is the drop target and another node is being dragged
+  const showInsertionLine =
+    !!activeDragId && activeDragId !== category.id && overTargetId === category.id;
 
   return (
     <div ref={setNodeRef} style={style}>
+      {showInsertionLine && (
+        <div
+          className="h-0.5 bg-blue-500 rounded-full mx-2"
+          data-testid="insertion-line"
+          aria-hidden="true"
+        />
+      )}
       <CategoryTreeNodeInner {...props} dragAttributes={attributes} dragListeners={listeners} />
     </div>
   );
@@ -220,6 +325,7 @@ function CategoryTreeNodeInner({
   level,
   dragAttributes,
   dragListeners,
+  onMoveTo,
 }: CategoryTreeNodeInnerProps) {
   const hasChildren = category.children && category.children.length > 0;
   const isExpanded = expanded.has(category.id);
@@ -227,8 +333,27 @@ function CategoryTreeNodeInner({
   const skillCount = category._count?.skills ?? category.skills?.length ?? 0;
   const colorClasses = getCategoryColorClasses(category.color);
 
+  // D-2: Child-level drag state for insertion line within nested SortableContexts
+  const [childDragId, setChildDragId] = useState<string | null>(null);
+  const [childOverId, setChildOverId] = useState<string | null>(null);
+
+  const childDragCategory = useMemo(() => {
+    if (!childDragId || !category.children) return null;
+    return category.children.find((c) => c.id === childDragId) ?? null;
+  }, [childDragId, category.children]);
+
+  const handleChildDragStart = useCallback((event: DragStartEvent) => {
+    setChildDragId(event.active.id as string);
+  }, []);
+
+  const handleChildDragOver = useCallback((event: DragOverEvent) => {
+    setChildOverId(event.over ? (event.over.id as string) : null);
+  }, []);
+
   const handleChildDragEnd = useCallback(
     (event: DragEndEvent) => {
+      setChildDragId(null);
+      setChildOverId(null);
       if (!onReorder || !category.children) return;
       const { active, over } = event;
       if (!over || active.id === over.id) return;
@@ -392,6 +517,23 @@ function CategoryTreeNodeInner({
               </Button>
             )}
 
+            {/* D-3: Move to... button — hidden for system-defined categories */}
+            {onMoveTo && !category.isSystemDefined && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMoveTo(category);
+                }}
+                aria-label={`Move ${category.name}`}
+                title="Move to..."
+              >
+                <FolderInput className="h-3.5 w-3.5" />
+              </Button>
+            )}
+
             {(() => {
               const deleteDisabled = hasChildren || skillCount > 0;
               const deleteReason = hasChildren
@@ -434,6 +576,8 @@ function CategoryTreeNodeInner({
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
+              onDragStart={handleChildDragStart}
+              onDragOver={handleChildDragOver}
               onDragEnd={handleChildDragEnd}
             >
               <SortableContext
@@ -454,9 +598,22 @@ function CategoryTreeNodeInner({
                     selectedId={selectedId}
                     onSelect={onSelect}
                     level={level + 1}
+                    activeDragId={childDragId}
+                    overTargetId={childOverId}
+                    onMoveTo={onMoveTo}
                   />
                 ))}
               </SortableContext>
+              <DragOverlay dropAnimation={null}>
+                {childDragCategory ? (
+                  <div
+                    className="rounded-md bg-white shadow-lg border border-blue-200 px-3 py-2 opacity-90"
+                    data-testid="drag-overlay"
+                  >
+                    <span className="text-sm font-medium">{childDragCategory.name}</span>
+                  </div>
+                ) : null}
+              </DragOverlay>
             </DndContext>
           ) : (
             category.children!.map((child) => (

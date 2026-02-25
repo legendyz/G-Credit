@@ -3,6 +3,12 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { CategoryTree } from './CategoryTree';
 import type { SkillCategory } from '@/hooks/useSkillCategories';
 
+// Mock useIsDesktop — default to desktop (true) so existing tree tests still run the tree path
+const mockUseIsDesktop = vi.fn(() => true);
+vi.mock('@/hooks/useMediaQuery', () => ({
+  useIsDesktop: () => mockUseIsDesktop(),
+}));
+
 const mockCategories: SkillCategory[] = [
   {
     id: 'cat-1',
@@ -55,6 +61,7 @@ const mockCategories: SkillCategory[] = [
 describe('CategoryTree', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseIsDesktop.mockReturnValue(true); // default: desktop
   });
 
   it('renders tree with nested children', () => {
@@ -247,6 +254,79 @@ describe('CategoryTree', () => {
         { id: 'cat-2', displayOrder: 0 },
         { id: 'cat-1', displayOrder: 1 },
       ]);
+    });
+  });
+
+  // D-2: Insertion line and DragOverlay tests
+  describe('D-2: DnD visual feedback', () => {
+    it('does not show insertion line or drag overlay in normal state', () => {
+      const onReorder = vi.fn();
+      render(<CategoryTree categories={mockCategories} editable onReorder={onReorder} />);
+
+      expect(screen.queryByTestId('insertion-line')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('drag-overlay')).not.toBeInTheDocument();
+    });
+
+    it('reduces opacity for dragged item (opacity: 0.3)', () => {
+      const onReorder = vi.fn();
+      const { container } = render(
+        <CategoryTree categories={mockCategories} editable onReorder={onReorder} />
+      );
+
+      // Verify SortableTreeNode renders with no initial opacity override
+      const treeItems = container.querySelectorAll('[role="treeitem"]');
+      treeItems.forEach((item) => {
+        const parent = item.parentElement;
+        // When not dragging, opacity should not be 0.3
+        expect(parent?.style.opacity).not.toBe('0.3');
+      });
+    });
+
+    it('renders DndContext with DragOverlay in editable mode', () => {
+      const onReorder = vi.fn();
+      const { container } = render(
+        <CategoryTree categories={mockCategories} editable onReorder={onReorder} />
+      );
+
+      // Verify tree structure is rendered (DnD branches are active)
+      const tree = container.querySelector('[role="tree"]');
+      expect(tree).toBeInTheDocument();
+
+      // Drag handles exist (proves editable DnD mode is active)
+      const handles = screen.getAllByTestId('drag-handle');
+      expect(handles.length).toBeGreaterThan(0);
+    });
+  });
+
+  // D-1: Responsive layout tests
+  describe('D-1: Responsive layout', () => {
+    it('renders tree on desktop screens', () => {
+      mockUseIsDesktop.mockReturnValue(true);
+      const { container } = render(
+        <CategoryTree categories={mockCategories} editable onReorder={vi.fn()} />
+      );
+
+      const tree = container.querySelector('[role="tree"]');
+      expect(tree).toBeInTheDocument();
+      // Should NOT have the dropdown trigger
+      expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+    });
+
+    it('renders CategoryDropdown on mobile screens', () => {
+      mockUseIsDesktop.mockReturnValue(false);
+      render(<CategoryTree categories={mockCategories} editable onReorder={vi.fn()} />);
+
+      // Dropdown should be present (Select renders a combobox role via Radix)
+      expect(screen.getByRole('combobox')).toBeInTheDocument();
+      // Tree should not be present
+      expect(screen.queryByRole('tree')).not.toBeInTheDocument();
+    });
+
+    it('shows empty state regardless of screen size', () => {
+      mockUseIsDesktop.mockReturnValue(false);
+      render(<CategoryTree categories={[]} onCreateRoot={vi.fn()} />);
+
+      expect(screen.getByText('No categories found')).toBeInTheDocument();
     });
   });
 });

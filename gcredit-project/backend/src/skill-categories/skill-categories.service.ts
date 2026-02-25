@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
@@ -144,30 +145,187 @@ export class SkillCategoriesService {
 
   /**
    * Update an existing category
-   * All categories (including system-defined) can be edited.
+   * All categories (including system-defined) can be edited for name/color/etc.
    * ADR-012: isSystemDefined retained as label only, not for access control.
+   *
+   * When `parentId` is provided, performs a reparent operation:
+   * - Validates no self-reference or cycle
+   * - Validates resulting depth ≤ 3
+   * - isSystemDefined categories cannot be moved (403)
+   * - Recalculates level for the category and all descendants
+   * - Sets displayOrder to append at end of new parent's children
    */
   async update(id: string, updateDto: UpdateSkillCategoryDto) {
-    // Check if category exists
+    // Check if category exists (include children for subtree depth calc)
     const category = await this.prisma.skillCategory.findUnique({
       where: { id },
+      include: { children: { include: { children: true } } },
     });
 
     if (!category) {
       throw new NotFoundException(`Skill category with ID ${id} not found`);
     }
 
-    // Update category
-    const updated = await this.prisma.skillCategory.update({
-      where: { id },
-      data: updateDto,
-      include: {
-        parent: true,
-        children: true,
-      },
+    // Separate parentId from other fields — reparent requires special handling
+    const { parentId, ...otherFields } = updateDto;
+
+    // Check if this is a reparent operation (parentId explicitly provided and different)
+    const isReparent = parentId !== undefined && parentId !== category.parentId;
+
+    if (!isReparent) {
+      // Simple update — no reparent logic needed
+      const data = parentId !== undefined ? otherFields : updateDto;
+      const updated = await this.prisma.skillCategory.update({
+        where: { id },
+        data,
+        include: { parent: true, children: true },
+      });
+      return updated;
+    }
+
+    // --- Reparent operation ---
+
+    // isSystemDefined categories cannot be moved
+    if (category.isSystemDefined) {
+      throw new ForbiddenException('System-defined categories cannot be moved');
+    }
+
+    // Cannot move to self
+    if (parentId === id) {
+      throw new BadRequestException('Cannot move a category to itself');
+    }
+
+    // Determine new level
+    let newLevel = 1; // default: root
+
+    if (parentId !== null) {
+      // Validate target parent exists
+      const targetParent = await this.prisma.skillCategory.findUnique({
+        where: { id: parentId },
+      });
+      if (!targetParent) {
+        throw new NotFoundException(
+          `Target parent category with ID ${parentId} not found`,
+        );
+      }
+
+      newLevel = targetParent.level + 1;
+
+      // Cycle detection: target parent must not be a descendant
+      const descendantIds = this.getDescendantIds(category);
+      if (descendantIds.has(parentId)) {
+        throw new BadRequestException(
+          'Cannot move a category to one of its own descendants (cycle detected)',
+        );
+      }
+    }
+
+    // Depth validation: new level + max subtree depth must be ≤ 3
+    const maxSubtreeDepth = this.getMaxSubtreeDepth(category);
+    if (newLevel + maxSubtreeDepth > 3) {
+      throw new BadRequestException(
+        `Cannot move: resulting depth would exceed maximum (3). Category subtree depth is ${maxSubtreeDepth}, target level is ${newLevel}.`,
+      );
+    }
+
+    // Calculate displayOrder: append at end of new parent's children
+    const siblingsCount = await this.prisma.skillCategory.count({
+      where: { parentId: parentId },
+    });
+
+    // Build batch updates for level recalculation
+    const levelUpdates = this.buildLevelUpdates(category, newLevel);
+
+    // Execute reparent in a transaction
+    const updated = await this.prisma.$transaction(async (tx) => {
+      // Update the main category: parentId, level, displayOrder, plus any other fields
+      const mainUpdate = await tx.skillCategory.update({
+        where: { id },
+        data: {
+          ...otherFields,
+          parentId: parentId,
+          level: newLevel,
+          displayOrder: siblingsCount,
+        },
+        include: { parent: true, children: true },
+      });
+
+      // Update descendant levels
+      for (const update of levelUpdates) {
+        await tx.skillCategory.update({
+          where: { id: update.id },
+          data: { level: update.level },
+        });
+      }
+
+      return mainUpdate;
     });
 
     return updated;
+  }
+
+  /**
+   * Get all descendant IDs of a category (for cycle detection).
+   * Works on the already-loaded children tree (up to 2 levels deep from schema include).
+   */
+  private getDescendantIds(category: {
+    children?: Array<{ id: string; children?: Array<{ id: string }> }>;
+  }): Set<string> {
+    const ids = new Set<string>();
+    const walk = (
+      children:
+        | Array<{ id: string; children?: Array<{ id: string }> }>
+        | undefined,
+    ) => {
+      if (!children) return;
+      for (const child of children) {
+        ids.add(child.id);
+        if (child.children) {
+          walk(child.children);
+        }
+      }
+    };
+    walk(category.children);
+    return ids;
+  }
+
+  /**
+   * Get the maximum depth of descendants below this category (0 = leaf, 1 = has children, 2 = has grandchildren).
+   */
+  private getMaxSubtreeDepth(category: {
+    children?: Array<{ children?: Array<Record<string, unknown>> }>;
+  }): number {
+    if (!category.children || category.children.length === 0) return 0;
+    let maxDepth = 1;
+    for (const child of category.children) {
+      if (child.children && child.children.length > 0) {
+        maxDepth = 2; // grandchildren exist
+      }
+    }
+    return maxDepth;
+  }
+
+  /**
+   * Build level update instructions for all descendants when reparenting.
+   * Returns array of { id, level } for children/grandchildren.
+   */
+  private buildLevelUpdates(
+    category: {
+      children?: Array<{ id: string; children?: Array<{ id: string }> }>;
+    },
+    newParentLevel: number,
+  ): Array<{ id: string; level: number }> {
+    const updates: Array<{ id: string; level: number }> = [];
+    if (!category.children) return updates;
+    for (const child of category.children) {
+      updates.push({ id: child.id, level: newParentLevel + 1 });
+      if (child.children) {
+        for (const grandchild of child.children) {
+          updates.push({ id: grandchild.id, level: newParentLevel + 2 });
+        }
+      }
+    }
+    return updates;
   }
 
   /**
