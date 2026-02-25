@@ -1,6 +1,6 @@
 # Code Review: Story 12.5.2
 
-**Verdict:** Approved with Comments
+**Verdict:** Approved
 
 ## Scope
 
@@ -9,6 +9,7 @@
 - Branch: `sprint-12.5/deferred-cleanup`
 - Base: `f6ccfe8`
 - Reviewed commit: `59b7e19`
+- Re-review commit: `670fc15` (story/status/docs sync)
 
 ## AC Status
 
@@ -37,3 +38,10 @@
 ## Summary
 
 Story 12.5.2 implementation is correct and low-risk. The legacy `Badge.evidenceUrl` column removal is cleanly applied at schema + migration + generated client levels, and full backend/frontend suites are green. Approved with a minor documentation cleanup comment.
+
+## Re-review Update (2026-02-25)
+
+- Re-reviewed latest branch head `670fc15`.
+- This commit contains documentation/status synchronization only (`12.5.2` status to `done`, review prompt/report files) and introduces no new backend/frontend source changes affecting Story 12.5.2 runtime behavior.
+- Prior validation evidence for `59b7e19` remains valid; verdict is unchanged.
+- Non-blocking documentation hygiene comment **resolved**: all references are in historical Sprint 12 docs (dev prompts, code reviews, UAT) that accurately described state at time of writing — no modification needed. Sprint 12.5 docs already correctly document the scripts as DELETED.

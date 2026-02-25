@@ -115,7 +115,7 @@ sprint-12: done
 # Target: v1.2.1
 # Branch: sprint-12.5/deferred-cleanup
 # ============================================
-sprint-12.5: in-progress
+sprint-12.5: done
 
 # --- Wave 1 (all stories parallel) ---
 12.5-1-category-tree-enhancements: done           # D-1 responsive, D-2 insertion line, D-3 cross-level move
