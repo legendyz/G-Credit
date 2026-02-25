@@ -1574,20 +1574,54 @@ Sprint 0-2 established this pattern:
    
    **Sprint Docs:** summary.md, retrospective.md, backlog.md, 8 story files
 
-22. 🔜 **Next Actions (Post-Sprint 12 — Sprint 13 Planning)**
-   - Phase 4 Pilot planning (L&D program pilot)
-   - Sprint 13 deferred items: D-1 through D-4 (~7h carry-forward)
-   - FEAT-008: User Management enhancements — manual add, M365 sync UI (P1)
-   - FR27: Azure AD SSO (Entra ID OAuth 2.0) — P3, 16-24h
-   - FEAT-007: Session management (idle timeout, centralized HTTP client) — P2
-   - FEAT-004: Role model refactor (see TD-034) — P2
-   - TD-006: Teams Channel Permissions (requires tenant admin approval) — External blocker
-   - TD-030: LinkedIn Dynamic OG Meta Tags — P2, 4-6h
-   - TD-027: Playwright Visual Regression in CI — P3
-   - FEAT-009: Invite-to-Claim (External Email Recipients) — P3, ~8h
-   - **Future Enhancement Candidates (F-1 through F-4):** Recorded in Sprint 12 backlog, pending PO/Architect decision
-   - **Sprint 12 待决策 (carried forward):**
-     - DEC-001 through DEC-006 (see Sprint 12 backlog for details)
+22. ✅ **Sprint 12.5 — Deferred Items Cleanup (COMPLETE - 2026-02-25)**
+   - **Branch:** `sprint-12.5/deferred-cleanup`
+   - **Duration:** 2026-02-25 (1 day mini-sprint)
+   - **Stories:** 2/2 complete
+     - 12.5.1: CategoryTree Enhancements (D-1 responsive dropdown, D-2 blue insertion line, D-3 cross-level move) — ✅
+     - 12.5.2: Remove legacy Badge.evidenceUrl column (D-4) — ✅
+   
+   **Key Achievements:**
+   - D-1: New `<CategoryDropdown>` for screens < 1024px (19 tests)
+   - D-2: Blue insertion line replacing opacity-only DnD feedback
+   - D-3: `<MoveToDialog>` + backend reparent with cycle detection, depth ≤ 3, color inheritance
+   - D-4: `ALTER TABLE "badges" DROP COLUMN "evidenceUrl"` — dead column removed
+   - New hooks: `useReorderSkillCategories` (batched), `resolveRootColor()`, `buildDescendantUpdates()`
+   - Tests: 847 → 855 BE (+8), 702 → 738 FE (+36)
+   - UAT: 26/26 PASS (3 CRITICAL, 13 HIGH, 7 MEDIUM, 3 LOW), 5 bugs found & fixed
+   
+   **Status:** ✅ v1.2.1 Released (PR #8 merged, tagged, GitHub Release published)
+   
+   **Sprint Docs:** backlog.md, 2 story files, 2 code review docs, 2 dev prompts, uat-test-plan.md
+
+23. 🔜 **Next Actions (Post-Sprint 12.5 — Sprint 13 Planning)**
+   
+   **Completed (remove from backlog):**
+   - ~~D-1 through D-4~~ — Done in Sprint 12.5 (v1.2.1)
+   - ~~FEAT-008: User Management enhancements~~ — Done in Sprint 12 Story 12.3 (manual add + M365 sync UI + search/filter/sort + role edit + lock/unlock)
+   
+   **P1 — Pilot Preparation:**
+   - FR27: Azure AD SSO (Entra ID OAuth 2.0) — 16-24h, enterprise auth for pilot
+   - FEAT-007: Session management (idle timeout, centralized HTTP client) — security hardening
+   - DEC-001 through DEC-006: PO decisions pending (carried from Sprint 12 backlog)
+   
+   **P2 — Feature & Quality:**
+   - FEAT-004: Role model refactor (see TD-034) — fine-grained permissions
+   - FEAT-009: Invite-to-Claim (External Email Recipients) — ~8h, expand badge reach
+   - TD-030: LinkedIn Dynamic OG Meta Tags — 4-6h, sharing experience
+   - TD-006: Teams Channel Permissions — external blocker, requires tenant admin approval
+   
+   **P3 — Nice to Have:**
+   - TD-027: Playwright Visual Regression in CI
+   - TD-002: Badge Issuance Tests Update
+   - TD-003: metadataHash Index
+   - TD-004: Baked Badge Caching
+   
+   **Future Enhancements (pending PO/Architect decision):**
+   - F-1: Fine-Grained RBAC (8-60h, 3 levels)
+   - F-2: Config Lifecycle Management (28-44h, 2 phases)
+   - F-3: Multi-tenant / Data Isolation (16-120h, 3 paths)
+   - F-4: AI Agent 对话式交互层 (3-10 days, 3 tiers)
 
 ---
 
