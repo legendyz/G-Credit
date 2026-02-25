@@ -20,7 +20,19 @@ const mockCategories: SkillCategory[] = [
         isSystemDefined: false,
         isEditable: true,
         displayOrder: 0,
-        children: [],
+        children: [
+          {
+            id: 'cat-1-1-1',
+            name: 'React Ecosystem',
+            level: 3,
+            parentId: 'cat-1-1',
+            isSystemDefined: false,
+            isEditable: true,
+            displayOrder: 0,
+            children: [],
+            skills: [],
+          },
+        ],
         skills: [
           { id: 's1', name: 'React' },
           { id: 's2', name: 'Vue' },
@@ -222,5 +234,46 @@ describe('CategoryDropdown', () => {
     render(<CategoryDropdown categories={mockCategories} editable selectedId="cat-1-2" />);
 
     expect(screen.queryByLabelText('Move Backend')).not.toBeInTheDocument();
+  });
+
+  it('shows selected category context info in toolbar', () => {
+    render(
+      <CategoryDropdown
+        categories={mockCategories}
+        editable
+        selectedId="cat-1-1"
+        onEdit={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('(Level 2)')).toBeInTheDocument();
+    expect(screen.getByText(/Selected:/)).toBeInTheDocument();
+  });
+
+  it('shows max depth warning when L3 category is selected', () => {
+    render(
+      <CategoryDropdown
+        categories={mockCategories}
+        editable
+        selectedId="cat-1-1-1"
+        onEdit={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText(/Maximum depth reached/)).toBeInTheDocument();
+  });
+
+  it('does not show Add Child button for L3 category', () => {
+    const onAddChild = vi.fn();
+    render(
+      <CategoryDropdown
+        categories={mockCategories}
+        editable
+        selectedId="cat-1-1-1"
+        onAddChild={onAddChild}
+      />
+    );
+
+    expect(screen.queryByText('Add Child')).not.toBeInTheDocument();
   });
 });

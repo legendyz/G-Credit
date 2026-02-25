@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Info } from 'lucide-react';
 import type { SkillCategory } from '@/hooks/useSkillCategories';
 
 interface CategoryDropdownProps {
@@ -114,10 +115,17 @@ export function CategoryDropdown({
         <SelectContent>
           <SelectItem value="__all__">All Categories</SelectItem>
           {flatItems.map((item) => (
-            <SelectItem key={item.id} value={item.id}>
+            <SelectItem
+              key={item.id}
+              value={item.id}
+              className="focus:bg-neutral-100 focus:text-foreground"
+            >
               <span style={{ paddingLeft: `${(item.level - 1) * 16}px` }}>
                 {item.level > 1 && <span className="text-muted-foreground mr-1">└</span>}
                 {item.name}
+                {item.original.level >= 3 && (
+                  <span className="text-xs text-muted-foreground ml-1">(Max depth)</span>
+                )}
               </span>
             </SelectItem>
           ))}
@@ -126,60 +134,74 @@ export function CategoryDropdown({
 
       {/* Toolbar: CRUD actions on selected category */}
       {editable && selectedItem && (
-        <div className="flex items-center gap-1" data-testid="dropdown-toolbar">
-          {onEdit && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onEdit(selectedItem.original)}
-              aria-label={`Edit ${selectedItem.name}`}
-            >
-              <Pencil className="h-3.5 w-3.5 mr-1" />
-              Edit
-            </Button>
-          )}
+        <div className="space-y-1.5">
+          <p className="text-xs text-muted-foreground px-1">
+            Selected: <span className="font-medium text-foreground">{selectedItem.name}</span>
+            <span className="ml-1">(Level {selectedItem.original.level})</span>
+          </p>
+          <div className="flex items-center gap-1" data-testid="dropdown-toolbar">
+            {onEdit && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onEdit(selectedItem.original)}
+                aria-label={`Edit ${selectedItem.name}`}
+              >
+                <Pencil className="h-3.5 w-3.5 mr-1" />
+                Edit
+              </Button>
+            )}
 
-          {onAddChild && selectedItem.original.level < 3 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onAddChild(selectedItem.original)}
-              aria-label={`Add child to ${selectedItem.name}`}
-            >
-              <Plus className="h-3.5 w-3.5 mr-1" />
-              Add Child
-            </Button>
-          )}
+            {onAddChild && selectedItem.original.level < 3 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onAddChild(selectedItem.original)}
+                aria-label={`Add child to ${selectedItem.name}`}
+              >
+                <Plus className="h-3.5 w-3.5 mr-1" />
+                Add Child
+              </Button>
+            )}
 
-          {onMoveTo &&
-            (() => {
-              const moveDisabled = selectedItem.isSystemDefined;
-              return (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onMoveTo(selectedItem.original)}
-                  disabled={moveDisabled}
-                  aria-label={`Move ${selectedItem.name}`}
-                  title={moveDisabled ? 'System-defined categories cannot be moved' : 'Move to...'}
-                >
-                  <FolderInput className="h-3.5 w-3.5 mr-1" />
-                  Move
-                </Button>
-              );
-            })()}
+            {onMoveTo &&
+              (() => {
+                const moveDisabled = selectedItem.isSystemDefined;
+                return (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onMoveTo(selectedItem.original)}
+                    disabled={moveDisabled}
+                    aria-label={`Move ${selectedItem.name}`}
+                    title={
+                      moveDisabled ? 'System-defined categories cannot be moved' : 'Move to...'
+                    }
+                  >
+                    <FolderInput className="h-3.5 w-3.5 mr-1" />
+                    Move
+                  </Button>
+                );
+              })()}
 
-          {onDelete && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onDelete(selectedItem.original)}
-              disabled={selectedItem.hasChildren || selectedItem.hasSkills}
-              aria-label={`Delete ${selectedItem.name}`}
-            >
-              <Trash2 className="h-3.5 w-3.5 mr-1" />
-              Delete
-            </Button>
+            {onDelete && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onDelete(selectedItem.original)}
+                disabled={selectedItem.hasChildren || selectedItem.hasSkills}
+                aria-label={`Delete ${selectedItem.name}`}
+              >
+                <Trash2 className="h-3.5 w-3.5 mr-1" />
+                Delete
+              </Button>
+            )}
+          </div>
+          {selectedItem.original.level >= 3 && (
+            <p className="flex items-center gap-1 text-xs text-amber-600 px-1">
+              <Info className="h-3 w-3 shrink-0" />
+              Maximum depth reached — cannot create sub-categories under this category
+            </p>
           )}
         </div>
       )}

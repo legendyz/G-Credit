@@ -35,6 +35,13 @@ export function SkillCategoryManagementPage() {
   const [deletingCategory, setDeletingCategory] = useState<SkillCategory | undefined>();
   const [deleteBlockMessage, setDeleteBlockMessage] = useState('');
 
+  // Selection state (used by responsive dropdown)
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>();
+
+  const handleSelect = useCallback((category: SkillCategory) => {
+    setSelectedCategoryId(category.id);
+  }, []);
+
   // Handlers
   const handleCreateRoot = useCallback(() => {
     setFormMode('create');
@@ -153,6 +160,8 @@ export function SkillCategoryManagementPage() {
           <CategoryTree
             categories={categories}
             editable
+            selectedId={selectedCategoryId}
+            onSelect={handleSelect}
             onEdit={handleEdit}
             onDelete={handleDeleteRequest}
             onAddChild={handleAddChild}
