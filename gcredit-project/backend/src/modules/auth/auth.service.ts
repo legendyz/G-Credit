@@ -808,7 +808,10 @@ export class AuthService {
 
       // Admin bootstrap: INITIAL_ADMIN_EMAIL (DEC-005 Resolution B)
       const initialAdminEmail = this.config.get<string>('INITIAL_ADMIN_EMAIL');
-      if (initialAdminEmail && user.email === initialAdminEmail.toLowerCase()) {
+      if (
+        initialAdminEmail &&
+        user.email === initialAdminEmail.trim().toLowerCase()
+      ) {
         await this.prisma.user.update({
           where: { id: user.id },
           data: { role: UserRole.ADMIN, roleSetManually: true },
@@ -822,9 +825,15 @@ export class AuthService {
       return user;
     } catch (error) {
       // Handle race condition: concurrent first-login with same azureId
-      const prismaError = error as { code?: string };
-      if (prismaError.code === 'P2002') {
-        // Prisma UniqueConstraintViolation
+      const prismaError = error as {
+        code?: string;
+        meta?: { target?: string[] };
+      };
+      if (
+        prismaError.code === 'P2002' &&
+        prismaError.meta?.target?.includes('azureId')
+      ) {
+        // Prisma UniqueConstraintViolation on azureId — race condition recovery
         this.logger.warn(
           `[SSO] JIT race condition: azureId:${profile.oid} already exists — fetching existing user`,
         );
@@ -861,7 +870,7 @@ export class AuthService {
       });
 
       this.logger.log(
-        `[AUDIT] JIT user provisioned: user:${user.id}, email:${user.email} — recommend Full Sync for complete role/manager derivation`,
+        `[AUDIT] JIT user provisioned: user:${user.id} — recommend Full Sync for complete role/manager derivation`,
       );
     } catch (error) {
       // Audit log failure should not block login

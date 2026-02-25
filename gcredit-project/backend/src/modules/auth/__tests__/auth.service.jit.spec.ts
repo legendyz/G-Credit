@@ -251,6 +251,7 @@ describe('AuthService — JIT User Provisioning (Story 13.2)', () => {
   it('should handle race condition (P2002) by fetching existing user', async () => {
     const p2002Error = Object.assign(new Error('Unique constraint violation'), {
       code: 'P2002',
+      meta: { target: ['azureId'] },
     });
 
     mockPrismaService.user.findUnique

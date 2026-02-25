@@ -162,3 +162,4 @@ So that I don't need to register separately or wait for an admin to add me.
 |------|--------|-------|
 | 2026-02-25 | Story started — implementation begins | — |
 | 2026-02-25 | Full implementation complete: JIT provisioning, admin bootstrap, audit log, M365 password removal, data migration, 11 tests | Tasks 1-9 |
+| 2026-02-25 | Addressed code review findings — 3 items resolved: (1) removed PII from console log, (2) P2002 target check for azureId, (3) trim INITIAL_ADMIN_EMAIL | — |
