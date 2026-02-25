@@ -1,6 +1,6 @@
 # Story 13.2: JIT User Provisioning on First SSO Login
 
-Status: review
+Status: done
 
 ## Story
 
@@ -76,7 +76,7 @@ So that I don't need to register separately or wait for an admin to add me.
   - [x] Unit: audit log failure doesn't block login
   - [x] Unit: sync rejected → deactivate JIT user
 - [x] Task 9: JIT audit log + admin notification (AC: #10)
-  - [x] After JIT user creation, log audit event: `[AUDIT] JIT user provisioned: user:{id}, email:{email} — recommend Full Sync for complete role/manager derivation`
+  - [x] After JIT user creation, log audit event: `[AUDIT] JIT user provisioned: user:{id} — recommend Full Sync for complete role/manager derivation`
   - [x] Create activity feed entry visible in Admin Dashboard (reuse existing Activity Feed pattern from Sprint 12)
   - [x] Activity feed message: "New user {displayName} ({email}) auto-provisioned via SSO. Run Full Sync to update manager relationships and role assignments."
   - [x] Activity feed type: `JIT_PROVISIONED` action in UserAuditLog
@@ -140,6 +140,7 @@ So that I don't need to register separately or wait for an admin to add me.
 - 11 new tests (10 JIT + 1 M365 sync), total: 907 passed / 28 skipped / 49 suites
 - `admin-users.service.ts` untouched — local user creation still uses `DEFAULT_USER_PASSWORD`
 - No sensitive data in logs (no passwords, no tokens)
+- Re-review completed: Story 13.2 code review verdict is Approved after fixes for PII logging and robustness checks
 
 ## File List
 
@@ -163,3 +164,4 @@ So that I don't need to register separately or wait for an admin to add me.
 | 2026-02-25 | Story started — implementation begins | — |
 | 2026-02-25 | Full implementation complete: JIT provisioning, admin bootstrap, audit log, M365 password removal, data migration, 11 tests | Tasks 1-9 |
 | 2026-02-25 | Addressed code review findings — 3 items resolved: (1) removed PII from console log, (2) P2002 target check for azureId, (3) trim INITIAL_ADMIN_EMAIL | — |
+| 2026-02-25 | Code review re-check passed — verdict updated to Approved in 13-2-code-review-result.md | — |
