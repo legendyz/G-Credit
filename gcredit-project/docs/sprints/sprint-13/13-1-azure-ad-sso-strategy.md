@@ -1,6 +1,6 @@
 # Story 13.1: Azure AD SSO Strategy + Callback Endpoints
 
-Status: review
+Status: done
 
 ## Story
 
@@ -20,7 +20,7 @@ So that employees can log in with their existing corporate credentials without a
 
 ## Acceptance Criteria
 
-1. [x] New `AzureAdStrategy` registered in Passport using `@azure/msal-node` (Authorization Code Flow with PKCE)
+1. [x] New `AzureAdSsoService` implements SSO flow using `@azure/msal-node` directly (Authorization Code Flow with PKCE)
 2. [x] `GET /api/auth/sso/login` redirects to Azure AD authorize URL with scopes: `openid profile email User.Read`
 3. [x] `GET /api/auth/sso/callback` exchanges authorization code for tokens, validates `id_token`
 4. [x] On successful callback, extracts `oid` (Azure Object ID), `email`, `displayName` from token claims
@@ -39,7 +39,7 @@ So that employees can log in with their existing corporate credentials without a
   - [x] Create `AzureAdConfig` — reads `AZURE_SSO_CLIENT_ID`, `AZURE_SSO_CLIENT_SECRET`, `AZURE_SSO_REDIRECT_URI`, `AZURE_TENANT_ID`
   - [x] Update `.env.example` with new SSO env vars
   - [x] Register MSAL `ConfidentialClientApplication` in NestJS module
-- [x] Task 2: Create `AzureAdStrategy` (Passport strategy) (AC: #1)
+- [x] Task 2: Create `AzureAdSsoService` (MSAL SSO service) (AC: #1)
   - [x] Location: `src/modules/auth/services/azure-ad-sso.service.ts`
   - [x] Implement Authorization Code Flow with PKCE
   - [x] Validate `id_token` claims: `oid`, `preferred_username`, `name`
@@ -163,3 +163,4 @@ SSO adds new endpoints but does NOT modify existing response contracts. However,
 |------|--------|-------|
 | 2026-02-25 | Story started — implementation begins | — |
 | 2026-02-25 | Full implementation complete: SSO endpoints, M365 password block, 36 tests | Tasks 1-9 |
+| 2026-02-25 | Code review fix: updated AC #1 and Task 2 wording — AzureAdSsoService (not Passport strategy) per review Note 1 | — |
