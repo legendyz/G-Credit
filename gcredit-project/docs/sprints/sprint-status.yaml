@@ -120,3 +120,27 @@ sprint-12.5: done
 # --- Wave 1 (all stories parallel) ---
 12.5-1-category-tree-enhancements: done           # D-1 responsive, D-2 insertion line, D-3 cross-level move
 12.5-2-remove-badge-evidence-url: done           # D-4 drop legacy evidenceUrl column
+
+# ============================================
+# Sprint 13: Azure AD SSO + Session Management
+# Goal: Enterprise M365 login + session lifecycle hardening
+# Target: v1.3.0
+# Branch: sprint-13/sso-session-management
+# ============================================
+sprint-13: in-progress
+
+# --- Wave 1: Azure AD SSO Backend ---
+13-1-azure-ad-sso-strategy: backlog              # OAuth 2.0 Auth Code Flow + Passport strategy + callback endpoints
+13-2-jit-user-provisioning: backlog              # First SSO login → auto-create user + Graph sync
+13-3-login-time-mini-sync: backlog               # Returning SSO login → refresh profile/role/manager
+
+# --- Wave 2: Azure AD SSO Frontend ---
+13-4-login-page-dual-entry: backlog              # "Sign in with Microsoft" + password form (DEC-001 Option A)
+
+# --- Wave 3: Session Management ---
+13-5-401-interceptor-refresh-queue: backlog       # apiFetch 401 handler + single-refresh queue
+13-6-idle-timeout-warning-modal: backlog          # 30min idle → auto-logout, 5min warning
+13-7-api-client-cleanup: backlog                  # Remove axios, inline→hooks migration (P1-3)
+
+# --- Wave 4: UAT ---
+13-8-sprint-13-uat: backlog                       # E2E SSO + session lifecycle + regression

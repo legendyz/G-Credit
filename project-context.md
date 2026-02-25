@@ -19,7 +19,9 @@
 **Sprint 10:** ✅ Complete (12/12 stories, branch: sprint-10/v1-release, 1061 tests, UAT 33/33 PASS, v1.0.0)  
 **Sprint 11:** ✅ Complete (25/25 stories, 7 waves, branch: sprint-11/security-quality-hardening, 1,307 tests, UAT 152/153 PASS, v1.1.0)  
 **Sprint 12:** ✅ Complete (8/8 dev stories, 3 waves, branch: sprint-12/management-uis-evidence, 1,549 tests, v1.2.0)
-**Last Updated:** 2026-02-24 (Sprint 12 COMPLETE — 8/8 dev stories, Management UIs + Evidence Unification)
+**Sprint 12.5:** ✅ Complete (2/2 stories, branch: sprint-12.5/deferred-cleanup, 1,593 tests, v1.2.1)
+**Sprint 13:** 🔄 Planning (8 stories, branch: sprint-13/sso-session-management, target: v1.3.0)
+**Last Updated:** 2026-02-25 (Sprint 13 PLANNING — Azure AD SSO + Session Management)
 ---
 
 ## 🚨 Maintenance Protocol - How to Keep This Document Current
@@ -1594,28 +1596,68 @@ Sprint 0-2 established this pattern:
    
    **Sprint Docs:** backlog.md, 2 story files, 2 code review docs, 2 dev prompts, uat-test-plan.md
 
-23. 🔜 **Next Actions (Post-Sprint 12.5 — Sprint 13 Planning)**
+23. � **Sprint 13: Azure AD SSO + Session Management** (v1.3.0)
    
-   **Completed (remove from backlog):**
-   - ~~D-1 through D-4~~ — Done in Sprint 12.5 (v1.2.1)
-   - ~~FEAT-008: User Management enhancements~~ — Done in Sprint 12 Story 12.3 (manual add + M365 sync UI + search/filter/sort + role edit + lock/unlock)
+   **Sprint Goal:** M365 enterprise login + robust session lifecycle for pilot deployment.
+   **Branch:** `sprint-13/sso-session-management`
+   **Estimate:** 45-60h (8 stories, 4 waves)
    
-   **P1 — Pilot Preparation:**
-   - FR27: Azure AD SSO (Entra ID OAuth 2.0) — 16-24h, enterprise auth for pilot
-   - FEAT-007: Session management (idle timeout, centralized HTTP client) — security hardening
-   - DEC-001 through DEC-006: PO decisions pending (carried from Sprint 12 backlog)
+   **Wave 1 — Azure AD SSO Backend (20-26h):**
+   - Story 13.1: Azure AD SSO Strategy + Callback Endpoints (10-12h)
+   - Story 13.2: JIT User Provisioning on First SSO Login (6-8h)
+   - Story 13.3: Login-Time Mini-Sync for Returning SSO Users (4-6h)
+   
+   **Wave 2 — Azure AD SSO Frontend (6-8h):**
+   - Story 13.4: Login Page Dual Entry + SSO Redirect Flow (6-8h)
+   
+   **Wave 3 — Session Management (17-22h):**
+   - Story 13.5: Global 401 Interceptor + Token Refresh Queue (8-10h)
+   - Story 13.6: Idle Timeout with Warning Modal (6-8h)
+   - Story 13.7: API Client Cleanup — Remove axios + Inline Migrations (3-4h)
+   
+   **Wave 4 — UAT (6-8h):**
+   - Story 13.8: Sprint 13 Integration Testing + UAT (6-8h)
+   
+   **PO Decisions Applied:**
+   - DEC-001 → Option A (dual entry: SSO + password)
+   - DEC-002 → Retain password login for pilot
+   - DEC-003 → Already resolved (Sprint 12)
+   - DEC-004 → FR27 executes now (FEAT-008 already done)
+   - DEC-005 → Env var bootstrap (`INITIAL_ADMIN_EMAIL`)
+   - DEC-006 → Deferred (IT admin operation, no code)
+   
+   **Merged from UI Audit:** P1-3 (API Client Unification) → Story 13.7
+
+24. 🔜 **Remaining Backlog (Post-Sprint 13)**
    
    **P2 — Feature & Quality:**
-   - FEAT-004: Role model refactor (see TD-034) — fine-grained permissions
-   - FEAT-009: Invite-to-Claim (External Email Recipients) — ~8h, expand badge reach
-   - TD-030: LinkedIn Dynamic OG Meta Tags — 4-6h, sharing experience
-   - TD-006: Teams Channel Permissions — external blocker, requires tenant admin approval
+   - FEAT-004 / TD-034: Role model refactor — fine-grained permissions (~18h)
+   - TD-035: Dashboard composite view — permission stacking (~18h, depends on TD-034)
+   - FEAT-009: Invite-to-Claim (External Email Recipients) — ~8h
+   - TD-030: LinkedIn Dynamic OG Meta Tags — 4-6h
+   - TD-006: Teams Channel Permissions — external blocker (Bot Framework / Webhook)
+   
+   **P2 — UI Polish (batchable ~19h):**
+   - P1-1: Inline styles → Tailwind (2h)
+   - P1-2: Hardcoded colors → design tokens (1h)
+   - P1-7: Forgot Password page (2h)
+   - P2-1/P2-2: Template + Wallet pagination (6h)
+   - P2-5: Styled delete confirmation (1h)
+   - P2-7: Emoji → Lucide icons (2h)
+   - P2-8: z-index scale (1h)
+   - P2-10: Mobile nav Issue Badge (1h)
+   - P2-11: Dirty-form guard (2h)
+   - P2-12: Template preview modes (4h)
    
    **P3 — Nice to Have:**
    - TD-027: Playwright Visual Regression in CI
    - TD-002: Badge Issuance Tests Update
    - TD-003: metadataHash Index
    - TD-004: Baked Badge Caching
+   - TD-016: Async Bulk Processing (Redis + Bull Queue)
+   - TD-031: Time-Based Milestone Metrics (~17h)
+   - TD-032: M365 Sync Performance at Scale (~18h)
+   - TD-033: Manager Delegation (~19h)
    
    **Future Enhancements (pending PO/Architect decision):**
    - F-1: Fine-Grained RBAC (8-60h, 3 levels)
