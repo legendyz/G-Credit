@@ -1,11 +1,12 @@
 # G-Credit Sprint 12.5 — UAT Test Plan
 
-**Version:** 1.0
+**Version:** 1.1
 **Created:** 2026-02-25
+**Updated:** 2026-02-25 — UAT execution complete
 **Sprint:** 12.5 (Deferred Items Cleanup)
 **Scope:** Story 12.5.1 (D-1, D-2, D-3) + Story 12.5.2 (D-4)
-**Tester(s):** _______________
-**Date(s):** _______________
+**Tester(s):** PO (manual) + SM (scripted)
+**Date(s):** 2026-02-25
 
 ---
 
@@ -21,10 +22,10 @@
 
 ### Pre-UAT Checklist
 
-- [ ] Database migrated: `npx prisma migrate deploy` — includes `20260225033009_remove_badge_evidence_url`
-- [ ] Backend starts without errors
-- [ ] Frontend builds without errors
-- [ ] Seed data present: skill categories (12), skills (9), users (5)
+- [x] Database migrated: `npx prisma migrate deploy` — includes `20260225033009_remove_badge_evidence_url`
+- [x] Backend starts without errors
+- [x] Frontend builds without errors
+- [x] Seed data present: skill categories (12), skills (9), users (5)
 
 ### Test Accounts
 
@@ -57,7 +58,7 @@
 | 4 | Verify hierarchy display | L1 categories are not indented; L2 categories show `└` prefix; L3 categories show deeper indent with `└` |
 | 5 | Set viewport back to 1024px | Dropdown disappears; tree view returns |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS
 
 ---
 
@@ -70,7 +71,7 @@
 | 1 | Click dropdown | First option shows "All Categories" |
 | 2 | Select "All Categories" | Any selected category is deselected; toolbar buttons hidden |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS
 
 ---
 
@@ -84,7 +85,7 @@
 | 2 | Click "Edit" button (Pencil icon) | Edit dialog opens with category name/description pre-filled |
 | 3 | Change name, click Save | Category name updates; dropdown shows new name |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS
 
 ---
 
@@ -99,7 +100,7 @@
 | 3 | Enter name, save | New child category appears under selected parent in dropdown |
 | 4 | Select an L3 category (e.g., "AWS / Amazon Web Services") | Toolbar does NOT show "Add Child" button (max depth reached) |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS
 
 ---
 
@@ -113,7 +114,7 @@
 | 2 | Select a category with skills but no children (e.g., "Professional Skills") | "Delete" button disabled |
 | 3 | Select "Experimental" (no children, no skills) | "Delete" button enabled |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS — Notes: Tooltip on disabled Delete/Move buttons initially not showing (browser ignores hover on disabled elements). Fixed by wrapping disabled buttons in `<span title>` wrapper.
 
 ---
 
@@ -126,7 +127,7 @@
 | 1 | Observe the dropdown UI | No drag handles visible |
 | 2 | Try long-pressing / dragging items in dropdown | No drag-and-drop behavior; items cannot be reordered |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS
 
 ---
 
@@ -144,7 +145,7 @@
 | 4 | Move the drag over different gaps | Insertion line moves to follow pointer position, indicating where drop will place the item |
 | 5 | Drop the item | Category moves to the indicated position; insertion line disappears |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS
 
 ---
 
@@ -158,7 +159,7 @@
 | 2 | Drag to a position between L2 children of a different parent | No insertion line appears (cross-level drag not allowed via DnD — use "Move to..." instead) |
 | 3 | Drag an L2 category within its parent's children | Insertion line appears between sibling L2 categories under the same parent |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS — Notes: Initially DnD reorder did not persist. Two bugs fixed: (1) Backend `findAll` missing `orderBy` on nested children includes, (2) Frontend `handleReorder` fired N independent mutations causing race conditions. Fixed with `useReorderSkillCategories` batch hook + backend `orderBy`.
 
 ---
 
@@ -172,7 +173,7 @@
 | 2 | Floating overlay: white card with shadow, category name, blue border | Overlay follows cursor |
 | 3 | Drop the item | Original position restores full opacity (or item moves to new position) |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS
 
 ---
 
@@ -187,7 +188,7 @@
 | 1 | Hover over a user-defined category (e.g., "Internal Tools") | Action buttons appear: Edit, Add Child, **Move** (FolderInput icon), Delete |
 | 2 | Hover over a system-defined category (e.g., "Technical Skills") | Move button visible but **disabled** with tooltip: "System-defined categories cannot be moved" |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS
 
 ---
 
@@ -201,7 +202,7 @@
 | 2 | Click "Move" | MoveToDialog opens |
 | 3 | Select a system-defined category in dropdown | "Move" button appears **disabled** with title "System-defined categories cannot be moved" |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS
 
 ---
 
@@ -219,7 +220,7 @@
 | 6 | Click "Move" button | Dialog closes; "Internal Tools" is now a child of "Technical Skills" (L2) |
 | 7 | Verify tree | "Internal Tools" appears under "Technical Skills" with its skill "G-Credit Platform" |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS — Notes: Reparent color inheritance bug found — moved category did not inherit L1 ancestor color. Fixed in backend: `resolveRootColor()` + `buildDescendantUpdates()` now propagate color to moved category and all descendants.
 
 ---
 
@@ -239,7 +240,7 @@ Alternative: Click "Move" on "Programming Languages" (L2, system-defined under T
 | 4 | Observe "Test Child" in target list | Disabled, shows "(Descendant (cycle))" |
 | 5 | Try to select "Test Child" | Cannot select — disabled |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS
 
 ---
 
@@ -247,29 +248,35 @@ Alternative: Click "Move" on "Programming Languages" (L2, system-defined under T
 
 **Pre-condition:** Admin, category tree with 3 levels
 
+> **Note:** Seed data system-defined categories (e.g., "Cloud Platforms") cannot be moved. First create user-defined categories for this test.
+
 | Step | Action | Expected Result |
 |------|--------|-----------------|
-| 1 | Click "Move" on an L2 category that has L3 children (e.g., "Cloud Platforms" has L3 child "AWS") | MoveToDialog opens |
+| 0a | Create a user-defined L2 category under "Internal Tools" (e.g., "My Frameworks") | Created successfully |
+| 0b | Create a user-defined L3 category under "My Frameworks" (e.g., "React Ecosystem") | Created successfully — now "My Frameworks" has an L3 child |
+| 1 | Click "Move" on "My Frameworks" (L2, user-defined, has L3 child) | MoveToDialog opens |
 | 2 | Observe other L2 categories in target list | Disabled, shows "(Would exceed max depth)" — because moving L2-with-L3-child under another L2 would create L4 |
 | 3 | Observe L1 categories | Enabled — moving under L1 keeps within depth 3 |
-| 4 | Select an L1 category, click Move | Move succeeds; "Cloud Platforms" is now under the new L1 parent; "AWS" remains at L3 |
+| 4 | Select an L1 category (e.g., "Domain Knowledge"), click Move | Move succeeds; "My Frameworks" is now under "Domain Knowledge"; "React Ecosystem" remains at L3 |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS — Notes: Original test referenced system-defined "Cloud Platforms" which cannot be moved. Test steps corrected to use user-defined categories.
 
 ---
 
 #### UAT-S12.5-015: Move L2 to Root [HIGH]
 
-**Pre-condition:** Admin
+**Pre-condition:** Admin, a user-defined L2 category exists (e.g., "My Frameworks" from UAT-S12.5-014, or create one)
+
+> **Note:** System-defined L2 categories (e.g., "Leadership") cannot be moved. Use a user-defined L2.
 
 | Step | Action | Expected Result |
 |------|--------|-----------------|
-| 1 | Click "Move" on an L2 category (e.g., "Leadership" under "Soft Skills") | Dialog opens |
+| 1 | Click "Move" on a user-defined L2 category (e.g., "My Frameworks") | Dialog opens |
 | 2 | Select "Root (Level 1)" | Highlighted |
-| 3 | Click "Move" | "Leadership" becomes an L1 top-level category |
-| 4 | Verify tree | "Leadership" appears as L1; its skill "Team Leadership" still attached |
+| 3 | Click "Move" | "My Frameworks" becomes an L1 top-level category |
+| 4 | Verify tree | "My Frameworks" appears as L1; its child "React Ecosystem" still attached |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS — Notes: Original test referenced system-defined "Leadership". Corrected to user-defined category.
 
 ---
 
@@ -284,7 +291,7 @@ Alternative: Click "Move" on "Programming Languages" (L2, system-defined under T
 | 3 | Click "Move" | "Experimental" becomes L2 under "Domain Knowledge" |
 | 4 | Verify tree | "Domain Knowledge" now expandable, shows "Experimental" as child |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS
 
 ---
 
@@ -300,7 +307,7 @@ Alternative: Click "Move" on "Programming Languages" (L2, system-defined under T
 | 2 | Click "Move" on "Internal Tools" again | MoveToDialog opens |
 | 3 | Observe "Technical Skills" in target list | Disabled, shows "(Current parent)" |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS
 
 ---
 
@@ -314,7 +321,7 @@ Alternative: Click "Move" on "Programming Languages" (L2, system-defined under T
 | 2 | During mutation | Cancel button disabled; dialog cannot be closed |
 | 3 | After success | Dialog closes; tree refreshes |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS
 
 ---
 
@@ -330,22 +337,26 @@ Alternative: Click "Move" on "Programming Languages" (L2, system-defined under T
 | 2 | Issue a single badge (select template, select recipient) | Badge created successfully with PENDING status |
 | 3 | Verify badge in Badge Management | Badge appears with correct template, recipient, status |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS
 
 ---
 
 #### UAT-S12.5-020: Evidence upload still works (no regression) [HIGH]
 
-**Pre-condition:** Logged in as Issuer, a CLAIMED badge exists
+**Pre-condition:** Logged in as Issuer
+
+> **Note:** Evidence is added during badge issuance (Issue Badge page or Bulk Issuance), not from an existing badge's detail view. Badge Management only displays evidence in read-only mode.
 
 | Step | Action | Expected Result |
 |------|--------|-----------------|
-| 1 | Navigate to a badge that supports evidence | Evidence section visible |
-| 2 | Upload a file as evidence | Upload succeeds; file appears in evidence list |
-| 3 | Add a URL as evidence | URL evidence added; displays in evidence list |
-| 4 | Verify badge detail shows evidence | Both file and URL evidence displayed correctly |
+| 1 | Go to "Issue New Badge" page | Issue Badge form loads |
+| 2 | Select a badge template and recipient, then attach a file as evidence in the Evidence section | File appears in the pending evidence list with filename and size |
+| 3 | Add a URL as evidence (if URL evidence input is available) | URL added to the pending evidence list |
+| 4 | Submit (issue the badge) | Badge issued successfully; evidence uploaded |
+| 5 | Go to Badge Management, find the newly issued badge | EVIDENCE column shows 📎 count matching uploaded items |
+| 6 | Click the 📎 evidence icon | Evidence popup/panel shows the uploaded file and URL |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS — Notes: Original test steps incorrectly described adding evidence from an existing badge detail view. Corrected: evidence is only added during issuance (Issue Badge page or Bulk Issuance Result page). Badge Management evidence column is read-only.
 
 ---
 
@@ -360,7 +371,7 @@ Alternative: Click "Move" on "Programming Languages" (L2, system-defined under T
 | 3 | Go to Wallet → Innovation Champion badge (badge3) | Evidence: innovation-proposal-q1.pdf |
 | 4 | Go to Wallet → Leadership Excellence badge (badge2) | Evidence: URL link to learn.microsoft.com |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS
 
 ---
 
@@ -374,7 +385,7 @@ Alternative: Click "Move" on "Programming Languages" (L2, system-defined under T
 | 2 | `SELECT column_name FROM information_schema.columns WHERE table_name='badges'` | `evidenceUrl` column does NOT exist |
 | 3 | Check other badge columns | All other columns intact: id, templateId, recipientId, issuerId, issuedAt, expiresAt, status, etc. |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS — Verified by script: migration `20260225033009_remove_badge_evidence_url` applied at `2026-02-25T05:07:33.449Z`; `evidenceUrl` column absent; 18 badge columns intact.
 
 ---
 
@@ -389,7 +400,7 @@ Alternative: Click "Move" on "Programming Languages" (L2, system-defined under T
 | 1 | Drag an L1 category to a different position among L1 siblings | Category reorders; blue insertion line guides placement |
 | 2 | Refresh page | New order persists |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS
 
 ---
 
@@ -403,7 +414,7 @@ Alternative: Click "Move" on "Programming Languages" (L2, system-defined under T
 | 2 | Edit it — change name to "UAT Test Renamed" | Name updated |
 | 3 | Delete "UAT Test Renamed" (no children, no skills) | Deleted successfully |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS
 
 ---
 
@@ -416,7 +427,7 @@ Alternative: Click "Move" on "Programming Languages" (L2, system-defined under T
 | 1 | Open CLAIMED badge verify URL: `http://localhost:5173/verify/00000000-0000-4000-a000-000300000001` | Badge verification page shows: valid badge, recipient info, evidence if attached |
 | 2 | Open REVOKED badge verify URL: `http://localhost:5173/verify/00000000-0000-4000-a000-000300000006` | Shows revoked status |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS
 
 ---
 
@@ -429,7 +440,7 @@ Alternative: Click "Move" on "Programming Languages" (L2, system-defined under T
 | 1 | Navigate to My Wallet | Badge cards display correctly |
 | 2 | Click a badge card | Badge detail shows correct info (template, status, skills, evidence) |
 
-**Result:** ⬜ PASS / ⬜ FAIL — Notes: _______________
+**Result:** ✅ PASS
 
 ---
 
@@ -450,20 +461,34 @@ Alternative: Click "Move" on "Programming Languages" (L2, system-defined under T
 
 | Priority | Total | PASS | FAIL | SKIP |
 |----------|-------|------|------|------|
-| CRITICAL | 3 | | | |
-| HIGH | 13 | | | |
-| MEDIUM | 7 | | | |
-| LOW | 3 | | | |
-| **Total** | **26** | | | |
+| CRITICAL | 3 | 3 | 0 | 0 |
+| HIGH | 13 | 13 | 0 | 0 |
+| MEDIUM | 7 | 7 | 0 | 0 |
+| LOW | 3 | 3 | 0 | 0 |
+| **Total** | **26** | **26** | **0** | **0** |
+
+### Bugs Found & Fixed During UAT
+
+| # | Test Case | Issue | Fix |
+|---|-----------|-------|-----|
+| 1 | S12.5-005 | Disabled button tooltip not showing (browser ignores hover on disabled elements) | Wrapped disabled Delete/Move buttons in `<span title>` wrapper |
+| 2 | S12.5-008 | DnD reorder not persisting after drop | Backend: added `orderBy` to nested children in `findAll`. Frontend: replaced N individual mutations with batched `useReorderSkillCategories` hook |
+| 3 | S12.5-012 | Reparent color inheritance — moved category kept original color instead of inheriting L1 ancestor color | Backend: added `resolveRootColor()` + `buildDescendantUpdates()` to propagate color on reparent |
+| 4 | S12.5-014/015 | Test steps referenced system-defined categories that cannot be moved | Corrected test steps to use user-defined categories |
+| 5 | S12.5-020 | Test steps described adding evidence from existing badge detail (not possible) | Corrected: evidence added during issuance only |
+
+### Observations (Non-blocking, Not in Scope)
+
+- Bulk Issuance stepper shows 4 steps (Download → Upload → Preview → Confirm) but the Evidence upload phase (BulkResultPage) is not represented in the stepper. Deferred to future sprint.
 
 ### Sign-off
 
-- [ ] All CRITICAL test cases PASS
-- [ ] All HIGH test cases PASS
-- [ ] No blocking bugs open
-- Tester: _______________
-- Date: _______________
-- Verdict: ⬜ PASS / ⬜ FAIL
+- [x] All CRITICAL test cases PASS
+- [x] All HIGH test cases PASS
+- [x] No blocking bugs open
+- Tester: PO (manual) + SM (scripted)
+- Date: 2026-02-25
+- Verdict: ✅ PASS
 
 ---
 
@@ -471,3 +496,4 @@ Alternative: Click "Move" on "Programming Languages" (L2, system-defined under T
 - D-3 tests may modify seed data (moving categories). If re-running, reset DB first.
 - System-defined categories cannot be moved — tests adjusted accordingly.
 - D-4 (evidenceUrl removal) is a backend-only change; frontend regression tests confirm no visible impact.
+- All 5 bugs found during UAT were fixed and verified before sign-off. Fixes committed in sprint branch.

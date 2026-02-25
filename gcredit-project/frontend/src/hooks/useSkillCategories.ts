@@ -103,6 +103,31 @@ export function useUpdateSkillCategory() {
   });
 }
 
+// Batch reorder mutation — fires all PATCH requests concurrently, invalidates once
+export function useReorderSkillCategories() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (updates: Array<{ id: string; displayOrder: number }>) => {
+      await Promise.all(
+        updates.map(({ id, displayOrder }) =>
+          apiFetchJson(`/skill-categories/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ displayOrder }),
+          })
+        )
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+      toast.success('Category order updated');
+    },
+    onError: (error: Error) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+      toast.error(error.message || 'Failed to reorder categories');
+    },
+  });
+}
+
 // Delete mutation
 export function useDeleteSkillCategory() {
   const queryClient = useQueryClient();

@@ -167,35 +167,63 @@ export function CategoryDropdown({
             {onMoveTo &&
               (() => {
                 const moveDisabled = selectedItem.isSystemDefined;
-                return (
+                const moveTitle = moveDisabled
+                  ? 'System-defined categories cannot be moved'
+                  : 'Move to...';
+                const btn = (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => onMoveTo(selectedItem.original)}
                     disabled={moveDisabled}
                     aria-label={`Move ${selectedItem.name}`}
-                    title={
-                      moveDisabled ? 'System-defined categories cannot be moved' : 'Move to...'
-                    }
                   >
                     <FolderInput className="h-3.5 w-3.5 mr-1" />
                     Move
                   </Button>
                 );
+                return moveDisabled ? (
+                  <span title={moveTitle} className="inline-flex">
+                    {btn}
+                  </span>
+                ) : (
+                  btn
+                );
               })()}
 
-            {onDelete && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onDelete(selectedItem.original)}
-                disabled={selectedItem.hasChildren || selectedItem.hasSkills}
-                aria-label={`Delete ${selectedItem.name}`}
-              >
-                <Trash2 className="h-3.5 w-3.5 mr-1" />
-                Delete
-              </Button>
-            )}
+            {onDelete &&
+              (() => {
+                const deleteDisabled = selectedItem.hasChildren || selectedItem.hasSkills;
+                const skillCount =
+                  selectedItem.original._count?.skills ?? selectedItem.original.skills?.length ?? 0;
+                const childCount = selectedItem.original.children?.length ?? 0;
+                let deleteTitle = 'Delete category';
+                if (selectedItem.hasChildren) {
+                  deleteTitle = `Cannot delete: has ${childCount} sub-categor${childCount === 1 ? 'y' : 'ies'}`;
+                } else if (selectedItem.hasSkills) {
+                  deleteTitle = `Cannot delete: has ${skillCount} skill${skillCount === 1 ? '' : 's'}`;
+                }
+                const btn = (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onDelete(selectedItem.original)}
+                    disabled={deleteDisabled}
+                    aria-label={`Delete ${selectedItem.name}`}
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1" />
+                    Delete
+                  </Button>
+                );
+                // Wrap in span so native title tooltip works on disabled buttons
+                return deleteDisabled ? (
+                  <span title={deleteTitle} className="inline-flex">
+                    {btn}
+                  </span>
+                ) : (
+                  btn
+                );
+              })()}
           </div>
           {selectedItem.original.level >= 3 && (
             <p className="flex items-center gap-1 text-xs text-amber-600 px-1">

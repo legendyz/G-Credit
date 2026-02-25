@@ -9,6 +9,7 @@ import {
   useSkillCategoryTree,
   useCreateSkillCategory,
   useUpdateSkillCategory,
+  useReorderSkillCategories,
   useDeleteSkillCategory,
   type SkillCategory,
   type CreateSkillCategoryInput,
@@ -119,14 +120,13 @@ export function SkillCategoryManagementPage() {
     });
   }, [deletingCategory, deleteBlockMessage, deleteMutation]);
 
+  const reorderMutation = useReorderSkillCategories();
+
   const handleReorder = useCallback(
     (updates: Array<{ id: string; displayOrder: number }>) => {
-      // Batch: fire all reorder mutations concurrently
-      updates.forEach(({ id, displayOrder }) => {
-        updateMutation.mutate({ id, displayOrder });
-      });
+      reorderMutation.mutate(updates);
     },
-    [updateMutation]
+    [reorderMutation]
   );
 
   const isEmpty = !isLoading && !isError && (!categories || categories.length === 0);

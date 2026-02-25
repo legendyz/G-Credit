@@ -295,14 +295,11 @@ describe('SkillCategoriesService', () => {
           isEditable: true,
           children: [],
         };
-        const targetParent = {
-          id: 'cat-b',
-          name: 'Category B',
-          level: 1,
-        };
+        const targetParent = { id: 'cat-b', name: 'Category B', level: 1 };
         prisma.skillCategory.findUnique
           .mockResolvedValueOnce(category) // find the category
-          .mockResolvedValueOnce(targetParent); // find the target parent
+          .mockResolvedValueOnce(targetParent) // find the target parent
+          .mockResolvedValueOnce({ color: 'blue', parentId: null }); // resolveRootColor for cat-b
         prisma.skillCategory.count.mockResolvedValue(2); // 2 existing children
         prisma.skillCategory.update.mockResolvedValue({
           ...category,
@@ -467,11 +464,17 @@ describe('SkillCategoriesService', () => {
 
         // Move to root (parentId: null) — already root but children should still be updated
         // Actually let's test move to a new parent
-        const targetParent = { id: 'cat-b', name: 'B', level: 1 };
+        const targetParent = {
+          id: 'cat-b',
+          name: 'B',
+          level: 1,
+          color: 'emerald',
+        };
         prisma.skillCategory.findUnique
           .mockReset()
           .mockResolvedValueOnce(category)
-          .mockResolvedValueOnce(targetParent);
+          .mockResolvedValueOnce(targetParent)
+          .mockResolvedValueOnce({ color: 'emerald', parentId: null }); // resolveRootColor
         prisma.skillCategory.count.mockResolvedValue(0);
 
         await service.update('cat-a', { parentId: 'cat-b' });
@@ -480,12 +483,12 @@ describe('SkillCategoriesService', () => {
         expect(prisma.$transaction).toHaveBeenCalled();
         // Main update + 1 descendant update = 2 update calls
         expect(updateCalls.length).toBe(2);
-        // Descendant should be updated to level 3 (parent at L2, child at L3)
+        // Descendant should be updated to level 3 with inherited color
         const descendantUpdate = updateCalls[1];
         expect(descendantUpdate).toEqual(
           expect.objectContaining({
             where: { id: 'child-a' },
-            data: { level: 3 },
+            data: { level: 3, color: 'emerald' },
           }),
         );
       });

@@ -92,6 +92,10 @@ vi.mock('@/hooks/useSkillCategories', () => ({
     mutate: mockUpdateMutate,
     isPending: false,
   }),
+  useReorderSkillCategories: () => ({
+    mutate: vi.fn(),
+    isPending: false,
+  }),
   useDeleteSkillCategory: () => ({
     mutate: mockDeleteMutate,
     isPending: false,

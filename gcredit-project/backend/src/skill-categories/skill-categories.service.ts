@@ -39,8 +39,10 @@ export class SkillCategoriesService {
       where: { level: 1 }, // Only top-level
       include: {
         children: {
+          orderBy: { displayOrder: 'asc' },
           include: {
             children: {
+              orderBy: { displayOrder: 'asc' },
               include: {
                 skills: includeSkills,
               },
@@ -198,6 +200,8 @@ export class SkillCategoriesService {
     // Determine new level
     let newLevel = 1; // default: root
 
+    let inheritedColor: string | null = null;
+
     if (parentId !== null) {
       // Validate target parent exists
       const targetParent = await this.prisma.skillCategory.findUnique({
@@ -210,6 +214,9 @@ export class SkillCategoriesService {
       }
 
       newLevel = targetParent.level + 1;
+
+      // Resolve L1 ancestor color for inheritance
+      inheritedColor = await this.resolveRootColor(targetParent.id);
 
       // Cycle detection: target parent must not be a descendant
       const descendantIds = this.getDescendantIds(category);
@@ -233,12 +240,16 @@ export class SkillCategoriesService {
       where: { parentId: parentId },
     });
 
-    // Build batch updates for level recalculation
-    const levelUpdates = this.buildLevelUpdates(category, newLevel);
+    // Build batch updates for level (and color) recalculation
+    const descendantUpdates = this.buildDescendantUpdates(
+      category,
+      newLevel,
+      inheritedColor,
+    );
 
     // Execute reparent in a transaction
     const updated = await this.prisma.$transaction(async (tx) => {
-      // Update the main category: parentId, level, displayOrder, plus any other fields
+      // Update the main category: parentId, level, displayOrder, color, plus any other fields
       const mainUpdate = await tx.skillCategory.update({
         where: { id },
         data: {
@@ -246,15 +257,19 @@ export class SkillCategoriesService {
           parentId: parentId,
           level: newLevel,
           displayOrder: siblingsCount,
+          ...(inheritedColor !== null ? { color: inheritedColor } : {}),
         },
         include: { parent: true, children: true },
       });
 
-      // Update descendant levels
-      for (const update of levelUpdates) {
+      // Update descendant levels and colors
+      for (const update of descendantUpdates) {
         await tx.skillCategory.update({
           where: { id: update.id },
-          data: { level: update.level },
+          data: {
+            level: update.level,
+            ...(update.color !== undefined ? { color: update.color } : {}),
+          },
         });
       }
 
@@ -306,26 +321,52 @@ export class SkillCategoriesService {
   }
 
   /**
-   * Build level update instructions for all descendants when reparenting.
-   * Returns array of { id, level } for children/grandchildren.
+   * Build level and color update instructions for all descendants when reparenting.
+   * Returns array of { id, level, color? } for children/grandchildren.
    */
-  private buildLevelUpdates(
+  private buildDescendantUpdates(
     category: {
       children?: Array<{ id: string; children?: Array<{ id: string }> }>;
     },
     newParentLevel: number,
-  ): Array<{ id: string; level: number }> {
-    const updates: Array<{ id: string; level: number }> = [];
+    inheritedColor: string | null,
+  ): Array<{ id: string; level: number; color?: string }> {
+    const updates: Array<{ id: string; level: number; color?: string }> = [];
     if (!category.children) return updates;
     for (const child of category.children) {
-      updates.push({ id: child.id, level: newParentLevel + 1 });
+      updates.push({
+        id: child.id,
+        level: newParentLevel + 1,
+        ...(inheritedColor !== null ? { color: inheritedColor } : {}),
+      });
       if (child.children) {
         for (const grandchild of child.children) {
-          updates.push({ id: grandchild.id, level: newParentLevel + 2 });
+          updates.push({
+            id: grandchild.id,
+            level: newParentLevel + 2,
+            ...(inheritedColor !== null ? { color: inheritedColor } : {}),
+          });
         }
       }
     }
     return updates;
+  }
+
+  /**
+   * Resolve the L1 root ancestor's color by walking up the parent chain.
+   */
+  private async resolveRootColor(categoryId: string): Promise<string | null> {
+    let current = await this.prisma.skillCategory.findUnique({
+      where: { id: categoryId },
+      select: { color: true, parentId: true },
+    });
+    while (current?.parentId) {
+      current = await this.prisma.skillCategory.findUnique({
+        where: { id: current.parentId },
+        select: { color: true, parentId: true },
+      });
+    }
+    return current?.color ?? null;
   }
 
   /**
