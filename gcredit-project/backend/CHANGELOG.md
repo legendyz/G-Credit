@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.1] - 2026-02-25 (Sprint 12.5 — Deferred Items Cleanup)
+
+### Sprint 12.5 Summary — Deferred Items from Sprint 12
+
+**Branch:** `sprint-12.5/deferred-cleanup`
+**Stories:** 2/2 complete | **PR:** #8 merged 2026-02-25
+**Tests:** 855 passed (28 skipped), +8 from v1.2.0
+**UAT:** 26/26 PASS (signed off 2026-02-25)
+
+#### Story 12.5.1: CategoryTree Enhancements (D-1, D-2, D-3)
+
+- **D-3 Backend — Cross-Level Reparent:** Added `parentId` to `UpdateSkillCategoryDto`. Reparent logic in `skill-categories.service.ts` with cycle detection, depth ≤ 3 validation, `isSystemDefined` guard (403). Recursive level recalculation via `buildDescendantUpdates()`.
+- **Color Inheritance:** New `resolveRootColor()` walks parent chain to L1 ancestor; `buildDescendantUpdates()` propagates color to all descendants on reparent.
+- **Order Persistence:** Added `orderBy: { displayOrder: 'asc' }` to nested children includes in `findAll()`.
+- **Tests:** 8 new reparent tests (move L2→L1, L1→L2, cycle, depth, system-defined, descendants). Total: 21 skill-categories tests.
+
+#### Story 12.5.2: Remove Legacy `Badge.evidenceUrl` (D-4)
+
+- **Schema:** Removed `evidenceUrl String?` from Badge model in `schema.prisma`.
+- **Migration:** `20260225033009_remove_badge_evidence_url` — `ALTER TABLE "badges" DROP COLUMN "evidenceUrl"`.
+- **Cleanup:** Removed stale comments in `bulk-issue-badges.dto.ts`, deleted obsolete `migrate-evidence.ts` and `migrate-evidence-down.ts` scripts.
+- **Impact:** Zero behavior change — column was dead code since Sprint 12 EvidenceFile system.
+
+#### UAT Bug Fixes
+
+- **DnD reorder not persisting (S12.5-008):** Backend `orderBy` fix + frontend batched `useReorderSkillCategories` hook.
+- **Reparent color inheritance (S12.5-012):** `resolveRootColor()` + `buildDescendantUpdates()` propagate L1 ancestor color.
+
+---
+
 ## [1.2.0] - 2026-02-24 (Sprint 12 — Management UIs & Evidence)
 
 ### Sprint 12 Summary — Management UIs & Evidence Unification

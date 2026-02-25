@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.1] - 2026-02-25 (Sprint 12.5 — Deferred Items Cleanup)
+
+### Sprint 12.5 Summary — Deferred Items from Sprint 12
+
+**Branch:** `sprint-12.5/deferred-cleanup`
+**Stories:** 2/2 complete | **PR:** #8 merged 2026-02-25
+**Tests:** 738 passed (68 test files, 100% pass rate, +36 from v1.2.0)
+**UAT:** 26/26 PASS (signed off 2026-02-25)
+
+#### Story 12.5.1: CategoryTree Enhancements (D-1, D-2, D-3)
+
+- **D-1 Responsive Dropdown (`< 1024px`):** New `<CategoryDropdown>` component renders on screens < 1024px. Indented hierarchy display with `└` prefix. All CRUD actions accessible via toolbar. DnD disabled on mobile. 19 tests.
+- **D-2 Blue Insertion Line:** 2px blue line (`border-blue-500`) at insertion point during drag. Replaces opacity-only feedback with precise positional indicator.
+- **D-3 Cross-Level "Move to...":** New `<MoveToDialog>` with read-only tree for target parent selection. Disabled constraints (self, descendants, current parent). 9 tests.
+- **Batch Reorder Hook:** New `useReorderSkillCategories()` in `useSkillCategories.ts` — batches all PATCH requests via `Promise.all`, single cache invalidation, single toast.
+
+#### Story 12.5.2: Remove Legacy `Badge.evidenceUrl` (D-4)
+
+- No frontend changes required — `evidenceUrl` was never referenced in frontend code.
+
+#### UAT Bug Fixes
+
+- **Disabled button tooltip (S12.5-005):** Wrapped disabled Delete/Move buttons in `<span title>` wrapper (browsers ignore hover on disabled elements).
+- **DnD reorder not persisting (S12.5-008):** Replaced N individual mutations with batched `useReorderSkillCategories` hook.
+- **CategoryDropdown UX:** Added gray hover (`focus:bg-neutral-100`), context info display, L3 depth warning hint.
+
+#### New Components
+
+| Component | Tests |
+|-----------|-------|
+| `CategoryDropdown.tsx` | 19 |
+| `MoveToDialog.tsx` | 9 |
+| `CategoryTree.tsx` (updated) | +6 |
+| `SkillCategoryManagementPage.tsx` (updated) | 10 |
+
+---
+
 ## [1.2.0] - 2026-02-24 (Sprint 12 — Management UIs & Evidence)
 
 ### Sprint 12 Summary — Management UIs & Evidence Unification
