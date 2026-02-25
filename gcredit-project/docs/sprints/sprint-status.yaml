@@ -119,4 +119,4 @@ sprint-12.5: in-progress
 
 # --- Wave 1 (all stories parallel) ---
 12.5-1-category-tree-enhancements: done           # D-1 responsive, D-2 insertion line, D-3 cross-level move
-12.5-2-remove-badge-evidence-url: review       # D-4 drop legacy evidenceUrl column
+12.5-2-remove-badge-evidence-url: done           # D-4 drop legacy evidenceUrl column
