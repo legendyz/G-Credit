@@ -19,6 +19,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { AzureAdProfile } from './interfaces/azure-ad-profile.interface';
 
 @Injectable()
 export class AuthService {
@@ -123,6 +124,14 @@ export class AuthService {
         throw new UnauthorizedException('Invalid credentials');
       }
       // Lock expired — will be fully reset on successful login below
+    }
+
+    // Story 13.1 AC #11 / DEC-011-13: Block password login for M365 users
+    // M365 users (having azureId) must use SSO — different error message than "Invalid credentials"
+    if (user.azureId) {
+      throw new UnauthorizedException(
+        'This account is managed by Microsoft 365. Please use "Sign in with Microsoft".',
+      );
     }
 
     // Story 12.3a AC #32: Empty passwordHash guard (M365 users with no local password)
@@ -595,6 +604,115 @@ export class AuthService {
     this.logger.log(`[AUDIT] Password changed: user:${userId}`);
 
     return { message: 'Password changed successfully' };
+  }
+
+  /**
+   * SSO Login — find user by azureId and issue JWT tokens
+   * Called from SSO callback after successful Azure AD token exchange
+   *
+   * @returns { accessToken, refreshToken, user } on success
+   * @returns { error: string } if user not found, inactive, etc.
+   */
+  async ssoLogin(profile: AzureAdProfile): Promise<
+    | {
+        accessToken: string;
+        refreshToken: string;
+        user: Record<string, unknown>;
+      }
+    | { error: string }
+  > {
+    // 1. Look up user by azureId (oid from Azure AD)
+    const user = await this.prisma.user.findUnique({
+      where: { azureId: profile.oid },
+    });
+
+    // 2. User not found — delegate to JIT provisioning (Story 13.2)
+    if (!user) {
+      this.logger.log(
+        `[SSO] No user found for azureId:${profile.oid} — JIT provisioning needed (Story 13.2)`,
+      );
+      return { error: 'sso_no_account' };
+    }
+
+    // 3. Check if user is active
+    if (!user.isActive) {
+      this.logger.warn(
+        `[SECURITY] SSO login blocked for disabled account: user:${user.id}`,
+      );
+      return { error: 'account_disabled' };
+    }
+
+    // 4. Login-time mini-sync for M365 users
+    let freshUser = user;
+    if (user.azureId) {
+      const syncResult = await this.m365SyncService.syncUserFromGraph({
+        id: user.id,
+        azureId: user.azureId,
+        lastSyncAt: user.lastSyncAt,
+      });
+      if (syncResult.rejected) {
+        this.logger.warn(
+          `[SECURITY] SSO login rejected by M365 sync: user:${user.id}`,
+        );
+        return { error: 'sso_failed' };
+      }
+      const updatedUser = await this.prisma.user.findUnique({
+        where: { id: user.id },
+      });
+      if (updatedUser) {
+        freshUser = updatedUser;
+      }
+    }
+
+    // 5. Generate JWT tokens — same payload as password login
+    const payload = {
+      sub: freshUser.id,
+      email: freshUser.email,
+      role: freshUser.role,
+    };
+
+    const accessToken = this.jwtService.sign(payload);
+
+    const refreshExpiresIn =
+      this.config.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
+    const refreshToken = this.jwtService.sign(
+      { sub: freshUser.id, jti: randomBytes(16).toString('hex') },
+      {
+        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+        expiresIn: refreshExpiresIn,
+      } as JwtSignOptions,
+    );
+
+    // 6. Store refresh token in DB
+    const expiresAt = this.calculateExpiryDate(refreshExpiresIn);
+    await this.prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: freshUser.id,
+        expiresAt,
+      },
+    });
+
+    // 7. Update lastLoginAt + reset lockout counters
+    await this.prisma.user.update({
+      where: { id: freshUser.id },
+      data: {
+        lastLoginAt: new Date(),
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+      },
+    });
+
+    this.logger.log(
+      `[SSO] Successful SSO login: user:${freshUser.id} (role: ${freshUser.role})`,
+    );
+
+    const { passwordHash: _hash, ...userProfile } = freshUser;
+    return {
+      accessToken,
+      refreshToken,
+      user: userProfile,
+    };
   }
 
   /**

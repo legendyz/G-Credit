@@ -70,3 +70,47 @@ DEFAULT_TEAMS_CHANNEL_ID=...
 ---
 
 **Owner:** Sprint 6 / Story 7.1
+
+---
+
+## SSO Configuration (Sprint 13 — Story 13.1)
+
+### Redirect URI for SSO
+
+1. Go to **Azure Portal → App registrations → G-Credit**
+2. Under **Authentication → Platform configurations → Web**
+3. Add redirect URI: `http://localhost:3000/api/auth/sso/callback` (development)
+4. For production: add `https://<production-domain>/api/auth/sso/callback`
+
+### Delegated API Permissions for SSO
+
+Add **Delegated** permissions (in addition to existing Application permissions):
+- `openid`
+- `profile`
+- `email`
+- `User.Read`
+
+Then click **Grant admin consent**.
+
+> **Note:** These delegated permissions are for the SSO Authorization Code Flow. The existing Application permissions (Mail.Send, TeamsActivity.Send, etc.) for the Client Credentials flow are NOT affected.
+
+### SSO Environment Variables
+
+Add to `backend/.env`:
+```bash
+AZURE_SSO_CLIENT_ID="ceafe2e0-73a9-46b6-a203-1005bfdda11f"
+AZURE_SSO_CLIENT_SECRET="<your-secret>"
+AZURE_SSO_REDIRECT_URI="http://localhost:3000/api/auth/sso/callback"
+AZURE_SSO_SCOPES="openid profile email User.Read"
+```
+
+### Dual OAuth Architecture
+
+| Flow | Purpose | Library | Permissions |
+|------|---------|---------|-------------|
+| **Client Credentials** (Sprint 6) | App-only Graph API | `@azure/identity` | Application: Mail.Send, User.Read.All, etc. |
+| **Authorization Code + PKCE** (Sprint 13) | User SSO login | `@azure/msal-node` | Delegated: openid, profile, email, User.Read |
+
+Both flows share the same App Registration but operate independently.
+
+**Owner:** Sprint 13 / Story 13.1
