@@ -18,7 +18,7 @@ vi.mock('../apiConfig', () => ({
   API_BASE_URL: 'http://localhost:3000/api',
 }));
 
-import { apiFetch } from '../apiFetch';
+import { apiFetch, apiFetchJson, ApiError } from '../apiFetch';
 import { enqueueRefresh } from '../refreshQueue';
 
 describe('apiFetch — 401 interceptor', () => {
@@ -130,5 +130,60 @@ describe('apiFetch — 401 interceptor', () => {
     expect(result.status).toBe(401);
     expect(enqueueRefresh).not.toHaveBeenCalled();
     expect(mockLogout).not.toHaveBeenCalled();
+  });
+
+  it('POST retry preserves method, body, and headers', async () => {
+    const unauthorizedResponse = new Response('Unauthorized', { status: 401 });
+    const retryResponse = new Response(JSON.stringify({ id: 1 }), { status: 201 });
+
+    mockFetch.mockResolvedValueOnce(unauthorizedResponse).mockResolvedValueOnce(retryResponse);
+    vi.mocked(enqueueRefresh).mockResolvedValueOnce(true);
+
+    const body = JSON.stringify({ name: 'test' });
+    const result = await apiFetch('/users', {
+      method: 'POST',
+      body,
+      headers: { 'X-Custom': 'value' },
+    });
+
+    expect(result.status).toBe(201);
+    // Verify the retried fetch preserved original request shape
+    const retryCall = mockFetch.mock.calls[1];
+    const retryUrl = retryCall[0] as string;
+    const retryInit = retryCall[1] as RequestInit;
+    expect(retryUrl).toContain('/users');
+    expect(retryInit.method).toBe('POST');
+    expect(retryInit.body).toBe(body);
+    expect((retryInit.headers as Record<string, string>)['X-Custom']).toBe('value');
+  });
+
+  it('apiFetchJson inherits 401 interceptor (refresh → retry → parse)', async () => {
+    const unauthorizedResponse = new Response('Unauthorized', { status: 401 });
+    const retryResponse = new Response(JSON.stringify({ message: 'ok' }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    mockFetch.mockResolvedValueOnce(unauthorizedResponse).mockResolvedValueOnce(retryResponse);
+    vi.mocked(enqueueRefresh).mockResolvedValueOnce(true);
+
+    const data = await apiFetchJson<{ message: string }>('/users');
+
+    expect(data).toEqual({ message: 'ok' });
+    expect(enqueueRefresh).toHaveBeenCalledTimes(1);
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('apiFetchJson throws ApiError with status on non-ok response', async () => {
+    const errorResponse = new Response(JSON.stringify({ message: 'Forbidden' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    });
+    mockFetch.mockResolvedValueOnce(errorResponse);
+
+    const err = await apiFetchJson('/admin').catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ApiError);
+    expect((err as ApiError).status).toBe(403);
+    expect((err as ApiError).message).toBe('Forbidden');
   });
 });

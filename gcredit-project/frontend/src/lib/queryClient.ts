@@ -14,7 +14,12 @@ export const queryClient = new QueryClient({
     queries: {
       retry: (failureCount, error) => {
         // Don't retry 401s — the apiFetch interceptor handles token refresh
-        if (error instanceof Error && error.message.includes('401')) return false;
+        if (
+          error instanceof Error &&
+          'status' in error &&
+          (error as { status: number }).status === 401
+        )
+          return false;
         // Default: retry up to 3 times for other errors
         return failureCount < 3;
       },

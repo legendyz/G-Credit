@@ -5,7 +5,21 @@ import { enqueueRefresh } from './refreshQueue';
 const EXCLUDED_PATHS = ['/auth/refresh', '/auth/logout'];
 
 function isExcluded(path: string): boolean {
-  return EXCLUDED_PATHS.some((p) => path.includes(p));
+  return EXCLUDED_PATHS.some((p) => path === p);
+}
+
+/**
+ * Custom error with HTTP status for structured error handling.
+ * Used by apiFetchJson(); React Query retry inspects `.status` directly.
+ */
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
 }
 
 /**
@@ -69,7 +83,7 @@ export async function apiFetchJson<T>(path: string, options: RequestInit = {}): 
   const res = await apiFetch(path, options);
   if (!res.ok) {
     const error = await res.json().catch(() => ({ message: res.statusText }));
-    throw new Error(error.message || `HTTP ${res.status}`);
+    throw new ApiError(error.message || `HTTP ${res.status}`, res.status);
   }
   return res.json();
 }

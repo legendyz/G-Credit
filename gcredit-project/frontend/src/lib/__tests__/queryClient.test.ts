@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { queryClient } from '../queryClient';
+import { ApiError } from '../apiFetch';
 
 describe('queryClient — retry configuration', () => {
   it('queries retry is configured as a function', () => {
@@ -7,13 +8,13 @@ describe('queryClient — retry configuration', () => {
     expect(typeof retryOption).toBe('function');
   });
 
-  it('401 errors are not retried', () => {
+  it('401 errors are not retried (status-based detection)', () => {
     const retryFn = queryClient.getDefaultOptions().queries?.retry as (
       failureCount: number,
       error: Error
     ) => boolean;
 
-    const error401 = new Error('HTTP 401');
+    const error401 = new ApiError('Unauthorized', 401);
     expect(retryFn(0, error401)).toBe(false);
     expect(retryFn(1, error401)).toBe(false);
   });
@@ -24,7 +25,7 @@ describe('queryClient — retry configuration', () => {
       error: Error
     ) => boolean;
 
-    const error500 = new Error('Internal Server Error');
+    const error500 = new ApiError('Internal Server Error', 500);
     expect(retryFn(0, error500)).toBe(true);
     expect(retryFn(1, error500)).toBe(true);
     expect(retryFn(2, error500)).toBe(true);
