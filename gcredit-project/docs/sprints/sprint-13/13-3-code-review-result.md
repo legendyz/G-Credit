@@ -2,25 +2,32 @@
 
 ## 1) Verdict
 
-**Approved with Notes**
+**Approved**
 
-The implementation satisfies Story 13.3 acceptance criteria (jobTitle sync, 3-minute cooldown, role demotion hardening) and affected tests pass.
+Re-review confirms the previously reported MINOR findings were fixed in commit `7cc8a60` and affected tests pass.
+
+---
+
+## Re-review Update (2026-02-26)
+
+- Fix commit reviewed: `7cc8a60` (`fix(story-13.3): address code review — clock-skew guard, memberOf failure test`)
+- Verified fixes:
+  - Cooldown now guards future timestamps: `minutesSinceSync >= 0 && minutesSinceSync < COOLDOWN_MINUTES`
+  - Added explicit test: role unchanged when `memberOf` fails but profile succeeds
+- Test rerun:
+  - Command: `npx jest src/m365-sync/m365-sync.service.spec.ts --runInBand`
+  - Result: **PASS** — 1 suite, 87 tests, 0 failures
 
 ---
 
 ## 2) Findings
 
-### MINOR
+### INFO
 
-1. **Clock-skew edge case in cooldown check can skip sync unexpectedly**  
-   - Reference: `backend/src/m365-sync/m365-sync.service.ts:389-391`  
-   - Current logic uses `minutesSinceSync < COOLDOWN_MINUTES`. If `lastSyncAt` is in the future (clock skew/manual DB update), `minutesSinceSync` is negative and the sync is skipped.  
-   - Recommendation: guard with `minutesSinceSync >= 0 && minutesSinceSync < COOLDOWN_MINUTES`.
-
-2. **Missing direct test for `syncUserFromGraph` when `memberOf` fails but profile succeeds**  
-   - References: `backend/src/m365-sync/m365-sync.service.ts:437`, `backend/src/m365-sync/m365-sync.service.spec.ts:1620-1750`  
-   - Behavior appears correct (role remains unchanged because role update only occurs when `memberOfResult.status === 'fulfilled'`), but there is no explicit test for this branch in `syncUserFromGraph` tests.  
-   - Recommendation: add a focused test asserting role is not changed on `memberOf` failure.
+1. **Previously reported MINOR findings are resolved**  
+   - References: `backend/src/m365-sync/m365-sync.service.ts`, `backend/src/m365-sync/m365-sync.service.spec.ts`  
+   - Clock-skew cooldown guard fixed.
+   - Explicit `memberOf` failure / role-unchanged test added and passing.
 
 ### NIT
 
@@ -41,7 +48,7 @@ The implementation satisfies Story 13.3 acceptance criteria (jobTitle sync, 3-mi
 
 - Test run:
   - Command: `npx jest src/m365-sync/m365-sync.service.spec.ts --runInBand`
-  - Result: **PASS** — 1 suite, 86 tests, 0 failures
+   - Result: **PASS** — 1 suite, 87 tests, 0 failures
 
 ---
 
@@ -58,4 +65,5 @@ The implementation satisfies Story 13.3 acceptance criteria (jobTitle sync, 3-mi
 
 ## 5) Fixes Applied
 
-- **None in this review pass** (no code changes made by reviewer).
+- Reviewed fix commit: `7cc8a60`
+- Reviewer made no code changes.

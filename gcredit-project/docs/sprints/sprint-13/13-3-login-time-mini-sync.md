@@ -1,6 +1,6 @@
 # Story 13.3: Login-Time Mini-Sync for Returning SSO Users
 
-Status: review
+Status: done
 
 ## Story
 
