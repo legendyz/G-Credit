@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { apiFetch } from '../../lib/apiFetch';
+import { reportBadgeIssue } from '../../lib/badgesApi';
 
 interface ReportIssueFormProps {
   badgeId: string;
@@ -34,20 +34,11 @@ const ReportIssueForm: React.FC<ReportIssueFormProps> = ({ badgeId, userEmail, o
     setError(null);
 
     try {
-      const response = await apiFetch(`/badges/${badgeId}/report`, {
-        method: 'POST',
-        body: JSON.stringify({
-          issueType,
-          description: description.trim(),
-          email,
-        }),
+      const data = await reportBadgeIssue(badgeId, {
+        issueType,
+        description: description.trim(),
+        email,
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit report');
-      }
-
-      const data = await response.json();
       setDescription('');
       setShowForm(false);
 
@@ -57,7 +48,9 @@ const ReportIssueForm: React.FC<ReportIssueFormProps> = ({ badgeId, userEmail, o
 
       // AC 4.10: Show success message
       toast.success('Report submitted', {
-        description: data.message || "We'll review your report within 2 business days.",
+        description:
+          (data as Record<string, string>).message ||
+          "We'll review your report within 2 business days.",
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit report');

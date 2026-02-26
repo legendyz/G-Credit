@@ -18,7 +18,12 @@ import ExpirationSection from './ExpirationSection';
 import ClaimSuccessModal from '../ClaimSuccessModal';
 import { MilestoneReachedCelebration } from '../common/CelebrationModal';
 import { Globe, Lock, Loader2 } from 'lucide-react';
-import { apiFetch } from '../../lib/apiFetch';
+import {
+  getBadgeById,
+  downloadBadgePng,
+  updateBadgeVisibility,
+  claimBadge,
+} from '../../lib/badgesApi';
 import { useCurrentUser } from '../../stores/authStore';
 import { useSkillNamesMap, useSkills } from '../../hooks/useSkills';
 
@@ -60,15 +65,9 @@ const BadgeDetailModal: React.FC = () => {
       setError(null);
 
       try {
-        const response = await apiFetch(`/badges/${badgeId}`);
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch badge details');
-        }
-
-        const data = await response.json();
-        setBadge(data);
-        setLocalVisibility(data.visibility ?? 'PUBLIC');
+        const data = await getBadgeById(badgeId);
+        setBadge(data as unknown as BadgeDetail);
+        setLocalVisibility((data as unknown as BadgeDetail).visibility ?? 'PUBLIC');
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
@@ -104,13 +103,7 @@ const BadgeDetailModal: React.FC = () => {
 
     setDownloading(true);
     try {
-      const response = await apiFetch(`/badges/${badge.id}/download/png`);
-
-      if (!response.ok) {
-        throw new Error('Failed to download badge');
-      }
-
-      const blob = await response.blob();
+      const blob = await downloadBadgePng(badge.id);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -134,11 +127,7 @@ const BadgeDetailModal: React.FC = () => {
     setIsToggling(true);
     try {
       const newVisibility = localVisibility === 'PUBLIC' ? 'PRIVATE' : 'PUBLIC';
-      const res = await apiFetch(`/badges/${badge.id}/visibility`, {
-        method: 'PATCH',
-        body: JSON.stringify({ visibility: newVisibility }),
-      });
-      if (!res.ok) throw new Error();
+      await updateBadgeVisibility(badge.id, newVisibility);
       setLocalVisibility(newVisibility);
       // Invalidate wallet queries so the list reflects the new visibility
       queryClient.invalidateQueries({ queryKey: ['wallet'] });
@@ -156,17 +145,8 @@ const BadgeDetailModal: React.FC = () => {
 
     setClaiming(true);
     try {
-      const response = await apiFetch(`/badges/${badge.id}/claim`, {
-        method: 'POST',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to claim badge');
-      }
-
-      // Parse response to check for new milestones
-      const claimData = await response.json();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const claimData = (await claimBadge(badge.id)) as any;
 
       // Update local badge state
       setBadge((prev) =>

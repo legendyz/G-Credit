@@ -14,8 +14,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { issueBadge } from '@/lib/badgesApi';
+import { getRecipients } from '@/lib/badgesApi';
+import { getActiveTemplates } from '@/lib/badgeTemplatesApi';
 import { uploadEvidenceFile, addUrlEvidence, MAX_EVIDENCE_ITEMS } from '@/lib/evidenceApi';
-import { apiFetch } from '@/lib/apiFetch';
 import EvidenceAttachmentPanel, {
   type PendingFile,
 } from '@/components/evidence/EvidenceAttachmentPanel';
@@ -60,11 +61,8 @@ export function IssueBadgePage() {
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        const response = await apiFetch('/badge-templates?status=ACTIVE');
-        if (!response.ok) throw new Error('Failed to load templates');
-        const data = await response.json();
-        const list = Array.isArray(data) ? data : data.data || data.items || [];
-        setTemplates(list);
+        const data = await getActiveTemplates();
+        setTemplates(data);
       } catch {
         toast.error('Failed to load badge templates');
       } finally {
@@ -78,10 +76,8 @@ export function IssueBadgePage() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await apiFetch('/badges/recipients');
-        if (!response.ok) throw new Error('Failed to load recipients');
-        const data = await response.json();
-        setUsers(Array.isArray(data) ? data : []);
+        const data = await getRecipients();
+        setUsers(data);
       } catch {
         toast.error('Failed to load users');
       } finally {

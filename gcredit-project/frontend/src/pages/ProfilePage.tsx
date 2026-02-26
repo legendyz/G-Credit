@@ -12,30 +12,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PageTemplate } from '@/components/layout/PageTemplate';
-import { apiFetch } from '@/lib/apiFetch';
+import { getProfile, updateProfile, changePassword } from '@/lib/profileApi';
+import type { ProfileData } from '@/lib/profileApi';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from 'sonner';
 import { Loader2, User, Lock, Eye, EyeOff } from 'lucide-react';
-
-interface ProfileData {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: string;
-  department?: string | null;
-  isActive: boolean;
-  emailVerified: boolean;
-  lastLoginAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-  manager?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-  } | null;
-}
 
 export function ProfilePage() {
   // Profile state
@@ -68,11 +49,7 @@ export function ProfilePage() {
     setProfileLoading(true);
     setProfileError('');
     try {
-      const response = await apiFetch('/auth/profile');
-      if (!response.ok) {
-        throw new Error('Failed to load profile');
-      }
-      const data: ProfileData = await response.json();
+      const data = await getProfile();
       setProfile(data);
       setFirstName(data.firstName);
       setLastName(data.lastName);
@@ -92,20 +69,10 @@ export function ProfilePage() {
     setProfileSaving(true);
     setProfileError('');
     try {
-      const response = await apiFetch('/auth/profile', {
-        method: 'PATCH',
-        body: JSON.stringify({
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-        }),
+      const updated = await updateProfile({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.message || 'Failed to update profile');
-      }
-
-      const updated: ProfileData = await response.json();
       setProfile(updated);
       setFirstName(updated.firstName);
       setLastName(updated.lastName);
@@ -158,18 +125,7 @@ export function ProfilePage() {
 
     setPasswordSaving(true);
     try {
-      const response = await apiFetch('/auth/change-password', {
-        method: 'POST',
-        body: JSON.stringify({
-          currentPassword,
-          newPassword,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.message || 'Failed to change password');
-      }
+      await changePassword({ currentPassword, newPassword });
 
       // Clear form
       setCurrentPassword('');

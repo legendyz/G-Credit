@@ -1,5 +1,5 @@
 import { toast } from 'sonner';
-import { apiFetch } from '../../lib/apiFetch';
+import { downloadErrorReport } from '../../lib/bulkIssuanceApi';
 
 interface BadgeResult {
   row: number;
@@ -37,13 +37,7 @@ export default function ProcessingComplete({
   const handleDownloadErrorReport = async () => {
     if (!sessionId) return;
     try {
-      const response = await apiFetch(`/bulk-issuance/error-report/${sessionId}`);
-
-      if (!response.ok) {
-        throw new Error('Failed to download error report');
-      }
-
-      const blob = await response.blob();
+      const blob = await downloadErrorReport(sessionId);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;

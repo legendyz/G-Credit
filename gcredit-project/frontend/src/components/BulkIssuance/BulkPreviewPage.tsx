@@ -9,45 +9,12 @@ import EmptyPreviewState from './EmptyPreviewState';
 import ProcessingComplete from './ProcessingComplete';
 import BulkResultPage from './BulkResultPage';
 import ProcessingModal from './ProcessingModal';
-import { apiFetch } from '../../lib/apiFetch';
-
-interface PreviewRow {
-  rowNumber: number;
-  badgeTemplateId: string;
-  recipientEmail: string;
-  isValid: boolean;
-  error?: string;
-  badgeName?: string;
-  recipientName?: string;
-}
-
-interface SessionError {
-  rowNumber: number;
-  badgeTemplateId: string;
-  recipientEmail: string;
-  message: string;
-}
-
-interface TemplateBreakdown {
-  templateId: string;
-  templateName: string;
-  count: number;
-}
-
-interface EnrichedPreviewData {
-  sessionId: string;
-  validRows: number;
-  errorRows: number;
-  totalRows: number;
-  errors: SessionError[];
-  status: string;
-  createdAt: string;
-  expiresAt: string;
-  rows: PreviewRow[];
-  summary?: {
-    byTemplate: TemplateBreakdown[];
-  };
-}
+import {
+  getBulkPreview,
+  downloadErrorReport,
+  confirmBulkIssuance,
+} from '../../lib/bulkIssuanceApi';
+import type { EnrichedPreviewData } from '../../lib/bulkIssuanceApi';
 
 /**
  * Bulk Preview Page Component (UX-P0-3)
@@ -93,19 +60,7 @@ export default function BulkPreviewPage() {
         setIsLoading(true);
         setError(null);
 
-        const response = await apiFetch(`/bulk-issuance/preview/${sessionId}`);
-
-        if (!response.ok) {
-          if (response.status === 403) {
-            throw new Error('You do not have permission to access this session');
-          }
-          if (response.status === 404) {
-            throw new Error('Session not found or has expired');
-          }
-          throw new Error('Failed to load preview data');
-        }
-
-        const data: EnrichedPreviewData = await response.json();
+        const data = await getBulkPreview(sessionId!);
         setPreviewData(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
@@ -128,13 +83,7 @@ export default function BulkPreviewPage() {
 
   const handleDownloadErrorReport = async () => {
     try {
-      const response = await apiFetch(`/bulk-issuance/error-report/${sessionId}`);
-
-      if (!response.ok) {
-        throw new Error('Failed to download error report');
-      }
-
-      const blob = await response.blob();
+      const blob = await downloadErrorReport(sessionId!);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -161,30 +110,10 @@ export default function BulkPreviewPage() {
     const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     try {
-      const response = await apiFetch(`/bulk-issuance/confirm/${sessionId}`, {
-        method: 'POST',
-        signal: controller.signal,
-      });
+      const data = await confirmBulkIssuance(sessionId!, controller.signal);
 
       clearTimeout(timeoutId);
 
-      if (!response.ok) {
-        throw new Error('Bulk issuance failed');
-      }
-
-      const data: {
-        processed: number;
-        failed: number;
-        results: Array<{
-          row: number;
-          recipientEmail: string;
-          badgeName: string;
-          status: 'success' | 'failed';
-          error?: string;
-          badgeId?: string;
-          emailError?: string;
-        }>;
-      } = await response.json();
       setProcessingResults({
         success: data.processed,
         failed: data.failed,

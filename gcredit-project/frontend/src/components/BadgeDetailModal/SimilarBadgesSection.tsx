@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { apiFetch } from '../../lib/apiFetch';
+import { getSimilarBadges } from '../../lib/badgesApi';
 
 interface SimilarBadge {
   id: string;
@@ -25,13 +25,7 @@ const SimilarBadgesSection: React.FC<SimilarBadgesSectionProps> = ({ badgeId, on
   useEffect(() => {
     const fetchSimilarBadges = async () => {
       try {
-        const response = await apiFetch(`/badges/${badgeId}/similar?limit=6`);
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch similar badges');
-        }
-
-        const data = await response.json();
+        const data = (await getSimilarBadges(badgeId)) as SimilarBadge[];
         setSimilarBadges(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');

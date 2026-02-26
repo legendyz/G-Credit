@@ -13,7 +13,7 @@ import type { Badge } from '../../hooks/useWallet';
 import { BadgeStatus } from '../../types/badge';
 import { useBadgeDetailModal } from '../../stores/badgeDetailModal';
 import { StatusBadge } from '../ui/StatusBadge';
-import { apiFetch } from '../../lib/apiFetch';
+import { updateBadgeVisibility } from '../../lib/badgesApi';
 
 interface BadgeTimelineCardProps {
   badge: Badge;
@@ -39,11 +39,7 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
     setIsToggling(true);
     try {
       const newVisibility = localVisibility === 'PUBLIC' ? 'PRIVATE' : 'PUBLIC';
-      const res = await apiFetch(`/badges/${badge.id}/visibility`, {
-        method: 'PATCH',
-        body: JSON.stringify({ visibility: newVisibility }),
-      });
-      if (!res.ok) throw new Error();
+      await updateBadgeVisibility(badge.id, newVisibility);
       setLocalVisibility(newVisibility);
       queryClient.invalidateQueries({ queryKey: ['wallet'] });
       toast.success(`Badge set to ${newVisibility === 'PUBLIC' ? 'Public' : 'Private'}`);

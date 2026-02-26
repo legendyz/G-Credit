@@ -3,7 +3,7 @@
  * Sprint 7 - Epic 9: Badge Revocation Admin UI
  */
 
-import { apiFetch } from './apiFetch';
+import { apiFetch, apiFetchJson } from './apiFetch';
 
 // Badge status constants matching backend Prisma enum
 export const BadgeStatus = {
@@ -199,6 +199,76 @@ export async function issueBadge(dto: IssueBadgeRequest): Promise<Badge> {
   return handleResponse<Badge>(response);
 }
 
+// --- Story 13.7: API Client Cleanup — migrated inline calls ---
+
+export interface Recipient {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  department?: string;
+}
+
+/** PATCH /badges/:id/visibility */
+export async function updateBadgeVisibility(
+  badgeId: string,
+  visibility: 'PUBLIC' | 'PRIVATE'
+): Promise<void> {
+  const res = await apiFetch(`/badges/${badgeId}/visibility`, {
+    method: 'PATCH',
+    body: JSON.stringify({ visibility }),
+  });
+  if (!res.ok) throw new Error('Failed to update visibility');
+}
+
+/** POST /badges/:id/claim — claim a specific badge (wallet modal) */
+export async function claimBadge(badgeId: string): Promise<Record<string, unknown>> {
+  const response = await apiFetch(`/badges/${badgeId}/claim`, {
+    method: 'POST',
+  });
+  return handleResponse<Record<string, unknown>>(response);
+}
+
+/** POST /badges/claim — public claim by token (email link) */
+export async function claimBadgeByToken(data: {
+  claimToken: string;
+}): Promise<Record<string, unknown>> {
+  const response = await apiFetch('/badges/claim', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  return handleResponse<Record<string, unknown>>(response);
+}
+
+/** GET /badges/:id/download/png — returns blob */
+export async function downloadBadgePng(badgeId: string): Promise<Blob> {
+  const response = await apiFetch(`/badges/${badgeId}/download/png`);
+  if (!response.ok) throw new Error('Failed to download badge');
+  return response.blob();
+}
+
+/** POST /badges/:id/report */
+export async function reportBadgeIssue(
+  badgeId: string,
+  data: { issueType: string; description: string; email: string }
+): Promise<Record<string, unknown>> {
+  const response = await apiFetch(`/badges/${badgeId}/report`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  return handleResponse<Record<string, unknown>>(response);
+}
+
+/** GET /badges/:id/similar?limit=N */
+export async function getSimilarBadges(badgeId: string, limit = 6): Promise<unknown[]> {
+  return apiFetchJson(`/badges/${badgeId}/similar?limit=${limit}`);
+}
+
+/** GET /badges/recipients */
+export async function getRecipients(): Promise<Recipient[]> {
+  return apiFetchJson('/badges/recipients');
+}
+
 // Export as namespace for cleaner imports
 export const badgesApi = {
   getAllBadges,
@@ -206,6 +276,13 @@ export const badgesApi = {
   revokeBadge,
   getBadgeById,
   issueBadge,
+  updateBadgeVisibility,
+  claimBadge,
+  claimBadgeByToken,
+  downloadBadgePng,
+  reportBadgeIssue,
+  getSimilarBadges,
+  getRecipients,
 };
 
 export default badgesApi;

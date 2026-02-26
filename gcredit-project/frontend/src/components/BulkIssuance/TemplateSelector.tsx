@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
-import { apiFetch } from '../../lib/apiFetch';
+import { getActiveTemplates } from '../../lib/badgeTemplatesApi';
 
 interface BadgeTemplate {
   id: string;
@@ -37,13 +37,8 @@ export function TemplateSelector({ onSelect, disabled = false }: TemplateSelecto
     const fetchTemplates = async () => {
       setIsLoading(true);
       try {
-        const response = await apiFetch('/badge-templates?status=ACTIVE');
-        if (response.ok) {
-          const data = await response.json();
-          // Handle both array response and paginated response
-          const templateList = Array.isArray(data) ? data : data.data || data.items || [];
-          setTemplates(templateList);
-        }
+        const data = await getActiveTemplates();
+        setTemplates(data);
       } catch {
         toast.error('Failed to load badge templates');
       } finally {

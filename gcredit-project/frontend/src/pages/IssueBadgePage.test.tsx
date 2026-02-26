@@ -31,8 +31,16 @@ vi.mock('react-router-dom', async () => {
 
 // Mock badgesApi
 const mockIssueBadge = vi.fn();
+const mockGetRecipients = vi.fn();
 vi.mock('@/lib/badgesApi', () => ({
   issueBadge: (...args: unknown[]) => mockIssueBadge(...args),
+  getRecipients: (...args: unknown[]) => mockGetRecipients(...args),
+}));
+
+// Mock badgeTemplatesApi
+const mockGetActiveTemplates = vi.fn();
+vi.mock('@/lib/badgeTemplatesApi', () => ({
+  getActiveTemplates: (...args: unknown[]) => mockGetActiveTemplates(...args),
 }));
 
 // Mock evidence API
@@ -51,8 +59,8 @@ vi.mock('@/lib/evidenceApi', () => ({
   truncateUrl: (u: string) => u.substring(0, 50),
 }));
 
-// Note: IssueBadgePage now uses fetch('/badges/recipients') instead of getAdminUsers
-// Recipients are mocked via global.fetch alongside templates
+// Mock global fetch (kept for any direct fetch calls)
+const mockFetch = vi.fn();
 
 // Mock shadcn Select as native <select> for testability
 vi.mock('@/components/ui/select', () => ({
@@ -133,9 +141,6 @@ vi.mock('@/components/ui/select', () => ({
   ),
 }));
 
-// Mock global fetch for template loading
-const mockFetch = vi.fn();
-
 const mockTemplates = [
   { id: 'tpl-1', name: 'Cloud Expert', description: 'Cloud certification' },
   { id: 'tpl-2', name: 'Security Pro', description: 'Security certification' },
@@ -162,16 +167,15 @@ describe('IssueBadgePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Mock fetch for both templates (first call) and recipients (second call)
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockTemplates),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockRecipients),
-      });
+    // Mock API lib functions for templates and recipients
+    mockGetActiveTemplates.mockResolvedValue(mockTemplates);
+    mockGetRecipients.mockResolvedValue(mockRecipients);
+
+    // Keep mockFetch for any remaining fetch calls (e.g. issueBadge)
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({}),
+    });
     global.fetch = mockFetch;
   });
 
@@ -204,14 +208,7 @@ describe('IssueBadgePage', () => {
     renderPage();
 
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/badge-templates?status=ACTIVE'),
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            'Content-Type': 'application/json',
-          }),
-        })
-      );
+      expect(mockGetActiveTemplates).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -219,20 +216,15 @@ describe('IssueBadgePage', () => {
     renderPage();
 
     await waitFor(() => {
-      // Verify fetch was called at least twice (templates + recipients)
-      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(mockGetRecipients).toHaveBeenCalledTimes(1);
     });
-
-    // Second call should be for recipients
-    const secondCallUrl = mockFetch.mock.calls[1]?.[0];
-    expect(secondCallUrl).toContain('/badges/recipients');
   });
 
   it('shows validation error when submitting without template', async () => {
     const user = userEvent.setup();
     renderPage();
 
-    await waitFor(() => expect(mockFetch).toHaveBeenCalled());
+    await waitFor(() => expect(mockGetActiveTemplates).toHaveBeenCalled());
 
     const submitBtn = screen.getByRole('button', { name: /Issue Badge/i });
     await user.click(submitBtn);
@@ -244,7 +236,7 @@ describe('IssueBadgePage', () => {
   it('renders evidence attachment area', async () => {
     renderPage();
 
-    await waitFor(() => expect(mockFetch).toHaveBeenCalled());
+    await waitFor(() => expect(mockGetActiveTemplates).toHaveBeenCalled());
 
     // Evidence attachment panel should be present
     expect(screen.getByText(/Drag files here/i)).toBeInTheDocument();
@@ -324,16 +316,7 @@ describe('IssueBadgePage', () => {
   });
 
   it('shows error toast when template fetch fails', async () => {
-    mockFetch.mockReset();
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: false,
-        json: () => Promise.resolve({ message: 'Unauthorized' }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockRecipients),
-      });
+    mockGetActiveTemplates.mockRejectedValueOnce(new Error('Unauthorized'));
 
     renderPage();
 
@@ -343,17 +326,7 @@ describe('IssueBadgePage', () => {
   });
 
   it('shows error toast when user fetch fails', async () => {
-    // Reset and reconfigure: templates succeed, recipients fail
-    mockFetch.mockReset();
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockTemplates),
-      })
-      .mockResolvedValueOnce({
-        ok: false,
-        json: () => Promise.resolve({ message: 'Unauthorized' }),
-      });
+    mockGetRecipients.mockRejectedValueOnce(new Error('Unauthorized'));
 
     renderPage();
 

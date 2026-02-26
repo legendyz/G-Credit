@@ -156,12 +156,20 @@ export async function deleteTemplate(id: string): Promise<void> {
   }
 }
 
+/** GET /badge-templates?status=ACTIVE — only active templates */
+export async function getActiveTemplates(): Promise<BadgeTemplate[]> {
+  const response = await apiFetch('/badge-templates?status=ACTIVE');
+  const data = await handleResponse<BadgeTemplate[] | BadgeTemplateListResponse>(response);
+  return Array.isArray(data) ? data : data.data || [];
+}
+
 export const badgeTemplatesApi = {
   getAllTemplates,
   getTemplateById,
   createTemplate,
   updateTemplate,
   deleteTemplate,
+  getActiveTemplates,
 };
 
 export default badgeTemplatesApi;
