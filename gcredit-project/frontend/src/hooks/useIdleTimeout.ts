@@ -47,6 +47,8 @@ export function useIdleTimeout({
   const [secondsRemaining, setSecondsRemaining] = useState(0);
   const onTimeoutRef = useRef(onTimeout);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // One-shot guard: prevent duplicate onTimeout calls (nit from code review)
+  const hasTimedOutRef = useRef(false);
 
   // Keep onTimeout ref current to avoid re-registering effects
   useEffect(() => {
@@ -57,6 +59,7 @@ export function useIdleTimeout({
     lastActivityTime.current = Date.now();
     setIsWarning(false);
     setSecondsRemaining(0);
+    hasTimedOutRef.current = false;
   }, []);
 
   useEffect(() => {
@@ -85,7 +88,8 @@ export function useIdleTimeout({
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
         const elapsed = Date.now() - lastActivityTime.current;
-        if (elapsed >= timeout) {
+        if (elapsed >= timeout && !hasTimedOutRef.current) {
+          hasTimedOutRef.current = true;
           onTimeoutRef.current();
         } else if (elapsed >= warningThreshold) {
           setIsWarning(true);
@@ -104,7 +108,10 @@ export function useIdleTimeout({
     intervalRef.current = setInterval(() => {
       const elapsed = Date.now() - lastActivityTime.current;
       if (elapsed >= timeout) {
-        onTimeoutRef.current();
+        if (!hasTimedOutRef.current) {
+          hasTimedOutRef.current = true;
+          onTimeoutRef.current();
+        }
         return;
       }
       if (elapsed >= warningThreshold) {

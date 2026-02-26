@@ -19,7 +19,7 @@ vi.mock('../stores/authStore', () => ({
 
 // Mock sonner
 vi.mock('sonner', () => ({
-  toast: { error: vi.fn(), success: vi.fn() },
+  toast: { error: vi.fn(), success: vi.fn(), info: vi.fn() },
 }));
 
 // Mock navigate
@@ -165,6 +165,23 @@ describe('LoginPage (Story 13.4)', () => {
 
     expect(screen.getByRole('alert')).toHaveTextContent(
       'An unexpected error occurred. Please try again.'
+    );
+  });
+
+  // Story 13.6: reason param toast tests
+  it('shows info toast for reason=session_expired', async () => {
+    const { toast } = await import('sonner');
+    renderLoginPage('/login?reason=session_expired');
+
+    expect(toast.info).toHaveBeenCalledWith('Your session has expired. Please log in again.');
+  });
+
+  it('shows info toast for reason=idle_timeout', async () => {
+    const { toast } = await import('sonner');
+    renderLoginPage('/login?reason=idle_timeout');
+
+    expect(toast.info).toHaveBeenCalledWith(
+      'Session expired due to inactivity. Please log in again.'
     );
   });
 });
