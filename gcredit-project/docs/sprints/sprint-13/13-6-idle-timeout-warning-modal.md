@@ -1,6 +1,6 @@
 # Story 13.6: Idle Timeout with Warning Modal
 
-Status: review
+Status: done
 
 ## Story
 
@@ -96,3 +96,16 @@ So that unattended workstations don't pose a security risk.
 - `src/stores/authStore.ts` — `logout()` action
 - `src/components/ui/dialog.tsx` — shadcn Dialog for modal
 - FEAT-007 requirements doc
+
+---
+
+## Code Review Sync (2026-02-26)
+
+- Final code review verdict: **Approved**
+- Re-review fix commit verified: `d7c5a37` (`fix(story-13.6): code review fixes  idempotent timeout guard + reason toast tests`)
+- Closed items:
+  - Added one-shot timeout guard in `useIdleTimeout` to prevent duplicate timeout callback firing.
+  - Added `LoginPage` tests for `reason=session_expired` and `reason=idle_timeout` info-toast behavior.
+- Validation evidence:
+  - `npx vitest run src/hooks/useIdleTimeout.test.ts src/components/session/IdleWarningModal.test.tsx src/components/session/IdleTimeoutProvider.test.tsx` → 3 files, 16 tests, 0 failed
+  - `npx vitest run src/hooks/useIdleTimeout.test.ts src/pages/LoginPage.test.tsx` → 2 files, 22 tests, 0 failed
