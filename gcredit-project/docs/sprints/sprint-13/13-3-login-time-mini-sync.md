@@ -11,7 +11,7 @@ So that organizational changes (department move, promotion, new manager) are ref
 ## Context
 
 - ADR-011 DEC-011-10/11: "On every login/token-refresh, perform single-user sync."
-- Reuses `M365SyncService.syncSingleUser()` — same function used by JIT and manual sync
+- Reuses `M365SyncService.syncUserFromGraph()` — shared helper for login-time mini-sync
 - SSO callback (Story 13.1) invokes this for recognized `azureId` before issuing JWT cookies
 - Parallel Graph API calls for efficiency: profile + memberOf + manager
 

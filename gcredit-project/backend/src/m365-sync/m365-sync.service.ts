@@ -388,7 +388,7 @@ export class M365SyncService {
     if (user.lastSyncAt) {
       const minutesSinceSync =
         (Date.now() - user.lastSyncAt.getTime()) / (1000 * 60);
-      if (minutesSinceSync < COOLDOWN_MINUTES) {
+      if (minutesSinceSync >= 0 && minutesSinceSync < COOLDOWN_MINUTES) {
         this.logger.debug(
           `Mini-sync cooldown: user ${user.id} synced ${minutesSinceSync.toFixed(1)}m ago, skipping`,
         );

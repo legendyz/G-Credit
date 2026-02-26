@@ -1775,6 +1775,37 @@ describe('M365SyncService', () => {
         }) as unknown,
       });
     });
+
+    it('should not change role when memberOf API fails but profile succeeds', async () => {
+      const mockGet = jest
+        .fn()
+        .mockResolvedValueOnce({
+          accountEnabled: true,
+          displayName: 'Test User',
+          department: 'Eng',
+          jobTitle: 'Dev',
+        }) // profile succeeds
+        .mockRejectedValueOnce(new Error('memberOf API error')) // memberOf fails
+        .mockRejectedValueOnce({ statusCode: 404 }); // manager 404
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+
+      prisma.user.update.mockResolvedValue({});
+
+      const result = await service.syncUserFromGraph(mockGraphUser);
+
+      expect(result.rejected).toBe(false);
+      // Role should NOT appear in update data when memberOf fails
+      /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+      const updateCall = prisma.user.update.mock.calls[0]?.[0] as
+        | { data: Record<string, unknown> }
+        | undefined;
+      /* eslint-enable @typescript-eslint/no-unsafe-member-access */
+      expect(updateCall?.data).not.toHaveProperty('role');
+    });
   });
 
   // ============================================================
