@@ -1,15 +1,27 @@
 import { API_BASE_URL } from './apiConfig';
+import { enqueueRefresh } from './refreshQueue';
+
+/** Paths excluded from 401 interception (avoid circular refresh) */
+const EXCLUDED_PATHS = ['/auth/refresh', '/auth/logout'];
+
+function isExcluded(path: string): boolean {
+  return EXCLUDED_PATHS.some((p) => path.includes(p));
+}
 
 /**
  * Fetch wrapper that includes credentials (httpOnly cookies) automatically.
  * All API calls should go through this wrapper instead of raw fetch().
  *
+ * Story 13.5: Enhanced with 401 interceptor → auto-refresh → retry.
  * @see ADR-010: JWT Token Transport Migration
  */
-export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
+export async function apiFetch(
+  path: string,
+  options: RequestInit & { _retried?: boolean } = {}
+): Promise<Response> {
   const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
 
-  const { headers: customHeaders, ...rest } = options;
+  const { headers: customHeaders, _retried, ...rest } = options;
 
   // Don't set Content-Type for FormData (browser sets boundary automatically)
   const isFormData = options.body instanceof FormData;
@@ -17,7 +29,7 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
     ? {}
     : { 'Content-Type': 'application/json' };
 
-  return fetch(url, {
+  const response = await fetch(url, {
     ...rest,
     credentials: 'include',
     headers: {
@@ -25,6 +37,29 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
       ...customHeaders,
     },
   });
+
+  // 401 Interception — Story 13.5
+  if (response.status === 401 && !isExcluded(path) && !_retried) {
+    const refreshed = await enqueueRefresh();
+
+    if (refreshed) {
+      // Retry with fresh cookies — mark as retried to prevent infinite loop
+      return apiFetch(path, { ...options, _retried: true });
+    }
+
+    // Refresh failed → force logout
+    // Dynamic import to avoid circular dependency (apiFetch ← authStore → apiFetch)
+    const { useAuthStore } = await import('../stores/authStore');
+    const logout = useAuthStore.getState().logout;
+    await logout();
+
+    // Redirect to login with reason
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login?reason=session_expired';
+    }
+  }
+
+  return response;
 }
 
 /**
