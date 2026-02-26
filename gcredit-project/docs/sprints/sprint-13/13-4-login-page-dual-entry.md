@@ -89,6 +89,7 @@ Frontend-only story wiring the existing backend SSO flow (13.1-13.3) to the UI:
 - Full suite: 70 test files, 751 tests, 0 failures
 - TypeScript: 0 type errors
 - P2-6 fix: all native `<input>`, `<label>`, `<button>` replaced with shadcn `<Input>`, `<Label>`, `<Button>`
+- Re-review completed: Story 13.4 code review verdict is Approved after follow-up test coverage fixes
 
 ### File List
 
@@ -116,3 +117,4 @@ Frontend-only story wiring the existing backend SSO flow (13.1-13.3) to the UI:
 | New `SsoCallbackPage` | AC #4, #6 — handle backend redirect, validate session, auto-navigate |
 | New `loginViaSSO()` in authStore | AC #5 — bypass validateSession guard for fresh SSO cookies |
 | `/sso/callback` route in App.tsx | AC #4 — register public route for SSO redirect target |
+| Code review re-check passed (Approved) | Follow-up fixes validated: timeout-path test, unknown error-code test, loginViaSSO store unit tests |
