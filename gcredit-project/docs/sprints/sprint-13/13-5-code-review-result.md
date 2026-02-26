@@ -2,9 +2,23 @@
 
 ## 1) Verdict
 
-**Approved with Notes**
+**Approved**
 
-Core behavior is implemented correctly for 401 interception, refresh queuing, single-retry protection, excluded auth paths, and React Query integration. Targeted Story 13.5 tests pass.
+Re-review confirms previously reported findings are addressed in commit `e49243e` and targeted Story 13.5 tests pass.
+
+---
+
+## Re-review Update (2026-02-26)
+
+- Fix commit reviewed: `e49243e` (`fix(story-13.5): code review fixes — ApiError class + strict path matching`)
+- Verified closures:
+   1. React Query 401 detection now uses structured `ApiError.status` instead of message matching.
+   2. Excluded auth paths now use strict equality match instead of substring includes.
+   3. Added retry-shape test for POST method/body/headers preservation.
+   4. Added `apiFetchJson()` interceptor-inheritance test and `ApiError` assertion test.
+- Re-run result:
+   - Command: `npx vitest run src/lib/__tests__/apiFetch.test.ts src/lib/__tests__/refreshQueue.test.ts src/lib/__tests__/queryClient.test.ts`
+   - Result: **3 files passed, 18 tests passed, 0 failed**.
 
 ---
 
@@ -20,25 +34,11 @@ Core behavior is implemented correctly for 401 interception, refresh queuing, si
 
 ### MINOR
 
-1. **401 detection in React Query retry policy is message-string based and brittle**  
-   - Reference: `frontend/src/lib/queryClient.ts:17`  
-   - Current logic uses `error.message.includes('401')`. This can false-match unrelated errors containing `401`, or miss auth errors with different message formatting.  
-   - Recommendation: standardize an auth-error shape (e.g., status code on custom error) and inspect status directly.
-
-2. **Excluded-path matching uses substring logic that may over-match**  
-   - Reference: `frontend/src/lib/apiFetch.ts:8`  
-   - `path.includes('/auth/refresh')` and `path.includes('/auth/logout')` are practical, but can accidentally match longer unrelated paths containing those substrings.  
-   - Recommendation: normalize path and use stricter endpoint matching (`===` or pathname-based match).
+None.
 
 ### NIT
 
-1. **Missing targeted test that retry preserves original request shape for non-GET bodies**  
-   - References: `frontend/src/lib/apiFetch.ts:24,47`, `frontend/src/lib/__tests__/apiFetch.test.ts:71-129`  
-   - Current tests validate 401 flow well, but there is no explicit coverage for POST/PUT/FormData retry preserving method/body/headers semantics.
-
-2. **No direct `apiFetchJson()` 401-retry path test**  
-   - Reference: `frontend/src/lib/apiFetch.ts:68-76`  
-   - It should inherit interceptor behavior via `apiFetch()`, but a direct test would lock this contract.
+None.
 
 ---
 
@@ -54,7 +54,7 @@ Core behavior is implemented correctly for 401 interception, refresh queuing, si
   - `frontend/src/lib/__tests__/queryClient.test.ts`
 - Executed targeted test command:
   - `npx vitest run src/lib/__tests__/apiFetch.test.ts src/lib/__tests__/refreshQueue.test.ts src/lib/__tests__/queryClient.test.ts`
-  - Result: **3 files passed, 15 tests passed, 0 failed**
+   - Result: **3 files passed, 18 tests passed, 0 failed**
 
 ---
 
@@ -71,5 +71,5 @@ Core behavior is implemented correctly for 401 interception, refresh queuing, si
 
 ## 5) Fixes Applied
 
-- **None in this review pass.**
+- Applied by dev (verified in re-review): `e49243e`
 - Reviewer did not modify source code.
