@@ -491,6 +491,7 @@ export class AuthService {
         lastName: true,
         role: true,
         department: true,
+        azureId: true,
         isActive: true,
         emailVerified: true,
         lastLoginAt: true,
@@ -527,6 +528,13 @@ export class AuthService {
 
     if (!user) {
       throw new NotFoundException('User not found');
+    }
+
+    // SSO users' profile is managed by Microsoft 365 — block local edits
+    if (user.azureId) {
+      throw new BadRequestException(
+        'SSO user profile is managed by Microsoft 365. Changes must be made in Azure AD.',
+      );
     }
 
     // Update profile
@@ -568,6 +576,13 @@ export class AuthService {
 
     if (!user) {
       throw new NotFoundException('User not found');
+    }
+
+    // SSO users have no local password — block password change
+    if (user.azureId) {
+      throw new BadRequestException(
+        'SSO user passwords are managed by Microsoft 365. Please change your password in Azure AD.',
+      );
     }
 
     // 2. Verify current password

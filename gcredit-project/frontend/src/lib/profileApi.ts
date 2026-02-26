@@ -14,6 +14,7 @@ export interface ProfileData {
   lastName: string;
   role: string;
   department?: string | null;
+  azureId?: string | null;
   isActive: boolean;
   emailVerified: boolean;
   lastLoginAt: string | null;
