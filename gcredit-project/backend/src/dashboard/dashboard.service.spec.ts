@@ -79,6 +79,9 @@ describe('DashboardService', () => {
       auditLog: {
         findMany: jest.fn(),
       },
+      m365SyncLog: {
+        findFirst: jest.fn().mockResolvedValue(null),
+      },
       $queryRaw: jest.fn().mockResolvedValue([1]),
     };
 
