@@ -1405,7 +1405,7 @@ describe('M365SyncService', () => {
     const mockGraphUser = {
       id: 'user-1',
       azureId: 'azure-id-123',
-      lastSyncAt: new Date(),
+      lastSyncAt: new Date(Date.now() - 10 * 60 * 1000), // 10 min ago — outside 3-min cooldown
     };
 
     it('should reject when M365 account is disabled', async () => {
@@ -1537,6 +1537,7 @@ describe('M365SyncService', () => {
       (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
 
       prisma.user.findUnique.mockResolvedValue({ id: 'local-manager-id' });
+      prisma.user.count.mockResolvedValue(0);
       prisma.user.update.mockResolvedValue({});
 
       const result = await service.syncUserFromGraph(mockGraphUser);
@@ -1566,6 +1567,7 @@ describe('M365SyncService', () => {
       });
       (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
 
+      prisma.user.count.mockResolvedValue(0);
       prisma.user.update.mockResolvedValue({});
 
       const result = await service.syncUserFromGraph(mockGraphUser);
@@ -1597,6 +1599,7 @@ describe('M365SyncService', () => {
 
       // Manager NOT found in local DB
       prisma.user.findUnique.mockResolvedValue(null);
+      prisma.user.count.mockResolvedValue(0);
       prisma.user.update.mockResolvedValue({});
 
       const result = await service.syncUserFromGraph(mockGraphUser);
@@ -1606,6 +1609,169 @@ describe('M365SyncService', () => {
         where: { id: 'user-1' },
         data: expect.objectContaining({
           managerId: null,
+        }) as unknown,
+      });
+    });
+
+    // ============================================================
+    // Story 13.3 — Mini-Sync Hardening Tests
+    // ============================================================
+
+    it('should skip sync when lastSyncAt < 3 minutes ago (cooldown)', async () => {
+      const recentUser = {
+        ...mockGraphUser,
+        lastSyncAt: new Date(Date.now() - 60 * 1000), // 1 minute ago
+      };
+
+      const result = await service.syncUserFromGraph(recentUser);
+
+      expect(result.rejected).toBe(false);
+      // Verify NO Graph API calls were made
+      expect(Client.initWithMiddleware).not.toHaveBeenCalled();
+    });
+
+    it('should run sync when lastSyncAt is exactly 3 minutes ago', async () => {
+      const borderlineUser = {
+        ...mockGraphUser,
+        lastSyncAt: new Date(Date.now() - 3 * 60 * 1000), // exactly 3 min
+      };
+
+      const mockGet = jest
+        .fn()
+        .mockResolvedValueOnce({
+          accountEnabled: true,
+          displayName: 'Test',
+          department: 'Eng',
+          jobTitle: null,
+        })
+        .mockResolvedValueOnce({ value: [] })
+        .mockRejectedValueOnce({ statusCode: 404 });
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+      prisma.user.count.mockResolvedValue(0);
+      prisma.user.update.mockResolvedValue({});
+
+      const result = await service.syncUserFromGraph(borderlineUser);
+
+      expect(result.rejected).toBe(false);
+      expect(Client.initWithMiddleware).toHaveBeenCalled();
+    });
+
+    it('should sync jobTitle from Graph API', async () => {
+      const mockGet = jest
+        .fn()
+        .mockResolvedValueOnce({
+          accountEnabled: true,
+          displayName: 'John Doe',
+          department: 'Engineering',
+          jobTitle: 'Senior Developer',
+        })
+        .mockResolvedValueOnce({ value: [] })
+        .mockRejectedValueOnce({ statusCode: 404 });
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+      prisma.user.count.mockResolvedValue(0);
+      prisma.user.update.mockResolvedValue({});
+
+      await service.syncUserFromGraph(mockGraphUser);
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: expect.objectContaining({
+          jobTitle: 'Senior Developer',
+        }) as unknown,
+      });
+    });
+
+    it('should clear jobTitle when Azure AD returns null', async () => {
+      const mockGet = jest
+        .fn()
+        .mockResolvedValueOnce({
+          accountEnabled: true,
+          displayName: 'Test',
+          department: 'Eng',
+          jobTitle: null,
+        })
+        .mockResolvedValueOnce({ value: [] })
+        .mockRejectedValueOnce({ statusCode: 404 });
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+      prisma.user.count.mockResolvedValue(0);
+      prisma.user.update.mockResolvedValue({});
+
+      await service.syncUserFromGraph(mockGraphUser);
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: expect.objectContaining({
+          jobTitle: null,
+        }) as unknown,
+      });
+    });
+
+    it('should demote to EMPLOYEE when removed from Security Group and no direct reports', async () => {
+      const mockGet = jest
+        .fn()
+        .mockResolvedValueOnce({
+          accountEnabled: true,
+          displayName: 'Former Admin',
+          department: 'Eng',
+          jobTitle: 'Developer',
+        })
+        .mockResolvedValueOnce({ value: [] }) // NOT in any security group
+        .mockRejectedValueOnce({ statusCode: 404 });
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+      prisma.user.count.mockResolvedValue(0); // no direct reports
+      prisma.user.update.mockResolvedValue({});
+
+      await service.syncUserFromGraph(mockGraphUser);
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: expect.objectContaining({
+          role: 'EMPLOYEE',
+        }) as unknown,
+      });
+    });
+
+    it('should demote to MANAGER when removed from Security Group but has direct reports', async () => {
+      const mockGet = jest
+        .fn()
+        .mockResolvedValueOnce({
+          accountEnabled: true,
+          displayName: 'Former Admin',
+          department: 'Eng',
+          jobTitle: 'Team Lead',
+        })
+        .mockResolvedValueOnce({ value: [] }) // not in any group
+        .mockRejectedValueOnce({ statusCode: 404 });
+      const mockApi = jest.fn().mockReturnValue({ get: mockGet });
+      (Client.initWithMiddleware as jest.Mock).mockReturnValue({
+        api: mockApi,
+      });
+      (graphTokenProvider.getAuthProvider as jest.Mock).mockReturnValue({});
+      prisma.user.count.mockResolvedValue(3); // has 3 direct reports
+      prisma.user.update.mockResolvedValue({});
+
+      await service.syncUserFromGraph(mockGraphUser);
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: expect.objectContaining({
+          role: 'MANAGER',
         }) as unknown,
       });
     });

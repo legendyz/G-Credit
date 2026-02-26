@@ -132,7 +132,7 @@ sprint-13: in-progress
 # --- Wave 1: Azure AD SSO Backend ---
 13-1-azure-ad-sso-strategy: done                  # OAuth 2.0 Auth Code Flow + MSAL SSO service + callback endpoints
 13-2-jit-user-provisioning: done                  # First SSO login → auto-create user + Graph sync
-13-3-login-time-mini-sync: backlog               # Returning SSO login → refresh profile/role/manager
+13-3-login-time-mini-sync: review                  # Returning SSO login → refresh profile/role/manager
 
 # --- Wave 2: Azure AD SSO Frontend ---
 13-4-login-page-dual-entry: backlog              # "Sign in with Microsoft" + password form (DEC-001 Option A)
