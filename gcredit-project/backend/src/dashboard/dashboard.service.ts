@@ -445,7 +445,96 @@ export class DashboardService {
         newUsersThisMonth,
       },
       recentActivity,
+      notifications: await this.getAdminNotifications(),
     };
+  }
+
+  /**
+   * Generate admin notifications — two independent triggers (either one → notify):
+   *   Trigger 1 (time):  No full sync ever, or last full sync > 24h ago
+   *   Trigger 2 (mini):  Mini-sync happened AFTER the last full sync
+   * Notification disappears right after a successful full sync and only
+   * reappears when either trigger fires again.
+   */
+  private async getAdminNotifications() {
+    const notifications: Array<{
+      type: string;
+      severity: 'info' | 'warning' | 'critical';
+      message: string;
+      detail?: string;
+      timestamp: Date;
+    }> = [];
+
+    // ── 1. Last successful full sync ────────────────────────────────
+    const lastFullSync = await this.prisma.m365SyncLog.findFirst({
+      where: {
+        syncType: 'FULL',
+        status: { in: ['SUCCESS', 'PARTIAL_SUCCESS'] },
+      },
+      orderBy: { syncDate: 'desc' },
+      select: { syncDate: true },
+    });
+
+    const hoursSinceFullSync = lastFullSync
+      ? Math.floor(
+          (Date.now() - lastFullSync.syncDate.getTime()) / (1000 * 60 * 60),
+        )
+      : null;
+
+    // Trigger 1: time-based — no full sync ever, or >24h since last one
+    const timeTrigger =
+      !lastFullSync || (hoursSinceFullSync !== null && hoursSinceFullSync > 24);
+
+    // ── 2. Mini-sync since last full sync ───────────────────────────
+    // syncDate records the start of the full sync; users processed during
+    // it get lastSyncAt slightly later. A 10-min buffer avoids false
+    // positives from users updated as part of the full sync itself.
+    const cutoffDate = lastFullSync
+      ? new Date(lastFullSync.syncDate.getTime() + 10 * 60 * 1000)
+      : new Date(0); // no full sync → any mini-synced user counts
+
+    const miniSyncedCount = await this.prisma.user.count({
+      where: {
+        azureId: { not: null },
+        lastSyncAt: { gt: cutoffDate },
+      },
+    });
+
+    // Trigger 2: mini-sync — SSO user(s) synced after last full sync
+    const miniSyncTrigger = miniSyncedCount > 0;
+
+    // ── 3. Build notification if either trigger fires ───────────────
+    if (timeTrigger || miniSyncTrigger) {
+      // Severity: warning if never done or >72h; otherwise info
+      const severity: 'info' | 'warning' =
+        !lastFullSync || (hoursSinceFullSync && hoursSinceFullSync > 72)
+          ? 'warning'
+          : 'info';
+
+      // Compose reason parts
+      const reasons: string[] = [];
+      if (miniSyncTrigger) {
+        reasons.push(
+          `${miniSyncedCount} SSO user(s) updated by login-time mini-sync since last full sync`,
+        );
+      }
+      if (!lastFullSync) {
+        reasons.push('no full M365 sync has ever been run');
+      } else if (timeTrigger) {
+        reasons.push(`last full sync was ${hoursSinceFullSync} hours ago`);
+      }
+
+      notifications.push({
+        type: 'M365_SYNC_RECOMMENDED',
+        severity,
+        message: `Strongly recommend running a full M365 sync — ${reasons.join('; ')}`,
+        detail:
+          'Mini-sync only updates individual user profiles at login. A full sync ensures all organizational data (roles, departments, managers) is complete and consistent.',
+        timestamp: new Date(),
+      });
+    }
+
+    return notifications;
   }
 
   private async checkSystemHealth(): Promise<string> {

@@ -131,8 +131,17 @@ export interface SystemOverview {
   newUsersThisMonth: number;
 }
 
+export interface AdminNotification {
+  type: string;
+  severity: 'info' | 'warning' | 'critical';
+  message: string;
+  detail?: string;
+  timestamp: string;
+}
+
 // Admin Dashboard
 export interface AdminDashboard {
   systemOverview: SystemOverview;
   recentActivity: AdminActivity[];
+  notifications?: AdminNotification[];
 }

@@ -25,6 +25,9 @@ import {
   FileText,
   BarChart3,
   PlusCircle,
+  AlertTriangle,
+  Info,
+  RefreshCw,
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
@@ -50,10 +53,19 @@ export const AdminDashboard: React.FC = () => {
     return <NoActivityState />;
   }
 
-  const { systemOverview, recentActivity } = data;
+  const { systemOverview, recentActivity, notifications } = data;
 
   return (
     <PageTemplate title="Admin Dashboard" description="System overview and platform management">
+      {/* Admin Notifications */}
+      {notifications && notifications.length > 0 && (
+        <div className="space-y-3">
+          {notifications.map((notification, index) => (
+            <NotificationBanner key={index} notification={notification} />
+          ))}
+        </div>
+      )}
+
       {/* System Health Banner */}
       <SystemHealthBanner health={systemOverview.systemHealth} />
 
@@ -299,5 +311,61 @@ const QuickActionButton: React.FC<QuickActionButtonProps> = ({
     <span className="text-sm font-medium">{label}</span>
   </button>
 );
+
+// Notification Banner Component
+interface NotificationBannerProps {
+  notification: {
+    type: string;
+    severity: 'info' | 'warning' | 'critical';
+    message: string;
+    detail?: string;
+    timestamp: string;
+  };
+}
+
+const NotificationBanner: React.FC<NotificationBannerProps> = ({ notification }) => {
+  const config = {
+    info: {
+      bg: 'bg-blue-50 dark:bg-blue-900/20',
+      border: 'border-blue-200 dark:border-blue-800',
+      text: 'text-blue-800 dark:text-blue-200',
+      detailText: 'text-blue-700 dark:text-blue-300',
+      icon: <Info className="h-5 w-5" />,
+    },
+    warning: {
+      bg: 'bg-amber-50 dark:bg-amber-900/20',
+      border: 'border-amber-200 dark:border-amber-800',
+      text: 'text-amber-800 dark:text-amber-200',
+      detailText: 'text-amber-700 dark:text-amber-300',
+      icon: <AlertTriangle className="h-5 w-5" />,
+    },
+    critical: {
+      bg: 'bg-red-50 dark:bg-red-900/20',
+      border: 'border-red-200 dark:border-red-800',
+      text: 'text-red-800 dark:text-red-200',
+      detailText: 'text-red-700 dark:text-red-300',
+      icon: <AlertTriangle className="h-5 w-5" />,
+    },
+  };
+
+  const style = config[notification.severity];
+
+  return (
+    <div className={cn('p-4 rounded-lg border', style.bg, style.border)} role="alert">
+      <div className="flex items-start gap-3">
+        <div className={cn('mt-0.5 flex-shrink-0', style.text)}>{style.icon}</div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <RefreshCw className={cn('h-4 w-4', style.text)} />
+            <p className={cn('font-medium text-sm', style.text)}>{notification.message}</p>
+          </div>
+          {notification.detail && (
+            <p className={cn('text-sm mt-1', style.detailText)}>{notification.detail}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default AdminDashboard;
