@@ -284,7 +284,7 @@ Deliver enterprise-grade authentication (Azure AD SSO) and production-quality se
 #### Story 13.7: API Client Cleanup (Remove axios + Inline Migrations)
 **Priority:** MEDIUM  
 **Estimate:** 3-4h  
-**Status:** Backlog  
+**Status:** Done  
 
 **As a** developer maintaining the codebase,  
 **I want** a single, consistent API client pattern across all pages,  

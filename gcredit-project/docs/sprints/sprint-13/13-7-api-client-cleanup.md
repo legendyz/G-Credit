@@ -1,6 +1,6 @@
 # Story 13.7: API Client Cleanup (Remove axios + Inline Migrations)
 
-Status: dev
+Status: done
 
 ## Story
 
@@ -78,3 +78,20 @@ So that every API call benefits from the 401 interceptor and cookie handling aut
 - `src/lib/apiFetch.ts` — central API client
 - `src/lib/*Api.ts` — API library modules
 - `src/hooks/use*.ts` — React Query hooks
+
+---
+
+## Code Review Sync (2026-02-26)
+
+- Final code review verdict: **Approved**
+- Re-review fix commits verified:
+  - `ad11af6` (`fix(frontend): Story 13.7 code review nits — deduplicate handleResponse, strict API types`)
+  - `6a4850c` (`fix(frontend): CI build errors — getBadgeById returns BadgeDetail, fix optional chaining`)
+- Closed items:
+  - Consolidated repeated response handling by adopting `apiFetchJson` in key API modules.
+  - Tightened API response types and removed prior broad casts in migrated call sites.
+  - Resolved CI build regression related to `BadgeDetail` typing/nullability.
+- Validation evidence:
+  - `npx vitest run src/lib/__tests__/badgeTemplatesApi.test.ts src/pages/IssueBadgePage.test.tsx src/pages/ProfilePage.test.tsx src/components/BulkIssuance/__tests__/BulkPreviewPage.test.tsx` → 4 files, 61 tests, 0 failed
+  - `npx vitest run src/lib/badgesApi.test.ts` → 1 file, 16 tests, 0 failed
+  - `npx vite build` → success
