@@ -1,23 +1,56 @@
 /**
- * Login Page - Story 0.2a: Login & Navigation System
+ * Login Page - Story 0.2a / Story 13.4: Dual Entry (SSO + Email/Password)
  * Story 8.3: WCAG 2.1 AA Accessibility
  *
- * Minimal login page for UAT testing.
- * Features: email/password form, error handling, redirect on success.
+ * Features:
+ * - "Sign in with Microsoft" SSO button (primary CTA)
+ * - Email/password form with shadcn/ui components (P2-6 fix)
+ * - SSO error display from URL params
+ * - Redirect on success, sonner toasts, full accessibility
  */
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuthStore } from '../stores/authStore';
+import { MicrosoftSsoButton } from '../components/auth/MicrosoftSsoButton';
+import { Input } from '../components/ui/input';
+import { Button } from '../components/ui/button';
+import { Label } from '../components/ui/label';
+
+/** SSO error codes → user-friendly messages */
+const SSO_ERROR_MESSAGES: Record<string, string> = {
+  sso_cancelled: 'Sign-in was cancelled. Please try again.',
+  sso_failed: 'Microsoft sign-in failed. Please try again or use email login.',
+  account_disabled: 'Your account has been deactivated. Contact your administrator.',
+  sso_invalid_token: 'Authentication error. Please try again.',
+  sso_no_account: 'No account found. Contact your administrator.',
+};
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { login, isLoading, error, isAuthenticated, clearError } = useAuthStore();
+
+  // SSO error from URL params (backend redirects to /login?error=<code>)
+  // SSO error from URL params — capture once on mount, then clear URL
+  const [ssoError] = useState(() => {
+    const errorCode = searchParams.get('error');
+    return errorCode
+      ? SSO_ERROR_MESSAGES[errorCode] || 'An unexpected error occurred. Please try again.'
+      : null;
+  });
+
+  // Clear URL error params after capturing (avoid sticky errors on refresh)
+  useEffect(() => {
+    if (searchParams.has('error')) {
+      setSearchParams({}, { replace: true });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -31,6 +64,8 @@ export function LoginPage() {
   useEffect(() => {
     return () => clearError();
   }, [clearError]);
+
+  const displayError = ssoError || error;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,29 +104,41 @@ export function LoginPage() {
         <div className="bg-white rounded-lg shadow-elevation-4 p-8">
           <h2 className="text-xl font-semibold text-neutral-900 mb-6">Sign In</h2>
 
-          {/* Error Alert - Story 8.3 AC4 */}
-          {error && (
+          {/* Error Alert - SSO errors + form errors */}
+          {displayError && (
             <div
               id="login-error"
               className="mb-4 p-3 bg-error-light border border-red-200 rounded-md text-error text-sm"
               role="alert"
               aria-live="assertive"
             >
-              {error}
+              {displayError}
             </div>
           )}
 
+          {/* Primary CTA: Microsoft SSO */}
+          <MicrosoftSsoButton disabled={isLoading} />
+
+          {/* Visual Separator */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-neutral-300" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-neutral-500">or sign in with email</span>
+            </div>
+          </div>
+
+          {/* Email/Password Form */}
           <form
             onSubmit={handleSubmit}
             className="space-y-4"
-            aria-describedby={error ? 'login-error' : undefined}
+            aria-describedby={displayError ? 'login-error' : undefined}
           >
             {/* Email Field */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-1">
-                Email Address
-              </label>
-              <input
+            <div className="space-y-1.5">
+              <Label htmlFor="email">Email Address</Label>
+              <Input
                 id="email"
                 type="email"
                 value={email}
@@ -100,20 +147,14 @@ export function LoginPage() {
                 autoComplete="email"
                 required
                 disabled={isLoading}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm 
-                         placeholder-neutral-400 focus:outline-none focus:ring-2 
-                         focus:ring-brand-500 focus:border-brand-500
-                         disabled:bg-neutral-100 disabled:cursor-not-allowed"
                 aria-required="true"
               />
             </div>
 
             {/* Password Field */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-1">
-                Password
-              </label>
-              <input
+            <div className="space-y-1.5">
+              <Label htmlFor="password">Password</Label>
+              <Input
                 id="password"
                 type="password"
                 value={password}
@@ -122,24 +163,17 @@ export function LoginPage() {
                 autoComplete="current-password"
                 required
                 disabled={isLoading}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm 
-                         placeholder-neutral-400 focus:outline-none focus:ring-2 
-                         focus:ring-brand-500 focus:border-brand-500
-                         disabled:bg-neutral-100 disabled:cursor-not-allowed"
                 aria-required="true"
               />
             </div>
 
             {/* Submit Button */}
-            <button
+            <Button
               type="submit"
               disabled={isLoading}
               aria-busy={isLoading}
-              className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm 
-                       text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 
-                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500
-                       disabled:bg-brand-400 disabled:cursor-not-allowed
-                       transition-colors duration-200"
+              className="w-full"
+              size="lg"
             >
               {isLoading ? (
                 <span className="flex items-center justify-center">
@@ -164,12 +198,12 @@ export function LoginPage() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                   </svg>
-                  Signing in...
+                  Signing in…
                 </span>
               ) : (
                 'Sign In'
               )}
-            </button>
+            </Button>
           </form>
 
           {/* Help Text */}
