@@ -27,6 +27,12 @@ const SSO_ERROR_MESSAGES: Record<string, string> = {
   sso_no_account: 'No account found. Contact your administrator.',
 };
 
+/** Redirect reason codes → informational messages (Story 13.5 + 13.6) */
+const REASON_MESSAGES: Record<string, string> = {
+  session_expired: 'Your session has expired. Please log in again.',
+  idle_timeout: 'Session expired due to inactivity. Please log in again.',
+};
+
 export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,7 +42,6 @@ export function LoginPage() {
 
   const { login, isLoading, error, isAuthenticated, clearError } = useAuthStore();
 
-  // SSO error from URL params (backend redirects to /login?error=<code>)
   // SSO error from URL params — capture once on mount, then clear URL
   const [ssoError] = useState(() => {
     const errorCode = searchParams.get('error');
@@ -45,14 +50,27 @@ export function LoginPage() {
       : null;
   });
 
-  // Clear URL error params after capturing (avoid sticky errors on refresh).
-  // Intentionally empty deps: run-once cleanup — ssoError already captured above via
+  // Redirect reason from URL params (session_expired, idle_timeout) — Story 13.5/13.6
+  const [reasonMessage] = useState(() => {
+    const reason = searchParams.get('reason');
+    return reason ? REASON_MESSAGES[reason] || null : null;
+  });
+
+  // Clear URL error/reason params after capturing (avoid sticky errors on refresh).
+  // Intentionally empty deps: run-once cleanup — ssoError/reasonMessage already captured above via
   // useState initializer, so re-running on searchParams change is unnecessary.
   useEffect(() => {
-    if (searchParams.has('error')) {
+    if (searchParams.has('error') || searchParams.has('reason')) {
       setSearchParams({}, { replace: true });
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Show reason message as info toast on mount (Story 13.6)
+  useEffect(() => {
+    if (reasonMessage) {
+      toast.info(reasonMessage);
+    }
+  }, [reasonMessage]);
 
   // Redirect if already authenticated
   useEffect(() => {

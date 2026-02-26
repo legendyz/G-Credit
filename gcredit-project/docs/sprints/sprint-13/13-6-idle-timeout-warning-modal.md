@@ -1,6 +1,6 @@
 # Story 13.6: Idle Timeout with Warning Modal
 
-Status: backlog
+Status: review
 
 ## Story
 
@@ -17,17 +17,17 @@ So that unattended workstations don't pose a security risk.
 
 ## Acceptance Criteria
 
-1. [ ] Idle detection tracks: `mousemove`, `keydown`, `click`, `scroll`, `touchstart`, `visibilitychange`
-2. [ ] Any tracked activity resets the 30-minute idle timer
-3. [ ] At 25 minutes idle (5 min remaining), warning modal appears:
+1. [x] Idle detection tracks: `mousemove`, `keydown`, `click`, `scroll`, `touchstart`, `visibilitychange`
+2. [x] Any tracked activity resets the 30-minute idle timer
+3. [x] At 25 minutes idle (5 min remaining), warning modal appears:
    - "Your session will expire in 5 minutes due to inactivity"
    - "Continue Working" button resets timer
    - Countdown display (5:00 → 0:00)
-4. [ ] At 30 minutes idle → auto logout + redirect to `/login` with message "Session expired due to inactivity"
-5. [ ] Timer pauses when tab is hidden (`document.hidden`), resumes when tab becomes visible — but total hidden time still counts
-6. [ ] Idle timeout only active when user is authenticated (`isAuthenticated === true`)
-7. [ ] Configurable timeout values via constants (easy to change for different environments)
-8. [ ] Tests: idle timer fires at 30 min, activity resets timer, warning shows at 25 min, continue button resets, auto-logout at 30 min, unauthenticated users unaffected
+4. [x] At 30 minutes idle → auto logout + redirect to `/login` with message "Session expired due to inactivity"
+5. [x] Timer pauses when tab is hidden (`document.hidden`), resumes when tab becomes visible — but total hidden time still counts
+6. [x] Idle timeout only active when user is authenticated (`isAuthenticated === true`)
+7. [x] Configurable timeout values via constants (easy to change for different environments)
+8. [x] Tests: idle timer fires at 30 min, activity resets timer, warning shows at 25 min, continue button resets, auto-logout at 30 min, unauthenticated users unaffected
 
 ## Tasks / Subtasks
 

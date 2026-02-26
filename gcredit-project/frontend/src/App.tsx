@@ -5,6 +5,7 @@ import { Toaster } from 'sonner';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Layout } from '@/components/layout/Layout';
 import { queryClient } from '@/lib/queryClient';
+import { IdleTimeoutProvider } from '@/components/session/IdleTimeoutProvider';
 
 // Lazy-load all page components (TD-013: route-based code splitting)
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
@@ -57,6 +58,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <Toaster richColors position="top-right" />
       <BrowserRouter>
+        <IdleTimeoutProvider />
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
             {/* Public Routes */}
