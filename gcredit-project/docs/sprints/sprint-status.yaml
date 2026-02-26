@@ -135,7 +135,7 @@ sprint-13: in-progress
 13-3-login-time-mini-sync: done                    # Returning SSO login → refresh profile/role/manager
 
 # --- Wave 2: Azure AD SSO Frontend ---
-13-4-login-page-dual-entry: review                  # "Sign in with Microsoft" + password form (DEC-001 Option A)
+13-4-login-page-dual-entry: done                    # "Sign in with Microsoft" + password form (DEC-001 Option A)
 
 # --- Wave 3: Session Management ---
 13-5-401-interceptor-refresh-queue: backlog       # apiFetch 401 handler + single-refresh queue
