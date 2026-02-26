@@ -1,0 +1,3 @@
+admin/password123 = 429
+admin/newPassword456 = 429
+admin/Password123 = 429
