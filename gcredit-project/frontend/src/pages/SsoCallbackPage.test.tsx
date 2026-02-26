@@ -71,4 +71,16 @@ describe('SsoCallbackPage (Story 13.4)', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/login?error=sso_failed', { replace: true });
     });
   });
+
+  it('redirects to login with error when SSO validation times out', async () => {
+    vi.useFakeTimers();
+    mockLoginViaSSO.mockReturnValue(new Promise(() => {})); // never resolves
+    renderCallbackPage();
+
+    // Advance past the 10-second timeout
+    vi.advanceTimersByTime(10_000);
+
+    expect(mockNavigate).toHaveBeenCalledWith('/login?error=sso_failed', { replace: true });
+    vi.useRealTimers();
+  });
 });

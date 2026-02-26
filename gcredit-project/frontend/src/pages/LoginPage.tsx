@@ -45,7 +45,9 @@ export function LoginPage() {
       : null;
   });
 
-  // Clear URL error params after capturing (avoid sticky errors on refresh)
+  // Clear URL error params after capturing (avoid sticky errors on refresh).
+  // Intentionally empty deps: run-once cleanup — ssoError already captured above via
+  // useState initializer, so re-running on searchParams change is unnecessary.
   useEffect(() => {
     if (searchParams.has('error')) {
       setSearchParams({}, { replace: true });

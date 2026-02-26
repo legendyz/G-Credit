@@ -159,4 +159,12 @@ describe('LoginPage (Story 13.4)', () => {
 
     expect(mockNavigate).toHaveBeenCalledWith('/', { replace: true });
   });
+
+  it('displays generic message for unknown SSO error code', () => {
+    renderLoginPage('/login?error=unknown_code_xyz');
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'An unexpected error occurred. Please try again.'
+    );
+  });
 });
