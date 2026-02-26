@@ -4,6 +4,7 @@
  */
 
 import { apiFetch, apiFetchJson } from './apiFetch';
+import type { BadgeDetail } from '../types/badge';
 
 // Badge status constants matching backend Prisma enum
 export const BadgeStatus = {
@@ -161,9 +162,10 @@ export async function revokeBadge(
 /**
  * Get a single badge by ID
  * GET /api/badges/:id
+ * Returns full detail including visibility, evidence, verificationId.
  */
-export async function getBadgeById(badgeId: string): Promise<Badge> {
-  return apiFetchJson<Badge>(`/badges/${badgeId}`);
+export async function getBadgeById(badgeId: string): Promise<BadgeDetail> {
+  return apiFetchJson<BadgeDetail>(`/badges/${badgeId}`);
 }
 
 // --- Single Badge Issuance (Story 10.6b) ---

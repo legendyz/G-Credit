@@ -66,8 +66,8 @@ const BadgeDetailModal: React.FC = () => {
 
       try {
         const data = await getBadgeById(badgeId);
-        setBadge(data as BadgeDetail);
-        setLocalVisibility((data as BadgeDetail).visibility ?? 'PUBLIC');
+        setBadge(data);
+        setLocalVisibility(data.visibility ?? 'PUBLIC');
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
@@ -159,13 +159,13 @@ const BadgeDetailModal: React.FC = () => {
       setClaimSuccessOpen(true);
 
       // Story 12.4: Show milestone celebration if new milestones achieved
-      if (claimData.newMilestones?.length > 0) {
+      if (claimData.newMilestones && claimData.newMilestones.length > 0) {
         // Show milestone celebration after a brief delay (after claim celebration)
         setTimeout(() => {
           setMilestoneCelebration({
             isOpen: true,
-            name: claimData.newMilestones[0].title,
-            description: claimData.newMilestones[0].description,
+            name: claimData.newMilestones![0].title,
+            description: claimData.newMilestones![0].description,
           });
         }, 1500);
       }
