@@ -5,7 +5,7 @@
  * Covers: CSV template download, upload, preview, error-report, confirm
  */
 
-import { apiFetch } from './apiFetch';
+import { apiFetch, apiFetchJson } from './apiFetch';
 
 export interface BulkUploadResult {
   totalRows: number;
@@ -66,14 +66,6 @@ export interface BulkConfirmResult {
   }>;
 }
 
-async function handleResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Unknown error' }));
-    throw new Error(error.message || `HTTP ${response.status}`);
-  }
-  return response.json();
-}
-
 /** GET /bulk-issuance/template — returns CSV blob for download */
 export async function downloadTemplate(templateId?: string): Promise<Response> {
   const url = templateId
@@ -88,11 +80,10 @@ export async function downloadTemplate(templateId?: string): Promise<Response> {
 
 /** POST /bulk-issuance/upload — FormData with CSV file */
 export async function uploadBulkIssuance(formData: FormData): Promise<BulkUploadResult> {
-  const response = await apiFetch('/bulk-issuance/upload', {
+  return apiFetchJson<BulkUploadResult>('/bulk-issuance/upload', {
     method: 'POST',
     body: formData,
   });
-  return handleResponse<BulkUploadResult>(response);
 }
 
 /** GET /bulk-issuance/preview/:sessionId */
@@ -123,9 +114,8 @@ export async function confirmBulkIssuance(
   sessionId: string,
   signal?: AbortSignal
 ): Promise<BulkConfirmResult> {
-  const response = await apiFetch(`/bulk-issuance/confirm/${sessionId}`, {
+  return apiFetchJson<BulkConfirmResult>(`/bulk-issuance/confirm/${sessionId}`, {
     method: 'POST',
     signal,
   });
-  return handleResponse<BulkConfirmResult>(response);
 }

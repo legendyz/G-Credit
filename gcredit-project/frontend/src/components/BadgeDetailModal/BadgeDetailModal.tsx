@@ -66,8 +66,8 @@ const BadgeDetailModal: React.FC = () => {
 
       try {
         const data = await getBadgeById(badgeId);
-        setBadge(data as unknown as BadgeDetail);
-        setLocalVisibility((data as unknown as BadgeDetail).visibility ?? 'PUBLIC');
+        setBadge(data as BadgeDetail);
+        setLocalVisibility((data as BadgeDetail).visibility ?? 'PUBLIC');
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
@@ -145,8 +145,7 @@ const BadgeDetailModal: React.FC = () => {
 
     setClaiming(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const claimData = (await claimBadge(badge.id)) as any;
+      const claimData = await claimBadge(badge.id);
 
       // Update local badge state
       setBadge((prev) =>

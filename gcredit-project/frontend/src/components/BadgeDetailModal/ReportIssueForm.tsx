@@ -48,9 +48,7 @@ const ReportIssueForm: React.FC<ReportIssueFormProps> = ({ badgeId, userEmail, o
 
       // AC 4.10: Show success message
       toast.success('Report submitted', {
-        description:
-          (data as Record<string, string>).message ||
-          "We'll review your report within 2 business days.",
+        description: data.message || "We'll review your report within 2 business days.",
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit report');

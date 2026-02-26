@@ -34,8 +34,7 @@ export default function ClaimBadgePage() {
     const claimBadge = async () => {
       setState('claiming');
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const data = (await claimBadgeByToken({ claimToken: token })) as any;
+        const data = await claimBadgeByToken({ claimToken: token });
         const name = data.badge?.name || data.template?.name || data.badgeName || 'Badge';
         setBadgeName(name);
         setState('success');

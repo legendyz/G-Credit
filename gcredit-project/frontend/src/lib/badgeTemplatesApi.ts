@@ -3,7 +3,7 @@
  * Story 10.8 BUG-003: Badge Template CRUD UI
  */
 
-import { apiFetch } from './apiFetch';
+import { apiFetch, apiFetchJson } from './apiFetch';
 
 export type TemplateStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
 export type TemplateCategory = 'achievement' | 'skill' | 'certification' | 'participation';
@@ -46,25 +46,17 @@ export interface BadgeTemplateListResponse {
   limit: number;
 }
 
-async function handleResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Unknown error' }));
-    throw new Error(error.message || `HTTP ${response.status}`);
-  }
-  return response.json();
-}
-
 /** Get all templates (ADMIN/ISSUER — includes DRAFT, ACTIVE, ARCHIVED) */
 export async function getAllTemplates(): Promise<BadgeTemplate[]> {
-  const response = await apiFetch('/badge-templates/all');
-  const data = await handleResponse<BadgeTemplate[] | BadgeTemplateListResponse>(response);
+  const data = await apiFetchJson<BadgeTemplate[] | BadgeTemplateListResponse>(
+    '/badge-templates/all'
+  );
   return Array.isArray(data) ? data : data.data || [];
 }
 
 /** Get a single template by ID */
 export async function getTemplateById(id: string): Promise<BadgeTemplate> {
-  const response = await apiFetch(`/badge-templates/${id}`);
-  return handleResponse<BadgeTemplate>(response);
+  return apiFetchJson<BadgeTemplate>(`/badge-templates/${id}`);
 }
 
 /** Create a new template (multipart/form-data for image support) */
@@ -95,11 +87,10 @@ export async function createTemplate(
     formData.append('image', image);
   }
 
-  const response = await apiFetch('/badge-templates', {
+  return apiFetchJson<BadgeTemplate>('/badge-templates', {
     method: 'POST',
     body: formData,
   });
-  return handleResponse<BadgeTemplate>(response);
 }
 
 /** Update an existing template */
@@ -138,11 +129,10 @@ export async function updateTemplate(
     formData.append('image', image);
   }
 
-  const response = await apiFetch(`/badge-templates/${id}`, {
+  return apiFetchJson<BadgeTemplate>(`/badge-templates/${id}`, {
     method: 'PATCH',
     body: formData,
   });
-  return handleResponse<BadgeTemplate>(response);
 }
 
 /** Delete a template */
@@ -158,8 +148,9 @@ export async function deleteTemplate(id: string): Promise<void> {
 
 /** GET /badge-templates?status=ACTIVE — only active templates */
 export async function getActiveTemplates(): Promise<BadgeTemplate[]> {
-  const response = await apiFetch('/badge-templates?status=ACTIVE');
-  const data = await handleResponse<BadgeTemplate[] | BadgeTemplateListResponse>(response);
+  const data = await apiFetchJson<BadgeTemplate[] | BadgeTemplateListResponse>(
+    '/badge-templates?status=ACTIVE'
+  );
   return Array.isArray(data) ? data : data.data || [];
 }
 

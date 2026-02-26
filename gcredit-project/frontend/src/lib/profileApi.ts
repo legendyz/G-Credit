@@ -5,7 +5,7 @@
  * Covers: GET/PATCH /auth/profile, POST /auth/change-password
  */
 
-import { apiFetch } from './apiFetch';
+import { apiFetch, apiFetchJson } from './apiFetch';
 
 export interface ProfileData {
   id: string;
@@ -27,18 +27,9 @@ export interface ProfileData {
   } | null;
 }
 
-async function handleResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Unknown error' }));
-    throw new Error(error.message || `HTTP ${response.status}`);
-  }
-  return response.json();
-}
-
 /** GET /auth/profile */
 export async function getProfile(): Promise<ProfileData> {
-  const response = await apiFetch('/auth/profile');
-  return handleResponse<ProfileData>(response);
+  return apiFetchJson<ProfileData>('/auth/profile');
 }
 
 /** PATCH /auth/profile */
@@ -46,11 +37,10 @@ export async function updateProfile(data: {
   firstName: string;
   lastName: string;
 }): Promise<ProfileData> {
-  const response = await apiFetch('/auth/profile', {
+  return apiFetchJson<ProfileData>('/auth/profile', {
     method: 'PATCH',
     body: JSON.stringify(data),
   });
-  return handleResponse<ProfileData>(response);
 }
 
 /** POST /auth/change-password */
