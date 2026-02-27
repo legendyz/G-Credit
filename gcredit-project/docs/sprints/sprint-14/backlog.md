@@ -57,6 +57,14 @@ Deliver the TD-034 dual-dimension identity refactor — separating permission ro
 | **ADR-017** | TD-034 full architecture spec (11-step sequence) | ✅ Accepted |
 | **ADR-011** | User Management (§4.3 Rules 2-3 superseded by ADR-017) | ⚠️ Partially superseded |
 
+## Planning Artifacts
+
+| Artifact | Path | Status |
+|----------|------|--------|
+| **Version Manifest** | [version-manifest.md](version-manifest.md) | ✅ Created |
+| **Story Files** | 9 files in `sprint-14/` directory | ✅ Created |
+| **Infrastructure Inventory** | [infrastructure-inventory.md](../../setup/infrastructure-inventory.md) | ✅ Reviewed — no new resources |
+
 ---
 
 ## Wave Structure
@@ -66,33 +74,33 @@ Deliver the TD-034 dual-dimension identity refactor — separating permission ro
 
 | # | Story | Priority | Est | Depends On |
 |---|-------|----------|-----|------------|
-| 14.1 | TD-036: Fix flaky BadgeManagementPage test | HIGH | 2-4h | — |
+| 14.1 | [TD-036: Fix flaky BadgeManagementPage test](14-1-fix-flaky-badge-management-test.md) | HIGH | 2-4h | — |
 
 ### Wave 2: Role Model Refactor — Backend (Stories 14.2 — 14.6)
 *Focus: Schema migration, JWT, guards, M365 sync — ADR-017 Steps 1-8*
 
 | # | Story | Priority | Est | Depends On |
 |---|-------|----------|-----|------------|
-| 14.2 | Schema migration: remove MANAGER from enum | CRITICAL | 2h | — |
-| 14.3 | JWT payload + AuthenticatedUser + JwtStrategy update | CRITICAL | 2h | 14.2 |
-| 14.4 | ManagerGuard + @RequireManager() decorator | HIGH | 2h | 14.3 |
-| 14.5 | RolesGuard update + remove MANAGER from @Roles() decorators | HIGH | 2h | 14.3 |
-| 14.6 | M365 sync deriveRole() + user management cleanup | HIGH | 2h | 14.2 |
+| 14.2 | [Schema migration: remove MANAGER from enum](14-2-schema-migration-remove-manager.md) | CRITICAL | 2h | — |
+| 14.3 | [JWT payload + AuthenticatedUser + JwtStrategy update](14-3-jwt-payload-ismanager.md) | CRITICAL | 2h | 14.2 |
+| 14.4 | [ManagerGuard + @RequireManager() decorator](14-4-manager-guard-decorator.md) | HIGH | 2h | 14.3 |
+| 14.5 | [RolesGuard update + remove MANAGER from @Roles() decorators](14-5-rolesguard-remove-manager.md) | HIGH | 2h | 14.3 |
+| 14.6 | [M365 sync deriveRole() + user management cleanup](14-6-m365-sync-cleanup.md) | HIGH | 2h | 14.2 |
 
 ### Wave 3: Role Model Refactor — Frontend (Story 14.7)
 *Focus: Type updates, remove MANAGER references — ADR-017 Steps 9-10*
 
 | # | Story | Priority | Est | Depends On |
 |---|-------|----------|-----|------------|
-| 14.7 | Frontend types + ProtectedRoute + remove MANAGER checks | HIGH | 4h | 14.3 |
+| 14.7 | [Frontend types + ProtectedRoute + remove MANAGER checks](14-7-frontend-remove-manager.md) | HIGH | 4h | 14.3 |
 
 ### Wave 4: Testing + Design Tokens (Stories 14.8 — 14.9)
 *Focus: 6-combination test matrix, design token prep*
 
 | # | Story | Priority | Est | Depends On |
 |---|-------|----------|-----|------------|
-| 14.8 | 6-combination test matrix + regression | HIGH | 2h | 14.2-14.7 |
-| 14.9 | P1-2: Hardcoded colors → design tokens | LOW | 1h | — |
+| 14.8 | [6-combination test matrix + regression](14-8-test-matrix-6-combinations.md) | HIGH | 2h | 14.2-14.7 |
+| 14.9 | [P1-2: Hardcoded colors → design tokens](14-9-design-tokens-prep.md) | LOW | 1h | — |
 
 ---
 
