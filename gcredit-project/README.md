@@ -436,6 +436,10 @@ Remove-Item -Recurse -Force backend\.git
 - **Sprint 12:** ✅ v1.2.0 Release — Management UIs & Evidence Unification (8/8 stories, 3 waves, 1,549 tests)
 - **Sprint 12.5:** ✅ v1.2.1 Release — Deferred Items Cleanup (2/2 stories, 1,593 tests)
 - **Sprint 13:** ✅ v1.3.0 Release — Azure AD SSO + Session Management (8/8 stories, 4 waves, 1,708 tests)
+- **Sprint 14:** 🔜 Planned — Role Model Refactor + Quick Wins (TD-034 dual-dimension identity, TD-036 flaky test fix, ~24h)
+- **Sprint 15:** 🔜 Planned — UI Overhaul + Dashboard Composite View (TD-035 permission stacking, full UI polish, ~37h)
+- **Sprint 16:** 🔜 Planned — Fine-Grained RBAC L1 + Invite-to-Claim (Issuer template ownership, external recipients, ~16h)
+- **Phase 4 Pilot** after Sprint 16 completion
 
 ## 📝 License
 

@@ -412,7 +412,13 @@ _bmad-output/
 | Post-MVP Audit | 1 day | 6 comprehensive audits (PRD, Arch, Security, CQ, UX) | ✅ COMPLETE (2026-02-11, 6 reports, ~2,000 lines) |
 | → Sprint 11 | 7 days | Security Hardening + Code Quality + Feature Polish | ✅ COMPLETE (2026-02-12→02-18, 25/25 stories, 7 waves, 1,307 tests, UAT 152/153 PASS, v1.1.0 Released) |
 | → Sprint 12 | 6 days | Management UIs + Evidence Unification | ✅ COMPLETE (2026-02-19→02-24, 8/8 dev stories, 3 waves, 1,549 tests, v1.2.0) |
-| Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ Pending |
+| → Sprint 12.5 | 1 day | Deferred Items Cleanup | ✅ COMPLETE (2026-02-25, 2/2 stories, 1,593 tests, v1.2.1) |
+| → Sprint 13 | 3 days | Azure AD SSO + Session Management | ✅ COMPLETE (2026-02-27, 8/8 stories, 1,708 tests, v1.3.0) |
+| **Pre-Pilot Hardening** | **~3 sprints** | **Role Refactor + UI Polish + RBAC** | **🔜 Planning** |
+| → Sprint 14 | TBD | Role Model Refactor + Quick Wins (~24h) | 🔜 Planned |
+| → Sprint 15 | TBD | UI Overhaul + Dashboard Composite View (~37h) | 🔜 Planned |
+| → Sprint 16 | TBD | Fine-Grained RBAC L1 + Invite-to-Claim (~16h) | 🔜 Planned |
+| Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ After Sprint 16 |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
 
@@ -1647,39 +1653,77 @@ Sprint 0-2 established this pattern:
    
    **Sprint Docs:** backlog.md, sprint-status.md, retrospective.md
 
-24. 🔜 **Remaining Backlog (Post-Sprint 13)**
+24. 🔜 **Sprint 14: Role Model Refactor + Quick Wins** (Planned)
    
-   **P2 — Feature & Quality:**
-   - FEAT-004 / TD-034: Role model refactor — fine-grained permissions (~18h)
-   - TD-035: Dashboard composite view — permission stacking (~18h, depends on TD-034)
-   - FEAT-009: Invite-to-Claim (External Email Recipients) — ~8h
+   **Sprint Goal:** Architecture-first — land the role model refactor before UI changes to avoid rework.
+   **Estimated Effort:** ~24h
+   
+   **Stories:**
+   - TD-036: Fix flaky BadgeManagementPage test (2-4h) — CI reliability quick win
+   - TD-034: Role Model Refactor — Dual-Dimension Identity (~18h)
+     - Schema migration: remove MANAGER from UserRole enum (~2h)
+     - Backend RBAC guards: `role === 'MANAGER'` → `directReportsCount > 0` / JWT `isManager` (~6h)
+     - JWT token: add `isManager: boolean` claim (~2h)
+     - M365 sync: role derivation update (~3h)
+     - Frontend: RoleBadge combined tags, route guards (~4h)
+     - Audit log migration (~1h)
+   - P1-2: Hardcoded colors → design tokens (1h) — UI infrastructure prep
+
+25. 🔜 **Sprint 15: UI Overhaul + Dashboard Composite View** (Planned)
+   
+   **Sprint Goal:** Visual polish + Dashboard permission stacking on new role model.
+   **Estimated Effort:** ~37h
+   **Dependencies:** Sprint 14 (TD-034) must be complete.
+   
+   **Stories:**
+   - TD-035: Dashboard Composite View — Permission Stacking (~18h)
+     - Dashboard layout: tabbed/sectioned composite view (~8h)
+     - Backend: permission-based API checks (~3h)
+     - Navigation: sidebar combined menu per effective permissions (~3h)
+     - Testing: all 6 role combinations (~4h)
+   - UI Polish (all remaining items, ~18h):
+     - P1-1: Inline styles → Tailwind (2h)
+     - P1-7: Forgot Password page (2h)
+     - P2-1/P2-2: Template + Wallet pagination (6h)
+     - P2-5: Styled delete confirmation (1h)
+     - P2-7: Emoji → Lucide icons (2h)
+     - P2-8: z-index scale (1h)
+     - P2-10: Mobile nav Issue Badge (1h)
+     - P2-11: Dirty-form guard (2h)
+     - P2-12: Template preview modes (4h)
+
+26. 🔜 **Sprint 16: Pilot Readiness — Fine-Grained RBAC + Invite-to-Claim** (Planned)
+   
+   **Sprint Goal:** Permission fine-tuning + external recipients — last sprint before Phase 4 Pilot.
+   **Estimated Effort:** ~16h
+   
+   **Stories:**
+   - F-1 Level 1: Fine-Grained RBAC — Issuer template ownership on issuance (~8h)
+     - Issuer can only issue badges using templates they created
+     - Admin unrestricted (can use any template)
+     - Backend guard + frontend template list filtering
+   - FEAT-009: Invite-to-Claim (External Email Recipients) (~8h)
+     - Send badge claim invitations to external email addresses
+     - JIT recipient account creation on claim
+   
+   **After Sprint 16 → Phase 4: Pilot Deployment**
+
+27. 📋 **Remaining Backlog (Post-Sprint 16 / Post-Pilot)**
+   
+   **P2 — Feature:**
    - TD-030: LinkedIn Dynamic OG Meta Tags — 4-6h
    - TD-006: Teams Channel Permissions — external blocker (Bot Framework / Webhook)
    
-   **P2 — UI Polish (batchable ~19h):**
-   - P1-1: Inline styles → Tailwind (2h)
-   - P1-2: Hardcoded colors → design tokens (1h)
-   - P1-7: Forgot Password page (2h)
-   - P2-1/P2-2: Template + Wallet pagination (6h)
-   - P2-5: Styled delete confirmation (1h)
-   - P2-7: Emoji → Lucide icons (2h)
-   - P2-8: z-index scale (1h)
-   - P2-10: Mobile nav Issue Badge (1h)
-   - P2-11: Dirty-form guard (2h)
-   - P2-12: Template preview modes (4h)
-   
    **P3 — Nice to Have:**
    - TD-027: Playwright Visual Regression in CI
-   - TD-002: Badge Issuance Tests Update
-   - TD-003: metadataHash Index
-   - TD-004: Baked Badge Caching
-   - TD-016: Async Bulk Processing (Redis + Bull Queue)
+   - TD-004: Baked Badge Caching tests
+   - TD-016: Async Bulk Processing (Redis + Bull Queue, 8h)
    - TD-031: Time-Based Milestone Metrics (~17h)
    - TD-032: M365 Sync Performance at Scale (~18h)
    - TD-033: Manager Delegation (~19h)
    
    **Future Enhancements (pending PO/Architect decision):**
-   - F-1: Fine-Grained RBAC (8-60h, 3 levels)
+   - F-1 Levels 2-3: Recipient scope + Data isolation (extends Level 1)
    - F-2: Config Lifecycle Management (28-44h, 2 phases)
    - F-3: Multi-tenant / Data Isolation (16-120h, 3 paths)
    - F-4: AI Agent 对话式交互层 (3-10 days, 3 tiers)
