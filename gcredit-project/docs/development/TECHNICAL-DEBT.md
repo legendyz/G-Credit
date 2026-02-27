@@ -1,271 +1,302 @@
 # Technical Debt Tracking
 
-**Last Updated:** 2026-01-28  
-**Status:** Active
+**Last Updated:** 2026-02-27 (Sprint 13 closeout)  
+**Status:** Active  
+**Version:** v1.3.0  
+**Codebase Health:** tsc 0 errors (BE+FE) | ESLint 0 errors + 0 warnings (BE+FE) | npm audit 0 vulnerabilities (prod)
 
-This document tracks known technical debt across the G-Credit project. Items are prioritized and linked to relevant issues/sprints for future resolution.
-
----
-
-## 🔴 High Priority
-
-### TD-001: E2E Test Suite Isolation Issues
-
-**Identified:** Sprint 5 (2026-01-28)  
-**Impact:** High - Tests fail when run in parallel  
-**Effort:** Medium (8-12 hours)
-
-**Description:**
-
-E2E test suites experience race conditions and database conflicts when run concurrently:
-
-1. **Foreign Key Constraint Violations** in `afterAll()` cleanup
-   - `badge-verification.e2e-spec.ts` fails on `badgeTemplate.deleteMany()`
-   - Error: `Foreign key constraint violated on badges_templateId_fkey`
-   - Root cause: Multiple test suites deleting shared data simultaneously
-
-2. **Cleanup Order Dependencies**
-   - Tests must delete in order: evidenceFiles → badges → badgeTemplates → users
-   - Current cleanup doesn't respect foreign key cascade order
-
-3. **Test Data Contamination**
-   - Tests share database state when run in parallel
-   - `badge-integrity.e2e-spec.ts` test expects badge but finds null after cleanup
-
-**Impact on Sprint 5:**
-- All new Story 6.x tests pass individually ✅
-- Full test suite has 13 failed tests due to concurrency issues
-- Functional code is correct; only test infrastructure affected
-
-**Reproduction:**
-```bash
-npm run test:e2e  # Fails with FK violations and timeouts
-npm run test:e2e -- --testNamePattern="Story 6.4"  # Passes ✅
-```
-
-**Proposed Solutions:**
-
-**Option A: Sequential Test Execution** (Quick fix - 2h)
-- Update `test/jest-e2e.json` with `maxWorkers: 1`
-- Pros: Immediate fix, no test changes
-- Cons: Slower CI/CD pipeline
-
-**Option B: Test Database Transactions** (Proper fix - 8h)
-- Wrap each test suite in database transaction
-- Rollback after each suite instead of manual cleanup
-- Pros: True isolation, faster execution
-- Cons: Requires refactoring all E2E tests
-
-**Option C: Test Data Factory** (Best practice - 12h)
-- Implement factory pattern for test data creation
-- Use unique prefixes/UUIDs per test suite
-- Cascade delete helper utility
-- Pros: Robust, maintainable, parallel-safe
-- Cons: More upfront work
-
-**Recommended:** Option B (database transactions) + Option C (factory pattern) in Sprint 6
-
-**Files Affected:**
-- `test/badge-verification.e2e-spec.ts`
-- `test/badge-integrity.e2e-spec.ts`
-- `test/badge-issuance.e2e-spec.ts`
-- `test/badge-templates.e2e-spec.ts`
-- `test/baked-badge.e2e-spec.ts`
-
-**Workaround:**
-Use `--testNamePattern` to run test suites individually until fixed.
+This document tracks known technical debt across the G-Credit project. Items are prioritized and linked to relevant sprints for resolution.
 
 ---
 
-### TD-002: Badge Issuance E2E Test Regressions
+## Summary
 
-**Identified:** Sprint 5 (2026-01-28)  
-**Impact:** Medium - Some existing tests fail after metadataHash addition  
-**Effort:** Small (2-4 hours)
-
-**Description:**
-
-After implementing Story 6.5 (metadata integrity), some Sprint 3/4 badge issuance tests fail:
-
-**Failing Tests:**
-1. `POST /api/badges/:id/claim` - 400 instead of 201 (2 tests)
-2. `POST /api/badges/:id/claim` - Expired token test has Prisma validation error
-3. `GET /api/badges/my-badges` - 401 unauthorized (2 tests)
-4. `GET /api/badges/issued` - 404 instead of 201 (2 tests)
-5. `POST /api/badges/:id/revoke` - 404 instead of 200 (2 tests)
-6. `GET /api/badges/:id/assertion` - 404 instead of 200/410 (2 tests)
-7. `POST /api/badges/bulk` - 0 successful instead of expected counts (2 tests)
-
-**Root Causes:**
-
-1. **Test Setup Issues**
-   - Some tests don't properly create badge data before assertions
-   - Missing `verificationId` or `metadataHash` in manually created badges
-
-2. **Timing/Race Conditions**
-   - Tests running before badge issuance completes
-   - Async metadataHash generation not awaited properly
-
-3. **Data Cleanup Conflicts**
-   - Same issue as TD-001, affecting these tests too
-
-**Impact:**
-- New Sprint 5 features work correctly ✅
-- Old tests need updating to match new badge creation flow
-- No production functionality affected
-
-**Proposed Solution:**
-- Review failing tests one by one
-- Update test data setup to include `verificationId` and `metadataHash`
-- Ensure proper async/await in badge creation steps
-- Add missing badges in test setup where needed
-
-**Priority:** Medium - Should fix before Sprint 6 to prevent technical debt accumulation
-
-**Files Affected:**
-- `test/badge-issuance.e2e-spec.ts` (14 failing tests)
+| Category | Count | Items |
+|----------|-------|-------|
+| ✅ Resolved | 22 | TD-001, 002, 003, 013, 014, 015, 016b, 017, 018, 019, 020, 021, 022, 023, 024, 025, 028, 029 + lodash, ESLint regression, Prisma |
+| ⏸️ External Blocker | 1 | TD-006 |
+| 📋 Deferred (trigger-based) | 6 | TD-005, 016, 030, 031, 032, 036 |
+| 📋 Deferred (architecture) | 3 | TD-033, 034, 035 |
+| 📋 Process Improvement | 2 | TD-026, 027 |
+| 🔍 Track | 2 | TD-004, 037 |
 
 ---
 
-## 🟡 Medium Priority
+## 📋 Open Items
 
-### TD-003: Badge Template Image Validation Enhancement
+### ⏸️ External Blocker
 
-**Identified:** Sprint 2  
-**Impact:** Low - Workaround exists  
-**Effort:** Small (2 hours)
+#### TD-006: Teams Channel Permissions
 
-**Description:**
+**Identified:** Sprint 10 | **Severity:** Medium | **Effort:** 1 day (admin approval)
 
-Current badge template image validation only checks size (128-2048px). Additional validations needed:
+**Issue:** 4 Teams integration tests skipped. Requires tenant admin to approve `ChannelMessage.Send` Graph API permission.
 
-**Missing Validations:**
-- File format verification (only PNG/JPEG/SVG allowed)
-- File size limit (currently unlimited, should be <5MB)
-- Aspect ratio check (should be square or within 1:1.2 ratio)
-- Color profile validation (sRGB recommended)
+**Impact:** Badge sharing via Teams channel not functional. Email sharing works as fallback.
 
-**Current Workaround:**
-- Azure Blob Storage enforces some limits
-- Frontend validation catches most issues
-- Manual admin review for edge cases
+**Workaround:** Teams tab hidden in UI (commented out with TD-006 references).
 
-**Proposed Solution:**
-- Add `sharp` metadata inspection in `StorageService.uploadBadgeImage()`
-- Implement comprehensive validation DTO
-- Return detailed error messages
+**Files with TD-006 markers:**
+- `frontend/src/components/BadgeShareModal/BadgeShareModal.tsx` (tab config)
+- `frontend/src/components/BadgeShareModal/BadgeShareModal.test.tsx`
+- `frontend/src/components/BadgeDetailModal/BadgeAnalytics.tsx`
 
-**Priority:** Medium - Nice to have, not blocking
+**Testing:** See [SKIPPED-TESTS-TRACKER.md](../testing/SKIPPED-TESTS-TRACKER.md) for 4 skipped test details.
 
-**Related:** Sprint 2, Story 3.2
+**Resolution:** Awaits tenant admin action — not a code change.
 
 ---
 
-## 🟢 Low Priority
+### 📋 Deferred (Trigger-Based)
 
-### TD-004: Test Coverage for Baked Badge Caching
+#### TD-005: Assertion Hash Backward Compatibility Script
 
-**Identified:** Sprint 5 (2026-01-28)  
-**Impact:** Low - Feature works, just needs more tests  
-**Effort:** Small (4 hours)
+**Identified:** Sprint 5 | **Severity:** Low | **Effort:** 2 hours
 
-**Description:**
+**Issue:** Badges created before Story 6.5 lack `metadataHash`. Need backfill script to compute hash from existing `assertionJson`.
 
-Baked badge generation (Story 6.4) is functional but lacks comprehensive caching tests:
+**Trigger:** Before production deployment or when hash-based integrity verification is enforced on legacy badges.
 
-**Missing Test Coverage:**
-- Cache hit/miss scenarios
-- Cache invalidation on badge revocation
-- Cache expiry behavior
-- Concurrent generation requests
-- Error handling for corrupted cache
-
-**Current State:**
-- Basic functionality tested ✅
-- HTTP authentication tested ✅
-- Integration tests for authorization ✅
-- Cache behavior not explicitly tested ❌
-
-**Proposed Solution:**
-- Add dedicated test suite `baked-badge-caching.spec.ts`
-- Mock Azure Blob Storage responses
-- Test cache behavior under load
-
-**Priority:** Low - Enhancement for future sprint
+**Status:** No script exists yet.
 
 ---
 
-## 📋 Backlog
+#### TD-016: Async Bulk Processing
 
-### TD-005: Assertion Hash Backward Compatibility Script
+**Identified:** Sprint 9 | **Severity:** Low | **Effort:** 8 hours
 
-**Identified:** Sprint 5 (2026-01-28)  
-**Impact:** Low - Only affects old badges  
-**Effort:** Small (2 hours)
+**Issue:** Bulk badge issuance limited to 20 badges synchronously.
 
-**Description:**
+**Plan:** Add Redis + Bull Queue for >20 badge async processing.
 
-Badges created before Story 6.5 don't have `metadataHash` populated. Need backfill script to:
+**Trigger:** When user feedback validates need for >20 badges per batch.
 
-1. Query all badges where `metadataHash IS NULL`
-2. Compute hash from existing `assertionJson`
-3. Update badge with computed hash
+**Note:** TD-016 (Dashboard JSON display) was separately resolved by Sprint 12 Story 12.7.
 
-**Script Location:** `backend/src/badge-issuance/scripts/backfill-metadata-hash.ts`
+---
 
-**Status:** Partially implemented (code exists in backlog.md but not as runnable script)
+#### TD-030: LinkedIn Dynamic OG Meta Tags
 
-**Proposed Solution:**
-- Create NestJS command script using `@nestjs/command`
-- Add to deployment checklist for production migration
-- Run once after Story 6.5 deployment
+**Identified:** Sprint 11 | **Severity:** P2 | **Effort:** 4-6 hours
 
-**Priority:** Low - Can run when convenient, no user impact
+**Issue:** LinkedIn crawler gets static generic OG meta tags for all `/verify/:id` share links — all previews show identical card.
+
+**Root Cause:** SPA with no SSR; LinkedIn bot doesn't execute JavaScript.
+
+**Plan:** Backend middleware detecting crawler User-Agent and returning pre-rendered HTML with dynamic `og:title`, `og:description`, `og:image`.
+
+---
+
+#### TD-031: Time-Based Milestone Metrics
+
+**Identified:** Sprint 12 | **Severity:** P3 | **Effort:** ~17 hours
+
+**Issue:** Milestone engine supports `badge_count` and `category_count` only. Missing:
+1. **Time Window Filter** — "Earn N badges within M days" (~4h)
+2. **Streak** — "Earn badges in N consecutive months" (~8h)
+3. **Tenure** — "N days since first badge / account creation" (~5h)
+
+**Architecture Impact:** Minimal — leverages existing `metric + scope + threshold` model and JSON trigger column. No Prisma schema migration needed.
+
+**Suggested Phasing:** Time Window + Tenure (9h, one story), Streak (8h, one story).
+
+**Reference:** `docs/sprints/sprint-12/milestone-engine-design-notes-20260221.md`
+
+---
+
+#### TD-032: M365 Sync Performance at Scale
+
+**Identified:** Sprint 12 | **Severity:** P3 | **Effort:** ~18 hours
+
+**Issue:** FULL sync processes users serially (~1.2s/user via 2 Graph API calls each). 17 users = ~20s; 10,000 users = ~3-4 hours + Graph API throttling.
+
+**Partial Fix (Sprint 12):** GROUPS_ONLY sync already optimized — batch group member queries (`81e6b3c`).
+
+**Remaining Optimizations:**
+1. Batch Group Query for FULL sync (~2h)
+2. Concurrent Processing with p-limit (~3h)
+3. Graph `$batch` API for manager queries (~4h)
+4. Delta Query (`/users/delta`) (~6h)
+5. Redis caching (~3h, ties into TD-016)
+
+**Trigger:** User count exceeds 500 OR FULL sync takes >2 minutes.
+
+**Suggested Phasing:** Phase 1 at 200+ users (5h), Phase 2 at 1000+ users (10h), Phase 3 with TD-016 (3h).
+
+---
+
+#### TD-036: Flaky Frontend Test (BadgeManagementPage)
+
+**Identified:** Sprint 13 closeout (2026-02-27) | **Severity:** Low | **Effort:** 2-4 hours
+
+**Issue:** `BadgeManagementPage.test.tsx` test "should show Revoke button for PENDING badges when ADMIN" fails intermittently when running full frontend test suite, but passes consistently in isolation.
+
+**Symptoms:** Pre-push hook fails ~1 in 3 pushes; retry succeeds.
+
+**Possible Causes:**
+- Test isolation issue in Vitest worker scheduling
+- Shared mock state leaking between test files
+- `getAllByRole` with `toBeGreaterThanOrEqual(2)` assertion masking subtle DOM timing
+
+**Workaround:** Retry push (or `--no-verify`).
+
+**File:** `frontend/src/pages/admin/BadgeManagementPage.test.tsx`
+
+---
+
+### 📋 Deferred (Architecture)
+
+#### TD-033: Manager Delegation (Acting Manager)
+
+**Identified:** Sprint 12 | **Severity:** P3 | **Effort:** ~19 hours
+
+**Issue:** No mechanism for a manager to delegate responsibilities during absence.
+
+**Scope:** Schema (2h) → Backend API (4h) → Permission Guards (4h) → Frontend UI (6h) → Audit logging (3h)
+
+**Trigger:** When organizational workflows require manager absence coverage.
+
+---
+
+#### TD-034: Role Model Refactor — Dual-Dimension Identity
+
+**Identified:** Sprint 12 | **Severity:** P2 | **Effort:** ~18 hours
+
+**Issue:** Single `role` enum conflates organization identity (Manager/Employee) with permission role (Admin/Issuer). Makes role combinations impossible.
+
+**Proposed:** Remove MANAGER from enum; derive manager status from `directReportsCount > 0` + JWT `isManager` claim.
+
+**Scope:** Schema migration (2h) → RBAC guards (6h) → JWT claims (2h) → M365 sync (3h) → Frontend (4h) → Audit migration (1h)
+
+**Trigger:** When role combination requirements become blocking for user workflows.
+
+**Dependencies:** TD-035 should follow.
+
+---
+
+#### TD-035: Dashboard Composite View — Permission Stacking
+
+**Identified:** Sprint 12 | **Severity:** P2 | **Effort:** ~18 hours
+
+**Issue:** Dashboard routing is mutually exclusive per role. With dual-dimension identity, users should see stacked sections.
+
+**Dependencies:** TD-034 must be completed first.
+
+---
+
+### 📋 Process Improvement
+
+#### TD-026: SM Audit Triage Workflow
+
+**Identified:** Sprint 11 | **Severity:** Medium | **Effort:** 1 hour
+
+**Issue:** Audit recommendations not systematically converted to stories.
+
+**Plan:** SM agent `[AT]` menu item.
+
+---
+
+#### TD-027: Playwright Visual Regression in CI
+
+**Identified:** Sprint 11 | **Severity:** Low | **Effort:** 4 hours
+
+**Issue:** No automated visual regression testing.
+
+**Plan:** Playwright screenshot comparison in CI.
+
+---
+
+### 🔍 Track (Low Priority, Enhancement)
+
+#### TD-004: Test Coverage for Baked Badge Caching
+
+**Identified:** Sprint 5 | **Severity:** Low | **Effort:** 4 hours
+
+**Issue:** Baked badge generation functional but lacks comprehensive caching tests (hit/miss, invalidation, expiry, concurrency, error handling).
+
+---
+
+#### TD-037: Dark Mode Support
+
+**Identified:** Sprint 13 | **Severity:** Low | **Effort:** TBD
+
+**Issue:** Single TODO in codebase: `MicrosoftSsoButton.tsx` line 8 — `// TODO: dark mode variant`. Full dark mode would require design system-wide theming.
+
+---
+
+## ✅ Resolved Items
+
+| ID | Description | Resolved | Sprint | Notes |
+|----|-------------|----------|--------|-------|
+| TD-001 | E2E Test Suite Isolation Issues | ✅ | Sprint 8 | Schema-based isolation + test data factories (`UserFactory`, `BadgeTemplateFactory`, `BadgeFactory`) + `maxWorkers: 4`. `setupE2ETest()` helper creates per-suite PostgreSQL schema. |
+| TD-002 | Badge Issuance E2E Test Regressions | ✅ | Sprint 8 | Resolved by schema isolation (TD-001 fix). Tests no longer share database state. |
+| TD-003 | Badge Template Image Validation | ✅ | Sprint 8 | `sharp` metadata inspection + magic-byte validation (SEC-005) + dimension bounds (128-2048px) + MIME whitelist (PNG/JPG) + 2MB file size limit + aspect ratio checks in `blob-storage.service.ts`. |
+| TD-009 | Milestone Admin UI | ✅ | Sprint 12 | Full admin UI with card grid, dynamic form per milestone type, active/inactive toggle. Story 12.4. |
+| TD-010 | Evidence System Unification | ✅ | Sprint 12 | Two-phase: EvidenceFile model + Prisma migration (12.5) + Unified UI (12.6). |
+| TD-013 | Frontend Bundle Code Splitting | ✅ | Sprint 9 | Route-based code splitting: 707 KB → 235 KB (66.8% reduction). Story 8.3. |
+| TD-014 | Dual Email System | ✅ | Sprint 9 | nodemailer removed, `EmailService` delegates to `GraphEmailService`. Story 8.4. |
+| TD-015 | ESLint Type Safety | ✅ | Sprint 9 | 1303 → 282 warnings (78% reduction). Standalone story. |
+| TD-016b | Dashboard JSON Display | ✅ | Sprint 12 | `formatAuditDescription()` + `buildActivityDescription()` replace raw JSON. Story 12.7. |
+| TD-017 | Skills UUID Fallback + tsc Errors | ✅ | Sprint 10/12 | 114 tsc errors fixed (Sprint 10). `useSkillNamesMap()` + `UNKNOWN_SKILL_LABEL` (Sprint 12, Story 12.8). |
+| TD-018 | Code TODO Cleanup | ✅ | Sprint 10 | 14 TODO/FIXME markers resolved. `apiConfig.ts` centralization. Story 10.3. |
+| TD-019 | Frontend ESLint Cleanup | ✅ | Sprint 10 | 49 errors + 21,363 warnings → 0/0. 135 files. CI `--max-warnings=0` gate. Story 10.3b. |
+| TD-020 | CI E2E Missing Frontend Dependency | ✅ | Sprint 10 | `e2e-tests` job now depends on `frontend-tests`. Story 10.4. |
+| TD-021 | react-hooks Inline Suppressions | ✅ | Sprint 10 | Project-level override, 9 inline suppressions removed. Story 10.4. |
+| TD-022 | API Path Mismatches | ✅ | Sprint 10 | 5 critical path mismatches fixed: 4 controller `api/` prefixes + 3 frontend path bugs + 8 hardcoded URL unifications. Story 10.3c. |
+| TD-023 | CI Chinese Character Gate | ✅ | Sprint 11 | CI grep gate + `scripts/check-chinese.sh`. Story 11.21. |
+| TD-024 | CI console.log Gate | ✅ | Sprint 11 | ESLint `no-console: 'error'` in both configs. Story 11.21. |
+| TD-025 | Husky Pre-commit Hooks | ✅ | Sprint 11 | Husky v9 + lint-staged pre-commit + pre-push mirroring CI. Story 11.22. |
+| TD-028 | Data Contract Alignment | ✅ | Sprint 11 | 14 API-to-UI data contract issues fixed. Story 11.24. |
+| TD-029 | Decorator Metadata Guard Tests | ✅ | Sprint 11 | `Reflect.getMetadata()` tests for `@Public()` and `@Roles()`. Story 11.24. |
+
+### Other Resolved Items
+
+| Issue | Status | Notes |
+|-------|--------|-------|
+| lodash Prototype Pollution | ✅ Risk Accepted | ADR-002. Dev-only exposure, CVSS 6.5. |
+| Prisma version locked at 6.x | 🔒 Intentional | Prisma 7 breaking changes deferred to post-MVP. |
+| ESLint Warning Regression (Sprint 9→10) | ✅ Sprint 10 | 423 → 0 warnings. Stories 10.2 + 10.3b. |
 
 ---
 
 ## 📊 Technical Debt Metrics
 
-### Sprint 5 Summary
+### Current State (Post-Sprint 13)
 
 | Category | Count | Estimated Effort |
 |----------|-------|------------------|
-| High Priority | 2 | 10-16 hours |
-| Medium Priority | 1 | 2 hours |
-| Low Priority | 2 | 6 hours |
-| **Total** | **5** | **18-24 hours** |
+| Resolved | 22 | — |
+| External Blocker | 1 | 1 day (admin) |
+| Deferred (trigger-based) | 6 | ~54 hours |
+| Deferred (architecture) | 3 | ~55 hours |
+| Process Improvement | 2 | 5 hours |
+| Track (enhancement) | 2 | ~6 hours |
+| **Open Total** | **14** | **~120 hours** |
 
-### Debt Ratio
+### Codebase Health Dashboard
 
-**Current Sprint Capacity:** 56 hours  
-**Technical Debt Created:** ~18-24 hours  
-**Debt Ratio:** ~35-43%
+| Metric | Backend | Frontend |
+|--------|---------|----------|
+| TypeScript Errors | 0 | 0 |
+| ESLint Errors | 0 | 0 |
+| ESLint Warnings | 0 | 0 |
+| npm audit (prod) | 0 vulnerabilities | 0 vulnerabilities |
+| Unit Tests | 914 passed (28 skipped = TD-006) | 794 passed |
+| TODO/FIXME in src | 0 | 1 (dark mode) |
 
-**Analysis:**
-- Acceptable for new feature sprint introducing complex functionality
-- Most debt is test infrastructure, not production code
-- Should address TD-001 and TD-002 in Sprint 6 to prevent accumulation
+### Debt Trend
 
----
+| Sprint | Created | Resolved | Net | Open Total |
+|--------|---------|----------|-----|------------|
+| Sprint 5 | 5 (TD-001–005) | 0 | +5 | 5 |
+| Sprint 8 | 0 | 3 (TD-001, 002, 003) | -3 | 2 |
+| Sprint 9 | 3 (TD-013, 014, 015) | 3 (TD-013, 014, 015) | 0 | 2 |
+| Sprint 10 | 6 (TD-018–022, regression) | 7 (TD-017–022, regression) | -1 | 1 |
+| Sprint 11 | 8 (TD-023–030) | 5 (TD-023–025, 028, 029) | +3 | 4 |
+| Sprint 12 | 5 (TD-031–035) | 4 (TD-009, 010, 016b, 017) | +1 | 5 |
+| Sprint 13 | 1 (TD-036) | 0 | +1 | 14* |
 
-## 🎯 Resolution Plan
-
-### Sprint 6 Recommendations
-
-1. **Week 1: Test Infrastructure** (8-10 hours)
-   - Resolve TD-001 (E2E isolation) with database transactions
-   - Implement test data factory pattern
-   
-2. **Week 2: Test Fixes** (2-4 hours)
-   - Resolve TD-002 (badge issuance test regressions)
-   - Update all failing tests to pass consistently
-
-3. **Optional Enhancements** (4-6 hours)
-   - TD-003: Image validation improvements
-   - TD-004: Baked badge caching tests
-   - TD-005: Hash backfill script
-
-**Total Estimated Resolution:** 14-20 hours (35-40% of Sprint 6 capacity)
+*\*Open = 1 external blocker + 6 deferred + 3 architecture + 2 process + 2 track*
 
 ---
 
@@ -273,38 +304,24 @@ Badges created before Story 6.5 don't have `metadataHash` populated. Need backfi
 
 ### How to Add Technical Debt
 
-When identifying new technical debt:
+1. **Assign ID:** TD-XXX (increment from TD-037)
+2. **Set priority:** Critical / High / Medium / Low / P1-P3
+3. **Estimate effort** in hours
+4. **Document:** Description, impact, root cause, proposed solution
+5. **Add to this file** AND to `project-context.md` Known Technical Issues table
+6. **Link:** Reference sprint/story, tag affected files
 
-1. **Create Entry:**
-   - Assign TD-XXX identifier (increment from last)
-   - Set priority (High/Medium/Low)
-   - Estimate effort in hours
+### Debt Prevention Checklist
 
-2. **Document:**
-   - Clear description of issue
-   - Impact on users/developers
-   - Root cause analysis
-   - Reproduction steps
-   - Proposed solutions
-
-3. **Link:**
-   - Reference related sprints/stories
-   - Link to GitHub issues (when created)
-   - Tag relevant files
-
-4. **Review:**
-   - Discuss in sprint retrospective
-   - Prioritize for next sprint
-   - Track resolution progress
-
-### Debt Prevention
-
-**Best Practices:**
-- Write tests as you develop (TDD when possible)
-- Review test isolation before committing
-- Use database transactions in E2E tests
-- Implement proper cleanup with cascade deletes
-- Run full test suite before pushing
+- [x] ESLint `--max-warnings=0` gate on both BE/FE (CI + pre-push)
+- [x] TypeScript strict mode (`noEmit` check in pre-push)
+- [x] `no-console` ESLint rule enforced
+- [x] Chinese character CI gate
+- [x] Husky pre-commit (lint-staged) + pre-push (full CI mirror)
+- [x] Schema-based E2E test isolation with data factories
+- [x] npm audit 0 vulnerabilities (prod dependencies)
+- [ ] Playwright visual regression (TD-027)
+- [ ] Audit triage workflow (TD-026)
 
 ---
 
@@ -312,9 +329,9 @@ When identifying new technical debt:
 
 | Date | Change | Author |
 |------|--------|--------|
-| 2026-01-28 | Initial technical debt tracking document created | Amelia (Dev Agent) |
-| 2026-01-28 | Added TD-001 through TD-005 from Sprint 5 | Amelia (Dev Agent) |
+| 2026-01-28 | Initial document — TD-001 through TD-005 | Amelia (Dev Agent) |
+| 2026-02-27 | Full rewrite — 35 items audited, 22 resolved, 14 open. Added codebase health metrics, debt trend, prevention checklist. | Bob (SM Agent) |
 
 ---
 
-**Next Review:** Sprint 6 Planning (2026-02-10)
+**Next Review:** Sprint 14 Planning
