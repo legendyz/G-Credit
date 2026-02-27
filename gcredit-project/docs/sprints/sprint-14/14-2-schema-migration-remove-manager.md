@@ -66,11 +66,19 @@ ALTER TYPE "UserRole" ADD VALUE 'MANAGER';
 -- To restore original role assignments, you would need a separate data restore.
 ```
 
-### Expected Test Failures (Out of Scope)
-These failures are caused by code referencing `'MANAGER'` / `UserRole.MANAGER` and will be fixed in later stories:
+### Expected Test/Compilation Failures (Out of Scope)
+These failures are caused by code referencing `'MANAGER'` / `UserRole.MANAGER` and will be fixed in later stories.
+The list below is representative — additional references may exist in other controllers, services, and DTOs:
 - `test/helpers/test-setup.ts` — `createManager` uses `UserRole.MANAGER` (→ 14.8)
 - `src/app.controller.ts` — `@Roles('MANAGER', 'ADMIN')` (→ 14.5)
 - `src/analytics/analytics.controller.ts` — `@Roles('ADMIN', 'MANAGER')` (→ 14.5)
+- `src/analytics/analytics.service.ts` — MANAGER role references (→ 14.5)
+- `src/analytics/dto/system-overview.dto.ts` — MANAGER in DTO (→ 14.5)
+- `src/badge-issuance/badge-issuance.controller.ts` — `@Roles('MANAGER', ...)` (→ 14.5)
+- `src/badge-issuance/badge-issuance.service.ts` — MANAGER logic (→ 14.5)
+- `src/badge-issuance/badge-issuance.controller.spec.ts` — test references (→ 14.8)
+- `src/admin-users/admin-users.service.ts` — multiple MANAGER references (→ 14.5)
+- `src/m365-sync/m365-sync.service.spec.ts` — manager sync tests (→ 14.6)
 
 ### Testing Standards
 - Run all backend tests after migration to verify no breakage
