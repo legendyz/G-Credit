@@ -10,9 +10,58 @@ import type { ShareStats, ShareHistoryItem } from '../../lib/badgeShareApi';
 interface BadgeAnalyticsProps {
   badgeId: string;
   isOwner: boolean; // Only show analytics if user is badge owner or issuer
+  refreshKey?: number; // Increment to force re-fetch (e.g. after sharing)
 }
 
-const BadgeAnalytics: React.FC<BadgeAnalyticsProps> = ({ badgeId, isOwner }) => {
+// Data-driven platform config — add/remove entries to control which platforms are shown
+// TD-006: Teams excluded until Graph API permissions approved
+const PLATFORM_CONFIG: {
+  key: keyof ShareStats['byPlatform'];
+  label: string;
+  icon: string;
+  colors: { bg: string; border: string; text: string; subtext: string };
+}[] = [
+  {
+    key: 'email',
+    label: 'Email',
+    icon: '📧',
+    colors: {
+      bg: 'from-green-50 to-green-100',
+      border: 'border-green-200',
+      text: 'text-green-900',
+      subtext: 'text-green-700',
+    },
+  },
+  {
+    key: 'linkedin',
+    label: 'Social',
+    icon: '🌐',
+    colors: {
+      bg: 'from-indigo-50 to-indigo-100',
+      border: 'border-indigo-200',
+      text: 'text-indigo-900',
+      subtext: 'text-indigo-700',
+    },
+  },
+  // { key: 'teams', label: 'Teams', icon: '👥', colors: { bg: 'from-purple-50 to-purple-100', border: 'border-purple-200', text: 'text-purple-900', subtext: 'text-purple-700' } },  // TD-006
+  {
+    key: 'widget',
+    label: 'Widget Copied',
+    icon: '📋',
+    colors: {
+      bg: 'from-orange-50 to-orange-100',
+      border: 'border-orange-200',
+      text: 'text-orange-900',
+      subtext: 'text-orange-700',
+    },
+  },
+];
+
+const PLATFORM_LABEL_MAP: Record<string, string> = Object.fromEntries(
+  PLATFORM_CONFIG.map((p) => [p.key, `${p.icon} ${p.label}`])
+);
+
+const BadgeAnalytics: React.FC<BadgeAnalyticsProps> = ({ badgeId, isOwner, refreshKey = 0 }) => {
   const [stats, setStats] = useState<ShareStats | null>(null);
   const [history, setHistory] = useState<ShareHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,7 +91,7 @@ const BadgeAnalytics: React.FC<BadgeAnalyticsProps> = ({ badgeId, isOwner }) => 
     };
 
     fetchAnalytics();
-  }, [badgeId, isOwner]);
+  }, [badgeId, isOwner, refreshKey]);
 
   if (!isOwner) {
     return null; // Don't show analytics to non-owners
@@ -82,24 +131,27 @@ const BadgeAnalytics: React.FC<BadgeAnalyticsProps> = ({ badgeId, isOwner }) => 
 
         {stats && !loading && (
           <>
-            {/* Share Statistics */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+            {/* Share Statistics — data-driven from PLATFORM_CONFIG */}
+            <div
+              className={`grid grid-cols-2 sm:grid-cols-${PLATFORM_CONFIG.length + 1} gap-4 mb-6`}
+            >
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
                 <div className="text-2xl font-bold text-blue-900">{stats.total}</div>
                 <div className="text-xs text-blue-700 mt-1">Total Shares</div>
               </div>
-              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
-                <div className="text-2xl font-bold text-green-900">{stats.byPlatform.email}</div>
-                <div className="text-xs text-green-700 mt-1">📧 Email</div>
-              </div>
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
-                <div className="text-2xl font-bold text-purple-900">{stats.byPlatform.teams}</div>
-                <div className="text-xs text-purple-700 mt-1">👥 Teams</div>
-              </div>
-              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-4 border border-orange-200">
-                <div className="text-2xl font-bold text-orange-900">{stats.byPlatform.widget}</div>
-                <div className="text-xs text-orange-700 mt-1">🔗 Widget</div>
-              </div>
+              {PLATFORM_CONFIG.map((platform) => (
+                <div
+                  key={platform.key}
+                  className={`bg-gradient-to-br ${platform.colors.bg} rounded-lg p-4 border ${platform.colors.border}`}
+                >
+                  <div className={`text-2xl font-bold ${platform.colors.text}`}>
+                    {stats.byPlatform[platform.key]}
+                  </div>
+                  <div className={`text-xs ${platform.colors.subtext} mt-1`}>
+                    {platform.icon} {platform.label}
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Share History Toggle */}
@@ -158,9 +210,7 @@ const BadgeAnalytics: React.FC<BadgeAnalyticsProps> = ({ badgeId, isOwner }) => 
                           <div className="flex-1">
                             <div className="flex items-center space-x-2">
                               <span className="text-sm font-medium text-gray-900">
-                                {item.platform === 'email' && '📧 Email'}
-                                {item.platform === 'teams' && '👥 Teams'}
-                                {item.platform === 'widget' && '🔗 Widget'}
+                                {PLATFORM_LABEL_MAP[item.platform] || item.platform}
                               </span>
                               {item.recipientEmail && (
                                 <span className="text-xs text-gray-500">

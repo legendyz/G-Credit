@@ -22,6 +22,7 @@ export interface ShareStats {
     email: number;
     teams: number;
     widget: number;
+    linkedin: number;
   };
 }
 
@@ -174,6 +175,15 @@ export async function getWidgetHtml(
  */
 export async function recordLinkedInShare(badgeId: string): Promise<void> {
   await apiFetch(`/badges/${badgeId}/share/linkedin`, {
+    method: 'POST',
+  });
+}
+
+/**
+ * Record widget link copy for analytics (non-blocking)
+ */
+export async function recordWidgetCopy(badgeId: string): Promise<void> {
+  await apiFetch(`/badges/${badgeId}/share/widget`, {
     method: 'POST',
   });
 }

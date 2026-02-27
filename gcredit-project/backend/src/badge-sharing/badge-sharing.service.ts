@@ -185,7 +185,10 @@ export class BadgeSharingService {
           badge.id,
           'email',
           userId,
-          { recipientEmail: dto.recipientEmail },
+          {
+            recipientEmail: dto.recipientEmail,
+            ...(dto.personalMessage ? { note: dto.personalMessage } : {}),
+          },
         );
         this.logger.log(`Recorded email share event for badge ${badge.id}`);
       } catch (analyticsError: unknown) {

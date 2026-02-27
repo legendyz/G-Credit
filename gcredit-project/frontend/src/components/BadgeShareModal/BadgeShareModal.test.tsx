@@ -50,11 +50,11 @@ describe('BadgeShareModal - LinkedIn Tab', () => {
     );
 
     const tabs = screen.getAllByRole('tab');
-    expect(tabs).toHaveLength(4);
+    // TD-006: Teams tab hidden until Graph API permissions approved
+    expect(tabs).toHaveLength(3);
     expect(tabs[0]).toHaveTextContent(/email/i);
     expect(tabs[1]).toHaveTextContent(/linkedin/i);
-    expect(tabs[2]).toHaveTextContent(/teams/i);
-    expect(tabs[3]).toHaveTextContent(/widget/i);
+    expect(tabs[2]).toHaveTextContent(/widget/i);
   });
 
   it('shows LinkedIn share panel when tab is clicked', async () => {

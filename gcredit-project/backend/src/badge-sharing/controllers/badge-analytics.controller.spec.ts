@@ -29,6 +29,7 @@ describe('BadgeAnalyticsController', () => {
       email: 6,
       teams: 5,
       widget: 4,
+      linkedin: 0,
     },
   };
 
@@ -107,6 +108,7 @@ describe('BadgeAnalyticsController', () => {
           email: 0,
           teams: 0,
           widget: 0,
+          linkedin: 0,
         },
       };
       jest.spyOn(service, 'getShareStats').mockResolvedValue(emptyStats);
