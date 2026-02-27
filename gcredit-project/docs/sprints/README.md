@@ -25,8 +25,8 @@
 | [Sprint 12](./sprint-12/) | Management UIs & Evidence Unification | ✅ Complete | 6 days | 8 stories | 1,549 tests | v1.2.0 |
 | [Sprint 12.5](./sprint-12.5/) | Deferred Items Cleanup | ✅ Complete | 1 day | 2 stories | 1,593 tests | v1.2.1 |
 | [Sprint 13](./sprint-13/) | Azure AD SSO + Session Management | ✅ Complete | 3 days | 8 stories | 1,708 tests | v1.3.0 |
-| Sprint 14 | Role Model Refactor + Quick Wins | 🔜 Planned | TBD | ~3 stories | — | v1.4.0 |
-| Sprint 15 | UI Overhaul + Sidebar + Dashboard Composite | 🔜 Planned | Extended | ~13 stories | — | v1.5.0 |
+| [Sprint 14](./sprint-14/) | Role Model Refactor + Quick Wins | 🔜 Planned | TBD | 9 stories | — | v1.4.0 |
+| [Sprint 15](./sprint-15/) | UI Overhaul + Sidebar + Dashboard Composite | 🔜 Planned | Extended | 13 stories | — | v1.5.0 |
 | Sprint 16 | Fine-Grained RBAC L1 + Pilot Readiness | 🔜 Planned | TBD | ~2-3 stories | — | v1.6.0 |
 
 ---
