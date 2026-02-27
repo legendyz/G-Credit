@@ -80,8 +80,11 @@ Claude Opus 4.6 (GitHub Copilot)
 - Strengthened `afterEach` cleanup with `vi.restoreAllMocks()` + explicit RTL `cleanup()`
 - Post-fix full suite: **10/10 pass** (794 tests each run)
 - Assertion coverage preserved: 25 tests, same assertion count, exact count is STRONGER
+- CR follow-up commit `b12876d` applied: changed to `await screen.findByRole('table')` for stronger timing robustness
+- Re-review status: **APPROVED** (see `docs/sprints/sprint-14/14-1-code-review-result.md`)
 
 ### File List
 - `frontend/src/pages/admin/BadgeManagementPage.test.tsx` — fixed flaky test + strengthened cleanup
+- `docs/sprints/sprint-14/14-1-code-review-result.md` — code review and re-review results
 
 ## Retrospective Notes
