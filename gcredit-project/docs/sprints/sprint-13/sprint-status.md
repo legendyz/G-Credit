@@ -154,7 +154,7 @@ cac0935 fix(dashboard): m365SyncLog mock in spec
 - [x] Code committed to `sprint-13/sso-session-management` branch
 - [ ] PR created for merge to main
 - [x] CHANGELOG.md updated for v1.3.0
-- [ ] Sprint retrospective notes captured
+- [x] Sprint retrospective notes captured
 
 ---
 

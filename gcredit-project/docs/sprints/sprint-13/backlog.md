@@ -373,7 +373,7 @@ Deliver enterprise-grade authentication (Azure AD SSO) and production-quality se
 - [x] Code committed to `sprint-13/sso-session-management` branch
 - [ ] PR created for merge to main
 - [x] CHANGELOG.md updated for v1.3.0
-- [ ] Sprint retrospective notes captured
+- [x] Sprint retrospective notes captured
 
 ---
 
