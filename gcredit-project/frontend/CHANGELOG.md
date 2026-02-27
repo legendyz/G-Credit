@@ -7,6 +7,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0] - 2026-02-27 (Sprint 13 — Azure AD SSO + Session Management)
+
+### Sprint 13 Summary — Enterprise SSO & Session Lifecycle
+
+**Branch:** `sprint-13/sso-session-management`
+**Stories:** 8/8 complete (4 waves) | **Target Version:** v1.3.0
+**Tests:** 794 passed (77 test files, 100% pass rate, +56 from v1.2.1)
+**UAT:** Agent 47/47 PASS + Manual M1-M6 all PASS (signed off 2026-02-27)
+
+#### Wave 1–2: Azure AD SSO (Stories 13.1–13.4)
+
+- **Login Page Dual Entry (13.4):** Complete login page rewrite with "Sign in with Microsoft" button (Microsoft brand guidelines: logo + text, white/dark variants) and email/password form below with "or sign in with email" separator. SSO callback page (`/auth/sso/callback`) handles Azure AD redirect. Auth store `loginViaSSO()` action detects SSO callback and calls `validateSession()`. All native `<input>` elements migrated to shadcn `<Input>` (P2-6). Loading states, error messages for Azure AD failures. `<MicrosoftSsoButton>` component. Responsive layout.
+- **Auth Store Enhancement:** `loginViaSSO()`, `isSsoUser` computed from user profile (`passwordHash === ''`). SSO users blocked from profile/password editing.
+
+#### Wave 3: Session Management (Stories 13.5–13.7)
+
+- **Global 401 Interceptor + Token Refresh Queue (13.5):** `apiFetch()` enhanced with 401 response interceptor. On 401 → auto-calls `POST /api/auth/refresh` → retries original request with new cookies. Promise-based refresh queue — concurrent 401s trigger single refresh request. All queued calls retry after refresh success or reject on failure. Max 1 retry per request (infinite loop prevention). Excluded paths: `/auth/login`, `/auth/refresh`, `/auth/logout`. New `ApiError` class with `path`, `method`, `statusText` fields. 28 tests.
+- **Idle Timeout with Warning Modal (13.6):** `useIdleTimeout()` custom hook in `ProtectedRoute`. Tracks `mousemove`, `keydown`, `click`, `scroll`, `touchstart` events. 30-min idle → auto-logout with "Session expired due to inactivity" toast. 5-min warning modal with live countdown (`mm:ss`). "Continue Working" button resets timer. `isWarningRef` prevents activity events during warning state. Configurable timeouts via constants. Only active when `isAuthenticated`. `<SessionWarningModal>` component. 12 tests.
+- **API Client Cleanup (13.7):** `axios` removed from `package.json`. 21 inline `apiFetch()` calls migrated to API library functions + TanStack Query hooks. Pages migrated: `DashboardPage`, `IssueBadgePage`, `VerifyBadgePage`, `ClaimBadgePage`, `BadgeManagementPage`, `AdminDashboardPage`, and more. All API calls now route through centralized `apiFetch()` for automatic 401 handling. Removed all `localStorage` token reads.
+
+#### Wave 4: UAT (Story 13.8)
+
+- **Integration Testing + UAT (13.8):** Full regression + feature testing. Agent-driven: 47/47 API tests across 13 phases. Manual browser: 6 phases (M1–M6) covering SSO login, JIT provisioning, password login, session management, admin features, badge lifecycle.
+
+#### UAT Bug Fixes
+
+- **M3.1 Login Error Flash (3eeb139):** Login error message briefly visible before redirect on successful login. Fixed `apiFetch` excluded paths to include `/auth/login`.
+- **M4.2 Idle Timeout Mouse Reset (3eeb139):** Mouse movement during warning modal incorrectly reset idle timer. Added `isWarningRef` guard in `handleActivity()` to block events during warning state.
+- **M6.2 Badge Share Auto-Refresh (299a7b8):** Share analytics not refreshing after successful share. Added `refreshKey` prop to `BadgeAnalytics`, `analyticsRefreshKey` state incremented on share success.
+- **Data-Driven Tab Refactor (299a7b8):** `BadgeShareModal` tabs refactored from hardcoded buttons to `TAB_CONFIG` array. Teams tab commented out with TD-006 reference.
+- **Data-Driven Analytics Cards (299a7b8):** `BadgeAnalytics` platform stats refactored from hardcoded cards to `PLATFORM_CONFIG` array. Added Widget Copied + Social (LinkedIn) stats.
+- **Widget Share Recording (299a7b8):** `handleCopyWidgetLink` now calls `recordWidgetCopy()` API function. Copy Widget Link tracks analytics.
+
+#### Additional Features
+
+- **SSO Profile Protection (6079606):** SSO users (`isSsoUser`) see disabled profile fields and hidden password change section. Computed from auth store user profile.
+- **Admin Dashboard Notifications (fc386e7):** Dual-trigger notification for M365 sync recommendations. Time-based (>24h since last sync) + mini-sync gap detection (SSO logins without full sync). 10-minute buffer deduplication.
+
+#### New/Updated Components
+
+| Component | Description |
+|-----------|-------------|
+| `MicrosoftSsoButton` | Microsoft branded SSO login button |
+| `SsoCallbackPage` | Azure AD redirect callback handler |
+| `SessionWarningModal` | Idle timeout warning with countdown |
+| `useIdleTimeout` | Custom hook for idle detection |
+| `BadgeShareModal` (updated) | Data-driven `TAB_CONFIG`, `onShareSuccess` callback |
+| `BadgeAnalytics` (updated) | Data-driven `PLATFORM_CONFIG`, `refreshKey` prop |
+| `BadgeDetailModal` (updated) | `analyticsRefreshKey` state for share refresh |
+
+---
+
 ## [1.2.1] - 2026-02-25 (Sprint 12.5 — Deferred Items Cleanup)
 
 ### Sprint 12.5 Summary — Deferred Items from Sprint 12

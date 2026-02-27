@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0] - 2026-02-27 (Sprint 13 — Azure AD SSO + Session Management)
+
+### Sprint 13 Summary — Enterprise SSO & Session Lifecycle
+
+**Branch:** `sprint-13/sso-session-management`
+**Stories:** 8/8 complete (4 waves) | **Target Version:** v1.3.0
+**Tests:** 914 passed (100% pass rate, +59 from v1.2.1)
+**UAT:** Agent 47/47 PASS + Manual M1-M6 all PASS (signed off 2026-02-27)
+
+#### Wave 1: Azure AD SSO — Backend (Stories 13.1–13.3)
+
+- **Azure AD SSO Strategy + Callback Endpoints (13.1):** `AzureAdSsoService` using `@azure/msal-node` ConfidentialClientApplication for Authorization Code Flow with PKCE. `GET /api/auth/sso/login` redirects to Azure AD authorize URL. `GET /api/auth/sso/callback` exchanges code for tokens, extracts `oid`/email/name from ID token claims. Reuses `setAuthCookies()` for consistent httpOnly cookie issuance. Environment config: `AZURE_SSO_CLIENT_ID`, `AZURE_SSO_REDIRECT_URI`, `AZURE_SSO_SCOPES`.
+- **JIT User Provisioning (13.2):** First SSO login auto-creates user (`azureId`, email, name, `passwordHash=''`, `role=EMPLOYEE`). Immediately invokes `syncUserFromGraph()` for department/jobTitle/manager/role. `INITIAL_ADMIN_EMAIL` env var bootstrap for first admin. DB unique constraint on `azureId` prevents race conditions. Graceful fallback if Graph sync fails.
+- **Login-Time Mini-Sync (13.3):** Returning SSO users get profile refresh on every login. Parallel Graph API calls (`/users/{oid}`, `/memberOf`, `/manager`). `jobTitle` sync added. 5-minute cooldown prevents excessive syncs. Role demotion support when Security Group membership changes. `lastSyncedAt` timestamp updated.
+
+#### Wave 2: Azure AD SSO — Frontend (Story 13.4)
+
+- **Login Page Dual Entry (13.4):** "Sign in with Microsoft" button following Microsoft brand guidelines (logo + text). Email/password form below with "or sign in with email" separator. SSO callback page (`/auth/sso/callback`) handles redirect. Auth store `loginViaSSO()` action. Native `<input>` migrated to shadcn `<Input>` (P2-6). Loading states, error handling for Azure AD failures.
+
+#### Wave 3: Session Management (Stories 13.5–13.7)
+
+- **Global 401 Interceptor + Token Refresh Queue (13.5):** `apiFetch()` enhanced with 401 response interceptor. Auto-calls `POST /api/auth/refresh`, retries original request. Promise-based refresh queue — concurrent 401s trigger single refresh. Max 1 retry per request (no infinite loops). Excluded paths: `/auth/login`, `/auth/refresh`, `/auth/logout`. New `ApiError` class for structured error handling.
+- **Idle Timeout with Warning Modal (13.6):** `useIdleTimeout()` hook tracks mousemove/keydown/click/scroll/touchstart. 30-min idle → auto-logout. 5-min warning modal with countdown. `isWarningRef` prevents activity events during warning state. Configurable timeout values. Only active when authenticated.
+- **API Client Cleanup (13.7):** `axios` removed from frontend dependencies. 21 inline `apiFetch()` calls migrated to API lib functions + hooks. All API calls now route through centralized `apiFetch()` with 401 interceptor. No remaining `localStorage` token reads.
+
+#### Wave 4: UAT (Story 13.8)
+
+- **Integration Testing + UAT (13.8):** Agent-driven API UAT: 47/47 tests passed across 13 phases. Manual browser UAT: M1 (SSO Login) + M2 (JIT Provisioning) + M3 (Password Login) + M4 (Session Management) + M5 (Admin Features) + M6 (Badge Lifecycle) — all passed.
+
+#### UAT Bug Fixes
+
+- **M3.1 Login Error Flash (3eeb139):** Login error message briefly visible before redirect on successful login. Fixed by excluding `/auth/login` from 401 interceptor excluded paths check.
+- **M4.2 Idle Timeout Mouse Reset (3eeb139):** Mouse movement during warning modal reset the idle timer. Fixed with `isWarningRef` guard in `handleActivity()`.
+- **M6.1 UAT Plan Fix (3eeb139):** Updated manual UAT plan Step 2 navigation text.
+- **M6.2 Badge Share Auto-Refresh (299a7b8):** Share analytics not refreshing after share action. Added `refreshKey` prop to `BadgeAnalytics`, `analyticsRefreshKey` state to `BadgeDetailModal`.
+- **Widget Share Recording (299a7b8):** New `POST :badgeId/share/widget` endpoint. `recordWidgetCopy()` API function. Widget link copy now records analytics.
+- **LinkedIn Analytics (299a7b8):** Added `linkedin` field to `ShareStatsDto` and `getShareStats()` counting logic.
+- **Share Metadata (299a7b8):** `personalMessage` now stored as `note` in share metadata.
+
+#### Additional Features
+
+- **SSO Profile Protection (6079606):** SSO users (`passwordHash=''`) blocked from editing profile fields and changing password. Backend guard + frontend conditional rendering.
+- **Admin Dashboard Notifications (fc386e7):** Dual-trigger notification system for M365 sync recommendations (time-based >24h + mini-sync gap detection). 10-minute buffer prevents duplicate alerts.
+
+---
+
 ## [1.2.1] - 2026-02-25 (Sprint 12.5 — Deferred Items Cleanup)
 
 ### Sprint 12.5 Summary — Deferred Items from Sprint 12

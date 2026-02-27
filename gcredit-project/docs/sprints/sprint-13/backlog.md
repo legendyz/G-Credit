@@ -313,7 +313,7 @@ Deliver enterprise-grade authentication (Azure AD SSO) and production-quality se
 #### Story 13.8: Sprint 13 Integration Testing + UAT
 **Priority:** HIGH  
 **Estimate:** 6-8h  
-**Status:** Backlog  
+**Status:** Done  
 
 **As a** product owner,  
 **I want** end-to-end verification of SSO login and session management,  
@@ -366,13 +366,13 @@ Deliver enterprise-grade authentication (Azure AD SSO) and production-quality se
 
 ## Definition of Done (Sprint Level)
 
-- [ ] All 8 stories completed and tested
-- [ ] All existing tests pass (BE + FE, 0 regressions)
-- [ ] New tests cover all acceptance criteria
-- [ ] Pre-push hook passes (`npm run lint` + `npm run build` + core tests)
-- [ ] Code committed to `sprint-13/sso-session-management` branch
+- [x] All 8 stories completed and tested
+- [x] All existing tests pass (BE 914, FE 794, 0 regressions)
+- [x] New tests cover all acceptance criteria
+- [x] Pre-push hook passes (`npm run lint` + `npm run build` + core tests)
+- [x] Code committed to `sprint-13/sso-session-management` branch
 - [ ] PR created for merge to main
-- [ ] CHANGELOG.md updated for v1.3.0
+- [x] CHANGELOG.md updated for v1.3.0
 - [ ] Sprint retrospective notes captured
 
 ---

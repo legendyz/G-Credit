@@ -127,7 +127,7 @@ sprint-12.5: done
 # Target: v1.3.0
 # Branch: sprint-13/sso-session-management
 # ============================================
-sprint-13: in-progress
+sprint-13: done
 
 # --- Wave 1: Azure AD SSO Backend ---
 13-1-azure-ad-sso-strategy: done                  # OAuth 2.0 Auth Code Flow + MSAL SSO service + callback endpoints
@@ -139,8 +139,8 @@ sprint-13: in-progress
 
 # --- Wave 3: Session Management ---
 13-5-401-interceptor-refresh-queue: done          # apiFetch 401 handler + single-refresh queue
-13-6-idle-timeout-warning-modal: review           # 30min idle → auto-logout, 5min warning
-13-7-api-client-cleanup: backlog                  # Remove axios, inline→hooks migration (P1-3)
+13-6-idle-timeout-warning-modal: done             # 30min idle → auto-logout, 5min warning
+13-7-api-client-cleanup: done                     # Remove axios, inline→hooks migration (P1-3)
 
 # --- Wave 4: UAT ---
-13-8-sprint-13-uat: backlog                       # E2E SSO + session lifecycle + regression
+13-8-sprint-13-uat: done                          # Agent 47/47 + Manual M1-M6 all PASS
