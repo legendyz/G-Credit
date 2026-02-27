@@ -114,6 +114,7 @@ Build an internal digital credentialing (badging) platform to securely recognize
 - **Product Brief:** `MD_FromCopilot/product-brief.md` ✅ COMPLETE
 - **PRD:** `MD_FromCopilot/PRD.md` ✅ COMPLETE (33 FRs, 22 NFRs)
 - **Architecture:** `gcredit-project/docs/architecture/system-architecture.md` ✅ COMPLETE (5,406 lines, 12 decisions, Phased Azure Strategy)
+- **ADR-014 (External User / GUEST Role):** `gcredit-project/docs/decisions/ADR-014-external-user-guest-role-strategy.md` 📋 DEFERRED (Architecture approved, implementation Post-Pilot)
 - **UX Design Specification:** `gcredit-project/docs/planning/ux-design-specification.md` ✅ COMPLETE (3,314 lines, 22 screens)
 - **UX Wireframes:** `_bmad-output/excalidraw-diagrams/wireframe-gcredit-mvp-20260122.excalidraw` ✅ COMPLETE (10 screens: 6 desktop + 4 mobile)
 - **Epics & Stories:** `gcredit-project/docs/planning/epics.md` ✅ COMPLETE (14 epics, 85 stories, 100% FR coverage)
@@ -417,7 +418,7 @@ _bmad-output/
 | **Pre-Pilot Hardening** | **~3 sprints** | **Role Refactor + UI Polish + RBAC** | **🔜 Planning** |
 | → Sprint 14 | TBD | Role Model Refactor + Quick Wins (~24h) | 🔜 Planned |
 | → Sprint 15 | TBD | UI Overhaul + Dashboard Composite View (~37h) | 🔜 Planned |
-| → Sprint 16 | TBD | Fine-Grained RBAC L1 + Invite-to-Claim (~16h) | 🔜 Planned |
+| → Sprint 16 | TBD | Fine-Grained RBAC L1 + Pilot Readiness (~12h) | 🔜 Planned |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ After Sprint 16 |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
@@ -1692,25 +1693,28 @@ Sprint 0-2 established this pattern:
      - P2-11: Dirty-form guard (2h)
      - P2-12: Template preview modes (4h)
 
-26. 🔜 **Sprint 16: Pilot Readiness — Fine-Grained RBAC + Invite-to-Claim** (Planned)
+26. 🔜 **Sprint 16: Pilot Readiness — Fine-Grained RBAC + Pilot Validation** (Planned)
    
-   **Sprint Goal:** Permission fine-tuning + external recipients — last sprint before Phase 4 Pilot.
-   **Estimated Effort:** ~16h
+   **Sprint Goal:** Permission fine-tuning + pilot validation — last sprint before Phase 4 Pilot.
+   **Estimated Effort:** ~12h
    
    **Stories:**
    - F-1 Level 1: Fine-Grained RBAC — Issuer template ownership on issuance (~8h)
      - Issuer can only issue badges using templates they created
      - Admin unrestricted (can use any template)
      - Backend guard + frontend template list filtering
-   - FEAT-009: Invite-to-Claim (External Email Recipients) (~8h)
-     - Send badge claim invitations to external email addresses
-     - JIT recipient account creation on claim
+   - Pilot Readiness Validation (~4h)
+     - Smoke test with pilot scenario
+     - Pilot seed data preparation
+   
+   **FEAT-009 (Invite-to-Claim) deferred to Post-Pilot** — See ADR-014 for GUEST role architecture decision.
    
    **After Sprint 16 → Phase 4: Pilot Deployment**
 
 27. 📋 **Remaining Backlog (Post-Sprint 16 / Post-Pilot)**
    
    **P2 — Feature:**
+   - FEAT-009: Invite-to-Claim + GUEST Role (External Email Recipients) — ~8h L1 (Magic Link + JIT) + ~10-12h L2 (Account Merge). Architecture approved in ADR-014, deferred to Post-Pilot.
    - TD-030: LinkedIn Dynamic OG Meta Tags — 4-6h
    - TD-006: Teams Channel Permissions — external blocker (Bot Framework / Webhook)
    

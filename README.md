@@ -442,7 +442,7 @@ This project uses the **BMAD (Business Model Agent Development) Framework** v6.0
 | **Pre-Pilot Hardening** | **~3 sprints** | **Role Refactor + UI Polish + RBAC** | **🔜 Planning** |
 | → Sprint 14 | TBD | Role Model Refactor + Quick Wins (TD-034, TD-036, ~24h) | 🔜 Planned |
 | → Sprint 15 | TBD | UI Overhaul + Dashboard Composite View (TD-035, ~37h) | 🔜 Planned |
-| → Sprint 16 | TBD | Fine-Grained RBAC L1 + Invite-to-Claim (F-1, FEAT-009, ~16h) | 🔜 Planned |
+| → Sprint 16 | TBD | Fine-Grained RBAC L1 + Pilot Readiness (F-1, ~12h) | 🔜 Planned |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ After Sprint 16 |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |

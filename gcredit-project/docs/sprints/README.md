@@ -27,7 +27,7 @@
 | [Sprint 13](./sprint-13/) | Azure AD SSO + Session Management | ✅ Complete | 3 days | 8 stories | 1,708 tests | v1.3.0 |
 | Sprint 14 | Role Model Refactor + Quick Wins | 🔜 Planned | TBD | ~3 stories | — | v1.4.0 |
 | Sprint 15 | UI Overhaul + Dashboard Composite View | 🔜 Planned | TBD | ~11 stories | — | v1.5.0 |
-| Sprint 16 | Fine-Grained RBAC L1 + Invite-to-Claim | 🔜 Planned | TBD | ~2 stories | — | v1.6.0 |
+| Sprint 16 | Fine-Grained RBAC L1 + Pilot Readiness | 🔜 Planned | TBD | ~2 stories | — | v1.6.0 |
 
 ---
 
