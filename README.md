@@ -466,29 +466,32 @@ This project uses the **BMAD (Business Model Agent Development) Framework** v6.0
 
 ---
 
-## 🛠️ Development Setup (To Be Implemented)
+## 🛠️ Development Setup
 
 ```bash
 # Clone repository
-git clone https://github.com/YOUR_ORG/g-credit.git
-cd g-credit
-
-# Install frontend dependencies
-cd gcredit-web
-npm install
+git clone https://github.com/legendyz/G-Credit.git
+cd G-Credit
 
 # Install backend dependencies
-cd ../gcredit-api
+cd gcredit-project/backend
 npm install
+
+# Configure environment variables
+cp .env.example .env
+# Edit .env file to configure Database, Azure, JWT, and SSO settings
 
 # Setup database
 npx prisma migrate dev
 
-# Configure environment variables
-cp .env.example .env
-# Edit .env file to configure Azure service connections
+# Start backend (http://localhost:3000)
+npm run start:dev
 
-# Start development server
+# Install frontend dependencies (new terminal)
+cd gcredit-project/frontend
+npm install
+
+# Start frontend (http://localhost:5173)
 npm run dev
 ```
 
