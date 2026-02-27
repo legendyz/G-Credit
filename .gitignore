@@ -55,15 +55,22 @@ desktop.ini
 *.temp
 .cache/
 
+# Output / debug temp files (retro action item Sprint 13)
+_push-output.txt
+test-output*.txt
+**/test-output.txt
+**/test-results.txt
+**/startup-log.txt
+**/_tmp.js
+**/eslint-report.txt
+gcredit-project/scripts/*.txt
+
 # Output directories
 *.bak
 _bmad-output/playwright-sessions/
 
 # Claude Code files
 .claude/
-
-# ESLint reports
-**/eslint-report.txt
 
 # Environment variable files (security: never commit real secrets)
 # Subproject .gitignore files have their own rules, this is a safety net

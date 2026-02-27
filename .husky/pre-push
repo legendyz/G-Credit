@@ -1,5 +1,18 @@
 echo "Running pre-push checks (mirroring CI pipeline)..."
 
+# Skip checks for tag pushes (no code changes to validate)
+# Git sends "<local ref> <local sha> <remote ref> <remote sha>" lines via stdin.
+TAG_PUSH=false
+while read local_ref local_sha remote_ref remote_sha; do
+  if echo "$local_ref" | grep -q "^refs/tags/"; then
+    TAG_PUSH=true
+  fi
+done
+if [ "$TAG_PUSH" = "true" ]; then
+  echo "Tag push detected — skipping pre-push checks"
+  exit 0
+fi
+
 set -e
 
 # ===========================================

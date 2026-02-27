@@ -1,5 +1,0 @@
-admin@gcredit.com = 401
-manager@gcredit.com = 200
-issuer@gcredit.com = 429
-employee@gcredit.com = 429
-employee2@gcredit.com = 429
