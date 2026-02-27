@@ -2,10 +2,10 @@
 
 **Project:** G-Credit Digital Credentialing System  
 **Purpose:** Capture key learnings and establish best practices for efficient development  
-**Last Updated:** 2026-02-24 (Sprint 12 v1.2.0 — Management UIs & Evidence Unification)  
+**Last Updated:** 2026-02-27 (Sprint 13 v1.3.0 — Azure AD SSO + Session Management)  
 **Status:** Living document - update after each Sprint Retrospective  
-**Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 → Sprint 6 → Sprint 7 → Sprint 8 → Sprint 9 → Sprint 10 → Sprint 11 → Sprint 12 (Complete, v1.2.0)  + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
-**Total Lessons:** 45 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 8, Sprint 7: 3, Sprint 8: 3, Sprint 9: 3, Sprint 10: 3, Sprint 11: 4, Sprint 12: 2)
+**Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 → Sprint 6 → Sprint 7 → Sprint 8 → Sprint 9 → Sprint 10 → Sprint 11 → Sprint 12 → Sprint 13 (Complete, v1.3.0)  + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
+**Total Lessons:** 48 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 8, Sprint 7: 3, Sprint 8: 3, Sprint 9: 3, Sprint 10: 3, Sprint 11: 4, Sprint 12: 2, Sprint 13: 3)
 
 ---
 
@@ -25,9 +25,10 @@
 | Sprint 10 | 12/12 (100%) | 95h | 109h | 87% | ~9.1h/story | ⭐
 | Sprint 11 | 25/25 (100%) | 51.5-65.5h | ~60h | ~92-100% | ~2.4h/story | ⭐
 | Sprint 12 | 8/8 (100%) | 72h | — | — | ~9h/story | ⭐
+| Sprint 13 | 8/8 (100%) | 50-60h | — | — | ~6.5h/story | ⭐
 
 ### Quality Metrics
-- **Test Pass Rate:** 100% (1,549/1,549 tests — BE 847 + FE 702) ⭐
+- **Test Pass Rate:** 100% (1,708/1,708 tests — BE 914 + FE 794) ⭐
 - **UAT Pass Rate:** 99.3% (152/153 tests Sprint 11, 33/33 Sprint 10) ⭐
 - **Documentation Accuracy:** 95%+ (comprehensive guides created)
 - **Technical Debt:** 56 items tracked (17 P1 resolved Sprint 8, 7 TD resolved Sprint 10, 4 TD resolved Sprint 12: TD-009/TD-010/TD-016/TD-017) ⭐
@@ -49,6 +50,7 @@
 - ✅ v1.0.0 Release (UAT 33/33, full documentation, GitHub Release) ⭐ Sprint 10
 - ✅ v1.1.0 Security & Quality Hardening (25 stories, 7 waves, httpOnly cookies, Husky CI) ⭐ Sprint 11
 - ✅ v1.2.0 Management UIs & Evidence Unification (8 stories, 3 waves, 4 admin pages, evidence unified) ⭐ Sprint 12
+- ✅ v1.3.0 Azure AD SSO + Session Management (8 stories, 4 waves, enterprise SSO, idle timeout) ⭐ Sprint 13
 - ✅ Comprehensive documentation system (15+ guides created)
 - ✅ Well-organized test structure (1,549 tests, 100% pass rate) ⭐
 
@@ -96,6 +98,10 @@
 - [Sprint 12 Lessons](#sprint-12-lessons-february-2026) - Shared Components, Doc Lag (2 lessons)
   - Lesson 44: Shared Component Investment Pays Compound Returns
   - Lesson 45: Documentation Should Be Updated Incrementally, Not Batched
+- [Sprint 13 Lessons](#sprint-13-lessons-february-2026) - Enterprise SSO, Dual-Track UAT, Session Management (3 lessons)
+  - Lesson 46: Enterprise SSO Integration Requires End-to-End Wave Design
+  - Lesson 47: Dual-Track UAT (Agent + Manual) Catches Complementary Bug Classes
+  - Lesson 48: UAT-Phase Refactoring Increases Risk — Keep Bug Fixes Minimal
 - [Cross-Sprint Patterns](#cross-sprint-patterns) - 13 patterns
 - [Development Checklists](#development-checklists)
 - [Common Pitfalls](#common-pitfalls-to-avoid)
@@ -5297,3 +5303,57 @@ Updated 3 files: `test-setup.ts`, `analytics.e2e-spec.ts`, `auth-simple.e2e-spec
 > **单元测试覆盖率 100% ≠ 安全。当你修改 API 响应契约时，单元测试用 mock 跳过了真实 HTTP 层，只有 E2E 测试才能验证端到端数据流。修改 controller 返回值前，永远先 `grep test/` 找消费端。**
 
 *This is a living document - keep it updated, keep it useful!*
+
+---
+
+## Sprint 13 Lessons (February 2026)
+
+### Sprint 13: Lesson 46 — Enterprise SSO Integration Requires End-to-End Wave Design
+
+**Context:** Sprint 13 delivered Azure AD SSO (MSAL Auth Code Flow + PKCE) across 4 waves: backend strategy → JIT provisioning → mini-sync → frontend login page.
+
+**Lesson:** Tightly coupled authentication features (SSO backend → JIT → mini-sync → frontend) must be planned as sequential waves with clear handoff contracts. The wave-based approach ensured each piece was testable in isolation before integration.
+
+**What Worked:**
+- Wave 1 (3 stories) built the entire backend SSO stack before Wave 2 touched frontend
+- JIT provisioning and mini-sync were separate stories despite being called from the same callback, making code review focused
+- PKCE + state cookie pattern handled CSRF protection without requiring frontend state management
+
+**Key Pattern:**
+> When building an authentication integration, design waves around trust boundaries: external service → backend validation → user lifecycle → frontend UX. Never mix trust boundary concerns in a single story.
+
+**Action Items:**
+1. For future integrations (Graph API, Teams, etc.), apply the same wave pattern: external → backend → lifecycle → frontend
+2. Document the MSAL integration pattern as a reusable architecture reference
+
+### Sprint 13: Lesson 47 — Dual-Track UAT (Agent + Manual) Catches Complementary Bug Classes
+
+**Context:** Sprint 12 Retrospective Action Item #6 asked to "decide formal vs informal UAT." Sprint 13 answered with dual-track: Agent UAT (47 automated tests) + Manual UAT (6 stages).
+
+**Lesson:** Agent UAT catches API-level regressions and data contract issues. Manual UAT catches UX/interaction issues that automated tests miss (idle timeout behavior, multi-tab scenarios, SSO redirect UX).
+
+**Evidence:**
+- Agent UAT: 47/47 passed — verified API contracts, auth flows, data integrity
+- Manual UAT: Found 4 real bugs (M3.1 admin-sync missing graph import, M4.2 analytics sidebar icon, M6.1 share widget background, M6.2 share tabs) — all missed by Agent UAT
+- The 4 manual UAT bugs were UX-level issues that would have reached production without manual testing
+
+**Key Pattern:**
+> Use Agent UAT as your regression safety net (fast, repeatable, wide coverage). Use Manual UAT for new feature UX validation (SSO flows, timeouts, multi-tab). Both are required — neither alone is sufficient.
+
+### Sprint 13: Lesson 48 — UAT-Phase Refactoring Increases Risk — Keep Bug Fixes Minimal
+
+**Context:** During Sprint 13 UAT, bug fix commit `299a7b8` included not just the M6.2 fix but also a data-driven refactoring of share tabs (TAB_CONFIG, PLATFORM_CONFIG patterns).
+
+**Lesson:** Refactoring during UAT phase improves code quality but increases the risk of introducing new regressions. The refactoring was beneficial (cleaner code, easier to maintain), but it expanded the blast radius of a "bug fix" commit.
+
+**What Happened:**
+- M6.2 reported a background color issue on the widget share panel
+- The fix expanded into a data-driven refactoring of the entire share dialog (TAB_CONFIG, PLATFORM_CONFIG arrays replacing hardcoded conditionals)
+- While the refactoring was clean and improved code quality, it changed significantly more code than necessary for the bug fix
+
+**Key Pattern:**
+> During UAT phase: fix the bug, nothing more. Log the improvement opportunity as a TD item for the next sprint. Refactoring belongs in the first sprint commit, not the last UAT fix.
+
+**Action Items:**
+1. SM to enforce "minimal fix" policy during UAT phase
+2. Refactoring improvements discovered during UAT should be logged as TD items

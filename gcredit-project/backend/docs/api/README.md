@@ -312,6 +312,6 @@ For questions or issues:
 
 ---
 
-**Last Updated:** February 24, 2026  
-**Version:** 1.2.0 (Sprint 12 Complete)  
+**Last Updated:** February 27, 2026  
+**Version:** 1.3.0 (Sprint 13 Complete)  
 **Maintained By:** GCredit Development Team

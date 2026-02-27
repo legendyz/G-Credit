@@ -1,7 +1,7 @@
 ﻿﻿# G-Credit - Enterprise Internal Digital Credentialing System
 
-[![Status](https://img.shields.io/badge/Status-v1.2.0%20Released-brightgreen)]()
-[![Phase](https://img.shields.io/badge/Phase-2.0%20Management%20UIs%20Complete-brightgreen)]()
+[![Status](https://img.shields.io/badge/Status-v1.3.0%20Released-brightgreen)]()
+[![Phase](https://img.shields.io/badge/Phase-3.0%20SSO%20%2B%20Session%20Management%20Complete-brightgreen)]()
 [![Sprint0](https://img.shields.io/badge/Sprint%200-Complete%20(100%25)-success)]()
 [![Sprint1](https://img.shields.io/badge/Sprint%201-Complete%20(100%25)-brightgreen)]()
 [![Sprint2](https://img.shields.io/badge/Sprint%202-Complete%20(100%25)-brightgreen)]()
@@ -14,8 +14,11 @@
 [![Sprint9](https://img.shields.io/badge/Sprint%209-Complete%20(100%25)-brightgreen)]()
 [![Sprint10](https://img.shields.io/badge/Sprint%2010-Complete%20(100%25)-brightgreen)]()
 [![Sprint11](https://img.shields.io/badge/Sprint%2011-Complete%20(100%25)-brightgreen)]()
-[![Version](https://img.shields.io/badge/Version-v1.2.0-blue)]()
-[![Tests](https://img.shields.io/badge/Tests-1549%20Total%2C%201549%20Passing-success)]()
+[![Sprint12](https://img.shields.io/badge/Sprint%2012-Complete%20(100%25)-brightgreen)]()
+[![Sprint12.5](https://img.shields.io/badge/Sprint%2012.5-Complete%20(100%25)-brightgreen)]()
+[![Sprint13](https://img.shields.io/badge/Sprint%2013-Complete%20(100%25)-brightgreen)]()
+[![Version](https://img.shields.io/badge/Version-v1.3.0-blue)]()
+[![Tests](https://img.shields.io/badge/Tests-1708%20Total%2C%201708%20Passing-success)]()
 
 > **G-Credit** is an enterprise-grade internal digital badging platform designed to securely recognize, verify, and analyze employee skills and achievements. Compliant with Open Badges 2.0 standards, it aims to replace fragmented certificate management and reduce dependency on external platforms.
 
@@ -26,7 +29,7 @@
 **Project Name:** G-Credit  
 **Project Type:** Enterprise Internal Platform (Greenfield Development)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
-**Current Status:** ✅ v1.2.0 Released — Management UIs & Evidence Unification (12 Sprints, 1,549 tests)  
+**Current Status:** ✅ v1.3.0 Released — Azure AD SSO + Session Management (14 Sprints, 1,708 tests)  
 **Sprint 0:** ✅ Complete (100%, actual 9.5h / estimated 10h, 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, actual 21h / estimated 21h, 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, actual 29h / estimated 32h, 2026-01-26)  
@@ -40,7 +43,9 @@
 **Sprint 10:** ✅ Complete (12/12 stories, 109h, 1061 tests, UAT 33/33 PASS, 2026-02-09 to 2026-02-11, v1.0.0)  
 **Sprint 11:** ✅ Complete (25/25 stories, 7 waves, 1,307 tests, UAT 152/153 PASS, 2026-02-12 to 2026-02-15, v1.1.0)  
 **Sprint 12:** ✅ Complete (8/8 dev stories, 3 waves, 1,549 tests, 2026-02-19 to 2026-02-24, v1.2.0)  
-**Version:** v1.2.0 (Management UIs & Evidence Unification, 1,549 tests, 100% passing)
+**Sprint 12.5:** ✅ Complete (2/2 stories, 1,593 tests, 2026-02-25, v1.2.1)  
+**Sprint 13:** ✅ Complete (8/8 stories, 4 waves, 1,708 tests, 2026-02-25 to 2026-02-27, v1.3.0)  
+**Version:** v1.3.0 (Azure AD SSO + Session Management, 1,708 tests, 100% passing)
 - Badge catalog with search and categorization
 - ✅ Badge revocation with reason tracking
 
@@ -283,6 +288,27 @@
 - **Git Tag:** v1.2.0
 - **GitHub Release:** [v1.2.0](https://github.com/legendyz/G-Credit/releases/tag/v1.2.0)
 
+**✅ Sprint 12.5 Complete (2026-02-25, v1.2.1):**
+- ✅ 2/2 stories delivered (Deferred Items Cleanup)
+- ✅ Widget badge sharing, tree reorder batch API
+- **Testing:** 1,593 tests (BE 855 + FE 738), 100% pass rate (+44 from v1.2.0)
+- **Branch:** sprint-12.5/deferred-cleanup (merged to main via PR #8)
+- **Git Tag:** v1.2.1
+- **GitHub Release:** [v1.2.1](https://github.com/legendyz/G-Credit/releases/tag/v1.2.1)
+
+**✅ Sprint 13 Complete (2026-02-27, v1.3.0 Released):**
+- ✅ 8/8 stories delivered across 4 waves (Azure AD SSO + Session Management)
+- ✅ Wave 1: Azure AD SSO Strategy + Callback, JIT Provisioning, Login-Time Mini-Sync
+- ✅ Wave 2: Login Page Dual Entry + SSO Redirect Flow
+- ✅ Wave 3: 401 Interceptor + Refresh Queue, Idle Timeout, axios Removal
+- ✅ Wave 4: Integration Testing + UAT (All PASS)
+- ✅ Key features: MSAL Auth Code Flow + PKCE, dual-entry login, idle timeout with warning
+- **Total: 8 stories, 4 waves, 30 commits, 133 files changed**
+- **Testing:** 1,708 tests (BE 914 + FE 794), 100% pass rate (+115 from v1.2.1)
+- **Branch:** sprint-13/sso-session-management (merged to main via PR #9)
+- **Git Tag:** v1.3.0
+- **GitHub Release:** [v1.3.0](https://github.com/legendyz/G-Credit/releases/tag/v1.3.0)
+
 ---
 
 ## 📁 Project Structure
@@ -429,6 +455,9 @@ This project uses the **BMAD (Business Model Agent Development) Framework** v6.0
 | **Post-MVP Hardening** | **7 days** | **Security, Quality, DX** | **✅ v1.1.0 Released** |
 | → Sprint 11 | 7 days | Security & Quality Hardening (25 stories, 7 waves) | ✅ Complete (2026-02-18, 25/25 stories, ~60h/51-66h, 1,307 tests, UAT 152/153 PASS, v1.1.0) |
 | → Sprint 12 | 6 days | Management UIs + Evidence Unification (8 stories, 3 waves) | ✅ Complete (2026-02-24, 8/8 stories, 72h, 1,549 tests, v1.2.0) |
+| → Sprint 12.5 | 1 day | Deferred Items Cleanup (2 stories) | ✅ Complete (2026-02-25, 2/2 stories, 1,593 tests, v1.2.1) |
+| **Phase 3 - SSO** | **3 days** | **Enterprise Authentication** | **✅ v1.3.0 Released** |
+| → Sprint 13 | 3 days | Azure AD SSO + Session Management (8 stories, 4 waves) | ✅ Complete (2026-02-27, 8/8 stories, 1,708 tests, v1.3.0) |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ Pending |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
@@ -531,9 +560,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Last Updated:** 2026-02-24
-**Status:** ✅ v1.2.0 Released — Management UIs & Evidence Unification Complete
-**Version:** v1.2.0 (Released 2026-02-24, 1,549 tests, 19 controllers, 97 endpoints)
+**Last Updated:** 2026-02-27
+**Status:** ✅ v1.3.0 Released — Azure AD SSO + Session Management Complete
+**Version:** v1.3.0 (Released 2026-02-27, 1,708 tests, 20 controllers, 100 endpoints)
 **Sprint 0:** ✅ Complete (actual 9.5h / estimated 10h, 95%) - [Retrospective](./_bmad-output/implementation-artifacts/sprint-0-retrospective.md)  
 **Sprint 1:** ✅ Complete (actual 21h / estimated 21h, 100%) - [Retrospective](./_bmad-output/implementation-artifacts/sprint-1-retrospective.md)  
 **Sprint 2:** ✅ Complete (actual 29h / estimated 32h, 110%) - [Final Report](./gcredit-project/backend/docs/sprints/sprint-2/final-report.md) | [Retrospective](./gcredit-project/backend/docs/sprints/sprint-2/retrospective.md)  
@@ -547,4 +576,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Sprint 10:** ✅ Complete (12/12 stories, 109h/95h, v1.0.0) - [Sprint Status](./gcredit-project/docs/sprints/sprint-10/sprint-status.yaml) | [Release Notes](./gcredit-project/docs/sprints/sprint-10/v1.0.0-release-notes.md)  
 **Sprint 11:** ✅ Complete (25/25 stories, 7 waves, v1.1.0) - [Summary](./gcredit-project/docs/sprints/sprint-11/summary.md) | [Retrospective](./gcredit-project/docs/sprints/sprint-11/retrospective.md)  
 **Sprint 12:** ✅ Complete (8/8 stories, 3 waves, v1.2.0) - [Summary](./gcredit-project/docs/sprints/sprint-12/summary.md) | [Retrospective](./gcredit-project/docs/sprints/sprint-12/retrospective.md)  
-**Release:** [v1.2.0 on GitHub](https://github.com/legendyz/G-Credit/releases/tag/v1.2.0)
+**Sprint 12.5:** ✅ Complete (2/2 stories, v1.2.1) - [Backlog](./gcredit-project/docs/sprints/sprint-12.5/backlog.md)  
+**Sprint 13:** ✅ Complete (8/8 stories, 4 waves, v1.3.0) - [Status](./gcredit-project/docs/sprints/sprint-13/sprint-status.md) | [Retrospective](./gcredit-project/docs/sprints/sprint-13/retrospective.md)  
+**Release:** [v1.3.0 on GitHub](https://github.com/legendyz/G-Credit/releases/tag/v1.3.0)

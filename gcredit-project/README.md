@@ -4,7 +4,9 @@
 
 ## 📊 Project Status
 
-**Version:** ✅ v1.2.0 Released (Management UIs & Evidence Unification)  
+**Version:** ✅ v1.3.0 Released (Azure AD SSO + Session Management)  
+**Sprint 13:** ✅ Complete (8/8 stories, 4 waves, 2026-02-25 to 2026-02-27, Azure AD SSO + Session Management, 1,708 tests, v1.3.0)  
+**Sprint 12.5:** ✅ Complete (2/2 stories, 2026-02-25, Deferred Items Cleanup, 1,593 tests, v1.2.1)  
 **Sprint 12:** ✅ Complete (8/8 dev stories, 3 waves, 2026-02-19 to 2026-02-24, Management UIs + Evidence Unification, 1,549 tests, v1.2.0)  
 **Sprint 11:** ✅ Complete (25/25 stories, 7 waves, 2026-02-12 to 2026-02-15, Security + Quality Hardening, 1,307 tests, v1.1.0)  
 **Sprint 10:** ✅ Complete (12/12 stories, 2026-02-09 to 2026-02-11, UAT 33/33 PASS, v1.0.0)  
@@ -18,7 +20,7 @@
 **Sprint 2:** ✅ Complete (100%, 29h/32h, 2026-01-26, Badge Templates)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, 2026-01-25, Authentication)  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, 2026-01-24, Infrastructure)  
-**Tests:** 1,549 (Backend 847 + Frontend 702), 100% pass rate  
+**Tests:** 1,708 (Backend 914 + Frontend 794), 100% pass rate  
 **License:** MIT
 
 ## 🚀 Tech Stack
@@ -301,6 +303,8 @@ Remove-Item -Recurse -Force backend\.git
 - [Sprint 10 Documentation](docs/sprints/sprint-10/) ✅ Complete (v1.0.0 Release)
 - [Sprint 11 Documentation](docs/sprints/sprint-11/) ✅ Complete (Security & Quality Hardening, v1.1.0)
 - [Sprint 12 Documentation](docs/sprints/sprint-12/) ✅ Complete (Management UIs & Evidence, v1.2.0)
+- [Sprint 12.5 Documentation](docs/sprints/sprint-12.5/) ✅ Complete (Deferred Items Cleanup, v1.2.1)
+- [Sprint 13 Documentation](docs/sprints/sprint-13/) ✅ Complete (Azure AD SSO + Session Management, v1.3.0)
 - [v1.0.0 Release Notes](docs/sprints/sprint-10/v1.0.0-release-notes.md)
 - [All Sprints Index](docs/sprints/README.md)
 
@@ -430,6 +434,8 @@ Remove-Item -Recurse -Force backend\.git
 - **Sprint 10:** ✅ v1.0.0 Release — TD Cleanup + Feature Polish + UAT + Release (Complete, 1061 tests, UAT 33/33 PASS)
 - **Sprint 11:** ✅ v1.1.0 Release — Security & Quality Hardening (25/25 stories, 7 waves, 1,307 tests, UAT 152/153 PASS)
 - **Sprint 12:** ✅ v1.2.0 Release — Management UIs & Evidence Unification (8/8 stories, 3 waves, 1,549 tests)
+- **Sprint 12.5:** ✅ v1.2.1 Release — Deferred Items Cleanup (2/2 stories, 1,593 tests)
+- **Sprint 13:** ✅ v1.3.0 Release — Azure AD SSO + Session Management (8/8 stories, 4 waves, 1,708 tests)
 
 ## 📝 License
 

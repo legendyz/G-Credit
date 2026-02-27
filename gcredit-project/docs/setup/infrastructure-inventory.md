@@ -1,6 +1,6 @@
 # G-Credit Infrastructure Inventory
 
-**Last Updated:** 2026-02-24  
+**Last Updated:** 2026-02-27  
 **Project:** G-Credit - Enterprise Internal Digital Credentialing System  
 **Environment:** Development
 
@@ -413,6 +413,16 @@ AZURE_STORAGE_CONTAINER_BADGES="badges"
 AZURE_STORAGE_CONTAINER_EVIDENCE="evidence"
 ```
 
+**Azure AD SSO (Sprint 13):**
+```env
+AZURE_AD_CLIENT_ID="your-azure-ad-app-client-id"
+AZURE_AD_CLIENT_SECRET="your-azure-ad-app-client-secret"
+AZURE_AD_TENANT_ID="your-azure-ad-tenant-id"
+AZURE_AD_REDIRECT_URI="http://localhost:3000/api/auth/sso/callback"
+INITIAL_ADMIN_EMAIL="admin@yourdomain.com"
+```
+*Note: SSO is optional — if env vars are missing, `/auth/sso/login` returns 503*
+
 ---
 
 ## 📦 NPM Dependencies
@@ -469,6 +479,7 @@ AZURE_STORAGE_CONTAINER_EVIDENCE="evidence"
 
 **Azure Integration:**
 - @azure/storage-blob: 12.30.0
+- @azure/msal-node: 5.0.5 (Sprint 13 — Azure AD SSO)
 
 **Image Processing (Sprint 2+):**
 - sharp: (to be installed)
@@ -558,6 +569,18 @@ AZURE_STORAGE_CONTAINER_EVIDENCE="evidence"
 ---
 
 ## 📝 Change Log
+
+### 2026-02-27 (Sprint 13 Completion)
+- ✅ Added Azure AD SSO via MSAL Auth Code Flow + PKCE
+- ✅ New dependency: `@azure/msal-node` ^5.0.5
+- ✅ New env vars: AZURE_AD_CLIENT_ID, AZURE_AD_CLIENT_SECRET, AZURE_AD_TENANT_ID, AZURE_AD_REDIRECT_URI, INITIAL_ADMIN_EMAIL
+- ✅ New endpoints: GET /auth/sso/login, GET /auth/sso/callback
+- ✅ JIT user provisioning + login-time mini-sync for SSO users
+- ✅ Session management: 401 interceptor, token refresh queue, idle timeout
+- ✅ Removed `axios` dependency (migrated to fetch/ky)
+- ✅ Total: 20 controllers, ~100 API endpoints
+- ✅ 1,708 tests (914 BE + 794 FE), 100% pass rate
+- ✅ Tagged v1.3.0
 
 ### 2026-02-24 (Sprint 12 Completion)
 - ✅ EvidenceFile model enhanced: added `type` (FILE|URL), `sourceUrl`, `badgeTemplateId` fields

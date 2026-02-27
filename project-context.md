@@ -5,7 +5,7 @@
 **Project Type:** Enterprise Internal Platform (Greenfield)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
 **License:** MIT License (Open Source)  
-**Status:** ✅ Sprint 12 COMPLETE — 8/8 dev stories, v1.2.0  
+**Status:** ✅ Sprint 13 COMPLETE — 8/8 stories, v1.3.0  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, committed 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, committed 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, committed 2026-01-26)  
@@ -20,8 +20,8 @@
 **Sprint 11:** ✅ Complete (25/25 stories, 7 waves, branch: sprint-11/security-quality-hardening, 1,307 tests, UAT 152/153 PASS, v1.1.0)  
 **Sprint 12:** ✅ Complete (8/8 dev stories, 3 waves, branch: sprint-12/management-uis-evidence, 1,549 tests, v1.2.0)
 **Sprint 12.5:** ✅ Complete (2/2 stories, branch: sprint-12.5/deferred-cleanup, 1,593 tests, v1.2.1)
-**Sprint 13:** 🔄 Planning (8 stories, branch: sprint-13/sso-session-management, target: v1.3.0)
-**Last Updated:** 2026-02-25 (Sprint 13 PLANNING — Azure AD SSO + Session Management)
+**Sprint 13:** ✅ Complete (8/8 stories, 4 waves, branch: sprint-13/sso-session-management, 1,708 tests, v1.3.0)
+**Last Updated:** 2026-02-27 (Sprint 13 COMPLETE — Azure AD SSO + Session Management, v1.3.0)
 ---
 
 ## 🚨 Maintenance Protocol - How to Keep This Document Current
@@ -150,6 +150,19 @@ Build an internal digital credentialing (badging) platform to securely recognize
 - **UAT Plan v1.1.0:** `gcredit-project/docs/testing/uat-plan-v1.1.0.md` ✅ COMPLETE (153 cases, 152 PASS, 1 SKIP)
 - **Technical Debt:** `gcredit-project/docs/sprints/sprint-11/technical-debt.md` — TD-009/010/016/017/018 (5 items, ~53-77h)
 
+**Sprint 12 — Management UIs & Evidence Unification (v1.2.0, 2026-02-19 to 2026-02-24):**
+- **Sprint 12 Backlog:** `gcredit-project/docs/sprints/sprint-12/backlog.md` ✅ COMPLETE (8 stories, 3 waves)
+- **Sprint 12 Summary:** `gcredit-project/docs/sprints/sprint-12/summary.md` ✅ COMPLETE (8/8 stories, 1,549 tests)
+- **Sprint 12 Retrospective:** `gcredit-project/docs/sprints/sprint-12/retrospective.md` ✅ COMPLETE
+
+**Sprint 12.5 — Deferred Items Cleanup (v1.2.1, 2026-02-25):**
+- **Sprint 12.5 Backlog:** `gcredit-project/docs/sprints/sprint-12.5/backlog.md` ✅ COMPLETE (2 stories)
+
+**Sprint 13 — Azure AD SSO + Session Management (v1.3.0, 2026-02-25 to 2026-02-27):**
+- **Sprint 13 Backlog:** `gcredit-project/docs/sprints/sprint-13/backlog.md` ✅ COMPLETE (8 stories, 4 waves)
+- **Sprint 13 Status:** `gcredit-project/docs/sprints/sprint-13/sprint-status.md` ✅ COMPLETE (8/8 stories, 1,708 tests)
+- **Sprint 13 Retrospective:** `gcredit-project/docs/sprints/sprint-13/retrospective.md` ✅ COMPLETE
+
 ---
 
 ## 📂 Documentation Structure & Navigation Guide
@@ -172,7 +185,7 @@ gcredit-project/docs/
 ├── architecture/          # System architecture
 │   ├── system-architecture.md  # 5,406 lines, 12 decisions
 │   └── architecture-diagrams.md
-├── sprints/              # Sprint documentation (Sprint 0-9)
+├── sprints/              # Sprint documentation (Sprint 0-13)
 │   ├── sprint-0/         # Infrastructure setup
 │   ├── sprint-1/         # JWT auth & user management
 │   ├── sprint-2/         # Badge template management
@@ -185,7 +198,9 @@ gcredit-project/docs/
 │   ├── sprint-9/         # ✅ COMPLETE - Bulk badge issuance + TD cleanup
 │   ├── sprint-10/        # ✅ COMPLETE - v1.0.0 Release Sprint (12 stories, UAT PASSED)
 │   ├── sprint-11/        # ✅ COMPLETE - Security & Quality Hardening (25 stories, v1.1.0)
-│   └── sprint-12/        # ✅ COMPLETE - Management UIs & Evidence Unification (8 stories, v1.2.0)
+│   ├── sprint-12/        # ✅ COMPLETE - Management UIs & Evidence Unification (8 stories, v1.2.0)
+│   ├── sprint-12.5/      # ✅ COMPLETE - Deferred Cleanup (2 stories, v1.2.1)
+│   └── sprint-13/        # ✅ COMPLETE - Azure AD SSO + Session Management (8 stories, v1.3.0)
 ├── decisions/            # Architecture Decision Records
 │   ├── 002-lodash-security-risk-acceptance.md
 │   ├── 003-badge-assertion-format.md
@@ -1596,37 +1611,41 @@ Sprint 0-2 established this pattern:
    
    **Sprint Docs:** backlog.md, 2 story files, 2 code review docs, 2 dev prompts, uat-test-plan.md
 
-23. � **Sprint 13: Azure AD SSO + Session Management** (v1.3.0)
+23. ✅ **Sprint 13: Azure AD SSO + Session Management** (v1.3.0)
    
    **Sprint Goal:** M365 enterprise login + robust session lifecycle for pilot deployment.
-   **Branch:** `sprint-13/sso-session-management`
-   **Estimate:** 45-60h (8 stories, 4 waves)
+   **Branch:** `sprint-13/sso-session-management` (merged to main via PR #9)
+   **Duration:** 2026-02-25 to 2026-02-27 | **Estimate:** 45-60h (8 stories, 4 waves)
    
-   **Wave 1 — Azure AD SSO Backend (20-26h):**
-   - Story 13.1: Azure AD SSO Strategy + Callback Endpoints (10-12h)
-   - Story 13.2: JIT User Provisioning on First SSO Login (6-8h)
-   - Story 13.3: Login-Time Mini-Sync for Returning SSO Users (4-6h)
+   **Wave 1 — Azure AD SSO Backend:**
+   - Story 13.1: Azure AD SSO Strategy + Callback Endpoints ✅
+   - Story 13.2: JIT User Provisioning on First SSO Login ✅
+   - Story 13.3: Login-Time Mini-Sync for Returning SSO Users ✅
    
-   **Wave 2 — Azure AD SSO Frontend (6-8h):**
-   - Story 13.4: Login Page Dual Entry + SSO Redirect Flow (6-8h)
+   **Wave 2 — Azure AD SSO Frontend:**
+   - Story 13.4: Login Page Dual Entry + SSO Redirect Flow ✅
    
-   **Wave 3 — Session Management (17-22h):**
-   - Story 13.5: Global 401 Interceptor + Token Refresh Queue (8-10h)
-   - Story 13.6: Idle Timeout with Warning Modal (6-8h)
-   - Story 13.7: API Client Cleanup — Remove axios + Inline Migrations (3-4h)
+   **Wave 3 — Session Management:**
+   - Story 13.5: Global 401 Interceptor + Token Refresh Queue ✅
+   - Story 13.6: Idle Timeout with Warning Modal ✅
+   - Story 13.7: API Client Cleanup — Remove axios + Inline Migrations ✅
    
-   **Wave 4 — UAT (6-8h):**
-   - Story 13.8: Sprint 13 Integration Testing + UAT (6-8h)
+   **Wave 4 — UAT:**
+   - Story 13.8: Sprint 13 Integration Testing + UAT ✅ (All PASS)
    
-   **PO Decisions Applied:**
-   - DEC-001 → Option A (dual entry: SSO + password)
-   - DEC-002 → Retain password login for pilot
-   - DEC-003 → Already resolved (Sprint 12)
-   - DEC-004 → FR27 executes now (FEAT-008 already done)
-   - DEC-005 → Env var bootstrap (`INITIAL_ADMIN_EMAIL`)
-   - DEC-006 → Deferred (IT admin operation, no code)
+   **Key Deliverables:**
+   - Azure AD SSO via MSAL Auth Code Flow + PKCE
+   - JIT provisioning + login-time mini-sync
+   - Dual-entry login page (SSO + password)
+   - 401 interceptor with token refresh queue
+   - Idle timeout with 2-min warning modal
+   - axios removed, full fetch/ky migration
+   - Tests: 1,708 (BE 914 + FE 794), 100% pass rate (+115 from v1.2.1)
+   - 30 commits, 133 files changed, +15,135/-1,235 lines
    
-   **Merged from UI Audit:** P1-3 (API Client Unification) → Story 13.7
+   **Status:** ✅ v1.3.0 Released (PR #9 merged, tagged, GitHub Release published)
+   
+   **Sprint Docs:** backlog.md, sprint-status.md, retrospective.md
 
 24. 🔜 **Remaining Backlog (Post-Sprint 13)**
    

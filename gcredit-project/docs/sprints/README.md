@@ -1,8 +1,8 @@
 # Sprint Documentation Index
 
-**Last Updated:** 2026-02-24  
-**Current Sprint:** Sprint 12 Complete — v1.2.0 Released  
-**Total Sprints:** 13 (Sprint 0-12)
+**Last Updated:** 2026-02-27  
+**Current Sprint:** Sprint 13 Complete — v1.3.0 Released  
+**Total Sprints:** 15 (Sprint 0-13 + Sprint 12.5)
 
 ---
 
@@ -23,6 +23,8 @@
 | [Sprint 10](./sprint-10/) | v1.0.0 Release Sprint | ✅ Complete | 3 days | 12 stories | 1061 tests | v1.0.0 |
 | [Sprint 11](./sprint-11/) | Security & Quality Hardening | ✅ Complete | 7 days | 25 stories | 1,307 tests | v1.1.0 |
 | [Sprint 12](./sprint-12/) | Management UIs & Evidence Unification | ✅ Complete | 6 days | 8 stories | 1,549 tests | v1.2.0 |
+| [Sprint 12.5](./sprint-12.5/) | Deferred Items Cleanup | ✅ Complete | 1 day | 2 stories | 1,593 tests | v1.2.1 |
+| [Sprint 13](./sprint-13/) | Azure AD SSO + Session Management | ✅ Complete | 3 days | 8 stories | 1,708 tests | v1.3.0 |
 
 ---
 

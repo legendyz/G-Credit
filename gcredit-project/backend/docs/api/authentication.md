@@ -527,6 +527,40 @@ User → POST /auth/login (with email + newPassword)
      ← 200 OK (accessToken, refreshToken)
 ```
 
+### 4. Azure AD SSO Flow (Sprint 13)
+
+```
+User → GET /auth/sso/login
+     ← 302 Redirect to Azure AD (sets sso_state httpOnly cookie)
+
+Azure AD → User authenticates via M365
+
+Azure AD → GET /auth/sso/callback?code={code}&state={state}
+     ← 302 Redirect to frontend (sets auth cookies)
+     ← JIT provisioning if first SSO login
+     ← Mini-sync for returning SSO users
+```
+
+**Endpoints:**
+
+#### GET /auth/sso/login
+- **Access:** Public (rate-limited 10/min)
+- **Description:** Generates MSAL Auth Code Flow URL with PKCE and redirects to Azure AD
+- **Response:** 302 Redirect to `https://login.microsoftonline.com/...`
+- **Cookies Set:** `sso_state` (httpOnly, 5 min TTL) — stores codeVerifier + state for CSRF protection
+- **Error:** 503 if SSO is not configured (missing Azure AD env vars)
+
+#### GET /auth/sso/callback
+- **Access:** Public (rate-limited 10/min)
+- **Description:** Azure AD callback handler — validates state, exchanges code for tokens, performs JIT provisioning or mini-sync, issues JWT cookies
+- **Query Params:** `code`, `state`, `error`, `error_description`
+- **Success:** 302 Redirect to `{FRONTEND_URL}/sso/callback?success=true` (with auth cookies)
+- **Errors:** 302 Redirect to `{FRONTEND_URL}/login?error={code}` where code is:
+  - `sso_cancelled` — User cancelled Azure AD login
+  - `sso_failed` — Generic SSO failure
+  - `sso_invalid_token` — Token missing required claims
+  - `sso_account_inactive` — User account is deactivated
+
 ---
 
 ## Token Management
