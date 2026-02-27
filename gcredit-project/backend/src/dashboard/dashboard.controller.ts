@@ -46,7 +46,7 @@ export class DashboardController {
    * GET /api/dashboard/employee
    */
   @Get('employee')
-  @Roles(UserRole.EMPLOYEE, UserRole.ISSUER, UserRole.MANAGER, UserRole.ADMIN)
+  @Roles(UserRole.EMPLOYEE, UserRole.ISSUER, UserRole.ADMIN) // ADR-017: MANAGER removed; all base roles can access employee dashboard
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get Employee Dashboard data' })
   @ApiResponse({
@@ -89,7 +89,7 @@ export class DashboardController {
    * GET /api/dashboard/manager
    */
   @Get('manager')
-  @Roles(UserRole.MANAGER, UserRole.ADMIN)
+  @Roles(UserRole.EMPLOYEE, UserRole.ADMIN) // ADR-017: MANAGER removed; managers are EMPLOYEE with directReports. IsManager guard TBD (Story 14.4)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get Manager Dashboard data' })
   @ApiResponse({

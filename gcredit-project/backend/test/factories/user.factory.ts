@@ -47,10 +47,11 @@ export class UserFactory {
   }
 
   /**
-   * Creates a manager user
+   * Creates a manager user (ADR-017: managers now have EMPLOYEE role;
+   * manager identity is derived from directReports relation)
    */
   async createManager(options: CreateUserOptions = {}): Promise<User> {
-    return this.createUser({ role: UserRole.MANAGER, ...options });
+    return this.createUser({ role: UserRole.EMPLOYEE, ...options });
   }
 
   /**

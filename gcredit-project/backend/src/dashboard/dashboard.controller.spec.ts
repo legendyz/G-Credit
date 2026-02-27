@@ -257,7 +257,7 @@ describe('DashboardController', () => {
         user: {
           userId: 'manager-1',
           email: 'manager@example.com',
-          role: UserRole.MANAGER,
+          role: UserRole.EMPLOYEE, // ADR-017: managers now have EMPLOYEE role
         },
       };
 

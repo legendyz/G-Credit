@@ -175,13 +175,13 @@ describe('BadgeIssuanceController', () => {
           expect.arrayContaining([
             UserRole.ADMIN,
             UserRole.ISSUER,
-            UserRole.MANAGER,
+            UserRole.EMPLOYEE, // ADR-017: MANAGER removed; managers are EMPLOYEE
           ]),
         );
         expect(roles).toHaveLength(3);
       });
 
-      it('GET /issued should require ADMIN, ISSUER, or MANAGER', () => {
+      it('GET /issued should require ADMIN, ISSUER, or EMPLOYEE', () => {
         const roles = Reflect.getMetadata(
           ROLES_KEY,
           proto.getIssuedBadges,
@@ -190,7 +190,7 @@ describe('BadgeIssuanceController', () => {
           expect.arrayContaining([
             UserRole.ADMIN,
             UserRole.ISSUER,
-            UserRole.MANAGER,
+            UserRole.EMPLOYEE, // ADR-017: MANAGER removed; managers are EMPLOYEE
           ]),
         );
         expect(roles).toHaveLength(3);

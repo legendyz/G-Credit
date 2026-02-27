@@ -438,9 +438,13 @@ export class BadgeIssuanceService {
       actor.role === UserRole.ADMIN ||
       (actor.role === UserRole.ISSUER && badge.issuerId === actorId);
 
-    // Story 12.3a: MANAGER can revoke badges for their direct reports (managerId-based)
-    if (actor.role === UserRole.MANAGER) {
-      canRevoke = badge.recipient?.managerId === actor.id;
+    // ADR-017: Manager can revoke badges for their direct reports (managerId-based)
+    // Manager identity is derived from directReports relation, not role enum
+    if (
+      actor.role === UserRole.EMPLOYEE &&
+      badge.recipient?.managerId === actor.id
+    ) {
+      canRevoke = true;
     }
 
     if (!canRevoke) {
@@ -700,9 +704,15 @@ export class BadgeIssuanceService {
     if (userRole === UserRole.ISSUER) {
       where.issuerId = userId;
     }
-    // Story 12.3a: MANAGER can only see badges for their direct reports (managerId-based)
-    else if (userRole === UserRole.MANAGER) {
-      where.recipient = { managerId: userId };
+    // ADR-017: Manager (EMPLOYEE with directReports) can see badges for their direct reports
+    else if (userRole === UserRole.EMPLOYEE) {
+      // Check if this employee is a manager (has direct reports)
+      const directReportCount = await this.prisma.user.count({
+        where: { managerId: userId },
+      });
+      if (directReportCount > 0) {
+        where.recipient = { managerId: userId };
+      }
     }
     // ADMIN can see all badges (no filter) - but Story 8.2 allows issuer filter
     else if (query.issuerId) {
