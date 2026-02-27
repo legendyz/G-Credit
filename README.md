@@ -46,32 +46,13 @@
 **Sprint 12.5:** ✅ Complete (2/2 stories, 1,593 tests, 2026-02-25, v1.2.1)  
 **Sprint 13:** ✅ Complete (8/8 stories, 4 waves, 1,708 tests, 2026-02-25 to 2026-02-27, v1.3.0)  
 **Version:** v1.3.0 (Azure AD SSO + Session Management, 1,708 tests, 100% passing)
-- Badge catalog with search and categorization
-- ✅ Badge revocation with reason tracking
 
-### Employee Experience ✅ **Sprint 3 Complete**
-- ✅ Badge claiming workflow (secure token-based)
-- ✅ Personal badge wallet/profile (my-badges endpoint)
-- ✅ Badge status lifecycle (ISSUED → CLAIMED → REVOKED)
-- 🔜 Privacy controls (public/private per badge) (Sprint 4+)
-- Social sharing (LinkedIn, email, personal websites)
-- Badge download and export
-
-### Analytics & Insights ✅ **Sprint 8 Complete**
-- ✅ Admin dashboards (issuance trends, claim rates, share rates)
-- ⚠️ Organizational skill inventory (analytics chart only, no standalone page)
-- ⚠️ Department and role-based skill distribution (category-level only)
-- 🔜 Program effectiveness metrics
-- 🔜 Exportable reports for HR planning
-
-### System Integrations ✅ **Sprint 6 Complete**
-- ⚠️ Azure AD (Entra ID) — server-to-server Graph API auth (user SSO planned)
-- ⚠️ HRIS employee directory sync (M365 user sync implemented, Workday/ADP planned)
-- 🔜 LMS Webhook consumption (automated issuance)
-- ⚠️ Microsoft Teams notifications (code ready, disabled pending permissions — TD-006)
-- ✅ Outlook email notifications (Graph API Mail.Send)
-- ⚠️ LinkedIn sharing integration (embed widget only, no API)
-- ✅ RESTful APIs with Swagger/OpenAPI documentation
+### Key Capabilities (v1.3.0)
+- **Badge Lifecycle:** Template management, issuance, claiming, revocation, verification (Open Badges 2.0)
+- **Employee Experience:** Badge wallet, timeline view, privacy controls, social sharing (LinkedIn/email)
+- **Admin & Analytics:** Dashboard, skill/category/user/milestone management, CSV export, activity feed
+- **Enterprise Auth:** Azure AD SSO (MSAL PKCE), JIT provisioning, idle timeout, dual-entry login
+- **Integrations:** M365 user sync, Graph API email, Teams notifications (pending permissions), RESTful APIs
 
 ---
 
