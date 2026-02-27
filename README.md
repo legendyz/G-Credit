@@ -468,32 +468,65 @@ This project uses the **BMAD (Business Model Agent Development) Framework** v6.0
 
 ## 🛠️ Development Setup
 
+### Prerequisites
+
+- **Node.js** ≥ 20.x (LTS recommended)
+- **npm** ≥ 10.x
+- **Git** ≥ 2.x
+- **Azure PostgreSQL** — a running PostgreSQL instance (Azure Flexible Server or local PostgreSQL)
+- **Azure Blob Storage** — for badge images and evidence files
+
+### 1. Clone & Configure
+
 ```bash
-# Clone repository
 git clone https://github.com/legendyz/G-Credit.git
 cd G-Credit
+```
 
-# Install backend dependencies
+### 2. Backend Setup
+
+```bash
 cd gcredit-project/backend
 npm install
 
 # Configure environment variables
 cp .env.example .env
-# Edit .env file to configure Database, Azure, JWT, and SSO settings
+# Edit .env — required: DATABASE_URL, JWT_SECRET, JWT_REFRESH_SECRET
+# Edit .env — required for full features: Azure Blob Storage connection string
+# Edit .env — optional: Azure AD SSO vars (system works with password login without SSO)
 
-# Setup database
+# Generate Prisma Client & run migrations
+npx prisma generate
 npx prisma migrate dev
 
 # Start backend (http://localhost:3000)
 npm run start:dev
+```
 
-# Install frontend dependencies (new terminal)
+### 3. Frontend Setup (new terminal)
+
+```bash
 cd gcredit-project/frontend
 npm install
 
 # Start frontend (http://localhost:5173)
 npm run dev
 ```
+
+### 4. (Optional) Enable Git Hooks — for contributors
+
+```bash
+# From project root (G-Credit/)
+cd ../..
+npm install    # installs Husky + lint-staged
+# Enables pre-commit (lint + format) and pre-push (full test suite) hooks
+```
+
+### Notes
+
+- **Azure AD SSO is optional** — if `AZURE_SSO_CLIENT_ID` is not set, SSO endpoint returns 503; password login works independently
+- **Frontend API proxy** — Vite dev server proxies `/api` to `http://localhost:3000` by default; no extra config needed
+- See [infrastructure-inventory.md](gcredit-project/docs/setup/infrastructure-inventory.md) for full environment variable reference
 
 ---
 
