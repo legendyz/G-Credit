@@ -5,10 +5,14 @@ import { Toaster } from 'sonner';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Layout } from '@/components/layout/Layout';
 import { queryClient } from '@/lib/queryClient';
+import { IdleTimeoutProvider } from '@/components/session/IdleTimeoutProvider';
 
 // Lazy-load all page components (TD-013: route-based code splitting)
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
 const LoginPage = lazy(() => import('@/pages/LoginPage').then((m) => ({ default: m.LoginPage })));
+const SsoCallbackPage = lazy(() =>
+  import('@/pages/SsoCallbackPage').then((m) => ({ default: m.SsoCallbackPage }))
+);
 const TimelineView = lazy(() =>
   import('@/components/TimelineView/TimelineView').then((m) => ({
     default: m.TimelineView,
@@ -54,10 +58,12 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <Toaster richColors position="top-right" />
       <BrowserRouter>
+        <IdleTimeoutProvider />
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
             {/* Public Routes */}
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/sso/callback" element={<SsoCallbackPage />} />
             <Route path="/verify/:verificationId" element={<VerifyBadgePage />} />
             <Route path="/badges/:badgeId/embed" element={<BadgeEmbedPage />} />
             <Route

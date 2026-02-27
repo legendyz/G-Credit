@@ -9,6 +9,7 @@ export interface ShareStatsDto {
     email: number;
     teams: number;
     widget: number;
+    linkedin: number;
   };
 }
 
@@ -110,6 +111,7 @@ export class BadgeAnalyticsService {
       email: shares.filter((s) => s.platform === 'email').length,
       teams: shares.filter((s) => s.platform === 'teams').length,
       widget: shares.filter((s) => s.platform === 'widget').length,
+      linkedin: shares.filter((s) => s.platform === 'linkedin').length,
     };
 
     return {

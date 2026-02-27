@@ -298,6 +298,32 @@ export class AdminActivityDto {
   timestamp: Date;
 }
 
+export class AdminNotificationDto {
+  @ApiProperty({
+    description: 'Notification type',
+    enum: ['M365_SYNC_RECOMMENDED', 'SYSTEM_WARNING'],
+  })
+  type: string;
+
+  @ApiProperty({
+    description: 'Notification severity',
+    enum: ['info', 'warning', 'critical'],
+  })
+  severity: 'info' | 'warning' | 'critical';
+
+  @ApiProperty({ description: 'User-friendly notification message' })
+  message: string;
+
+  @ApiProperty({
+    description: 'Detailed description or suggested action',
+    required: false,
+  })
+  detail?: string;
+
+  @ApiProperty({ description: 'When the notification was generated' })
+  timestamp: Date;
+}
+
 export class AdminDashboardDto {
   @ApiProperty({
     description: 'System overview statistics',
@@ -310,4 +336,11 @@ export class AdminDashboardDto {
     type: [AdminActivityDto],
   })
   recentActivity: AdminActivityDto[];
+
+  @ApiProperty({
+    description: 'Admin notifications (sync reminders, warnings)',
+    type: [AdminNotificationDto],
+    required: false,
+  })
+  notifications?: AdminNotificationDto[];
 }

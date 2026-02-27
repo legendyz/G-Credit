@@ -1,6 +1,6 @@
 # Story 13.5: Global 401 Interceptor + Token Refresh Queue
 
-Status: backlog
+Status: review
 
 ## Story
 
@@ -18,19 +18,19 @@ So that I don't lose my work or get unexpectedly logged out while working.
 
 ## Acceptance Criteria
 
-1. [ ] `apiFetch()` enhanced with 401 response interceptor:
+1. [x] `apiFetch()` enhanced with 401 response interceptor:
    - On 401 → automatically call `POST /api/auth/refresh`
    - On refresh success → retry the original request with new cookies
    - On refresh failure → call `authStore.logout()` + redirect to `/login`
-2. [ ] Token refresh queue implemented:
+2. [x] Token refresh queue implemented:
    - If 3+ concurrent API calls all receive 401, only 1 refresh request is sent
    - Other calls wait (queued) for the refresh to complete
    - After refresh completes, all queued calls are retried
    - If refresh fails, all queued calls are rejected
-3. [ ] Infinite retry loop prevention: max 1 retry per request (don't retry a retried request)
-4. [ ] `POST /api/auth/refresh` and `POST /api/auth/logout` are excluded from interception (avoid circular refresh)
-5. [ ] React Query `queryClient` default `retry` config updated to work with interceptor (avoid double-retry)
-6. [ ] Tests: single 401 → refresh → retry, concurrent 401s → single refresh → all retry, refresh failure → logout, no infinite loop, excluded paths
+3. [x] Infinite retry loop prevention: max 1 retry per request (don't retry a retried request)
+4. [x] `POST /api/auth/refresh` and `POST /api/auth/logout` are excluded from interception (avoid circular refresh)
+5. [x] React Query `queryClient` default `retry` config updated to work with interceptor (avoid double-retry)
+6. [x] Tests: single 401 → refresh → retry, concurrent 401s → single refresh → all retry, refresh failure → logout, no infinite loop, excluded paths
 
 ## Tasks / Subtasks
 

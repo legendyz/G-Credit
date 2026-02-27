@@ -314,6 +314,7 @@ describe('BulkPreviewPage', () => {
       .mockResolvedValueOnce({
         ok: false,
         status: 500,
+        json: () => Promise.resolve({ message: 'Bulk issuance failed' }),
       });
 
     renderWithRouter();

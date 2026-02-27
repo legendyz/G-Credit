@@ -131,7 +131,7 @@ describe('ProfilePage', () => {
       render(<ProfilePage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Failed to load profile')).toBeInTheDocument();
+        expect(screen.getByText('Server error')).toBeInTheDocument();
       });
     });
   });

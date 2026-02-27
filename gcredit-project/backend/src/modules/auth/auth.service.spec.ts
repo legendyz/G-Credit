@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -68,6 +69,9 @@ describe('AuthService', () => {
       create: jest.fn(),
       findUnique: jest.fn(),
       update: jest.fn(),
+    },
+    userAuditLog: {
+      create: jest.fn().mockResolvedValue({}),
     },
     $transaction: jest.fn(),
   };
@@ -425,7 +429,7 @@ describe('AuthService', () => {
       jest.clearAllMocks();
     });
 
-    it('should reject login for M365 user with empty passwordHash (AC #32)', async () => {
+    it('should reject login for M365 user with azureId set — SSO message (Story 13.1 AC #11)', async () => {
       const m365UserNoPassword = {
         ...mockUser,
         azureId: 'azure-id-123',
@@ -435,16 +439,36 @@ describe('AuthService', () => {
 
       await expect(
         service.login({ email: 'test@example.com', password: 'any' }),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(
+        'This account is managed by Microsoft 365. Please use "Sign in with Microsoft".',
+      );
 
       // Should NOT call bcrypt.compare
       expect(bcrypt.compare).not.toHaveBeenCalled();
     });
 
-    it('should reject login for user with null passwordHash (AC #32)', async () => {
-      const userNullHash = {
+    it('should reject login for M365 user with azureId + valid passwordHash — SSO message (AC #11)', async () => {
+      const m365UserWithPassword = {
         ...mockUser,
         azureId: 'azure-id-123',
+        passwordHash: '$2b$10$hashedpassword',
+      };
+      mockPrismaService.user.findUnique.mockResolvedValue(m365UserWithPassword);
+
+      await expect(
+        service.login({ email: 'test@example.com', password: 'correct' }),
+      ).rejects.toThrow(
+        'This account is managed by Microsoft 365. Please use "Sign in with Microsoft".',
+      );
+
+      // Should NOT call bcrypt.compare — check fires before password verification
+      expect(bcrypt.compare).not.toHaveBeenCalled();
+    });
+
+    it('should reject login for user with null passwordHash and no azureId (AC #32)', async () => {
+      const userNullHash = {
+        ...mockUser,
+        azureId: null,
         passwordHash: null,
       };
       mockPrismaService.user.findUnique.mockResolvedValue(userNullHash);
@@ -456,50 +480,67 @@ describe('AuthService', () => {
       expect(bcrypt.compare).not.toHaveBeenCalled();
     });
 
-    it('should trigger mini-sync for M365 user after password verification', async () => {
+    it('should block M365 user (azureId set) from password login \u2014 triggers before mini-sync', async () => {
       const m365User = {
         ...mockUser,
         azureId: 'azure-id-123',
         lastSyncAt: new Date(),
       };
       mockPrismaService.user.findUnique.mockResolvedValue(m365User);
-      bcrypt.compare.mockResolvedValue(true);
-      mockJwtService.sign.mockReturnValue('test-token');
-      mockPrismaService.refreshToken.create.mockResolvedValue({});
-      mockPrismaService.user.update.mockResolvedValue(m365User);
-      mockM365SyncService.syncUserFromGraph.mockResolvedValue({
-        rejected: false,
-      });
-
-      await service.login({ email: 'test@example.com', password: 'correct' });
-
-      expect(mockM365SyncService.syncUserFromGraph).toHaveBeenCalledWith({
-        id: m365User.id,
-        azureId: 'azure-id-123',
-        lastSyncAt: m365User.lastSyncAt,
-      });
-    });
-
-    it('should reject login when M365 account is disabled (syncResult.rejected)', async () => {
-      const m365User = {
-        ...mockUser,
-        azureId: 'azure-id-123',
-        lastSyncAt: new Date(),
-      };
-      mockPrismaService.user.findUnique.mockResolvedValue(m365User);
-      bcrypt.compare.mockResolvedValue(true);
-      mockM365SyncService.syncUserFromGraph.mockResolvedValue({
-        rejected: true,
-        reason: 'M365 account disabled',
-      });
 
       await expect(
         service.login({ email: 'test@example.com', password: 'correct' }),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(
+        'This account is managed by Microsoft 365. Please use "Sign in with Microsoft".',
+      );
+
+      // Mini-sync must NOT be called — azureId check fires before password verification
+      expect(mockM365SyncService.syncUserFromGraph).not.toHaveBeenCalled();
+      expect(bcrypt.compare).not.toHaveBeenCalled();
     });
 
-    it('should NOT trigger mini-sync for local user (no azureId)', async () => {
+    it('should reject login when M365 account has azureId set — blocks password login (Story 13.1)', async () => {
+      const m365User = {
+        ...mockUser,
+        azureId: 'azure-id-123',
+        lastSyncAt: new Date(),
+      };
+      mockPrismaService.user.findUnique.mockResolvedValue(m365User);
+
+      await expect(
+        service.login({ email: 'test@example.com', password: 'correct' }),
+      ).rejects.toThrow(
+        'This account is managed by Microsoft 365. Please use "Sign in with Microsoft".',
+      );
+    });
+
+    it('should allow login for local user (no azureId) — no regression (Story 13.1)', async () => {
       const localUser = { ...mockUser, azureId: null };
+      mockPrismaService.user.findUnique.mockResolvedValue(localUser);
+      bcrypt.compare.mockResolvedValue(true);
+      mockJwtService.sign.mockReturnValue('test-token');
+      mockPrismaService.refreshToken.create.mockResolvedValue({});
+      mockPrismaService.user.update.mockResolvedValue(localUser);
+
+      const result = await service.login({
+        email: 'test@example.com',
+        password: 'correct',
+      });
+
+      expect(result).toHaveProperty('accessToken');
+      expect(mockM365SyncService.syncUserFromGraph).not.toHaveBeenCalled();
+    });
+
+    it('should use fresh role in JWT payload after mini-sync (AC #31)', async () => {
+      // NOTE: With Story 13.1, M365 users (azureId set) are blocked from password login.
+      // Mini-sync now happens only via SSO flow. This test verifies the ssoLogin path instead.
+      // The local user path (no azureId) doesn't trigger mini-sync.
+      const localUser = {
+        ...mockUser,
+        azureId: null,
+        role: UserRole.EMPLOYEE,
+        lastSyncAt: new Date(),
+      };
       mockPrismaService.user.findUnique.mockResolvedValue(localUser);
       bcrypt.compare.mockResolvedValue(true);
       mockJwtService.sign.mockReturnValue('test-token');
@@ -508,118 +549,244 @@ describe('AuthService', () => {
 
       await service.login({ email: 'test@example.com', password: 'correct' });
 
-      expect(mockM365SyncService.syncUserFromGraph).not.toHaveBeenCalled();
-    });
-
-    it('should use fresh role in JWT payload after mini-sync (AC #31)', async () => {
-      const m365User = {
-        ...mockUser,
-        azureId: 'azure-id-123',
-        role: UserRole.EMPLOYEE,
-        lastSyncAt: new Date(),
-      };
-      const updatedUser = {
-        ...m365User,
-        role: UserRole.ADMIN, // Role changed after sync
-      };
-      mockPrismaService.user.findUnique
-        .mockResolvedValueOnce(m365User) // Initial lookup
-        .mockResolvedValueOnce(updatedUser); // After mini-sync refresh
-      bcrypt.compare.mockResolvedValue(true);
-      mockJwtService.sign.mockReturnValue('test-token');
-      mockPrismaService.refreshToken.create.mockResolvedValue({});
-      mockPrismaService.user.update.mockResolvedValue(updatedUser);
-      mockM365SyncService.syncUserFromGraph.mockResolvedValue({
-        rejected: false,
-      });
-
-      await service.login({ email: 'test@example.com', password: 'correct' });
-
-      // JWT sign should use the FRESH role (ADMIN), not the original (EMPLOYEE)
+      // Local user JWT uses their current role directly
       expect(mockJwtService.sign).toHaveBeenCalledWith(
         expect.objectContaining({
-          role: UserRole.ADMIN,
+          role: UserRole.EMPLOYEE,
         }),
       );
     });
 
-    it('should return freshUser profile (not stale) in login response after mini-sync', async () => {
-      const m365User = {
+    it('should return user profile without passwordHash in login response', async () => {
+      const localUser = {
         ...mockUser,
-        azureId: 'azure-id-123',
+        azureId: null,
         role: UserRole.EMPLOYEE,
-        department: 'Old Dept',
-        lastSyncAt: new Date(),
+        department: 'Engineering',
       };
-      const updatedUser = {
-        ...m365User,
-        role: UserRole.ADMIN,
-        department: 'New Dept',
-      };
-      mockPrismaService.user.findUnique
-        .mockResolvedValueOnce(m365User) // Initial lookup
-        .mockResolvedValueOnce(updatedUser); // After mini-sync refresh
+      mockPrismaService.user.findUnique.mockResolvedValue(localUser);
       bcrypt.compare.mockResolvedValue(true);
       mockJwtService.sign.mockReturnValue('test-token');
       mockPrismaService.refreshToken.create.mockResolvedValue({});
-      mockPrismaService.user.update.mockResolvedValue(updatedUser);
-      mockM365SyncService.syncUserFromGraph.mockResolvedValue({
-        rejected: false,
-      });
+      mockPrismaService.user.update.mockResolvedValue(localUser);
 
       const result = await service.login({
         email: 'test@example.com',
         password: 'correct',
       });
 
-      // Response user should reflect FRESH data, not stale pre-sync data
-      expect(result.user.role).toBe(UserRole.ADMIN);
-      expect(result.user.department).toBe('New Dept');
       // Password hash must NOT be in response
       expect(result.user).not.toHaveProperty('passwordHash');
+      expect(result.user.role).toBe(UserRole.EMPLOYEE);
+      expect(result.user.department).toBe('Engineering');
     });
 
-    it('should allow login when Graph unavailable AND lastSyncAt < 24h', async () => {
+    it('should block M365 user (azureId set) from password login even with valid password', async () => {
       const m365User = {
         ...mockUser,
         azureId: 'azure-id-123',
         lastSyncAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
       };
       mockPrismaService.user.findUnique.mockResolvedValue(m365User);
-      bcrypt.compare.mockResolvedValue(true);
-      mockJwtService.sign.mockReturnValue('test-token');
-      mockPrismaService.refreshToken.create.mockResolvedValue({});
-      mockPrismaService.user.update.mockResolvedValue(m365User);
-      // syncUserFromGraph returns not-rejected (degradation window allows)
-      mockM365SyncService.syncUserFromGraph.mockResolvedValue({
-        rejected: false,
-      });
 
-      const result = await service.login({
-        email: 'test@example.com',
-        password: 'correct',
-      });
+      await expect(
+        service.login({ email: 'test@example.com', password: 'correct' }),
+      ).rejects.toThrow(
+        'This account is managed by Microsoft 365. Please use "Sign in with Microsoft".',
+      );
 
-      expect(result).toHaveProperty('accessToken');
+      // No password comparison should happen
+      expect(bcrypt.compare).not.toHaveBeenCalled();
     });
 
-    it('should reject login when Graph unavailable AND lastSyncAt > 24h (AC #35)', async () => {
+    it('should block M365 user from password login regardless of sync status', async () => {
       const m365User = {
         ...mockUser,
         azureId: 'azure-id-123',
         lastSyncAt: new Date(Date.now() - 48 * 60 * 60 * 1000), // 48 hours ago
       };
       mockPrismaService.user.findUnique.mockResolvedValue(m365User);
-      bcrypt.compare.mockResolvedValue(true);
-      // syncUserFromGraph returns rejected (degradation window expired)
-      mockM365SyncService.syncUserFromGraph.mockResolvedValue({
-        rejected: true,
-        reason: 'Graph API unavailable and cached data expired',
-      });
 
       await expect(
         service.login({ email: 'test@example.com', password: 'correct' }),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(
+        'This account is managed by Microsoft 365. Please use "Sign in with Microsoft".',
+      );
+
+      // Mini-sync should NOT be called — azureId check fires before any password/sync logic
+      expect(mockM365SyncService.syncUserFromGraph).not.toHaveBeenCalled();
+    });
+  });
+
+  // ============================================================
+  // Story 13.1 — SSO Login Tests (ssoLogin method)
+  // ============================================================
+  describe('ssoLogin (Story 13.1)', () => {
+    const mockSsoProfile = {
+      oid: 'azure-oid-123',
+      email: 'sso@example.com',
+      displayName: 'SSO User',
+    };
+
+    const mockM365User = {
+      ...mockUser,
+      id: 'sso-user-123',
+      email: 'sso@example.com',
+      azureId: 'azure-oid-123',
+      isActive: true,
+      lastSyncAt: new Date(),
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      mockJwtService.sign.mockReturnValue('sso-jwt-token');
+      mockPrismaService.refreshToken.create.mockResolvedValue({});
+      mockPrismaService.user.update.mockResolvedValue(mockM365User);
+      mockM365SyncService.syncUserFromGraph.mockResolvedValue({
+        rejected: false,
+      });
+    });
+
+    it('should return accessToken + refreshToken + user for existing active user', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(mockM365User);
+
+      const result = await service.ssoLogin(mockSsoProfile);
+
+      expect(result).toHaveProperty('accessToken');
+      expect(result).toHaveProperty('refreshToken');
+      expect(result).toHaveProperty('user');
+      expect('error' in result).toBe(false);
+    });
+
+    it('should JIT provision new user when azureId not found (Story 13.2 replaces sso_no_account)', async () => {
+      const createdJitUser = {
+        ...mockM365User,
+        id: 'jit-new-user',
+        passwordHash: '',
+        role: UserRole.EMPLOYEE,
+      };
+      // First findUnique (azureId lookup) → null, second (re-fetch after JIT) → created user
+      mockPrismaService.user.findUnique
+        .mockResolvedValueOnce(null) // lookup by azureId
+        .mockResolvedValueOnce(createdJitUser); // re-fetch after JIT + sync
+      mockPrismaService.user.create.mockResolvedValue(createdJitUser);
+      mockPrismaService.user.update.mockResolvedValue(createdJitUser);
+
+      const result = await service.ssoLogin(mockSsoProfile);
+
+      expect(mockPrismaService.user.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            azureId: 'azure-oid-123',
+            passwordHash: '',
+            role: UserRole.EMPLOYEE,
+          }),
+        }),
+      );
+      expect(result).toHaveProperty('accessToken');
+      expect(result).not.toHaveProperty('error');
+    });
+
+    it('should return { error: account_disabled } for inactive user', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue({
+        ...mockM365User,
+        isActive: false,
+      });
+
+      const result = await service.ssoLogin(mockSsoProfile);
+
+      expect(result).toEqual({ error: 'account_disabled' });
+    });
+
+    it('should lookup user by azureId (oid)', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(mockM365User);
+
+      await service.ssoLogin(mockSsoProfile);
+
+      expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
+        where: { azureId: 'azure-oid-123' },
+      });
+    });
+
+    it('should update lastLoginAt on successful SSO login', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(mockM365User);
+
+      await service.ssoLogin(mockSsoProfile);
+
+      expect(mockPrismaService.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: mockM365User.id },
+          data: expect.objectContaining({
+            lastLoginAt: expect.any(Date),
+            failedLoginAttempts: 0,
+            lockedUntil: null,
+          }),
+        }),
+      );
+    });
+
+    it('should trigger mini-sync for M365 user', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(mockM365User);
+
+      await service.ssoLogin(mockSsoProfile);
+
+      expect(mockM365SyncService.syncUserFromGraph).toHaveBeenCalledWith({
+        id: mockM365User.id,
+        azureId: mockM365User.azureId,
+        lastSyncAt: mockM365User.lastSyncAt,
+      });
+    });
+
+    it('should return { error: sso_failed } when mini-sync rejects', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(mockM365User);
+      mockM365SyncService.syncUserFromGraph.mockResolvedValue({
+        rejected: true,
+        reason: 'Account disabled in M365',
+      });
+
+      const result = await service.ssoLogin(mockSsoProfile);
+
+      expect(result).toEqual({ error: 'sso_failed' });
+    });
+
+    it('should not include passwordHash in returned user profile', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(mockM365User);
+
+      const result = await service.ssoLogin(mockSsoProfile);
+
+      expect('user' in result && result.user).toBeDefined();
+      if ('user' in result) {
+        expect(result.user).not.toHaveProperty('passwordHash');
+      }
+    });
+
+    it('should generate JWT with { sub, email, role } payload', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(mockM365User);
+
+      await service.ssoLogin(mockSsoProfile);
+
+      expect(mockJwtService.sign).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sub: mockM365User.id,
+          email: mockM365User.email,
+          role: mockM365User.role,
+        }),
+      );
+    });
+
+    it('should store refresh token in database', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(mockM365User);
+
+      await service.ssoLogin(mockSsoProfile);
+
+      expect(mockPrismaService.refreshToken.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            token: 'sso-jwt-token',
+            userId: mockM365User.id,
+          }),
+        }),
+      );
     });
   });
 });

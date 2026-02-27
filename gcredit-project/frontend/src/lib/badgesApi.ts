@@ -3,7 +3,8 @@
  * Sprint 7 - Epic 9: Badge Revocation Admin UI
  */
 
-import { apiFetch } from './apiFetch';
+import { apiFetch, apiFetchJson } from './apiFetch';
+import type { BadgeDetail } from '../types/badge';
 
 // Badge status constants matching backend Prisma enum
 export const BadgeStatus = {
@@ -114,17 +115,6 @@ export interface BadgeQueryParams {
 }
 
 /**
- * Handle API response errors
- */
-async function handleResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Unknown error' }));
-    throw new Error(error.message || `HTTP ${response.status}`);
-  }
-  return response.json();
-}
-
-/**
  * Fetch all badges (Admin view) - uses /issued endpoint which returns all for ADMIN
  * GET /api/badges/issued
  */
@@ -139,9 +129,7 @@ export async function getAllBadges(params: BadgeQueryParams = {}): Promise<Badge
   if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder);
   if (params.activeOnly) searchParams.set('activeOnly', 'true');
 
-  const response = await apiFetch(`/badges/issued?${searchParams}`);
-
-  return handleResponse<BadgeListResponse>(response);
+  return apiFetchJson<BadgeListResponse>(`/badges/issued?${searchParams}`);
 }
 
 /**
@@ -165,22 +153,19 @@ export async function revokeBadge(
   badgeId: string,
   dto: RevokeBadgeDto
 ): Promise<RevokeBadgeResponse> {
-  const response = await apiFetch(`/badges/${badgeId}/revoke`, {
+  return apiFetchJson<RevokeBadgeResponse>(`/badges/${badgeId}/revoke`, {
     method: 'POST',
     body: JSON.stringify(dto),
   });
-
-  return handleResponse<RevokeBadgeResponse>(response);
 }
 
 /**
  * Get a single badge by ID
  * GET /api/badges/:id
+ * Returns full detail including visibility, evidence, verificationId.
  */
-export async function getBadgeById(badgeId: string): Promise<Badge> {
-  const response = await apiFetch(`/badges/${badgeId}`);
-
-  return handleResponse<Badge>(response);
+export async function getBadgeById(badgeId: string): Promise<BadgeDetail> {
+  return apiFetchJson<BadgeDetail>(`/badges/${badgeId}`);
 }
 
 // --- Single Badge Issuance (Story 10.6b) ---
@@ -192,11 +177,100 @@ export interface IssueBadgeRequest {
 }
 
 export async function issueBadge(dto: IssueBadgeRequest): Promise<Badge> {
-  const response = await apiFetch('/badges', {
+  return apiFetchJson<Badge>('/badges', {
     method: 'POST',
     body: JSON.stringify(dto),
   });
-  return handleResponse<Badge>(response);
+}
+
+// --- Story 13.7: API Client Cleanup — migrated inline calls ---
+
+export interface Recipient {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  department?: string;
+}
+
+/** PATCH /badges/:id/visibility */
+export async function updateBadgeVisibility(
+  badgeId: string,
+  visibility: 'PUBLIC' | 'PRIVATE'
+): Promise<void> {
+  const res = await apiFetch(`/badges/${badgeId}/visibility`, {
+    method: 'PATCH',
+    body: JSON.stringify({ visibility }),
+  });
+  if (!res.ok) throw new Error('Failed to update visibility');
+}
+
+/** Response from claim endpoints (badge details + optional milestones) */
+export interface ClaimBadgeResponse {
+  badge?: { name?: string };
+  template?: { name?: string };
+  badgeName?: string;
+  newMilestones?: Array<{ title: string; description?: string }>;
+}
+
+/** POST /badges/:id/claim — claim a specific badge (wallet modal) */
+export async function claimBadge(badgeId: string): Promise<ClaimBadgeResponse> {
+  return apiFetchJson<ClaimBadgeResponse>(`/badges/${badgeId}/claim`, {
+    method: 'POST',
+  });
+}
+
+/** POST /badges/claim — public claim by token (email link) */
+export async function claimBadgeByToken(data: { claimToken: string }): Promise<ClaimBadgeResponse> {
+  return apiFetchJson<ClaimBadgeResponse>('/badges/claim', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+/** GET /badges/:id/download/png — returns blob */
+export async function downloadBadgePng(badgeId: string): Promise<Blob> {
+  const response = await apiFetch(`/badges/${badgeId}/download/png`);
+  if (!response.ok) throw new Error('Failed to download badge');
+  return response.blob();
+}
+
+/** Response from report issue endpoint */
+export interface ReportIssueResponse {
+  message?: string;
+}
+
+/** POST /badges/:id/report */
+export async function reportBadgeIssue(
+  badgeId: string,
+  data: { issueType: string; description: string; email: string }
+): Promise<ReportIssueResponse> {
+  return apiFetchJson<ReportIssueResponse>(`/badges/${badgeId}/report`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+/** Similar badge item returned by GET /badges/:id/similar */
+export interface SimilarBadge {
+  id: string;
+  name: string;
+  description: string | null;
+  imageUrl: string | null;
+  category: string;
+  issuerName: string;
+  badgeCount: number;
+  similarityScore: number;
+}
+
+/** GET /badges/:id/similar?limit=N */
+export async function getSimilarBadges(badgeId: string, limit = 6): Promise<SimilarBadge[]> {
+  return apiFetchJson<SimilarBadge[]>(`/badges/${badgeId}/similar?limit=${limit}`);
+}
+
+/** GET /badges/recipients */
+export async function getRecipients(): Promise<Recipient[]> {
+  return apiFetchJson('/badges/recipients');
 }
 
 // Export as namespace for cleaner imports
@@ -206,6 +280,13 @@ export const badgesApi = {
   revokeBadge,
   getBadgeById,
   issueBadge,
+  updateBadgeVisibility,
+  claimBadge,
+  claimBadgeByToken,
+  downloadBadgePng,
+  reportBadgeIssue,
+  getSimilarBadges,
+  getRecipients,
 };
 
 export default badgesApi;

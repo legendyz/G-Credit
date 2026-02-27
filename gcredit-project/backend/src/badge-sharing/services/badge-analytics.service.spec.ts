@@ -240,6 +240,7 @@ describe('BadgeAnalyticsService', () => {
           email: 2,
           teams: 1,
           widget: 1,
+          linkedin: 0,
         },
       });
     });
@@ -257,6 +258,7 @@ describe('BadgeAnalyticsService', () => {
           email: 2,
           teams: 1,
           widget: 1,
+          linkedin: 0,
         },
       });
     });
@@ -282,6 +284,7 @@ describe('BadgeAnalyticsService', () => {
           email: 0,
           teams: 0,
           widget: 0,
+          linkedin: 0,
         },
       });
     });

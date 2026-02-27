@@ -1,0 +1,11 @@
+﻿T3.1|0||SC=
+T3.2|0||
+T3.3|0||
+T3.4|0||
+T11.6-step0|200|login-password123
+T11.6-step1a-setup|200|{"message":"Password changed successfully"}
+T11.6-step1|200|login-newPassword456
+T11.6-step2|200|{"message":"Password changed successfully"}
+T11.6-step3|200|login-Password123
+T12.2|200/200|admin=ADMIN,emp2=EMPLOYEE
+T12.4|401,401,401,401,401,429|expect-4x401-2x429

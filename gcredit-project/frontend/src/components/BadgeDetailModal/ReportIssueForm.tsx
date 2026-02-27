@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { apiFetch } from '../../lib/apiFetch';
+import { reportBadgeIssue } from '../../lib/badgesApi';
 
 interface ReportIssueFormProps {
   badgeId: string;
@@ -34,20 +34,11 @@ const ReportIssueForm: React.FC<ReportIssueFormProps> = ({ badgeId, userEmail, o
     setError(null);
 
     try {
-      const response = await apiFetch(`/badges/${badgeId}/report`, {
-        method: 'POST',
-        body: JSON.stringify({
-          issueType,
-          description: description.trim(),
-          email,
-        }),
+      const data = await reportBadgeIssue(badgeId, {
+        issueType,
+        description: description.trim(),
+        email,
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit report');
-      }
-
-      const data = await response.json();
       setDescription('');
       setShowForm(false);
 

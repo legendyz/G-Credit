@@ -100,10 +100,12 @@ describe('badgeTemplatesApi', () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 500,
+        statusText: 'Internal Server Error',
         json: () => Promise.reject(new Error('parse error')),
       });
 
-      await expect(getAllTemplates()).rejects.toThrow('Unknown error');
+      // apiFetchJson falls back to statusText → then `HTTP ${status}`
+      await expect(getAllTemplates()).rejects.toThrow('Internal Server Error');
     });
   });
 

@@ -192,4 +192,22 @@ export class BadgeAnalyticsController {
     );
     return { success: true };
   }
+
+  /**
+   * Record widget link copy for analytics
+   */
+  @Post(':badgeId/share/widget')
+  @ApiOperation({ summary: 'Record widget link copy for analytics' })
+  @ApiResponse({ status: 201, description: 'Widget copy recorded' })
+  async recordWidgetCopy(
+    @Param('badgeId') badgeId: string,
+    @Request() req: RequestWithUser,
+  ) {
+    await this.badgeAnalyticsService.recordShare(
+      badgeId,
+      'widget',
+      req.user.userId,
+    );
+    return { success: true };
+  }
 }

@@ -1,6 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Client } from '@microsoft/microsoft-graph-client';
-import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../common/prisma.service';
 import { GraphTokenProviderService } from '../microsoft-graph/services/graph-token-provider.service';
 import {
@@ -383,13 +382,26 @@ export class M365SyncService {
     reason?: string;
   }> {
     const DEGRADATION_WINDOW_HOURS = 24;
+    const COOLDOWN_MINUTES = 3;
+
+    // Cooldown: skip sync if last sync was < 3 minutes ago
+    if (user.lastSyncAt) {
+      const minutesSinceSync =
+        (Date.now() - user.lastSyncAt.getTime()) / (1000 * 60);
+      if (minutesSinceSync >= 0 && minutesSinceSync < COOLDOWN_MINUTES) {
+        this.logger.debug(
+          `Mini-sync cooldown: user ${user.id} synced ${minutesSinceSync.toFixed(1)}m ago, skipping`,
+        );
+        return { rejected: false };
+      }
+    }
 
     try {
       // Fire 3 Graph API calls in parallel (AC #31g — ~200-300ms)
       const [profileResult, memberOfResult, managerResult] =
         await Promise.allSettled([
           this.fetchWithRetry<GraphUser>(
-            `https://graph.microsoft.com/v1.0/users/${user.azureId}?$select=accountEnabled,displayName,department`,
+            `https://graph.microsoft.com/v1.0/users/${user.azureId}?$select=accountEnabled,displayName,department,jobTitle`,
           ),
           this.fetchWithRetry<{
             value: Array<{ id: string; '@odata.type': string }>;
@@ -417,11 +429,11 @@ export class M365SyncService {
           lastName:
             profile.displayName?.split(' ').slice(1).join(' ') || undefined,
           department: profile.department || undefined,
+          jobTitle: profile.jobTitle ?? null,
           lastSyncAt: new Date(),
         };
 
-        // c. Determine role from Security Group
-        let newRole: UserRole | undefined;
+        // c. Determine role from Security Group + directReports fallback
         if (memberOfResult.status === 'fulfilled') {
           const groupIds = memberOfResult.value.value
             .filter((m) => m['@odata.type'] === '#microsoft.graph.group')
@@ -431,9 +443,16 @@ export class M365SyncService {
           const issuerGroupId = process.env.AZURE_ISSUER_GROUP_ID;
 
           if (adminGroupId && groupIds.includes(adminGroupId)) {
-            newRole = UserRole.ADMIN;
+            updateData.role = UserRole.ADMIN;
           } else if (issuerGroupId && groupIds.includes(issuerGroupId)) {
-            newRole = UserRole.ISSUER;
+            updateData.role = UserRole.ISSUER;
+          } else {
+            // Not in any privileged Security Group → check directReports for MANAGER
+            const directReportCount = await this.prisma.user.count({
+              where: { managerId: user.id },
+            });
+            updateData.role =
+              directReportCount > 0 ? UserRole.MANAGER : UserRole.EMPLOYEE;
           }
         }
 
@@ -451,11 +470,6 @@ export class M365SyncService {
             // Manager call returned null (404 caught) → no manager
             updateData.managerId = null;
           }
-        }
-
-        // Apply role if determined
-        if (newRole) {
-          updateData.role = newRole;
         }
 
         // e. Update user record
@@ -655,18 +669,19 @@ export class M365SyncService {
         return { success: true, action: 'updated' };
       } else {
         // Create new user
-        // NEW-006: Assign temporary default password until SSO is implemented
-        const defaultPassword =
-          process.env.DEFAULT_USER_PASSWORD || 'password123';
-        const passwordHash = await bcrypt.hash(defaultPassword, 10);
+        // DEC-011-13: SSO-only — M365 users cannot use password login
         await this.prisma.user.create({
           data: {
             ...userData,
-            passwordHash,
+            passwordHash: '', // Empty hash → password login blocked (Story 13.1 guard)
             isActive: true,
             role: resolvedRole,
           },
         });
+
+        this.logger.log(
+          `[M365-SYNC] Created M365 user with SSO-only access (no temp password)`,
+        );
 
         return { success: true, action: 'created' };
       }

@@ -100,7 +100,7 @@ Deliver enterprise-grade authentication (Azure AD SSO) and production-quality se
 #### Story 13.1: Azure AD SSO Strategy + Callback Endpoints
 **Priority:** HIGH  
 **Estimate:** 10-12h  
-**Status:** Backlog  
+**Status:** Done  
 
 **As a** system administrator,  
 **I want** M365 users to authenticate via Azure AD Single Sign-On,  
@@ -134,7 +134,7 @@ Deliver enterprise-grade authentication (Azure AD SSO) and production-quality se
 #### Story 13.2: JIT User Provisioning on First SSO Login
 **Priority:** HIGH  
 **Estimate:** 6-8h  
-**Status:** Backlog  
+**Status:** Done  
 
 **As a** new M365 employee logging in for the first time,  
 **I want** my account to be automatically created when I sign in with Microsoft,  
@@ -167,7 +167,7 @@ Deliver enterprise-grade authentication (Azure AD SSO) and production-quality se
 #### Story 13.3: Login-Time Mini-Sync for Returning SSO Users
 **Priority:** HIGH  
 **Estimate:** 4-6h  
-**Status:** Backlog  
+**Status:** Done  
 
 **As a** returning M365 user,  
 **I want** my profile, role, and manager to update automatically each time I log in via SSO,  
@@ -193,7 +193,7 @@ Deliver enterprise-grade authentication (Azure AD SSO) and production-quality se
 #### Story 13.4: Login Page Dual Entry + SSO Redirect Flow
 **Priority:** HIGH  
 **Estimate:** 6-8h  
-**Status:** Backlog  
+**Status:** Done  
 
 **As a** user visiting the login page,  
 **I want** to see both a "Sign in with Microsoft" button and a traditional email/password form,  
@@ -224,7 +224,7 @@ Deliver enterprise-grade authentication (Azure AD SSO) and production-quality se
 #### Story 13.5: Global 401 Interceptor + Token Refresh Queue
 **Priority:** HIGH  
 **Estimate:** 8-10h  
-**Status:** Backlog  
+**Status:** Done  
 
 **As a** user with an active session,  
 **I want** the app to automatically refresh my session when it expires mid-use,  
@@ -255,7 +255,7 @@ Deliver enterprise-grade authentication (Azure AD SSO) and production-quality se
 #### Story 13.6: Idle Timeout with Warning Modal
 **Priority:** HIGH  
 **Estimate:** 6-8h  
-**Status:** Backlog  
+**Status:** Done  
 
 **As a** security-conscious organization,  
 **I want** user sessions to automatically log out after 30 minutes of inactivity,  
@@ -284,7 +284,7 @@ Deliver enterprise-grade authentication (Azure AD SSO) and production-quality se
 #### Story 13.7: API Client Cleanup (Remove axios + Inline Migrations)
 **Priority:** MEDIUM  
 **Estimate:** 3-4h  
-**Status:** Backlog  
+**Status:** Done  
 
 **As a** developer maintaining the codebase,  
 **I want** a single, consistent API client pattern across all pages,  
@@ -313,7 +313,7 @@ Deliver enterprise-grade authentication (Azure AD SSO) and production-quality se
 #### Story 13.8: Sprint 13 Integration Testing + UAT
 **Priority:** HIGH  
 **Estimate:** 6-8h  
-**Status:** Backlog  
+**Status:** Done  
 
 **As a** product owner,  
 **I want** end-to-end verification of SSO login and session management,  
@@ -366,13 +366,13 @@ Deliver enterprise-grade authentication (Azure AD SSO) and production-quality se
 
 ## Definition of Done (Sprint Level)
 
-- [ ] All 8 stories completed and tested
-- [ ] All existing tests pass (BE + FE, 0 regressions)
-- [ ] New tests cover all acceptance criteria
-- [ ] Pre-push hook passes (`npm run lint` + `npm run build` + core tests)
-- [ ] Code committed to `sprint-13/sso-session-management` branch
+- [x] All 8 stories completed and tested
+- [x] All existing tests pass (BE 914, FE 794, 0 regressions)
+- [x] New tests cover all acceptance criteria
+- [x] Pre-push hook passes (`npm run lint` + `npm run build` + core tests)
+- [x] Code committed to `sprint-13/sso-session-management` branch
 - [ ] PR created for merge to main
-- [ ] CHANGELOG.md updated for v1.3.0
+- [x] CHANGELOG.md updated for v1.3.0
 - [ ] Sprint retrospective notes captured
 
 ---

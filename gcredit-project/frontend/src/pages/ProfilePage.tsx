@@ -12,30 +12,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PageTemplate } from '@/components/layout/PageTemplate';
-import { apiFetch } from '@/lib/apiFetch';
+import { getProfile, updateProfile, changePassword } from '@/lib/profileApi';
+import type { ProfileData } from '@/lib/profileApi';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from 'sonner';
-import { Loader2, User, Lock, Eye, EyeOff } from 'lucide-react';
-
-interface ProfileData {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: string;
-  department?: string | null;
-  isActive: boolean;
-  emailVerified: boolean;
-  lastLoginAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-  manager?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-  } | null;
-}
+import { Loader2, User, Lock, Eye, EyeOff, ShieldAlert } from 'lucide-react';
 
 export function ProfilePage() {
   // Profile state
@@ -68,11 +49,7 @@ export function ProfilePage() {
     setProfileLoading(true);
     setProfileError('');
     try {
-      const response = await apiFetch('/auth/profile');
-      if (!response.ok) {
-        throw new Error('Failed to load profile');
-      }
-      const data: ProfileData = await response.json();
+      const data = await getProfile();
       setProfile(data);
       setFirstName(data.firstName);
       setLastName(data.lastName);
@@ -92,20 +69,10 @@ export function ProfilePage() {
     setProfileSaving(true);
     setProfileError('');
     try {
-      const response = await apiFetch('/auth/profile', {
-        method: 'PATCH',
-        body: JSON.stringify({
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-        }),
+      const updated = await updateProfile({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.message || 'Failed to update profile');
-      }
-
-      const updated: ProfileData = await response.json();
       setProfile(updated);
       setFirstName(updated.firstName);
       setLastName(updated.lastName);
@@ -158,18 +125,7 @@ export function ProfilePage() {
 
     setPasswordSaving(true);
     try {
-      const response = await apiFetch('/auth/change-password', {
-        method: 'POST',
-        body: JSON.stringify({
-          currentPassword,
-          newPassword,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.message || 'Failed to change password');
-      }
+      await changePassword({ currentPassword, newPassword });
 
       // Clear form
       setCurrentPassword('');
@@ -189,6 +145,9 @@ export function ProfilePage() {
 
   const hasProfileChanges =
     profile && (firstName !== profile.firstName || lastName !== profile.lastName);
+
+  // SSO users cannot edit profile or change password — managed by Microsoft 365
+  const isSsoUser = !!profile?.azureId;
 
   function formatRole(role: string): string {
     return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
@@ -217,6 +176,16 @@ export function ProfilePage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {isSsoUser && (
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 flex items-start gap-2">
+                <ShieldAlert className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                <span>
+                  This account is managed by Microsoft 365. Profile information is synced from Azure
+                  AD and cannot be edited here.
+                </span>
+              </div>
+            )}
+
             {profileError && (
               <div className="rounded-lg border border-error/20 bg-error/5 p-3 text-sm text-error">
                 {profileError}
@@ -279,7 +248,7 @@ export function ProfilePage() {
               />
             </div>
 
-            {/* First Name - editable */}
+            {/* First Name - editable for local users, read-only for SSO */}
             <div className="space-y-1.5">
               <Label htmlFor="firstName" className="text-sm font-medium text-neutral-700">
                 First Name
@@ -289,10 +258,12 @@ export function ProfilePage() {
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder="Enter first name"
+                disabled={isSsoUser}
+                className={isSsoUser ? 'bg-neutral-50 text-neutral-500' : ''}
               />
             </div>
 
-            {/* Last Name - editable */}
+            {/* Last Name - editable for local users, read-only for SSO */}
             <div className="space-y-1.5">
               <Label htmlFor="lastName" className="text-sm font-medium text-neutral-700">
                 Last Name
@@ -302,143 +273,149 @@ export function ProfilePage() {
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="Enter last name"
+                disabled={isSsoUser}
+                className={isSsoUser ? 'bg-neutral-50 text-neutral-500' : ''}
               />
             </div>
 
-            <Button
-              onClick={handleProfileSave}
-              disabled={profileSaving || !hasProfileChanges}
-              className="bg-brand-600 text-white hover:bg-brand-700 min-h-[44px]"
-            >
-              {profileSaving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                'Save Changes'
-              )}
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Change Password Card */}
-        <Card className="shadow-elevation-1">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Lock className="h-5 w-5 text-brand-600" />
-              Change Password
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {passwordError && (
-              <div className="rounded-lg border border-error/20 bg-error/5 p-3 text-sm text-error">
-                {passwordError}
-              </div>
+            {!isSsoUser && (
+              <Button
+                onClick={handleProfileSave}
+                disabled={profileSaving || !hasProfileChanges}
+                className="bg-brand-600 text-white hover:bg-brand-700 min-h-[44px]"
+              >
+                {profileSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
+              </Button>
             )}
-
-            {/* Current Password */}
-            <div className="space-y-1.5">
-              <Label htmlFor="currentPassword" className="text-sm font-medium text-neutral-700">
-                Current Password
-              </Label>
-              <div className="relative">
-                <Input
-                  id="currentPassword"
-                  type={showCurrentPassword ? 'text' : 'password'}
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="Enter current password"
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
-                  aria-label={showCurrentPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showCurrentPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* New Password */}
-            <div className="space-y-1.5">
-              <Label htmlFor="newPassword" className="text-sm font-medium text-neutral-700">
-                New Password
-              </Label>
-              <div className="relative">
-                <Input
-                  id="newPassword"
-                  type={showNewPassword ? 'text' : 'password'}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Min 8 chars, upper + lower + number"
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
-                  aria-label={showNewPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              <p className="text-xs text-neutral-500">
-                Must be at least 8 characters with uppercase, lowercase, and a number
-              </p>
-            </div>
-
-            {/* Confirm New Password */}
-            <div className="space-y-1.5">
-              <Label htmlFor="confirmPassword" className="text-sm font-medium text-neutral-700">
-                Confirm New Password
-              </Label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Repeat new password"
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
-                  aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <Button
-              onClick={handlePasswordChange}
-              disabled={passwordSaving || !currentPassword || !newPassword || !confirmPassword}
-              className="bg-brand-600 text-white hover:bg-brand-700 min-h-[44px]"
-            >
-              {passwordSaving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Changing Password...
-                </>
-              ) : (
-                'Change Password'
-              )}
-            </Button>
           </CardContent>
         </Card>
+
+        {/* Change Password Card — hidden for SSO users (managed by M365) */}
+        {!isSsoUser && (
+          <Card className="shadow-elevation-1">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Lock className="h-5 w-5 text-brand-600" />
+                Change Password
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {passwordError && (
+                <div className="rounded-lg border border-error/20 bg-error/5 p-3 text-sm text-error">
+                  {passwordError}
+                </div>
+              )}
+
+              {/* Current Password */}
+              <div className="space-y-1.5">
+                <Label htmlFor="currentPassword" className="text-sm font-medium text-neutral-700">
+                  Current Password
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="currentPassword"
+                    type={showCurrentPassword ? 'text' : 'password'}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Enter current password"
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                    aria-label={showCurrentPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showCurrentPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* New Password */}
+              <div className="space-y-1.5">
+                <Label htmlFor="newPassword" className="text-sm font-medium text-neutral-700">
+                  New Password
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="newPassword"
+                    type={showNewPassword ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Min 8 chars, upper + lower + number"
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                    aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                <p className="text-xs text-neutral-500">
+                  Must be at least 8 characters with uppercase, lowercase, and a number
+                </p>
+              </div>
+
+              {/* Confirm New Password */}
+              <div className="space-y-1.5">
+                <Label htmlFor="confirmPassword" className="text-sm font-medium text-neutral-700">
+                  Confirm New Password
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Repeat new password"
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <Button
+                onClick={handlePasswordChange}
+                disabled={passwordSaving || !currentPassword || !newPassword || !confirmPassword}
+                className="bg-brand-600 text-white hover:bg-brand-700 min-h-[44px]"
+              >
+                {passwordSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Changing Password...
+                  </>
+                ) : (
+                  'Change Password'
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </PageTemplate>
   );

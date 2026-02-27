@@ -13,7 +13,7 @@ import { useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { TemplateSelector } from '../components/BulkIssuance/TemplateSelector';
-import { apiFetch } from '../lib/apiFetch';
+import { downloadTemplate, uploadBulkIssuance } from '../lib/bulkIssuanceApi';
 import { PageTemplate } from '../components/layout/PageTemplate';
 
 /** Max file size: 100KB */
@@ -41,14 +41,7 @@ export function BulkIssuancePage() {
   const handleDownloadTemplate = useCallback(async () => {
     setIsDownloading(true);
     try {
-      const templateUrl = selectedTemplateId
-        ? `/bulk-issuance/template?templateId=${encodeURIComponent(selectedTemplateId)}`
-        : '/bulk-issuance/template';
-      const response = await apiFetch(templateUrl);
-
-      if (!response.ok) {
-        throw new Error(`Download failed: ${response.statusText}`);
-      }
+      const response = await downloadTemplate(selectedTemplateId ?? undefined);
 
       const blob = await response.blob();
       const contentDisposition = response.headers.get('Content-Disposition');
@@ -104,17 +97,7 @@ export function BulkIssuancePage() {
         const formData = new FormData();
         formData.append('file', file);
 
-        const response = await apiFetch('/bulk-issuance/upload', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || `Upload failed: ${response.statusText}`);
-        }
-
-        const data = await response.json();
+        const data = await uploadBulkIssuance(formData);
         toast.success(`CSV uploaded: ${data.validRows} valid, ${data.errorRows} errors`);
 
         if (data.errorRows === 0) {

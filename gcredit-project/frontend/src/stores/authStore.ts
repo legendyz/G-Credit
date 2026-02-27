@@ -35,6 +35,9 @@ interface AuthState {
   clearError: () => void;
   setLoading: (loading: boolean) => void;
 
+  // SSO login (validates cookies set by backend SSO redirect)
+  loginViaSSO: () => Promise<boolean>;
+
   // Session validation (verifies cookie validity on app startup)
   sessionValidated: boolean;
   validateSession: () => Promise<boolean>;
@@ -151,6 +154,29 @@ export const useAuthStore = create<AuthState>()(
 
       // Set loading state
       setLoading: (loading: boolean) => set({ isLoading: loading }),
+
+      // SSO login: cookies already set by backend redirect, validate and fetch profile
+      loginViaSSO: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          const profileRes = await apiFetch('/auth/profile');
+          if (profileRes.ok) {
+            const data = await profileRes.json();
+            queryClient.clear();
+            set({
+              user: data.user || data,
+              isAuthenticated: true,
+              isLoading: false,
+              sessionValidated: true,
+            });
+            return true;
+          }
+          throw new Error('Session validation failed');
+        } catch {
+          set({ isLoading: false, isAuthenticated: false });
+          return false;
+        }
+      },
 
       // Validate session on app startup
       // Tries /auth/profile (cookie sent automatically) → refresh if expired → logout

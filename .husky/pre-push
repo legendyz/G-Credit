@@ -48,7 +48,25 @@ cd gcredit-project/frontend
 npm run lint
 
 # 2. Frontend Tests
-npx vitest run
+# Vitest in sh -e on Windows can occasionally exit early (worker race).
+# Capture output and check the summary line, same pattern as backend Jest.
+VITEST_OUTPUT=$(npx vitest run 2>&1) || true
+echo "$VITEST_OUTPUT" | tail -10
+
+if ! echo "$VITEST_OUTPUT" | grep -q "Test Files"; then
+  echo "❌ Frontend tests: no summary line found (Vitest may have crashed)"
+  exit 1
+fi
+if echo "$VITEST_OUTPUT" | grep -q "Test Files.*failed"; then
+  echo "❌ Frontend tests failed"
+  exit 1
+fi
+# Guard against "0 passed" (worker race — tests discovered but not executed)
+if echo "$VITEST_OUTPUT" | grep -q "Test Files  0 passed"; then
+  echo "❌ Frontend tests: 0 tests executed (possible worker race). Re-run push."
+  exit 1
+fi
+echo "✓ Frontend tests passed"
 
 # 3. Build (tsc -b + vite build) — match CI: npm run build
 npm run build

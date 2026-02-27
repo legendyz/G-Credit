@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { useBadgeDetailModal } from '../../stores/badgeDetailModal';
@@ -18,7 +18,12 @@ import ExpirationSection from './ExpirationSection';
 import ClaimSuccessModal from '../ClaimSuccessModal';
 import { MilestoneReachedCelebration } from '../common/CelebrationModal';
 import { Globe, Lock, Loader2 } from 'lucide-react';
-import { apiFetch } from '../../lib/apiFetch';
+import {
+  getBadgeById,
+  downloadBadgePng,
+  updateBadgeVisibility,
+  claimBadge,
+} from '../../lib/badgesApi';
 import { useCurrentUser } from '../../stores/authStore';
 import { useSkillNamesMap, useSkills } from '../../hooks/useSkills';
 
@@ -30,6 +35,7 @@ const BadgeDetailModal: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [analyticsRefreshKey, setAnalyticsRefreshKey] = useState(0);
   const [downloading, setDownloading] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [claimSuccessOpen, setClaimSuccessOpen] = useState(false);
@@ -52,32 +58,26 @@ const BadgeDetailModal: React.FC = () => {
       : { name: skillNamesMap[id] || 'Unknown Skill', categoryColor: null };
   });
 
+  const fetchBadgeDetails = useCallback(async () => {
+    if (!badgeId) return;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const data = await getBadgeById(badgeId);
+      setBadge(data);
+      setLocalVisibility(data.visibility ?? 'PUBLIC');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  }, [badgeId]);
+
   useEffect(() => {
     if (!isOpen || !badgeId) return;
-
-    const fetchBadgeDetails = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await apiFetch(`/badges/${badgeId}`);
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch badge details');
-        }
-
-        const data = await response.json();
-        setBadge(data);
-        setLocalVisibility(data.visibility ?? 'PUBLIC');
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchBadgeDetails();
-  }, [isOpen, badgeId]);
+  }, [isOpen, badgeId, fetchBadgeDetails]);
 
   // AC 4.14: Keyboard navigation - Escape key closes modal
   useEffect(() => {
@@ -104,13 +104,7 @@ const BadgeDetailModal: React.FC = () => {
 
     setDownloading(true);
     try {
-      const response = await apiFetch(`/badges/${badge.id}/download/png`);
-
-      if (!response.ok) {
-        throw new Error('Failed to download badge');
-      }
-
-      const blob = await response.blob();
+      const blob = await downloadBadgePng(badge.id);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -134,11 +128,7 @@ const BadgeDetailModal: React.FC = () => {
     setIsToggling(true);
     try {
       const newVisibility = localVisibility === 'PUBLIC' ? 'PRIVATE' : 'PUBLIC';
-      const res = await apiFetch(`/badges/${badge.id}/visibility`, {
-        method: 'PATCH',
-        body: JSON.stringify({ visibility: newVisibility }),
-      });
-      if (!res.ok) throw new Error();
+      await updateBadgeVisibility(badge.id, newVisibility);
       setLocalVisibility(newVisibility);
       // Invalidate wallet queries so the list reflects the new visibility
       queryClient.invalidateQueries({ queryKey: ['wallet'] });
@@ -156,17 +146,7 @@ const BadgeDetailModal: React.FC = () => {
 
     setClaiming(true);
     try {
-      const response = await apiFetch(`/badges/${badge.id}/claim`, {
-        method: 'POST',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to claim badge');
-      }
-
-      // Parse response to check for new milestones
-      const claimData = await response.json();
+      const claimData = await claimBadge(badge.id);
 
       // Update local badge state
       setBadge((prev) =>
@@ -180,13 +160,13 @@ const BadgeDetailModal: React.FC = () => {
       setClaimSuccessOpen(true);
 
       // Story 12.4: Show milestone celebration if new milestones achieved
-      if (claimData.newMilestones?.length > 0) {
+      if (claimData.newMilestones && claimData.newMilestones.length > 0) {
         // Show milestone celebration after a brief delay (after claim celebration)
         setTimeout(() => {
           setMilestoneCelebration({
             isOpen: true,
-            name: claimData.newMilestones[0].title,
-            description: claimData.newMilestones[0].description,
+            name: claimData.newMilestones![0].title,
+            description: claimData.newMilestones![0].description,
           });
         }, 1500);
       }
@@ -342,6 +322,7 @@ const BadgeDetailModal: React.FC = () => {
                 <BadgeAnalytics
                   badgeId={badge.id}
                   isOwner={badge.recipient.email === currentUser?.email}
+                  refreshKey={analyticsRefreshKey}
                 />
 
                 {/* AC 4.7: Similar Badges Section (from Story 4.5) */}
@@ -540,6 +521,10 @@ const BadgeDetailModal: React.FC = () => {
         <BadgeShareModal
           isOpen={shareModalOpen}
           onClose={() => setShareModalOpen(false)}
+          onShareSuccess={() => {
+            fetchBadgeDetails();
+            setAnalyticsRefreshKey((k) => k + 1);
+          }}
           badgeId={badge.id}
           badgeName={badge.template.name}
           verificationId={badge.verificationId}

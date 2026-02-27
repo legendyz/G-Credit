@@ -13,7 +13,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { apiFetch } from '../lib/apiFetch';
+import { claimBadgeByToken } from '../lib/badgesApi';
 
 type ClaimState = 'claiming' | 'success' | 'error' | 'no-token';
 
@@ -34,17 +34,7 @@ export default function ClaimBadgePage() {
     const claimBadge = async () => {
       setState('claiming');
       try {
-        const response = await apiFetch('/badges/claim', {
-          method: 'POST',
-          body: JSON.stringify({ claimToken: token }),
-        });
-
-        if (!response.ok) {
-          const data = await response.json().catch(() => ({}));
-          throw new Error(data.message || `Claim failed (${response.status})`);
-        }
-
-        const data = await response.json();
+        const data = await claimBadgeByToken({ claimToken: token });
         const name = data.badge?.name || data.template?.name || data.badgeName || 'Badge';
         setBadgeName(name);
         setState('success');

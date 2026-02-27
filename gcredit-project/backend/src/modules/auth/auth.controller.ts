@@ -6,13 +6,16 @@ import {
   HttpStatus,
   Get,
   Patch,
+  Query,
   Req,
   Res,
   Logger,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
+import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
+import { AzureAdSsoService } from './services/azure-ad-sso.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RequestResetDto } from './dto/request-reset.dto';
@@ -26,7 +29,11 @@ import type { AuthenticatedUser } from '../../common/interfaces/request-with-use
 @Controller('api/auth')
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private azureAdSsoService: AzureAdSsoService,
+    private configService: ConfigService,
+  ) {}
 
   // Rate limit: 3 registrations per hour per IP (Story 8.6 - SEC-P1-004)
   @Throttle({ default: { ttl: 3600000, limit: 3 } })
@@ -138,6 +145,154 @@ export class AuthController {
     @Body() dto: ChangePasswordDto,
   ) {
     return this.authService.changePassword(user.userId, dto);
+  }
+
+  // ====== SSO Endpoints (Story 13.1) ======
+
+  /**
+   * SSO Login Redirect — initiates Azure AD OAuth flow
+   * Generates PKCE challenge + state, stores in signed cookie, redirects to Azure AD
+   */
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
+  @Public()
+  @Get('sso/login')
+  async ssoLogin(@Res() res: Response) {
+    const { authUrl, codeVerifier, state } =
+      await this.azureAdSsoService.generateAuthUrl();
+
+    // Store codeVerifier + state in httpOnly cookie (5 min max-age)
+    const ssoStatePayload = JSON.stringify({ codeVerifier, state });
+    res.cookie('sso_state', ssoStatePayload, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/api/auth/sso',
+      maxAge: 5 * 60 * 1000, // 5 minutes
+    });
+
+    this.logger.log('[SSO] Redirecting to Azure AD authorize URL');
+    return res.redirect(authUrl);
+  }
+
+  /**
+   * SSO Callback — Azure AD redirects here after user authentication
+   * Validates state, exchanges code for tokens, issues JWT cookies, redirects to frontend
+   */
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
+  @Public()
+  @Get('sso/callback')
+  async ssoCallback(
+    @Query('code') code: string,
+    @Query('state') state: string,
+    @Query('error') azureError: string,
+    @Query('error_description') errorDescription: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const frontendUrl =
+      this.configService.get<string>('FRONTEND_URL') || 'http://localhost:5173';
+
+    // Clear SSO state cookie regardless of outcome
+    const clearSsoCookie = () => {
+      res.clearCookie('sso_state', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/api/auth/sso',
+      });
+    };
+
+    try {
+      // Handle Azure AD error (user cancelled, denied, etc.)
+      if (azureError) {
+        this.logger.warn(
+          `[SECURITY] Azure AD SSO error: ${azureError} — ${errorDescription || 'no description'}`,
+        );
+        clearSsoCookie();
+        const errorCode =
+          azureError === 'access_denied' ? 'sso_cancelled' : 'sso_failed';
+        return res.redirect(`${frontendUrl}/login?error=${errorCode}`);
+      }
+
+      // Validate required params
+      if (!code || !state) {
+        this.logger.warn(
+          '[SECURITY] SSO callback missing code or state parameter',
+        );
+        clearSsoCookie();
+        return res.redirect(`${frontendUrl}/login?error=sso_failed`);
+      }
+
+      // Retrieve and validate stored state from cookie
+      const ssoStateCookie = req.cookies?.sso_state as string;
+      if (!ssoStateCookie) {
+        this.logger.warn(
+          '[SECURITY] SSO callback: missing sso_state cookie (expired or tampered)',
+        );
+        clearSsoCookie();
+        return res.redirect(`${frontendUrl}/login?error=sso_failed`);
+      }
+
+      let storedState: { codeVerifier: string; state: string };
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        storedState = JSON.parse(ssoStateCookie);
+      } catch {
+        this.logger.warn('[SECURITY] SSO callback: corrupted sso_state cookie');
+        clearSsoCookie();
+        return res.redirect(`${frontendUrl}/login?error=sso_failed`);
+      }
+
+      // CSRF protection: validate state matches
+      if (state !== storedState.state) {
+        this.logger.warn(
+          '[SECURITY] SSO callback: state mismatch (potential CSRF)',
+        );
+        clearSsoCookie();
+        return res.redirect(`${frontendUrl}/login?error=sso_failed`);
+      }
+
+      // Exchange code for tokens via MSAL
+      const profile = await this.azureAdSsoService.handleCallback(
+        code,
+        storedState.codeVerifier,
+      );
+
+      // SSO login via AuthService (find user, generate JWT, etc.)
+      const loginResult = await this.authService.ssoLogin(profile);
+
+      clearSsoCookie();
+
+      // Handle error responses from ssoLogin
+      if ('error' in loginResult) {
+        const errorCode = loginResult.error;
+        this.logger.warn(`[SSO] SSO login failed: ${errorCode}`);
+        return res.redirect(`${frontendUrl}/login?error=${errorCode}`);
+      }
+
+      // Success — set auth cookies and redirect to frontend
+      this.setAuthCookies(
+        res,
+        loginResult.accessToken,
+        loginResult.refreshToken,
+      );
+
+      this.logger.log('[SSO] SSO callback success — redirecting to frontend');
+      return res.redirect(`${frontendUrl}/sso/callback?success=true`);
+    } catch (error: unknown) {
+      const errMsg =
+        error instanceof Error ? error.message : 'Unknown SSO error';
+      this.logger.error(`[SECURITY] SSO callback exception: ${errMsg}`);
+
+      clearSsoCookie();
+
+      // Check for specific MSAL errors
+      if (errMsg.includes('oid')) {
+        return res.redirect(`${frontendUrl}/login?error=sso_invalid_token`);
+      }
+
+      return res.redirect(`${frontendUrl}/login?error=sso_failed`);
+    }
   }
 
   /**

@@ -17,7 +17,7 @@ import {
   Award,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { apiFetch } from '../lib/apiFetch';
+import { verifyBadge } from '../lib/verifyApi';
 import { getCategoryColorClasses } from '../lib/categoryColors';
 import { RevokedBadgeAlert } from '../components/badges/RevokedBadgeAlert';
 import EvidenceList from '../components/evidence/EvidenceList';
@@ -41,8 +41,7 @@ export function VerifyBadgePage() {
       try {
         setIsLoading(true);
         setError(null);
-        // Story 11.25 AC-M5: Use apiFetch instead of axios (credentials: 'include')
-        const response = await apiFetch(`/verify/${verificationId}`);
+        const response = await verifyBadge(verificationId);
 
         if (!response.ok) {
           if (response.status === 404) {

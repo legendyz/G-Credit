@@ -24,6 +24,7 @@ model User {
   firstName     String?
   lastName      String?
   department    String?   // Sprint 8: M365 sync field
+  jobTitle      String?   // Story 13.3: M365 mini-sync field
   role          UserRole  @default(EMPLOYEE)
   azureId       String?   @unique // Sprint 8: M365 Azure AD ID
   isActive      Boolean   @default(true)

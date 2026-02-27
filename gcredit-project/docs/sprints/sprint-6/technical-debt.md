@@ -35,10 +35,16 @@ The following 4 test files are currently skipped due to missing permissions:
    - Reason: Requires `ChannelMessage.Send` permission
 
 **⚠️ Important:** When TD-006 is resolved, remember to:
+- [ ] Uncomment `{ id: 'teams', label: '👥 Teams' }` in `BadgeShareModal.tsx` `TAB_CONFIG`
 - [ ] Remove `.skip()` from all 4 test files
 - [ ] Verify tests pass with real Teams environment
 - [ ] Update this document status to ✅ Resolved
 - [ ] Update `technical-debt-from-reviews.md` in Sprint 7
+
+#### Sprint 13 Update (2026-02-27)
+- Frontend Teams tab hidden from Share Badge modal UI (`TAB_CONFIG` data-driven refactor)
+- Backend `shareBadgeToTeams` endpoint still returns `400 BadRequestException` (unchanged)
+- Tab bar refactored from hardcoded buttons to data-driven `TAB_CONFIG` array — restore Teams by uncommenting one line
 
 #### Current Implementation
 - ✅ **Badge Issuance Notifications**: Email-based (private, working)

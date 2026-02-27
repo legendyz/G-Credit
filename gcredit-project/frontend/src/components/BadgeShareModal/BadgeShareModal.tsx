@@ -9,12 +9,14 @@ import {
   shareBadgeViaEmail,
   shareBadgeToTeams,
   recordLinkedInShare,
+  recordWidgetCopy,
 } from '../../lib/badgeShareApi';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 interface BadgeShareModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onShareSuccess?: () => void;
   badgeId: string;
   badgeName: string;
   verificationId?: string;
@@ -22,11 +24,31 @@ interface BadgeShareModalProps {
 
 type ShareTab = 'email' | 'linkedin' | 'teams' | 'widget';
 
-const TABS: ShareTab[] = ['email', 'linkedin', 'teams', 'widget'];
+// Tab configuration — add/remove entries to control which tabs are shown
+// TD-006: Teams tab excluded until Graph API permissions approved
+const TAB_CONFIG: { id: ShareTab; label: React.ReactNode }[] = [
+  { id: 'email', label: '📧 Email' },
+  {
+    id: 'linkedin',
+    label: (
+      <>
+        <svg className="inline h-4 w-4 mr-1" viewBox="0 0 24 24" fill="#0A66C2" aria-hidden="true">
+          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+        </svg>
+        LinkedIn
+      </>
+    ),
+  },
+  // { id: 'teams', label: '👥 Teams' },  // TD-006: Uncomment when Graph API ready
+  { id: 'widget', label: '🔗 Widget' },
+];
+
+const TABS: ShareTab[] = TAB_CONFIG.map((t) => t.id);
 
 const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
   isOpen,
   onClose,
+  onShareSuccess,
   badgeId,
   badgeName,
   verificationId,
@@ -114,6 +136,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
     }
 
     setLinkedInShared(true);
+    onShareSuccess?.();
     setTimeout(() => setLinkedInShared(false), 5000);
   };
 
@@ -145,6 +168,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
       setSuccess(true);
       setEmailRecipients('');
       setEmailMessage('');
+      onShareSuccess?.();
 
       setTimeout(() => {
         setSuccess(false);
@@ -172,6 +196,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
       setTeamsTeamId('');
       setTeamsChannelId('');
       setTeamsMessage('');
+      onShareSuccess?.();
 
       setTimeout(() => {
         setSuccess(false);
@@ -188,6 +213,9 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
     const widgetUrl = `${window.location.origin}/badges/${badgeId}/embed`;
     navigator.clipboard.writeText(widgetUrl);
     setSuccess(true);
+    onShareSuccess?.();
+    // Record widget copy analytics (non-blocking)
+    recordWidgetCopy(badgeId).catch(() => {});
     setTimeout(() => setSuccess(false), 2000);
   };
 
@@ -254,86 +282,27 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
           aria-label="Share options"
           className="flex border-b border-gray-200 bg-gray-50"
         >
-          <button
-            role="tab"
-            data-tab="email"
-            id="share-tab-email"
-            aria-selected={activeTab === 'email'}
-            aria-controls="share-panel-email"
-            tabIndex={activeTab === 'email' ? 0 : -1}
-            onClick={() => setActiveTab('email')}
-            onKeyDown={(e) => handleTabKeyDown(e, 'email')}
-            className={`flex-1 min-h-[44px] px-3 py-2.5 text-sm font-medium transition-all
-                       ${
-                         activeTab === 'email'
-                           ? 'text-blue-600 bg-white border-b-2 border-blue-600'
-                           : 'text-gray-600 hover:text-gray-900 active:bg-gray-100'
-                       }`}
-          >
-            📧 Email
-          </button>
-          <button
-            role="tab"
-            data-tab="linkedin"
-            id="share-tab-linkedin"
-            aria-selected={activeTab === 'linkedin'}
-            aria-controls="share-panel-linkedin"
-            tabIndex={activeTab === 'linkedin' ? 0 : -1}
-            onClick={() => setActiveTab('linkedin')}
-            onKeyDown={(e) => handleTabKeyDown(e, 'linkedin')}
-            className={`flex-1 min-h-[44px] px-3 py-2.5 text-sm font-medium transition-all
-                       ${
-                         activeTab === 'linkedin'
-                           ? 'text-blue-600 bg-white border-b-2 border-blue-600'
-                           : 'text-gray-600 hover:text-gray-900 active:bg-gray-100'
-                       }`}
-          >
-            <svg
-              className="inline h-4 w-4 mr-1"
-              viewBox="0 0 24 24"
-              fill="#0A66C2"
-              aria-hidden="true"
+          {TAB_CONFIG.map((tab) => (
+            <button
+              key={tab.id}
+              role="tab"
+              data-tab={tab.id}
+              id={`share-tab-${tab.id}`}
+              aria-selected={activeTab === tab.id}
+              aria-controls={`share-panel-${tab.id}`}
+              tabIndex={activeTab === tab.id ? 0 : -1}
+              onClick={() => setActiveTab(tab.id)}
+              onKeyDown={(e) => handleTabKeyDown(e, tab.id)}
+              className={`flex-1 min-h-[44px] px-3 py-2.5 text-sm font-medium transition-all
+                         ${
+                           activeTab === tab.id
+                             ? 'text-blue-600 bg-white border-b-2 border-blue-600'
+                             : 'text-gray-600 hover:text-gray-900 active:bg-gray-100'
+                         }`}
             >
-              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-            </svg>
-            LinkedIn
-          </button>
-          <button
-            role="tab"
-            data-tab="teams"
-            id="share-tab-teams"
-            aria-selected={activeTab === 'teams'}
-            aria-controls="share-panel-teams"
-            tabIndex={activeTab === 'teams' ? 0 : -1}
-            onClick={() => setActiveTab('teams')}
-            onKeyDown={(e) => handleTabKeyDown(e, 'teams')}
-            className={`flex-1 min-h-[44px] px-3 py-2.5 text-sm font-medium transition-all
-                       ${
-                         activeTab === 'teams'
-                           ? 'text-blue-600 bg-white border-b-2 border-blue-600'
-                           : 'text-gray-600 hover:text-gray-900 active:bg-gray-100'
-                       }`}
-          >
-            👥 Teams
-          </button>
-          <button
-            role="tab"
-            data-tab="widget"
-            id="share-tab-widget"
-            aria-selected={activeTab === 'widget'}
-            aria-controls="share-panel-widget"
-            tabIndex={activeTab === 'widget' ? 0 : -1}
-            onClick={() => setActiveTab('widget')}
-            onKeyDown={(e) => handleTabKeyDown(e, 'widget')}
-            className={`flex-1 min-h-[44px] px-3 py-2.5 text-sm font-medium transition-all
-                       ${
-                         activeTab === 'widget'
-                           ? 'text-blue-600 bg-white border-b-2 border-blue-600'
-                           : 'text-gray-600 hover:text-gray-900 active:bg-gray-100'
-                       }`}
-          >
-            🔗 Widget
-          </button>
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {/* Content - Tab Panels - Story 8.5: Responsive padding */}

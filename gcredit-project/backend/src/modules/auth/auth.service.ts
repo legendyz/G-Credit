@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { UserRole } from '@prisma/client';
+import { User, UserRole } from '@prisma/client';
 import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../common/prisma.service';
@@ -19,6 +19,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { AzureAdProfile } from './interfaces/azure-ad-profile.interface';
 
 @Injectable()
 export class AuthService {
@@ -123,6 +124,14 @@ export class AuthService {
         throw new UnauthorizedException('Invalid credentials');
       }
       // Lock expired — will be fully reset on successful login below
+    }
+
+    // Story 13.1 AC #11 / DEC-011-13: Block password login for M365 users
+    // M365 users (having azureId) must use SSO — different error message than "Invalid credentials"
+    if (user.azureId) {
+      throw new UnauthorizedException(
+        'This account is managed by Microsoft 365. Please use "Sign in with Microsoft".',
+      );
     }
 
     // Story 12.3a AC #32: Empty passwordHash guard (M365 users with no local password)
@@ -482,6 +491,7 @@ export class AuthService {
         lastName: true,
         role: true,
         department: true,
+        azureId: true,
         isActive: true,
         emailVerified: true,
         lastLoginAt: true,
@@ -518,6 +528,13 @@ export class AuthService {
 
     if (!user) {
       throw new NotFoundException('User not found');
+    }
+
+    // SSO users' profile is managed by Microsoft 365 — block local edits
+    if (user.azureId) {
+      throw new BadRequestException(
+        'SSO user profile is managed by Microsoft 365. Changes must be made in Azure AD.',
+      );
     }
 
     // Update profile
@@ -561,6 +578,13 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
+    // SSO users have no local password — block password change
+    if (user.azureId) {
+      throw new BadRequestException(
+        'SSO user passwords are managed by Microsoft 365. Please change your password in Azure AD.',
+      );
+    }
+
     // 2. Verify current password
     const isCurrentPasswordValid = await bcrypt.compare(
       dto.currentPassword,
@@ -598,6 +622,153 @@ export class AuthService {
   }
 
   /**
+   * SSO Login — find user by azureId and issue JWT tokens
+   * Called from SSO callback after successful Azure AD token exchange
+   *
+   * @returns { accessToken, refreshToken, user } on success
+   * @returns { error: string } if user not found, inactive, etc.
+   */
+  async ssoLogin(profile: AzureAdProfile): Promise<
+    | {
+        accessToken: string;
+        refreshToken: string;
+        user: Record<string, unknown>;
+      }
+    | { error: string }
+  > {
+    // 1. Look up user by azureId (oid from Azure AD)
+    const user = await this.prisma.user.findUnique({
+      where: { azureId: profile.oid },
+    });
+
+    // 2. User not found — JIT provisioning (Story 13.2)
+    let freshUser: User | null = null;
+    let isJitUser = false;
+    if (!user) {
+      // JIT User Provisioning — auto-create user from Azure AD profile
+      const jitUser = await this.createSsoUser(profile);
+
+      // Graph API mini-sync (same as returning-user path)
+      try {
+        const syncResult = await this.m365SyncService.syncUserFromGraph({
+          id: jitUser.id,
+          azureId: jitUser.azureId!,
+          lastSyncAt: jitUser.lastSyncAt,
+        });
+        if (syncResult.rejected) {
+          this.logger.warn(
+            `[SECURITY] JIT user sync rejected: user:${jitUser.id}, reason: ${syncResult.reason}`,
+          );
+          // Deactivate JIT user — M365 account is disabled
+          await this.prisma.user.update({
+            where: { id: jitUser.id },
+            data: { isActive: false },
+          });
+          return { error: 'sso_failed' };
+        }
+      } catch (syncError) {
+        // Sync failure is non-fatal for JIT (AC #4) — user keeps EMPLOYEE defaults
+        this.logger.warn(
+          `[SSO] JIT sync failed for user:${jitUser.id} — continuing with defaults: ${(syncError as Error).message}`,
+        );
+      }
+
+      // Audit log + admin notification (AC #10)
+      await this.createJitAuditLog(jitUser);
+
+      // Re-fetch user to get post-sync data (role, department, managerId)
+      freshUser = await this.prisma.user.findUnique({
+        where: { id: jitUser.id },
+      });
+      if (!freshUser) {
+        freshUser = jitUser;
+      }
+      isJitUser = true;
+    } else {
+      freshUser = user;
+    }
+
+    // 3. Check if user is active
+    if (!freshUser.isActive) {
+      this.logger.warn(
+        `[SECURITY] SSO login blocked for disabled account: user:${freshUser.id}`,
+      );
+      return { error: 'account_disabled' };
+    }
+
+    // 4. Login-time mini-sync for returning M365 users (skip for JIT — already synced above)
+    if (!isJitUser && freshUser.azureId) {
+      const syncResult = await this.m365SyncService.syncUserFromGraph({
+        id: freshUser.id,
+        azureId: freshUser.azureId,
+        lastSyncAt: freshUser.lastSyncAt,
+      });
+      if (syncResult.rejected) {
+        this.logger.warn(
+          `[SECURITY] SSO login rejected by M365 sync: user:${freshUser.id}`,
+        );
+        return { error: 'sso_failed' };
+      }
+      const updatedUser = await this.prisma.user.findUnique({
+        where: { id: freshUser.id },
+      });
+      if (updatedUser) {
+        freshUser = updatedUser;
+      }
+    }
+
+    // 5. Generate JWT tokens — same payload as password login
+    const payload = {
+      sub: freshUser.id,
+      email: freshUser.email,
+      role: freshUser.role,
+    };
+
+    const accessToken = this.jwtService.sign(payload);
+
+    const refreshExpiresIn =
+      this.config.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
+    const refreshToken = this.jwtService.sign(
+      { sub: freshUser.id, jti: randomBytes(16).toString('hex') },
+      {
+        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+        expiresIn: refreshExpiresIn,
+      } as JwtSignOptions,
+    );
+
+    // 6. Store refresh token in DB
+    const expiresAt = this.calculateExpiryDate(refreshExpiresIn);
+    await this.prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: freshUser.id,
+        expiresAt,
+      },
+    });
+
+    // 7. Update lastLoginAt + reset lockout counters
+    await this.prisma.user.update({
+      where: { id: freshUser.id },
+      data: {
+        lastLoginAt: new Date(),
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+      },
+    });
+
+    this.logger.log(
+      `[SSO] Successful SSO login: user:${freshUser.id} (role: ${freshUser.role})`,
+    );
+
+    const { passwordHash: _hash, ...userProfile } = freshUser;
+    return {
+      accessToken,
+      refreshToken,
+      user: userProfile,
+    };
+  }
+
+  /**
    * Calculate expiry date from JWT expiry string (e.g., '7d', '24h', '30m')
    * @param expiresIn - JWT expiry string format
    * @returns Date object for database storage
@@ -620,5 +791,107 @@ export class AuthService {
     };
 
     return new Date(Date.now() + value * multipliers[unit]);
+  }
+
+  /**
+   * JIT User Provisioning — create new user from Azure AD SSO first login.
+   * Called when ssoLogin() finds no user with matching azureId.
+   *
+   * Story 13.2 AC #1, #6: auto-create user, handle race condition (P2002).
+   */
+  private async createSsoUser(profile: AzureAdProfile): Promise<User> {
+    const nameParts = profile.displayName.split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
+    try {
+      const user = await this.prisma.user.create({
+        data: {
+          azureId: profile.oid,
+          email: profile.email.toLowerCase(),
+          firstName,
+          lastName,
+          passwordHash: '', // SSO-only — cannot use password login (DEC-011-13)
+          isActive: true,
+          role: UserRole.EMPLOYEE, // Default — upgraded by syncUserFromGraph() or Full Sync
+        },
+      });
+
+      this.logger.log(
+        `[SSO] JIT user provisioned: user:${user.id} (azureId: ${profile.oid})`,
+      );
+
+      // Admin bootstrap: INITIAL_ADMIN_EMAIL (DEC-005 Resolution B)
+      const initialAdminEmail = this.config.get<string>('INITIAL_ADMIN_EMAIL');
+      if (
+        initialAdminEmail &&
+        user.email === initialAdminEmail.trim().toLowerCase()
+      ) {
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: { role: UserRole.ADMIN, roleSetManually: true },
+        });
+        user.role = UserRole.ADMIN;
+        this.logger.warn(
+          `[SECURITY] Admin bootstrapped via INITIAL_ADMIN_EMAIL: user:${user.id}`,
+        );
+      }
+
+      return user;
+    } catch (error) {
+      // Handle race condition: concurrent first-login with same azureId
+      const prismaError = error as {
+        code?: string;
+        meta?: { target?: string[] };
+      };
+      if (
+        prismaError.code === 'P2002' &&
+        prismaError.meta?.target?.includes('azureId')
+      ) {
+        // Prisma UniqueConstraintViolation on azureId — race condition recovery
+        this.logger.warn(
+          `[SSO] JIT race condition: azureId:${profile.oid} already exists — fetching existing user`,
+        );
+        const existing = await this.prisma.user.findUnique({
+          where: { azureId: profile.oid },
+        });
+        if (existing) return existing;
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Create audit log entry for JIT user provisioning.
+   * Visible in Admin Activity Feed — prompts admin to run Full Sync.
+   *
+   * Story 13.2 AC #10: audit log failure must NOT block login.
+   */
+  private async createJitAuditLog(user: User): Promise<void> {
+    try {
+      await this.prisma.userAuditLog.create({
+        data: {
+          userId: user.id,
+          action: 'JIT_PROVISIONED',
+          changes: {
+            source: 'SSO_FIRST_LOGIN',
+            email: user.email,
+            azureId: user.azureId,
+            message: `New user ${user.firstName} ${user.lastName} (${user.email}) auto-provisioned via SSO. Run Full Sync to update manager relationships and role assignments.`,
+          },
+          source: 'SYSTEM',
+          actorId: null,
+        },
+      });
+
+      this.logger.log(
+        `[AUDIT] JIT user provisioned: user:${user.id} — recommend Full Sync for complete role/manager derivation`,
+      );
+    } catch (error) {
+      // Audit log failure should not block login
+      this.logger.error(
+        `[AUDIT] Failed to create JIT audit log for user:${user.id}: ${(error as Error).message}`,
+      );
+    }
   }
 }
