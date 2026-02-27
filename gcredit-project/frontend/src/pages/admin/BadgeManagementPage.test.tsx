@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
@@ -167,7 +167,8 @@ describe('BadgeManagementPage', () => {
   });
 
   afterEach(() => {
-    vi.resetAllMocks();
+    cleanup();
+    vi.restoreAllMocks();
   });
 
   describe('Rendering', () => {
@@ -270,12 +271,16 @@ describe('BadgeManagementPage', () => {
     it('should show Revoke button for PENDING badges when ADMIN', async () => {
       render(<BadgeManagementPage userRole="ADMIN" />, { wrapper: createWrapper() });
 
+      // Wait for badge data to fully load before asserting buttons
       await waitFor(() => {
-        const revokeButtons = screen.getAllByRole('button', { name: /Revoke/i });
-        // Mobile + desktop layouts: 2 revocable badges × 2 layouts = up to 4 buttons
-        // But minimum should be 2 (one per revocable badge in at least one layout)
-        expect(revokeButtons.length).toBeGreaterThanOrEqual(2);
+        expect(screen.getAllByText('John Doe').length).toBeGreaterThanOrEqual(1);
       });
+
+      // Scope to desktop table to avoid non-deterministic dual-layout button count
+      const desktopTable = screen.getByRole('table');
+      const revokeButtons = within(desktopTable).getAllByRole('button', { name: /Revoke/i });
+      // Exactly 2 revocable badges in desktop layout: PENDING (badge-1) + CLAIMED (badge-2)
+      expect(revokeButtons).toHaveLength(2);
     });
 
     it('should NOT show Revoke button for REVOKED badges', async () => {

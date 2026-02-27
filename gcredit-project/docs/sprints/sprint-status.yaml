@@ -156,7 +156,7 @@ sprint-13: done
 sprint-14: in-progress
 
 # --- Wave 1: Quick Win ---
-14-1-fix-flaky-badge-management-test: backlog      # TD-036: CI reliability quick win
+14-1-fix-flaky-badge-management-test: done        # TD-036: CI reliability quick win
 
 # --- Wave 2: Role Model Refactor — Backend ---
 14-2-schema-migration-remove-manager: backlog      # Prisma: UserRole enum = ADMIN|ISSUER|EMPLOYEE
