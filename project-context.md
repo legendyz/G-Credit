@@ -1672,31 +1672,33 @@ Sprint 0-2 established this pattern:
 
 25. 🔜 **Sprint 15: UI Overhaul + Dashboard Composite View** (Planned)
    
-   **Sprint Goal:** Visual polish + Dashboard permission stacking on new role model.
-   **Estimated Effort:** ~37h
+   **Sprint Goal:** Sidebar layout migration + Dashboard permission stacking + full UI polish.
+   **Estimated Effort:** ~44h (extended sprint — ADR-016)
    **Dependencies:** Sprint 14 (TD-034) must be complete.
+   **Design Decisions:** ADR-016 — 5 decisions accepted 2026-02-27.
    
    **Stories:**
-   - TD-035: Dashboard Composite View — Permission Stacking (~18h)
-     - Dashboard layout: tabbed/sectioned composite view (~8h)
-     - Backend: permission-based API checks (~3h)
-     - Navigation: sidebar combined menu per effective permissions (~3h)
-     - Testing: all 6 role combinations (~4h)
-   - UI Polish (all remaining items, ~18h):
+   - TD-035: Dashboard Composite View — Permission Stacking (~27h)
+     - TD-035-A: Dashboard tabbed composite view, default "My Badges" tab (~8h)
+     - TD-035-B: Backend permissions API `/api/users/me/permissions` (~3h)
+     - TD-035-C: Sidebar layout migration — replace top nav with collapsible sidebar (~12h)
+     - TD-035-D: Testing: all 6 role×manager combinations (~4h)
+   - UI Polish (~17h):
      - P1-1: Inline styles → Tailwind (2h)
      - P1-7: Forgot Password page (2h)
-     - P2-1/P2-2: Template + Wallet pagination (6h)
+     - P2-1: Template list — server-side pagination (3h)
+     - P2-2: Wallet — cursor-based infinite scroll (3h)
      - P2-5: Styled delete confirmation (1h)
-     - P2-7: Emoji → Lucide icons (2h)
+     - P2-7: Full site emoji → Lucide icons (5h)
      - P2-8: z-index scale (1h)
-     - P2-10: Mobile nav Issue Badge (1h)
      - P2-11: Dirty-form guard (2h)
-     - P2-12: Template preview modes (4h)
+   - **Deferred from Sprint 15:** P2-12 (Template preview modes) → Sprint 16+
+   - **Absorbed into Sidebar:** P2-10 (Mobile nav Issue Badge) — no separate estimate
 
 26. 🔜 **Sprint 16: Pilot Readiness — Fine-Grained RBAC + Pilot Validation** (Planned)
    
    **Sprint Goal:** Permission fine-tuning + pilot validation — last sprint before Phase 4 Pilot.
-   **Estimated Effort:** ~12h
+   **Estimated Effort:** ~12h (+ optional P2-12 template preview, 4h)
    
    **Stories:**
    - F-1 Level 1: Fine-Grained RBAC — Issuer template ownership on issuance (~8h)
