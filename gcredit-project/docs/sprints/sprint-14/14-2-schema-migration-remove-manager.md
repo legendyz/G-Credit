@@ -1,6 +1,6 @@
 # Story 14.2: Schema Migration — Remove MANAGER from UserRole Enum
 
-**Status:** backlog  
+**Status:** review  
 **Priority:** CRITICAL  
 **Estimate:** 2h  
 **Wave:** 2 — Role Model Refactor (Backend)  
@@ -17,34 +17,34 @@
 
 ## Acceptance Criteria
 
-1. [ ] Prisma migration created: `UserRole` enum = `{ ADMIN, ISSUER, EMPLOYEE }`
-2. [ ] All existing `role = 'MANAGER'` rows migrated to `role = 'EMPLOYEE'`
-3. [ ] `directReports` relationships preserved (zero data loss)
-4. [ ] ADR-015 code comments added to `schema.prisma` enum definition
-5. [ ] Migration reversible (rollback SQL documented)
-6. [ ] All seed data updated (no MANAGER references in seed files)
+1. [x] Prisma migration created: `UserRole` enum = `{ ADMIN, ISSUER, EMPLOYEE }`
+2. [x] All existing `role = 'MANAGER'` rows migrated to `role = 'EMPLOYEE'`
+3. [x] `directReports` relationships preserved (zero data loss)
+4. [x] ADR-015 code comments added to `schema.prisma` enum definition
+5. [x] Migration reversible (rollback SQL documented)
+6. [x] All seed data updated (no MANAGER references in seed files)
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1: Create Prisma migration** (AC: #1, #2)
-  - [ ] Write data migration SQL: `UPDATE users SET role = 'EMPLOYEE' WHERE role = 'MANAGER'`
-  - [ ] Alter `UserRole` enum to remove `MANAGER` value
-  - [ ] ⚠️ **DO NOT run `npx prisma format`** (Lesson 22 — can break 137+ files)
-  - [ ] Run `npx prisma migrate dev --name remove-manager-role`
-- [ ] **Task 2: Verify data integrity** (AC: #3)
-  - [ ] Query `directReports` relationships — count before/after must match
-  - [ ] Verify `managerId` foreign keys are intact
-  - [ ] Run spot check: users who had MANAGER role still have their direct reports
-- [ ] **Task 3: Update seed data** (AC: #6)
-  - [ ] Search seed files for `'MANAGER'` references
-  - [ ] Replace with `'EMPLOYEE'` (or appropriate role)
-  - [ ] Verify seed script runs cleanly
-- [ ] **Task 4: Add code comments** (AC: #4)
-  - [ ] Add ADR-015 reference comment to `UserRole` enum in `schema.prisma`
-  - [ ] Example: `// ADR-015: Permission roles only. Manager identity is derived from directReports (see ADR-017)`
-- [ ] **Task 5: Document rollback** (AC: #5)
-  - [ ] Write rollback SQL in migration file or Dev Notes
-  - [ ] Test rollback on local DB copy
+- [x] **Task 1: Create Prisma migration** (AC: #1, #2)
+  - [x] Write data migration SQL: `UPDATE users SET role = 'EMPLOYEE' WHERE role = 'MANAGER'`
+  - [x] Alter `UserRole` enum to remove `MANAGER` value
+  - [x] ⚠️ **DO NOT run `npx prisma format`** (Lesson 22 — can break 137+ files)
+  - [x] Run `npx prisma migrate dev --name remove-manager-role`
+- [x] **Task 2: Verify data integrity** (AC: #3)
+  - [x] Query `directReports` relationships — count before/after must match
+  - [x] Verify `managerId` foreign keys are intact
+  - [x] Run spot check: users who had MANAGER role still have their direct reports
+- [x] **Task 3: Update seed data** (AC: #6)
+  - [x] Search seed files for `'MANAGER'` references
+  - [x] Replace with `'EMPLOYEE'` (or appropriate role)
+  - [x] Verify seed script runs cleanly
+- [x] **Task 4: Add code comments** (AC: #4)
+  - [x] Add ADR-015 reference comment to `UserRole` enum in `schema.prisma`
+  - [x] Example: `// ADR-015: Permission roles only. Manager identity is derived from directReports (see ADR-017)`
+- [x] **Task 5: Document rollback** (AC: #5)
+  - [x] Write rollback SQL in migration file or Dev Notes
+  - [x] Test rollback on local DB copy
 
 ## Dev Notes
 
@@ -54,8 +54,23 @@
 
 ### Source Tree Components
 - `prisma/schema.prisma` — UserRole enum
-- `prisma/migrations/` — new migration folder
-- `prisma/seed.ts` or seed files — MANAGER references
+- `prisma/migrations/20260302000000_remove_manager_role/` — migration SQL
+- `prisma/seed-uat.ts` — MANAGER references updated to EMPLOYEE
+
+### Rollback SQL
+```sql
+-- Rollback: Re-add MANAGER to UserRole enum
+ALTER TYPE "UserRole" ADD VALUE 'MANAGER';
+-- Note: Re-adding the enum value is sufficient.
+-- No data migration needed for rollback (users already have valid roles).
+-- To restore original role assignments, you would need a separate data restore.
+```
+
+### Expected Test Failures (Out of Scope)
+These failures are caused by code referencing `'MANAGER'` / `UserRole.MANAGER` and will be fixed in later stories:
+- `test/helpers/test-setup.ts` — `createManager` uses `UserRole.MANAGER` (→ 14.8)
+- `src/app.controller.ts` — `@Roles('MANAGER', 'ADMIN')` (→ 14.5)
+- `src/analytics/analytics.controller.ts` — `@Roles('ADMIN', 'MANAGER')` (→ 14.5)
 
 ### Testing Standards
 - Run all backend tests after migration to verify no breakage
@@ -73,7 +88,23 @@
 ## Dev Agent Record
 
 ### Agent Model Used
+Claude Opus 4.6 (GitHub Copilot)
+
 ### Completion Notes
+- **Migration:** Created `20260302000000_remove_manager_role/migration.sql` with proper 2-step approach:
+  1. `UPDATE users SET role='EMPLOYEE' WHERE role='MANAGER'` (data first)
+  2. PostgreSQL enum swap (`CREATE TYPE new → ALTER COLUMN → RENAME → DROP old`)
+- **Data Integrity Verified:** ROLES: ADMIN(2), ISSUER(2), EMPLOYEE(18) — zero MANAGER rows. 17 managerId links preserved.
+- **manager@gcredit.com:** Confirmed `role=EMPLOYEE`, identity preserved via directReports.
+- **Seed:** `seed-uat.ts` updated — 2 occurrences of `UserRole.MANAGER` → `UserRole.EMPLOYEE`.
+- **Schema Comments:** ADR-015/017/014 references added to `UserRole` enum.
+- **Rollback:** Documented in Dev Notes — `ALTER TYPE "UserRole" ADD VALUE 'MANAGER'`.
+- **Test Results:** 48/49 suites pass, 912/942 tests pass. 1 suite fails (`m365-sync.service.spec.ts`, 2 tests) — expected, will be fixed in Story 14.6.
+- **TS Compilation:** Expected errors in `admin-users.service.ts` and `m365-sync.service.ts` referencing removed `UserRole.MANAGER` — out of scope per dev prompt (Stories 14.3–14.8).
+
 ### File List
+- `backend/prisma/schema.prisma` — removed MANAGER from UserRole enum, added ADR comments
+- `backend/prisma/migrations/20260302000000_remove_manager_role/migration.sql` — new migration
+- `backend/prisma/seed-uat.ts` — UserRole.MANAGER → UserRole.EMPLOYEE (2 occurrences)
 
 ## Retrospective Notes

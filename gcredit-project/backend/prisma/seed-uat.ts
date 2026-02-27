@@ -205,7 +205,7 @@ async function main() {
     where: { email: 'manager@gcredit.com' },
     update: {
       passwordHash,
-      role: UserRole.MANAGER,
+      role: UserRole.EMPLOYEE,
       isActive: true,
       emailVerified: true,
       jobTitle: 'Engineering Manager',
@@ -215,7 +215,7 @@ async function main() {
       passwordHash,
       firstName: 'Team',
       lastName: 'Manager',
-      role: UserRole.MANAGER,
+      role: UserRole.EMPLOYEE,
       department: 'Engineering',
       jobTitle: 'Engineering Manager',
       isActive: true,

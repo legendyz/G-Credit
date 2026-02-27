@@ -10,11 +10,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ADR-015: Permission roles ONLY.
+// Manager identity derived from directReports relation — see ADR-017.
+// GUEST will be added when FEAT-009 implemented — see ADR-014.
 enum UserRole {
-  ADMIN
-  ISSUER
-  MANAGER
-  EMPLOYEE
+  ADMIN       // Full system administration
+  ISSUER      // Badge template creation and issuance
+  EMPLOYEE    // Base role — no elevated permissions (default)
 }
 
 model User {
