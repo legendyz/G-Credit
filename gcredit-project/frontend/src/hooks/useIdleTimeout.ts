@@ -49,6 +49,8 @@ export function useIdleTimeout({
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // One-shot guard: prevent duplicate onTimeout calls (nit from code review)
   const hasTimedOutRef = useRef(false);
+  // When true, activity events are ignored — only explicit resetTimer() dismisses the warning
+  const isWarningRef = useRef(false);
 
   // Keep onTimeout ref current to avoid re-registering effects
   useEffect(() => {
@@ -57,6 +59,7 @@ export function useIdleTimeout({
 
   const resetTimer = useCallback(() => {
     lastActivityTime.current = Date.now();
+    isWarningRef.current = false;
     setIsWarning(false);
     setSecondsRemaining(0);
     hasTimedOutRef.current = false;
@@ -75,13 +78,13 @@ export function useIdleTimeout({
     // Activity handler — throttled via lastEventTime comparison
     let lastEventTime = 0;
     const handleActivity = () => {
+      // Once warning modal is shown, ignore activity events.
+      // User must explicitly click "Continue Working" (resetTimer) to dismiss.
+      if (isWarningRef.current) return;
       const now = Date.now();
       if (now - lastEventTime < SESSION_CONFIG.ACTIVITY_THROTTLE_MS) return;
       lastEventTime = now;
       lastActivityTime.current = now;
-      // If in warning state, user activity dismisses the warning
-      setIsWarning(false);
-      setSecondsRemaining(0);
     };
 
     // visibilitychange handler — check elapsed time when tab becomes visible
@@ -92,6 +95,7 @@ export function useIdleTimeout({
           hasTimedOutRef.current = true;
           onTimeoutRef.current();
         } else if (elapsed >= warningThreshold) {
+          isWarningRef.current = true;
           setIsWarning(true);
           setSecondsRemaining(Math.max(0, Math.ceil((timeout - elapsed) / 1000)));
         }
@@ -115,6 +119,7 @@ export function useIdleTimeout({
         return;
       }
       if (elapsed >= warningThreshold) {
+        isWarningRef.current = true;
         setIsWarning(true);
         setSecondsRemaining(Math.max(0, Math.ceil((timeout - elapsed) / 1000)));
       }

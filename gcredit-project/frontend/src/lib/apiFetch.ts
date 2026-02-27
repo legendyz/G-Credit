@@ -2,7 +2,7 @@ import { API_BASE_URL } from './apiConfig';
 import { enqueueRefresh } from './refreshQueue';
 
 /** Paths excluded from 401 interception (avoid circular refresh) */
-const EXCLUDED_PATHS = ['/auth/refresh', '/auth/logout'];
+const EXCLUDED_PATHS = ['/auth/login', '/auth/refresh', '/auth/logout'];
 
 function isExcluded(path: string): boolean {
   return EXCLUDED_PATHS.some((p) => path === p);

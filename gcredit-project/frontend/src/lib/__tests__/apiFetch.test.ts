@@ -110,6 +110,20 @@ describe('apiFetch — 401 interceptor', () => {
     expect(mockLogout).not.toHaveBeenCalled();
   });
 
+  it('excluded path /auth/login → 401 returned as-is (SSO user password block)', async () => {
+    const unauthorizedResponse = new Response(
+      JSON.stringify({ message: 'This account is managed by Microsoft 365.' }),
+      { status: 401 }
+    );
+    mockFetch.mockResolvedValueOnce(unauthorizedResponse);
+
+    const result = await apiFetch('/auth/login', { method: 'POST' });
+
+    expect(result.status).toBe(401);
+    expect(enqueueRefresh).not.toHaveBeenCalled();
+    expect(mockLogout).not.toHaveBeenCalled();
+  });
+
   it('excluded path /auth/refresh → 401 returned as-is', async () => {
     const unauthorizedResponse = new Response('Unauthorized', { status: 401 });
     mockFetch.mockResolvedValueOnce(unauthorizedResponse);

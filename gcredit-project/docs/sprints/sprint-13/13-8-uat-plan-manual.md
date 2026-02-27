@@ -280,7 +280,7 @@ Reset command: `cd c:\G_Credit\CODE\gcredit-project\backend && npm run seed:rese
 | Step | Action | Expected Result |
 |------|--------|-----------------|
 | 1 | Login as `issuer@gcredit.com` / `Password123` | Dashboard loads |
-| 2 | Navigate to **Issue Badge** (or Templates → select "Cloud Expert Certification" → Issue) | Issue badge form appears |
+| 2 | Navigate to **Badge Management** → click **Issue New Badge** button | Issue badge form appears |
 | 3 | Set recipient to `employee2@gcredit.com`, fill required fields | — |
 | 4 | Submit issuance | Success message, badge appears as PENDING |
 | 5 | Log out | — |
