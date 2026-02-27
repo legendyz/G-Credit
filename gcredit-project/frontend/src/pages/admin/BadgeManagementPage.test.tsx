@@ -271,13 +271,8 @@ describe('BadgeManagementPage', () => {
     it('should show Revoke button for PENDING badges when ADMIN', async () => {
       render(<BadgeManagementPage userRole="ADMIN" />, { wrapper: createWrapper() });
 
-      // Wait for badge data to fully load before asserting buttons
-      await waitFor(() => {
-        expect(screen.getAllByText('John Doe').length).toBeGreaterThanOrEqual(1);
-      });
-
-      // Scope to desktop table to avoid non-deterministic dual-layout button count
-      const desktopTable = screen.getByRole('table');
+      // Use findByRole for maximal timing robustness — waits for table to appear in DOM
+      const desktopTable = await screen.findByRole('table');
       const revokeButtons = within(desktopTable).getAllByRole('button', { name: /Revoke/i });
       // Exactly 2 revocable badges in desktop layout: PENDING (badge-1) + CLAIMED (badge-2)
       expect(revokeButtons).toHaveLength(2);
