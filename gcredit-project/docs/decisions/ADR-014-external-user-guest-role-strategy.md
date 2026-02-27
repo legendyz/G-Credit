@@ -172,6 +172,7 @@ model User {
 - **FEAT-009:** Invite-to-Claim feature request
 - **TD-034:** Role Model Refactor (Sprint 14) — removes MANAGER, establishes dual-dimension model
 - **ADR-011:** User Management Architecture — `managerId` FK, role management
+- **ADR-015:** UserRole Enum Clean Design — explains why GUEST is not pre-added to the enum
 - **Sprint 13:** SSO + Session Management — JIT Provisioning pattern reusable for GUEST JIT
 
 ---
