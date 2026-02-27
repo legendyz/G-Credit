@@ -159,7 +159,7 @@ sprint-14: in-progress
 14-1-fix-flaky-badge-management-test: done        # TD-036: CI reliability quick win
 
 # --- Wave 2: Role Model Refactor — Backend ---
-14-2-schema-migration-remove-manager: review       # Prisma: UserRole enum = ADMIN|ISSUER|EMPLOYEE
+14-2-schema-migration-remove-manager: done         # Prisma: UserRole enum = ADMIN|ISSUER|EMPLOYEE
 14-3-jwt-payload-ismanager: backlog                # JWT + AuthenticatedUser + isManager claim
 14-4-manager-guard-decorator: backlog              # ManagerGuard + @RequireManager() decorator
 14-5-rolesguard-remove-manager: backlog            # Remove all @Roles('MANAGER') from controllers

@@ -1,6 +1,6 @@
 # Story 14.2: Schema Migration — Remove MANAGER from UserRole Enum
 
-**Status:** review  
+**Status:** done  
 **Priority:** CRITICAL  
 **Estimate:** 2h  
 **Wave:** 2 — Role Model Refactor (Backend)  
