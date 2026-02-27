@@ -89,7 +89,7 @@
 - ✅ Story 2.5: Password reset via email (4h)
 - ✅ Story 2.6: User profile management (3h)
 - ✅ Story 2.7: Session management and logout (2h)
-- ⏸️ Story 2.8: Azure AD SSO (deferred to Sprint 8+)
+- ✅ Story 2.8: Azure AD SSO (deferred to Sprint 13, delivered in v1.3.0)
 - **Total: 21h / 21h estimated (100% accuracy - perfect!)**
 - **Commits:** 10 feature commits
 - **Testing:** 40/40 tests passed (100%)
