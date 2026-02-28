@@ -26,27 +26,33 @@ const PendingBadgesEmptyState: React.FC<PendingBadgesEmptyStateProps> = ({
             width="128"
             height="96"
             rx="4"
-            fill="#FCD34D"
-            stroke="#F59E0B"
+            fill="var(--color-gift-box)"
+            stroke="var(--color-gift-box-dark)"
             strokeWidth="3"
           />
-          <rect x="64" y="96" width="128" height="24" fill="#F59E0B" />
+          <rect x="64" y="96" width="128" height="24" fill="var(--color-gift-box-dark)" />
 
           {/* Ribbon vertical */}
-          <rect x="118" y="96" width="20" height="96" fill="#EF4444" />
+          <rect x="118" y="96" width="20" height="96" fill="var(--color-gift-ribbon)" />
 
           {/* Ribbon horizontal */}
-          <rect x="64" y="106" width="128" height="12" fill="#DC2626" />
+          <rect x="64" y="106" width="128" height="12" fill="var(--color-gift-ribbon-dark)" />
 
           {/* Bow top */}
-          <ellipse cx="108" cy="90" rx="14" ry="20" fill="#EF4444" />
-          <ellipse cx="148" cy="90" rx="14" ry="20" fill="#EF4444" />
-          <circle cx="128" cy="96" r="10" fill="#DC2626" />
+          <ellipse cx="108" cy="90" rx="14" ry="20" fill="var(--color-gift-ribbon)" />
+          <ellipse cx="148" cy="90" rx="14" ry="20" fill="var(--color-gift-ribbon)" />
+          <circle cx="128" cy="96" r="10" fill="var(--color-gift-ribbon-dark)" />
 
           {/* Sparkles */}
-          <circle cx="48" cy="72" r="4" fill="#FCD34D" className="animate-pulse" />
-          <circle cx="208" cy="128" r="4" fill="#FCD34D" className="animate-pulse" />
-          <circle cx="220" cy="88" r="3" fill="#F59E0B" className="animate-pulse" />
+          <circle cx="48" cy="72" r="4" fill="var(--color-gift-box)" className="animate-pulse" />
+          <circle cx="208" cy="128" r="4" fill="var(--color-gift-box)" className="animate-pulse" />
+          <circle
+            cx="220"
+            cy="88"
+            r="3"
+            fill="var(--color-gift-box-dark)"
+            className="animate-pulse"
+          />
         </svg>
       </div>
 

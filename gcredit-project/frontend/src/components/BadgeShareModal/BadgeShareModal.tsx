@@ -481,7 +481,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                 className={`w-full flex items-center justify-center gap-2 min-h-[44px] rounded-lg text-sm font-medium border-none transition-colors ${
                   linkedInShared
                     ? 'bg-green-100 text-green-700 cursor-not-allowed'
-                    : 'bg-[#0A66C2] text-white cursor-pointer hover:bg-[#094F96]'
+                    : 'bg-linkedin text-white cursor-pointer hover:bg-linkedin-dark'
                 }`}
               >
                 {linkedInShared ? (

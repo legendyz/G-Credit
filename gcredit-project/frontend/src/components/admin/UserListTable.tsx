@@ -450,7 +450,7 @@ export function UserListTable({
                 Last Login
               </SortHeader>
               {/* Pinned Actions column with sticky positioning */}
-              <th className="sticky right-0 bg-gray-50 px-4 py-3 text-right font-medium text-gray-500 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)] dark:bg-gray-800 dark:text-gray-400">
+              <th className="sticky right-0 bg-gray-50 px-4 py-3 text-right font-medium text-gray-500 shadow-sticky dark:bg-gray-800 dark:text-gray-400">
                 Actions
               </th>
             </tr>
@@ -554,7 +554,7 @@ export function UserListTable({
                     {lastLogin.relative}
                   </td>
                   {/* Pinned Actions cell — context-aware (AC #10) */}
-                  <td className="sticky right-0 whitespace-nowrap bg-white px-4 py-3 text-right shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)] dark:bg-gray-900">
+                  <td className="sticky right-0 whitespace-nowrap bg-white px-4 py-3 text-right shadow-sticky dark:bg-gray-900">
                     <div className="flex justify-end gap-1">
                       {/* View details — all users */}
                       <Button

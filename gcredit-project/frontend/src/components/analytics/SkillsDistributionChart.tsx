@@ -54,23 +54,37 @@ const SkillsDistributionChart: React.FC<SkillsDistributionChartProps> = ({
           <h4 className="text-sm font-medium text-gray-500 mb-3">Top Skills by Badge Count</h4>
           <ResponsiveContainer width="100%" height={Math.max(200, chartData.length * 36)}>
             <BarChart data={chartData} layout="vertical" margin={{ left: 20, right: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" horizontal={false} />
-              <XAxis type="number" tick={{ fontSize: 12, fill: '#6b7280' }} allowDecimals={false} />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="var(--color-neutral-200)"
+                horizontal={false}
+              />
+              <XAxis
+                type="number"
+                tick={{ fontSize: 12, fill: 'var(--color-neutral-500)' }}
+                allowDecimals={false}
+              />
               <YAxis
                 type="category"
                 dataKey="name"
                 width={120}
-                tick={{ fontSize: 12, fill: '#374151' }}
+                tick={{ fontSize: 12, fill: 'var(--color-neutral-700)' }}
               />
               <Tooltip
                 // inline style retained: Recharts library API prop
                 contentStyle={{
                   borderRadius: '8px',
-                  border: '1px solid #e5e7eb',
+                  border: '1px solid var(--color-neutral-200)',
+                  background: 'var(--color-background)',
                   fontSize: '13px',
                 }}
               />
-              <Bar dataKey="badges" name="Badges" fill="#6366f1" radius={[0, 4, 4, 0]} />
+              <Bar
+                dataKey="badges"
+                name="Badges"
+                fill="var(--color-chart-4)"
+                radius={[0, 4, 4, 0]}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>

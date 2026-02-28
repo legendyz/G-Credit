@@ -81,7 +81,13 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({
     onClose();
   };
 
-  const confettiColors = ['#fbbf24', '#34d399', '#60a5fa', '#f472b6', '#a78bfa'];
+  const confettiColors = [
+    'var(--color-warning)',
+    'var(--color-success)',
+    'var(--color-brand-400)',
+    'var(--color-confetti-pink)',
+    'var(--color-confetti-purple)',
+  ];
 
   // Pre-compute confetti positions to avoid Math.random() during render
   const confettiPositions = useMemo(

@@ -111,11 +111,28 @@
   --text-caption: 0.6875rem;
   --text-caption--line-height: 0.875rem;
 
+  /* === Third-party Brand Colors === */
+  --color-linkedin: #0A66C2;
+  --color-linkedin-dark: #094F96;
+  --color-ms-text: #2F2F2F;
+  --color-ms-border: #8C8C8C;
+
+  /* === Confetti Colors === */
+  --color-confetti-pink: #f472b6;
+  --color-confetti-purple: #a78bfa;
+
+  /* === SVG Illustration Colors === */
+  --color-gift-box: #FCD34D;
+  --color-gift-box-dark: #F59E0B;
+  --color-gift-ribbon: #EF4444;
+  --color-gift-ribbon-dark: #DC2626;
+
   /* === Shadows (Elevation) === */
   --shadow-elevation-1: 0 2px 4px rgba(0, 0, 0, 0.08);
   --shadow-elevation-2: 0 4px 8px rgba(0, 0, 0, 0.12);
   --shadow-elevation-3: 0 8px 16px rgba(0, 0, 0, 0.16);
   --shadow-elevation-4: 0 16px 32px rgba(0, 0, 0, 0.24);
+  --shadow-sticky: -4px 0 8px -4px rgba(0, 0, 0, 0.1);
 
   /* === Border Radius === */
   --radius-xs: 2px;
