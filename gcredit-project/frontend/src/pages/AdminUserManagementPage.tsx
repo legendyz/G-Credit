@@ -42,7 +42,7 @@ type SourceFilterValue = 'ALL' | 'M365' | 'LOCAL';
 
 const DEFAULT_PAGE_SIZE = 20;
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
-const ROLES: (UserRole | 'ALL')[] = ['ALL', 'ADMIN', 'ISSUER', 'MANAGER', 'EMPLOYEE'];
+const ROLES: (UserRole | 'ALL')[] = ['ALL', 'ADMIN', 'ISSUER', 'EMPLOYEE']; // ADR-017: MANAGER removed
 
 export function AdminUserManagementPage() {
   const { user: currentUser } = useAuthStore();

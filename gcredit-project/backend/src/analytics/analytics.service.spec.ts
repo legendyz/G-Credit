@@ -55,8 +55,7 @@ describe('AnalyticsService', () => {
       mockPrismaService.user.groupBy.mockResolvedValue([
         { role: 'ADMIN', _count: 5 },
         { role: 'ISSUER', _count: 20 },
-        { role: 'MANAGER', _count: 45 },
-        { role: 'EMPLOYEE', _count: 380 },
+        { role: 'EMPLOYEE', _count: 425 }, // ADR-017: MANAGER merged into EMPLOYEE
       ]);
 
       // Mock active users this month
@@ -82,7 +81,7 @@ describe('AnalyticsService', () => {
 
       expect(result.users.total).toBe(450);
       expect(result.users.byRole.ADMIN).toBe(5);
-      expect(result.users.byRole.EMPLOYEE).toBe(380);
+      expect(result.users.byRole.EMPLOYEE).toBe(425); // ADR-017: MANAGER merged into EMPLOYEE
       expect(result.users.activeThisMonth).toBe(320);
       expect(result.users.newThisMonth).toBe(25);
 
@@ -347,10 +346,12 @@ describe('AnalyticsService', () => {
       expect(result.topPerformers.length).toBe(5);
     });
 
-    it('should filter by managerId for MANAGER role (Story 12.3a)', async () => {
+    it('should filter by managerId for EMPLOYEE with directReports (ADR-017)', async () => {
+      // ADR-017: manager identity from directReports, not role enum
+      mockPrismaService.user.count.mockResolvedValue(3); // has 3 direct reports
       mockPrismaService.user.findMany.mockResolvedValue([]);
 
-      await service.getTopPerformers(undefined, 10, 'manager-1', 'MANAGER');
+      await service.getTopPerformers(undefined, 10, 'manager-1', 'EMPLOYEE');
 
       expect(mockPrismaService.user.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -361,20 +362,29 @@ describe('AnalyticsService', () => {
       );
     });
 
-    it('should throw ForbiddenException if MANAGER requests teamId (Story 12.3a)', async () => {
+    it('should throw ForbiddenException if manager requests teamId (ADR-017)', async () => {
+      mockPrismaService.user.count.mockResolvedValue(3); // has direct reports
       await expect(
-        service.getTopPerformers('Sales', 10, 'manager-1', 'MANAGER'),
+        service.getTopPerformers('Sales', 10, 'manager-1', 'EMPLOYEE'),
       ).rejects.toThrow(ForbiddenException);
     });
 
-    it('should return empty list for MANAGER with no direct reports (Story 12.3a)', async () => {
+    it('should throw ForbiddenException for EMPLOYEE without directReports (ADR-017)', async () => {
+      mockPrismaService.user.count.mockResolvedValue(0); // no direct reports
+      await expect(
+        service.getTopPerformers(undefined, 10, 'employee-1', 'EMPLOYEE'),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should return empty list for manager with no team badges (ADR-017)', async () => {
+      mockPrismaService.user.count.mockResolvedValue(2); // has direct reports
       mockPrismaService.user.findMany.mockResolvedValue([]);
 
       const result = await service.getTopPerformers(
         undefined,
         10,
         'manager-1',
-        'MANAGER',
+        'EMPLOYEE',
       );
 
       expect(result.topPerformers).toEqual([]);

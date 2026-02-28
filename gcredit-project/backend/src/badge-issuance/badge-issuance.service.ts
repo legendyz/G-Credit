@@ -712,6 +712,10 @@ export class BadgeIssuanceService {
       });
       if (directReportCount > 0) {
         where.recipient = { managerId: userId };
+      } else {
+        throw new ForbiddenException(
+          'Manager access required: you have no direct reports',
+        );
       }
     }
     // ADMIN can see all badges (no filter) - but Story 8.2 allows issuer filter

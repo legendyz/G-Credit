@@ -12,6 +12,7 @@ import {
   Logger,
   HttpCode,
   HttpStatus,
+  ForbiddenException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -23,6 +24,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
+import { PrismaService } from '../common/prisma.service';
 import { DashboardService } from './dashboard.service';
 import {
   EmployeeDashboardDto,
@@ -39,7 +41,10 @@ import type { RequestWithUser } from '../common/interfaces/request-with-user.int
 export class DashboardController {
   private readonly logger = new Logger(DashboardController.name);
 
-  constructor(private readonly dashboardService: DashboardService) {}
+  constructor(
+    private readonly dashboardService: DashboardService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   /**
    * AC1: Employee Dashboard
@@ -105,6 +110,18 @@ export class DashboardController {
   async getManagerDashboard(
     @Request() req: RequestWithUser,
   ): Promise<ManagerDashboardDto> {
+    // ADR-017: Manager identity from directReports relation, not role enum.
+    // Non-admin users must have directReports to access manager dashboard.
+    if (req.user.role !== 'ADMIN') {
+      const directReportCount = await this.prisma.user.count({
+        where: { managerId: req.user.userId },
+      });
+      if (directReportCount === 0) {
+        throw new ForbiddenException(
+          'Manager access required: you have no direct reports',
+        );
+      }
+    }
     this.logger.log(`Getting manager dashboard for user ${req.user.userId}`);
     return this.dashboardService.getManagerDashboard(req.user.userId);
   }

@@ -18,6 +18,7 @@ export interface CreateUserOptions {
   role?: UserRole;
   emailVerified?: boolean;
   department?: string;
+  managerId?: string;
 }
 
 /**
@@ -47,11 +48,23 @@ export class UserFactory {
   }
 
   /**
-   * Creates a manager user (ADR-017: managers now have EMPLOYEE role;
-   * manager identity is derived from directReports relation)
+   * Creates a manager user (ADR-017: managers have EMPLOYEE role;
+   * manager identity is derived from directReports relation).
+   * Automatically creates a subordinate to establish manager identity.
    */
   async createManager(options: CreateUserOptions = {}): Promise<User> {
-    return this.createUser({ role: UserRole.EMPLOYEE, ...options });
+    const manager = await this.createUser({
+      role: UserRole.EMPLOYEE,
+      ...options,
+    });
+    // ADR-017: Create a subordinate to establish manager identity (directReports)
+    await this.createUser({
+      role: UserRole.EMPLOYEE,
+      firstName: 'Sub',
+      lastName: `Of${manager.id.substring(0, 6)}`,
+      managerId: manager.id,
+    });
+    return manager;
   }
 
   /**
@@ -85,6 +98,7 @@ export class UserFactory {
         role,
         emailVerified: options.emailVerified ?? true,
         department: options.department,
+        managerId: options.managerId,
       },
     });
   }
@@ -105,6 +119,7 @@ export class UserFactory {
 
   /**
    * Creates a complete test team: admin, manager, and employees
+   * ADR-017: Employees are assigned to the manager via managerId
    */
   async createTestTeam(): Promise<{
     admin: User;
@@ -112,8 +127,18 @@ export class UserFactory {
     employees: User[];
   }> {
     const admin = await this.createAdmin();
+    // createManager already creates one subordinate (ADR-017)
     const manager = await this.createManager();
-    const employees = await this.createMany(3, { role: UserRole.EMPLOYEE });
+    // Create additional employees under this manager
+    const employees: User[] = [];
+    for (let i = 0; i < 3; i++) {
+      employees.push(
+        await this.createUser({
+          role: UserRole.EMPLOYEE,
+          managerId: manager.id,
+        }),
+      );
+    }
 
     return { admin, manager, employees };
   }

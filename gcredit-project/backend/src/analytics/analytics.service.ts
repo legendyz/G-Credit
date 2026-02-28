@@ -306,7 +306,8 @@ export class AnalyticsService {
 
   /**
    * AC3: Get top performers by badge count
-   * MANAGER can only see their own team, ADMIN sees all
+   * ADR-017: Manager (EMPLOYEE with directReports) can only see their own team, ADMIN sees all.
+   * Non-manager EMPLOYEE users are rejected with ForbiddenException.
    * @param teamId - Optional team filter (department)
    * @param limit - Max results (default 10)
    * @param currentUserId - Current user ID
@@ -318,19 +319,30 @@ export class AnalyticsService {
     currentUserId?: string,
     currentUserRole?: string,
   ): Promise<TopPerformersDto> {
-    // Story 12.3a: MANAGER scoped to direct reports (managerId-based)
+    // ADR-017: Manager identity from directReports relation, not role enum
     let filterManagerId: string | undefined;
     let filterDepartment: string | undefined;
 
-    if (currentUserRole === 'MANAGER') {
+    if (currentUserRole === 'ADMIN') {
+      // ADMIN can filter by any department
+      if (teamId) {
+        filterDepartment = teamId;
+      }
+    } else if (currentUserId) {
+      // For EMPLOYEE users, check if they are a manager (have directReports)
+      const directReportCount = await this.prisma.user.count({
+        where: { managerId: currentUserId },
+      });
+      if (directReportCount === 0) {
+        throw new ForbiddenException(
+          'Manager access required: you have no direct reports',
+        );
+      }
       // Manager can only see their direct reports
       filterManagerId = currentUserId;
       if (teamId) {
         throw new ForbiddenException('You can only view your own team');
       }
-    } else if (teamId) {
-      // ADMIN can filter by any department
-      filterDepartment = teamId;
     }
 
     // Query users with badge counts

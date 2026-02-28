@@ -135,3 +135,43 @@ This is non-blocking for Story 14.2 (scope is schema/migration/seed), but the st
 APPROVED
 
 No blocking migration/schema/seed defects were found, and the requested documentation hardening is now complete.
+
+---
+
+## Incremental Re-review Update (Post-acceptance code changes)
+
+### Reviewed Commit
+
+- `0c03a72` — `fix: unify manager identity model across codebase (ADR-017) [14.2]`
+
+### Incremental Verdict
+
+**CHANGES REQUESTED**
+
+This increment fixes the previously reported badge-issued access risk, but introduces/retains one blocking authorization gap in `app.controller.ts`.
+
+### Confirmed Improvements
+
+- `badge-issuance.service.ts`: non-manager `EMPLOYEE` now receives `ForbiddenException` in `getIssuedBadges`.
+- `analytics.service.ts`: manager identity switched to `directReports` check; non-manager `EMPLOYEE` blocked.
+- `dashboard.controller.ts`: directReports gate added for manager dashboard (admin bypass preserved).
+- Frontend role/type cleanup aligned with ADR-017 (`MANAGER` removed from role unions).
+
+### Blocking Issue
+
+- `backend/src/app.controller.ts` `GET /manager-only` currently allows `@Roles('EMPLOYEE', 'ADMIN')` but does not enforce manager identity (`directReports > 0`) in handler logic.
+- This can allow ordinary `EMPLOYEE` users without direct reports to access manager-only route, which is inconsistent with ADR-017 semantics and route comments.
+
+### Required Fix (Minimal)
+
+1. Add directReports check in `managerRoute` for non-admin users (same guard logic used in `dashboard.controller.ts`), and throw `ForbiddenException` when count is 0.
+2. Add/adjust unit tests for:
+   - EMPLOYEE with directReports → allowed
+   - EMPLOYEE without directReports → forbidden
+   - ADMIN → allowed and bypasses directReports check
+
+### Verification Run Summary for Increment
+
+- Passed: `analytics.service.spec.ts`, `dashboard.controller.spec.ts`, `badge-issuance.service.spec.ts`, `app.controller.spec.ts`, `RoleBadge.test.tsx`
+- Passed: backend `tsc --noEmit`, frontend `tsc --noEmit -p tsconfig.app.json`
+- Note: Existing `app.controller.spec.ts` is minimal and does not currently assert manager-only authorization behavior.

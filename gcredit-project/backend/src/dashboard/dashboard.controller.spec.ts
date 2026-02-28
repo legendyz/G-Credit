@@ -5,6 +5,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DashboardController } from './dashboard.controller';
 import { DashboardService } from './dashboard.service';
+import { PrismaService } from '../common/prisma.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import {
@@ -19,6 +20,7 @@ import type { RequestWithUser } from '../common/interfaces/request-with-user.int
 describe('DashboardController', () => {
   let controller: DashboardController;
   let dashboardService: jest.Mocked<DashboardService>;
+  let mockPrismaService: { user: { count: jest.Mock } };
 
   const mockEmployeeDashboard: EmployeeDashboardDto = {
     badgeSummary: {
@@ -133,12 +135,20 @@ describe('DashboardController', () => {
       getAdminDashboard: jest.fn(),
     };
 
+    mockPrismaService = {
+      user: { count: jest.fn() },
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [DashboardController],
       providers: [
         {
           provide: DashboardService,
           useValue: mockDashboardService,
+        },
+        {
+          provide: PrismaService,
+          useValue: mockPrismaService,
         },
       ],
     })
@@ -248,8 +258,9 @@ describe('DashboardController', () => {
   });
 
   describe('getManagerDashboard', () => {
-    it('should return manager dashboard data', async () => {
+    it('should return manager dashboard data for EMPLOYEE with directReports', async () => {
       // Arrange
+      mockPrismaService.user.count.mockResolvedValue(3); // has 3 direct reports
       dashboardService.getManagerDashboard.mockResolvedValue(
         mockManagerDashboard,
       );
@@ -268,6 +279,23 @@ describe('DashboardController', () => {
       expect(result).toEqual(mockManagerDashboard);
       expect(dashboardService.getManagerDashboard).toHaveBeenCalledWith(
         'manager-1',
+      );
+    });
+
+    it('should throw ForbiddenException for EMPLOYEE without directReports (ADR-017)', async () => {
+      // Arrange
+      mockPrismaService.user.count.mockResolvedValue(0); // no direct reports
+      const req: RequestWithUser = {
+        user: {
+          userId: 'employee-1',
+          email: 'employee@example.com',
+          role: UserRole.EMPLOYEE,
+        },
+      };
+
+      // Act & Assert
+      await expect(controller.getManagerDashboard(req)).rejects.toThrow(
+        'Manager access required',
       );
     });
 
@@ -292,6 +320,8 @@ describe('DashboardController', () => {
       expect(dashboardService.getManagerDashboard).toHaveBeenCalledWith(
         'admin-1',
       );
+      // Should NOT check directReports for ADMIN
+      expect(mockPrismaService.user.count).not.toHaveBeenCalled();
     });
   });
 

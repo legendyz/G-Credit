@@ -44,7 +44,7 @@ export class CreateUserDto {
   department?: string;
 
   @ApiProperty({
-    enum: ['EMPLOYEE', 'ISSUER', 'MANAGER'],
+    enum: ['EMPLOYEE', 'ISSUER'], // ADR-017: MANAGER removed; manager identity from directReports
     example: 'EMPLOYEE',
   })
   @IsEnum(UserRole)
