@@ -357,8 +357,8 @@ export class M365SyncService {
     // Priority 2: roleSetManually = true → keep existing role
     if (existingUser?.roleSetManually) return existingUser.role;
 
-    // Priority 3: directReports > 0 → MANAGER
-    if (hasDirectReports) return UserRole.MANAGER;
+    // Priority 3: directReports > 0 → EMPLOYEE (ADR-017: manager identity from directReports relation, not role)
+    if (hasDirectReports) return UserRole.EMPLOYEE;
 
     // Priority 4: Default → EMPLOYEE
     return UserRole.EMPLOYEE;
@@ -447,12 +447,8 @@ export class M365SyncService {
           } else if (issuerGroupId && groupIds.includes(issuerGroupId)) {
             updateData.role = UserRole.ISSUER;
           } else {
-            // Not in any privileged Security Group → check directReports for MANAGER
-            const directReportCount = await this.prisma.user.count({
-              where: { managerId: user.id },
-            });
-            updateData.role =
-              directReportCount > 0 ? UserRole.MANAGER : UserRole.EMPLOYEE;
+            // ADR-017: manager identity from directReports relation, not role enum
+            updateData.role = UserRole.EMPLOYEE;
           }
         }
 
@@ -921,12 +917,9 @@ export class M365SyncService {
           } else if (issuerMembers.has(user.azureId)) {
             newRole = UserRole.ISSUER;
           } else {
-            // Not in any Security Group — check directReports
-            const directReportsCount = await this.prisma.user.count({
-              where: { managerId: user.id },
-            });
-            newRole =
-              directReportsCount > 0 ? UserRole.MANAGER : UserRole.EMPLOYEE;
+            // ADR-017: manager identity from directReports relation, not role enum.
+            // directReports count no longer drives role assignment.
+            newRole = UserRole.EMPLOYEE;
           }
 
           // Check manager
@@ -1050,14 +1043,11 @@ export class M365SyncService {
 
     for (const user of usersWithReports) {
       if (!user.azureId) continue;
-      // Only upgrade to MANAGER if current role is EMPLOYEE and not manually set
-      // Security Group roles (ADMIN/ISSUER) take priority — already set in Pass 1
-      if (user.role === UserRole.EMPLOYEE && !user.roleSetManually) {
-        await this.prisma.user.update({
-          where: { id: user.id },
-          data: { role: UserRole.MANAGER },
-        });
-      }
+      // ADR-017: MANAGER role removed — manager identity derived from directReports relation.
+      // Pass 2 no longer upgrades role. Users with directReports remain EMPLOYEE.
+      // This block is intentionally a no-op; retained for traceability until Story 14.6 refactor.
+      // istanbul ignore next
+      void user;
     }
   }
 

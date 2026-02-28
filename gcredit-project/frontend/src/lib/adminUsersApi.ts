@@ -2,7 +2,7 @@
  * Admin Users API Types - Story 8.10, 12.3b
  */
 
-export type UserRole = 'ADMIN' | 'ISSUER' | 'MANAGER' | 'EMPLOYEE';
+export type UserRole = 'ADMIN' | 'ISSUER' | 'EMPLOYEE'; // ADR-017: MANAGER removed; manager identity from directReports
 
 export interface AdminUser {
   id: string;

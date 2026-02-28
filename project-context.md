@@ -5,7 +5,7 @@
 **Project Type:** Enterprise Internal Platform (Greenfield)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
 **License:** MIT License (Open Source)  
-**Status:** ✅ Sprint 13 COMPLETE — 8/8 stories, v1.3.0  
+**Status:** ✅ Sprint 14 COMPLETE — 9/9 stories, v1.4.0  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, committed 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, committed 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, committed 2026-01-26)  
@@ -21,7 +21,8 @@
 **Sprint 12:** ✅ Complete (8/8 dev stories, 3 waves, branch: sprint-12/management-uis-evidence, 1,549 tests, v1.2.0)
 **Sprint 12.5:** ✅ Complete (2/2 stories, branch: sprint-12.5/deferred-cleanup, 1,593 tests, v1.2.1)
 **Sprint 13:** ✅ Complete (8/8 stories, 4 waves, branch: sprint-13/sso-session-management, 1,708 tests, v1.3.0)
-**Last Updated:** 2026-02-27 (Sprint 13 COMPLETE — Azure AD SSO + Session Management, v1.3.0)
+**Sprint 14:** ✅ Complete (9/9 stories, 4 waves, branch: sprint-14/role-model-refactor, 1,757 tests, v1.4.0)
+**Last Updated:** 2026-02-28 (Sprint 14 COMPLETE — Dual-Dimension Role Model Refactor, v1.4.0)
 ---
 
 ## 🚨 Maintenance Protocol - How to Keep This Document Current
@@ -164,6 +165,12 @@ Build an internal digital credentialing (badging) platform to securely recognize
 - **Sprint 13 Status:** `gcredit-project/docs/sprints/sprint-13/sprint-status.md` ✅ COMPLETE (8/8 stories, 1,708 tests)
 - **Sprint 13 Retrospective:** `gcredit-project/docs/sprints/sprint-13/retrospective.md` ✅ COMPLETE
 
+**Sprint 14 — Dual-Dimension Role Model Refactor (v1.4.0, 2026-02-27 to 2026-02-28):**
+- **Sprint 14 Backlog:** `gcredit-project/docs/sprints/sprint-14/backlog.md` ✅ COMPLETE (9 stories, 4 waves)
+- **Sprint 14 Summary:** `gcredit-project/docs/sprints/sprint-14/summary.md` ✅ COMPLETE (9/9 stories, 1,757 tests)
+- **Sprint 14 Retrospective:** `gcredit-project/docs/sprints/sprint-14/retrospective.md` ✅ COMPLETE
+- **Sprint 14 Version Manifest:** `gcredit-project/docs/sprints/sprint-14/version-manifest.md` ✅ COMPLETE
+
 ---
 
 ## 📂 Documentation Structure & Navigation Guide
@@ -201,7 +208,8 @@ gcredit-project/docs/
 │   ├── sprint-11/        # ✅ COMPLETE - Security & Quality Hardening (25 stories, v1.1.0)
 │   ├── sprint-12/        # ✅ COMPLETE - Management UIs & Evidence Unification (8 stories, v1.2.0)
 │   ├── sprint-12.5/      # ✅ COMPLETE - Deferred Cleanup (2 stories, v1.2.1)
-│   └── sprint-13/        # ✅ COMPLETE - Azure AD SSO + Session Management (8 stories, v1.3.0)
+│   ├── sprint-13/        # ✅ COMPLETE - Azure AD SSO + Session Management (8 stories, v1.3.0)
+│   └── sprint-14/        # ✅ COMPLETE - Dual-Dimension Role Model Refactor (9 stories, v1.4.0)
 ├── decisions/            # Architecture Decision Records
 │   ├── 002-lodash-security-risk-acceptance.md
 │   ├── 003-badge-assertion-format.md
@@ -292,7 +300,7 @@ _bmad-output/
 - **Framework:** NestJS 11.1.12 (Core), 11.0.16 (CLI) (enterprise-grade Node.js)
 - **API Design:** RESTful JSON API (50+ endpoints implemented)
 - **Authentication:** ✅ Passport.js + JWT (Access 15min, Refresh 7d, M365 Graph integration via Client Credentials)
-- **Authorization:** ✅ RBAC with 4 roles (ADMIN, ISSUER, MANAGER, EMPLOYEE)
+- **Authorization:** ✅ RBAC with 3 permission roles (ADMIN, ISSUER, EMPLOYEE) + `isManager` organization dimension (ADR-017)
 - **Job Queue:** Bull (Redis-backed async processing) - *to be added Sprint 2+*
 - **Validation:** ✅ Class-validator + Class-transformer (all DTOs validated)
 - **Security:** ✅ bcrypt password hashing, JWT guards, role-based guards, token revocation
@@ -416,14 +424,14 @@ _bmad-output/
 | → Sprint 12.5 | 1 day | Deferred Items Cleanup | ✅ COMPLETE (2026-02-25, 2/2 stories, 1,593 tests, v1.2.1) |
 | → Sprint 13 | 3 days | Azure AD SSO + Session Management | ✅ COMPLETE (2026-02-27, 8/8 stories, 1,708 tests, v1.3.0) |
 | **Pre-Pilot Hardening** | **~3 sprints** | **Role Refactor + UI Polish + RBAC** | **🔜 Planning** |
-| → Sprint 14 | TBD | Role Model Refactor + Quick Wins (~24h) | 🔜 Planned |
-| → Sprint 15 | TBD | UI Overhaul + Dashboard Composite View (~37h) | 🔜 Planned |
+| → Sprint 14 | 2 days | Dual-Dimension Role Model Refactor | ✅ COMPLETE (2026-02-28, 9/9 stories, 1,757 tests, v1.4.0) |
+| → Sprint 15 | TBD | UI Overhaul + Dashboard Composite View (~44h) | 🔜 Planned |
 | → Sprint 16 | TBD | Fine-Grained RBAC L1 + Pilot Readiness (~12h) | 🔜 Planned |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ After Sprint 16 |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
 
-**Current Status:** ✅ Sprint 12 Complete — All 8 development stories (12.1–12.8) delivered across 3 waves. Skill Category UI, Skill UI, User Management UI, Milestone Admin UI, Evidence Unification (Data Model + UI), Activity Feed Formatting, UUID Fallback Hardening. Total: 1,549 tests (847 BE + 702 FE). 4 tech debt items resolved (TD-009, TD-010, TD-016, TD-017). Branch: `sprint-12/management-uis-evidence`.
+**Current Status:** ✅ Sprint 14 Complete — 9/9 stories delivered across 4 waves. Dual-dimension role model refactor (ADR-015/017): MANAGER removed from UserRole enum, `isManager` JWT claim, ManagerGuard + @RequireManager(), 6-combination test matrix (31 E2E tests), design token infrastructure (11 tokens). Total: 1,757 tests (932 BE + 794 FE + 31 E2E). 2 tech debt resolved (TD-034, TD-036), 1 created (TD-038). Branch: `sprint-14/role-model-refactor`.
 
 ---
 
@@ -480,7 +488,7 @@ _bmad-output/
 | **TD-031: Time-Based Milestone Metrics** | P3 | 📋 Deferred | **Issue:** Current milestone engine (Story 12.4) supports `badge_count` and `category_count` metrics only. Three time-related capabilities are missing: (1) **Time Window Filter** — "Earn N badges within M days" — adds optional `timeWindowDays` to trigger JSON, ~4h. (2) **Streak** — "Earn badges in N consecutive months" — new `streak` metric with `streakPeriod`/`minPerPeriod` fields, time-series grouping evaluator, ~8h. (3) **Tenure** — "N days since first badge / account creation" — new `tenure` metric with `anchor` field, requires login-time evaluation trigger (lazy, not cron), ~5h. **Architecture Impact:** Minimal — all three leverage existing `metric + scope + threshold` orthogonal model and JSON trigger column (no Prisma schema migration needed, only enum value additions). Time Window is a scope filter modifier (not a new metric). Streak and Tenure add evaluator cases following existing pattern. Only Tenure introduces a new trigger point (login guard). **Total Effort:** ~17h. **Suggested Phasing:** Time Window + Tenure together (9h, one story), Streak separately (8h, one story). **Reference:** `docs/sprints/sprint-12/milestone-engine-design-notes-20260221.md` |
 | **TD-032: M365 Sync Performance at Scale** | P3 | 📋 Deferred | **Issue:** FULL sync (Sync Users) processes users serially — each user requires 2 Graph API calls (memberOf + manager), totaling ~1.2s/user. 17 users = ~20s; 10,000 users = ~3-4 hours, plus Graph API throttling (10,000 req/10 min limit). **Partial Fix (Sprint 12):** GROUPS_ONLY sync (Sync Roles) already optimized — batch group member queries reduced role-check API calls from N to 2 (`81e6b3c`). **Remaining Optimizations:** (1) **Batch Group Query for FULL sync** — apply same `getGroupMembers()` pattern to `resolveUserRole()`, replacing per-user `/memberOf` calls, ~2h. (2) **Concurrent Processing (p-limit)** — parallelize `syncSingleUser` with concurrency pool (e.g., 10 parallel), ~3h. (3) **Graph $batch API** — bundle up to 20 requests per HTTP call for manager queries, ~4h. (4) **Delta Query** — use `/users/delta` endpoint to sync only changed users instead of full list, ~6h. (5) **Redis caching** — cache group members and Graph responses to avoid redundant calls across sync runs (ties into TD-016), ~3h. **Trigger Conditions:** User count exceeds 500 OR FULL sync takes >2 minutes. **Total Effort:** ~18h. **Suggested Phasing:** Phase 1 (batch group + concurrency, 5h) at 200+ users; Phase 2 ($batch + delta query, 10h) at 1000+ users; Phase 3 (Redis, 3h) with TD-016. |
 | **TD-033: Manager Delegation (Acting Manager)** | P3 | 📋 Deferred | **Issue:** Current architecture supports only a single fixed `managerId` per user. No mechanism exists for a manager to delegate their management responsibilities (e.g., dashboard access, approval rights) to another user during absence or for workload distribution. **Scope:** (1) **Schema** — new `ManagerDelegation` model (delegatorId, delegateId, startDate, endDate, scope enum, isActive), ~2h. (2) **Backend API** — CRUD endpoints for creating/revoking/querying delegations, ~4h. (3) **Permission Guards** — extend MANAGER role checks with OR logic: "is manager OR is active delegate of a manager", ~4h. (4) **Frontend UI** — delegation management UI on Manager Dashboard + delegate context switcher, ~6h. (5) **Audit** — delegation lifecycle audit logging + delegate attribution on proxied actions, ~3h. **Total Effort:** ~19h. **Dependencies:** Builds on DEC-011-18 (MANAGER role-managerId strong constraint). **Trigger:** When organizational workflows require manager absence coverage or team co-management. |
-| **TD-034: Role Model Refactor — Dual-Dimension Identity** | P2 | 📋 Deferred | **Issue:** Current single `role` enum (`ADMIN \| ISSUER \| MANAGER \| EMPLOYEE`) conflates two orthogonal dimensions: (1) **Organization identity** (Manager/Employee) — derived from `directReportsCount > 0`, and (2) **Permission role** (Admin/Issuer/None) — manually assigned. This makes role combinations impossible (e.g., an Issuer who manages people must choose one role). **Proposed Model:** `role` field stores only permission dimension: `ADMIN \| ISSUER \| EMPLOYEE` (EMPLOYEE = no extra permission). Organization identity (`Manager` vs `Employee`) is purely derived from subordinate count at query time. MANAGER removed from enum. **Scope:** (1) **Schema migration** — remove MANAGER from UserRole enum, migrate existing MANAGER rows to EMPLOYEE, ~2h. (2) **Backend RBAC guards** — all `role === 'MANAGER'` checks → `directReportsCount > 0` or JWT `isManager` claim, ~6h. (3) **JWT token** — add `isManager: boolean` claim derived at login/sync, ~2h. (4) **M365 sync** — role derivation no longer sets MANAGER, only ADMIN/ISSUER/EMPLOYEE based on Security Groups, ~3h. (5) **Frontend** — Role column shows combined tags `[Manager] [Issuer]`, RoleBadge component updated, route guards updated, ~4h. (6) **Audit log migration** — historical `MANAGER` entries preserved as-is with note, ~1h. **Total Effort:** ~18h. **Dependencies:** TD-035 (Dashboard overhaul) should follow. **Trigger:** When role combination requirements become blocking for user workflows. |
+| **TD-034: Role Model Refactor — Dual-Dimension Identity** | P2 | ✅ Sprint 14 Done | **Resolved:** MANAGER removed from UserRole enum. `isManager` JWT claim derived from `directReportsCount > 0`. ManagerGuard + @RequireManager() decorator. M365 sync cleanup. Frontend types updated. 31-test E2E matrix validates all 6 combinations. ADR-015 + ADR-017 implemented. Sprint 14 Stories 14.2–14.8 (2026-02-28). |
 | **TD-035: Dashboard Composite View — Permission Stacking** | P2 | 📋 Deferred | **Issue:** Current dashboard routing is mutually exclusive — each role sees one dashboard. With dual-dimension identity (TD-034), users should see **stacked** sections based on their combined permissions. **Proposed Design:** Every user sees Employee section (My Badges/Wallet). Manager section added if `directReportsCount > 0`. Issuer section (Badge Issuance) added if `permissionRole ∈ {ISSUER, ADMIN}`. Admin section added if `permissionRole = ADMIN`. **Scope:** (1) **Dashboard layout** — tabbed or sectioned composite view replacing role-switched routing, ~8h. (2) **Backend endpoints** — ensure all dashboard APIs accept permission checks rather than role enum, ~3h. (3) **Navigation** — sidebar shows combined menu items based on effective permissions, ~3h. (4) **Testing** — all 6 valid combinations (Employee, Manager, Employee+Issuer, Manager+Issuer, Admin, Admin+Manager), ~4h. **Total Effort:** ~18h. **Dependencies:** TD-034 (role model refactor) must be completed first. **Trigger:** After TD-034 is implemented. |
 
 ---
@@ -1654,21 +1662,42 @@ Sprint 0-2 established this pattern:
    
    **Sprint Docs:** backlog.md, sprint-status.md, retrospective.md
 
-24. 🔜 **Sprint 14: Role Model Refactor + Quick Wins** (Planned)
+24. ✅ **Sprint 14: Dual-Dimension Role Model Refactor** (COMPLETE - 2026-02-28)
    
-   **Sprint Goal:** Architecture-first — land the role model refactor before UI changes to avoid rework.
-   **Estimated Effort:** ~24h
+   **Sprint Goal:** Architecture-first — land the dual-dimension role model refactor before UI overhaul.
+   **Branch:** `sprint-14/role-model-refactor`
+   **Duration:** 2026-02-27 to 2026-02-28 | **Estimate:** ~24h
    
-   **Stories:**
-   - TD-036: Fix flaky BadgeManagementPage test (2-4h) — CI reliability quick win
-   - TD-034: Role Model Refactor — Dual-Dimension Identity (~18h)
-     - Schema migration: remove MANAGER from UserRole enum (~2h)
-     - Backend RBAC guards: `role === 'MANAGER'` → `directReportsCount > 0` / JWT `isManager` (~6h)
-     - JWT token: add `isManager: boolean` claim (~2h)
-     - M365 sync: role derivation update (~3h)
-     - Frontend: RoleBadge combined tags, route guards (~4h)
-     - Audit log migration (~1h)
-   - P1-2: Hardcoded colors → design tokens (1h) — UI infrastructure prep
+   **Wave 1 — Quick Win:**
+   - Story 14.1: TD-036 Fix flaky BadgeManagementPage test ✅
+   
+   **Wave 2 — Role Model Refactor (Backend):**
+   - Story 14.2: Schema migration: remove MANAGER from UserRole enum ✅ (absorbed 14.5 + 14.6)
+   - Story 14.3: JWT payload + AuthenticatedUser + `isManager` claim ✅
+   - Story 14.4: ManagerGuard + @RequireManager() decorator ✅
+   - Story 14.5: RolesGuard cleanup (absorbed by 14.2) ✅
+   - Story 14.6: M365 sync cleanup (absorbed by 14.2) ✅
+   
+   **Wave 3 — Role Model Refactor (Frontend):**
+   - Story 14.7: Frontend types + ProtectedRoute + remove MANAGER references ✅
+   
+   **Wave 4 — Testing + Design Tokens:**
+   - Story 14.8: 6-combination role×manager test matrix (31 E2E tests) ✅
+   - Story 14.9: P1-2 Design tokens prep (11 tokens, ~25 hardcoded colors) ✅
+   
+   **Key Deliverables:**
+   - ADR-015: UserRole enum = ADMIN | ISSUER | EMPLOYEE (MANAGER removed)
+   - ADR-017: Dual-dimension identity — Permission (role) × Organization (isManager)
+   - `computeIsManager(userId)` at 4 JWT generation points
+   - ManagerGuard (58 lines) + @RequireManager() decorator
+   - 31-test role×manager E2E matrix (ADR-017 §7)
+   - 11 CSS design tokens in `@theme` blocks (ADR-009)
+   - Tests: 1,757 (BE 932 + FE 794 + E2E 31), 100% pass rate (+49 from v1.3.0)
+   - Tech debt: TD-034 + TD-036 resolved, TD-038 created
+   
+   **Status:** ✅ v1.4.0 — Sprint complete
+   
+   **Sprint Docs:** backlog.md, summary.md, retrospective.md, version-manifest.md, 9 story files, 9 dev prompts, 9 CR results
 
 25. 🔜 **Sprint 15: UI Overhaul + Dashboard Composite View** (Planned)
    

@@ -326,28 +326,17 @@ export class AdminUsersService {
       );
     }
 
-    // MANAGER and EMPLOYEE are auto-managed via managerId relationships.
-    // Only ADMIN and ISSUER can be manually assigned.
-    if (dto.role === UserRole.MANAGER || dto.role === UserRole.EMPLOYEE) {
+    // ADR-017: MANAGER/EMPLOYEE distinction removed. Only ADMIN and ISSUER can be manually assigned.
+    // EMPLOYEE is the default role; manager identity is derived from directReports.
+    if (dto.role === UserRole.EMPLOYEE) {
       throw new BadRequestException(
-        `Cannot manually assign ${dto.role} role. ` +
-          'MANAGER/EMPLOYEE roles are automatically managed based on subordinate assignments.',
+        'Cannot manually assign EMPLOYEE role. ' +
+          'EMPLOYEE is the default role automatically managed by the system.',
       );
     }
 
-    // Strong constraint: block role change from MANAGER if user has subordinates
-    // (ADMIN promotion is allowed — ADMIN supersedes MANAGER)
-    if (currentUser.role === UserRole.MANAGER && dto.role !== UserRole.ADMIN) {
-      const subordinateCount = await this.prisma.user.count({
-        where: { managerId: userId },
-      });
-      if (subordinateCount > 0) {
-        throw new BadRequestException(
-          `Cannot change role from MANAGER: this user has ${subordinateCount} subordinate(s). ` +
-            'Please reassign their subordinates first.',
-        );
-      }
-    }
+    // ADR-017: MANAGER role removed — manager identity from directReports relation.
+    // No need to block MANAGER→other transitions; the role no longer exists in the enum.
 
     // AC5: Optimistic locking - check version match
     if (currentUser.roleVersion !== dto.roleVersion) {
@@ -688,101 +677,11 @@ export class AdminUsersService {
         },
       });
 
-      // Auto-upgrade new manager: EMPLOYEE → MANAGER
-      if (newManager && newManager.role === UserRole.EMPLOYEE) {
-        await tx.user.update({
-          where: { id: newManager.id },
-          data: {
-            role: UserRole.MANAGER,
-            roleSetManually: true,
-            roleUpdatedAt: new Date(),
-            roleUpdatedBy: adminId,
-            roleVersion: { increment: 1 },
-          },
-        });
+      // ADR-017: Manager identity derived from directReports relation, not role enum.
+      // Auto-upgrade to MANAGER role removed — role stays EMPLOYEE.
 
-        await tx.userRoleAuditLog.create({
-          data: {
-            userId: newManager.id,
-            performedBy: adminId,
-            action: 'ROLE_CHANGED',
-            oldValue: UserRole.EMPLOYEE,
-            newValue: UserRole.MANAGER,
-            note: `Auto-upgraded to MANAGER: assigned as manager of ${currentUser.email}`,
-          },
-        });
-
-        const mgrDisplayName =
-          [newManager.firstName, newManager.lastName]
-            .filter(Boolean)
-            .join(' ') || newManager.email;
-
-        response.managerAutoUpgraded = {
-          managerId: newManager.id,
-          managerName: mgrDisplayName,
-          previousRole: UserRole.EMPLOYEE,
-        };
-
-        this.logger.log(
-          `Auto-upgraded ${newManager.email} from EMPLOYEE to MANAGER (assigned as manager of ${currentUser.email})`,
-        );
-      }
-
-      // Auto-downgrade old manager: if MANAGER with 0 remaining subordinates → EMPLOYEE
-      if (oldManagerId) {
-        const oldMgr = await tx.user.findUnique({
-          where: { id: oldManagerId },
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-            _count: { select: { directReports: true } },
-          },
-        });
-
-        if (
-          oldMgr &&
-          oldMgr.role === UserRole.MANAGER &&
-          oldMgr._count.directReports === 0
-        ) {
-          await tx.user.update({
-            where: { id: oldMgr.id },
-            data: {
-              role: UserRole.EMPLOYEE,
-              roleSetManually: true,
-              roleUpdatedAt: new Date(),
-              roleUpdatedBy: adminId,
-              roleVersion: { increment: 1 },
-            },
-          });
-
-          await tx.userRoleAuditLog.create({
-            data: {
-              userId: oldMgr.id,
-              performedBy: adminId,
-              action: 'ROLE_CHANGED',
-              oldValue: UserRole.MANAGER,
-              newValue: UserRole.EMPLOYEE,
-              note: `Auto-downgraded: last subordinate ${currentUser.email} reassigned`,
-            },
-          });
-
-          const oldMgrDisplayName =
-            [oldMgr.firstName, oldMgr.lastName].filter(Boolean).join(' ') ||
-            oldMgr.email;
-
-          response.managerAutoDowngraded = {
-            managerId: oldMgr.id,
-            managerName: oldMgrDisplayName,
-          };
-
-          this.logger.log(
-            `Auto-downgraded ${oldMgr.email} from MANAGER to EMPLOYEE (last subordinate reassigned)`,
-          );
-        }
-      }
+      // ADR-017: Manager identity derived from directReports relation, not role enum.
+      // Auto-downgrade from MANAGER role removed — role was never MANAGER.
     });
 
     this.logger.log(
@@ -803,13 +702,7 @@ export class AdminUsersService {
       );
     }
 
-    // MANAGER is auto-managed — cannot be directly assigned
-    if (dto.role === UserRole.MANAGER) {
-      throw new BadRequestException(
-        'Cannot create users with MANAGER role directly. ' +
-          'Assign subordinates to automatically promote to MANAGER.',
-      );
-    }
+    // ADR-017: MANAGER removed from UserRole enum. Manager identity is from directReports.
 
     // AC #17: Email uniqueness
     const existing = await this.prisma.user.findUnique({
@@ -893,34 +786,7 @@ export class AdminUsersService {
         },
       });
 
-      // Auto-upgrade manager to MANAGER role if needed
-      if (managerNeedsUpgrade && managerBeforeUpgrade) {
-        await tx.user.update({
-          where: { id: managerBeforeUpgrade.id },
-          data: {
-            role: UserRole.MANAGER,
-            roleSetManually: true,
-            roleUpdatedAt: new Date(),
-            roleUpdatedBy: adminId,
-            roleVersion: { increment: 1 },
-          },
-        });
-
-        await tx.userRoleAuditLog.create({
-          data: {
-            userId: managerBeforeUpgrade.id,
-            performedBy: adminId,
-            action: 'ROLE_CHANGED',
-            oldValue: managerBeforeUpgrade.role,
-            newValue: UserRole.MANAGER,
-            note: `Auto-upgraded to MANAGER: assigned as manager of new user ${dto.email.toLowerCase()}`,
-          },
-        });
-
-        this.logger.log(
-          `Auto-upgraded ${managerBeforeUpgrade.email} from ${managerBeforeUpgrade.role} to MANAGER (assigned as manager of ${dto.email.toLowerCase()})`,
-        );
-      }
+      // ADR-017: Manager identity derived from directReports relation — no role auto-upgrade.
 
       return created;
     });
@@ -1013,35 +879,11 @@ export class AdminUsersService {
           },
         });
 
-        if (
-          mgr &&
-          mgr.role === UserRole.MANAGER &&
-          mgr._count.directReports === 0
-        ) {
-          await tx.user.update({
-            where: { id: mgr.id },
-            data: {
-              role: UserRole.EMPLOYEE,
-              roleSetManually: true,
-              roleUpdatedAt: new Date(),
-              roleUpdatedBy: adminId,
-              roleVersion: { increment: 1 },
-            },
-          });
-
-          await tx.userRoleAuditLog.create({
-            data: {
-              userId: mgr.id,
-              performedBy: adminId,
-              action: 'ROLE_CHANGED',
-              oldValue: UserRole.MANAGER,
-              newValue: UserRole.EMPLOYEE,
-              note: `Auto-downgraded: last subordinate ${user.email} was deleted`,
-            },
-          });
-
+        // ADR-017: Manager identity derived from directReports relation — no role auto-downgrade.
+        // Manager status is determined by having directReports, not by role enum.
+        if (mgr) {
           this.logger.log(
-            `Auto-downgraded ${mgr.email} from MANAGER to EMPLOYEE (last subordinate deleted)`,
+            `Former manager ${mgr.email} now has 0 subordinates after ${user.email} deleted`,
           );
         }
       }

@@ -44,18 +44,19 @@ const IssuanceTrendChart: React.FC<IssuanceTrendChartProps> = ({ dataPoints }) =
   return (
     <ResponsiveContainer width="100%" height={320}>
       <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--color-neutral-200)" />
         <XAxis
           dataKey="label"
-          tick={{ fontSize: 12, fill: '#6b7280' }}
+          tick={{ fontSize: 12, fill: 'var(--color-neutral-500)' }}
           interval="preserveStartEnd"
         />
-        <YAxis tick={{ fontSize: 12, fill: '#6b7280' }} allowDecimals={false} />
+        <YAxis tick={{ fontSize: 12, fill: 'var(--color-neutral-500)' }} allowDecimals={false} />
         <Tooltip
           // inline style retained: Recharts library API prop
           contentStyle={{
             borderRadius: '8px',
-            border: '1px solid #e5e7eb',
+            border: '1px solid var(--color-neutral-200)',
+            background: 'var(--color-background)',
             fontSize: '13px',
           }}
         />
@@ -65,17 +66,17 @@ const IssuanceTrendChart: React.FC<IssuanceTrendChartProps> = ({ dataPoints }) =
           type="monotone"
           dataKey="issued"
           name="Issued"
-          stroke="#3b82f6"
-          fill="#93c5fd"
-          fillOpacity={0.4}
+          stroke="var(--color-chart-1)"
+          fill="var(--color-chart-1)"
+          fillOpacity={0.3}
           strokeWidth={2}
         />
         <Area
           type="monotone"
           dataKey="claimed"
           name="Claimed"
-          stroke="#22c55e"
-          fill="#86efac"
+          stroke="var(--color-chart-2)"
+          fill="var(--color-chart-2)"
           fillOpacity={0.3}
           strokeWidth={2}
         />
@@ -83,8 +84,8 @@ const IssuanceTrendChart: React.FC<IssuanceTrendChartProps> = ({ dataPoints }) =
           type="monotone"
           dataKey="revoked"
           name="Revoked"
-          stroke="#ef4444"
-          fill="#fca5a5"
+          stroke="var(--color-chart-3)"
+          fill="var(--color-chart-3)"
           fillOpacity={0.3}
           strokeWidth={2}
         />

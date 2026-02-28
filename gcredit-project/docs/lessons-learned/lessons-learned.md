@@ -2,10 +2,10 @@
 
 **Project:** G-Credit Digital Credentialing System  
 **Purpose:** Capture key learnings and establish best practices for efficient development  
-**Last Updated:** 2026-02-27 (Sprint 13 v1.3.0 — Azure AD SSO + Session Management)  
+**Last Updated:** 2026-02-28 (Sprint 14 v1.4.0 — Dual-Dimension Role Model Refactor)  
 **Status:** Living document - update after each Sprint Retrospective  
-**Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 → Sprint 6 → Sprint 7 → Sprint 8 → Sprint 9 → Sprint 10 → Sprint 11 → Sprint 12 → Sprint 13 (Complete, v1.3.0)  + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
-**Total Lessons:** 48 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 8, Sprint 7: 3, Sprint 8: 3, Sprint 9: 3, Sprint 10: 3, Sprint 11: 4, Sprint 12: 2, Sprint 13: 3)
+**Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 → Sprint 6 → Sprint 7 → Sprint 8 → Sprint 9 → Sprint 10 → Sprint 11 → Sprint 12 → Sprint 13 → Sprint 14 (Complete, v1.4.0)  + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
+**Total Lessons:** 51 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 8, Sprint 7: 3, Sprint 8: 3, Sprint 9: 3, Sprint 10: 3, Sprint 11: 4, Sprint 12: 2, Sprint 13: 3, Sprint 14: 3)
 
 ---
 
@@ -26,9 +26,10 @@
 | Sprint 11 | 25/25 (100%) | 51.5-65.5h | ~60h | ~92-100% | ~2.4h/story | ⭐
 | Sprint 12 | 8/8 (100%) | 72h | — | — | ~9h/story | ⭐
 | Sprint 13 | 8/8 (100%) | 50-60h | — | — | ~6.5h/story | ⭐
+| Sprint 14 | 9/9 (100%) | 24h | — | — | ~2.7h/story | ⭐
 
 ### Quality Metrics
-- **Test Pass Rate:** 100% (1,708/1,708 tests — BE 914 + FE 794) ⭐
+- **Test Pass Rate:** 100% (1,757/1,757 tests — BE 932 + FE 794 + E2E 31) ⭐
 - **UAT Pass Rate:** 99.3% (152/153 tests Sprint 11, 33/33 Sprint 10) ⭐
 - **Documentation Accuracy:** 95%+ (comprehensive guides created)
 - **Technical Debt:** 56 items tracked (17 P1 resolved Sprint 8, 7 TD resolved Sprint 10, 4 TD resolved Sprint 12: TD-009/TD-010/TD-016/TD-017) ⭐
@@ -102,6 +103,10 @@
   - Lesson 46: Enterprise SSO Integration Requires End-to-End Wave Design
   - Lesson 47: Dual-Track UAT (Agent + Manual) Catches Complementary Bug Classes
   - Lesson 48: UAT-Phase Refactoring Increases Risk — Keep Bug Fixes Minimal
+- [Sprint 14 Lessons](#sprint-14-lessons-february-2026) - Architecture Specs, Story Absorption, Rate Limiter Awareness (3 lessons)
+  - Lesson 49: Architecture Specs as Development Contracts
+  - Lesson 50: Story Absorption Reduces Overhead
+  - Lesson 51: Rate Limiter Settings Need E2E Testing Awareness
 - [Cross-Sprint Patterns](#cross-sprint-patterns) - 13 patterns
 - [Development Checklists](#development-checklists)
 - [Common Pitfalls](#common-pitfalls-to-avoid)
@@ -5357,3 +5362,54 @@ Updated 3 files: `test-setup.ts`, `analytics.e2e-spec.ts`, `auth-simple.e2e-spec
 **Action Items:**
 1. SM to enforce "minimal fix" policy during UAT phase
 2. Refactoring improvements discovered during UAT should be logged as TD items
+
+---
+
+## Sprint 14 Lessons (February 2026)
+### Dual-Dimension Role Model Refactor (v1.4.0)
+
+### Sprint 14: Lesson 49 — Architecture Specs as Development Contracts
+
+**Context:** ADR-017 provided an 11-step implementation sequence with explicit file lists, guard patterns, and test matrix requirements for the dual-dimension identity model refactor.
+
+**Lesson:** When a detailed architecture spec (ADR) exists before Sprint Planning, development follows the spec step-by-step with zero interpretation disputes. Stories 14.2–14.4 had no design ambiguity because ADR-017 served as a development contract.
+
+**What Worked:**
+- ADR-017 specified exactly which files to modify, what patterns to use, and what test matrix to implement
+- Stories mapped 1:1 to ADR sections, making scope crystal clear
+- Code review verified ADR compliance rather than debating design choices
+
+**Key Pattern:**
+> For architectural refactors, invest time in a detailed ADR with step-by-step implementation guidance. The ADR becomes a development contract — not just a decision record.
+
+### Sprint 14: Lesson 50 — Story Absorption Reduces Overhead
+
+**Context:** Stories 14.5 (RolesGuard cleanup) and 14.6 (M365 sync cleanup) were absorbed into Story 14.2 during schema migration because the changes were naturally coupled.
+
+**Lesson:** Fine-grained story splitting sometimes creates unnecessary handoff points. When a larger story naturally encompasses smaller related stories, absorbing them early reduces context-switching and avoids artificial boundaries.
+
+**Evidence:**
+- Story 14.2 expanded scope to include all `@Roles('MANAGER')` removals (originally 14.5) and `deriveRole()` cleanup (originally 14.6)
+- Code review handled the expanded scope in one pass, more efficient than 3 separate reviews
+- sprint-status.yaml marked 14.5 and 14.6 as "absorbed by 14.2"
+
+**Key Pattern:**
+> When a larger story naturally encompasses smaller related stories, absorb them early and note it in sprint-status.yaml rather than creating artificial development boundaries.
+
+### Sprint 14: Lesson 51 — Rate Limiter Settings Need E2E Testing Awareness
+
+**Context:** Auth controller has 8 `@Throttle()` decorators with hardcoded limits (e.g., login: 5/min/IP) that override the global `ConfigService`-based throttle config. Story 14.8's 6-combination test matrix needed >5 logins, hitting the rate limit.
+
+**Lesson:** Rate limits set for production security can block E2E testing. The workaround (using `JwtService.sign()` for the 6th test user instead of a real login) was functional but fragile. Rate limits should be `ConfigService`-based so test environments can override them.
+
+**Evidence:**
+- 5/min login rate limit hit during 14.8 E2E testing with 6 different users
+- Workaround: 5 real logins + 1 JwtService.sign() — breaks real-login testing pattern
+- TD-038 logged as Sprint 15 candidate (Story 15.14, 2-3h)
+
+**Key Pattern:**
+> When adding rate limiters, always consider the E2E testing impact. Use `ConfigService`-based values that can be overridden in test environments rather than hardcoded decorator values.
+
+**Action Items:**
+1. Implement TD-038 in Sprint 15 — move all `@Throttle()` values to `ConfigService`
+2. Add E2E test env config with relaxed rate limits

@@ -1206,7 +1206,7 @@ describe('M365SyncService', () => {
 
       const existingUser = {
         ...mockLocalUser,
-        role: 'MANAGER',
+        role: 'ISSUER', // ADR-017: test with valid role (MANAGER removed from enum)
         roleSetManually: true,
       };
       prisma.user.findFirst.mockResolvedValue(existingUser);
@@ -1216,7 +1216,7 @@ describe('M365SyncService', () => {
 
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: existingUser.id },
-        data: expect.objectContaining({ role: 'MANAGER' }) as unknown,
+        data: expect.objectContaining({ role: 'ISSUER' }) as unknown,
       });
     });
   });
@@ -1263,7 +1263,7 @@ describe('M365SyncService', () => {
       expect(result.status).toBeDefined();
     });
 
-    it('should upgrade EMPLOYEE to MANAGER when user has directReports (Pass 2b)', async () => {
+    it('should NOT upgrade EMPLOYEE to MANAGER when user has directReports — ADR-017 no-op (Pass 2b)', async () => {
       const mockResponse = {
         value: [mockAzureUser],
         '@odata.nextLink': undefined,
@@ -1299,11 +1299,13 @@ describe('M365SyncService', () => {
 
       await service.runSync('FULL');
 
-      // Should have been called to upgrade role to MANAGER
-      expect(prisma.user.update).toHaveBeenCalledWith({
-        where: { id: 'user-1' },
-        data: { role: 'MANAGER' },
-      });
+      // ADR-017: Pass 2b is now a no-op — manager identity from directReports, not role
+      // Verify NO role upgrade to MANAGER happened
+      expect(prisma.user.update).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { role: 'MANAGER' },
+        }),
+      );
     });
   });
 
@@ -1771,7 +1773,7 @@ describe('M365SyncService', () => {
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: 'user-1' },
         data: expect.objectContaining({
-          role: 'MANAGER',
+          role: 'EMPLOYEE', // ADR-017: directReports → EMPLOYEE (not MANAGER)
         }) as unknown,
       });
     });

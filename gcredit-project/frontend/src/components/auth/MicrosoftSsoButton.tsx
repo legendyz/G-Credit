@@ -28,7 +28,7 @@ const MicrosoftLogo = () => (
 
 const LoadingSpinner = () => (
   <svg
-    className="animate-spin h-5 w-5 text-[#2F2F2F]"
+    className="animate-spin h-5 w-5 text-ms-text"
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
     viewBox="0 0 24 24"
@@ -65,7 +65,7 @@ export function MicrosoftSsoButton({ className, disabled }: MicrosoftSsoButtonPr
       aria-label="Sign in with Microsoft"
       className={cn(
         'flex items-center justify-center gap-3 w-full px-6 py-3',
-        'bg-white text-[#2F2F2F] border border-[#8C8C8C] rounded-md',
+        'bg-white text-ms-text border border-ms-border rounded-md',
         'text-sm font-semibold',
         'hover:bg-neutral-50 active:bg-neutral-100',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500',

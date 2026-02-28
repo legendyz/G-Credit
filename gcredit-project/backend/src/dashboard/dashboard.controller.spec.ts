@@ -7,6 +7,7 @@ import { DashboardController } from './dashboard.controller';
 import { DashboardService } from './dashboard.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { ManagerGuard } from '../common/guards/manager.guard';
 import {
   EmployeeDashboardDto,
   IssuerDashboardDto,
@@ -146,6 +147,8 @@ describe('DashboardController', () => {
       .useValue({ canActivate: () => true })
       .overrideGuard(RolesGuard)
       .useValue({ canActivate: () => true })
+      .overrideGuard(ManagerGuard)
+      .useValue({ canActivate: () => true })
       .compile();
 
     controller = module.get<DashboardController>(DashboardController);
@@ -163,6 +166,7 @@ describe('DashboardController', () => {
           userId: 'user-1',
           email: 'test@example.com',
           role: UserRole.EMPLOYEE,
+          isManager: false,
         },
       };
 
@@ -186,6 +190,7 @@ describe('DashboardController', () => {
           userId: 'different-user',
           email: 'other@example.com',
           role: UserRole.EMPLOYEE,
+          isManager: false,
         },
       };
 
@@ -210,6 +215,7 @@ describe('DashboardController', () => {
           userId: 'issuer-1',
           email: 'issuer@example.com',
           role: UserRole.ISSUER,
+          isManager: false,
         },
       };
 
@@ -233,6 +239,7 @@ describe('DashboardController', () => {
           userId: 'admin-1',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
+          isManager: false,
         },
       };
 
@@ -248,7 +255,7 @@ describe('DashboardController', () => {
   });
 
   describe('getManagerDashboard', () => {
-    it('should return manager dashboard data', async () => {
+    it('should return manager dashboard data for EMPLOYEE with isManager', async () => {
       // Arrange
       dashboardService.getManagerDashboard.mockResolvedValue(
         mockManagerDashboard,
@@ -257,7 +264,8 @@ describe('DashboardController', () => {
         user: {
           userId: 'manager-1',
           email: 'manager@example.com',
-          role: UserRole.MANAGER,
+          role: UserRole.EMPLOYEE,
+          isManager: true,
         },
       };
 
@@ -271,6 +279,8 @@ describe('DashboardController', () => {
       );
     });
 
+    // Guard behavior (ADMIN bypass, non-manager denial) tested in manager.guard.spec.ts
+
     it('should work for admin users accessing manager dashboard', async () => {
       // Arrange
       dashboardService.getManagerDashboard.mockResolvedValue(
@@ -281,6 +291,7 @@ describe('DashboardController', () => {
           userId: 'admin-1',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
+          isManager: false,
         },
       };
 

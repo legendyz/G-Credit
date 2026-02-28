@@ -123,7 +123,7 @@ export class AnalyticsController {
    * Note: No auto-cache - user-scoped data requires manual cache with user-specific keys
    */
   @Get('top-performers')
-  @Roles('ADMIN', 'MANAGER')
+  @Roles('ADMIN', 'EMPLOYEE') // ADR-017: MANAGER removed; managers are EMPLOYEE with directReports
   @ApiOperation({
     summary: 'Get top performers by badge count',
     description:

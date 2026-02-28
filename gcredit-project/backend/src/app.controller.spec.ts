@@ -14,15 +14,11 @@ describe('AppController', () => {
         AppService,
         {
           provide: PrismaService,
-          useValue: {
-            // Mock PrismaService methods if needed
-          },
+          useValue: {},
         },
         {
           provide: StorageService,
-          useValue: {
-            // Mock StorageService methods if needed
-          },
+          useValue: {},
         },
       ],
     }).compile();
@@ -34,5 +30,18 @@ describe('AppController', () => {
     it('should return "Hello World!"', () => {
       expect(appController.getHello()).toBe('Hello World!');
     });
+  });
+
+  describe('managerRoute', () => {
+    it('should return manager access granted', () => {
+      const user = { userId: 'mgr-1', email: 'mgr@test.com', role: 'EMPLOYEE' };
+
+      const result = appController.managerRoute(user);
+
+      expect(result.message).toBe('Manager access granted');
+      expect(result.user.userId).toBe('mgr-1');
+    });
+
+    // Guard behavior (ADMIN bypass, isManager check) tested in manager.guard.spec.ts
   });
 });

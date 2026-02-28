@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.4.0] - 2026-02-28 (Sprint 14 — Dual-Dimension Role Model Refactor)
+
+### Sprint 14 Summary — Architecture-First Role Model Refactor
+
+**Branch:** `sprint-14/role-model-refactor`
+**Stories:** 9/9 complete (4 waves) | **Target Version:** v1.4.0
+**Tests:** 932 unit/integration + 31 E2E = 963 passed (100% pass rate, +49 from v1.3.0)
+**Architecture:** ADR-015 (UserRole enum), ADR-017 (Dual-Dimension Identity)
+
+#### Wave 1: Quick Win — CI Reliability (Story 14.1)
+
+- **Fix Flaky BadgeManagementPage Test (14.1):** TD-036 resolved. Test isolation fix for mock state leaking between Vitest workers — proper `beforeEach`/`afterEach` cleanup.
+
+#### Wave 2: Role Model Refactor — Backend (Stories 14.2–14.6)
+
+- **Schema Migration (14.2):** `UserRole` enum reduced to `ADMIN | ISSUER | EMPLOYEE`. MANAGER value removed via Prisma migration. Existing MANAGER users migrated to EMPLOYEE. All `@Roles('MANAGER')` decorators removed. M365 sync `deriveRole()` no longer assigns MANAGER; auto-downgrade logic removed. Stories 14.5 and 14.6 absorbed into this expanded-scope story.
+- **JWT `isManager` Claim (14.3):** `computeIsManager(userId)` checks `directReportsCount > 0` at 4 JWT generation points (login, SSO callback, token refresh, JWT claims). `AuthenticatedUser` type extended with `isManager: boolean`. `JwtStrategy` propagates claim.
+- **ManagerGuard + @RequireManager() Decorator (14.4):** 58-line Reflector-based guard. ADMIN bypass. `ForbiddenException('Manager access required')` for non-managers. Compositional pattern: `@RequireManager()` + `@UseGuards(JwtAuthGuard, ManagerGuard)`.
+
+#### Wave 4: Testing (Story 14.8)
+
+- **6-Combination Role×Manager Test Matrix (14.8):** 31 E2E tests validating ADR-017 §7. 6 combos (EMPLOYEE, EMPLOYEE+Manager, ISSUER, ISSUER+Manager, ADMIN, ADMIN+Manager) × 4 endpoints (`/users/me`, `/badges/issued`, `/admin/users`, `/manager/dashboard`). JWT backward compatibility test. 6 dashboard access tests. Shared `authRequest()` helper with 5 real logins + 1 `JwtService.sign()` (rate limit workaround).
+
+#### Technical Debt
+
+- **TD-034 Resolved:** Role Model Refactor — Dual-Dimension Identity (P2, ~18h)
+- **TD-036 Resolved:** Flaky Frontend Test (Low, 2-4h)
+- **TD-038 Created:** Auth endpoint rate limits hardcoded in `@Throttle` decorators (P2, 2-3h) — 8 endpoints override `ConfigService`-based global config
+
+---
+
 ## [1.3.0] - 2026-02-27 (Sprint 13 — Azure AD SSO + Session Management)
 
 ### Sprint 13 Summary — Enterprise SSO & Session Lifecycle

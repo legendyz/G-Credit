@@ -1,7 +1,7 @@
 ﻿﻿# G-Credit - Enterprise Internal Digital Credentialing System
 
-[![Status](https://img.shields.io/badge/Status-v1.3.0%20Released-brightgreen)]()
-[![Phase](https://img.shields.io/badge/Phase-3.0%20SSO%20%2B%20Session%20Management%20Complete-brightgreen)]()
+[![Status](https://img.shields.io/badge/Status-v1.4.0%20Released-brightgreen)]()
+[![Phase](https://img.shields.io/badge/Phase-3.5%20Role%20Model%20Refactor%20Complete-brightgreen)]()
 [![Sprint0](https://img.shields.io/badge/Sprint%200-Complete%20(100%25)-success)]()
 [![Sprint1](https://img.shields.io/badge/Sprint%201-Complete%20(100%25)-brightgreen)]()
 [![Sprint2](https://img.shields.io/badge/Sprint%202-Complete%20(100%25)-brightgreen)]()
@@ -17,8 +17,9 @@
 [![Sprint12](https://img.shields.io/badge/Sprint%2012-Complete%20(100%25)-brightgreen)]()
 [![Sprint12.5](https://img.shields.io/badge/Sprint%2012.5-Complete%20(100%25)-brightgreen)]()
 [![Sprint13](https://img.shields.io/badge/Sprint%2013-Complete%20(100%25)-brightgreen)]()
-[![Version](https://img.shields.io/badge/Version-v1.3.0-blue)]()
-[![Tests](https://img.shields.io/badge/Tests-1708%20Total%2C%201708%20Passing-success)]()
+[![Sprint14](https://img.shields.io/badge/Sprint%2014-Complete%20(100%25)-brightgreen)]()
+[![Version](https://img.shields.io/badge/Version-v1.4.0-blue)]()
+[![Tests](https://img.shields.io/badge/Tests-1757%20Total%2C%201757%20Passing-success)]() 
 
 > **G-Credit** is an enterprise-grade internal digital badging platform designed to securely recognize, verify, and analyze employee skills and achievements. Compliant with Open Badges 2.0 standards, it aims to replace fragmented certificate management and reduce dependency on external platforms.
 
@@ -29,7 +30,7 @@
 **Project Name:** G-Credit  
 **Project Type:** Enterprise Internal Platform (Greenfield Development)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
-**Current Status:** ✅ v1.3.0 Released — Azure AD SSO + Session Management (14 Sprints, 1,708 tests)  
+**Current Status:** ✅ v1.4.0 Released — Dual-Dimension Role Model Refactor (15 Sprints, 1,757 tests)  
 **Sprint 0:** ✅ Complete (100%, actual 9.5h / estimated 10h, 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, actual 21h / estimated 21h, 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, actual 29h / estimated 32h, 2026-01-26)  
@@ -45,9 +46,10 @@
 **Sprint 12:** ✅ Complete (8/8 dev stories, 3 waves, 1,549 tests, 2026-02-19 to 2026-02-24, v1.2.0)  
 **Sprint 12.5:** ✅ Complete (2/2 stories, 1,593 tests, 2026-02-25, v1.2.1)  
 **Sprint 13:** ✅ Complete (8/8 stories, 4 waves, 1,708 tests, 2026-02-25 to 2026-02-27, v1.3.0)  
-**Version:** v1.3.0 (Azure AD SSO + Session Management, 1,708 tests, 100% passing)
+**Sprint 14:** ✅ Complete (9/9 stories, 4 waves, 1,757 tests, 2026-02-27 to 2026-02-28, v1.4.0)  
+**Version:** v1.4.0 (Dual-Dimension Role Model Refactor, 1,757 tests, 100% passing)
 
-### Key Capabilities (v1.3.0)
+### Key Capabilities (v1.4.0)
 - **Badge Lifecycle:** Template management, issuance, claiming, revocation, verification (Open Badges 2.0)
 - **Employee Experience:** Badge wallet, timeline view, privacy controls, social sharing (LinkedIn/email)
 - **Admin & Analytics:** Dashboard, skill/category/user/milestone management, CSV export, activity feed

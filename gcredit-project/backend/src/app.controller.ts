@@ -1,10 +1,12 @@
-import { Controller, Get, Logger } from '@nestjs/common';
+import { Controller, Get, Logger, UseGuards } from '@nestjs/common';
 import { AppService } from './app.service';
 import { PrismaService } from './common/prisma.service';
 import { StorageService } from './common/storage.service';
 import { Public } from './common/decorators/public.decorator';
 import { Roles } from './common/decorators/roles.decorator';
+import { RequireManager } from './common/decorators/require-manager.decorator';
 import { CurrentUser } from './common/decorators/current-user.decorator';
+import { ManagerGuard } from './common/guards/manager.guard';
 
 interface JwtUser {
   userId: string;
@@ -71,7 +73,7 @@ export class AppController {
    * Profile endpoint - Accessible by all authenticated users
    */
   @Get('profile')
-  @Roles('EMPLOYEE', 'MANAGER', 'ISSUER', 'ADMIN')
+  @Roles('EMPLOYEE', 'ISSUER', 'ADMIN') // ADR-017: MANAGER removed from enum; managers are EMPLOYEE
   getProfile(@CurrentUser() user: JwtUser) {
     return {
       message: 'Profile access granted',
@@ -116,10 +118,13 @@ export class AppController {
   }
 
   /**
-   * Manager endpoint - Accessible by MANAGER and ADMIN roles
+   * Manager endpoint - Accessible by managers (EMPLOYEE with isManager) and ADMIN
+   * ADR-017 §4.5: ManagerGuard reads isManager from JWT claim (no DB query)
    */
   @Get('manager-only')
-  @Roles('MANAGER', 'ADMIN')
+  @Roles('EMPLOYEE', 'ADMIN')
+  @RequireManager()
+  @UseGuards(ManagerGuard)
   managerRoute(@CurrentUser() user: JwtUser) {
     return {
       message: 'Manager access granted',

@@ -14,8 +14,8 @@ export interface SystemOverviewDto {
     byRole: {
       ADMIN: number;
       ISSUER: number;
-      MANAGER: number;
       EMPLOYEE: number;
+      // ADR-017: MANAGER removed from enum; manager identity from directReports
     };
   };
   badges: {

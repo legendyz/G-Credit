@@ -52,6 +52,7 @@ describe.skip('TeamsSharingController - Story 7.4', () => {
       userId: 'user-123',
       email: 'john.smith@example.com',
       role: UserRole.EMPLOYEE,
+      isManager: false,
     },
   };
 
@@ -151,6 +152,7 @@ describe.skip('TeamsSharingController - Story 7.4', () => {
           userId: 'issuer-789',
           email: 'issuer@example.com',
           role: UserRole.ISSUER,
+          isManager: false,
         },
       };
 

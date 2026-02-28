@@ -69,6 +69,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       role: user.role,
+      isManager: false, // ADR-017: new users never have direct reports
     };
 
     const accessToken = this.jwtService.sign(payload);
@@ -195,10 +196,12 @@ export class AuthService {
     }
 
     // 4. Generate JWT tokens — use FRESH role from synced user data
+    const isManager = await this.computeIsManager(freshUser.id);
     const payload = {
       sub: freshUser.id,
       email: freshUser.email,
       role: freshUser.role,
+      isManager,
     };
 
     const accessToken = this.jwtService.sign(payload);
@@ -402,10 +405,12 @@ export class AuthService {
     }
 
     // 4. Generate new access token
+    const isManager = await this.computeIsManager(tokenRecord.user.id);
     const newPayload = {
       sub: tokenRecord.user.id,
       email: tokenRecord.user.email,
       role: tokenRecord.user.role,
+      isManager,
     };
 
     const accessToken = this.jwtService.sign(newPayload);
@@ -718,10 +723,12 @@ export class AuthService {
     }
 
     // 5. Generate JWT tokens — same payload as password login
+    const isManager = await this.computeIsManager(freshUser.id);
     const payload = {
       sub: freshUser.id,
       email: freshUser.email,
       role: freshUser.role,
+      isManager,
     };
 
     const accessToken = this.jwtService.sign(payload);
@@ -766,6 +773,17 @@ export class AuthService {
       refreshToken,
       user: userProfile,
     };
+  }
+
+  /**
+   * ADR-017 §4.1: Compute isManager from directReports count.
+   * Uses @@index([managerId]) — O(1) index lookup, ~1ms.
+   */
+  private async computeIsManager(userId: string): Promise<boolean> {
+    const count = await this.prisma.user.count({
+      where: { managerId: userId },
+    });
+    return count > 0;
   }
 
   /**

@@ -21,7 +21,9 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { ManagerGuard } from '../common/guards/manager.guard';
 import { Roles } from '../common/decorators/roles.decorator';
+import { RequireManager } from '../common/decorators/require-manager.decorator';
 import { UserRole } from '@prisma/client';
 import { DashboardService } from './dashboard.service';
 import {
@@ -46,7 +48,7 @@ export class DashboardController {
    * GET /api/dashboard/employee
    */
   @Get('employee')
-  @Roles(UserRole.EMPLOYEE, UserRole.ISSUER, UserRole.MANAGER, UserRole.ADMIN)
+  @Roles(UserRole.EMPLOYEE, UserRole.ISSUER, UserRole.ADMIN) // ADR-017: MANAGER removed; all base roles can access employee dashboard
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get Employee Dashboard data' })
   @ApiResponse({
@@ -89,7 +91,9 @@ export class DashboardController {
    * GET /api/dashboard/manager
    */
   @Get('manager')
-  @Roles(UserRole.MANAGER, UserRole.ADMIN)
+  @Roles(UserRole.EMPLOYEE, UserRole.ADMIN)
+  @RequireManager()
+  @UseGuards(ManagerGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get Manager Dashboard data' })
   @ApiResponse({

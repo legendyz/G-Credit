@@ -12,10 +12,11 @@ import { useAuthStore } from '../stores/authStore';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRoles?: Array<'ADMIN' | 'ISSUER' | 'MANAGER' | 'EMPLOYEE'>;
+  requiredRoles?: Array<'ADMIN' | 'ISSUER' | 'EMPLOYEE'>;
+  requireManager?: boolean;
 }
 
-export function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps) {
+export function ProtectedRoute({ children, requiredRoles, requireManager }: ProtectedRouteProps) {
   const { isAuthenticated, user, sessionValidated, validateSession } = useAuthStore();
   const location = useLocation();
 
@@ -42,10 +43,14 @@ export function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps)
     return <Navigate to="/login" state={{ from: fullPath }} replace />;
   }
 
-  // Check role authorization if required
-  if (requiredRoles && requiredRoles.length > 0 && user) {
-    if (!requiredRoles.includes(user.role)) {
-      // User doesn't have required role - redirect to 403 page
+  // Check role authorization if required (ADR-017 dual-dimension)
+  if (user) {
+    const hasRole = requiredRoles && requiredRoles.length > 0 && requiredRoles.includes(user.role);
+    const isManager = requireManager && (user.isManager ?? false);
+    const isAdmin = user.role === 'ADMIN';
+    const needsCheck = (requiredRoles && requiredRoles.length > 0) || requireManager;
+    if (needsCheck && !hasRole && !isManager && !isAdmin) {
+      // User doesn't have required role or manager access - redirect to 403 page
       return <Navigate to="/access-denied" replace />;
     }
   }

@@ -27,6 +27,7 @@ const mockUser = {
   firstName: 'SSO',
   lastName: 'User',
   role: 'EMPLOYEE',
+  isManager: false,
 };
 
 describe('authStore — loginViaSSO()', () => {

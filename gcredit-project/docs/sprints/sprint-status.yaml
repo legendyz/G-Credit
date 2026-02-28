@@ -144,3 +144,30 @@ sprint-13: done
 
 # --- Wave 4: UAT ---
 13-8-sprint-13-uat: done                          # Agent 47/47 + Manual M1-M6 all PASS
+
+# ============================================
+# Sprint 14: Dual-Dimension Role Model Refactor
+# Goal: Architecture-first — TD-034 role model refactor + CI reliability
+# Target: v1.4.0
+# Branch: sprint-14/role-model-refactor
+# Planning: 2026-02-27
+# Stories: 14.1-14.9 (~24h) — 4 Waves
+# ============================================
+sprint-14: done
+
+# --- Wave 1: Quick Win ---
+14-1-fix-flaky-badge-management-test: done        # TD-036: CI reliability quick win
+
+# --- Wave 2: Role Model Refactor — Backend ---
+14-2-schema-migration-remove-manager: done         # Prisma: UserRole enum = ADMIN|ISSUER|EMPLOYEE
+14-3-jwt-payload-ismanager: done                      # JWT + AuthenticatedUser + isManager claim
+14-4-manager-guard-decorator: done                  # ManagerGuard + @RequireManager() decorator
+14-5-rolesguard-remove-manager: done               # Absorbed by 14.2: all @Roles('MANAGER') removed
+14-6-m365-sync-cleanup: done                       # Absorbed by 14.2: deriveRole() + auto-downgrade removed
+
+# --- Wave 3: Role Model Refactor — Frontend ---
+14-7-frontend-remove-manager: done                # Types + ProtectedRoute + remove MANAGER references
+
+# --- Wave 4: Testing + Design Tokens ---
+14-8-test-matrix-6-combinations: done              # 31 tests: 6 combos × 4 endpoints + JWT compat + dashboard matrix
+14-9-design-tokens-prep: done                     # P1-2: 11 new tokens, ~25 hardcoded colors replaced

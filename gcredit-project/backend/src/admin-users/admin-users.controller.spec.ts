@@ -48,6 +48,7 @@ describe('AdminUsersController', () => {
     userId: 'admin-123',
     email: 'admin@example.com',
     role: UserRole.ADMIN,
+    isManager: false,
   };
 
   const mockReq: RequestWithUser = { user: mockAdmin };

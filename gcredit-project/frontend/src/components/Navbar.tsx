@@ -8,11 +8,12 @@
  */
 
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../stores/authStore';
+import { useAuthStore, useIsManager } from '../stores/authStore';
 import { toast } from 'sonner';
 
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuthStore();
+  const isManager = useIsManager();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const isActive = (path: string) => pathname === path;
@@ -150,8 +151,8 @@ export function Navbar() {
               </>
             )}
 
-            {/* Manager Links */}
-            {user?.role === 'MANAGER' && (
+            {/* Manager Links — ADR-017: check isManager from JWT, not role */}
+            {isManager && user?.role === 'EMPLOYEE' && (
               <li>
                 <Link
                   to="/admin/badges"

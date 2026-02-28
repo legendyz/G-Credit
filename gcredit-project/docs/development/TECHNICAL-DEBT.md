@@ -1,8 +1,8 @@
 # Technical Debt Tracking
 
-**Last Updated:** 2026-02-27 (Sprint 13 closeout)  
+**Last Updated:** 2026-02-28 (Sprint 14 closeout)  
 **Status:** Active  
-**Version:** v1.3.0  
+**Version:** v1.4.0  
 **Codebase Health:** tsc 0 errors (BE+FE) | ESLint 0 errors + 0 warnings (BE+FE) | npm audit 0 vulnerabilities (prod)
 
 This document tracks known technical debt across the G-Credit project. Items are prioritized and linked to relevant sprints for resolution.
@@ -13,10 +13,10 @@ This document tracks known technical debt across the G-Credit project. Items are
 
 | Category | Count | Items |
 |----------|-------|-------|
-| ✅ Resolved | 22 | TD-001, 002, 003, 013, 014, 015, 016b, 017, 018, 019, 020, 021, 022, 023, 024, 025, 028, 029 + lodash, ESLint regression, Prisma |
+| ✅ Resolved | 24 | TD-001, 002, 003, 013, 014, 015, 016b, 017, 018, 019, 020, 021, 022, 023, 024, 025, 028, 029, 034, 036 + lodash, ESLint regression, Prisma |
 | ⏸️ External Blocker | 1 | TD-006 |
-| 📋 Deferred (trigger-based) | 6 | TD-005, 016, 030, 031, 032, 036 |
-| 📋 Deferred (architecture) | 3 | TD-033, 034, 035 |
+| 📋 Deferred (trigger-based) | 6 | TD-005, 016, 030, 031, 032, 038 |
+| 📋 Deferred (architecture) | 1 | TD-033, 035 |
 | 📋 Process Improvement | 2 | TD-026, 027 |
 | 🔍 Track | 2 | TD-004, 037 |
 
@@ -125,9 +125,44 @@ This document tracks known technical debt across the G-Credit project. Items are
 
 ---
 
+#### TD-038: Auth Endpoint Rate Limits Hardcoded in Decorators
+
+**Identified:** Sprint 14 (2026-02-28) | **Severity:** P2 | **Effort:** 2-3 hours
+
+**Issue:** All `@Throttle()` decorators in `auth.controller.ts` use hardcoded values (e.g., login = 5 req/min/IP). The global `ThrottlerModule` reads from `ConfigService` (`RATE_LIMIT_TTL`, `RATE_LIMIT_MAX`), but per-endpoint `@Throttle()` overrides are compile-time constants — they ignore `.env` and `ConfigService`.
+
+**Impact:**
+- **Enterprise UX risk:** Users behind shared NAT/proxy share one IP. 10+ employees logging in within 1 minute → 429 errors from the 6th login onward.
+- **E2E test friction:** 10 logins in role-matrix tests exceed 5/min limit → 429 in CI.
+- **Inconsistency:** `bulk-issuance.controller.ts` attempted `process.env` workaround but documented it as non-functional (class-load timing).
+
+**Affected Endpoints:**
+| Endpoint | Hardcoded ttl | Hardcoded limit |
+|----------|--------------|----------------|
+| `POST /api/auth/login` | 60s | 5 |
+| `POST /api/auth/register` | 3600s | 3 |
+| `POST /api/auth/request-reset` | 300s | 3 |
+| `POST /api/auth/reset-password` | 300s | 5 |
+| `POST /api/auth/refresh` | 60s | 10 |
+| `PATCH /api/auth/change-password` | 3600s | 3 |
+| `PATCH /api/auth/profile` | 60s | 10 |
+| `GET /api/auth/sso/callback` | 60s | 10 |
+
+**Proposed Solution:** Custom `ConfigurableThrottlerGuard` extending `ThrottlerGuard` that reads per-route limits from `ConfigService` with sensible defaults. This allows `.env.test` to raise limits for CI and ops to tune production limits without code changes.
+
+**Alternative (simpler):** Replace `@Throttle({ default: { ttl: X, limit: Y } })` with `@Throttle({ default: { ttl: parseInt(process.env.AUTH_LOGIN_THROTTLE_TTL || '60000'), limit: parseInt(process.env.AUTH_LOGIN_THROTTLE_LIMIT || '5') } })` — but this has the same class-load timing issue documented in bulk-issuance.
+
+**Trigger:** Sprint 15 — resolves E2E test friction and prevents enterprise UX issues before pilot.
+
+**Files:** `backend/src/modules/auth/auth.controller.ts`, `backend/src/bulk-issuance/bulk-issuance.controller.ts`
+
+---
+
 #### TD-036: Flaky Frontend Test (BadgeManagementPage)
 
 **Identified:** Sprint 13 closeout (2026-02-27) | **Severity:** Low | **Effort:** 2-4 hours
+
+**Status:** ✅ Resolved (Sprint 14, Story 14.1)
 
 **Issue:** `BadgeManagementPage.test.tsx` test "should show Revoke button for PENDING badges when ADMIN" fails intermittently when running full frontend test suite, but passes consistently in isolation.
 
@@ -161,6 +196,8 @@ This document tracks known technical debt across the G-Credit project. Items are
 #### TD-034: Role Model Refactor — Dual-Dimension Identity
 
 **Identified:** Sprint 12 | **Severity:** P2 | **Effort:** ~18 hours
+
+**Status:** ✅ Resolved (Sprint 14, Stories 14.2–14.8, ADR-015 + ADR-017)
 
 **Issue:** Single `role` enum conflates organization identity (Manager/Employee) with permission role (Admin/Issuer). Makes role combinations impossible.
 
@@ -249,6 +286,9 @@ This document tracks known technical debt across the G-Credit project. Items are
 | TD-028 | Data Contract Alignment | ✅ | Sprint 11 | 14 API-to-UI data contract issues fixed. Story 11.24. |
 | TD-029 | Decorator Metadata Guard Tests | ✅ | Sprint 11 | `Reflect.getMetadata()` tests for `@Public()` and `@Roles()`. Story 11.24. |
 
+| TD-034 | Role Model Refactor — Dual-Dimension Identity | ✅ | Sprint 14 | ADR-015 + ADR-017 implemented. MANAGER removed from UserRole enum. `isManager` JWT claim. ManagerGuard + @RequireManager(). 31-test E2E matrix. Stories 14.2–14.8. |
+| TD-036 | Flaky Frontend Test (BadgeManagementPage) | ✅ | Sprint 14 | Test isolation fix — mock state leaking between Vitest workers. Story 14.1. |
+
 ### Other Resolved Items
 
 | Issue | Status | Notes |
@@ -261,17 +301,17 @@ This document tracks known technical debt across the G-Credit project. Items are
 
 ## 📊 Technical Debt Metrics
 
-### Current State (Post-Sprint 13)
+### Current State (Post-Sprint 14)
 
 | Category | Count | Estimated Effort |
 |----------|-------|------------------|
-| Resolved | 22 | — |
+| Resolved | 24 | — |
 | External Blocker | 1 | 1 day (admin) |
-| Deferred (trigger-based) | 6 | ~54 hours |
-| Deferred (architecture) | 3 | ~55 hours |
+| Deferred (trigger-based) | 6 | ~51 hours |
+| Deferred (architecture) | 1 | ~37 hours |
 | Process Improvement | 2 | 5 hours |
 | Track (enhancement) | 2 | ~6 hours |
-| **Open Total** | **14** | **~120 hours** |
+| **Open Total** | **12** | **~99 hours** |
 
 ### Codebase Health Dashboard
 
@@ -281,7 +321,7 @@ This document tracks known technical debt across the G-Credit project. Items are
 | ESLint Errors | 0 | 0 |
 | ESLint Warnings | 0 | 0 |
 | npm audit (prod) | 0 vulnerabilities | 0 vulnerabilities |
-| Unit Tests | 914 passed (28 skipped = TD-006) | 794 passed |
+| Unit Tests | 932 passed (28 skipped = TD-006) | 794 passed |
 | TODO/FIXME in src | 0 | 1 (dark mode) |
 
 ### Debt Trend
@@ -295,8 +335,10 @@ This document tracks known technical debt across the G-Credit project. Items are
 | Sprint 11 | 8 (TD-023–030) | 5 (TD-023–025, 028, 029) | +3 | 4 |
 | Sprint 12 | 5 (TD-031–035) | 4 (TD-009, 010, 016b, 017) | +1 | 5 |
 | Sprint 13 | 1 (TD-036) | 0 | +1 | 14* |
+| Sprint 14 | 1 (TD-038) | 1 (TD-036) | 0 | 15** |
 
 *\*Open = 1 external blocker + 6 deferred + 3 architecture + 2 process + 2 track*
+*\*\*Open = 1 external blocker + 6 deferred + 1 architecture + 2 process + 2 track (TD-034, TD-036 resolved by Sprint 14)*
 
 ---
 
@@ -334,4 +376,4 @@ This document tracks known technical debt across the G-Credit project. Items are
 
 ---
 
-**Next Review:** Sprint 14 Planning
+**Next Review:** Sprint 15 Planning

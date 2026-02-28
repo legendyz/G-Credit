@@ -109,7 +109,7 @@ function App() {
             <Route
               path="/admin/badges"
               element={
-                <ProtectedRoute requiredRoles={['ADMIN', 'ISSUER', 'MANAGER']}>
+                <ProtectedRoute requiredRoles={['ADMIN', 'ISSUER']} requireManager>
                   <Layout pageTitle="Badge Management">
                     <BadgeManagementPage />
                   </Layout>

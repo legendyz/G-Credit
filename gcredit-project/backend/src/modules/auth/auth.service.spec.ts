@@ -59,6 +59,7 @@ describe('AuthService', () => {
       findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+      count: jest.fn().mockResolvedValue(0), // ADR-017: computeIsManager()
     },
     refreshToken: {
       findUnique: jest.fn(),
@@ -770,6 +771,7 @@ describe('AuthService', () => {
           sub: mockM365User.id,
           email: mockM365User.email,
           role: mockM365User.role,
+          isManager: false,
         }),
       );
     });
@@ -786,6 +788,117 @@ describe('AuthService', () => {
             userId: mockM365User.id,
           }),
         }),
+      );
+    });
+  });
+
+  // ============================================================
+  // ADR-017: JWT isManager Claim Tests
+  // ============================================================
+  describe('JWT isManager claim (ADR-017)', () => {
+    it('should include isManager: false for user with no direct reports (login)', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
+      mockPrismaService.user.count.mockResolvedValue(0);
+      mockJwtService.sign.mockReturnValue('test-token');
+
+      await service.login({ email: mockUser.email, password: 'password123' });
+
+      expect(mockPrismaService.user.count).toHaveBeenCalledWith({
+        where: { managerId: mockUser.id },
+      });
+      expect(mockJwtService.sign).toHaveBeenCalledWith(
+        expect.objectContaining({ isManager: false }),
+      );
+    });
+
+    it('should include isManager: true for user with direct reports (login)', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
+      mockPrismaService.user.count.mockResolvedValue(3);
+      mockJwtService.sign.mockReturnValue('test-token');
+
+      await service.login({ email: mockUser.email, password: 'password123' });
+
+      expect(mockPrismaService.user.count).toHaveBeenCalledWith({
+        where: { managerId: mockUser.id },
+      });
+      expect(mockJwtService.sign).toHaveBeenCalledWith(
+        expect.objectContaining({ isManager: true }),
+      );
+    });
+
+    it('should recompute isManager on token refresh', async () => {
+      mockPrismaService.user.count.mockResolvedValue(2);
+      mockPrismaService.refreshToken.findUnique.mockResolvedValue(
+        mockRefreshTokenRecord,
+      );
+      mockPrismaService.refreshToken.update.mockResolvedValue({});
+      mockPrismaService.refreshToken.create.mockResolvedValue({});
+      mockJwtService.sign.mockReturnValue('new-token');
+      mockJwtService.verify.mockReturnValue({ sub: 'user-123' });
+
+      await service.refreshAccessToken('valid-refresh-token');
+
+      expect(mockPrismaService.user.count).toHaveBeenCalledWith({
+        where: { managerId: mockUser.id },
+      });
+      expect(mockJwtService.sign).toHaveBeenCalledWith(
+        expect.objectContaining({ isManager: true }),
+      );
+    });
+
+    it('should set isManager: false for registration (no direct reports possible)', async () => {
+      mockPrismaService.user.create.mockResolvedValue({
+        ...mockUser,
+        id: 'new-user-id',
+      });
+      mockPrismaService.user.findUnique.mockResolvedValue(null); // no existing user
+      mockPrismaService.refreshToken.create.mockResolvedValue({});
+      mockJwtService.sign.mockReturnValue('new-token');
+
+      await service.register({
+        email: 'new@example.com',
+        password: 'Password123!',
+        firstName: 'New',
+        lastName: 'User',
+      });
+
+      // computeIsManager should NOT be called for registration
+      expect(mockPrismaService.user.count).not.toHaveBeenCalled();
+      expect(mockJwtService.sign).toHaveBeenCalledWith(
+        expect.objectContaining({ isManager: false }),
+      );
+    });
+
+    it('should include isManager: true for SSO user with direct reports', async () => {
+      const mockSsoMgr = {
+        oid: 'azure-mgr-oid',
+        email: 'mgr@example.com',
+        displayName: 'Manager User',
+      };
+      const mockMgrUser = {
+        ...mockUser,
+        id: 'mgr-user-id',
+        email: 'mgr@example.com',
+        azureId: 'azure-mgr-oid',
+        isActive: true,
+        lastSyncAt: new Date(),
+      };
+      mockPrismaService.user.findUnique.mockResolvedValue(mockMgrUser);
+      mockPrismaService.user.update.mockResolvedValue(mockMgrUser);
+      mockPrismaService.user.count.mockResolvedValue(5); // has direct reports
+      mockPrismaService.refreshToken.create.mockResolvedValue({});
+      mockJwtService.sign.mockReturnValue('sso-mgr-token');
+      mockM365SyncService.syncUserFromGraph.mockResolvedValue({
+        rejected: false,
+      });
+
+      await service.ssoLogin(mockSsoMgr);
+
+      expect(mockPrismaService.user.count).toHaveBeenCalledWith({
+        where: { managerId: mockMgrUser.id },
+      });
+      expect(mockJwtService.sign).toHaveBeenCalledWith(
+        expect.objectContaining({ isManager: true }),
       );
     });
   });

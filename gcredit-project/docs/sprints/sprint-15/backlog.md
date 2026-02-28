@@ -102,6 +102,7 @@ Deliver the full UI overhaul: replace top-navigation with a collapsible sidebar,
 | 15.11 | z-index scale in Tailwind theme (P2-8) | LOW | 1h | — |
 | 15.12 | Styled delete confirmation modal (P2-5) | LOW | 1h | — |
 | 15.13 | Dirty-form guard for template form (P2-11) | MEDIUM | 2h | — |
+| 15.14 | TD-038: Configurable auth rate limits | MEDIUM | 2-3h | — |
 
 ---
 

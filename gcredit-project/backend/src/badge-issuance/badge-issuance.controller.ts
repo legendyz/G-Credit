@@ -179,7 +179,7 @@ export class BadgeIssuanceController {
   }
 
   @Get('issued')
-  @Roles(UserRole.ADMIN, UserRole.ISSUER, UserRole.MANAGER)
+  @Roles(UserRole.ADMIN, UserRole.ISSUER, UserRole.EMPLOYEE) // ADR-017: MANAGER removed; managers are now EMPLOYEE with directReports
   @ApiOperation({
     summary:
       'Get badges issued by current user (ISSUER), department badges (MANAGER), or all badges (ADMIN)',
@@ -249,7 +249,7 @@ export class BadgeIssuanceController {
   }
 
   @Post(':id/revoke')
-  @Roles(UserRole.ADMIN, UserRole.ISSUER, UserRole.MANAGER) // Sprint 7: ISSUER own badges, Sprint 10: MANAGER same-department
+  @Roles(UserRole.ADMIN, UserRole.ISSUER, UserRole.EMPLOYEE) // ADR-017: MANAGER removed; managers are now EMPLOYEE with directReports
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary:

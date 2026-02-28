@@ -23,12 +23,14 @@ describe('RoleBadge', () => {
     expect(badge).toHaveClass('bg-blue-100', 'text-blue-800');
   });
 
-  it('renders Manager badge with correct styling', () => {
+  // ADR-017: MANAGER role removed from enum; manager identity from directReports
+  it('renders unknown role with Employee fallback styling', () => {
+    // @ts-expect-error testing fallback for removed MANAGER role
     render(<RoleBadge role="MANAGER" />);
 
-    const badge = screen.getByText('Manager');
+    const badge = screen.getByText('Employee');
     expect(badge).toBeInTheDocument();
-    expect(badge).toHaveClass('bg-purple-100', 'text-purple-800');
+    expect(badge).toHaveClass('bg-gray-100', 'text-gray-800');
   });
 
   it('renders Employee badge with correct styling', () => {
