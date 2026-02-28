@@ -166,8 +166,8 @@ sprint-14: in-progress
 14-6-m365-sync-cleanup: done                       # Absorbed by 14.2: deriveRole() + auto-downgrade removed
 
 # --- Wave 3: Role Model Refactor — Frontend ---
-14-7-frontend-remove-manager: backlog              # Types + ProtectedRoute + remove MANAGER references
+14-7-frontend-remove-manager: done                # Types + ProtectedRoute + remove MANAGER references
 
 # --- Wave 4: Testing + Design Tokens ---
-14-8-test-matrix-6-combinations: backlog           # 6 role×manager combinations verification
+14-8-test-matrix-6-combinations: done              # 31 tests: 6 combos × 4 endpoints + JWT compat + dashboard matrix
 14-9-design-tokens-prep: backlog                   # P1-2: Hardcoded colors → Tailwind tokens

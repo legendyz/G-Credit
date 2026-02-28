@@ -15,7 +15,7 @@ This document tracks known technical debt across the G-Credit project. Items are
 |----------|-------|-------|
 | ✅ Resolved | 22 | TD-001, 002, 003, 013, 014, 015, 016b, 017, 018, 019, 020, 021, 022, 023, 024, 025, 028, 029 + lodash, ESLint regression, Prisma |
 | ⏸️ External Blocker | 1 | TD-006 |
-| 📋 Deferred (trigger-based) | 6 | TD-005, 016, 030, 031, 032, 036 |
+| 📋 Deferred (trigger-based) | 7 | TD-005, 016, 030, 031, 032, 036, 038 |
 | 📋 Deferred (architecture) | 3 | TD-033, 034, 035 |
 | 📋 Process Improvement | 2 | TD-026, 027 |
 | 🔍 Track | 2 | TD-004, 037 |
@@ -122,6 +122,39 @@ This document tracks known technical debt across the G-Credit project. Items are
 **Trigger:** User count exceeds 500 OR FULL sync takes >2 minutes.
 
 **Suggested Phasing:** Phase 1 at 200+ users (5h), Phase 2 at 1000+ users (10h), Phase 3 with TD-016 (3h).
+
+---
+
+#### TD-038: Auth Endpoint Rate Limits Hardcoded in Decorators
+
+**Identified:** Sprint 14 (2026-02-28) | **Severity:** P2 | **Effort:** 2-3 hours
+
+**Issue:** All `@Throttle()` decorators in `auth.controller.ts` use hardcoded values (e.g., login = 5 req/min/IP). The global `ThrottlerModule` reads from `ConfigService` (`RATE_LIMIT_TTL`, `RATE_LIMIT_MAX`), but per-endpoint `@Throttle()` overrides are compile-time constants — they ignore `.env` and `ConfigService`.
+
+**Impact:**
+- **Enterprise UX risk:** Users behind shared NAT/proxy share one IP. 10+ employees logging in within 1 minute → 429 errors from the 6th login onward.
+- **E2E test friction:** 10 logins in role-matrix tests exceed 5/min limit → 429 in CI.
+- **Inconsistency:** `bulk-issuance.controller.ts` attempted `process.env` workaround but documented it as non-functional (class-load timing).
+
+**Affected Endpoints:**
+| Endpoint | Hardcoded ttl | Hardcoded limit |
+|----------|--------------|----------------|
+| `POST /api/auth/login` | 60s | 5 |
+| `POST /api/auth/register` | 3600s | 3 |
+| `POST /api/auth/request-reset` | 300s | 3 |
+| `POST /api/auth/reset-password` | 300s | 5 |
+| `POST /api/auth/refresh` | 60s | 10 |
+| `PATCH /api/auth/change-password` | 3600s | 3 |
+| `PATCH /api/auth/profile` | 60s | 10 |
+| `GET /api/auth/sso/callback` | 60s | 10 |
+
+**Proposed Solution:** Custom `ConfigurableThrottlerGuard` extending `ThrottlerGuard` that reads per-route limits from `ConfigService` with sensible defaults. This allows `.env.test` to raise limits for CI and ops to tune production limits without code changes.
+
+**Alternative (simpler):** Replace `@Throttle({ default: { ttl: X, limit: Y } })` with `@Throttle({ default: { ttl: parseInt(process.env.AUTH_LOGIN_THROTTLE_TTL || '60000'), limit: parseInt(process.env.AUTH_LOGIN_THROTTLE_LIMIT || '5') } })` — but this has the same class-load timing issue documented in bulk-issuance.
+
+**Trigger:** Sprint 15 — resolves E2E test friction and prevents enterprise UX issues before pilot.
+
+**Files:** `backend/src/modules/auth/auth.controller.ts`, `backend/src/bulk-issuance/bulk-issuance.controller.ts`
 
 ---
 
@@ -295,8 +328,10 @@ This document tracks known technical debt across the G-Credit project. Items are
 | Sprint 11 | 8 (TD-023–030) | 5 (TD-023–025, 028, 029) | +3 | 4 |
 | Sprint 12 | 5 (TD-031–035) | 4 (TD-009, 010, 016b, 017) | +1 | 5 |
 | Sprint 13 | 1 (TD-036) | 0 | +1 | 14* |
+| Sprint 14 | 1 (TD-038) | 1 (TD-036) | 0 | 15** |
 
 *\*Open = 1 external blocker + 6 deferred + 3 architecture + 2 process + 2 track*
+*\*\*Open = 1 external blocker + 7 deferred + 3 architecture + 2 process + 2 track (TD-036 resolved by Story 14.1)*
 
 ---
 

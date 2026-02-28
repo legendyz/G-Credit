@@ -54,8 +54,8 @@
 - [x] **Task 5: Full regression** (AC: #5)
   - [x] Backend unit: 51 suites, 932 passed (4 skipped)
   - [x] Frontend: 77 suites, 794 passed
-  - [x] Role-matrix E2E: 29 passed
-  - [x] Total: 1,755 tests (932 + 794 + 29), 0 regressions
+  - [x] Role-matrix E2E: 31 passed
+  - [x] Total: 1,757 tests (932 + 794 + 31), 0 regressions
 
 ## Dev Notes
 
@@ -83,14 +83,30 @@
 Claude Opus 4.6 (GitHub Copilot)
 
 ### Completion Notes
-- Created `role-matrix.e2e-spec.ts` with 29 tests covering all 6 role×manager combos
+- Created `role-matrix.e2e-spec.ts` with 31 tests covering all 6 role×manager combos
 - All user creation + login consolidated in single `beforeAll` to stay within auth rate limit (5 logins/min)
 - Combo #6 uses `JwtService.sign()` with `isManager: true` to avoid exceeding rate limit
 - JWT backward compatibility verified using token without `isManager` claim
-- Dashboard endpoint matrix tests reuse existing combo tokens
+- Dashboard endpoint matrix expanded to full 6-combo symmetry (CR follow-up `e7e8cbe`)
+- Migrated from inline `authGet()` to shared `authRequest()` helper (CR follow-up)
 - AC #3 (migration) and AC #4 (M365 sync) marked N/A — MANAGER role enum already removed; M365 sync requires external infra
 
 ### File List
-- `backend/test/role-matrix.e2e-spec.ts` — NEW (29 tests)
+- `backend/test/role-matrix.e2e-spec.ts` — NEW (31 tests)
+
+### SM Acceptance
+- **Accepted by:** SM Agent (Bob)
+- **Date:** 2026-02-28
+- **Commits:** `f9b2778` (dev) → `e7e8cbe` (CR follow-up) → `4131d54` (prettier)
+- **Verification:**
+  - Role-matrix E2E: 31/31 passed
+  - Backend unit: 51 suites, 932 passed (4 skipped)
+  - Frontend: 77 suites, 794 passed
+  - Total: 1,757 tests (932 + 794 + 31), 0 regressions
+- **CR follow-up resolved:**
+  - P3: Replaced inline `authGet()` with shared `authRequest()` from `test-setup.ts`
+  - Q8: Dashboard matrix expanded from 4 to 6 combos (full symmetry)
 
 ## Retrospective Notes
+- Rate limit workaround (TD-038) worked — `JwtService.sign()` for combo #6 avoided 429
+- Full 6-combo dashboard coverage caught combo #4 ISSUER+manager → 403 pattern (by design)
