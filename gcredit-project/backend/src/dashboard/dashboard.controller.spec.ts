@@ -173,6 +173,7 @@ describe('DashboardController', () => {
           userId: 'user-1',
           email: 'test@example.com',
           role: UserRole.EMPLOYEE,
+          isManager: false,
         },
       };
 
@@ -196,6 +197,7 @@ describe('DashboardController', () => {
           userId: 'different-user',
           email: 'other@example.com',
           role: UserRole.EMPLOYEE,
+          isManager: false,
         },
       };
 
@@ -220,6 +222,7 @@ describe('DashboardController', () => {
           userId: 'issuer-1',
           email: 'issuer@example.com',
           role: UserRole.ISSUER,
+          isManager: false,
         },
       };
 
@@ -243,6 +246,7 @@ describe('DashboardController', () => {
           userId: 'admin-1',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
+          isManager: false,
         },
       };
 
@@ -269,6 +273,7 @@ describe('DashboardController', () => {
           userId: 'manager-1',
           email: 'manager@example.com',
           role: UserRole.EMPLOYEE, // ADR-017: managers now have EMPLOYEE role
+          isManager: true,
         },
       };
 
@@ -290,6 +295,7 @@ describe('DashboardController', () => {
           userId: 'employee-1',
           email: 'employee@example.com',
           role: UserRole.EMPLOYEE,
+          isManager: false,
         },
       };
 
@@ -309,6 +315,7 @@ describe('DashboardController', () => {
           userId: 'admin-1',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
+          isManager: false,
         },
       };
 

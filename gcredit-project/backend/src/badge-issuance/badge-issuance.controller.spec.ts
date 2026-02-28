@@ -49,7 +49,14 @@ describe('BadgeIssuanceController', () => {
   });
 
   describe('claimBadgeByToken()', () => {
-    const mockReq = { user: { userId: 'user-123' } } as RequestWithUser;
+    const mockReq: RequestWithUser = {
+      user: {
+        userId: 'user-123',
+        email: 'user@example.com',
+        role: UserRole.EMPLOYEE,
+        isManager: false,
+      },
+    };
 
     it('should claim badge with valid claimToken', async () => {
       const mockResult = {

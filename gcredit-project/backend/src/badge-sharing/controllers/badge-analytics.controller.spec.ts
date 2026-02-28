@@ -19,6 +19,7 @@ describe('BadgeAnalyticsController', () => {
       userId: 'user-123',
       email: 'user@example.com',
       role: UserRole.EMPLOYEE,
+      isManager: false,
     },
   };
 

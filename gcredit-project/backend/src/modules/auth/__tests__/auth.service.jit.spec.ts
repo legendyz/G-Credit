@@ -48,6 +48,7 @@ describe('AuthService — JIT User Provisioning (Story 13.2)', () => {
       findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+      count: jest.fn().mockResolvedValue(0), // ADR-017: computeIsManager()
     },
     refreshToken: {
       create: jest.fn().mockResolvedValue({}),

@@ -10,7 +10,8 @@ import { UserRole } from '@prisma/client';
 export interface AuthenticatedUser {
   userId: string;
   email: string;
-  role: UserRole;
+  role: UserRole; // Permission dimension
+  isManager: boolean; // ADR-017: Organization dimension
 }
 
 export interface RequestWithUser {

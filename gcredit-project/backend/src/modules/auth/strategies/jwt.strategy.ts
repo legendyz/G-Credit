@@ -7,7 +7,8 @@ import type { Request } from 'express';
 export interface JwtPayload {
   sub: string; // user ID
   email: string;
-  role: string;
+  role: string; // UserRole: 'ADMIN' | 'ISSUER' | 'EMPLOYEE'
+  isManager: boolean; // ADR-017: derived from directReports count > 0
 }
 
 /**
@@ -59,6 +60,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       userId: payload.sub,
       email: payload.email,
       role: payload.role,
+      isManager: payload.isManager ?? false, // ADR-017: backward compat for old tokens
     };
   }
 }
