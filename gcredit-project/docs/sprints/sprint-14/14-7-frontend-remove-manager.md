@@ -130,4 +130,25 @@ Claude Opus 4 (via GitHub Copilot)
 - `frontend/src/hooks/useDashboard.ts` — isManager parameter, removed MANAGER case
 - `frontend/src/stores/authStore.loginViaSSO.test.ts` — added isManager to mockUser
 
+## SM Acceptance Record
+
+- **Date:** 2026-02-28
+- **SM:** Bob (SM Agent — Claude Opus 4.6)
+- **CR Verdict:** APPROVED (follow-ups addressed in commit `bc9b86f`)
+- **Commits:** `81bcd7b` (main impl) + `bc9b86f` (CR follow-ups)
+- **Test Results:** 77/77 suites, 794 tests passed, 0 ESLint warnings
+- **Verification:**
+  - [x] All 12 ACs met (3 pre-done from 14.2, 9 completed this story)
+  - [x] `authStore.ts`: User has `isManager: boolean`, `useIsManager()` selector, 5 mapping points with `?? false` fallback
+  - [x] `ProtectedRoute.tsx`: `requireManager` prop works independently + with `requiredRoles`, ADMIN bypass
+  - [x] `App.tsx`: Badge Management route uses `requireManager` instead of `'MANAGER'`
+  - [x] `Navbar.tsx`: `isManager && role === 'EMPLOYEE'` — no duplicate links
+  - [x] `MobileNav.tsx`: `managerAccess` flag + filter, all `'MANAGER'` removed from role arrays
+  - [x] `BadgeManagementPage.tsx`: `isManager` prop replaces all `'MANAGER'` type/conditional usage
+  - [x] `DashboardPage.tsx`: `case 'MANAGER':` removed, conditional render via `user.isManager`
+  - [x] `useDashboard.ts`: `isManager` param, `enabled` query gating (CR follow-up)
+  - [x] Grep verification: zero `'MANAGER'` role-enum matches in production code
+  - [x] Minor note: `CreateUserDialog.tsx:136` toast "to MANAGER" — backend auto-upgrade message, not role enum usage. Cosmetic follow-up deferred.
+  - [x] Sprint-status updated to `done`
+
 ## Retrospective Notes
