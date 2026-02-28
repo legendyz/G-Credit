@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.4.0] - 2026-02-28 (Sprint 14 — Dual-Dimension Role Model Refactor)
+
+### Sprint 14 Summary — Role Model Refactor + Design Tokens
+
+**Branch:** `sprint-14/role-model-refactor`
+**Stories:** 9/9 complete (4 waves) | **Target Version:** v1.4.0
+**Tests:** 794 passed (77 test files, 100% pass rate, +0 from v1.3.0)
+
+#### Wave 1: Quick Win (Story 14.1)
+
+- **Fix Flaky BadgeManagementPage Test (14.1):** TD-036 resolved. Test isolation fix — mock state leaking between Vitest workers cleaned up.
+
+#### Wave 3: Role Model Refactor — Frontend (Story 14.7)
+
+- **Frontend MANAGER Removal (14.7):** `User` type updated to `role: 'ADMIN' | 'ISSUER' | 'EMPLOYEE'` + `isManager: boolean`. `useIsManager()` Zustand selector. `ProtectedRoute` independent `requireManager` evaluation via `needsCheck`. `useDashboard()` `enabled` query gating. All `'MANAGER'` string references removed from application code. `RoleBadge` shows combined `[Manager]` + `[Issuer]` tags.
+
+#### Wave 4: Design Tokens (Story 14.9)
+
+- **Design Token Infrastructure (14.9):** 11 new CSS custom properties in `@theme` block following ADR-009 (Tailwind v4 CSS-first config). Tokens: `--color-linkedin`, `--color-linkedin-dark`, `--color-ms-text`, `--color-ms-border`, `--color-confetti-pink`, `--color-confetti-purple`, `--color-gift-box`, `--color-gift-box-dark`, `--color-gift-ribbon`, `--color-gift-ribbon-dark`, `--shadow-sticky`. ~25 hardcoded hex colors replaced with CSS vars across 8 components.
+
+#### Updated Components
+
+| Component | Change |
+|-----------|--------|
+| `authStore.ts` | `isManager: boolean` in User type, `useIsManager()` selector |
+| `ProtectedRoute.tsx` | `requireManager` prop, `needsCheck` evaluation |
+| `useDashboard.ts` | `enabled` query gating |
+| `RoleBadge.tsx` | Combined `[Manager]` + `[Role]` tag display |
+| `IssuanceTrendChart.tsx` | 10 hex → CSS vars (`chart-1/2/3`, `neutral-200/500`) |
+| `SkillsDistributionChart.tsx` | hex → CSS vars (`chart-4`, `neutral-200/500/700`) |
+| `BadgeShareModal.tsx` | `bg-[#0A66C2]` → `bg-linkedin`, SVG fill tokenized |
+| `MicrosoftSsoButton.tsx` | `text-[#2F2F2F]` / `border-[#8C8C8C]` → `text-ms-text` / `border-ms-border` |
+| `CelebrationModal.tsx` | 5 confetti hex → CSS var mix |
+| `PendingBadgesEmptyState.tsx` | 7 SVG fill/stroke hex → CSS vars |
+| `UserListTable.tsx` | 2 arbitrary rgba shadows → `shadow-sticky` |
+| `index.css` | 11 new tokens in `@theme` block |
+
+---
+
 ## [1.3.0] - 2026-02-27 (Sprint 13 — Azure AD SSO + Session Management)
 
 ### Sprint 13 Summary — Enterprise SSO & Session Lifecycle

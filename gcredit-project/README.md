@@ -4,7 +4,8 @@
 
 ## 📊 Project Status
 
-**Version:** ✅ v1.3.0 Released (Azure AD SSO + Session Management)  
+**Version:** ✅ v1.4.0 Released (Dual-Dimension Role Model Refactor)  
+**Sprint 14:** ✅ Complete (9/9 stories, 4 waves, 2026-02-27 to 2026-02-28, Dual-Dimension Role Model Refactor, 1,757 tests, v1.4.0)  
 **Sprint 13:** ✅ Complete (8/8 stories, 4 waves, 2026-02-25 to 2026-02-27, Azure AD SSO + Session Management, 1,708 tests, v1.3.0)  
 **Sprint 12.5:** ✅ Complete (2/2 stories, 2026-02-25, Deferred Items Cleanup, 1,593 tests, v1.2.1)  
 **Sprint 12:** ✅ Complete (8/8 dev stories, 3 waves, 2026-02-19 to 2026-02-24, Management UIs + Evidence Unification, 1,549 tests, v1.2.0)  
@@ -20,7 +21,7 @@
 **Sprint 2:** ✅ Complete (100%, 29h/32h, 2026-01-26, Badge Templates)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, 2026-01-25, Authentication)  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, 2026-01-24, Infrastructure)  
-**Tests:** 1,708 (Backend 914 + Frontend 794), 100% pass rate  
+**Tests:** 1,757 (Backend 932 + Frontend 794 + E2E 31), 100% pass rate  
 **License:** MIT
 
 ## 🚀 Tech Stack
