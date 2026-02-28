@@ -5,7 +5,9 @@
 **Estimate:** 2h  
 **Wave:** 4 — Testing + Design Tokens  
 **Source:** ADR-017 §7  
-**Depends On:** 14.2, 14.3, 14.4, 14.5, 14.6, 14.7
+**Depends On:** 14.2, 14.3, 14.4, 14.7
+
+**Partial Work Note:** Story 14.2 (commit `25c0ae3`) updated `test/factories/user.factory.ts` — `createManager()` now creates EMPLOYEE + subordinate (ADR-017 pattern), `createTestTeam()` links employees via `managerId`. E2E test helpers now support the dual-dimension model. Dependencies 14.5 and 14.6 are done (absorbed into 14.2).
 
 ---
 

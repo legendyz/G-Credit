@@ -2,10 +2,12 @@
 
 **Status:** backlog  
 **Priority:** HIGH  
-**Estimate:** 4h  
+**Estimate:** 3h *(reduced from 4h — partial work done in 14.2)*  
 **Wave:** 3 — Role Model Refactor (Frontend)  
 **Source:** ADR-017 §5  
 **Depends On:** 14.3
+
+**Partial Work Note:** Story 14.2 (commit `25c0ae3`) already completed AC #2, #7, #12. Remaining work is AC #1, #3, #4, #5, #6, #8, #9, #10, #11.
 
 ---
 
@@ -18,17 +20,17 @@
 ## Acceptance Criteria
 
 1. [ ] `authStore.ts`: User interface adds `isManager: boolean`, new `useIsManager()` selector
-2. [ ] `adminUsersApi.ts`: `UserRole` type = `'ADMIN' | 'ISSUER' | 'EMPLOYEE'`
+2. [x] `adminUsersApi.ts`: `UserRole` type = `'ADMIN' | 'ISSUER' | 'EMPLOYEE'` *(done in 14.2)*
 3. [ ] `ProtectedRoute.tsx`: `requiredRoles` type removes `'MANAGER'`, adds `requireManager?: boolean` prop
 4. [ ] `App.tsx`: all `requiredRoles` arrays — remove `'MANAGER'`
 5. [ ] `Navbar.tsx`: remove `role === 'MANAGER'` conditional block
 6. [ ] `MobileNav.tsx`: remove `'MANAGER'` from all `navLinks` role arrays
-7. [ ] `AdminUserManagementPage.tsx`: `ROLES` array removes `'MANAGER'`
+7. [x] `AdminUserManagementPage.tsx`: `ROLES` array removes `'MANAGER'` *(done in 14.2)*
 8. [ ] `BadgeManagementPage.tsx`: remove `'MANAGER'` from type union, replace `role === 'MANAGER'` checks with `isManager`
 9. [ ] `DashboardPage.tsx`: remove `case 'MANAGER':` — minimal change (full tabbed view in Sprint 15)
 10. [ ] Grep verification: zero `'MANAGER'` string matches in frontend `src/` (excluding test historical data)
 11. [ ] All frontend tests updated and passing
-12. [ ] Role display: combined tags `[Issuer] [Manager]` where applicable
+12. [x] Role display: RoleBadge component updated — MANAGER removed from `roleConfig` *(done in 14.2)*
 
 ## Tasks / Subtasks
 

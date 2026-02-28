@@ -2,10 +2,12 @@
 
 **Status:** backlog  
 **Priority:** HIGH  
-**Estimate:** 2h  
+**Estimate:** 1h *(reduced from 2h — inline guards already exist from 14.2)*  
 **Wave:** 2 — Role Model Refactor (Backend)  
 **Source:** ADR-017 §4.5  
 **Depends On:** 14.3
+
+**Partial Work Note:** Story 14.2 (commits `7fe5ee0`, `25c0ae3`) added inline `directReports` count checks in `app.controller.ts`, `dashboard.controller.ts`, `analytics.service.ts`, and `badge-issuance.service.ts`. These are functional but duplicated. This story extracts the pattern into a reusable `@RequireManager()` decorator + `ManagerGuard`. Estimate reduced accordingly.
 
 ---
 

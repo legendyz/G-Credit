@@ -24,7 +24,7 @@ The migration implementation is correct and safe for Story 14.2 scope. The previ
 - Migration SQL uses the correct PostgreSQL enum-removal pattern: data migration first, then enum type swap.
 - Prisma schema now contains only ADMIN, ISSUER, EMPLOYEE in UserRole, while manager identity fields (managerId/manager/directReports) remain intact.
 - Seed updates correctly replace UserRole.MANAGER with UserRole.EMPLOYEE in both upsert update/create blocks for manager@gcredit.com.
-- Story and sprint tracking were updated to review as required.
+- Story and sprint tracking were updated and finalized as done.
 
 ---
 
@@ -99,13 +99,13 @@ This is non-blocking for Story 14.2 (scope is schema/migration/seed), but the st
 
 ### 7) Story Documentation
 
-- Story status = review: PASS
+- Story status = done: PASS
 - AC all checked: PASS
 - Tasks/subtasks checked: PASS
 - Dev Agent Record filled: PASS
 - Rollback SQL documented: PASS
 - Expected test failures listed with story references: PASS (but incomplete set; see follow-up)
-- sprint-status updated to review: PASS
+- sprint-status updated to done: PASS
 
 ---
 
@@ -143,12 +143,13 @@ No blocking migration/schema/seed defects were found, and the requested document
 ### Reviewed Commit
 
 - `0c03a72` — `fix: unify manager identity model across codebase (ADR-017) [14.2]`
+- `25c0ae3` — follow-up fix including `app.controller` manager-only authorization guard + tests
 
 ### Incremental Verdict
 
-**CHANGES REQUESTED**
+**APPROVED**
 
-This increment fixes the previously reported badge-issued access risk, but introduces/retains one blocking authorization gap in `app.controller.ts`.
+The previously reported blocking authorization gap in `app.controller.ts` is now fixed and verified.
 
 ### Confirmed Improvements
 
@@ -157,15 +158,10 @@ This increment fixes the previously reported badge-issued access risk, but intro
 - `dashboard.controller.ts`: directReports gate added for manager dashboard (admin bypass preserved).
 - Frontend role/type cleanup aligned with ADR-017 (`MANAGER` removed from role unions).
 
-### Blocking Issue
+### Blocking Issue Status
 
-- `backend/src/app.controller.ts` `GET /manager-only` currently allows `@Roles('EMPLOYEE', 'ADMIN')` but does not enforce manager identity (`directReports > 0`) in handler logic.
-- This can allow ordinary `EMPLOYEE` users without direct reports to access manager-only route, which is inconsistent with ADR-017 semantics and route comments.
-
-### Required Fix (Minimal)
-
-1. Add directReports check in `managerRoute` for non-admin users (same guard logic used in `dashboard.controller.ts`), and throw `ForbiddenException` when count is 0.
-2. Add/adjust unit tests for:
+- `backend/src/app.controller.ts` `GET /manager-only` now enforces manager identity (`directReports > 0`) for non-admin users and throws `ForbiddenException` when not a manager.
+- `backend/src/app.controller.spec.ts` now covers:
    - EMPLOYEE with directReports → allowed
    - EMPLOYEE without directReports → forbidden
    - ADMIN → allowed and bypasses directReports check
@@ -174,4 +170,4 @@ This increment fixes the previously reported badge-issued access risk, but intro
 
 - Passed: `analytics.service.spec.ts`, `dashboard.controller.spec.ts`, `badge-issuance.service.spec.ts`, `app.controller.spec.ts`, `RoleBadge.test.tsx`
 - Passed: backend `tsc --noEmit`, frontend `tsc --noEmit -p tsconfig.app.json`
-- Note: Existing `app.controller.spec.ts` is minimal and does not currently assert manager-only authorization behavior.
+- Note: manager-only authorization assertions are now present in `app.controller.spec.ts`.
