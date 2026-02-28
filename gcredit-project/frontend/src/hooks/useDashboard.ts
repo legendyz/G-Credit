@@ -34,7 +34,7 @@ export function useEmployeeDashboard() {
  * Fetches issuance summary and recent activity
  * Auto-refreshes every 60 seconds when tab is active
  */
-export function useIssuerDashboard() {
+export function useIssuerDashboard(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['dashboard', 'issuer'],
     queryFn: () => apiFetchJson<IssuerDashboard>('/dashboard/issuer'),
@@ -42,6 +42,7 @@ export function useIssuerDashboard() {
     refetchInterval: 60 * 1000, // 60 seconds auto-refresh
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: true,
+    enabled: options?.enabled ?? true,
   });
 }
 
@@ -50,7 +51,7 @@ export function useIssuerDashboard() {
  * Fetches team insights and revocation alerts
  * Auto-refreshes every 60 seconds when tab is active
  */
-export function useManagerDashboard() {
+export function useManagerDashboard(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['dashboard', 'manager'],
     queryFn: () => apiFetchJson<ManagerDashboard>('/dashboard/manager'),
@@ -58,6 +59,7 @@ export function useManagerDashboard() {
     refetchInterval: 60 * 1000, // 60 seconds auto-refresh
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: true,
+    enabled: options?.enabled ?? true,
   });
 }
 
@@ -66,7 +68,7 @@ export function useManagerDashboard() {
  * Fetches system overview and recent activity
  * Auto-refreshes every 60 seconds when tab is active
  */
-export function useAdminDashboard() {
+export function useAdminDashboard(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['dashboard', 'admin'],
     queryFn: () => apiFetchJson<AdminDashboard>('/dashboard/admin'),
@@ -74,6 +76,7 @@ export function useAdminDashboard() {
     refetchInterval: 60 * 1000, // 60 seconds auto-refresh
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: true,
+    enabled: options?.enabled ?? true,
   });
 }
 
@@ -82,10 +85,14 @@ export function useAdminDashboard() {
  * ADR-017: isManager parameter controls manager dashboard access
  */
 export function useDashboard(role: 'EMPLOYEE' | 'ISSUER' | 'ADMIN', isManager?: boolean) {
+  const isAdmin = role === 'ADMIN';
+  const isIssuer = role === 'ISSUER';
+  const needsManager = isAdmin || !!isManager;
+
   const employeeQuery = useEmployeeDashboard();
-  const issuerQuery = useIssuerDashboard();
-  const managerQuery = useManagerDashboard();
-  const adminQuery = useAdminDashboard();
+  const issuerQuery = useIssuerDashboard({ enabled: isAdmin || isIssuer });
+  const managerQuery = useManagerDashboard({ enabled: needsManager });
+  const adminQuery = useAdminDashboard({ enabled: isAdmin });
 
   switch (role) {
     case 'ADMIN':

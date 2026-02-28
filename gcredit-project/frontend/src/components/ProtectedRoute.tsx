@@ -44,12 +44,13 @@ export function ProtectedRoute({ children, requiredRoles, requireManager }: Prot
   }
 
   // Check role authorization if required (ADR-017 dual-dimension)
-  if (requiredRoles && requiredRoles.length > 0 && user) {
-    const hasRole = requiredRoles.includes(user.role);
+  if (user) {
+    const hasRole = requiredRoles && requiredRoles.length > 0 && requiredRoles.includes(user.role);
     const isManager = requireManager && (user.isManager ?? false);
     const isAdmin = user.role === 'ADMIN';
-    if (!hasRole && !isManager && !isAdmin) {
-      // User doesn't have required role - redirect to 403 page
+    const needsCheck = (requiredRoles && requiredRoles.length > 0) || requireManager;
+    if (needsCheck && !hasRole && !isManager && !isAdmin) {
+      // User doesn't have required role or manager access - redirect to 403 page
       return <Navigate to="/access-denied" replace />;
     }
   }

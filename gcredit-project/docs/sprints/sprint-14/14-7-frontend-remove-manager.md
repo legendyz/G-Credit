@@ -1,6 +1,6 @@
 # Story 14.7: Frontend Type Updates + Remove MANAGER References
 
-**Status:** review  
+**Status:** done  
 **Priority:** HIGH  
 **Estimate:** 3h *(reduced from 4h — partial work done in 14.2)*  
 **Wave:** 3 — Role Model Refactor (Frontend)  
@@ -116,6 +116,8 @@ Claude Opus 4 (via GitHub Copilot)
 - Grep verification: zero `'MANAGER'` role-enum matches in production code
 - All 77 test suites (794 tests) passing; fixed SSO test mock to include `isManager`
 - ESLint `--max-warnings=0` clean
+- CR follow-up 1: ProtectedRoute evaluates `requireManager` independently from `requiredRoles`
+- CR follow-up 2: Dashboard hooks accept `{ enabled }` option; `useDashboard()` disables unnecessary queries by role
 
 ### File List
 - `frontend/src/stores/authStore.ts` — User interface + `useIsManager()` selector + isManager mapping
