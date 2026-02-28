@@ -1,6 +1,6 @@
 # Story 14.4: ManagerGuard + @RequireManager() Decorator
 
-**Status:** review  
+**Status:** done  
 **Priority:** HIGH  
 **Estimate:** 1h *(reduced from 2h — inline guards already exist from 14.2)*  
 **Wave:** 2 — Role Model Refactor (Backend)  
@@ -96,5 +96,22 @@ Claude Opus 4.6 (GitHub Copilot)
 - `src/app.controller.spec.ts` — MODIFIED (simplified manager tests)
 - `src/dashboard/dashboard.controller.ts` — MODIFIED (manager endpoint uses @RequireManager + ManagerGuard, removed PrismaService)
 - `src/dashboard/dashboard.controller.spec.ts` — MODIFIED (removed PrismaService mock, simplified manager tests)
+
+## SM Acceptance Record
+
+- **Date:** 2026-02-28
+- **SM:** Bob (SM Agent — Claude Opus 4.6)
+- **CR Verdict:** APPROVED (no follow-up items)
+- **Commit:** `6d820ac` (includes CR follow-up hardening)
+- **Test Results:** 51/51 suites, 932 tests passed, 0 ESLint warnings
+- **Verification:**
+  - [x] All 7 ACs met
+  - [x] Guard implementation correct (Reflector, ADMIN bypass, strict `=== true`)
+  - [x] Decorator follows established `SetMetadata` pattern
+  - [x] 8 unit tests covering all guard paths + decorator metadata
+  - [x] CR follow-up items addressed: `ForbiddenException` message, `undefined` edge case test, AppModule registration
+  - [x] Controller refactors clean: inline guards replaced, `PrismaService` removed from `DashboardController`
+  - [x] `analytics.service.ts` and `badge-issuance.service.ts` intentionally unchanged (data filtering, not access control)
+  - [x] Sprint-status updated to `done`
 
 ## Retrospective Notes
