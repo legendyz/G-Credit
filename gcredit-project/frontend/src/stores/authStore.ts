@@ -18,7 +18,8 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: 'ADMIN' | 'ISSUER' | 'MANAGER' | 'EMPLOYEE';
+  role: 'ADMIN' | 'ISSUER' | 'EMPLOYEE';
+  isManager: boolean;
 }
 
 interface AuthState {
@@ -74,7 +75,7 @@ export const useAuthStore = create<AuthState>()(
           queryClient.clear();
 
           set({
-            user: data.user,
+            user: { ...data.user, isManager: data.user?.isManager ?? false },
             isAuthenticated: true,
             isLoading: false,
             error: null,
@@ -107,7 +108,7 @@ export const useAuthStore = create<AuthState>()(
           const data = await response.json();
 
           set({
-            user: data.user,
+            user: { ...data.user, isManager: data.user?.isManager ?? false },
             isAuthenticated: true,
             isLoading: false,
             error: null,
@@ -163,8 +164,9 @@ export const useAuthStore = create<AuthState>()(
           if (profileRes.ok) {
             const data = await profileRes.json();
             queryClient.clear();
+            const userData = data.user || data;
             set({
-              user: data.user || data,
+              user: { ...userData, isManager: userData?.isManager ?? false },
               isAuthenticated: true,
               isLoading: false,
               sessionValidated: true,
@@ -193,7 +195,11 @@ export const useAuthStore = create<AuthState>()(
 
           if (profileRes.ok) {
             const data = await profileRes.json();
-            set({ user: data.user || data, sessionValidated: true });
+            const userData = data.user || data;
+            set({
+              user: { ...userData, isManager: userData?.isManager ?? false },
+              sessionValidated: true,
+            });
             return true;
           }
 
@@ -207,7 +213,11 @@ export const useAuthStore = create<AuthState>()(
             const retryRes = await apiFetch('/auth/profile');
             if (retryRes.ok) {
               const data = await retryRes.json();
-              set({ user: data.user || data, sessionValidated: true });
+              const userData = data.user || data;
+              set({
+                user: { ...userData, isManager: userData?.isManager ?? false },
+                sessionValidated: true,
+              });
               return true;
             }
           }
@@ -238,3 +248,11 @@ export const useAuthStore = create<AuthState>()(
 export const useIsAuthenticated = () => useAuthStore((state) => state.isAuthenticated);
 export const useCurrentUser = () => useAuthStore((state) => state.user);
 export const useUserRole = () => useAuthStore((state) => state.user?.role);
+
+/**
+ * Selector: is current user a manager? (ADR-017 dual-dimension)
+ * Reads isManager from JWT claim, not from role.
+ */
+export function useIsManager(): boolean {
+  return useAuthStore((state) => state.user?.isManager ?? false);
+}

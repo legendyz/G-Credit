@@ -41,7 +41,9 @@ import { useCurrentUser } from '@/stores/authStore';
 
 interface BadgeManagementPageProps {
   /** User role - determines which badges to show and actions available */
-  userRole?: 'ADMIN' | 'ISSUER' | 'MANAGER';
+  userRole?: 'ADMIN' | 'ISSUER' | 'EMPLOYEE';
+  /** Whether user is a manager (ADR-017 dual-dimension) */
+  isManager?: boolean;
   /** Current user ID - for checking badge ownership */
   userId?: string;
 }
@@ -154,11 +156,14 @@ function StatusBadge({ status }: { status: BadgeStatus }) {
 
 export function BadgeManagementPage({
   userRole: userRoleProp,
+  isManager: isManagerProp,
   userId: userIdProp,
 }: BadgeManagementPageProps) {
   const currentUser = useCurrentUser();
   const navigate = useNavigate();
-  const userRole = userRoleProp || (currentUser?.role as 'ADMIN' | 'ISSUER' | 'MANAGER') || 'ADMIN';
+  const userRole =
+    userRoleProp || (currentUser?.role as 'ADMIN' | 'ISSUER' | 'EMPLOYEE') || 'ADMIN';
+  const isManager = isManagerProp ?? currentUser?.isManager ?? false;
   const userId = userIdProp || currentUser?.id || 'unknown';
   const queryClient = useQueryClient();
 
@@ -210,7 +215,7 @@ export function BadgeManagementPage({
     return allBadges;
   }, [userRole]);
 
-  // Fetch badges - Admin sees all, Issuer sees own, Manager sees department badges
+  // Fetch badges - Admin sees all, Issuer sees own, manager employees see department badges
   const {
     data: allBadges,
     isLoading,
@@ -362,11 +367,11 @@ export function BadgeManagementPage({
       }
 
       // Manager can revoke department badges (backend enforces same-department)
-      if (userRole === 'MANAGER') return true;
+      if (isManager) return true;
 
       return false;
     },
-    [userRole, userId]
+    [userRole, userId, isManager]
   );
 
   // Handle revoke button click
@@ -430,7 +435,7 @@ export function BadgeManagementPage({
           description={
             userRole === 'ADMIN'
               ? 'Manage all badges in the system'
-              : userRole === 'MANAGER'
+              : isManager
                 ? 'Manage badges for your department'
                 : 'Manage badges you have issued'
           }

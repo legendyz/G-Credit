@@ -51,21 +51,6 @@ export const DashboardPage: React.FC = () => {
         </ErrorBoundary>
       );
 
-    case 'MANAGER':
-      return (
-        <ErrorBoundary>
-          <div className="space-y-8">
-            <ManagerDashboard />
-            <div className="border-t pt-8">
-              <h2 className="text-lg font-semibold mb-4 px-4 md:px-6 lg:px-8">
-                Your Personal Dashboard
-              </h2>
-              <EmployeeDashboard />
-            </div>
-          </div>
-        </ErrorBoundary>
-      );
-
     case 'ISSUER':
       return (
         <ErrorBoundary>
@@ -85,7 +70,19 @@ export const DashboardPage: React.FC = () => {
     default:
       return (
         <ErrorBoundary>
-          <EmployeeDashboard />
+          <div className="space-y-8">
+            {user.isManager && (
+              <>
+                <ManagerDashboard />
+                <div className="border-t pt-8">
+                  <h2 className="text-lg font-semibold mb-4 px-4 md:px-6 lg:px-8">
+                    Your Personal Dashboard
+                  </h2>
+                </div>
+              </>
+            )}
+            <EmployeeDashboard />
+          </div>
         </ErrorBoundary>
       );
   }

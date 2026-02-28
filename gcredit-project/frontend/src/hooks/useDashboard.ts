@@ -79,8 +79,9 @@ export function useAdminDashboard() {
 
 /**
  * Combined dashboard hook that fetches appropriate data based on role
+ * ADR-017: isManager parameter controls manager dashboard access
  */
-export function useDashboard(role: 'EMPLOYEE' | 'ISSUER' | 'MANAGER' | 'ADMIN') {
+export function useDashboard(role: 'EMPLOYEE' | 'ISSUER' | 'ADMIN', isManager?: boolean) {
   const employeeQuery = useEmployeeDashboard();
   const issuerQuery = useIssuerDashboard();
   const managerQuery = useManagerDashboard();
@@ -94,17 +95,18 @@ export function useDashboard(role: 'EMPLOYEE' | 'ISSUER' | 'MANAGER' | 'ADMIN') 
         manager: managerQuery,
         admin: adminQuery,
       };
-    case 'MANAGER':
-      return {
-        employee: employeeQuery,
-        manager: managerQuery,
-      };
     case 'ISSUER':
       return {
         employee: employeeQuery,
         issuer: issuerQuery,
       };
     default:
+      if (isManager) {
+        return {
+          employee: employeeQuery,
+          manager: managerQuery,
+        };
+      }
       return {
         employee: employeeQuery,
       };

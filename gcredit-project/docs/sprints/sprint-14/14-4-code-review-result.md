@@ -14,9 +14,9 @@
 
 ## Verdict
 
-**APPROVED WITH FOLLOW-UP**
+**APPROVED**
 
-The guard/decorator implementation is correct, the inline controller DB checks were cleanly refactored, and tests are solid for the main flow. A few non-blocking hardening recommendations remain.
+The guard/decorator implementation is correct, the inline controller DB checks were cleanly refactored, and previously noted follow-up items have been addressed.
 
 ---
 
@@ -36,7 +36,7 @@ File: `backend/src/common/guards/manager.guard.ts`
 
 **Reviewer notes:**
 1. `=== true` is a good defensive choice.
-2. Returning `false` (generic 403) is acceptable; throwing `ForbiddenException` with a message would improve diagnostics but is not required.
+2. Guard now throws `ForbiddenException('Manager access required')` for denied access, improving diagnostics.
 
 ### 2) `@RequireManager()` Decorator
 
@@ -51,15 +51,15 @@ File: `backend/src/common/decorators/require-manager.decorator.ts`
 
 File: `backend/src/common/guards/manager.guard.spec.ts`
 
-- [x] 7 expected tests present and passing
+- [x] 8 tests present and passing (including undefined `isManager` edge case)
 - [x] Mocked `ExecutionContext` request chain is correct
 - [x] Reflector metadata spy is used correctly for applied/non-applied paths
 - [x] Decorator metadata test verifies `Reflect.getMetadata(REQUIRE_MANAGER_KEY, ...) === true`
 - [x] Test isolation is adequate for current setup
 
 **Reviewer notes:**
-1. No explicit test for `user.isManager` being `undefined` (would currently deny due to `=== true`). Non-blocking optional edge-case test.
-2. No explicit DI wiring test for `@Injectable()`/module resolution (also non-blocking).
+1. Explicit test for `user.isManager` undefined (old token edge case) is now present and passing.
+2. DI wiring is covered by explicit `ManagerGuard` registration in `AppModule` providers.
 
 ### 4) Controller Refactors (Bonus Scope)
 
@@ -100,8 +100,7 @@ Scope adherence is correct.
 ### 7) Guard Registration
 
 - `ManagerGuard` is used via `@UseGuards(ManagerGuard)` at controller methods and is marked `@Injectable()`.
-- No explicit module-level provider registration was added.
-- This is acceptable in current Nest usage pattern for route-level guards, but explicit provider registration can be considered later for consistency.
+- Explicit module-level registration has been added in `AppModule` providers.
 
 ### 8) Story Documentation
 
@@ -121,16 +120,18 @@ Executed and passed:
 
 ---
 
-## Non-blocking Follow-ups
+## Re-review Update
 
-1. Add one explicit edge-case test: `user.isManager` missing/undefined → denied.
-2. Consider throwing `ForbiddenException('Manager access required')` in `ManagerGuard` for better API error clarity.
-3. Optionally register `ManagerGuard` in module providers for consistency with other shared cross-cutting components.
+- Reviewed follow-up commit: `6d820ac`
+- Closed items:
+	1. Added undefined `isManager` edge-case denial test in `manager.guard.spec.ts`
+	2. `ManagerGuard` now throws `ForbiddenException('Manager access required')`
+	3. `ManagerGuard` registered in `AppModule` providers
 
 ---
 
 ## Final Decision
 
-**APPROVED WITH FOLLOW-UP**
+**APPROVED**
 
-Story 14.4 implementation is correct and aligns with ADR-017 §4.5. Follow-ups are polish/hardening, not blockers.
+Story 14.4 implementation is correct, aligns with ADR-017 §4.5, and follow-up hardening items are complete.

@@ -1,6 +1,6 @@
 # Story 14.7: Frontend Type Updates + Remove MANAGER References
 
-**Status:** backlog  
+**Status:** review  
 **Priority:** HIGH  
 **Estimate:** 3h *(reduced from 4h — partial work done in 14.2)*  
 **Wave:** 3 — Role Model Refactor (Frontend)  
@@ -19,17 +19,17 @@
 
 ## Acceptance Criteria
 
-1. [ ] `authStore.ts`: User interface adds `isManager: boolean`, new `useIsManager()` selector
+1. [x] `authStore.ts`: User interface adds `isManager: boolean`, new `useIsManager()` selector
 2. [x] `adminUsersApi.ts`: `UserRole` type = `'ADMIN' | 'ISSUER' | 'EMPLOYEE'` *(done in 14.2)*
-3. [ ] `ProtectedRoute.tsx`: `requiredRoles` type removes `'MANAGER'`, adds `requireManager?: boolean` prop
-4. [ ] `App.tsx`: all `requiredRoles` arrays — remove `'MANAGER'`
-5. [ ] `Navbar.tsx`: remove `role === 'MANAGER'` conditional block
-6. [ ] `MobileNav.tsx`: remove `'MANAGER'` from all `navLinks` role arrays
+3. [x] `ProtectedRoute.tsx`: `requiredRoles` type removes `'MANAGER'`, adds `requireManager?: boolean` prop
+4. [x] `App.tsx`: all `requiredRoles` arrays — remove `'MANAGER'`
+5. [x] `Navbar.tsx`: remove `role === 'MANAGER'` conditional block
+6. [x] `MobileNav.tsx`: remove `'MANAGER'` from all `navLinks` role arrays
 7. [x] `AdminUserManagementPage.tsx`: `ROLES` array removes `'MANAGER'` *(done in 14.2)*
-8. [ ] `BadgeManagementPage.tsx`: remove `'MANAGER'` from type union, replace `role === 'MANAGER'` checks with `isManager`
-9. [ ] `DashboardPage.tsx`: remove `case 'MANAGER':` — minimal change (full tabbed view in Sprint 15)
-10. [ ] Grep verification: zero `'MANAGER'` string matches in frontend `src/` (excluding test historical data)
-11. [ ] All frontend tests updated and passing
+8. [x] `BadgeManagementPage.tsx`: remove `'MANAGER'` from type union, replace `role === 'MANAGER'` checks with `isManager`
+9. [x] `DashboardPage.tsx`: remove `case 'MANAGER':` — minimal change (full tabbed view in Sprint 15)
+10. [x] Grep verification: zero `'MANAGER'` string matches in frontend `src/` (excluding test historical data)
+11. [x] All frontend tests updated and passing (77 suites, 794 tests)
 12. [x] Role display: RoleBadge component updated — MANAGER removed from `roleConfig` *(done in 14.2)*
 
 ## Tasks / Subtasks
@@ -104,7 +104,28 @@
 ## Dev Agent Record
 
 ### Agent Model Used
+Claude Opus 4 (via GitHub Copilot)
+
 ### Completion Notes
+- Removed all `'MANAGER'` role-as-enum references from 8 frontend files
+- Added `isManager: boolean` to User interface with `useIsManager()` selector
+- ProtectedRoute supports `requireManager` prop for dual-dimension gating
+- Navbar/MobileNav use `isManager` flag instead of role checks
+- DashboardPage renders ManagerDashboard conditionally via `user.isManager`
+- useDashboard hook accepts optional `isManager` parameter
+- Grep verification: zero `'MANAGER'` role-enum matches in production code
+- All 77 test suites (794 tests) passing; fixed SSO test mock to include `isManager`
+- ESLint `--max-warnings=0` clean
+
 ### File List
+- `frontend/src/stores/authStore.ts` — User interface + `useIsManager()` selector + isManager mapping
+- `frontend/src/components/ProtectedRoute.tsx` — `requireManager` prop, dual-dimension access logic
+- `frontend/src/App.tsx` — Badge Management route uses `requireManager`
+- `frontend/src/components/Navbar.tsx` — isManager-based nav link visibility
+- `frontend/src/components/layout/MobileNav.tsx` — `managerAccess` flag + isManager filter
+- `frontend/src/pages/admin/BadgeManagementPage.tsx` — isManager prop, revoke logic
+- `frontend/src/pages/dashboard/DashboardPage.tsx` — conditional ManagerDashboard rendering
+- `frontend/src/hooks/useDashboard.ts` — isManager parameter, removed MANAGER case
+- `frontend/src/stores/authStore.loginViaSSO.test.ts` — added isManager to mockUser
 
 ## Retrospective Notes
