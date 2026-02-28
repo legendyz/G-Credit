@@ -27,6 +27,7 @@ import {
   teardownE2ETest,
   createAndLoginUser,
   extractCookieToken,
+  authRequest,
 } from './helpers/test-setup';
 
 describe('Role-Manager Matrix (ADR-017)', () => {
@@ -91,126 +92,120 @@ describe('Role-Manager Matrix (ADR-017)', () => {
     await teardownE2ETest(ctx);
   });
 
-  // Helper: make authenticated GET request
-  const authGet = (path: string, token: string) =>
-    request(ctx.app.getHttpServer() as App)
-      .get(path)
-      .set('Authorization', `Bearer ${token}`);
-
   // ─── Combo #1: EMPLOYEE + isManager=false ──────────────────────────
   describe('Combo #1: EMPLOYEE + isManager=false', () => {
     it('profile -> 200 (dashboard)', async () => {
-      await authGet('/profile', employeeToken).expect(200);
+      await authRequest(ctx.app, employeeToken).get('/profile').expect(200);
     });
 
     it('manager-only -> 403 (no team access)', async () => {
-      await authGet('/manager-only', employeeToken).expect(403);
+      await authRequest(ctx.app, employeeToken).get('/manager-only').expect(403);
     });
 
     it('issuer-only -> 403 (no issue access)', async () => {
-      await authGet('/issuer-only', employeeToken).expect(403);
+      await authRequest(ctx.app, employeeToken).get('/issuer-only').expect(403);
     });
 
     it('admin-only -> 403 (no admin access)', async () => {
-      await authGet('/admin-only', employeeToken).expect(403);
+      await authRequest(ctx.app, employeeToken).get('/admin-only').expect(403);
     });
   });
 
   // ─── Combo #2: EMPLOYEE + isManager=true ───────────────────────────
   describe('Combo #2: EMPLOYEE + isManager=true', () => {
     it('profile -> 200', async () => {
-      await authGet('/profile', managerToken).expect(200);
+      await authRequest(ctx.app, managerToken).get('/profile').expect(200);
     });
 
     it('manager-only -> 200 (team access via isManager)', async () => {
-      await authGet('/manager-only', managerToken).expect(200);
+      await authRequest(ctx.app, managerToken).get('/manager-only').expect(200);
     });
 
     it('issuer-only -> 403', async () => {
-      await authGet('/issuer-only', managerToken).expect(403);
+      await authRequest(ctx.app, managerToken).get('/issuer-only').expect(403);
     });
 
     it('admin-only -> 403', async () => {
-      await authGet('/admin-only', managerToken).expect(403);
+      await authRequest(ctx.app, managerToken).get('/admin-only').expect(403);
     });
   });
 
   // ─── Combo #3: ISSUER + isManager=false ────────────────────────────
   describe('Combo #3: ISSUER + isManager=false', () => {
     it('profile -> 200', async () => {
-      await authGet('/profile', issuerToken).expect(200);
+      await authRequest(ctx.app, issuerToken).get('/profile').expect(200);
     });
 
     it('manager-only -> 403', async () => {
-      await authGet('/manager-only', issuerToken).expect(403);
+      await authRequest(ctx.app, issuerToken).get('/manager-only').expect(403);
     });
 
     it('issuer-only -> 200 (issue access)', async () => {
-      await authGet('/issuer-only', issuerToken).expect(200);
+      await authRequest(ctx.app, issuerToken).get('/issuer-only').expect(200);
     });
 
     it('admin-only -> 403', async () => {
-      await authGet('/admin-only', issuerToken).expect(403);
+      await authRequest(ctx.app, issuerToken).get('/admin-only').expect(403);
     });
   });
 
   // ─── Combo #4: ISSUER + isManager=true ─────────────────────────────
   describe('Combo #4: ISSUER + isManager=true', () => {
     it('profile -> 200', async () => {
-      await authGet('/profile', issuerManagerToken).expect(200);
+      await authRequest(ctx.app, issuerManagerToken).get('/profile').expect(200);
     });
 
     it('manager-only -> 403 (ISSUER blocked by @Roles)', async () => {
       // ISSUER+manager gets 403 because @Roles('EMPLOYEE','ADMIN') blocks ISSUER.
       // ManagerGuard never runs. This is by design — ISSUER managers use issuer endpoints.
-      await authGet('/manager-only', issuerManagerToken).expect(403);
+      await authRequest(ctx.app, issuerManagerToken).get('/manager-only').expect(403);
     });
 
     it('issuer-only -> 200', async () => {
-      await authGet('/issuer-only', issuerManagerToken).expect(200);
+      await authRequest(ctx.app, issuerManagerToken).get('/issuer-only').expect(200);
     });
 
     it('admin-only -> 403', async () => {
-      await authGet('/admin-only', issuerManagerToken).expect(403);
+      await authRequest(ctx.app, issuerManagerToken).get('/admin-only').expect(403);
     });
   });
 
   // ─── Combo #5: ADMIN + isManager=false ─────────────────────────────
   describe('Combo #5: ADMIN + isManager=false', () => {
     it('profile -> 200', async () => {
-      await authGet('/profile', adminToken).expect(200);
+      await authRequest(ctx.app, adminToken).get('/profile').expect(200);
     });
 
     it('manager-only -> 200 (ADMIN bypass)', async () => {
       // ADMIN gets 200 even with isManager=false — ManagerGuard always allows ADMIN
-      await authGet('/manager-only', adminToken).expect(200);
+      await authRequest(ctx.app, adminToken).get('/manager-only').expect(200);
     });
 
     it('issuer-only -> 200 (ADMIN bypass)', async () => {
-      await authGet('/issuer-only', adminToken).expect(200);
+      await authRequest(ctx.app, adminToken).get('/issuer-only').expect(200);
     });
 
     it('admin-only -> 200', async () => {
-      await authGet('/admin-only', adminToken).expect(200);
+      await authRequest(ctx.app, adminToken).get('/admin-only').expect(200);
     });
   });
 
   // ─── Combo #6: ADMIN + isManager=true ──────────────────────────────
   describe('Combo #6: ADMIN + isManager=true', () => {
     it('profile -> 200', async () => {
-      await authGet('/profile', adminManagerToken).expect(200);
+      await authRequest(ctx.app, adminManagerToken).get('/profile').expect(200);
     });
 
     it('manager-only -> 200', async () => {
-      await authGet('/manager-only', adminManagerToken).expect(200);
+      await authRequest(ctx.app, adminManagerToken).get('/manager-only').expect(200);
     });
 
     it('issuer-only -> 200', async () => {
-      await authGet('/issuer-only', adminManagerToken).expect(200);
+      await authRequest(ctx.app, adminManagerToken).get('/issuer-only').expect(200);
     });
 
     it('admin-only -> 200', async () => {
-      await authGet('/admin-only', adminManagerToken).expect(200);
+      await authRequest(ctx.app, adminManagerToken).get('/admin-only').expect(200);
     });
   });
 
@@ -229,29 +224,38 @@ describe('Role-Manager Matrix (ADR-017)', () => {
       });
 
       // Should be treated as non-manager -> 403 on manager-only
-      await authGet('/manager-only', token).expect(403);
+      await authRequest(ctx.app, token).get('/manager-only').expect(403);
 
       // Should NOT cause 500 — graceful degradation
-      await authGet('/profile', token).expect(200);
+      await authRequest(ctx.app, token).get('/profile').expect(200);
     });
   });
 
-  // ─── Dashboard Endpoint Matrix (Additional Coverage) ───────────────
+  // ─── Dashboard Endpoint Matrix (Full 6-combo symmetry) ─────────────
   describe('Dashboard endpoint matrix', () => {
-    it('EMPLOYEE+manager -> /api/dashboard/manager -> 200', async () => {
-      await authGet('/api/dashboard/manager', managerToken).expect(200);
+    it('Combo #1 EMPLOYEE -> /api/dashboard/manager -> 403', async () => {
+      await authRequest(ctx.app, employeeToken).get('/api/dashboard/manager').expect(403);
     });
 
-    it('EMPLOYEE non-manager -> /api/dashboard/manager -> 403', async () => {
-      await authGet('/api/dashboard/manager', employeeToken).expect(403);
+    it('Combo #2 EMPLOYEE+manager -> /api/dashboard/manager -> 200', async () => {
+      await authRequest(ctx.app, managerToken).get('/api/dashboard/manager').expect(200);
     });
 
-    it('ADMIN -> /api/dashboard/manager -> 200 (bypass)', async () => {
-      await authGet('/api/dashboard/manager', adminToken).expect(200);
+    it('Combo #3 ISSUER -> /api/dashboard/manager -> 403', async () => {
+      await authRequest(ctx.app, issuerToken).get('/api/dashboard/manager').expect(403);
     });
 
-    it('ISSUER -> /api/dashboard/manager -> 403', async () => {
-      await authGet('/api/dashboard/manager', issuerToken).expect(403);
+    it('Combo #4 ISSUER+manager -> /api/dashboard/manager -> 403', async () => {
+      // ISSUER blocked by @Roles('EMPLOYEE','ADMIN') before ManagerGuard
+      await authRequest(ctx.app, issuerManagerToken).get('/api/dashboard/manager').expect(403);
+    });
+
+    it('Combo #5 ADMIN -> /api/dashboard/manager -> 200 (bypass)', async () => {
+      await authRequest(ctx.app, adminToken).get('/api/dashboard/manager').expect(200);
+    });
+
+    it('Combo #6 ADMIN+manager -> /api/dashboard/manager -> 200', async () => {
+      await authRequest(ctx.app, adminManagerToken).get('/api/dashboard/manager').expect(200);
     });
   });
 });
