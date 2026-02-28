@@ -14,7 +14,7 @@
 
 ## Verdict
 
-**APPROVED WITH FOLLOW-UP**
+**APPROVED**
 
 The implementation correctly completes ADR-017 frontend migration goals for this story: role-enum `MANAGER` references were removed from affected role unions/route checks, and manager identity now uses `user.isManager` consistently in auth store, route protection, and navigation/page logic.
 
@@ -50,8 +50,8 @@ File: `frontend/src/components/ProtectedRoute.tsx`
 - [x] Admin bypass preserved (`user.role === 'ADMIN'`)
 - [x] Manager check uses `user.isManager ?? false`
 
-Reviewer note:
-- Current logic applies manager checking only inside the `requiredRoles.length > 0` branch. This is safe for current usage (`/admin/badges` provides both), but leaves a minor design gap if future routes use `requireManager` alone.
+Reviewer note (re-review closed):
+- `requireManager` is now evaluated independently of `requiredRoles` via `needsCheck`, so manager-only routing constraints are enforced correctly.
 
 ### 3) Route Update in `App.tsx`
 
@@ -110,7 +110,7 @@ File: `frontend/src/hooks/useDashboard.ts`
 - [x] `MANAGER` case removed
 - [x] Default branch returns `{ employee, manager }` only when `isManager` is true
 - [x] ADMIN branch unchanged
-- [x] `useManagerDashboard()` remains unconditional (valid hooks usage)
+- [x] `useManagerDashboard()` now supports query gating via `enabled` option in combined hook usage
 
 ### 9) Test Update Scope
 
@@ -143,6 +143,10 @@ File: `docs/sprints/sprint-14/14-7-frontend-remove-manager.md`
 - [x] Dev Agent Record present (model/notes/file list)
 - [x] Test summary recorded
 
+Process note:
+- If Story Task/Subtask checklists are not fully synchronized with completed status, treat this as workflow consistency follow-up, not a code-quality blocker.
+- Per team workflow, unified task-checklist synchronization is owned by Scrum Master.
+
 ---
 
 ## Verification Runs (This Review)
@@ -152,17 +156,20 @@ Executed and passed:
 - `npm run test -- src/hooks/useDashboard.test.tsx --run`
 - `npm run build`
 
----
+## Re-review Update
 
-## Follow-up Recommendations (Non-blocking)
+- Reviewed follow-up commit: `bc9b86f`
+- Closed follow-up 1: `ProtectedRoute` now enforces `requireManager` independently from `requiredRoles`.
+- Closed follow-up 2: `useDashboard()` now applies role-based query gating (`enabled`) for issuer/manager/admin queries.
 
-1. **ProtectedRoute hardening:** Consider evaluating `requireManager` independently from `requiredRoles` so future routes can use manager-only gating without role arrays.
-2. **Query optimization:** Consider adding conditional `enabled` behavior for manager dashboard query paths in a future cleanup to avoid unnecessary non-manager fetch attempts.
+Executed and passed (re-review):
+- `npm run test -- src/hooks/useDashboard.test.tsx --run`
+- `npm run build`
 
 ---
 
 ## Final Decision
 
-**APPROVED WITH FOLLOW-UP**
+**APPROVED**
 
-Story 14.7 is implementation-correct for ADR-017 frontend migration and can proceed; follow-up items are improvements, not blockers.
+Story 14.7 is implementation-correct for ADR-017 frontend migration, and previously requested follow-up items are now complete.
