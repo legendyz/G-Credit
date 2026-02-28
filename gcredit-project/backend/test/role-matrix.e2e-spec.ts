@@ -99,7 +99,9 @@ describe('Role-Manager Matrix (ADR-017)', () => {
     });
 
     it('manager-only -> 403 (no team access)', async () => {
-      await authRequest(ctx.app, employeeToken).get('/manager-only').expect(403);
+      await authRequest(ctx.app, employeeToken)
+        .get('/manager-only')
+        .expect(403);
     });
 
     it('issuer-only -> 403 (no issue access)', async () => {
@@ -152,21 +154,29 @@ describe('Role-Manager Matrix (ADR-017)', () => {
   // ─── Combo #4: ISSUER + isManager=true ─────────────────────────────
   describe('Combo #4: ISSUER + isManager=true', () => {
     it('profile -> 200', async () => {
-      await authRequest(ctx.app, issuerManagerToken).get('/profile').expect(200);
+      await authRequest(ctx.app, issuerManagerToken)
+        .get('/profile')
+        .expect(200);
     });
 
     it('manager-only -> 403 (ISSUER blocked by @Roles)', async () => {
       // ISSUER+manager gets 403 because @Roles('EMPLOYEE','ADMIN') blocks ISSUER.
       // ManagerGuard never runs. This is by design — ISSUER managers use issuer endpoints.
-      await authRequest(ctx.app, issuerManagerToken).get('/manager-only').expect(403);
+      await authRequest(ctx.app, issuerManagerToken)
+        .get('/manager-only')
+        .expect(403);
     });
 
     it('issuer-only -> 200', async () => {
-      await authRequest(ctx.app, issuerManagerToken).get('/issuer-only').expect(200);
+      await authRequest(ctx.app, issuerManagerToken)
+        .get('/issuer-only')
+        .expect(200);
     });
 
     it('admin-only -> 403', async () => {
-      await authRequest(ctx.app, issuerManagerToken).get('/admin-only').expect(403);
+      await authRequest(ctx.app, issuerManagerToken)
+        .get('/admin-only')
+        .expect(403);
     });
   });
 
@@ -197,15 +207,21 @@ describe('Role-Manager Matrix (ADR-017)', () => {
     });
 
     it('manager-only -> 200', async () => {
-      await authRequest(ctx.app, adminManagerToken).get('/manager-only').expect(200);
+      await authRequest(ctx.app, adminManagerToken)
+        .get('/manager-only')
+        .expect(200);
     });
 
     it('issuer-only -> 200', async () => {
-      await authRequest(ctx.app, adminManagerToken).get('/issuer-only').expect(200);
+      await authRequest(ctx.app, adminManagerToken)
+        .get('/issuer-only')
+        .expect(200);
     });
 
     it('admin-only -> 200', async () => {
-      await authRequest(ctx.app, adminManagerToken).get('/admin-only').expect(200);
+      await authRequest(ctx.app, adminManagerToken)
+        .get('/admin-only')
+        .expect(200);
     });
   });
 
@@ -234,28 +250,40 @@ describe('Role-Manager Matrix (ADR-017)', () => {
   // ─── Dashboard Endpoint Matrix (Full 6-combo symmetry) ─────────────
   describe('Dashboard endpoint matrix', () => {
     it('Combo #1 EMPLOYEE -> /api/dashboard/manager -> 403', async () => {
-      await authRequest(ctx.app, employeeToken).get('/api/dashboard/manager').expect(403);
+      await authRequest(ctx.app, employeeToken)
+        .get('/api/dashboard/manager')
+        .expect(403);
     });
 
     it('Combo #2 EMPLOYEE+manager -> /api/dashboard/manager -> 200', async () => {
-      await authRequest(ctx.app, managerToken).get('/api/dashboard/manager').expect(200);
+      await authRequest(ctx.app, managerToken)
+        .get('/api/dashboard/manager')
+        .expect(200);
     });
 
     it('Combo #3 ISSUER -> /api/dashboard/manager -> 403', async () => {
-      await authRequest(ctx.app, issuerToken).get('/api/dashboard/manager').expect(403);
+      await authRequest(ctx.app, issuerToken)
+        .get('/api/dashboard/manager')
+        .expect(403);
     });
 
     it('Combo #4 ISSUER+manager -> /api/dashboard/manager -> 403', async () => {
       // ISSUER blocked by @Roles('EMPLOYEE','ADMIN') before ManagerGuard
-      await authRequest(ctx.app, issuerManagerToken).get('/api/dashboard/manager').expect(403);
+      await authRequest(ctx.app, issuerManagerToken)
+        .get('/api/dashboard/manager')
+        .expect(403);
     });
 
     it('Combo #5 ADMIN -> /api/dashboard/manager -> 200 (bypass)', async () => {
-      await authRequest(ctx.app, adminToken).get('/api/dashboard/manager').expect(200);
+      await authRequest(ctx.app, adminToken)
+        .get('/api/dashboard/manager')
+        .expect(200);
     });
 
     it('Combo #6 ADMIN+manager -> /api/dashboard/manager -> 200', async () => {
-      await authRequest(ctx.app, adminManagerToken).get('/api/dashboard/manager').expect(200);
+      await authRequest(ctx.app, adminManagerToken)
+        .get('/api/dashboard/manager')
+        .expect(200);
     });
   });
 });
