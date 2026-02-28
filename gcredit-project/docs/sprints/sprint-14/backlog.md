@@ -82,7 +82,7 @@ Deliver the TD-034 dual-dimension identity refactor — separating permission ro
 | # | Story | Priority | Est | Depends On | Status |
 |---|-------|----------|-----|------------|--------|
 | 14.2 | [Schema migration: remove MANAGER from enum](14-2-schema-migration-remove-manager.md) | CRITICAL | 2h | — | ✅ done |
-| 14.3 | [JWT payload + AuthenticatedUser + JwtStrategy update](14-3-jwt-payload-ismanager.md) | CRITICAL | 2h | 14.2 | backlog |
+| 14.3 | [JWT payload + AuthenticatedUser + JwtStrategy update](14-3-jwt-payload-ismanager.md) | CRITICAL | 2h | 14.2 | ✅ done |
 | 14.4 | [ManagerGuard + @RequireManager() decorator](14-4-manager-guard-decorator.md) | HIGH | 1h | 14.3 | backlog |
 | 14.5 | [RolesGuard update + remove MANAGER from @Roles() decorators](14-5-rolesguard-remove-manager.md) | HIGH | — | — | ✅ absorbed by 14.2 |
 | 14.6 | [M365 sync deriveRole() + user management cleanup](14-6-m365-sync-cleanup.md) | HIGH | — | — | ✅ absorbed by 14.2 |

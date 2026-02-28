@@ -160,7 +160,7 @@ sprint-14: in-progress
 
 # --- Wave 2: Role Model Refactor — Backend ---
 14-2-schema-migration-remove-manager: done         # Prisma: UserRole enum = ADMIN|ISSUER|EMPLOYEE
-14-3-jwt-payload-ismanager: review                   # JWT + AuthenticatedUser + isManager claim
+14-3-jwt-payload-ismanager: done                      # JWT + AuthenticatedUser + isManager claim
 14-4-manager-guard-decorator: backlog              # ManagerGuard + @RequireManager() decorator
 14-5-rolesguard-remove-manager: done               # Absorbed by 14.2: all @Roles('MANAGER') removed
 14-6-m365-sync-cleanup: done                       # Absorbed by 14.2: deriveRole() + auto-downgrade removed

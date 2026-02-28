@@ -14,9 +14,9 @@
 
 ## Verdict
 
-**APPROVED WITH FOLLOW-UP**
+**APPROVED**
 
-The implementation is correct for ADR-017 steps 4.1–4.3 and updates all expected JWT generation paths. A few non-blocking test/completeness follow-ups are recommended.
+The implementation is correct for ADR-017 steps 4.1–4.3 and the previously noted follow-up items have been addressed in subsequent fixes.
 
 ---
 
@@ -68,7 +68,7 @@ The listed files were updated and include `isManager` where `RequestWithUser`/`A
 - [x] `teams-sharing.controller.spec.ts`
 - [x] `dashboard.controller.spec.ts` (includes one `isManager: true` case for manager mock)
 
-**Finding:** one additional typed cast exists in `badge-issuance.controller.spec.ts` (`as RequestWithUser`) with minimal `userId` shape only. This predates Story 14.3 changes and is not a blocker for this story, but should be tightened later to avoid hidden type-drift.
+**Update:** `badge-issuance.controller.spec.ts` has been tightened to a full `RequestWithUser` mock shape (including `email`, `role`, `isManager`).
 
 ### 6) Test Coverage (New Tests)
 
@@ -79,9 +79,9 @@ The listed files were updated and include `isManager` where `RequestWithUser`/`A
 - [x] Registration avoids count query and sets `isManager: false`
 - [x] `beforeEach` uses `jest.clearAllMocks()`
 
-**Coverage gaps (non-blocking):**
-1. No dedicated unit test for `jwt.strategy.validate()` old-token fallback (`isManager` omitted).  
-2. No explicit SSO `isManager: true` assertion test (SSO path is updated in code, but positive manager-case assertion is not isolated).
+**Coverage status update:**
+1. Added dedicated `jwt.strategy.validate()` old-token fallback test (`isManager` omitted → `false`).
+2. Added explicit SSO `isManager: true` assertion test.
 
 ### 7) Story Documentation
 
@@ -115,16 +115,18 @@ The listed files were updated and include `isManager` where `RequestWithUser`/`A
 
 ---
 
-## Non-blocking Follow-up Recommendations
+## Re-review Validation
 
-1. Add a focused `jwt.strategy` unit test: payload without `isManager` returns `isManager: false`.
-2. Add a focused SSO test asserting `isManager: true` when directReports count > 0.
-3. Normalize cast-based `RequestWithUser` mocks (e.g., in `badge-issuance.controller.spec.ts`) to full interface shape for stronger compile-time safety.
+- Verified new/updated tests pass:
+   - `src/modules/auth/strategies/jwt.strategy.spec.ts`
+   - `src/modules/auth/auth.service.spec.ts`
+   - `src/badge-issuance/badge-issuance.controller.spec.ts`
+- Verified previous follow-up points are closed.
 
 ---
 
 ## Final Decision
 
-**APPROVED WITH FOLLOW-UP**
+**APPROVED**
 
-The Story 14.3 implementation is functionally correct and aligned with ADR-017. Suggested follow-ups are test hardening and mock consistency improvements, not blockers.
+The Story 14.3 implementation is functionally correct, aligned with ADR-017, and follow-up test/completeness items have been resolved.

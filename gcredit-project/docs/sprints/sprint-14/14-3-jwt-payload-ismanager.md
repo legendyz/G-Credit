@@ -1,6 +1,6 @@
 # Story 14.3: JWT Payload — Add `isManager` Claim
 
-**Status:** review  
+**Status:** done  
 **Priority:** CRITICAL  
 **Estimate:** 2h  
 **Wave:** 2 — Role Model Refactor (Backend)  
@@ -113,3 +113,11 @@ Claude Opus 4.6 (GitHub Copilot)
 - 2026-02-28: Story 14.3 implementation complete — JWT isManager claim (ADR-017 §4.1-4.3)
 
 ## Retrospective Notes
+
+### SM Acceptance — 2026-02-28
+- **Commit:** `d0c2dc5`
+- **CR Verdict:** APPROVED (all follow-ups resolved)
+- **Backend:** 50/50 suites, 927 tests passed
+- **Frontend:** 77/77 suites, 794 tests passed
+- **Verified:** 4 JWT generation points (register, login, SSO, refresh), `computeIsManager()` O(1) helper, `?? false` backward compat, 11 downstream mocks fixed
+- **Note:** Story listed 3 JWT generation points but dev correctly identified and updated all 4 (SSO login was the 4th)
