@@ -153,7 +153,7 @@ sprint-13: done
 # Planning: 2026-02-27
 # Stories: 14.1-14.9 (~24h) — 4 Waves
 # ============================================
-sprint-14: in-progress
+sprint-14: done
 
 # --- Wave 1: Quick Win ---
 14-1-fix-flaky-badge-management-test: done        # TD-036: CI reliability quick win
@@ -170,4 +170,4 @@ sprint-14: in-progress
 
 # --- Wave 4: Testing + Design Tokens ---
 14-8-test-matrix-6-combinations: done              # 31 tests: 6 combos × 4 endpoints + JWT compat + dashboard matrix
-14-9-design-tokens-prep: backlog                   # P1-2: Hardcoded colors → Tailwind tokens
+14-9-design-tokens-prep: done                     # P1-2: 11 new tokens, ~25 hardcoded colors replaced

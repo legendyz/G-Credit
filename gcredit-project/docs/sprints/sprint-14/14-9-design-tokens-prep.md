@@ -106,3 +106,16 @@ Claude Opus 4.6 (GitHub Copilot)
 - `frontend/src/components/admin/UserListTable.tsx` — arbitrary shadow → `shadow-sticky` token
 
 ## Retrospective Notes
+- Clean token migration — Recharts `var()` CSS variables work in SVG attributes
+- CR caught one missed LinkedIn SVG `fill` — follow-up commit `8c1a39d` fixed it
+- `gift-box`/`gift-ribbon` tokens are component-specific; Sprint 15 may consolidate to semantic tokens
+
+## SM Acceptance
+- **Accepted by:** SM Agent (Bob)
+- **Date:** 2026-02-28
+- **Commits:** `ca60114` (dev) → `8c1a39d` (CR follow-up: LinkedIn SVG fill)
+- **Verification:**
+  - Frontend: 77 suites, 794 passed
+  - Build: success
+  - CR: APPROVED WITH FOLLOW-UP → follow-up resolved
+- **Sprint 14 status:** ALL 9 STORIES COMPLETE
