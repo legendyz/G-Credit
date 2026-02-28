@@ -1,4 +1,3 @@
-import { ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -7,20 +6,15 @@ import { StorageService } from './common/storage.service';
 
 describe('AppController', () => {
   let appController: AppController;
-  let prismaService: { user: { count: jest.Mock } };
 
   beforeEach(async () => {
-    prismaService = {
-      user: { count: jest.fn() },
-    };
-
     const app: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
       providers: [
         AppService,
         {
           provide: PrismaService,
-          useValue: prismaService,
+          useValue: {},
         },
         {
           provide: StorageService,
@@ -39,34 +33,15 @@ describe('AppController', () => {
   });
 
   describe('managerRoute', () => {
-    it('should allow EMPLOYEE with directReports (manager)', async () => {
-      prismaService.user.count.mockResolvedValue(3);
+    it('should return manager access granted', () => {
       const user = { userId: 'mgr-1', email: 'mgr@test.com', role: 'EMPLOYEE' };
 
-      const result = await appController.managerRoute(user);
+      const result = appController.managerRoute(user);
 
       expect(result.message).toBe('Manager access granted');
-      expect(prismaService.user.count).toHaveBeenCalledWith({
-        where: { managerId: 'mgr-1' },
-      });
+      expect(result.user.userId).toBe('mgr-1');
     });
 
-    it('should throw ForbiddenException for EMPLOYEE without directReports', async () => {
-      prismaService.user.count.mockResolvedValue(0);
-      const user = { userId: 'emp-1', email: 'emp@test.com', role: 'EMPLOYEE' };
-
-      await expect(appController.managerRoute(user)).rejects.toThrow(
-        ForbiddenException,
-      );
-    });
-
-    it('should allow ADMIN without directReports check', async () => {
-      const user = { userId: 'adm-1', email: 'admin@test.com', role: 'ADMIN' };
-
-      const result = await appController.managerRoute(user);
-
-      expect(result.message).toBe('Manager access granted');
-      expect(prismaService.user.count).not.toHaveBeenCalled();
-    });
+    // Guard behavior (ADMIN bypass, isManager check) tested in manager.guard.spec.ts
   });
 });

@@ -1,10 +1,12 @@
-import { Controller, ForbiddenException, Get, Logger } from '@nestjs/common';
+import { Controller, Get, Logger, UseGuards } from '@nestjs/common';
 import { AppService } from './app.service';
 import { PrismaService } from './common/prisma.service';
 import { StorageService } from './common/storage.service';
 import { Public } from './common/decorators/public.decorator';
 import { Roles } from './common/decorators/roles.decorator';
+import { RequireManager } from './common/decorators/require-manager.decorator';
 import { CurrentUser } from './common/decorators/current-user.decorator';
+import { ManagerGuard } from './common/guards/manager.guard';
 
 interface JwtUser {
   userId: string;
@@ -116,23 +118,14 @@ export class AppController {
   }
 
   /**
-   * Manager endpoint - Accessible by managers (EMPLOYEE with directReports) and ADMIN
-   * ADR-017: MANAGER role removed; managers are EMPLOYEE with directReports
+   * Manager endpoint - Accessible by managers (EMPLOYEE with isManager) and ADMIN
+   * ADR-017 §4.5: ManagerGuard reads isManager from JWT claim (no DB query)
    */
   @Get('manager-only')
   @Roles('EMPLOYEE', 'ADMIN')
-  async managerRoute(@CurrentUser() user: JwtUser) {
-    // ADR-017: Non-admin users must have directReports to access manager-only route.
-    if (user.role !== 'ADMIN') {
-      const directReportCount = await this.prisma.user.count({
-        where: { managerId: user.userId },
-      });
-      if (directReportCount === 0) {
-        throw new ForbiddenException(
-          'Manager access required: you have no direct reports',
-        );
-      }
-    }
+  @RequireManager()
+  @UseGuards(ManagerGuard)
+  managerRoute(@CurrentUser() user: JwtUser) {
     return {
       message: 'Manager access granted',
       user: {

@@ -12,7 +12,6 @@ import {
   Logger,
   HttpCode,
   HttpStatus,
-  ForbiddenException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -22,9 +21,10 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { ManagerGuard } from '../common/guards/manager.guard';
 import { Roles } from '../common/decorators/roles.decorator';
+import { RequireManager } from '../common/decorators/require-manager.decorator';
 import { UserRole } from '@prisma/client';
-import { PrismaService } from '../common/prisma.service';
 import { DashboardService } from './dashboard.service';
 import {
   EmployeeDashboardDto,
@@ -41,10 +41,7 @@ import type { RequestWithUser } from '../common/interfaces/request-with-user.int
 export class DashboardController {
   private readonly logger = new Logger(DashboardController.name);
 
-  constructor(
-    private readonly dashboardService: DashboardService,
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly dashboardService: DashboardService) {}
 
   /**
    * AC1: Employee Dashboard
@@ -94,7 +91,9 @@ export class DashboardController {
    * GET /api/dashboard/manager
    */
   @Get('manager')
-  @Roles(UserRole.EMPLOYEE, UserRole.ADMIN) // ADR-017: MANAGER removed; managers are EMPLOYEE with directReports. IsManager guard TBD (Story 14.4)
+  @Roles(UserRole.EMPLOYEE, UserRole.ADMIN)
+  @RequireManager()
+  @UseGuards(ManagerGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get Manager Dashboard data' })
   @ApiResponse({
@@ -110,18 +109,6 @@ export class DashboardController {
   async getManagerDashboard(
     @Request() req: RequestWithUser,
   ): Promise<ManagerDashboardDto> {
-    // ADR-017: Manager identity from directReports relation, not role enum.
-    // Non-admin users must have directReports to access manager dashboard.
-    if (req.user.role !== 'ADMIN') {
-      const directReportCount = await this.prisma.user.count({
-        where: { managerId: req.user.userId },
-      });
-      if (directReportCount === 0) {
-        throw new ForbiddenException(
-          'Manager access required: you have no direct reports',
-        );
-      }
-    }
     this.logger.log(`Getting manager dashboard for user ${req.user.userId}`);
     return this.dashboardService.getManagerDashboard(req.user.userId);
   }

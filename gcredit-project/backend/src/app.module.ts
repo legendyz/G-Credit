@@ -12,6 +12,7 @@ import { SkillsModule } from './skills/skills.module';
 import { BadgeTemplatesModule } from './badge-templates/badge-templates.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
+import { ManagerGuard } from './common/guards/manager.guard';
 import { BadgeIssuanceModule } from './badge-issuance/badge-issuance.module';
 import { EvidenceModule } from './evidence/evidence.module';
 import { MilestonesModule } from './milestones/milestones.module';
@@ -75,6 +76,7 @@ import { BulkIssuanceModule } from './bulk-issuance/bulk-issuance.module';
   controllers: [AppController],
   providers: [
     AppService,
+    ManagerGuard, // Route-level guard for @RequireManager() (ADR-017 §4.5)
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard, // Apply JWT validation to all routes by default
