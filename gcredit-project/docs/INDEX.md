@@ -2,7 +2,7 @@
 
 This directory contains project-specific technical documentation, setup guides, sprint history, and testing resources.
 
-**Last Updated:** 2026-02-18 (Sprint 11 complete — v1.1.0 Released)
+**Last Updated:** 2026-02-28 (Sprint 14 complete — v1.4.0 Released)
 
 ---
 
@@ -13,7 +13,7 @@ This directory contains project-specific technical documentation, setup guides, 
 docs/
 ├── architecture/       # System architecture and design
 ├── planning/           # Planning artifacts (epics, UX spec, readiness reports)
-├── sprints/            # Sprint documentation (Sprint 0-10)
+├── sprints/            # Sprint documentation (Sprint 0-14)
 ├── decisions/          # Architecture Decision Records (ADRs)
 ├── development/        # Developer guides (coding standards, testing)
 ├── setup/              # Environment and service setup guides
@@ -53,25 +53,26 @@ Project planning documents, epics, user stories, and UX specifications.
 Historical sprint documentation organized by sprint number.
 
 **Sprint Structure:**
-- **Sprint 0-11:** Each sprint directory contains backlog, retrospective, evaluation, technical debt, and sprint-specific docs
-- **Total Files:** 120+ files across 12 sprint directories
+- **Sprint 0-14:** Each sprint directory contains backlog, retrospective, summary, and sprint-specific docs
+- **Total Files:** 200+ files across 16 sprint directories
 - **Index:** [sprints/README.md](./sprints/README.md)
 
-**Sprint 11 Closure:**
-- Sprint 11 completed (2026-02-15). All evaluation, UAT, and technical debt docs are consolidated.
-- Technical debt registry updated (TD-009, TD-010 from health audit merged).
-- See [sprints/sprint-11/](./sprints/sprint-11/) for details.
+**Latest Sprint Closures:**
+- Sprint 14 completed (2026-02-28). Dual-dimension role model refactor, v1.4.0. 9/9 stories, 1,757 tests.
+- Sprint 13 completed (2026-02-27). Azure AD SSO + Session Management, v1.3.0. 8/8 stories.
+- Sprint 12 completed (2026-02-24). Management UIs + Evidence Unification, v1.2.0. 8/8 stories.
+- See [sprints/sprint-14/](./sprints/sprint-14/) for latest details.
 
 ---
 
-## 🧹 Documentation Hygiene (2026-02-18)
+## 🧹 Documentation Hygiene (2026-02-28)
 
-- ADRs: Naming and metadata will be unified (ADR-002 to ADR-010, see `decisions/`).
-- Outdated/legacy files in `_bmad-output/` will be reviewed and cleaned up.
-- Index and project-context.md are now up-to-date.
+- ADRs: ADR-002 through ADR-017 documented. ADR-015 (UserRole enum), ADR-017 (Dual-Dimension Identity) added in Sprint 14.
+- Outdated/legacy files in `_bmad-output/` reviewed — excalidraw diagrams active, planning/implementation artifacts deprecated.
+- Index and project-context.md are up-to-date through Sprint 14 (v1.4.0).
 
 **Next Steps:**
-- Evaluate systematic documentation management (e.g., GitHub Wiki) for future archiving and navigation.
+- Sprint 15 planning (UI Overhaul + Dashboard Composite View).
 
 
 ### 🛠️ Setup Guides (`setup/`)
@@ -216,6 +217,6 @@ When adding new documentation:
 
 ---
 
-**Document Version:** 1.2  
+**Document Version:** 1.3  
 **Created:** 2026-01-25  
-**Next Review:** Post-MVP pilot phase
+**Next Review:** After Sprint 15 completion

@@ -441,8 +441,8 @@ This project uses the **BMAD (Business Model Agent Development) Framework** v6.0
 | → Sprint 12.5 | 1 day | Deferred Items Cleanup (2 stories) | ✅ Complete (2026-02-25, 2/2 stories, 1,593 tests, v1.2.1) |
 | **Phase 3 - SSO** | **3 days** | **Enterprise Authentication** | **✅ v1.3.0 Released** |
 | → Sprint 13 | 3 days | Azure AD SSO + Session Management (8 stories, 4 waves) | ✅ Complete (2026-02-27, 8/8 stories, 1,708 tests, v1.3.0) |
-| **Pre-Pilot Hardening** | **~3 sprints** | **Role Refactor + UI Polish + RBAC** | **🔜 Planning** |
-| → Sprint 14 | TBD | Role Model Refactor + Quick Wins (TD-034, TD-036, ~24h) | 🔜 Planned |
+| **Pre-Pilot Hardening** | **~3 sprints** | **Role Refactor + UI Polish + RBAC** | **� In Progress** |
+| → Sprint 14 | 2 days | Dual-Dimension Role Model Refactor (9/9 stories, 4 waves, ∼24h) | ✅ Complete (2026-02-28, 1,757 tests, v1.4.0) |
 | → Sprint 15 | TBD | UI Overhaul + Dashboard Composite View (TD-035, ~37h) | 🔜 Planned |
 | → Sprint 16 | TBD | Fine-Grained RBAC L1 + Pilot Readiness (F-1, ~12h) | 🔜 Planned |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ After Sprint 16 |

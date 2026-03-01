@@ -1,6 +1,6 @@
 # G-Credit Infrastructure Inventory
 
-**Last Updated:** 2026-02-27  
+**Last Updated:** 2026-02-28  
 **Project:** G-Credit - Enterprise Internal Digital Credentialing System  
 **Environment:** Development
 
@@ -140,7 +140,7 @@ model User {
 }
 ```
 
-**Roles:** ADMIN, ISSUER, MANAGER, EMPLOYEE
+**Roles:** ADMIN, ISSUER, EMPLOYEE (Sprint 14: MANAGER removed from enum, see ADR-015)
 
 #### PasswordResetToken Model
 ```prisma
@@ -570,6 +570,15 @@ INITIAL_ADMIN_EMAIL="admin@yourdomain.com"
 
 ## 📝 Change Log
 
+### 2026-02-28 (Sprint 14 Completion)
+- ✅ Prisma migration: Removed MANAGER from UserRole enum (ADR-015)
+- ✅ Existing MANAGER users migrated to EMPLOYEE
+- ✅ UserRole now: ADMIN | ISSUER | EMPLOYEE
+- ✅ `isManager` derived from `directReportsCount > 0` (ADR-017)
+- ✅ ManagerGuard + @RequireManager() decorator added
+- ✅ 1,757 tests (932 BE + 794 FE + 31 E2E), 100% pass rate
+- ✅ Tagged v1.4.0
+
 ### 2026-02-27 (Sprint 13 Completion)
 - ✅ Added Azure AD SSO via MSAL Auth Code Flow + PKCE
 - ✅ New dependency: `@azure/msal-node` ^5.0.5
@@ -752,4 +761,4 @@ npm list @azure/storage-blob @prisma/client @nestjs/core
 
 **Document Owner:** Scrum Master / Product Manager  
 **Review Frequency:** After each Sprint completion  
-**Next Review:** 2026-02-07 (Sprint 2 completion)
+**Next Review:** After Sprint 15 completion

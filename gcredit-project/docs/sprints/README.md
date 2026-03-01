@@ -1,8 +1,8 @@
 # Sprint Documentation Index
 
-**Last Updated:** 2026-02-27  
-**Current Sprint:** Sprint 13 Complete — v1.3.0 Released | Sprint 14-16 Planned  
-**Total Sprints:** 15 completed (Sprint 0-13 + Sprint 12.5) | 3 planned (Sprint 14-16)
+**Last Updated:** 2026-02-28  
+**Current Sprint:** Sprint 14 Complete — v1.4.0 Released | Sprint 15-16 Planned  
+**Total Sprints:** 16 completed (Sprint 0-14 + Sprint 12.5) | 2 planned (Sprint 15-16)
 
 ---
 
@@ -25,7 +25,7 @@
 | [Sprint 12](./sprint-12/) | Management UIs & Evidence Unification | ✅ Complete | 6 days | 8 stories | 1,549 tests | v1.2.0 |
 | [Sprint 12.5](./sprint-12.5/) | Deferred Items Cleanup | ✅ Complete | 1 day | 2 stories | 1,593 tests | v1.2.1 |
 | [Sprint 13](./sprint-13/) | Azure AD SSO + Session Management | ✅ Complete | 3 days | 8 stories | 1,708 tests | v1.3.0 |
-| [Sprint 14](./sprint-14/) | Role Model Refactor + Quick Wins | 🔜 Planned | TBD | 9 stories | — | v1.4.0 |
+| [Sprint 14](./sprint-14/) | Dual-Dimension Role Model Refactor | ✅ Complete | 2 days | 9 stories | 1,757 tests | v1.4.0 |
 | [Sprint 15](./sprint-15/) | UI Overhaul + Sidebar + Dashboard Composite | 🔜 Planned | Extended | 13 stories | — | v1.5.0 |
 | Sprint 16 | Fine-Grained RBAC L1 + Pilot Readiness | 🔜 Planned | TBD | ~2-3 stories | — | v1.6.0 |
 
@@ -303,8 +303,14 @@ Sprint 6:  7/7 stories ✅ (100%)
 Sprint 7:  10/10 stories ✅ (100%)
 Sprint 8:  12/12 items ✅ (100%)
 Sprint 9:  5/5 stories ✅ (100%)
+Sprint 10: 12/12 stories ✅ (100%)
+Sprint 11: 25/25 stories ✅ (100%)
+Sprint 12: 8/8 stories ✅ (100%)
+Sprint 12.5: 2/2 stories ✅ (100%)
+Sprint 13: 8/8 stories ✅ (100%)
+Sprint 14: 9/9 stories ✅ (100%)
 ────────────────────────────
-Total:     61/61 stories ✅
+Total:     125/125 stories ✅
 ```
 
 ### Test Coverage
@@ -319,8 +325,14 @@ Sprint 6:  207 tests
 Sprint 7:  605 tests
 Sprint 8:  876 tests
 Sprint 9:  1087 tests (532 backend + 397 frontend + 158 E2E)
+Sprint 10: 1,061 tests
+Sprint 11: 1,307 tests
+Sprint 12: 1,549 tests
+Sprint 12.5: 1,593 tests
+Sprint 13: 1,708 tests
+Sprint 14: 1,757 tests (932 backend + 794 frontend + 31 E2E)
 ────────────────────────────
-Current:   1087 automated tests (0 failures)
+Current:   1,757 automated tests (0 failures)
 ```
 
 ### Time Efficiency
@@ -334,6 +346,8 @@ Sprint 6:  35h / 56-76h (46-63%)
 Sprint 7:  38.5h / 41-47h (82-94%)
 Sprint 8:  80h / 76h (105%)
 Sprint 9:  37h / 51h (73%)
+Sprint 10: 109h / 95h (87%)
+Sprint 11: ~60h / 51-66h (~92-100%)
 ────────────────────────────
 Average:   ~87% efficiency ✅
 ```
@@ -347,6 +361,8 @@ Average:   ~87% efficiency ✅
 **Authentication & Security**
 → Sprint 1: User auth, JWT, RBAC, password reset
 → Sprint 8: Security hardening (17 P1 items)
+→ Sprint 11: Account lockout, httpOnly cookies, PII sanitization, HTML sanitization
+→ Sprint 13: Azure AD SSO, idle timeout, 401 interceptor
 
 **Badge Templates**
 → Sprint 2: Template management, image upload, search
@@ -368,9 +384,21 @@ Average:   ~87% efficiency ✅
 **Badge Lifecycle**
 → Sprint 7: Revocation, lifecycle UAT, expiry management
 
+**Admin Management UIs**
+→ Sprint 12: Skill categories, skills, user management, milestones, evidence unification
+→ Sprint 12.5: Category tree enhancements, legacy column cleanup
+
+**Enterprise SSO & Session**
+→ Sprint 13: Azure AD SSO (MSAL PKCE), JIT provisioning, login-time mini-sync, idle timeout
+
+**Role Model & Authorization**
+→ Sprint 14: Dual-dimension identity (ADR-015/017), MANAGER removed, isManager JWT claim, ManagerGuard
+
 **Infrastructure**
 → Sprint 0: Project setup, environment, standards
 → Sprint 9: Code splitting, email unification, ESLint cleanup
+→ Sprint 10: v1.0.0 release, ESLint zero-tolerance CI gate
+→ Sprint 14: Design token infrastructure (11 CSS custom properties)
 
 ---
 
@@ -431,15 +459,15 @@ Looking to create sprint documentation?
 
 ## 🚀 Current Sprint
 
-Sprint 10 is complete — v1.0.0 Released:
-- Phase 1: TD Cleanup (Stories 10.1-10.3c) ✅ Complete
-- Phase 2: Feature Polish (Stories 10.4-10.5, 10.6b, 10.6d) ✅ Complete
-- Phase 3: UAT (Stories 10.6a, 10.6c, 10.7, 10.8) ✅ Complete
-- Phase 4: Release (Stories 10.9-10.10) ✅ Complete
+Sprint 14 is complete — v1.4.0 Released:
+- Wave 1: Quick Win — CI Reliability (Story 14.1) ✅ Complete
+- Wave 2: Role Model Refactor — Backend (Stories 14.2–14.6) ✅ Complete
+- Wave 3: Role Model Refactor — Frontend (Story 14.7) ✅ Complete
+- Wave 4: Testing + Design Tokens (Stories 14.8–14.9) ✅ Complete
 
-**Release:** [v1.0.0 on GitHub](https://github.com/legendyz/G-Credit/releases/tag/v1.0.0)
+**Key Changes:** MANAGER removed from UserRole enum. `isManager` JWT claim. ManagerGuard + @RequireManager(). 31-test E2E matrix. 11 design tokens.
 
-→ [Sprint 10 Details](./sprint-10/) | [Release Notes](./sprint-10/v1.0.0-release-notes.md)
+→ [Sprint 14 Details](./sprint-14/) | [Sprint 14 Summary](./sprint-14/summary.md)
 
 ---
 

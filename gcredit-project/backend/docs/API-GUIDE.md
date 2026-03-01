@@ -1,8 +1,8 @@
 # API Usage Guide
 
 **G-Credit Badge Platform REST API**  
-**Version:** 1.2.0 (Sprint 12 - v1.2.0 Management UIs & Evidence)  
-**Last Updated:** 2026-02-24
+**Version:** 1.4.0 (Sprint 14 - v1.4.0 Dual-Dimension Role Model Refactor)  
+**Last Updated:** 2026-02-28
 
 ---
 
@@ -19,8 +19,10 @@
 9. [Admin User Management](#admin-user-management)
 10. [M365 Sync API](#m365-sync-api)
 11. [Bulk Issuance](#bulk-issuance) ⭐ NEW
-12. [Error Handling](#error-handling)
-13. [Rate Limiting](#rate-limiting)
+12. [Azure AD SSO](#azure-ad-sso) ⭐ Sprint 13
+13. [Error Handling](#error-handling)
+14. [Rate Limiting](#rate-limiting)
+15. [Sprint 14 Breaking Changes](#sprint-14-breaking-changes) ⚠️
 
 ---
 
@@ -1623,6 +1625,133 @@ Content-Disposition: attachment; filename="errors-550e8400.csv"
 
 ---
 
+## Azure AD SSO
+
+> **⭐ Sprint 13 (v1.3.0):** Azure AD Single Sign-On via OAuth 2.0 Authorization Code Flow with PKCE. M365 users authenticate through their corporate credentials. Coexists with password-based login.
+
+### SSO Login Redirect
+
+**Endpoint:** `GET /api/auth/sso/login`  
+**Authentication:** Not required (`@Public()`)
+
+Redirects the browser to Azure AD's authorize URL.
+
+```bash
+# Open in browser or redirect
+curl -v http://localhost:3000/api/auth/sso/login
+```
+
+**Response (302 Redirect):**
+```
+Location: https://login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize?
+  client_id={SSO_CLIENT_ID}&
+  response_type=code&
+  redirect_uri=http://localhost:3000/api/auth/sso/callback&
+  scope=openid+profile+email+User.Read&
+  code_challenge={PKCE_CHALLENGE}&
+  code_challenge_method=S256&
+  state={SIGNED_STATE}
+```
+
+### SSO Callback
+
+**Endpoint:** `GET /api/auth/sso/callback`  
+**Authentication:** Not required (`@Public()`)
+
+Handles the Azure AD redirect after user authentication. Exchanges the authorization code for tokens, validates claims, looks up or creates the user, and issues httpOnly JWT cookies.
+
+```
+GET /api/auth/sso/callback?code={AUTHORIZATION_CODE}&state={SIGNED_STATE}
+```
+
+**Success (302 Redirect):**
+```
+Location: http://localhost:5173/auth/sso/callback
+Set-Cookie: access_token=eyJhbG...; HttpOnly; SameSite=Lax; Path=/; Max-Age=900
+Set-Cookie: refresh_token=eyJhbG...; HttpOnly; SameSite=Lax; Path=/; Max-Age=604800
+```
+
+**Error (302 Redirect):**
+```
+Location: http://localhost:5173/login?error=sso_failed
+Location: http://localhost:5173/login?error=sso_no_account
+Location: http://localhost:5173/login?error=sso_invalid_token
+```
+
+**JIT Provisioning:** If the Azure AD user doesn't exist in the database, they are automatically created with role `EMPLOYEE` and their profile is synced from Microsoft Graph (department, jobTitle, manager).
+
+**M365 Password Block:** Users with `azureId` set are blocked from password login. They must use "Sign in with Microsoft".
+
+### Login-Time Mini-Sync (Sprint 13)
+
+Returning SSO users get a profile refresh on every login:
+- Parallel Graph API calls: `/users/{oid}`, `/memberOf`, `/manager`
+- Updates: `jobTitle`, `department`, `managerId`, role (from Security Group membership)
+- 5-minute cooldown prevents excessive syncs
+- Role demotion supported when group membership changes
+
+### Environmental Variables (SSO)
+
+```env
+AZURE_SSO_CLIENT_ID=ceafe2e0-73a9-46b6-a203-1005bfdda11f
+AZURE_SSO_CLIENT_SECRET=***
+AZURE_SSO_REDIRECT_URI=http://localhost:3000/api/auth/sso/callback
+AZURE_SSO_SCOPES=openid profile email User.Read
+AZURE_TENANT_ID=afc9fe8f-1d40-41fc-9906-e001e500926c
+```
+
+---
+
+## Sprint 14 Breaking Changes
+
+> **⚠️ Sprint 14 (v1.4.0):** Dual-Dimension Role Model Refactor. `MANAGER` removed from `UserRole` enum. New `isManager` JWT claim.
+
+### UserRole Enum Change
+
+**Before (v1.3.0):** `ADMIN | ISSUER | MANAGER | EMPLOYEE`  
+**After (v1.4.0):** `ADMIN | ISSUER | EMPLOYEE`
+
+- `MANAGER` is no longer a valid role value
+- Existing `MANAGER` users were migrated to `EMPLOYEE` via Prisma migration
+- Manager status is now determined by `isManager` boolean (derived from `directReportsCount > 0`)
+
+### JWT Payload Change
+
+**New field:** `isManager: boolean`
+
+```json
+{
+  "sub": "user-uuid",
+  "email": "john.doe@example.com",
+  "role": "EMPLOYEE",
+  "isManager": true,
+  "iat": 1740700000,
+  "exp": 1740700900
+}
+```
+
+`isManager` is computed at 4 JWT generation points: login, SSO callback, token refresh, and JWT claims endpoint.
+
+### ManagerGuard
+
+New guard protects manager-only endpoints:
+
+```
+@RequireManager()
+@UseGuards(JwtAuthGuard, ManagerGuard)
+```
+
+- Returns `403 Forbidden` with message "Manager access required" for non-managers
+- ADMIN users bypass the guard (always allowed)
+- Applied to `/api/manager/*` endpoints
+
+### Register Endpoint
+
+The `role` field in `POST /api/auth/register` now only accepts: `ADMIN`, `ISSUER`, `EMPLOYEE`.
+Sending `MANAGER` will return `400 Bad Request`.
+
+---
+
 ## Error Handling
 
 ### Standard Error Response Format
@@ -2162,12 +2291,13 @@ Import this collection into Postman for quick API testing:
 
 ---
 
-**Last Updated:** 2026-02-24  
-**API Version:** 1.2.0 (Sprint 12 — Management UIs & Evidence Unification)  
+**Last Updated:** 2026-02-28  
+**API Version:** 1.4.0 (Sprint 14 — Dual-Dimension Role Model Refactor)  
 **Author:** G-Credit Development Team  
-**Coverage:** Sprint 0-12 (Authentication, Templates, Issuance, Verification, Sharing, Revocation, Analytics, Admin Users, M365 Sync, Bulk Issuance, Dashboard, Evidence, Milestones, Teams, CSV Export, Skill Categories, Skills)  
-**Total Routes:** ~97 across 19 modules  
-**Sprint 12 Changes:** Skill Category CRUD, Skill CRUD (enhanced), User Management (8 endpoints), Milestone Admin UI, Evidence Unification, Activity Feed Formatting, UUID Hardening
+**Coverage:** Sprint 0-14 (Authentication, Templates, Issuance, Verification, Sharing, Revocation, Analytics, Admin Users, M365 Sync, Bulk Issuance, Dashboard, Evidence, Milestones, Teams, CSV Export, Skill Categories, Skills, Azure AD SSO, ManagerGuard)  
+**Total Routes:** ~100 across 19 modules  
+**Sprint 13 Changes:** Azure AD SSO (`/api/auth/sso/login`, `/api/auth/sso/callback`), JIT provisioning, login-time mini-sync, idle timeout, 401 interceptor  
+**Sprint 14 Changes:** UserRole enum (MANAGER removed), JWT `isManager` claim, ManagerGuard + @RequireManager(), 6-combination test matrix
 
 **See Also:**
 - [API Module Index](./api/README.md) - Quick reference table
