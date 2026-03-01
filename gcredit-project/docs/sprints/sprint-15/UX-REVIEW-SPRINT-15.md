@@ -62,13 +62,10 @@ The stories demonstrate strong alignment with ADR-016 design decisions and the d
 **CRITICAL-15.3-001: ADMIN Sidebar Group Inconsistency**  
 - **Severity:** CRITICAL 🔴  
 - **Location:** AC #3 — "Team group: Visible when `isManager === true`"  
-- **Issue:** The backlog summary table says "ADMIN always sees Team in sidebar (bypasses manager check)" but the Story AC only says `isManager === true`. If ADMIN-non-Manager doesn't see Team group, they lose Team Badges navigation (but current Navbar.tsx shows no Team link for non-manager ADMIN).  
-- **Impact:** Inconsistent behavior between sidebar and dashboard tabs. Dashboard Story 15.1 shows ADMIN sees 3 tabs (My Badges, Issuance, Admin) — no Team tab for non-manager ADMIN. These need to match.  
-- **Recommendation:** Decide a single rule:  
-  - **Option A (Recommended):** Team group visible when `isManager === true || role === 'ADMIN'` — ADMIN always sees team oversight  
-  - **Option B:** Team group strictly `isManager === true` — consistent with dashboard tab visibility  
-  - Document decision in Story AC and ensure sidebar + dashboard match  
-- **Status:** NEEDS DECISION ❌
+- **Issue:** The backlog summary table previously said "ADMIN always sees Team in sidebar (bypasses manager check)" but the Story AC says `isManager === true`. These needed to match.  
+- **Impact:** Inconsistent behavior between sidebar and dashboard tabs.  
+- **Resolution:** ✅ **Option B selected** — Team group visibility strictly `isManager === true`. No ADMIN bypass. Rationale: ManagerDashboard shows direct reports data; ADMIN without direct reports would see an empty tab. If org-wide team view is needed later, it should be a separate feature.  
+- **Status:** RESOLVED ✅ (2026-03-01)
 
 **CRITICAL-15.3-002: Transition Animation Spec Missing**  
 - **Severity:** HIGH 🟠  
@@ -166,9 +163,9 @@ The stories demonstrate strong alignment with ADR-016 design decisions and the d
 ## Pre-Development Checklist
 
 ### Must Resolve Before Development
-- [ ] **CRITICAL-15.3-001:** ADMIN Team group visibility rule — decide Option A or B
-- [ ] **CRITICAL-15.1-001:** Tab content loading strategy — decide mount-all vs lazy
-- [ ] **CRITICAL-15.1-002:** Acknowledge stacked → tabbed behavior change
+- [x] **CRITICAL-15.3-001:** ADMIN Team group visibility rule — ✅ Option B (strict isManager)
+- [x] **CRITICAL-15.1-001:** Tab content loading strategy — ✅ Mount all + gate data fetching
+- [x] **CRITICAL-15.1-002:** Acknowledge stacked → tabbed behavior change — ✅ Confirmed intentional UX improvement
 
 ### Should Address During Development
 - [ ] **CRITICAL-15.3-002:** Add transition animation spec to AC

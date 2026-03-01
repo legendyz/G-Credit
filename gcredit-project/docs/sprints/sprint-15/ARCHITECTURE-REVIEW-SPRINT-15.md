@@ -297,10 +297,10 @@ export const AUTH_COMBINATIONS = [
 
 | ID | Decision | Options | Recommendation | Story |
 |----|----------|---------|----------------|-------|
-| DEC-15-01 | Tab computation source of truth | JWT only / API only / Hybrid | Hybrid: JWT primary, API verification | 15.1, 15.2 |
-| DEC-15-02 | ADMIN Team group visibility | isManager only / ADMIN bypass | Align with dashboard tab logic | 15.3 |
-| DEC-15-03 | Tab content mounting strategy | Mount all / Lazy per tab | Mount all, gate data fetching | 15.1 |
-| DEC-15-04 | Sidebar state storage | localStorage / Cookie | Follow shadcn/ui default | 15.3 |
+| DEC-15-01 | Tab computation source of truth | JWT only / API only / Hybrid | ✅ **RESOLVED: Hybrid** — JWT primary (instant render), Permissions API background verification + store update | 15.1, 15.2 |
+| DEC-15-02 | ADMIN Team group visibility | isManager only / ADMIN bypass | ✅ **RESOLVED: isManager only** — no ADMIN bypass. ManagerDashboard shows direct reports; empty for non-manager ADMIN. | 15.3 |
+| DEC-15-03 | Tab content mounting strategy | Mount all / Lazy per tab | ✅ **RESOLVED: Mount all + gate data fetching** — DOM all mounted, React Query `enabled` only on active tab | 15.1 |
+| DEC-15-04 | Sidebar state storage | localStorage / Cookie | ✅ **RESOLVED: Cookie (shadcn/ui default)** — `sidebar:state` cookie, zero custom code | 15.3 |
 
 ---
 
