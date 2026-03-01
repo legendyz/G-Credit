@@ -121,6 +121,47 @@ _To be filled during UAT execution_
 **PASS Rate:** _%  
 **Action Items:** (if any FAIL)
 
+---
+
+## UAT Findings (Non-Blocking)
+
+### FINDING-01: Wallet page title shows "My Badges" instead of "My Badge Wallet"
+
+- **Severity:** LOW (UX inconsistency)
+- **Test ID:** C2 (Route Integrity — Wallet link)
+- **Description:** Clicking sidebar "Wallet" navigates to `/wallet` correctly, but the page content title reads "My Badges" (from `TimelineView.tsx` line 256: `<PageTemplate title="My Badges">`). This conflicts with the sidebar label "Wallet" and Layout's `pageTitle="My Badge Wallet"`.
+- **Root Cause:** `TimelineView` component hardcodes `title="My Badges"` in its `PageTemplate`. This is a pre-Sprint 15 issue, not introduced by sidebar migration.
+- **Disposition:** Defer to **Wave 3** fix. Suggest aligning title to "My Badge Wallet" or just "Badge Wallet" to match sidebar.
+- **File:** `frontend/src/components/TimelineView/TimelineView.tsx` line 256
+
+### FINDING-02: Manager permissions not reflected until re-login
+
+- **Severity:** LOW (Expected JWT behavior, but UX surprise)
+- **Test ID:** A9 / A12 prep (adding subordinates to create isManager=true)
+- **Description:** After assigning a subordinate to a user via Admin Users page, the sidebar Team group and Dashboard Team Overview tab do not appear until the user logs out and logs back in. The background permission verification (`GET /api/users/me/permissions`, DEC-15-01) exists but has 5-minute staleTime and only triggers on Dashboard page, not on sidebar navigation.
+- **Root Cause:** `isManager` is computed at login time and stored in JWT. Subordinate changes are not reflected in the current session's JWT. The background API check (Story 15.1) could theoretically auto-correct, but the 5-minute cache and Dashboard-only scope limit its effectiveness.
+- **Disposition:** Accept as known limitation for MVP. Consider future enhancement: reduce staleTime or trigger permission refresh after Admin user edits. Not blocking — re-login resolves immediately.
+- **Workaround:** Log out and log back in after changing subordinate assignments.
+
+### FINDING-03: Team Overview only shows direct reports, not full org tree
+
+- **Severity:** INFO (MVP design decision, not a defect)
+- **Test ID:** B5 (Team tab content)
+- **Description:** The Manager Dashboard "Team Overview" tab only displays statistics for direct reports (users whose `managerId` equals the current user). It does not recursively traverse the organization hierarchy to include indirect subordinates (e.g., a director cannot see their manager's direct reports).
+- **Root Cause:** `dashboard.service.ts` queries `where: { managerId: userId }` — single-level lookup by design (Story 12.3a).
+- **Disposition:** This is an **intentional MVP design decision**. Recursive org tree traversal (indirect subordinates) is deferred as a **post-MVP enhancement** item due to: (1) recursive CTE query complexity, (2) performance considerations for deep hierarchies, (3) permission boundary definitions needed for multi-level visibility. Not blocking Sprint 15.
+
+### FINDING-04: ISSUER+isManager gets 403 on Team Overview tab (**HOTFIXED**)
+
+- **Severity:** HIGH (functional bug — tab visible but content blocked)
+- **Test ID:** A9 / B7 (ISSUER + isManager=true)
+- **Description:** When an ISSUER user with subordinates (isManager=true) clicks the "Team Overview" tab, the backend returns 403 Forbidden. The frontend correctly shows the tab (based on `computeDashboardTabs`), but the backend `GET /api/dashboard/manager` endpoint's `@Roles` decorator only allowed `EMPLOYEE` and `ADMIN` — missing `ISSUER`.
+- **Root Cause:** `dashboard.controller.ts` line 94: `@Roles(UserRole.EMPLOYEE, UserRole.ADMIN)` — ISSUER was omitted when the MANAGER role was removed in Sprint 14 refactor (Story 14.5).
+- **Fix:** Added `UserRole.ISSUER` to `@Roles(UserRole.EMPLOYEE, UserRole.ISSUER, UserRole.ADMIN)`. ManagerGuard already supported ISSUER+isManager (confirmed by `manager.guard.spec.ts`).
+- **Disposition:** **Hotfixed immediately** during UAT. Commit pending.
+
+---
+
 ## Dev Agent Record
 
 ### Agent Model Used
