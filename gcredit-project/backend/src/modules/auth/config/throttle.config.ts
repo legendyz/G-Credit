@@ -30,20 +30,38 @@ export class ThrottleConfigService {
 
   constructor(private readonly config: ConfigService) {
     // Read override env vars (null = use per-endpoint defaults)
-    const ttlSeconds = this.config.get<number>('THROTTLE_TTL_SECONDS');
-    const limit = this.config.get<number>('THROTTLE_LIMIT');
+    const ttlSeconds = this.config.get<string>('THROTTLE_TTL_SECONDS');
+    const limit = this.config.get<string>('THROTTLE_LIMIT');
 
-    this.overrideTtl = ttlSeconds != null ? ttlSeconds * 1000 : null; // Convert seconds → ms
-
-    if (limit != null) {
-      const parsed = Number(limit);
-      // AC #7: Enforce minimum floor
-      this.overrideLimit = Math.max(parsed, THROTTLE_LIMIT_MIN_FLOOR);
-      if (parsed < THROTTLE_LIMIT_MIN_FLOOR) {
+    // Defensive: guard against NaN / non-numeric values
+    if (ttlSeconds != null && ttlSeconds !== '') {
+      const parsed = Number(ttlSeconds);
+      this.overrideTtl = !isNaN(parsed) && parsed > 0 ? parsed * 1000 : null;
+      if (this.overrideTtl == null) {
         this.logger.warn(
-          `THROTTLE_LIMIT=${parsed} is below minimum floor (${THROTTLE_LIMIT_MIN_FLOOR}). ` +
-            `Using ${THROTTLE_LIMIT_MIN_FLOOR} instead.`,
+          `THROTTLE_TTL_SECONDS='${ttlSeconds}' is not a valid positive number. Ignoring.`,
         );
+      }
+    } else {
+      this.overrideTtl = null; // Use per-endpoint defaults
+    }
+
+    if (limit != null && limit !== '') {
+      const parsed = Number(limit);
+      if (isNaN(parsed)) {
+        this.logger.warn(
+          `THROTTLE_LIMIT='${limit}' is not a valid number. Ignoring.`,
+        );
+        this.overrideLimit = null;
+      } else {
+        // AC #7: Enforce minimum floor
+        this.overrideLimit = Math.max(parsed, THROTTLE_LIMIT_MIN_FLOOR);
+        if (parsed < THROTTLE_LIMIT_MIN_FLOOR) {
+          this.logger.warn(
+            `THROTTLE_LIMIT=${parsed} is below minimum floor (${THROTTLE_LIMIT_MIN_FLOOR}). ` +
+              `Using ${THROTTLE_LIMIT_MIN_FLOOR} instead.`,
+          );
+        }
       }
     } else {
       this.overrideLimit = null;

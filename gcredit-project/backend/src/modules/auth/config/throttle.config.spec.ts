@@ -95,6 +95,40 @@ describe('ThrottleConfigService', () => {
     });
   });
 
+  describe('invalid / NaN guardrails', () => {
+    it('ignores NaN THROTTLE_TTL_SECONDS (string)', () => {
+      const svc = createService({ THROTTLE_TTL_SECONDS: 'abc' });
+      expect(svc.getOverrideTtl()).toBeNull();
+      expect(svc.isOverrideActive()).toBe(false);
+    });
+
+    it('ignores zero THROTTLE_TTL_SECONDS', () => {
+      const svc = createService({ THROTTLE_TTL_SECONDS: 0 });
+      expect(svc.getOverrideTtl()).toBeNull();
+    });
+
+    it('ignores negative THROTTLE_TTL_SECONDS', () => {
+      const svc = createService({ THROTTLE_TTL_SECONDS: -5 });
+      expect(svc.getOverrideTtl()).toBeNull();
+    });
+
+    it('ignores empty string THROTTLE_TTL_SECONDS', () => {
+      const svc = createService({ THROTTLE_TTL_SECONDS: '' });
+      expect(svc.getOverrideTtl()).toBeNull();
+    });
+
+    it('ignores NaN THROTTLE_LIMIT (string)', () => {
+      const svc = createService({ THROTTLE_LIMIT: 'xyz' });
+      expect(svc.getOverrideLimit()).toBeNull();
+      expect(svc.isOverrideActive()).toBe(false);
+    });
+
+    it('ignores empty string THROTTLE_LIMIT', () => {
+      const svc = createService({ THROTTLE_LIMIT: '' });
+      expect(svc.getOverrideLimit()).toBeNull();
+    });
+  });
+
   describe('THROTTLE_LIMIT_MIN_FLOOR constant', () => {
     it('is 5', () => {
       expect(THROTTLE_LIMIT_MIN_FLOOR).toBe(5);

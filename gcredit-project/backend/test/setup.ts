@@ -8,7 +8,8 @@
 // Story 8.8: Set higher rate limits for E2E tests to prevent 429 errors
 process.env.RATE_LIMIT_MAX = '1000'; // 1000 requests per minute in tests
 process.env.RATE_LIMIT_TTL = '60000';
-process.env.THROTTLE_TTL = '60000';
+// Story 15.13: ConfigurableThrottlerGuard reads these in onModuleInit
+process.env.THROTTLE_TTL_SECONDS = '60';
 process.env.THROTTLE_LIMIT = '1000';
 
 // NOTE: Do NOT override UPLOAD_THROTTLE_LIMIT here.

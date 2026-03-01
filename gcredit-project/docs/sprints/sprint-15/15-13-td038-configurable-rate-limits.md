@@ -1,6 +1,6 @@
 # Story 15.13: Configurable Auth Rate Limits (TD-038)
 
-**Status:** review  
+**Status:** in-progress  
 **Started:** 2026-03-01  
 **Priority:** MEDIUM  
 **Estimate:** 3h  
@@ -18,7 +18,7 @@
 
 ## Acceptance Criteria
 
-1. [x] All `@Throttle()` decorators in auth controller use `ConfigService` values instead of hardcoded numbers
+1. [x] All `@Throttle()` decorators in auth controller are overridable at runtime via `ConfigurableThrottlerGuard` and env vars (decorators retain production defaults as documentation)
 2. [x] Environment variables: `THROTTLE_TTL_SECONDS` and `THROTTLE_LIMIT` (clear units, clear purpose) _(NOTE-15.13-001)_
 3. [x] Default values match current production settings (e.g., login: 5/60s)
 4. [x] `.env.example` updated with new variables and comments
@@ -92,6 +92,48 @@
 - [ARCHITECTURE-REVIEW-SPRINT-15.md](ARCHITECTURE-REVIEW-SPRINT-15.md) — Story 15.13 section
 
 ## Dev Agent Record
+
+## Review Follow-ups (AI)
+
+- [x] **HIGH — AC #1 wording and implementation mismatch**
+  - Story AC #1 currently states all @Throttle() decorators in auth controller use ConfigService values instead of hardcoded numbers.
+  - Current implementation uses ConfigurableThrottlerGuard runtime override while decorators remain hardcoded defaults.
+  - Required resolution (choose one):
+    - Update AC #1 wording to match guard-override architecture, or
+    - Refactor implementation so decorators directly consume config values.
+  - Evidence: backend/src/modules/auth/auth.controller.ts (decorators remain hardcoded), backend/src/modules/auth/config/configurable-throttler.guard.ts (runtime override path)
+  - **Resolution:** AC #1 wording updated to reflect guard-override architecture. Decorators intentionally retained as production defaults and documentation.
+
+- [x] **HIGH — AC #9 marked complete without Swagger evidence**
+  - Story AC #9 says Swagger documentation is updated for rate-limited endpoints.
+  - Auth controller currently has no NestJS Swagger annotations for 429/rate-limit responses.
+  - Required resolution:
+    - Add explicit Swagger response documentation for rate-limited endpoints (429), or
+    - Update AC #9 status and notes if out-of-scope.
+  - Evidence: backend/src/modules/auth/auth.controller.ts (no @nestjs/swagger response annotations)
+  - **Resolution:** Added `@ApiTags('Auth')` and `@ApiResponse({ status: 429 })` to all 8 rate-limited endpoints in auth.controller.ts.
+
+- [x] **MEDIUM — ThrottleConfigService lacks invalid-number guardrails**
+  - ThrottleConfigService parses env values but does not explicitly handle NaN for malformed values.
+  - Guard path has numeric checks; service path should match defensive behavior for consistency.
+  - Required resolution:
+    - Add NaN/invalid-value handling for THROTTLE_TTL_SECONDS and THROTTLE_LIMIT in service.
+  - Evidence: backend/src/modules/auth/config/throttle.config.ts
+  - **Resolution:** Added `isNaN()`, zero, negative, and empty-string guardrails with warning logs. 6 new unit tests covering all invalid-value paths.
+
+- [x] **LOW — Test env naming inconsistency**
+  - test/setup.ts uses THROTTLE_TTL while story and .env.test standardize THROTTLE_TTL_SECONDS.
+  - Required resolution:
+    - Align test setup variable naming with THROTTLE_TTL_SECONDS to reduce confusion.
+  - Evidence: backend/test/setup.ts, backend/.env.test
+  - **Resolution:** Changed `THROTTLE_TTL='60000'` → `THROTTLE_TTL_SECONDS='60'` in test/setup.ts (seconds, matching .env.test convention).
+
+### Review Summary (2026-03-01)
+
+- Targeted unit tests pass for Story 15.13 scope: throttle.config.spec.ts and configurable-throttler.guard.spec.ts (25 tests).
+- All 4 review follow-up items resolved (2 HIGH, 1 MEDIUM, 1 LOW).
+- 6 new NaN/invalid-value guardrail tests added to throttle.config.spec.ts (total: 19 config tests).
+- 8 Swagger `@ApiResponse({ status: 429 })` annotations added to auth.controller.ts.
 
 ### Agent Model Used
 Claude Opus 4.6 (GitHub Copilot)
