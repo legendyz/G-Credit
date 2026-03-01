@@ -182,12 +182,7 @@ describe('Permissions API (Story 15.2)', () => {
         'issuance',
         'admin',
       ]);
-      expect(body.sidebarGroups).toEqual([
-        'base',
-        'team',
-        'issuance',
-        'admin',
-      ]);
+      expect(body.sidebarGroups).toEqual(['base', 'team', 'issuance', 'admin']);
     });
   });
 
@@ -206,7 +201,13 @@ describe('Permissions API (Story 15.2)', () => {
       // Verify only expected keys
       const keys = Object.keys(body);
       expect(keys.sort()).toEqual(
-        ['dashboardTabs', 'isManager', 'permissions', 'role', 'sidebarGroups'].sort(),
+        [
+          'dashboardTabs',
+          'isManager',
+          'permissions',
+          'role',
+          'sidebarGroups',
+        ].sort(),
       );
     });
   });
