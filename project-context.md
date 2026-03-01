@@ -428,6 +428,7 @@ _bmad-output/
 | → Sprint 15 | TBD | UI Overhaul + Dashboard Composite View (~44h) | 🔜 Planned |
 | → Sprint 16 | TBD | Fine-Grained RBAC L1 + Pilot Readiness (~12h) | 🔜 Planned |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ After Sprint 16 |
+| ⚙️ BMAD Workflow Extension *(independent project)* | ~30-50h | VS Code extension — automate SM→Dev→CR pipeline. **⚠️ NOT a G-Credit sprint item — separate repo, separate backlog.** Developed in parallel during Pilot downtime. Design doc: `docs/bmad-workflow-extension-design.md` | 📋 Planned (Pilot period) |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
 
@@ -1742,7 +1743,32 @@ Sprint 0-2 established this pattern:
    
    **After Sprint 16 → Phase 4: Pilot Deployment**
 
-27. 📋 **Remaining Backlog (Post-Sprint 16 / Post-Pilot)**
+27. 📋 **Tooling: BMAD Workflow Automation Extension** (Planned — During Pilot)
+   
+   > **⚠️ INDEPENDENT PROJECT — NOT A G-CREDIT SPRINT ITEM**
+   > This extension is a general-purpose developer tooling project. It will be developed in a **separate repository** with its own backlog, versioning, and release cycle. It is listed here for awareness and timeline coordination only. **Do NOT plan extension tasks into G-Credit Sprint 15, 16, or any G-Credit sprint backlog.**
+   
+   **Goal:** Build a VS Code extension that automates the SM→Dev→CR agent pipeline, eliminating manual 3-window context switching.
+   **Estimated Effort:** ~30-50h
+   **Separate Repository:** TBD (to be created during Pilot phase; design docs will migrate from `docs/` to the new repo)
+   **Optimal Timing:** Phase 4 (Pilot) — low G-Credit development intensity, extension benefits all future sprints.
+   **Design Document (temporary location):** `docs/bmad-workflow-extension-design.md` (EN) / `docs/bmad-workflow-extension-design.zh-CN.md` (ZH)
+   **Key Technology:** VS Code `vscode.lm` API (Copilot subscription models, $0 cost)
+   
+   **Pre-work (lightweight, during Sprint 15-16 — NOT sprint-tracked):**
+   - [ ] Validate `vscode.lm` API with minimal prototype (~1h)
+   - [ ] Collect SM→Dev→CR prompt patterns as golden test cases
+   
+   **V1.0 Scope (during Pilot — tracked in extension project backlog):**
+   - [ ] PipelineOrchestrator — state machine for SM→Dev→CR flow
+   - [ ] AgentManager — LLM calls via `vscode.lm.selectChatModels()`
+   - [ ] PromptLoader — dynamic BMAD template loading from `_bmad/`
+   - [ ] GitManager — auto commit/squash/push strategy
+   - [ ] Single-story pipeline execution
+   
+   **Future (Phase 5+):** Batch mode, wave mode, sprint-level automation
+
+28. 📋 **Remaining Backlog (Post-Sprint 16 / Post-Pilot)**
    
    **P2 — Feature:**
    - FEAT-009: Invite-to-Claim + GUEST Role (External Email Recipients) — ~8h L1 (Magic Link + JIT) + ~10-12h L2 (Account Merge). Architecture approved in ADR-014, deferred to Post-Pilot.
