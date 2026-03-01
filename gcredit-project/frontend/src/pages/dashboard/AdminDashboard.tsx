@@ -30,8 +30,13 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
-export const AdminDashboard: React.FC = () => {
-  const { data, isLoading, error, refetch } = useAdminDashboard();
+interface AdminDashboardProps {
+  /** When false, React Query is disabled — no API calls (DEC-15-03) */
+  enabled?: boolean;
+}
+
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({ enabled = true }) => {
+  const { data, isLoading, error, refetch } = useAdminDashboard({ enabled });
   const navigate = useNavigate();
 
   if (isLoading) {

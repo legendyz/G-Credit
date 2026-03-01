@@ -18,8 +18,13 @@ import { cn } from '../../lib/utils';
 import { RefreshCw, Award, Users } from 'lucide-react';
 import { PageTemplate } from '../../components/layout/PageTemplate';
 
-export const ManagerDashboard: React.FC = () => {
-  const { data, isLoading, error, refetch, isFetching } = useManagerDashboard();
+interface ManagerDashboardProps {
+  /** When false, React Query is disabled — no API calls (DEC-15-03) */
+  enabled?: boolean;
+}
+
+export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ enabled = true }) => {
+  const { data, isLoading, error, refetch, isFetching } = useManagerDashboard({ enabled });
 
   // AC3: Manual refresh handler
   const handleRefresh = useCallback(() => {

@@ -19,8 +19,13 @@ import { useNavigate } from 'react-router-dom';
 import { RefreshCw, PlusCircle, List } from 'lucide-react';
 import { PageTemplate } from '../../components/layout/PageTemplate';
 
-export const IssuerDashboard: React.FC = () => {
-  const { data, isLoading, error, refetch, isFetching } = useIssuerDashboard();
+interface IssuerDashboardProps {
+  /** When false, React Query is disabled — no API calls (DEC-15-03) */
+  enabled?: boolean;
+}
+
+export const IssuerDashboard: React.FC<IssuerDashboardProps> = ({ enabled = true }) => {
+  const { data, isLoading, error, refetch, isFetching } = useIssuerDashboard({ enabled });
   const navigate = useNavigate();
 
   // AC2: Manual refresh handler
