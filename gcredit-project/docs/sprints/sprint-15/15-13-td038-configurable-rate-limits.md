@@ -1,6 +1,6 @@
 # Story 15.13: Configurable Auth Rate Limits (TD-038)
 
-**Status:** in-progress  
+**Status:** done  
 **Started:** 2026-03-01  
 **Priority:** MEDIUM  
 **Estimate:** 3h  
@@ -70,10 +70,12 @@
 
 ### Source Tree Components
 - `backend/src/modules/auth/auth.controller.ts` (modified — decorators)
-- `backend/src/config/throttle.config.ts` (new — or add to existing config)
+- `backend/src/modules/auth/config/throttle.config.ts` (new)
 - `backend/.env.example` (updated)
 - `backend/.env.test` (updated with relaxed limits)
-- `backend/src/modules/auth/auth.controller.spec.ts` (test updates)
+- `backend/src/modules/auth/config/throttle.config.spec.ts` (updated)
+- `backend/src/modules/auth/config/configurable-throttler.guard.spec.ts` (updated)
+- `backend/test/setup.ts` (updated env var naming)
 
 ### Review Findings (2026-03-01)
 - **NOTE-15.13-001:** Env var naming simplified to `THROTTLE_TTL_SECONDS` + `THROTTLE_LIMIT` (clear units)
@@ -130,7 +132,7 @@
 
 ### Review Summary (2026-03-01)
 
-- Targeted unit tests pass for Story 15.13 scope: throttle.config.spec.ts and configurable-throttler.guard.spec.ts (25 tests).
+- Targeted unit tests pass for Story 15.13 scope: throttle.config.spec.ts and configurable-throttler.guard.spec.ts (31 tests).
 - All 4 review follow-up items resolved (2 HIGH, 1 MEDIUM, 1 LOW).
 - 6 new NaN/invalid-value guardrail tests added to throttle.config.spec.ts (total: 19 config tests).
 - 8 Swagger `@ApiResponse({ status: 429 })` annotations added to auth.controller.ts.
@@ -147,7 +149,7 @@ Claude Opus 4.6 (GitHub Copilot)
 - `THROTTLE_LIMIT` floor ≥5 enforced in both guard and service (AC #7)
 - No changes to existing `@Throttle()` decorators — they serve as documentation and production defaults
 
-**Test results:** 985 tests passed (54 suites), 0 failures. 25 new tests for throttle config + guard.
+**Test results:** Targeted verification passed — `throttle.config.spec.ts` + `configurable-throttler.guard.spec.ts` = 31/31 tests.
 
 ### File List
 | File | Action | Purpose |

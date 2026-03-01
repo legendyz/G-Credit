@@ -156,7 +156,7 @@ Testing + UAT: 12h (21%)
 | 15.10 | Emoji → Lucide Icons | MEDIUM | 5h | W3 | 🔴 backlog |
 | 15.11 | z-index Scale | LOW | 1h | W3 | 🔴 backlog |
 | 15.12 | Dirty-Form Guard | MEDIUM | 2h | W3 | 🔴 backlog |
-| 15.13 | TD-038: Configurable Rate Limits | MEDIUM | 3h | W1 | � in-progress |
+| 15.13 | TD-038: Configurable Rate Limits | MEDIUM | 3h | W1 | ✅ done |
 | 15.14 | Mid-Sprint UAT | HIGH | 3h | W2.5 | 🔴 backlog |
 | 15.15 | Final UAT | HIGH | 4h | W4 | 🔴 backlog |
 | **Total** | **15 stories** | | **56h** | | |
