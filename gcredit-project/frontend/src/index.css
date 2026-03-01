@@ -247,3 +247,20 @@
 .animate-bounce-slow {
   animation: bounce-slow 2s ease-in-out infinite;
 }
+
+/* === Sidebar Active State — Story 15.3 (REC-15.3-003) === */
+[data-sidebar="menu-button"][data-active="true"] {
+  border-left: 3px solid hsl(var(--primary));
+  background-color: hsl(var(--accent));
+}
+
+/* === Sidebar Collapse Animation — Story 15.3 (CRITICAL-15.3-002) === */
+[data-sidebar="sidebar"] {
+  transition: width 200ms ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-sidebar="sidebar"] {
+    transition: none;
+  }
+}

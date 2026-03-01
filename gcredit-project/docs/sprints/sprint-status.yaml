@@ -188,7 +188,7 @@ sprint-15: active
 15-13-td038-configurable-rate-limits: done  # TD-038: @Throttle() runtime override via ConfigurableThrottlerGuard — CR passed
 
 # --- Wave 2: Core UI (20h) ---
-15-3-sidebar-layout-migration: backlog             # TD-035-C: Navbar.tsx → AppSidebar.tsx (shadcn/ui Sidebar)
+15-3-sidebar-layout-migration: done                 # TD-035-C: Navbar.tsx → AppSidebar.tsx (shadcn/ui Sidebar) — Done 2026-03-02
 15-1-dashboard-composite-view: backlog             # TD-035-A: role switch → permission-stacked tabs
 
 # --- Wave 2.5: Mid-Sprint UAT (3h) ---
