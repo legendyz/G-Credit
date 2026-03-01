@@ -1,6 +1,6 @@
 # Story 15.1: Dashboard Tabbed Composite View (TD-035-A)
 
-**Status:** in-progress  
+**Status:** done  
 **Priority:** CRITICAL  
 **Estimate:** 8h  
 **Wave:** 2 — Core UI  

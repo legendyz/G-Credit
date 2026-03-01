@@ -144,7 +144,7 @@ Testing + UAT: 12h (21%)
 
 | ID | Title | Priority | Est | Wave | Status |
 |----|-------|----------|-----|------|--------|
-| 15.1 | Dashboard Tabbed Composite View | CRITICAL | 8h | W2 | � in-progress |
+| 15.1 | Dashboard Tabbed Composite View | CRITICAL | 8h | W2 | ✅ done |
 | 15.2 | Backend Permissions API | HIGH | 3h | W1 | ✅ done |
 | 15.3 | Sidebar Layout Migration | CRITICAL | 12h | W2 | ✅ done |
 | 15.4 | Role×Manager Test Matrix | HIGH | 4h | W4 | 🔴 backlog |
