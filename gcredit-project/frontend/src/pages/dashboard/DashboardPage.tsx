@@ -27,6 +27,14 @@ import { ManagerDashboard } from './ManagerDashboard';
 import { IssuerDashboard } from './IssuerDashboard';
 import { AdminDashboard } from './AdminDashboard';
 
+/** All valid DashboardTab values for type-safe URL validation */
+const VALID_TABS = new Set<string>(['my-badges', 'team', 'issuance', 'admin']);
+
+/** Type-safe check: is a string a valid DashboardTab? */
+function isValidTab(value: string | null): value is DashboardTab {
+  return value !== null && VALID_TABS.has(value);
+}
+
 /** Tab metadata: label for display */
 const TAB_LABELS: Record<DashboardTab, string> = {
   'my-badges': 'My Badges',
@@ -89,7 +97,7 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({ role, isManager }) => {
 
   // --- Active tab derived from URL (REC-15.1-004) ---
   const urlTab = searchParams.get('tab');
-  const activeTab = visibleTabs.includes(urlTab as DashboardTab) ? urlTab! : 'my-badges';
+  const activeTab = isValidTab(urlTab) && visibleTabs.includes(urlTab) ? urlTab : 'my-badges';
 
   const handleTabChange = (value: string) => {
     setSearchParams({ tab: value }, { replace: true }); // No history push

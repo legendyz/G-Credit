@@ -1,6 +1,6 @@
 # Story 15.1: Dashboard Tabbed Composite View (TD-035-A)
 
-**Status:** done  
+**Status:** in-progress  
 **Priority:** CRITICAL  
 **Estimate:** 8h  
 **Wave:** 2 — Core UI  
@@ -108,6 +108,25 @@
 - [ARCHITECTURE-REVIEW-SPRINT-15.md](ARCHITECTURE-REVIEW-SPRINT-15.md) — Story 15.1 section
 
 ## Dev Agent Record
+
+## Review Follow-ups (AI)
+
+- [x] **MEDIUM — AC #7 fade indicator gap (implementation vs AC wording)** — Resolved 2026-03-02
+  - AC #7 currently states: mobile uses horizontal scroll **with fade indicator**.
+  - Current implementation provides horizontal scroll + hidden scrollbar, but no fade/gradient indicator.
+  - Resolution: Implemented CSS `mask-image` gradient on `[data-dashboard-tabs]` for mobile — fades edges to signal scrollable content.
+  - Evidence: `frontend/src/index.css` (mask-image + -webkit-mask-image on `[data-dashboard-tabs]` inside `@media (max-width: 767px)`)
+
+- [x] **LOW — URL tab validation type assertion cleanup (non-blocking code quality)** — Resolved 2026-03-02
+  - `visibleTabs.includes(urlTab as DashboardTab)` works at runtime, but relies on a type assertion that reduces type safety clarity.
+  - Resolution: Replaced with `isValidTab()` type guard using `Set<string>` — no assertion needed, proper type narrowing.
+  - Evidence: `frontend/src/pages/dashboard/DashboardPage.tsx` (`VALID_TABS` + `isValidTab()` type guard)
+
+### Re-CR Summary (2026-03-02)
+
+- Review scope: `git diff 19dc086..4daf87e` (7 files, +535/-109).
+- Targeted tests pass: `DashboardPage.test.tsx` (17/17).
+- Verdict: **APPROVED** — all follow-ups resolved 2026-03-02.
 
 ### Agent Model Used
 Claude Opus 4.6 (GitHub Copilot)
