@@ -217,10 +217,9 @@ export const navigationConfig: NavItem[] = [...]
 - **Recommendation:** When removing Navbar.tsx, clean up the import path inconsistency. All layout components should live in `components/layout/`.
 
 **MEDIUM-15.3-003: localStorage Collision Check**
-- Sidebar collapse state stored in localStorage (per story Dev Notes)
-- authStore already persists to localStorage (from authStore.ts)
-- shadcn/ui Sidebar uses cookie by default (`sidebar:state`) — verify localStorage vs cookie approach
-- Ensure no key collision with existing persisted state
+- Sidebar collapse state stored in cookie (DEC-15-04 resolved)
+- shadcn/ui Sidebar uses `sidebar:state` cookie by default — no localStorage collision
+- ✅ No key collision with authStore (which uses localStorage)
 
 ---
 
@@ -310,16 +309,18 @@ export const AUTH_COMBINATIONS = [
 - [ ] Install shadcn/ui components: `sidebar`, `tabs`, `tooltip`
 - [ ] Create `frontend/src/utils/permissions.ts` with shared computation
 - [ ] Create `frontend/src/test-utils/auth-fixtures.ts` with 6-combo factory
-- [ ] Resolve DEC-15-01 through DEC-15-04
+- [x] Resolve DEC-15-01 through DEC-15-04 — ✅ All 4 resolved (2026-03-01)
 
 ### Architecture Review Sign-Off
-- [ ] Permission computation model agreed
-- [ ] Layout restructure approach confirmed
-- [ ] Performance impact accepted (~15-20KB bundle increase)
-- [ ] Security review: 15.2 response shape, 15.13 env var safety
+- [x] Permission computation model agreed — Hybrid (DEC-15-01)
+- [x] Layout restructure approach confirmed — SidebarProvider + SidebarInset + max-w-7xl
+- [x] Performance impact accepted (~15-20KB bundle increase)
+- [x] Security review: 15.2 response shape (no PII), 15.13 env var safety (min floor ≥5)
 
 ---
 
 **Reviewed By:** Technical Architect (AI-Assisted)  
 **Review Date:** 2026-03-01  
-**Next Step:** Resolve 4 architecture decisions, install shadcn/ui components, then begin Wave 1
+**Decisions Resolved:** 2026-03-01 — All 4 DEC-15-01~04 confirmed by PO  
+**All findings synced to story files:** 2026-03-01  
+**Next Step:** Install shadcn/ui components, then begin Wave 1

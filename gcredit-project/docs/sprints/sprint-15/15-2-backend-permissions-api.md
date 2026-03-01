@@ -23,8 +23,10 @@
 4. [ ] `sidebarGroups` array contains only the navigation groups the user should see (per DEC-016-02)
 5. [ ] Endpoint requires JWT authentication (returns 401 for unauthenticated)
 6. [ ] Response is fast (<50ms) — no database queries, computed from JWT claims
-7. [ ] Swagger documentation complete with response schema
-8. [ ] Unit tests cover all 6 role×manager combinations
+7. [ ] Response does NOT include user email, ID, or any PII — only permission flags _(Arch Security Note)_
+8. [ ] Swagger documentation complete with response schema
+9. [ ] Unit tests cover all 6 role×manager combinations
+10. [ ] Backend computation logic mirrors frontend `utils/permissions.ts` — same results for same inputs _(CROSS-001)_
 
 ## Tasks / Subtasks
 
@@ -36,10 +38,24 @@
   - [ ] Create `computeDashboardTabs(role, isManager)` utility
   - [ ] Create `computeSidebarGroups(role, isManager)` utility
   - [ ] Return structured `UserPermissionsDto` response
-- [ ] **Task 3: Create DTOs** (AC: #2, #7)
+  - [ ] Ensure computation logic aligns with frontend `utils/permissions.ts` _(CROSS-001)_
+- [ ] **Task 3: Create DTOs** (AC: #2, #8)
   - [ ] `UserPermissionsDto` with class-validator decorators
   - [ ] `@ApiResponse` Swagger documentation
-  - [ ] Response shape: `{ role, isManager, dashboardTabs, sidebarGroups }`
+  - [ ] Response shape includes both computed arrays AND flat booleans _(NOTE-15.2-003)_:
+    ```json
+    {
+      "role": "ISSUER",
+      "isManager": true,
+      "dashboardTabs": ["my-badges", "team-overview", "issuance"],
+      "sidebarGroups": ["base", "team", "issuance"],
+      "permissions": {
+        "canViewTeam": true,
+        "canIssueBadges": true,
+        "canManageUsers": false
+      }
+    }
+    ```
 - [ ] **Task 4: Unit tests** (AC: #6, #8)
   - [ ] Test all 6 role×manager combinations
   - [ ] Test 401 for unauthenticated request
@@ -69,6 +85,13 @@
 - `backend/src/modules/auth/utils/compute-permissions.ts` (new)
 - `backend/src/modules/auth/permissions.controller.spec.ts` (new)
 
+### Review Findings (2026-03-01)
+- **NOTE-15.2-001 (DEC-15-01):** Frontend uses JWT claims for instant rendering; this API is background verification + enrichment source (Hybrid approach)
+- **NOTE-15.2-002:** Cache in frontend authStore, invalidated on token refresh / SSO re-sync
+- **NOTE-15.2-003:** Response includes both computed arrays (`dashboardTabs`, `sidebarGroups`) AND flat permission booleans for flexibility
+- **CROSS-001:** Backend `compute-permissions.ts` must produce identical results to frontend `utils/permissions.ts` for same (role, isManager) inputs
+- **Security:** Do NOT include PII (email, userId) in permissions response — keep minimal
+
 ### Testing Standards
 - 6-combination matrix (following Sprint 14 Story 14.8 pattern)
 - No database mocking needed — pure computation
@@ -79,6 +102,7 @@
 - ADR-016 DEC-016-02: Sidebar navigation groups
 - ADR-015/017: Dual-dimension identity model
 - Sprint 14 Story 14.3: JWT payload + isManager claim
+- [ARCHITECTURE-REVIEW-SPRINT-15.md](ARCHITECTURE-REVIEW-SPRINT-15.md) — Story 15.2 section
 
 ## Dev Agent Record
 

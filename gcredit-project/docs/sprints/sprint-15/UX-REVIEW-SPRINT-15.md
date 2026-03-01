@@ -210,4 +210,6 @@ This will install the required primitives and their dependencies (Radix UI, etc.
 
 **Reviewed By:** Amelia (UX Designer Agent)  
 **Review Date:** 2026-03-01  
-**Next Step:** Resolve 2 blocking decisions, then proceed to development
+**Decisions Resolved:** 2026-03-01 — All blocking items confirmed by PO  
+**All findings synced to story files:** 2026-03-01  
+**Next Step:** Proceed to development

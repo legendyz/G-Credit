@@ -18,13 +18,14 @@
 ## Acceptance Criteria
 
 1. [ ] All `@Throttle()` decorators in auth controller use `ConfigService` values instead of hardcoded numbers
-2. [ ] Environment variables: `THROTTLE_AUTH_LOGIN_LIMIT`, `THROTTLE_AUTH_LOGIN_TTL` (and similar for other auth endpoints)
+2. [ ] Environment variables: `THROTTLE_TTL_SECONDS` and `THROTTLE_LIMIT` (clear units, clear purpose) _(NOTE-15.13-001)_
 3. [ ] Default values match current production settings (e.g., login: 5/60s)
 4. [ ] `.env.example` updated with new variables and comments
-5. [ ] E2E test setup can override rate limits (e.g., 100/60s for testing)
+5. [ ] E2E test `.env.test` sets generous limits (e.g., `THROTTLE_LIMIT=1000`) _(NOTE-15.13-001)_
 6. [ ] Existing rate limiting behavior unchanged in production (defaults match current hardcoded values)
-7. [ ] Unit tests verify ConfigService injection and default fallback
-8. [ ] Swagger documentation updated for rate-limited endpoints
+7. [ ] `THROTTLE_LIMIT` must have a minimum floor (≥5) to prevent accidental disablement _(Arch Security Note)_
+8. [ ] Unit tests verify ConfigService injection and default fallback
+9. [ ] Swagger documentation updated for rate-limited endpoints
 
 ## Tasks / Subtasks
 
@@ -70,7 +71,13 @@
 - `backend/src/modules/auth/auth.controller.ts` (modified — decorators)
 - `backend/src/config/throttle.config.ts` (new — or add to existing config)
 - `backend/.env.example` (updated)
+- `backend/.env.test` (updated with relaxed limits)
 - `backend/src/modules/auth/auth.controller.spec.ts` (test updates)
+
+### Review Findings (2026-03-01)
+- **NOTE-15.13-001:** Env var naming simplified to `THROTTLE_TTL_SECONDS` + `THROTTLE_LIMIT` (clear units)
+- **Arch Security:** `THROTTLE_LIMIT` must have min floor (≥5) to prevent accidental disable
+- **Arch Security:** Ensure relaxed `.env.test` values never leak to production `.env`
 
 ### Testing Standards
 - Verify default behavior unchanged (regression safe)
@@ -81,6 +88,7 @@
 - Sprint 14 Story 14.8: Rate limit discovery (6th user needed JwtService.sign workaround)
 - Sprint 14 Retrospective: Action Item #1
 - Lesson 51: Rate limiter settings need E2E testing awareness
+- [ARCHITECTURE-REVIEW-SPRINT-15.md](ARCHITECTURE-REVIEW-SPRINT-15.md) — Story 15.13 section
 
 ## Dev Agent Record
 

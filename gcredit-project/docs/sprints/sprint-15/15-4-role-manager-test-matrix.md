@@ -70,6 +70,20 @@
 ### Source Tree Components
 - `backend/test/dashboard-permissions.e2e-spec.ts` (new)
 - OR `backend/test/sidebar-dashboard.e2e-spec.ts` (new)
+- `frontend/src/test-utils/auth-fixtures.ts` (new — shared fixture factory, CROSS-003)
+
+### Review Findings (2026-03-01)
+- **CROSS-003:** Create reusable test fixture factory with all 6 combos + expected outcomes:
+  ```typescript
+  // frontend/src/test-utils/auth-fixtures.ts
+  export const AUTH_COMBINATIONS = [
+    { role: 'EMPLOYEE', isManager: false, expectedTabs: 1, expectedGroups: ['base'] },
+    { role: 'EMPLOYEE', isManager: true, expectedTabs: 2, expectedGroups: ['base', 'team'] },
+    // ... all 6
+  ] as const;
+  ```
+- Reusable across Story 15.1 (tab tests), Story 15.3 (sidebar tests), and Story 15.4 (E2E tests)
+- Backend equivalent: `describe.each(AUTH_COMBINATIONS)` for E2E spec
 
 ### Testing Standards
 - Reliability: 10/10 pass rate

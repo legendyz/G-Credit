@@ -24,13 +24,16 @@
    - Team group: Visible when `isManager === true`
    - Issuance group (Templates, Badges, Bulk, Analytics): Visible when `role in [ADMIN, ISSUER]`
    - Admin group (Users, Skills, Categories, Milestones): Visible when `role === ADMIN`
-4. [ ] Collapsible to icon-only mode with toggle button
-5. [ ] Active state indicator (left border highlight or background)
-6. [ ] Responsive: on mobile (<768px), sidebar becomes drawer overlay (MobileNav pattern)
-7. [ ] Profile section at bottom with user info + Sign Out
-8. [ ] Layout uses `SidebarProvider` → content in `SidebarInset`
-9. [ ] All existing routes continue to work (no broken navigation)
-10. [ ] P2-10 (Mobile nav Issue Badge) absorbed — Issue Badge action accessible from mobile sidebar
+4. [ ] Collapsible to icon-only mode with toggle button; collapsed icons show tooltip with full label (shadcn/ui `SidebarMenuButton tooltip` prop) _(REC-15.3-002)_
+5. [ ] Active state indicator: left border (3px solid primary) + subtle background tint _(REC-15.3-003)_
+6. [ ] Collapse/expand animation: 200ms ease-in-out; content area shifts smoothly; respect `prefers-reduced-motion: reduce` _(CRITICAL-15.3-002)_
+7. [ ] Responsive: on mobile (<768px), sidebar becomes drawer overlay (MobileNav pattern)
+8. [ ] Profile section at bottom with user info + Sign Out
+9. [ ] Layout uses `SidebarProvider` → content in `SidebarInset`
+10. [ ] All existing routes continue to work (no broken navigation)
+11. [ ] Keyboard: Tab/Enter/Escape + Arrow keys within groups + Home/End; container has `role="navigation"` + `aria-label="Main navigation"` _(REC-15.3-004)_
+12. [ ] P2-10 (Mobile nav Issue Badge) absorbed — Issue Badge action accessible from mobile sidebar
+13. [ ] Sidebar collapse state persisted via cookie (`sidebar:state`) — shadcn/ui default, no custom localStorage _(DEC-15-04)_
 
 ## Tasks / Subtasks
 
@@ -45,11 +48,13 @@
   - [ ] Add collapsible toggle (icon-only mode)
   - [ ] Add active route indicator using `useLocation()`
   - [ ] Add Profile/Sign Out section at bottom
-- [ ] **Task 3: Refactor Layout component** (AC: #8)
+- [ ] **Task 3: Refactor Layout component** (AC: #9)
   - [ ] Wrap `Layout.tsx` content in `SidebarProvider`
   - [ ] Content area uses `SidebarInset` for proper spacing
+  - [ ] Keep `max-w-7xl` constraint inside `SidebarInset` to prevent content stretching _(CRITICAL-15.3-ARCH-002)_
   - [ ] Remove `Navbar.tsx` import and rendering
   - [ ] Ensure `Outlet` still renders page content correctly
+  - [ ] Verify all 15+ page components render correctly after layout shift
 - [ ] **Task 4: Mobile responsive sidebar** (AC: #6, #10)
   - [ ] On mobile (<768px): sidebar is a Sheet/Drawer overlay
   - [ ] Use `SidebarTrigger` (hamburger icon) in mobile header
@@ -60,9 +65,10 @@
   - [ ] Map all existing routes to sidebar items
   - [ ] Verify every existing route is accessible from sidebar
 - [ ] **Task 6: Remove old Navbar** (AC: #1)
-  - [ ] Delete `Navbar.tsx` or mark as deprecated
+  - [ ] Delete `Navbar.tsx` (currently at `components/Navbar.tsx` — inconsistent path) _(MEDIUM-15.3-002)_
   - [ ] Clean up any Navbar-specific CSS/styles
   - [ ] Update any components that referenced Navbar
+  - [ ] Ensure all layout components live in `components/layout/`
 - [ ] **Task 7: Design token usage** (AC: #5)
   - [ ] Use `@theme` design tokens for sidebar colors (Sprint 14 Lesson)
   - [ ] Active state, hover state, group headers use token-based colors
@@ -111,9 +117,22 @@
 ### Source Tree Components
 - `frontend/src/components/layout/AppSidebar.tsx` (new)
 - `frontend/src/components/layout/Layout.tsx` (refactored)
-- `frontend/src/components/layout/Navbar.tsx` (deprecated/removed)
+- `frontend/src/components/Navbar.tsx` (deleted — was at inconsistent path)
 - `frontend/src/components/layout/MobileNav.tsx` (updated for sidebar drawer)
 - `frontend/src/config/navigation.ts` (new — nav config array)
+- `frontend/src/utils/permissions.ts` (new — shared permission computation, CROSS-001)
+
+### Review Findings (2026-03-01)
+- **CRITICAL-15.3-002:** Added collapse/expand animation spec (200ms ease-in-out) + `prefers-reduced-motion`
+- **REC-15.3-002:** Tooltip on collapsed icons via shadcn `SidebarMenuButton tooltip`
+- **REC-15.3-003:** Active state = left border (3px) + bg tint
+- **REC-15.3-004:** Full keyboard nav spec (arrows, Home/End, ARIA role)
+- **DEC-15-04:** Sidebar state stored via cookie (shadcn/ui default), NOT localStorage
+- **MEDIUM-15.3-002:** Navbar.tsx at inconsistent path — clean up on removal
+- **CRITICAL-15.3-ARCH-001:** `sidebar.tsx` not installed — must run `npx shadcn@latest add sidebar` + `tooltip`
+- **CRITICAL-15.3-ARCH-002:** Layout.tsx paradigm shift — keep `max-w-7xl` inside SidebarInset
+- **MEDIUM-15.3-001:** Navigation config extraction → `config/navigation.ts` shared with dashboard
+- **CROSS-001:** Use shared `utils/permissions.ts` for group visibility (same as dashboard tabs)
 
 ### Testing Standards
 - 6-combination unit tests for sidebar group visibility
@@ -125,6 +144,8 @@
 - ADR-009: Design tokens
 - Sprint 14 Story 14.9: Design tokens prep (11 tokens)
 - shadcn/ui Sidebar docs: https://ui.shadcn.com/docs/components/sidebar
+- [UX-REVIEW-SPRINT-15.md](UX-REVIEW-SPRINT-15.md) — Story 15.3 section
+- [ARCHITECTURE-REVIEW-SPRINT-15.md](ARCHITECTURE-REVIEW-SPRINT-15.md) — Story 15.3 section
 
 ## Dev Agent Record
 
