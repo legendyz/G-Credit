@@ -50,7 +50,7 @@ export const navigationItems: NavItem[] = [
   { label: 'Wallet', href: '/wallet', icon: Wallet, group: 'base' },
 
   // Team group (isManager === true)
-  { label: 'Team Overview', href: '/admin/badges', icon: Users, group: 'team' },
+  { label: 'Team Badges', href: '/admin/badges', icon: Users, group: 'team' },
 
   // Issuance group (ISSUER | ADMIN)
   { label: 'Templates', href: '/admin/templates', icon: FileStack, group: 'issuance' },

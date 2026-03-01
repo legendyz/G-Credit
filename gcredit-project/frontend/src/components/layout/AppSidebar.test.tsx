@@ -139,16 +139,16 @@ describe('AppSidebar', () => {
       });
     });
 
-    it('EMPLOYEE without isManager cannot see Team Overview link', () => {
+    it('EMPLOYEE without isManager cannot see Team Badges link', () => {
       setAuthState('EMPLOYEE', false);
       renderSidebar();
-      expect(screen.queryByText('Team Overview')).not.toBeInTheDocument();
+      expect(screen.queryByText('Team Badges')).not.toBeInTheDocument();
     });
 
-    it('EMPLOYEE with isManager sees Team Overview link', () => {
+    it('EMPLOYEE with isManager sees Team Badges link', () => {
       setAuthState('EMPLOYEE', true);
       renderSidebar();
-      expect(screen.getByText('Team Overview')).toBeInTheDocument();
+      expect(screen.getByText('Team Badges')).toBeInTheDocument();
     });
 
     it('ADMIN sees all admin links', () => {

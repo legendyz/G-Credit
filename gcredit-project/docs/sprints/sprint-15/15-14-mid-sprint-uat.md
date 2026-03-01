@@ -160,6 +160,15 @@ _To be filled during UAT execution_
 - **Fix:** Added `UserRole.ISSUER` to `@Roles(UserRole.EMPLOYEE, UserRole.ISSUER, UserRole.ADMIN)`. ManagerGuard already supported ISSUER+isManager (confirmed by `manager.guard.spec.ts`).
 - **Disposition:** **Hotfixed immediately** during UAT. Commit pending.
 
+### FINDING-05: Sidebar "Team Overview" label confused with Dashboard "Team Overview" tab (**HOTFIXED**)
+
+- **Severity:** MEDIUM (UX confusion — same name, different content)
+- **Test ID:** C3 (Route Integrity — Team Overview link)
+- **Description:** Sidebar "Team Overview" link navigates to `/admin/badges` (Badge Management table), but Dashboard has a "Team Overview" tab showing ManagerDashboard (team stats). Same label, completely different content — users expect clicking sidebar "Team Overview" to show the same content as the Dashboard tab.
+- **Root Cause:** `navigation.ts` used label "Team Overview" for the `/admin/badges` route in the Team sidebar group. This was inherited from old Navbar behavior.
+- **Fix:** Renamed sidebar label from "Team Overview" to **"Team Badges"** in `navigation.ts`. Updated corresponding sidebar tests in `AppSidebar.test.tsx`. Dashboard tab "Team Overview" label unchanged (it genuinely shows team overview stats).
+- **Disposition:** **Hotfixed immediately** during UAT.
+
 ---
 
 ## Dev Agent Record
