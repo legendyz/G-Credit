@@ -136,13 +136,26 @@ describe('Bulk Issuance Upload — Functional (e2e)', () => {
 /**
  * Rate Limiting test — uses real ThrottlerGuard (ARCH-C3)
  * Separate describe to get a fresh throttle counter.
+ *
+ * IMPORTANT: Temporarily clears THROTTLE_LIMIT and THROTTLE_TTL_SECONDS so
+ * ConfigurableThrottlerGuard (Story 15.13) does NOT override the per-endpoint
+ * @Throttle() decorator (limit: 10). Without this, .env.test THROTTLE_LIMIT=1000
+ * would make the 11th upload succeed instead of returning 429.
  */
 describe('Bulk Issuance Upload — Rate Limiting (e2e)', () => {
   let ctx: TestContext;
   let adminUser: TestUser;
   let activeTemplateId: string;
+  let savedThrottleLimit: string | undefined;
+  let savedThrottleTtl: string | undefined;
 
   beforeAll(async () => {
+    // Save and clear global throttle overrides so per-endpoint @Throttle() is used
+    savedThrottleLimit = process.env.THROTTLE_LIMIT;
+    savedThrottleTtl = process.env.THROTTLE_TTL_SECONDS;
+    delete process.env.THROTTLE_LIMIT;
+    delete process.env.THROTTLE_TTL_SECONDS;
+
     ctx = await setupE2ETest('bulk-upload-rl');
     adminUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'admin');
 
@@ -151,10 +164,16 @@ describe('Bulk Issuance Upload — Rate Limiting (e2e)', () => {
       createdById: adminUser.user.id,
     });
     activeTemplateId = template.id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await teardownE2ETest(ctx);
+
+    // Restore global throttle overrides for subsequent test suites
+    if (savedThrottleLimit !== undefined)
+      process.env.THROTTLE_LIMIT = savedThrottleLimit;
+    if (savedThrottleTtl !== undefined)
+      process.env.THROTTLE_TTL_SECONDS = savedThrottleTtl;
   });
 
   it('POST /api/bulk-issuance/upload — 11th upload within 5 min returns 429 (ARCH-C3)', async () => {
