@@ -146,7 +146,7 @@ Testing + UAT: 12h (21%)
 |----|-------|----------|-----|------|--------|
 | 15.1 | Dashboard Tabbed Composite View | CRITICAL | 8h | W2 | 🔴 backlog |
 | 15.2 | Backend Permissions API | HIGH | 3h | W1 | ✅ done |
-| 15.3 | Sidebar Layout Migration | CRITICAL | 12h | W2 | � in-progress |
+| 15.3 | Sidebar Layout Migration | CRITICAL | 12h | W2 | ✅ done |
 | 15.4 | Role×Manager Test Matrix | HIGH | 4h | W4 | 🔴 backlog |
 | 15.5 | Inline Styles → Tailwind | MEDIUM | 2h | W3 | 🔴 backlog |
 | 15.6 | Forgot Password Page | MEDIUM | 2h | W3 | 🔴 backlog |

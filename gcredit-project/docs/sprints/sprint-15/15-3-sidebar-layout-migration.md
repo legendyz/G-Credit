@@ -1,6 +1,6 @@
 # Story 15.3: Sidebar Layout Migration (TD-035-C)
 
-**Status:** in-progress  
+**Status:** done  
 **Started:** 2026-03-01  
 **Completed:** 2026-03-02  
 **Priority:** CRITICAL  
