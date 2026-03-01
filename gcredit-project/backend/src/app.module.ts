@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './common/prisma.module';
@@ -13,6 +13,7 @@ import { BadgeTemplatesModule } from './badge-templates/badge-templates.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { ManagerGuard } from './common/guards/manager.guard';
+import { ConfigurableThrottlerGuard } from './modules/auth/config/configurable-throttler.guard';
 import { BadgeIssuanceModule } from './badge-issuance/badge-issuance.module';
 import { EvidenceModule } from './evidence/evidence.module';
 import { MilestonesModule } from './milestones/milestones.module';
@@ -87,7 +88,7 @@ import { BulkIssuanceModule } from './bulk-issuance/bulk-issuance.module';
     },
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard, // Apply rate limiting globally (Story 8.6)
+      useClass: ConfigurableThrottlerGuard, // Story 15.13: Configurable rate limiting (extends ThrottlerGuard)
     },
   ],
 })

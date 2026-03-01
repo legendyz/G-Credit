@@ -185,7 +185,7 @@ sprint-15: active
 
 # --- Wave 1: Backend Prep (6h) ---
 15-2-backend-permissions-api: done                  # TD-035-B: GET /api/users/me/permissions  — Started 2026-03-01, CR passed
-15-13-td038-configurable-rate-limits: in-progress  # TD-038: @Throttle() → ConfigService — Started 2026-03-01
+15-13-td038-configurable-rate-limits: review  # TD-038: @Throttle() → ConfigService — ConfigurableThrottlerGuard, 25 tests
 
 # --- Wave 2: Core UI (20h) ---
 15-3-sidebar-layout-migration: backlog             # TD-035-C: Navbar.tsx → AppSidebar.tsx (shadcn/ui Sidebar)
