@@ -189,7 +189,7 @@ sprint-15: active
 
 # --- Wave 2: Core UI (20h) ---
 15-3-sidebar-layout-migration: done                 # TD-035-C: Navbar.tsx → AppSidebar.tsx (shadcn/ui Sidebar) — Done 2026-03-02
-15-1-dashboard-composite-view: backlog             # TD-035-A: role switch → permission-stacked tabs
+15-1-dashboard-composite-view: in-progress         # TD-035-A: role switch → permission-stacked tabs — Started 2026-03-02
 
 # --- Wave 2.5: Mid-Sprint UAT (3h) ---
 15-14-mid-sprint-uat: backlog                      # 56 test cases: sidebar + dashboard + routes + responsive
