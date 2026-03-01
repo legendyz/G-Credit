@@ -181,11 +181,11 @@ sprint-14: done
 # Stories: 15.1-15.15 (~56h) — 5 Waves (W1→W2→W2.5→W3→W4)
 # Staged UAT: Mid-Sprint (W2.5) + Final (W4)
 # ============================================
-sprint-15: backlog
+sprint-15: active
 
 # --- Wave 1: Backend Prep (6h) ---
-15-2-backend-permissions-api: backlog              # TD-035-B: GET /api/users/me/permissions
-15-13-td038-configurable-rate-limits: backlog      # TD-038: @Throttle() → ConfigService
+15-2-backend-permissions-api: done                  # TD-035-B: GET /api/users/me/permissions  — Started 2026-03-01, CR passed
+15-13-td038-configurable-rate-limits: in-progress  # TD-038: @Throttle() → ConfigService — Started 2026-03-01
 
 # --- Wave 2: Core UI (20h) ---
 15-3-sidebar-layout-migration: backlog             # TD-035-C: Navbar.tsx → AppSidebar.tsx (shadcn/ui Sidebar)

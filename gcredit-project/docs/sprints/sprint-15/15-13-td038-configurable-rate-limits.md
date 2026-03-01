@@ -1,6 +1,7 @@
 # Story 15.13: Configurable Auth Rate Limits (TD-038)
 
-**Status:** backlog  
+**Status:** in-progress  
+**Started:** 2026-03-01  
 **Priority:** MEDIUM  
 **Estimate:** 3h  
 **Wave:** 1 — Backend Prep  
