@@ -205,5 +205,5 @@ sprint-15: active
 15-11-zindex-scale: done                           # P2-8: standardized z-index in @theme {}
 
 # --- Wave 4: Testing + Final UAT (8h) ---
-15-4-role-manager-test-matrix: backlog             # TD-035-D: 6-combo E2E matrix
+15-4-role-manager-test-matrix: done                 # TD-035-D: 6-combo E2E matrix
 15-15-final-uat: backlog                           # 40 test cases: regression + pagination + forms + visual + technical
