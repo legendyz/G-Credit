@@ -6,7 +6,7 @@
  * Uses multipart/form-data for image upload support.
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { PageTemplate } from '@/components/layout/PageTemplate';
@@ -35,6 +35,8 @@ import { useSkills } from '@/hooks/useSkills';
 import { SkillsFilter } from '@/components/search/SkillsFilter';
 import { useSkillCategoryTree } from '@/hooks/useSkillCategories';
 import { LayoutGrid, Save, Loader2, Upload, X, AlertCircle } from 'lucide-react';
+import { useFormGuard } from '@/hooks/useFormGuard';
+import { NavigationGuardDialog } from '@/components/ui/NavigationGuardDialog';
 
 const CATEGORIES: { value: TemplateCategory; label: string }[] = [
   { value: 'achievement', label: 'Achievement' },
@@ -90,6 +92,46 @@ export function BadgeTemplateFormPage() {
   const [creatorInfo, setCreatorInfo] = useState<TemplateUser | null>(null);
   const [updaterInfo, setUpdaterInfo] = useState<TemplateUser | null>(null);
 
+  // Story 15.12: Track initial values for dirty detection
+  const [initialValues, setInitialValues] = useState({
+    name: '',
+    description: '',
+    category: '' as TemplateCategory | '',
+    validityPeriod: '',
+    status: 'DRAFT' as TemplateStatus,
+    criteriaText: '',
+    selectedSkills: [] as string[],
+  });
+
+  // Story 15.12: Compute isDirty by comparing current vs initial
+  const isDirty = useMemo(() => {
+    if (isReadOnly) return false;
+    return (
+      name !== initialValues.name ||
+      description !== initialValues.description ||
+      category !== initialValues.category ||
+      validityPeriod !== initialValues.validityPeriod ||
+      status !== initialValues.status ||
+      criteriaText !== initialValues.criteriaText ||
+      JSON.stringify(selectedSkills) !== JSON.stringify(initialValues.selectedSkills) ||
+      imageFile !== null
+    );
+  }, [
+    name,
+    description,
+    category,
+    validityPeriod,
+    status,
+    criteriaText,
+    selectedSkills,
+    imageFile,
+    initialValues,
+    isReadOnly,
+  ]);
+
+  // Story 15.12: Form guard hook
+  const { isBlocked, proceed, reset } = useFormGuard({ isDirty: isDirty && !isSubmitting });
+
   // Fetch template data in edit mode
   useEffect(() => {
     if (!id) return;
@@ -123,6 +165,20 @@ export function BadgeTemplateFormPage() {
         // Store creator/updater info
         if (template.creator) setCreatorInfo(template.creator);
         if (template.updater) setUpdaterInfo(template.updater);
+
+        // Story 15.12: Snapshot initial values for dirty detection
+        setInitialValues({
+          name: template.name,
+          description: template.description || '',
+          category: template.category || '',
+          validityPeriod: template.validityPeriod ? template.validityPeriod.toString() : '',
+          status: template.status,
+          criteriaText:
+            typeof (template.issuanceCriteria as Record<string, unknown>)?.description === 'string'
+              ? ((template.issuanceCriteria as Record<string, unknown>).description as string)
+              : '',
+          selectedSkills: template.skillIds || [],
+        });
       } catch (err) {
         setLoadError(err instanceof Error ? err.message : 'Failed to load template');
       } finally {
@@ -568,6 +624,7 @@ export function BadgeTemplateFormPage() {
           </form>
         </CardContent>
       </Card>
+      <NavigationGuardDialog open={isBlocked} onStay={reset} onLeave={proceed} />
     </PageTemplate>
   );
 }

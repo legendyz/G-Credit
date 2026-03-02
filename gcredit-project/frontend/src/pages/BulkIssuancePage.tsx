@@ -16,6 +16,8 @@ import { ClipboardList, Lightbulb, AlertTriangle, CheckCircle, XCircle } from 'l
 import { TemplateSelector } from '../components/BulkIssuance/TemplateSelector';
 import { downloadTemplate, uploadBulkIssuance } from '../lib/bulkIssuanceApi';
 import { PageTemplate } from '../components/layout/PageTemplate';
+import { useFormGuard } from '../hooks/useFormGuard';
+import { NavigationGuardDialog } from '../components/ui/NavigationGuardDialog';
 
 /** Max file size: 100KB */
 const MAX_FILE_SIZE = 102_400;
@@ -35,6 +37,10 @@ export function BulkIssuancePage() {
     errorRows: number;
     sessionId: string;
   } | null>(null);
+
+  // Story 15.12: Dirty = file selected or upload in progress
+  const isDirty = fileSelected || isUploading;
+  const { isBlocked, proceed, reset } = useFormGuard({ isDirty });
 
   /**
    * Download CSV template from backend
@@ -437,6 +443,7 @@ export function BulkIssuancePage() {
           aria-hidden="true"
         />
       </div>
+      <NavigationGuardDialog open={isBlocked} onStay={reset} onLeave={proceed} />
     </PageTemplate>
   );
 }
