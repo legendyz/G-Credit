@@ -71,6 +71,59 @@
 
 ## Dev Agent Record
 
+## Review Follow-ups (AI)
+
+### Story 15.8 CR Verdict
+
+**Result:** FAIL  
+**AC Coverage:** 7/8 verified (functional scope mostly implemented; blocking TS issue present)
+
+**Findings:**
+
+- **F-01 (BLOCKER):** `TimelineView.tsx` references undefined `searchTerm` in no-results copy rendering (`No badges found for "..."`).
+  - Impact: Frontend type check fails; build is not clean.
+  - Evidence: `npx tsc --noEmit -p tsconfig.app.json` reports `TS2304: Cannot find name 'searchTerm'` (2 errors at `TimelineView.tsx` lines around 346-347).
+- **F-02 (LOW):** `WalletCursorResponse` in `wallet-query.dto.ts` is currently unused (service return type remains `Promise<WalletResponse>`).
+  - Impact: dead type definition / maintenance noise.
+- **F-03 (LOW):** `cursor` DTO has `@IsString()` but no explicit length bound.
+  - Impact: input-hardening gap (non-blocking).
+- **F-04 (LOW):** `isSearchLoading` in `BadgeSearchBar` is wired to `isFetchingNextPage`.
+  - Impact: loading indicator semantics can be misleading for new-search refetch vs load-more fetch.
+- **F-05 (INFO):** No dedicated tests added for `useInfiniteWallet`, `useInfiniteScroll`, or `TimelineView` infinite-scroll behaviors.
+
+**What passed:**
+
+- Backend cursor path and offset fallback logic are implemented in `getWalletBadges()`.
+- `nextCursor` generation and end-of-list behavior are implemented.
+- `useInfiniteWallet` + `useInfiniteScroll` hooks are integrated in `TimelineView` with sentinel + loading indicator + end message.
+- Targeted backend wallet tests pass (`6/6`).
+- Frontend changed-file lint passes.
+
+### Re-CR Summary (2026-03-02)
+
+- Review scope: Story 15.8 implementation commit `cb61c5d`.
+- Verdict: **FAIL** (blocking compile issue must be fixed before approval).
+- Required fix before pass: replace undefined `searchTerm` references with the intended local/debounced search state in `TimelineView.tsx`, then rerun TS/lint/tests.
+
+### CR Fix Applied (2026-03-02)
+
+All 4 findings addressed:
+
+| Finding | Fix |
+|---------|-----|
+| F-01 (BLOCKER) | Replaced 2× undefined `searchTerm` → `localSearch` in no-results copy |
+| F-02 (LOW) | Removed dead `WalletCursorResponse` interface from `wallet-query.dto.ts` |
+| F-03 (LOW) | Added `@MaxLength(100)` to `cursor` DTO field |
+| F-04 (LOW) | Changed `isSearchLoading={isFetchingNextPage}` → `isSearchLoading={isLoading}` |
+
+Verification: 0 TS errors (`tsc --noEmit -p tsconfig.app.json`) | 0 lint errors | 844/844 frontend | 6/6 backend wallet tests.
+
+### Verification Evidence (review-side)
+
+- Backend tests: `npm test -- badge-issuance-wallet.service.spec.ts` → `6/6` pass.
+- Frontend lint (changed files): `npx eslint src/components/TimelineView/TimelineView.tsx src/hooks/useInfiniteWallet.ts src/hooks/useInfiniteScroll.ts --max-warnings=0` → pass.
+- Frontend TS: `npx tsc --noEmit -p tsconfig.app.json` → **fail** (`TS2304` on `searchTerm`).
+
 ### Agent Model Used
 Claude Opus 4.6 (GitHub Copilot)
 

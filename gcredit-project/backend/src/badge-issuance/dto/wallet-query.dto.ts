@@ -35,6 +35,7 @@ export class WalletQueryDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   cursor?: string;
 
   @ApiPropertyOptional({ enum: BadgeStatus, description: 'Filter by status' })
@@ -108,13 +109,5 @@ export interface WalletResponse {
   };
   /** Story 15.8: Cursor for infinite scroll (null when no more items) */
   nextCursor?: string | null;
-  dateGroups: DateGroup[];
-}
-
-/** Story 15.8: Cursor-only response shape (without offset meta) */
-export interface WalletCursorResponse {
-  data: any[];
-  nextCursor: string | null;
-  total: number;
   dateGroups: DateGroup[];
 }

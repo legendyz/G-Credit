@@ -302,7 +302,7 @@ export function TimelineView() {
               searchTerm={localSearch}
               onSearchChange={setLocalSearch}
               onSearchClear={() => setLocalSearch('')}
-              isSearchLoading={isFetchingNextPage}
+              isSearchLoading={isLoading}
               skills={skills}
               selectedSkills={selectedSkills}
               onSkillsChange={setSelectedSkills}
@@ -343,8 +343,8 @@ export function TimelineView() {
                 </svg>
               </div>
               <p className="text-neutral-700 text-lg font-medium">
-                {searchTerm
-                  ? `No badges found for "${searchTerm}"`
+                {localSearch
+                  ? `No badges found for "${localSearch}"`
                   : 'No badges match your filters'}
               </p>
               <ul className="text-neutral-500 mt-3 space-y-1">
