@@ -71,6 +71,26 @@
 
 ## Dev Agent Record
 
+## Review Follow-ups (AI)
+
+- [x] **Scope validation:** commit `1ea8734` reviewed against `story-15-7-dev-prompt.md`.
+- [x] **API layer migration verified:** `getTemplatesPaginated()` + `TemplateQueryParams` + paginated `meta` response added in `badgeTemplatesApi.ts`; `getAllTemplates()` retained for backward compatibility.
+- [x] **Page wiring verified:** `BadgeTemplateListPage` uses `useSearchParams` (`page`, `pageSize`, `status`, `search`) and server query via `getTemplatesPaginated({ page, limit, status, search })`.
+- [x] **Pagination UX verified:** previous/next, page-number buttons with ellipsis, page-size selector (`10/20/50`), and results-count text are implemented and rendered from server `meta`.
+- [x] **Reset behavior verified:** status change, debounced search, and page-size change all reset page to `1`.
+- [x] **Transition/loading behavior verified:** `isFetching && !isLoading` overlay + previous-data placeholder behavior are present.
+- [x] **Status-tab counts removed:** tabs no longer render client-side total counts (aligned with server-side pagination model).
+- [x] **Quality gates (review-side) passed:**
+  - `BadgeTemplateListPage.test.tsx`: `27/27` passing.
+  - ESLint (changed files): exit `0`.
+  - TypeScript (`tsconfig.app.json`): exit `0`.
+
+### Re-CR Summary (2026-03-02)
+
+- Review scope: Story 15.7 implementation commit `1ea8734`.
+- Verdict: **APPROVED**.
+- Notes: Implementation matches dev prompt intent (frontend integration with existing backend pagination), no blocking issues found.
+
 ### Agent Model Used
 Claude Opus 4.6 (GitHub Copilot)
 
