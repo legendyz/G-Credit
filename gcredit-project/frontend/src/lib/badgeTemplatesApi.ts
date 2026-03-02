@@ -46,12 +46,52 @@ export interface BadgeTemplateListResponse {
   limit: number;
 }
 
+export interface PaginatedTemplateResponse {
+  data: BadgeTemplate[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
+
+export interface TemplateQueryParams {
+  page?: number;
+  limit?: number;
+  status?: TemplateStatus;
+  search?: string;
+  sortBy?: 'createdAt' | 'updatedAt' | 'name';
+  sortOrder?: 'asc' | 'desc';
+  category?: string;
+}
+
 /** Get all templates (ADMIN/ISSUER — includes DRAFT, ACTIVE, ARCHIVED) */
 export async function getAllTemplates(): Promise<BadgeTemplate[]> {
   const data = await apiFetchJson<BadgeTemplate[] | BadgeTemplateListResponse>(
     '/badge-templates/all'
   );
   return Array.isArray(data) ? data : data.data || [];
+}
+
+/** Get templates with server-side pagination (Story 15.7) */
+export async function getTemplatesPaginated(
+  params: TemplateQueryParams = {}
+): Promise<PaginatedTemplateResponse> {
+  const searchParams = new URLSearchParams();
+  if (params.page) searchParams.set('page', String(params.page));
+  if (params.limit) searchParams.set('limit', String(params.limit));
+  if (params.status) searchParams.set('status', params.status);
+  if (params.search) searchParams.set('search', params.search);
+  if (params.sortBy) searchParams.set('sortBy', params.sortBy);
+  if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder);
+  if (params.category) searchParams.set('category', params.category);
+
+  const qs = searchParams.toString();
+  const url = qs ? `/badge-templates/all?${qs}` : '/badge-templates/all';
+  return apiFetchJson<PaginatedTemplateResponse>(url);
 }
 
 /** Get a single template by ID */
@@ -156,6 +196,7 @@ export async function getActiveTemplates(): Promise<BadgeTemplate[]> {
 
 export const badgeTemplatesApi = {
   getAllTemplates,
+  getTemplatesPaginated,
   getTemplateById,
   createTemplate,
   updateTemplate,
