@@ -16,6 +16,7 @@ import { PageTemplate } from '@/components/layout/PageTemplate';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select,
@@ -106,6 +107,7 @@ export function BadgeTemplateListPage() {
   const isIssuer = currentUser?.role === 'ISSUER';
   const [searchParams, setSearchParams] = useSearchParams();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<BadgeTemplate | null>(null);
 
   // Read URL state
   const page = Number(searchParams.get('page')) || 1;
@@ -201,8 +203,14 @@ export function BadgeTemplateListPage() {
     }
   };
 
-  const handleDelete = async (template: BadgeTemplate) => {
-    if (!confirm(`Delete template "${template.name}"? This cannot be undone.`)) return;
+  const handleDeleteRequest = (template: BadgeTemplate) => {
+    setDeleteTarget(template);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    const template = deleteTarget;
+    setDeleteTarget(null);
     setActionLoading(template.id);
     try {
       await deleteTemplate(template.id);
@@ -588,7 +596,7 @@ export function BadgeTemplateListPage() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleDelete(template)}
+                                onClick={() => handleDeleteRequest(template)}
                                 disabled={!!isDisabled}
                                 className={`min-h-[44px] ${hasBadges ? 'text-neutral-400 cursor-not-allowed' : 'text-error hover:bg-error-light'}`}
                               >
@@ -650,6 +658,14 @@ export function BadgeTemplateListPage() {
           </div>
         </div>
       )}
+      <ConfirmDeleteDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Delete Template"
+        description={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
+        onConfirm={handleDeleteConfirm}
+        loading={actionLoading === deleteTarget?.id}
+      />
     </PageTemplate>
   );
 }

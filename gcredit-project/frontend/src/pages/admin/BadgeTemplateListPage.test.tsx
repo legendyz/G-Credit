@@ -151,8 +151,6 @@ describe('BadgeTemplateListPage', () => {
     vi.clearAllMocks();
     mockGetTemplatesPaginated.mockResolvedValue(createPaginatedResponse(mockTemplates));
     mockUseCurrentUser.mockReturnValue(adminUser);
-    // Mock window.confirm for delete tests
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
   });
 
   it('renders loading skeletons initially', () => {
@@ -339,7 +337,7 @@ describe('BadgeTemplateListPage', () => {
   });
 
   describe('delete', () => {
-    it('deletes a template after confirmation', async () => {
+    it('shows delete confirmation dialog and deletes on confirm', async () => {
       const user = userEvent.setup();
       mockDeleteTemplate.mockResolvedValue(undefined);
       renderWithProviders(<BadgeTemplateListPage />);
@@ -348,23 +346,31 @@ describe('BadgeTemplateListPage', () => {
         expect(screen.getByText('Cloud Expert')).toBeInTheDocument();
       });
 
-      // Find delete button by class
-      const trashButtons = screen.getAllByRole('button');
-      const deleteBtn = trashButtons.find(
+      // Find delete button by error text class
+      const allButtons = screen.getAllByRole('button');
+      const deleteBtn = allButtons.find(
         (btn) => btn.textContent === '' && btn.classList.contains('text-error')
       );
-      if (deleteBtn) {
-        await user.click(deleteBtn);
-      }
+      expect(deleteBtn).toBeTruthy();
+      await user.click(deleteBtn!);
+
+      // Dialog appears with title and description
+      await waitFor(() => {
+        expect(screen.getByText('Delete Template')).toBeInTheDocument();
+        expect(screen.getByText(/Are you sure you want to delete/)).toBeInTheDocument();
+      });
+
+      // Click confirm button in dialog
+      const confirmBtn = screen.getByRole('button', { name: /^delete$/i });
+      await user.click(confirmBtn);
 
       await waitFor(() => {
         expect(mockDeleteTemplate).toHaveBeenCalled();
       });
     });
 
-    it('does not delete when user cancels confirmation', async () => {
+    it('does not delete when user cancels confirmation dialog', async () => {
       const user = userEvent.setup();
-      vi.spyOn(window, 'confirm').mockReturnValue(false);
       renderWithProviders(<BadgeTemplateListPage />);
 
       await waitFor(() => {
@@ -374,10 +380,22 @@ describe('BadgeTemplateListPage', () => {
       // Find delete button by the error text class
       const allButtons = screen.getAllByRole('button');
       const deleteBtn = allButtons.find((btn) => btn.className.includes('text-error'));
-      if (deleteBtn) {
-        await user.click(deleteBtn);
-      }
+      expect(deleteBtn).toBeTruthy();
+      await user.click(deleteBtn!);
 
+      // Dialog appears
+      await waitFor(() => {
+        expect(screen.getByText('Delete Template')).toBeInTheDocument();
+      });
+
+      // Click Cancel
+      const cancelBtn = screen.getByRole('button', { name: /cancel/i });
+      await user.click(cancelBtn);
+
+      // Dialog closes, no delete called
+      await waitFor(() => {
+        expect(screen.queryByText('Delete Template')).not.toBeInTheDocument();
+      });
       expect(mockDeleteTemplate).not.toHaveBeenCalled();
     });
   });
