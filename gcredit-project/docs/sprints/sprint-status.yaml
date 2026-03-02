@@ -202,7 +202,7 @@ sprint-15: active
 15-6-forgot-password-page: deferred               # P1-7: deferred to backlog as tech debt (2026-03-02)
 15-12-dirty-form-guard: done                       # P2-11: beforeunload + useBlocker — Done 2026-03-02
 15-9-styled-delete-confirmation: done              # P2-5: window.confirm() → shadcn AlertDialog
-15-11-zindex-scale: backlog                        # P2-8: standardized z-index in @theme {}
+15-11-zindex-scale: done                           # P2-8: standardized z-index in @theme {}
 
 # --- Wave 4: Testing + Final UAT (8h) ---
 15-4-role-manager-test-matrix: backlog             # TD-035-D: 6-combo E2E matrix
