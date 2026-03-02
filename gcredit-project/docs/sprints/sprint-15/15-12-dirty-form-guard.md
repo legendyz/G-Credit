@@ -64,6 +64,45 @@
 
 ## Dev Agent Record
 
+## Review Follow-ups (AI)
+
+### Story 15.12 CR Verdict
+
+**Result:** FAIL  
+**AC Coverage:** 5/6 verified
+
+**Findings:**
+
+- **F-01 (BLOCKER, AC#4/#5):** `BulkIssuancePage` keeps guard active during successful submit navigation.
+  - Current logic: `isDirty = fileSelected || isUploading` and `useFormGuard({ isDirty })`.
+  - On successful upload (`errorRows === 0`), page calls `navigate('/admin/bulk-issuance/preview/:sessionId')` while dirty state is still true, so `pushState` interception can trigger guard dialog and block expected post-submit navigation.
+  - Expected for AC#4: no false warning after successful submit.
+
+**What passed:**
+
+- `beforeunload` protection and BrowserRouter-compatible history interception are implemented in `useFormGuard`.
+- Styled shadcn/ui confirmation dialog (`NavigationGuardDialog` + `AlertDialog`) is implemented.
+- Integrations are present in required form pages: Template Form, Profile, Issue Badge, Bulk Issuance.
+- Dirty-state computations exist and are wired to guard activation in each integrated page.
+
+### Re-CR Summary (2026-03-02)
+
+- Review scope: latest commit `5e081c0` (`git diff HEAD~1`).
+- Verdict: **FAIL** (one blocking behavior against AC#4/#5).
+- Required fix: disable/clear dirty guard before successful workflow navigation in `BulkIssuancePage` (same pattern already used in other submit flows via submission gating).
+
+### CR Fix Applied (2026-03-02)
+
+- **F-01 fix:** Added `setFileSelected(false)` before `navigate(...)` in `BulkIssuancePage` success path (`errorRows === 0`). This clears dirty state so the guard does not block post-submit navigation.
+- Validation: 0 TS errors | 0 lint errors | 844/844 tests pass.
+
+### Verification Evidence (review-side)
+
+- Diff scope: `git diff HEAD~1 --stat` → 11 files changed (`+806/-33`).
+- Type check: `npx tsc --noEmit` → `TSC_EXIT:0`.
+- Lint: `npm run lint` → `LINT_EXIT:0`.
+- Tests: `npm test -- --run` → `844/844` pass (`TEST_EXIT:0`).
+
 ### Agent Model Used
 Claude Opus 4.6 (GitHub Copilot)
 

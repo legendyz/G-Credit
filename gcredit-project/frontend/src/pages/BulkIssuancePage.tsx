@@ -108,7 +108,8 @@ export function BulkIssuancePage() {
         toast.success(`CSV uploaded: ${data.validRows} valid, ${data.errorRows} errors`);
 
         if (data.errorRows === 0) {
-          // No errors — auto-navigate to preview
+          // No errors — clear dirty state, then auto-navigate to preview
+          setFileSelected(false);
           navigate(`/admin/bulk-issuance/preview/${data.sessionId}`);
         } else {
           // Errors found — show validation summary
