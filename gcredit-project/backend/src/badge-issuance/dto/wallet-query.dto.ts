@@ -22,13 +22,20 @@ export class WalletQueryDto {
   @Min(1)
   page?: number = 1;
 
-  @ApiPropertyOptional({ description: 'Items per page', default: 50 })
+  @ApiPropertyOptional({ description: 'Items per page', default: 20 })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
   @Max(100)
-  limit?: number = 50;
+  limit?: number = 20;
+
+  @ApiPropertyOptional({
+    description: 'Cursor for pagination (last item ID from previous page)',
+  })
+  @IsOptional()
+  @IsString()
+  cursor?: string;
 
   @ApiPropertyOptional({ enum: BadgeStatus, description: 'Filter by status' })
   @IsOptional()
@@ -99,5 +106,15 @@ export interface WalletResponse {
     hasNextPage: boolean;
     hasPreviousPage: boolean;
   };
+  /** Story 15.8: Cursor for infinite scroll (null when no more items) */
+  nextCursor?: string | null;
+  dateGroups: DateGroup[];
+}
+
+/** Story 15.8: Cursor-only response shape (without offset meta) */
+export interface WalletCursorResponse {
+  data: any[];
+  nextCursor: string | null;
+  total: number;
   dateGroups: DateGroup[];
 }
