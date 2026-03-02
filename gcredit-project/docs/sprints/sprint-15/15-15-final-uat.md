@@ -99,34 +99,68 @@
 
 ## UAT Results
 
-_To be filled during UAT execution_
+_Phase 1 (Scripted UAT) executed 2026-03-02_
 
 ### Summary
 
 | Section | Tests | PASS | FAIL | Rate |
 |---------|-------|------|------|------|
-| E. Regression | 10 | | | |
-| F. Pagination | 8 | | | |
-| G. Forms & Dialogs | 8 | | | |
-| H. Visual Quality | 10 | | | |
-| I. Technical | 4 | | | |
-| **Total** | **40** | | | |
+| E. Regression | 10 | — | — | Phase 2 (manual) |
+| F. Pagination | 8 | — | — | Phase 2 (manual) |
+| G. Forms & Dialogs | 8 | — | — | Phase 2 (manual) |
+| H. Visual Quality | 10 | 10 | 0 | 100% |
+| I. Technical | 4 | 4 | 0 | 100% |
+| **Phase 1 Total** | **14** | **14** | **0** | **100%** |
+| **Phase 2 (pending)** | **26** | — | — | — |
 
-### Detailed Results
+### Phase 1 Detailed Results (Scripted Checks)
 
 | Test ID | Result | Notes |
 |---------|--------|-------|
-| E1 | | |
-| E2 | | |
-| ... | | |
+| H1 | PASS | Dashboard cards — no emoji in source; all icons via Lucide |
+| H2 | PASS | Sidebar items — no emoji; Lucide icons only |
+| H3 | PASS | Toast messages — no emoji; Lucide icons |
+| H4 | PASS | Empty states — no emoji; Lucide icons with descriptive text |
+| H5 | PASS | Badge status indicators — no emoji; Lucide check/clock/x |
+| H6 | PASS | 14 inline `style={{}}` found — all dynamic (tree indent, progress bar width, animation delay); no Tailwind-replaceable hardcoded styles |
+| H7 | PASS | z-index: semantic scale verified in `index.css @theme`; modal > sidebar |
+| H8 | PASS | z-index: toast (--z-toast: 9999) > modal (--z-modal: 50) |
+| H9 | PASS | Design tokens used throughout; no hardcoded color values in source |
+| H10 | PASS | Touch targets min-h-[44px] enforced; no horizontal overflow patterns |
+| I1 | PASS | Rate limit configurable via THROTTLE_TTL_SECONDS / THROTTLE_LIMIT env vars; E2E tests not blocked |
+| I2 | PASS | `.env.example` contains THROTTLE_TTL_SECONDS=60 / THROTTLE_LIMIT=5 defaults (commented) |
+| I3 | PASS | Frontend: 844/844 tests pass; Backend: 991/991 tests pass (0 failures) |
+| I4 | PASS | Frontend build: success (7.06s); Backend build: success |
+
+#### Emoji Audit Detail
+- Node.js Unicode regex scan across all `.tsx/.ts` source files (excluding tests)
+- 6 matches found — all safe:
+  - `MilestoneFormSheet.tsx:45-46` — emoji picker data array (✨🚀), not rendered as UI text
+  - `EvidenceList.tsx:26` — ✕ symbol in code comment
+  - `StatusBadge.tsx:6,8,9` — ✓ symbols in contrast-ratio documentation comments
+- **Verdict: No emoji rendered in application UI**
+
+#### Inline Style Audit Detail
+- 14 `style={{}}` occurrences across 10 files
+- All for dynamic computed values: tree-indent `paddingLeft`, progress-bar `width%`, `animationDelay`, celebration modal animation
+- No Tailwind-replaceable hardcoded styles found
+- **Verdict: All inline styles justified**
+
+### Phase 2 (Manual/UX) — Pending
+
+| Section | Tests | Status |
+|---------|-------|--------|
+| E. Mid-Sprint Regression | E1–E10 | Awaiting manual execution |
+| F. Pagination & Scroll | F1–F8 | Awaiting manual execution |
+| G. Forms & Dialogs | G1–G8 | Awaiting manual execution |
 
 ### Action Items (FAIL items)
 
 | # | Test ID | Issue | Severity | Resolution |
 |---|---------|-------|----------|------------|
-| 1 | | | | |
+| — | — | None | — | — |
 
-**UAT Verdict:** ☐ PASS — Sprint 15 Pilot-Ready | ☐ CONDITIONAL PASS — Minor issues noted | ☐ FAIL — Blocking issues found
+**UAT Verdict:** ☐ Phase 1 PASS (14/14) — Awaiting Phase 2 manual UAT for final verdict
 
 ## Dev Notes
 
@@ -138,7 +172,8 @@ _To be filled during UAT execution_
 ## Dev Agent Record
 
 ### Agent Model Used
-_To be filled during UAT_
+Claude Opus 4.6 (GitHub Copilot)
 
 ### Completion Notes
-_To be filled during UAT_
+- Phase 1 (Scripted UAT): 14/14 PASS — executed 2026-03-02
+- Phase 2 (Manual/UX UAT): 26 tests pending manual execution
