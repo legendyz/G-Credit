@@ -96,6 +96,16 @@
 - **F-01 fix:** Added `setFileSelected(false)` before `navigate(...)` in `BulkIssuancePage` success path (`errorRows === 0`). This clears dirty state so the guard does not block post-submit navigation.
 - Validation: 0 TS errors | 0 lint errors | 844/844 tests pass.
 
+### Re-CR Follow-up Closure (2026-03-02)
+
+- Re-review scope: fix commit `0b2d3e0`.
+- Final verdict: **APPROVED** (F-01 blocker resolved).
+- AC status: **6/6 verified**.
+- Re-review validation:
+  - `npx tsc --noEmit` → `RECR_TSC_EXIT:0`
+  - `npm run lint` → `RECR_LINT_EXIT:0`
+  - `npm run test:run -- src/pages/BulkIssuancePage.test.tsx` → `11/11` pass (`RECR_TEST_EXIT:0`)
+
 ### Verification Evidence (review-side)
 
 - Diff scope: `git diff HEAD~1 --stat` → 11 files changed (`+806/-33`).
