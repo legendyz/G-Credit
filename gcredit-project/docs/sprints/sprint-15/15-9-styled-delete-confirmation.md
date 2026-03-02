@@ -54,6 +54,29 @@
 
 ## Dev Agent Record
 
+## Review Follow-ups (AI)
+
+### Story 15.9 CR Verdict (2026-03-02)
+
+**Result:** APPROVED  
+**AC Coverage:** 6/6 verified
+
+### AC Mapping
+
+- **AC#1:** Verified. `window.confirm()` flow in `BadgeTemplateListPage` replaced by state-driven `ConfirmDeleteDialog` open/confirm handlers.
+- **AC#2:** Verified. `ConfirmDeleteDialog` implemented with shadcn/ui `AlertDialog` primitives.
+- **AC#3:** Verified. Dialog renders title, description, Cancel, and Delete actions.
+- **AC#4:** Verified. Confirm action uses destructive red styling (`bg-destructive text-destructive-foreground`).
+- **AC#5:** Verified. Uses Radix/shadcn alert-dialog accessibility behavior (focus trap + keyboard navigation); tests cover open/confirm/cancel interaction.
+- **AC#6:** Verified. Lucide icon present in header (`TriangleAlert`).
+
+### Validation Evidence (review-side)
+
+- Diff scope: `git diff HEAD~1 --stat` → 6 files changed (`+361/-43`)
+- Type check: `npx tsc --noEmit` → `TSC_EXIT_CODE=0`
+- Lint: `npm run lint` → `LINT_EXIT_CODE=0`
+- Tests: `npm test -- --run` → `79/79` files pass, `844/844` tests pass (`TEST_EXIT_CODE=0`)
+
 ### Agent Model Used
 Claude Opus 4.6 (GitHub Copilot)
 
