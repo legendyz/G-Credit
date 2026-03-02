@@ -267,11 +267,11 @@ describe('Role-Manager Matrix (ADR-017)', () => {
         .expect(403);
     });
 
-    it('Combo #4 ISSUER+manager -> /api/dashboard/manager -> 403', async () => {
-      // ISSUER blocked by @Roles('EMPLOYEE','ADMIN') before ManagerGuard
+    it('Combo #4 ISSUER+manager -> /api/dashboard/manager -> 200', async () => {
+      // ISSUER+isManager allowed: @Roles includes ISSUER, ManagerGuard passes
       await authRequest(ctx.app, issuerManagerToken)
         .get('/api/dashboard/manager')
-        .expect(403);
+        .expect(200);
     });
 
     it('Combo #5 ADMIN -> /api/dashboard/manager -> 200 (bypass)', async () => {
