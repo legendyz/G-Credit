@@ -256,7 +256,7 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 z-[10000] flex items-center justify-center p-0 md:p-4"
+      className="fixed inset-0 bg-black/50 z-modal flex items-center justify-center p-0 md:p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
       role="presentation"
     >

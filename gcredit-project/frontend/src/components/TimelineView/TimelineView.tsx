@@ -297,7 +297,7 @@ export function TimelineView() {
         {/* Main Content */}
         <div className="flex-1 min-w-0">
           {/* Story 8.2 AC1 & AC4: Badge Search Bar with sticky positioning */}
-          <div className="sticky top-0 z-10 bg-white pb-4 -mx-4 px-4 md:-mx-6 md:px-6 pt-2 shadow-sm">
+          <div className="sticky top-0 z-sticky bg-white pb-4 -mx-4 px-4 md:-mx-6 md:px-6 pt-2 shadow-sm">
             <BadgeSearchBar
               searchTerm={localSearch}
               onSearchChange={setLocalSearch}

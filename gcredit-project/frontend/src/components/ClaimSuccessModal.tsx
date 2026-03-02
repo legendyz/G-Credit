@@ -36,7 +36,7 @@ export function ClaimSuccessModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 z-[10001] flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/60 z-modal flex items-center justify-center p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
       role="dialog"
       aria-modal="true"

@@ -508,7 +508,7 @@ export function SkillsFilter({
       {isOpen && (
         <div
           className="
-            absolute z-20 mt-1 w-full
+            absolute z-sticky mt-1 w-full
             bg-white dark:bg-gray-800
             border border-gray-200 dark:border-gray-700
             rounded-lg shadow-lg

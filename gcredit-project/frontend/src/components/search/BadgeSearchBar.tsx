@@ -106,7 +106,7 @@ export function BadgeSearchBar({
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   const containerClasses = sticky
-    ? 'sticky top-0 z-10 bg-white shadow-sm pb-3 pt-2 -mx-4 px-4 md:-mx-6 md:px-6'
+    ? 'sticky top-0 z-sticky bg-white shadow-sm pb-3 pt-2 -mx-4 px-4 md:-mx-6 md:px-6'
     : '';
 
   return (

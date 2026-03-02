@@ -147,7 +147,7 @@ export function TemplateSelector({ onSelect, disabled = false }: TemplateSelecto
       {/* Dropdown */}
       {isOpen && filteredTemplates.length > 0 && (
         <ul
-          className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg 
+          className="absolute z-dropdown mt-1 w-full bg-white border border-gray-200 rounded-lg 
                      shadow-lg max-h-60 overflow-y-auto"
           role="listbox"
           id="template-listbox"
@@ -173,7 +173,7 @@ export function TemplateSelector({ onSelect, disabled = false }: TemplateSelecto
 
       {isOpen && searchTerm && filteredTemplates.length === 0 && !isLoading && (
         <div
-          className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg 
+          className="absolute z-dropdown mt-1 w-full bg-white border border-gray-200 rounded-lg 
                         shadow-lg p-4 text-sm text-gray-500 text-center"
         >
           No templates found matching "{searchTerm}"

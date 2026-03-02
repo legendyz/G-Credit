@@ -466,7 +466,7 @@ export default function SkillManagementPage() {
                               <span className="inline-flex items-center justify-center min-w-[1.5rem] px-1.5 py-0.5 rounded-full text-xs font-semibold bg-brand-100 text-brand-700 border border-brand-200">
                                 {skill.badgeCount}
                               </span>
-                              <span className="invisible group-hover/tmpl:visible absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs px-3 py-2 rounded-lg bg-neutral-800 text-white text-xs shadow-lg whitespace-pre-line">
+                              <span className="invisible group-hover/tmpl:visible absolute z-tooltip bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs px-3 py-2 rounded-lg bg-neutral-800 text-white text-xs shadow-lg whitespace-pre-line">
                                 <span className="font-semibold">Used by:</span>
                                 {skill.templateNames?.map((name) => (
                                   <span key={name} className="block mt-0.5">

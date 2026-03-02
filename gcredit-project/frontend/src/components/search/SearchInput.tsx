@@ -130,14 +130,14 @@ export function SearchInput({
     [handleClear]
   );
 
-  const stickyClasses = sticky ? 'sticky top-0 z-10 bg-white dark:bg-gray-900 py-2' : '';
+  const stickyClasses = sticky ? 'sticky top-0 z-sticky bg-white dark:bg-gray-900 py-2' : '';
 
   // Story 8.2 AC1: Expand to full width on mobile when focused
   // Only apply absolute positioning on mobile (< sm breakpoint) to avoid
   // breaking desktop layout where the input is already full-width inside a Card.
   const mobileExpandClasses =
     expandOnMobileFocus && isFocused
-      ? 'max-sm:absolute max-sm:left-0 max-sm:right-0 max-sm:mx-4 max-sm:z-20'
+      ? 'max-sm:absolute max-sm:left-0 max-sm:right-0 max-sm:mx-4 max-sm:z-sticky'
       : '';
 
   const focusClasses = isFocused

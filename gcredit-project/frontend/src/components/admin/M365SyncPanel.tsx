@@ -156,7 +156,7 @@ export function M365SyncPanel() {
             ) : (
               <div className="rounded-md border max-h-[280px] overflow-y-auto">
                 <Table>
-                  <TableHeader className="sticky top-0 bg-background z-10">
+                  <TableHeader className="sticky top-0 bg-background z-sticky">
                     <TableRow>
                       <TableHead className="w-[160px]">Date</TableHead>
                       <TableHead>Type</TableHead>

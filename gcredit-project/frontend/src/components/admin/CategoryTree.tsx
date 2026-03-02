@@ -477,7 +477,7 @@ function CategoryTreeNodeInner({
               {editable ? `${skillCount} ${skillCount === 1 ? 'skill' : 'skills'}` : skillCount}
             </span>
             {category.skills && category.skills.length > 0 && (
-              <span className="invisible group-hover/skill:visible absolute z-50 bottom-full right-0 mb-2 w-max max-w-xs px-3 py-2 rounded-lg bg-neutral-800 text-white text-xs shadow-lg whitespace-pre-line">
+              <span className="invisible group-hover/skill:visible absolute z-tooltip bottom-full right-0 mb-2 w-max max-w-xs px-3 py-2 rounded-lg bg-neutral-800 text-white text-xs shadow-lg whitespace-pre-line">
                 <span className="font-semibold">Associated skills:</span>
                 {category.skills.map((s) => (
                   <span key={s.id} className="block mt-0.5">

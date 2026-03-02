@@ -1,6 +1,6 @@
 # Story 15.11: z-index Scale in Tailwind Theme (P2-8)
 
-**Status:** backlog  
+**Status:** done  
 **Priority:** LOW  
 **Estimate:** 1h  
 **Wave:** 3 — UI Polish  
@@ -17,30 +17,30 @@
 
 ## Acceptance Criteria
 
-1. [ ] z-index scale defined in `tailwind.config.js` or `@theme` block
-2. [ ] Scale covers: base(0), dropdown(10), sticky(20), sidebar(30), modal(40), toast(50), tooltip(60)
-3. [ ] All existing ad-hoc z-index values migrated to use scale tokens
-4. [ ] Sidebar z-index fits correctly between sticky and modal layers
-5. [ ] Sonner toast renders above modals
-6. [ ] No z-index conflicts between components
+1. [x] z-index scale defined in `tailwind.config.js` or `@theme` block
+2. [x] Scale covers: base(0), dropdown(10), sticky(20), sidebar(30), modal(40), toast(50), tooltip(60)
+3. [x] All existing ad-hoc z-index values migrated to use scale tokens
+4. [x] Sidebar z-index fits correctly between sticky and modal layers
+5. [x] Sonner toast renders above modals
+6. [x] No z-index conflicts between components
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1: Define z-index scale** (AC: #1, #2)
-  - [ ] Add z-index tokens to Tailwind theme (`@theme` or `tailwind.config.js`)
-  - [ ] Scale: `z-base: 0`, `z-dropdown: 10`, `z-sticky: 20`, `z-sidebar: 30`, `z-modal: 40`, `z-toast: 50`, `z-tooltip: 60`
-- [ ] **Task 2: Audit existing z-index usage** (AC: #3)
-  - [ ] Search for `z-index`, `z-[` in frontend source
-  - [ ] Map each usage to appropriate scale token
-- [ ] **Task 3: Migrate values** (AC: #3, #4, #5)
-  - [ ] Replace hardcoded z-index values with Tailwind z-index classes
-  - [ ] Verify Sidebar uses `z-sidebar` (z-30)
-  - [ ] Verify Sonner toast portal uses `z-toast` (z-50)
-  - [ ] Verify modals use `z-modal` (z-40)
-- [ ] **Task 4: Visual verification** (AC: #6)
-  - [ ] Open sidebar + modal simultaneously → modal above sidebar
-  - [ ] Open toast while modal open → toast above modal
-  - [ ] Dropdown in content area → above content, below sidebar
+- [x] **Task 1: Define z-index scale** (AC: #1, #2)
+  - [x] Add z-index tokens to Tailwind theme (`@theme` or `tailwind.config.js`)
+  - [x] Scale: `z-base: 0`, `z-dropdown: 10`, `z-sticky: 20`, `z-sidebar: 30`, `z-modal: 40`, `z-toast: 50`, `z-tooltip: 60`
+- [x] **Task 2: Audit existing z-index usage** (AC: #3)
+  - [x] Search for `z-index`, `z-[` in frontend source
+  - [x] Map each usage to appropriate scale token
+- [x] **Task 3: Migrate values** (AC: #3, #4, #5)
+  - [x] Replace hardcoded z-index values with Tailwind z-index classes
+  - [x] Verify Sidebar uses `z-sidebar` (z-30)
+  - [x] Verify Sonner toast portal uses `z-toast` (z-50)
+  - [x] Verify modals use `z-modal` (z-40)
+- [x] **Task 4: Visual verification** (AC: #6)
+  - [x] Open sidebar + modal simultaneously → modal above sidebar
+  - [x] Open toast while modal open → toast above modal
+  - [x] Dropdown in content area → above content, below sidebar
 
 ## Dev Notes
 
@@ -66,10 +66,48 @@ z-tooltip:  60   — tooltips (highest)
 ## Dev Agent Record
 
 ### Agent Model Used
-_To be filled during development_
+Claude Opus 4.6 (GitHub Copilot)
 
 ### Completion Notes
-_To be filled during development_
+- Added 7 z-index tokens to `@theme` block in `index.css`: base(0), dropdown(10), sticky(20), sidebar(30), modal(40), toast(50), tooltip(60)
+- Migrated 30 z-index usages across 27 files:
+  - Group A: 3 arbitrary values (z-[9999], z-[10000], z-[10001]) → z-modal
+  - Group B: 7 custom modals z-50 → z-modal
+  - Group C: shadcn/ui primitives (dialog, alert-dialog, sheet, select, tooltip)
+  - Group D: sidebar z-10/z-20 → z-sidebar
+  - Group E: 4 sticky headers z-10 → z-sticky
+  - Group F: 4 dropdowns z-10/z-20 → z-dropdown/z-sticky
+  - Group G: 2 custom tooltips z-50 → z-tooltip
+  - accessibility.css: z-index: 9999 → var(--z-tooltip)
+- Group H (3 files) intentionally kept: internal/relative z-10 within parent containers
+- Sonner toast z-index overridden via `toastOptions.style` in App.tsx
+- Post-migration grep: 0 arbitrary z-[N] values, only 3 intentional z-10 remnants (Group H)
 
 ### File List
-_To be filled during development_
+- `frontend/src/index.css` — Modified (z-index scale in @theme)
+- `frontend/src/App.tsx` — Modified (Sonner toast z-index override)
+- `frontend/src/styles/accessibility.css` — Modified (skip-link z-index)
+- `frontend/src/components/ui/dialog.tsx` — Modified (z-50 → z-modal ×2)
+- `frontend/src/components/ui/alert-dialog.tsx` — Modified (z-50 → z-modal ×2)
+- `frontend/src/components/ui/sheet.tsx` — Modified (z-50 → z-modal ×2)
+- `frontend/src/components/ui/select.tsx` — Modified (z-50 → z-modal)
+- `frontend/src/components/ui/tooltip.tsx` — Modified (z-50 → z-tooltip)
+- `frontend/src/components/ui/sidebar.tsx` — Modified (z-10 → z-sidebar, z-20 → z-sidebar)
+- `frontend/src/components/BadgeDetailModal/BadgeDetailModal.tsx` — Modified (z-[9999] → z-modal)
+- `frontend/src/components/BadgeShareModal/BadgeShareModal.tsx` — Modified (z-[10000] → z-modal)
+- `frontend/src/components/ClaimSuccessModal.tsx` — Modified (z-[10001] → z-modal)
+- `frontend/src/components/admin/CreateUserDialog.tsx` — Modified (z-50 → z-modal)
+- `frontend/src/components/admin/DeactivateUserDialog.tsx` — Modified (z-50 → z-modal)
+- `frontend/src/components/admin/DeleteUserDialog.tsx` — Modified (z-50 → z-modal)
+- `frontend/src/components/admin/EditRoleDialog.tsx` — Modified (z-50 → z-modal)
+- `frontend/src/components/admin/CategoryTree.tsx` — Modified (z-50 → z-tooltip)
+- `frontend/src/components/admin/M365SyncPanel.tsx` — Modified (z-10 → z-sticky)
+- `frontend/src/components/BulkIssuance/BulkResultPage.tsx` — Modified (z-50 → z-modal)
+- `frontend/src/components/BulkIssuance/ProcessingModal.tsx` — Modified (z-50 → z-modal)
+- `frontend/src/components/BulkIssuance/TemplateSelector.tsx` — Modified (z-10 → z-dropdown ×2)
+- `frontend/src/components/common/LoadingSpinner.tsx` — Modified (z-50 → z-modal)
+- `frontend/src/components/search/BadgeSearchBar.tsx` — Modified (z-10 → z-sticky)
+- `frontend/src/components/search/SearchInput.tsx` — Modified (z-10 → z-sticky, z-20 → z-sticky)
+- `frontend/src/components/search/SkillsFilter.tsx` — Modified (z-20 → z-sticky)
+- `frontend/src/components/TimelineView/TimelineView.tsx` — Modified (z-10 → z-sticky)
+- `frontend/src/pages/admin/SkillManagementPage.tsx` — Modified (z-50 → z-tooltip)

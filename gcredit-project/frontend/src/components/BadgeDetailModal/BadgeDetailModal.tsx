@@ -198,7 +198,7 @@ const BadgeDetailModal: React.FC = () => {
     <>
       {/* Story 8.5: Responsive modal - full screen on mobile, centered on desktop */}
       <div
-        className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-0 md:p-4"
+        className="fixed inset-0 bg-black/50 z-modal flex items-center justify-center p-0 md:p-4"
         onClick={handleBackdropClick}
         role="dialog"
         aria-modal="true"
