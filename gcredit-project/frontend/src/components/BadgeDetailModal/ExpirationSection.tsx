@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock } from 'lucide-react';
+import { Clock, AlarmClock } from 'lucide-react';
 
 interface ExpirationSectionProps {
   expiresAt: string;
@@ -22,7 +22,9 @@ const ExpirationSection: React.FC<ExpirationSectionProps> = ({ expiresAt }) => {
       <div className="flex items-start gap-3">
         <Clock className="h-6 w-6 text-gray-500 flex-shrink-0 mt-1" />
         <div className="flex-1">
-          <h3 className="text-xl font-bold text-gray-800 mb-2">⏰ Badge Expired</h3>
+          <h3 className="text-xl font-bold text-gray-800 mb-2">
+            <AlarmClock size={20} className="inline mr-1" aria-hidden="true" /> Badge Expired
+          </h3>
 
           <p className="text-gray-700 mb-3">This badge expired on {formattedDate}</p>
 

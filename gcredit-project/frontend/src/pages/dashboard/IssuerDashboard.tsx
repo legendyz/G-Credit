@@ -16,7 +16,16 @@ import { ErrorDisplay } from '../../components/common/ErrorDisplay';
 import { EmptyState, NoActivityState } from '../../components/common/EmptyState';
 import { cn } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
-import { RefreshCw, PlusCircle, List } from 'lucide-react';
+import {
+  RefreshCw,
+  PlusCircle,
+  List,
+  Upload,
+  Clock,
+  Users,
+  ClipboardList,
+  BarChart3,
+} from 'lucide-react';
 import { PageTemplate } from '../../components/layout/PageTemplate';
 
 interface IssuerDashboardProps {
@@ -103,20 +112,20 @@ export const IssuerDashboard: React.FC<IssuerDashboardProps> = ({ enabled = true
         <SummaryCard
           title="Issued This Month"
           value={issuanceSummary.issuedThisMonth}
-          icon="📤"
+          icon={<Upload size={24} aria-hidden="true" />}
           description="Badges issued"
         />
         <SummaryCard
           title="Pending Claims"
           value={issuanceSummary.pendingClaims}
-          icon="⏳"
+          icon={<Clock size={24} aria-hidden="true" />}
           description="Awaiting claim"
           highlight={issuanceSummary.pendingClaims > 0}
         />
         <SummaryCard
           title="Total Recipients"
           value={issuanceSummary.totalRecipients}
-          icon="👥"
+          icon={<Users size={24} aria-hidden="true" />}
           description="Unique recipients"
         />
         <ClaimRateCard claimRate={issuanceSummary.claimRate} />
@@ -130,7 +139,7 @@ export const IssuerDashboard: React.FC<IssuerDashboardProps> = ({ enabled = true
         <CardContent>
           {recentActivity.length === 0 ? (
             <EmptyState
-              icon="📋"
+              icon={<ClipboardList size={48} aria-hidden="true" />}
               title="No recent activity"
               description="Your badge issuance activity will appear here."
             />
@@ -209,7 +218,7 @@ export const IssuerDashboard: React.FC<IssuerDashboardProps> = ({ enabled = true
 interface SummaryCardProps {
   title: string;
   value: string | number;
-  icon: string;
+  icon: React.ReactNode;
   description?: string;
   highlight?: boolean;
 }
@@ -229,9 +238,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
           <p className="text-3xl font-bold mt-1">{value}</p>
           {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
         </div>
-        <span className="text-2xl" aria-hidden="true">
-          {icon}
-        </span>
+        <div aria-hidden="true">{icon}</div>
       </div>
     </CardContent>
   </Card>
@@ -254,9 +261,7 @@ const ClaimRateCard: React.FC<{ claimRate: number }> = ({ claimRate }) => {
               {percentage >= 80 ? 'Excellent!' : percentage >= 50 ? 'Good' : 'Needs attention'}
             </p>
           </div>
-          <span className="text-2xl" aria-hidden="true">
-            📊
-          </span>
+          <BarChart3 size={24} className="flex-shrink-0" aria-hidden="true" />
         </div>
         <div className="w-full bg-secondary rounded-full h-2 mt-3 overflow-hidden">
           <div

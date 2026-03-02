@@ -1,3 +1,5 @@
+import { ClipboardList, RotateCw } from 'lucide-react';
+
 interface EmptyPreviewStateProps {
   onReupload: () => void;
 }
@@ -9,7 +11,9 @@ export default function EmptyPreviewState({ onReupload }: EmptyPreviewStateProps
   return (
     <div className="max-w-md mx-auto p-8 text-center">
       <div className="bg-white rounded-lg shadow-lg p-8">
-        <div className="text-6xl mb-4">📋</div>
+        <div className="mb-4">
+          <ClipboardList size={48} aria-hidden="true" />
+        </div>
         <h2 className="text-xl font-bold text-gray-900 mb-2">No Valid Badges</h2>
         <p className="text-gray-600 mb-6">
           No valid badges found in CSV file. Please check the template format and try again.
@@ -18,7 +22,7 @@ export default function EmptyPreviewState({ onReupload }: EmptyPreviewStateProps
           onClick={onReupload}
           className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
         >
-          🔄 Re-upload CSV
+          <RotateCw size={16} className="inline mr-1" aria-hidden="true" /> Re-upload CSV
         </button>
       </div>
     </div>

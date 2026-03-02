@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Ban } from 'lucide-react';
 
 interface RevocationSectionProps {
   revokedAt: string;
@@ -34,7 +34,9 @@ const RevocationSection: React.FC<RevocationSectionProps> = ({
       <div className="flex items-start gap-3">
         <AlertTriangle className="h-6 w-6 text-red-600 flex-shrink-0 mt-1" />
         <div className="flex-1">
-          <h3 className="text-xl font-bold text-red-900 mb-2">🚫 Badge Revoked</h3>
+          <h3 className="text-xl font-bold text-red-900 mb-2">
+            <Ban size={20} className="inline mr-1" aria-hidden="true" /> Badge Revoked
+          </h3>
 
           <p className="text-red-800 mb-3">This badge was revoked on {formattedDate}</p>
 

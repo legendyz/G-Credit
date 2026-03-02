@@ -7,7 +7,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Download } from 'lucide-react';
+import { Download, AlertTriangle, Award } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   useSystemOverview,
@@ -47,7 +47,7 @@ interface SectionErrorProps {
 const SectionError: React.FC<SectionErrorProps> = ({ message, onRetry }) => (
   <div className="bg-error-light border border-red-200 rounded-lg p-4 flex items-center justify-between">
     <div className="flex items-center gap-2">
-      <span className="text-error text-lg">⚠️</span>
+      <AlertTriangle size={20} className="text-error" aria-hidden="true" />
       <p className="text-sm text-error">{message}</p>
     </div>
     <button
@@ -283,7 +283,9 @@ const AdminAnalyticsPage: React.FC = () => {
               </div>
             ) : (
               <div className="bg-white rounded-lg shadow-elevation-1 p-6">
-                <h2 className="text-xl font-bold text-neutral-900 mb-4">🏆 Top Performers</h2>
+                <h2 className="text-xl font-bold text-neutral-900 mb-4">
+                  <Award size={24} className="inline" aria-hidden="true" /> Top Performers
+                </h2>
                 <TopPerformersTable performers={performers.data?.topPerformers || []} />
               </div>
             )}

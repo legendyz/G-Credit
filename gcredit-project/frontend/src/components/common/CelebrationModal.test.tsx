@@ -47,8 +47,8 @@ describe('CelebrationModal', () => {
   });
 
   it('renders with custom icon', () => {
-    render(<CelebrationModal {...defaultProps} icon="🚀" />);
-    expect(screen.getByText('🚀')).toBeInTheDocument();
+    render(<CelebrationModal {...defaultProps} icon={<span>RocketIcon</span>} />);
+    expect(screen.getByText('RocketIcon')).toBeInTheDocument();
   });
 
   it('renders badge image when provided', () => {
@@ -124,7 +124,7 @@ describe('BadgeEarnedCelebration', () => {
   it('renders with badge name', () => {
     render(<BadgeEarnedCelebration {...defaultProps} />);
     expect(screen.getByText('Achievement Badge')).toBeInTheDocument();
-    expect(screen.getByText('Congratulations! 🎉')).toBeInTheDocument();
+    expect(screen.getByText('Congratulations!')).toBeInTheDocument();
   });
 
   it('renders with badge image', () => {
@@ -153,7 +153,7 @@ describe('MilestoneReachedCelebration', () => {
   it('renders with milestone name', () => {
     render(<MilestoneReachedCelebration {...defaultProps} />);
     expect(screen.getByText('Badge Collector Level 2')).toBeInTheDocument();
-    expect(screen.getByText('Milestone Achieved! 🌟')).toBeInTheDocument();
+    expect(screen.getByText('Milestone Achieved!')).toBeInTheDocument();
   });
 
   it('renders with custom description', () => {

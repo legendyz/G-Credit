@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { ClipboardCopy, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { getActiveTemplates } from '../../lib/badgeTemplatesApi';
 
@@ -126,7 +127,8 @@ export function TemplateSelector({ onSelect, disabled = false }: TemplateSelecto
               title={`Click to copy: ${selectedTemplate.id}`}
               aria-label="Copy template ID"
             >
-              📋 {selectedTemplate.id.substring(0, 8)}...
+              <ClipboardCopy size={14} className="inline" aria-hidden="true" />{' '}
+              {selectedTemplate.id.substring(0, 8)}...
             </button>
           )}
         </div>
@@ -137,7 +139,7 @@ export function TemplateSelector({ onSelect, disabled = false }: TemplateSelecto
                        rounded-lg text-sm hover:bg-gray-50 min-h-[44px]"
             aria-label="Clear template selection"
           >
-            ✕
+            <X size={16} aria-hidden="true" />
           </button>
         )}
       </div>

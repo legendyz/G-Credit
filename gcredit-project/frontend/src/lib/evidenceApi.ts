@@ -5,6 +5,8 @@
 
 import { apiFetch } from './apiFetch';
 import { API_BASE_URL } from './apiConfig';
+import type { LucideIcon } from 'lucide-react';
+import { Paperclip, Camera, FileText, FileEdit } from 'lucide-react';
 
 export interface EvidenceItem {
   id: string;
@@ -158,12 +160,12 @@ export function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function getFileIcon(mimeType?: string): string {
-  if (!mimeType) return '📎';
-  if (mimeType.startsWith('image/')) return '📷';
-  if (mimeType.includes('pdf')) return '📄';
-  if (mimeType.includes('word') || mimeType.includes('docx')) return '📝';
-  return '📎';
+export function getFileIcon(mimeType?: string): LucideIcon {
+  if (!mimeType) return Paperclip;
+  if (mimeType.startsWith('image/')) return Camera;
+  if (mimeType.includes('pdf')) return FileText;
+  if (mimeType.includes('word') || mimeType.includes('docx')) return FileEdit;
+  return Paperclip;
 }
 
 export function truncateUrl(url: string, maxLen = 45): string {

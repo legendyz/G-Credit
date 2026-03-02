@@ -13,6 +13,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { AlertTriangle, Loader2, PartyPopper, XCircle } from 'lucide-react';
 import { claimBadgeByToken } from '../lib/badgesApi';
 
 type ClaimState = 'claiming' | 'success' | 'error' | 'no-token';
@@ -67,7 +68,7 @@ export default function ClaimBadgePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="max-w-md w-full text-center space-y-4">
-          <div className="text-6xl">⚠️</div>
+          <AlertTriangle size={64} className="text-amber-500" aria-hidden="true" />
           <h1 className="text-2xl font-bold text-gray-900">Missing Claim Token</h1>
           <p className="text-gray-600">
             No claim token found in the URL. Please use the link from your badge notification email.
@@ -88,7 +89,7 @@ export default function ClaimBadgePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="max-w-md w-full text-center space-y-4">
-          <div className="animate-spin text-5xl">⏳</div>
+          <Loader2 size={48} className="animate-spin text-brand-600" aria-hidden="true" />
           <h1 className="text-2xl font-bold text-gray-900">Claiming Your Badge...</h1>
           <p className="text-gray-600">Please wait while we process your badge claim.</p>
         </div>
@@ -101,7 +102,7 @@ export default function ClaimBadgePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="max-w-md w-full text-center space-y-4">
-          <div className="text-6xl">🎉</div>
+          <PartyPopper size={64} className="text-brand-600" aria-hidden="true" />
           <h1 className="text-2xl font-bold text-gray-900">Badge Claimed!</h1>
           <p className="text-gray-600">
             You&apos;ve successfully claimed{' '}
@@ -123,7 +124,7 @@ export default function ClaimBadgePage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="max-w-md w-full text-center space-y-4">
-        <div className="text-6xl">❌</div>
+        <XCircle size={64} className="text-red-500" aria-hidden="true" />
         <h1 className="text-2xl font-bold text-gray-900">Claim Failed</h1>
         <p className="text-red-600">{errorMessage}</p>
         <div className="flex gap-3 justify-center mt-4">

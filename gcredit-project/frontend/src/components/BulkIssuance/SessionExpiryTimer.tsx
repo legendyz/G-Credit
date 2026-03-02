@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Timer } from 'lucide-react';
 
 interface SessionExpiryTimerProps {
   expiresAt: string;
@@ -54,7 +55,7 @@ export default function SessionExpiryTimer({ expiresAt, onExpired }: SessionExpi
       role="timer"
       aria-live="polite"
     >
-      <span>⏱️</span>
+      <Timer size={16} aria-hidden="true" />
       <span>Preview expires in {timeStr}. Please confirm soon.</span>
     </div>
   );

@@ -1,4 +1,5 @@
 import React from 'react';
+import { X, RotateCw } from 'lucide-react';
 
 interface FilteredEmptyStateProps {
   currentFilter: string | null;
@@ -50,7 +51,7 @@ const FilteredEmptyState: React.FC<FilteredEmptyStateProps> = ({
             className="text-blue-600 hover:text-blue-800 font-bold"
             aria-label="Remove filter"
           >
-            ✕
+            <X size={16} aria-label="Remove filter" />
           </button>
         </div>
       )}
@@ -60,7 +61,7 @@ const FilteredEmptyState: React.FC<FilteredEmptyStateProps> = ({
         onClick={onClearFilters}
         className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-md"
       >
-        🔄 Clear Filters
+        <RotateCw size={16} className="inline mr-1" aria-hidden="true" /> Clear Filters
       </button>
 
       {/* Helpful suggestions */}

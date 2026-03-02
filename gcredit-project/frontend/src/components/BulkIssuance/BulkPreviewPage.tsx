@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { AlarmClock } from 'lucide-react';
 import BulkPreviewHeader from './BulkPreviewHeader';
 import BulkPreviewTable from './BulkPreviewTable';
 import ErrorCorrectionPanel from './ErrorCorrectionPanel';
@@ -213,7 +214,9 @@ export default function BulkPreviewPage() {
     return (
       <div className="max-w-2xl mx-auto p-6">
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
-          <div className="text-4xl mb-4">⏰</div>
+          <div className="mb-4">
+            <AlarmClock size={48} aria-hidden="true" />
+          </div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">Session Expired</h2>
           <p className="text-gray-600 mb-4">
             Your preview session has expired. Please upload your CSV file again. You will be

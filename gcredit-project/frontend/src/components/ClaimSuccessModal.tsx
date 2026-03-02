@@ -7,6 +7,7 @@
 
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { PartyPopper } from 'lucide-react';
 
 interface ClaimSuccessModalProps {
   isOpen: boolean;
@@ -71,7 +72,7 @@ export function ClaimSuccessModal({
 
         {/* Congratulations Message */}
         <h2 id="claim-success-title" className="text-2xl font-bold text-gray-900 mb-2">
-          🎉 Congratulations!
+          <PartyPopper size={24} className="inline" aria-hidden="true" /> Congratulations!
         </h2>
 
         <p className="text-base text-gray-600 mb-4">

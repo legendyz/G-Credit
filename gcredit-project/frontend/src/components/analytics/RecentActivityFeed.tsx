@@ -44,7 +44,11 @@ const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({ activities }) =
             key={activity.id}
             className="flex items-start gap-3 py-2.5 px-2 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            <span className="text-lg flex-shrink-0 mt-0.5">{getActivityIcon(activity.type)}</span>
+            {React.createElement(getActivityIcon(activity.type), {
+              size: 18,
+              className: 'flex-shrink-0 text-neutral-500 mt-0.5',
+              'aria-hidden': 'true',
+            })}
             <div className="flex-1 min-w-0">
               <p className="text-sm text-gray-800 leading-snug">
                 {buildActivityDescription(activity)}

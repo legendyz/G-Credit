@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Loader2, CheckCircle, Check, Clock, Timer, AlertTriangle } from 'lucide-react';
 
 interface BadgePreviewRow {
   badgeName?: string;
@@ -72,7 +73,9 @@ export default function ProcessingModal({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-xl">
-        <h2 className="text-xl font-bold mb-6 text-gray-800">⏳ Issuing Badges...</h2>
+        <h2 className="text-xl font-bold mb-6 text-gray-800">
+          <Loader2 size={20} className="inline animate-spin" aria-hidden="true" /> Issuing Badges...
+        </h2>
 
         {/* Progress Bar Section */}
         <div className="mb-4">
@@ -93,20 +96,25 @@ export default function ProcessingModal({
         {/* Currently processing badge */}
         {currentBadgeLabel && estimatedCurrent < totalBadges && (
           <div className="mb-4 text-sm text-gray-700">
-            <span className="text-green-600">✅</span> Processing: {currentBadgeLabel}
+            <CheckCircle size={16} className="inline text-green-600" aria-hidden="true" />{' '}
+            Processing: {currentBadgeLabel}
           </div>
         )}
 
         {/* Running success/failure/remaining counts */}
         <div className="flex justify-center gap-6 mb-4 text-sm">
-          <span className="text-green-600 font-medium">✓ {simulatedSuccess} done</span>
-          <span className="text-gray-500">⏳ {simulatedRemaining} remaining</span>
+          <span className="text-green-600 font-medium">
+            <Check size={16} className="inline" aria-hidden="true" /> {simulatedSuccess} done
+          </span>
+          <span className="text-gray-500">
+            <Clock size={16} className="inline" aria-hidden="true" /> {simulatedRemaining} remaining
+          </span>
         </div>
 
         {/* Estimated Time */}
         <div className="text-center mb-6">
           <p className="text-gray-600">
-            ⏱️ Estimated time remaining:{' '}
+            <Timer size={16} className="inline" aria-hidden="true" /> Estimated time remaining:{' '}
             <span className="font-semibold text-gray-800 ml-1">
               {estimatedRemaining > 60
                 ? `${Math.ceil(estimatedRemaining / 60)} minutes`
@@ -141,7 +149,11 @@ export default function ProcessingModal({
         {/* Warning Message */}
         <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
           <div className="flex items-start">
-            <span className="text-yellow-600 mr-2">⚠️</span>
+            <AlertTriangle
+              size={16}
+              className="text-yellow-600 mr-2 flex-shrink-0 mt-0.5"
+              aria-hidden="true"
+            />
             <div>
               <p className="text-sm text-yellow-800 font-medium">
                 Please do not refresh or close your browser

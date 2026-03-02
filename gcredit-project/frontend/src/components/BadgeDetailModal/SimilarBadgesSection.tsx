@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getSimilarBadges, type SimilarBadge } from '../../lib/badgesApi';
+import { Target, Award } from 'lucide-react';
 
 interface SimilarBadgesSectionProps {
   badgeId: string;
@@ -62,7 +63,7 @@ const SimilarBadgesSection: React.FC<SimilarBadgesSectionProps> = ({ badgeId, on
     <section className="px-6 py-6 border-t border-gray-200">
       {/* AC 5.8: Section heading */}
       <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-        <span>🎯</span>
+        <Target size={20} aria-hidden="true" />
         <span>Similar Badges You Might Like</span>
       </h3>
 
@@ -93,7 +94,7 @@ const SimilarBadgesSection: React.FC<SimilarBadgesSectionProps> = ({ badgeId, on
                 />
               ) : (
                 <div className="w-32 h-32 bg-gradient-to-br from-blue-400 to-purple-500 rounded-md flex items-center justify-center">
-                  <span className="text-white text-4xl">🏆</span>
+                  <Award size={32} className="text-white" aria-hidden="true" />
                 </div>
               )}
             </div>

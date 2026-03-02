@@ -17,7 +17,17 @@ import { EmptyState, NoBadgesState } from '../../components/common/EmptyState';
 import { BadgeEarnedCelebration } from '../../components/common/CelebrationModal';
 import { cn } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
-import { RefreshCw, Wallet, CheckCircle } from 'lucide-react';
+import {
+  RefreshCw,
+  Wallet,
+  CheckCircle,
+  Award,
+  TrendingUp,
+  Clock,
+  Medal,
+  PartyPopper,
+  Ban,
+} from 'lucide-react';
 import { PageTemplate } from '../../components/layout/PageTemplate';
 
 // Celebration tracking localStorage key (AC1 requirement)
@@ -186,26 +196,26 @@ export const EmployeeDashboard: React.FC = () => {
         <SummaryCard
           title="Total Badges"
           value={badgeSummary.total}
-          icon="🏆"
+          icon={<Award size={24} aria-hidden="true" />}
           description="All time"
         />
         <SummaryCard
           title="Claimed This Month"
           value={badgeSummary.claimedThisMonth}
-          icon="📈"
+          icon={<TrendingUp size={24} aria-hidden="true" />}
           description="Keep earning!"
         />
         <SummaryCard
           title="Pending Claims"
           value={badgeSummary.pendingCount}
-          icon="⏳"
+          icon={<Clock size={24} aria-hidden="true" />}
           description={badgeSummary.pendingCount > 0 ? 'Claim now!' : 'All caught up'}
           highlight={badgeSummary.pendingCount > 0}
         />
         <SummaryCard
           title="Latest Badge"
           value={badgeSummary.latestBadge?.templateName || 'None yet'}
-          icon="🎖️"
+          icon={<Medal size={24} aria-hidden="true" />}
           description={badgeSummary.latestBadge ? 'Just earned' : 'Start earning'}
           isText
         />
@@ -244,9 +254,14 @@ export const EmployeeDashboard: React.FC = () => {
                 />
               </div>
               <p className="text-sm text-muted-foreground">
-                {currentMilestone.percentage === 100
-                  ? '🎉 Milestone completed!'
-                  : `${currentMilestone.target - currentMilestone.progress} more to reach this milestone`}
+                {currentMilestone.percentage === 100 ? (
+                  <>
+                    <PartyPopper size={16} className="inline" aria-hidden="true" /> Milestone
+                    completed!
+                  </>
+                ) : (
+                  `${currentMilestone.target - currentMilestone.progress} more to reach this milestone`
+                )}
               </p>
             </div>
           </CardContent>
@@ -257,7 +272,10 @@ export const EmployeeDashboard: React.FC = () => {
       {achievedMilestones && achievedMilestones.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">🎖️ Achieved Milestones</CardTitle>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Medal size={20} aria-hidden="true" />
+              Achieved Milestones
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-3">
@@ -317,7 +335,9 @@ export const EmployeeDashboard: React.FC = () => {
                       highlightedBadgeId === badgeSummary.latestBadge.id && 'ring-2 ring-green-400'
                     )}
                   >
-                    <span className="text-3xl">🏆</span>
+                    <span className="text-3xl">
+                      <Award size={32} aria-hidden="true" />
+                    </span>
                   </div>
                 )}
                 <div className="flex-1">
@@ -336,7 +356,7 @@ export const EmployeeDashboard: React.FC = () => {
                       </Button>
                     ) : badgeSummary.latestBadge.status === 'REVOKED' ? (
                       <span className="inline-flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
-                        🚫 Revoked
+                        <Ban size={16} aria-hidden="true" /> Revoked
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
@@ -362,7 +382,7 @@ export const EmployeeDashboard: React.FC = () => {
         <CardContent>
           {recentBadges.length === 0 ? (
             <EmptyState
-              icon="🏅"
+              icon={<Medal size={48} aria-hidden="true" />}
               title="No badges yet"
               description="Start earning badges by completing skills and achievements."
             />
@@ -413,7 +433,7 @@ export const EmployeeDashboard: React.FC = () => {
 interface SummaryCardProps {
   title: string;
   value: string | number;
-  icon: string;
+  icon: React.ReactNode;
   description?: string;
   highlight?: boolean;
   isText?: boolean;
@@ -435,9 +455,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
           <p className={cn('font-bold mt-1', isText ? 'text-lg' : 'text-3xl')}>{value}</p>
           {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
         </div>
-        <span className="text-2xl" aria-hidden="true">
-          {icon}
-        </span>
+        <div aria-hidden="true">{icon}</div>
       </div>
     </CardContent>
   </Card>
@@ -481,7 +499,9 @@ const BadgeCard: React.FC<BadgeCardProps> = ({ badge, isHighlighted, onClaim }) 
         />
       ) : (
         <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-          <span className="text-2xl">🏆</span>
+          <span className="text-2xl">
+            <Award size={24} aria-hidden="true" />
+          </span>
         </div>
       )}
       <div className="flex-1 min-w-0">

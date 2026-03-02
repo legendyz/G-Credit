@@ -1,4 +1,5 @@
 import SessionExpiryTimer from './SessionExpiryTimer';
+import { CheckCircle, XCircle } from 'lucide-react';
 
 interface TemplateBreakdownItem {
   templateName: string;
@@ -42,11 +43,15 @@ export default function BulkPreviewHeader({
         </div>
         <div className="bg-green-50 rounded-lg p-4 text-center">
           <p className="text-3xl font-bold text-green-600">{validRows}</p>
-          <p className="text-green-700 text-sm">✅ Valid</p>
+          <p className="text-green-700 text-sm">
+            <CheckCircle size={16} className="inline" aria-hidden="true" /> Valid
+          </p>
         </div>
         <div className="bg-red-50 rounded-lg p-4 text-center">
           <p className="text-3xl font-bold text-red-600">{errorRows}</p>
-          <p className="text-red-700 text-sm">❌ Errors</p>
+          <p className="text-red-700 text-sm">
+            <XCircle size={16} className="inline" aria-hidden="true" /> Errors
+          </p>
         </div>
       </div>
 

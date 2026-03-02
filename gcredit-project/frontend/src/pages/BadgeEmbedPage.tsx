@@ -6,6 +6,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { AlertTriangle, Palette, Check, ClipboardCopy, BookOpen } from 'lucide-react';
 import { getWidgetEmbedData, getWidgetHtml } from '../lib/badgeShareApi';
 import type { WidgetEmbedData, WidgetHtmlData } from '../lib/badgeShareApi';
 
@@ -122,7 +123,7 @@ ${widgetHtml.css}
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl p-8 max-w-md">
-          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+          <AlertTriangle size={48} className="text-red-500 mb-4" aria-hidden="true" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Error</h1>
           <p className="text-gray-700">{error || 'Badge not found'}</p>
         </div>
@@ -135,7 +136,9 @@ ${widgetHtml.css}
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">🎨 Badge Widget Generator</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            <Palette size={32} className="inline" aria-hidden="true" /> Badge Widget Generator
+          </h1>
           <p className="text-lg text-gray-600">
             Create an embeddable widget for <strong>{badge.badgeName}</strong>
           </p>
@@ -230,7 +233,15 @@ ${widgetHtml.css}
                   onClick={() => handleCopy(generateIframeCode())}
                   className="px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200"
                 >
-                  {copied ? '✓ Copied!' : '📋 Copy Code'}
+                  {copied ? (
+                    <>
+                      <Check size={16} className="inline" aria-hidden="true" /> Copied!
+                    </>
+                  ) : (
+                    <>
+                      <ClipboardCopy size={16} className="inline" aria-hidden="true" /> Copy Code
+                    </>
+                  )}
                 </button>
               </div>
               <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
@@ -247,7 +258,15 @@ ${widgetHtml.css}
                   onClick={() => handleCopy(generateStandaloneCode())}
                   className="px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200"
                 >
-                  {copied ? '✓ Copied!' : '📋 Copy Code'}
+                  {copied ? (
+                    <>
+                      <Check size={16} className="inline" aria-hidden="true" /> Copied!
+                    </>
+                  ) : (
+                    <>
+                      <ClipboardCopy size={16} className="inline" aria-hidden="true" /> Copy Code
+                    </>
+                  )}
                 </button>
               </div>
               <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm max-h-96">
@@ -260,7 +279,9 @@ ${widgetHtml.css}
 
             {/* Instructions */}
             <div className="bg-gradient-to-br from-green-50 to-blue-50 border border-green-200 rounded-lg p-6">
-              <h3 className="font-bold text-gray-900 mb-3">📖 How to Use</h3>
+              <h3 className="font-bold text-gray-900 mb-3">
+                <BookOpen size={20} className="inline" aria-hidden="true" /> How to Use
+              </h3>
               <ol className="text-sm text-gray-700 space-y-2 list-decimal list-inside">
                 <li>Choose your preferred widget size, theme, and options</li>
                 <li>Copy the embed code (iframe or standalone)</li>

@@ -20,7 +20,7 @@ vi.mock('@/lib/evidenceApi', () => ({
   ALLOWED_EXTENSIONS: ['.pdf', '.png', '.jpg', '.jpeg', '.docx'],
   validateEvidenceFile: () => null,
   formatFileSize: (b: number) => `${(b / 1024 / 1024).toFixed(1)} MB`,
-  getFileIcon: () => '📄',
+  getFileIcon: () => () => null,
   truncateUrl: (u: string) => u.substring(0, 50),
 }));
 

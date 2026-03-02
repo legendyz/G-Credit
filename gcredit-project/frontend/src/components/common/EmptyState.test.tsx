@@ -18,8 +18,8 @@ describe('EmptyState', () => {
   });
 
   it('renders with custom icon', () => {
-    render(<EmptyState title="Empty" icon="🚀" />);
-    expect(screen.getByText('🚀')).toBeInTheDocument();
+    render(<EmptyState title="Empty" icon={<span>TestIcon</span>} />);
+    expect(screen.getByText('TestIcon')).toBeInTheDocument();
   });
 
   it('renders action button when provided', () => {

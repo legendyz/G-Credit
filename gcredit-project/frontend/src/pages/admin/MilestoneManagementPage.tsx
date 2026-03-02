@@ -5,7 +5,7 @@
  * Card grid layout grouped by scope, with create/edit/toggle/delete actions.
  */
 import { useState, useCallback } from 'react';
-import { Plus, Trash2, PowerOff } from 'lucide-react';
+import { Plus, Trash2, PowerOff, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -291,7 +291,9 @@ function MilestoneCard({ milestone, onEdit, onDelete, onToggle }: MilestoneCardP
       {/* Threshold + Achievements */}
       <div className="flex items-center justify-between mt-3 text-xs text-neutral-500">
         <span>Threshold: {milestone.trigger.threshold}</span>
-        <span>👥 {achievementCount} achieved</span>
+        <span>
+          <Users size={14} className="inline" aria-hidden="true" /> {achievementCount} achieved
+        </span>
       </div>
     </div>
   );

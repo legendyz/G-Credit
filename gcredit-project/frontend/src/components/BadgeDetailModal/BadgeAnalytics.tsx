@@ -6,6 +6,7 @@
 import React, { useEffect, useState } from 'react';
 import { getBadgeShareStats, getBadgeShareHistory } from '../../lib/badgeShareApi';
 import type { ShareStats, ShareHistoryItem } from '../../lib/badgeShareApi';
+import { Mail, Globe, ClipboardCopy } from 'lucide-react';
 
 interface BadgeAnalyticsProps {
   badgeId: string;
@@ -18,13 +19,13 @@ interface BadgeAnalyticsProps {
 const PLATFORM_CONFIG: {
   key: keyof ShareStats['byPlatform'];
   label: string;
-  icon: string;
+  icon: React.ReactNode;
   colors: { bg: string; border: string; text: string; subtext: string };
 }[] = [
   {
     key: 'email',
     label: 'Email',
-    icon: '📧',
+    icon: <Mail size={16} aria-hidden="true" />,
     colors: {
       bg: 'from-green-50 to-green-100',
       border: 'border-green-200',
@@ -35,7 +36,7 @@ const PLATFORM_CONFIG: {
   {
     key: 'linkedin',
     label: 'Social',
-    icon: '🌐',
+    icon: <Globe size={16} aria-hidden="true" />,
     colors: {
       bg: 'from-indigo-50 to-indigo-100',
       border: 'border-indigo-200',
@@ -47,7 +48,7 @@ const PLATFORM_CONFIG: {
   {
     key: 'widget',
     label: 'Widget Copied',
-    icon: '📋',
+    icon: <ClipboardCopy size={16} aria-hidden="true" />,
     colors: {
       bg: 'from-orange-50 to-orange-100',
       border: 'border-orange-200',
@@ -58,7 +59,7 @@ const PLATFORM_CONFIG: {
 ];
 
 const PLATFORM_LABEL_MAP: Record<string, string> = Object.fromEntries(
-  PLATFORM_CONFIG.map((p) => [p.key, `${p.icon} ${p.label}`])
+  PLATFORM_CONFIG.map((p) => [p.key, p.label])
 );
 
 const BadgeAnalytics: React.FC<BadgeAnalyticsProps> = ({ badgeId, isOwner, refreshKey = 0 }) => {
@@ -147,7 +148,9 @@ const BadgeAnalytics: React.FC<BadgeAnalyticsProps> = ({ badgeId, isOwner, refre
                   <div className={`text-2xl font-bold ${platform.colors.text}`}>
                     {stats.byPlatform[platform.key]}
                   </div>
-                  <div className={`text-xs ${platform.colors.subtext} mt-1`}>
+                  <div
+                    className={`text-xs ${platform.colors.subtext} mt-1 flex items-center gap-1`}
+                  >
                     {platform.icon} {platform.label}
                   </div>
                 </div>
@@ -209,7 +212,8 @@ const BadgeAnalytics: React.FC<BadgeAnalyticsProps> = ({ badgeId, isOwner, refre
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center space-x-2">
-                              <span className="text-sm font-medium text-gray-900">
+                              <span className="text-sm font-medium text-gray-900 flex items-center gap-1">
+                                {PLATFORM_CONFIG.find((p) => p.key === item.platform)?.icon}
                                 {PLATFORM_LABEL_MAP[item.platform] || item.platform}
                               </span>
                               {item.recipientEmail && (

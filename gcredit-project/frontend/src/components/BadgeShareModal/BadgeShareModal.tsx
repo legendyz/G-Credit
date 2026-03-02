@@ -12,6 +12,16 @@ import {
   recordWidgetCopy,
 } from '../../lib/badgeShareApi';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import {
+  Mail,
+  Link,
+  CheckCircle,
+  Check,
+  ClipboardCopy,
+  Lightbulb,
+  Users,
+  Palette,
+} from 'lucide-react';
 
 interface BadgeShareModalProps {
   isOpen: boolean;
@@ -27,7 +37,14 @@ type ShareTab = 'email' | 'linkedin' | 'teams' | 'widget';
 // Tab configuration — add/remove entries to control which tabs are shown
 // TD-006: Teams tab excluded until Graph API permissions approved
 const TAB_CONFIG: { id: ShareTab; label: React.ReactNode }[] = [
-  { id: 'email', label: '📧 Email' },
+  {
+    id: 'email',
+    label: (
+      <>
+        <Mail size={16} className="inline" aria-hidden="true" /> Email
+      </>
+    ),
+  },
   {
     id: 'linkedin',
     label: (
@@ -45,7 +62,14 @@ const TAB_CONFIG: { id: ShareTab; label: React.ReactNode }[] = [
     ),
   },
   // { id: 'teams', label: '👥 Teams' },  // TD-006: Uncomment when Graph API ready
-  { id: 'widget', label: '🔗 Widget' },
+  {
+    id: 'widget',
+    label: (
+      <>
+        <Link size={16} className="inline" aria-hidden="true" /> Widget
+      </>
+    ),
+  },
 ];
 
 const TABS: ShareTab[] = TAB_CONFIG.map((t) => t.id);
@@ -318,7 +342,8 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
             {success && (
               <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
                 <p className="text-green-800 font-medium">
-                  ✅ {activeTab === 'widget' ? 'Link copied!' : 'Badge shared successfully!'}
+                  <CheckCircle size={16} className="inline mr-1" aria-hidden="true" />{' '}
+                  {activeTab === 'widget' ? 'Link copied!' : 'Badge shared successfully!'}
                 </p>
               </div>
             )}
@@ -409,7 +434,9 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                     Sending...
                   </>
                 ) : (
-                  '📧 Send via Email'
+                  <>
+                    <Mail size={16} className="inline mr-1" aria-hidden="true" /> Send via Email
+                  </>
                 )}
               </button>
             </div>
@@ -475,7 +502,16 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                   className="mt-2 w-full flex items-center justify-center gap-1.5 min-h-[36px] rounded-md text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
                   aria-label="Copy message to clipboard"
                 >
-                  {copiedLinkedIn ? <>✓ Copied to clipboard</> : <>📋 Copy message first</>}
+                  {copiedLinkedIn ? (
+                    <>
+                      <Check size={16} className="inline" /> Copied to clipboard
+                    </>
+                  ) : (
+                    <>
+                      <ClipboardCopy size={16} className="inline" aria-hidden="true" /> Copy message
+                      first
+                    </>
+                  )}
                 </button>
               </div>
 
@@ -490,7 +526,10 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                 }`}
               >
                 {linkedInShared ? (
-                  <>✓ LinkedIn opened — paste your message there</>
+                  <>
+                    <Check size={16} className="inline" /> LinkedIn opened — paste your message
+                    there
+                  </>
                 ) : (
                   <>
                     <svg
@@ -507,7 +546,8 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
               </button>
 
               <p className="text-xs text-gray-500 text-center">
-                💡 Copy the message above, then paste it into the LinkedIn post editor
+                <Lightbulb size={16} className="inline mr-1" aria-hidden="true" /> Copy the message
+                above, then paste it into the LinkedIn post editor
               </p>
             </div>
           )}
@@ -522,8 +562,8 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
             >
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                 <p className="text-sm text-blue-800">
-                  💡 Leave Team ID and Channel ID empty to use default settings configured by your
-                  administrator.
+                  <Lightbulb size={16} className="inline mr-1" aria-hidden="true" /> Leave Team ID
+                  and Channel ID empty to use default settings configured by your administrator.
                 </p>
               </div>
 
@@ -612,7 +652,9 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
                     Sharing...
                   </>
                 ) : (
-                  '👥 Share to Teams'
+                  <>
+                    <Users size={16} className="inline mr-1" aria-hidden="true" /> Share to Teams
+                  </>
                 )}
               </button>
             </div>
@@ -627,7 +669,10 @@ const BadgeShareModal: React.FC<BadgeShareModalProps> = ({
               className="flex flex-col gap-4"
             >
               <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4">
-                <h3 className="font-medium text-gray-900 mb-2">🎨 Embeddable Badge Widget</h3>
+                <h3 className="font-medium text-gray-900 mb-2">
+                  <Palette size={16} className="inline mr-1" aria-hidden="true" /> Embeddable Badge
+                  Widget
+                </h3>
                 <p className="text-sm text-gray-700">
                   Generate an embeddable widget to display this badge on your website, portfolio, or
                   LinkedIn profile.

@@ -159,7 +159,8 @@ export function DeactivateUserDialog({
         {isSelf && isDeactivating && (
           <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 dark:border-red-900 dark:bg-red-900/20">
             <p className="text-sm text-red-800 dark:text-red-200">
-              ⚠️ You cannot deactivate your own account.
+              <AlertTriangle size={16} className="inline text-red-600" aria-hidden="true" /> You
+              cannot deactivate your own account.
             </p>
           </div>
         )}

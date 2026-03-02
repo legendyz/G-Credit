@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { toast } from 'sonner';
-import { ExternalLink, Download, Eye, X } from 'lucide-react';
+import { ExternalLink, Download, Eye, X, Link as LinkIcon } from 'lucide-react';
 import {
   type EvidenceItem,
   formatFileSize,
@@ -86,8 +86,15 @@ const EvidenceList: React.FC<EvidenceListProps> = ({
         >
           {/* Left: icon + name + meta */}
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <span className="text-lg flex-shrink-0">
-              {item.type === 'URL' ? '🔗' : getFileIcon(item.mimeType)}
+            <span className="flex-shrink-0">
+              {item.type === 'URL' ? (
+                <LinkIcon size={18} className="text-neutral-500" aria-hidden="true" />
+              ) : (
+                (() => {
+                  const FileIcon = getFileIcon(item.mimeType);
+                  return <FileIcon size={18} className="text-neutral-500" aria-hidden="true" />;
+                })()
+              )}
             </span>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-neutral-900 truncate">

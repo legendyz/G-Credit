@@ -4,6 +4,7 @@
  * Non-dismissable dialog that warns user of imminent session expiry.
  * Uses shadcn Dialog with no close button and onInteractOutside prevented.
  */
+import { AlertTriangle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -33,7 +34,9 @@ export function IdleWarningModal({ open, secondsRemaining, onContinue }: IdleWar
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle className="text-amber-700">⚠ Session Expiring</DialogTitle>
+          <DialogTitle className="text-amber-700">
+            <AlertTriangle size={20} className="inline" aria-hidden="true" /> Session Expiring
+          </DialogTitle>
           <DialogDescription>
             Your session will expire in{' '}
             <span className="font-mono font-bold text-amber-700">{timeDisplay}</span> due to
