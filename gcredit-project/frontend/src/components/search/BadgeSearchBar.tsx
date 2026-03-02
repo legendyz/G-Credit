@@ -114,7 +114,7 @@ export function BadgeSearchBar({
       {/* Search & Filters Row */}
       <div className="flex flex-col sm:flex-row gap-3">
         {/* Search Input - Story 8.2 AC1: Mobile focus behavior */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-[200px]">
           <SearchInput
             value={searchTerm}
             onChange={onSearchChange}
@@ -131,7 +131,7 @@ export function BadgeSearchBar({
 
         {/* Filters - responsive layout, hidden on mobile when search focused */}
         <div
-          className={`flex flex-wrap gap-2 sm:flex-nowrap ${isSearchFocused ? 'hidden sm:flex' : ''}`}
+          className={`flex flex-wrap gap-2 lg:flex-nowrap ${isSearchFocused ? 'hidden sm:flex' : ''}`}
         >
           {/* Skills Filter */}
           {skills.length > 0 && (

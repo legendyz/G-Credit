@@ -338,32 +338,25 @@ export default function SkillManagementPage() {
           </div>
 
           {/* Data table */}
-          <div className="rounded-lg border border-neutral-200 bg-white overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full table-fixed">
-                <colgroup>
-                  <col className="w-[22%]" />
-                  <col className="w-[22%]" />
-                  <col className="w-[16%]" />
-                  <col className="w-[12%]" />
-                  <col className="w-[12%]" />
-                  <col className="w-[16%]" />
-                </colgroup>
+          <div className="rounded-lg border border-neutral-200 bg-white overflow-hidden relative">
+            <div className="overflow-x-auto scrollbar-none">
+              {/* Removed: table-fixed + colgroup — let columns size naturally (FINDING-08) */}
+              <table className="w-full min-w-[600px]">
                 <thead>
                   <tr className="border-b border-neutral-200 bg-neutral-50">
                     <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                       Name
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider hidden md:table-cell">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider hidden lg:table-cell">
                       Description
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                       Category
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider hidden sm:table-cell">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider hidden md:table-cell">
                       Level
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-neutral-600 uppercase tracking-wider hidden sm:table-cell">
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-neutral-600 uppercase tracking-wider hidden lg:table-cell">
                       Badge Templates
                     </th>
                     <th className="px-4 py-3 text-right text-xs font-semibold text-neutral-600 uppercase tracking-wider">
@@ -387,7 +380,7 @@ export default function SkillManagementPage() {
                         />
                         {inlineError && <p className="text-xs text-red-600 mt-1">{inlineError}</p>}
                       </td>
-                      <td className="px-4 py-2 hidden md:table-cell">
+                      <td className="px-4 py-2 hidden lg:table-cell">
                         <Input
                           placeholder="Description"
                           value={newDescription}
@@ -402,7 +395,7 @@ export default function SkillManagementPage() {
                           {selectedCategoryName || '—'}
                         </span>
                       </td>
-                      <td className="px-4 py-2 hidden sm:table-cell">
+                      <td className="px-4 py-2 hidden md:table-cell">
                         <Select value={newLevel} onValueChange={setNewLevel}>
                           <SelectTrigger className="h-8 text-xs" onKeyDown={handleLastFieldKeyDown}>
                             <SelectValue placeholder="Level" />
@@ -416,7 +409,7 @@ export default function SkillManagementPage() {
                           </SelectContent>
                         </Select>
                       </td>
-                      <td className="px-4 py-2 text-center hidden sm:table-cell">
+                      <td className="px-4 py-2 text-center hidden lg:table-cell">
                         <span className="text-xs text-neutral-400">—</span>
                       </td>
                       <td className="px-4 py-2 text-right">
@@ -449,10 +442,12 @@ export default function SkillManagementPage() {
                     const colorClasses = getCategoryColorClasses(skill.categoryColor);
                     return (
                       <tr key={skill.id} className="group hover:bg-neutral-50 transition-colors">
-                        <td className="px-4 py-3 text-sm font-medium text-neutral-900 truncate">
-                          {skill.name}
+                        <td className="px-4 py-3 min-w-0">
+                          <span className="text-sm font-medium text-neutral-900 truncate block">
+                            {skill.name}
+                          </span>
                         </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600 truncate hidden md:table-cell">
+                        <td className="px-4 py-3 text-sm text-neutral-600 truncate hidden lg:table-cell">
                           {skill.description || '—'}
                         </td>
                         <td className="px-4 py-3">
@@ -462,10 +457,10 @@ export default function SkillManagementPage() {
                             {skill.categoryName || '—'}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600 hidden sm:table-cell">
+                        <td className="px-4 py-3 text-sm text-neutral-600 hidden md:table-cell">
                           {skill.level || '—'}
                         </td>
-                        <td className="px-4 py-3 text-center text-sm text-neutral-600 hidden sm:table-cell">
+                        <td className="px-4 py-3 text-center text-sm text-neutral-600 hidden lg:table-cell">
                           {(skill.badgeCount ?? 0) > 0 ? (
                             <span className="relative group/tmpl cursor-help">
                               <span className="inline-flex items-center justify-center min-w-[1.5rem] px-1.5 py-0.5 rounded-full text-xs font-semibold bg-brand-100 text-brand-700 border border-brand-200">

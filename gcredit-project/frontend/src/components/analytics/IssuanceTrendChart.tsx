@@ -52,7 +52,7 @@ const IssuanceTrendChart: React.FC<IssuanceTrendChartProps> = ({ dataPoints }) =
         />
         <YAxis tick={{ fontSize: 12, fill: 'var(--color-neutral-500)' }} allowDecimals={false} />
         <Tooltip
-          // inline style retained: Recharts library API prop
+          /* Recharts API requires style object — cannot use Tailwind classes */
           contentStyle={{
             borderRadius: '8px',
             border: '1px solid var(--color-neutral-200)',
@@ -60,7 +60,7 @@ const IssuanceTrendChart: React.FC<IssuanceTrendChartProps> = ({ dataPoints }) =
             fontSize: '13px',
           }}
         />
-        {/* inline style retained: Recharts library API prop */}
+        {/* Recharts API requires style object — cannot use Tailwind classes */}
         <Legend wrapperStyle={{ fontSize: '13px' }} />
         <Area
           type="monotone"

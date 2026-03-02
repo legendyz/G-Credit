@@ -253,7 +253,10 @@ export function TimelineView() {
   const showNoResults = displayBadges.length === 0 && hasFilters;
 
   return (
-    <PageTemplate title="My Badges" actions={<ViewToggle mode={viewMode} onChange={setViewMode} />}>
+    <PageTemplate
+      title="My Badge Wallet"
+      actions={<ViewToggle mode={viewMode} onChange={setViewMode} />}
+    >
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
         {/* Date Navigation Sidebar - AC 1.6 (hidden on mobile, visible on desktop) */}
         <DateNavigationSidebar
