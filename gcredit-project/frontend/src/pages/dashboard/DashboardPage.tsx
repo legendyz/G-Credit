@@ -132,11 +132,11 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({ role, isManager }) => {
       data-testid="dashboard-tabs"
     >
       <TabsList
-        className="w-full justify-start overflow-x-auto md:justify-center"
+        className="w-full justify-start overflow-x-auto scrollbar-none md:justify-center"
         data-dashboard-tabs
       >
         {visibleTabs.map((tab) => (
-          <TabsTrigger key={tab} value={tab} className="min-w-[100px]">
+          <TabsTrigger key={tab} value={tab} className="shrink-0">
             {TAB_LABELS[tab]}
           </TabsTrigger>
         ))}

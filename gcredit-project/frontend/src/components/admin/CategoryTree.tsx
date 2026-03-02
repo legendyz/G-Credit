@@ -46,6 +46,7 @@ interface CategoryTreeProps {
   onReorder?: (updates: Array<{ id: string; displayOrder: number }>) => void;
   selectedId?: string;
   onSelect?: (category: SkillCategory) => void;
+  onClearSelection?: () => void;
   onCreateRoot?: () => void;
 }
 
@@ -58,6 +59,7 @@ export function CategoryTree({
   onReorder,
   selectedId,
   onSelect,
+  onClearSelection,
   onCreateRoot,
 }: CategoryTreeProps) {
   const isDesktop = useIsDesktop();
@@ -169,6 +171,7 @@ export function CategoryTree({
           editable={editable}
           selectedId={selectedId}
           onSelect={onSelect}
+          onClearSelection={onClearSelection}
           onEdit={onEdit}
           onDelete={onDelete}
           onAddChild={onAddChild}

@@ -248,10 +248,19 @@
   animation: bounce-slow 2s ease-in-out infinite;
 }
 
+/* === Scrollbar Hide Utility — for horizontal scroll containers === */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* === Sidebar Active State — Story 15.3 (REC-15.3-003) === */
 [data-sidebar="menu-button"][data-active="true"] {
-  border-left: 3px solid hsl(var(--primary));
-  background-color: hsl(var(--accent));
+  border-left: 3px solid var(--primary);
+  background-color: var(--accent);
 }
 
 /* === Sidebar Collapse Animation — Story 15.3 (CRITICAL-15.3-002) === */

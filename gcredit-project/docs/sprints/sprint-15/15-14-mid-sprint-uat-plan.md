@@ -108,7 +108,7 @@ Seed 数据缺少 **ISSUER+isManager** (Combo 4) 和 **ADMIN+isManager** (Combo 
 | 组 | 组标题 | 包含链接 |
 |----|--------|---------|
 | base | _(无标题)_ | Dashboard, Wallet |
-| team | Team | Team Overview |
+| team | Team | Team Badges |
 | issuance | Issuance | Templates, Badges, Bulk Issue, Analytics |
 | admin | Admin | Users, Categories, Skills, Milestones |
 
@@ -129,7 +129,7 @@ Seed 数据缺少 **ISSUER+isManager** (Combo 4) 和 **ADMIN+isManager** (Combo 
 | # | 检查项 | 预期结果 | 操作 | PASS/FAIL |
 |---|--------|---------|------|-----------|
 | A1 | Base 组可见 | 侧边栏显示 "Dashboard" 和 "Wallet" 两个链接 | 直接观察侧边栏 | |
-| A2 | Team 组隐藏 | 侧边栏中 **没有** "Team" 标题和 "Team Overview" 链接 | 确认无此项 | |
+| A2 | Team 组隐藏 | 侧边栏中 **没有** "Team" 标题和 "Team Badges" 链接 | 确认无此项 | |
 | A3 | Issuance 组隐藏 | 侧边栏中 **没有** "Issuance" 标题及其下属链接 | 确认无此项 | |
 | A4 | Admin 组隐藏 | 侧边栏中 **没有** "Admin" 标题及其下属链接 | 确认无此项 | |
 
@@ -149,7 +149,7 @@ Seed 数据缺少 **ISSUER+isManager** (Combo 4) 和 **ADMIN+isManager** (Combo 
 
 | # | 检查项 | 预期结果 | 操作 | PASS/FAIL |
 |---|--------|---------|------|-----------|
-| A5 | Team 组可见 | 侧边栏显示 "Team" 标题和 "Team Overview" 链接 | 直接观察 | |
+| A5 | Team 组可见 | 侧边栏显示 "Team" 标题和 "Team Badges" 链接 | 直接观察 | |
 | A6 | Issuance 组隐藏 | 侧边栏中 **没有** "Issuance" 标题及其下属链接 | 确认无此项 | |
 
 > 此账户同时应有 Base 组（Dashboard, Wallet），可顺带确认。
@@ -171,7 +171,7 @@ Seed 数据缺少 **ISSUER+isManager** (Combo 4) 和 **ADMIN+isManager** (Combo 
 | # | 检查项 | 预期结果 | 操作 | PASS/FAIL |
 |---|--------|---------|------|-----------|
 | A7 | Issuance 组可见 | 侧边栏显示 "Issuance" 标题，包含：Templates, Badges, Bulk Issue, Analytics | 逐项确认 4 个链接 | |
-| A8 | Team 组隐藏 | 侧边栏中 **没有** "Team" 标题和 "Team Overview" 链接 | 确认无此项 | |
+| A8 | Team 组隐藏 | 侧边栏中 **没有** "Team" 标题和 "Team Badges" 链接 | 确认无此项 | |
 
 **完成后：** Sign Out。
 
@@ -189,7 +189,7 @@ Seed 数据缺少 **ISSUER+isManager** (Combo 4) 和 **ADMIN+isManager** (Combo 
 
 | # | 检查项 | 预期结果 | 操作 | PASS/FAIL |
 |---|--------|---------|------|-----------|
-| A9 | Team + Issuance 组都可见 | 侧边栏同时显示 "Team" 组（Team Overview）和 "Issuance" 组（4 个链接） | 观察两个组 | |
+| A9 | Team + Issuance 组都可见 | 侧边栏同时显示 "Team" 组（Team Badges）和 "Issuance" 组（4 个链接） | 观察两个组 | |
 
 **完成后：** Sign Out。恢复 employee2 的 Manager 为 Team Manager。
 
@@ -208,7 +208,7 @@ Seed 数据缺少 **ISSUER+isManager** (Combo 4) 和 **ADMIN+isManager** (Combo 
 | # | 检查项 | 预期结果 | 操作 | PASS/FAIL |
 |---|--------|---------|------|-----------|
 | A10 | Issuance + Admin 组可见 | 侧边栏显示 "Issuance" 组（4 链接）+ "Admin" 组（4 链接） | 逐项确认 | |
-| A11 | Team 组隐藏 | 侧边栏中 **没有** "Team" 标题和 "Team Overview" 链接 | 确认无此项 | |
+| A11 | Team 组隐藏 | 侧边栏中 **没有** "Team" 标题和 "Team Badges" 链接 | 确认无此项 | |
 
 **完成后：** Sign Out。
 
@@ -356,7 +356,7 @@ Seed 数据缺少 **ISSUER+isManager** (Combo 4) 和 **ADMIN+isManager** (Combo 
 |---|-----------|-----------|---------|-----------|
 | C1 | Dashboard | `/` | Dashboard 标签页视图（4 tabs） | |
 | C2 | Wallet | `/wallet` | Badge Wallet 时间线 | |
-| C3 | Team Overview | `/admin/badges` | Badge Management 页面 | |
+| C3 | Team Badges | `/admin/badges` | Badge Management 页面 | |
 | C4 | Templates | `/admin/templates` | Badge Template 列表页 | |
 | C5 | Badges | `/admin/badges` | Badge Management 页面 | |
 | C6 | Bulk Issue | `/admin/bulk-issuance` | Bulk Issuance 页面 | |
@@ -365,7 +365,7 @@ Seed 数据缺少 **ISSUER+isManager** (Combo 4) 和 **ADMIN+isManager** (Combo 
 | C9 | Categories | `/admin/skills/categories` | Skill Category 管理页 | |
 | C10 | Skills | `/admin/skills` | Skill 管理页 | |
 
-> **注意：** "Team Overview" 和 "Badges" 都指向 `/admin/badges`，这是预期行为（不同组中的同一路由）。
+> **注意：** "Team Badges" 和 "Badges" 都指向 `/admin/badges`，这是预期行为（不同组中的同一路由）。
 
 **每个路由检查清单：**
 - 页面正常加载（无白屏、无报错）
