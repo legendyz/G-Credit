@@ -2,10 +2,10 @@
 
 **Project:** G-Credit Digital Credentialing System  
 **Purpose:** Capture key learnings and establish best practices for efficient development  
-**Last Updated:** 2026-02-28 (Sprint 14 v1.4.0 — Dual-Dimension Role Model Refactor)  
+**Last Updated:** 2026-03-02 (Sprint 15 v1.5.0 — UI Overhaul & Dashboard)
 **Status:** Living document - update after each Sprint Retrospective  
-**Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 → Sprint 6 → Sprint 7 → Sprint 8 → Sprint 9 → Sprint 10 → Sprint 11 → Sprint 12 → Sprint 13 → Sprint 14 (Complete, v1.4.0)  + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
-**Total Lessons:** 51 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 8, Sprint 7: 3, Sprint 8: 3, Sprint 9: 3, Sprint 10: 3, Sprint 11: 4, Sprint 12: 2, Sprint 13: 3, Sprint 14: 3)
+**Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 → Sprint 6 → Sprint 7 → Sprint 8 → Sprint 9 → Sprint 10 → Sprint 11 → Sprint 12 → Sprint 13 → Sprint 14 (Complete, v1.4.0) → Sprint 15 (In Progress)  + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
+**Total Lessons:** 52 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 8, Sprint 7: 3, Sprint 8: 3, Sprint 9: 3, Sprint 10: 3, Sprint 11: 4, Sprint 12: 2, Sprint 13: 3, Sprint 14: 3, Sprint 15: 1)
 
 ---
 
@@ -107,6 +107,8 @@
   - Lesson 49: Architecture Specs as Development Contracts
   - Lesson 50: Story Absorption Reduces Overhead
   - Lesson 51: Rate Limiter Settings Need E2E Testing Awareness
+- [Sprint 15 Lessons](#sprint-15-lessons-march-2026) - Tailwind v4 Compatibility (1 lesson)
+  - Lesson 52: shadcn/ui Components Need Tailwind v4 CSS Variable Syntax Audit
 - [Cross-Sprint Patterns](#cross-sprint-patterns) - 13 patterns
 - [Development Checklists](#development-checklists)
 - [Common Pitfalls](#common-pitfalls-to-avoid)
@@ -5413,3 +5415,48 @@ Updated 3 files: `test-setup.ts`, `analytics.e2e-spec.ts`, `auth-simple.e2e-spec
 **Action Items:**
 1. Implement TD-038 in Sprint 15 — move all `@Throttle()` values to `ConfigService`
 2. Add E2E test env config with relaxed rate limits
+
+---
+
+## Sprint 15 Lessons (March 2026)
+### UI Overhaul, Dashboard, & Tailwind v4 Compatibility
+
+### Sprint 15: Lesson 52 — shadcn/ui Components Need Tailwind v4 CSS Variable Syntax Audit
+
+**Context:** After migrating to the shadcn/ui sidebar component (Story 15.3), the main content area was overlapped by the sidebar at all viewport sizes. The sidebar gap div (a space-holder that pushes content right of the fixed sidebar) rendered at 0px width instead of 256px.
+
+**Lesson:** shadcn/ui components are generated for Tailwind CSS v3, where `w-[--sidebar-width]` automatically wraps to `width: var(--sidebar-width)`. In **Tailwind v4** (our project uses v4.1.18), this syntax generates **invalid CSS** `width: --sidebar-width` (a literal string, not a CSS `var()` function). This is a **silent failure** — no build errors, no console warnings, no test failures. The rendered width simply falls back to the element's intrinsic content width (0px for empty divs, content-based for others).
+
+**What Happened:**
+- `sidebar.tsx` had 5 occurrences of `w-[--sidebar-width]` and `w-[--sidebar-width-icon]`
+- In Tailwind v4, these generated `width: --sidebar-width` (invalid) instead of `width: var(--sidebar-width)`
+- The gap div (no content) → 0px width → content starts at x=0
+- The fixed sidebar (has nav links) → ~173px (content-based) instead of 256px (16rem)
+- Result: sidebar overlaps content by ~173px, clipping titles and left side of all pages
+- **No build warning, no lint error, no test failure** — only visible during manual UAT
+
+**Root Cause:**
+- Tailwind v3 → v4 **breaking change** in arbitrary value syntax for CSS variables
+- v3: `w-[--my-var]` → `width: var(--my-var)` (auto-wraps)
+- v4: `w-[--my-var]` → `width: --my-var` (literal, invalid)
+- v4 correct: `w-[var(--my-var)]` or `w-(--my-var)` (new parenthesis syntax)
+
+**Fix Applied:**
+```tsx
+// Before (Tailwind v3 syntax — BROKEN in v4)
+w-[--sidebar-width]
+w-[--sidebar-width-icon]
+
+// After (Tailwind v4 compatible)
+w-[var(--sidebar-width)]
+w-[var(--sidebar-width-icon)]
+```
+
+**Prevention for Future:**
+1. **When adding/updating any shadcn/ui component:** Audit all arbitrary value usages for bare CSS variable references `[--var-name]` and replace with `[var(--var-name)]`
+2. **Grep check after `npx shadcn add`:** Run `grep -rn 'w-\[--\|h-\[--\|p-\[--\|m-\[--\|gap-\[--\|left-\[--\|right-\[--\|top-\[--\|bottom-\[--' src/components/ui/` to find bare CSS variable references
+3. **Add to Code Review checklist:** "Verify no Tailwind v3-style bare CSS variable syntax in arbitrary values"
+4. **Visual regression testing:** This class of bug is invisible to unit tests and build checks — only caught by rendering the actual UI
+
+**Key Pattern:**
+> When using component libraries designed for Tailwind v3 in a Tailwind v4 project, always audit the generated code for CSS variable syntax. The `[--var]` → `[var(--var)]` migration is a **silent breaking change** with no build-time warnings — it can only be caught through visual testing or CSS auditing.

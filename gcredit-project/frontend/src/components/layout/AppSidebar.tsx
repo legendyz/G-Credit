@@ -70,8 +70,12 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild tooltip="G-Credit">
               <a href="/" onClick={handleNavigate('/')}>
-                <CreditCard className="text-primary" />
-                <span className="text-lg font-bold text-primary">G-Credit</span>
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                  <CreditCard className="size-4" />
+                </div>
+                <div className="flex flex-col gap-0.5 leading-none">
+                  <span className="font-bold text-primary">G-Credit</span>
+                </div>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

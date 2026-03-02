@@ -33,45 +33,43 @@ interface LayoutProps {
 
 export function Layout({ children, pageTitle, showNavbar = true, className = '' }: LayoutProps) {
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-background flex w-full">
-        {/* Skip Link - First focusable element (WCAG 2.4.1) */}
-        <SkipLink targetId="main-content" />
+    <SidebarProvider className="bg-background">
+      {/* Skip Link - First focusable element (WCAG 2.4.1) */}
+      <SkipLink targetId="main-content" />
 
-        {/* Sidebar Navigation */}
-        {showNavbar && <AppSidebar />}
+      {/* Sidebar Navigation */}
+      {showNavbar && <AppSidebar />}
 
-        <SidebarInset>
-          {/* Mobile header with sidebar trigger (< 768px) */}
-          {showNavbar && (
-            <header className="flex h-14 items-center gap-2 border-b px-4 md:hidden">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mr-2 h-4" />
-              <span className="text-lg font-bold text-primary">G-Credit</span>
-            </header>
-          )}
+      <SidebarInset>
+        {/* Mobile header with sidebar trigger (< 768px) */}
+        {showNavbar && (
+          <header className="flex h-14 items-center gap-2 border-b px-4 md:hidden">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <span className="text-lg font-bold text-primary">G-Credit</span>
+          </header>
+        )}
 
-          {/* Main Content Area — max-w-7xl preserved (CRITICAL-15.3-ARCH-002) */}
-          <main
-            id="main-content"
-            role="main"
-            tabIndex={-1}
-            className={className}
-            aria-label={pageTitle || 'Main content'}
-          >
-            <div className="max-w-7xl mx-auto">
-              {/* Page heading for screen readers */}
-              {pageTitle && <h1 className="sr-only">{pageTitle}</h1>}
-              {children}
-            </div>
-          </main>
+        {/* Main Content Area — max-w-7xl preserved (CRITICAL-15.3-ARCH-002) */}
+        <main
+          id="main-content"
+          role="main"
+          tabIndex={-1}
+          className={className}
+          aria-label={pageTitle || 'Main content'}
+        >
+          <div className="max-w-7xl mx-auto">
+            {/* Page heading for screen readers */}
+            {pageTitle && <h1 className="sr-only">{pageTitle}</h1>}
+            {children}
+          </div>
+        </main>
 
-          {/* Footer with Contentinfo role */}
-          <footer role="contentinfo" className="sr-only">
-            <p>G-Credit Digital Badge Platform</p>
-          </footer>
-        </SidebarInset>
-      </div>
+        {/* Footer with Contentinfo role */}
+        <footer role="contentinfo" className="sr-only">
+          <p>G-Credit Digital Badge Platform</p>
+        </footer>
+      </SidebarInset>
     </SidebarProvider>
   );
 }

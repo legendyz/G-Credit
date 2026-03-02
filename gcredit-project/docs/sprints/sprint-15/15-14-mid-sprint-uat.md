@@ -169,9 +169,17 @@ _To be filled during UAT execution_
 - **Fix:** Renamed sidebar label from "Team Overview" to **"Team Badges"** in `navigation.ts`. Updated corresponding sidebar tests in `AppSidebar.test.tsx`. Dashboard tab "Team Overview" label unchanged (it genuinely shows team overview stats).
 - **Disposition:** **Hotfixed immediately** during UAT.
 
----
+### FINDING-06: Content area overlapped by sidebar — Tailwind v4 CSS variable syntax incompatibility (**HOTFIXED**)
 
-## Dev Agent Record
+- **Severity:** HIGH (Layout broken — content clipped on all pages)
+- **Test ID:** D1-D4 (Responsive Layout — all viewport sizes)
+- **Description:** When resizing the browser window, the main content area does not adapt — content is clipped/hidden behind the sidebar on the left side. The sidebar gap div (space-holder that pushes content right) has 0px width, so the content area starts at x=0, directly underneath the fixed-position sidebar (~173px wide).
+- **Root Cause:** shadcn/ui `sidebar.tsx` was generated for Tailwind CSS v3, using bare CSS variable syntax `w-[--sidebar-width]`. In Tailwind v3, this auto-wraps to `width: var(--sidebar-width)`. But the project uses **Tailwind v4.1.18**, where `w-[--sidebar-width]` generates **invalid CSS** `width: --sidebar-width` (literal string, not a `var()` function). The gap div has no content, so its width falls back to 0px. The fixed sidebar renders at its content's intrinsic width (~173px) instead of the intended 256px (16rem).
+- **Fix:** Changed all 5 bare `w-[--sidebar-width]` / `w-[--sidebar-width-icon]` occurrences to `w-[var(--sidebar-width)]` / `w-[var(--sidebar-width-icon)]` in `sidebar.tsx`. Also removed a redundant wrapper `<div>` in `Layout.tsx` that created a nested flex container.
+- **Files Changed:** `frontend/src/components/ui/sidebar.tsx`, `frontend/src/components/layout/Layout.tsx`
+- **Disposition:** **Hotfixed immediately** during UAT. Verified via Playwright: gap div now correctly computes to 256px.
+
+---
 
 ### Agent Model Used
 _To be filled during UAT_
