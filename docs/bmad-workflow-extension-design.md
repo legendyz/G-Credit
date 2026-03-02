@@ -1,10 +1,18 @@
 # BMAD Workflow Automation VS Code Extension — Technical Design Document
 
 > **Document Type**: Technical Design Document  
-> **Version**: 0.1.0 (Draft)  
+> **Version**: 0.2.0 (Draft)  
 > **Created**: 2026-03-01  
+> **Last Updated**: 2026-03-02  
 > **Author**: LegendZhu  
 > **Status**: Design Exploration — Not Yet Implemented
+
+### Revision History
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 0.1.0 | 2026-03-01 | Initial design document |
+| 0.2.0 | 2026-03-02 | Feasibility correction: full automated pipeline IS feasible (dev prompt / CR prompt are Agent-generated, not human-written); SM acceptance upgraded to mandatory stage; added CI verification closed loop; added Agent intermediate artifacts (dev prompt / CR prompt) passing mechanism; expanded multi-story execution modes (single/batch/wave/sprint) |
 
 ---
 
@@ -23,6 +31,8 @@ Window 3: CR Tea     → Code Review
 ```
 
 Each context switch requires manually copying context, loading Agent templates, and pasting instructions — a tedious and error-prone process.
+
+> **Key Finding (v0.2.0):** In practice, dev prompts and CR prompts are **entirely Agent-generated** (e.g., the SM Agent generates a detailed dev prompt when creating a Story — with per-file, per-line surgical instructions, often 400+ lines). The developer's role is merely **manual transport** of these Agent-generated artifacts between 3 Chat windows. This means a fully automated pipeline is absolutely feasible — the extension only needs to replace the manual transport steps.
 
 ### 1.2 Goals
 
@@ -158,27 +168,46 @@ Three feasible approaches were evaluated before arriving at the final solution:
                     │    Start     │
                     └──────┬──────┘
                            ▼
-                  ┌────────────────┐
-                  │  SM Creates    │
-                  │  Story         │
-                  │ (create-story) │
-                  └───────┬────────┘
+              ┌────────────────────────┐
+              │  SM Creates Story      │
+              │  (create-story)        │
+              │  Output: Story file    │
+              │      + dev prompt (*)  │
+              └───────────┬────────────┘
                           ▼
-                 ┌─────────────────┐
-                 │ Dev Implements  │
-                 │  Story          │
-                 │  (dev-story)    │
-                 └───────┬─────────┘
-                         ▼
+              ┌────────────────────────┐
+              │  SM Generates Dev      │
+              │  Prompt (based on      │
+              │  Story — detailed dev  │
+              │  instructions, 400+    │
+              │  lines)                │
+              └───────────┬────────────┘
+                          ▼
+              ┌────────────────────────┐
+              │  Dev Implements Story  │
+              │   Input: Story + dev  │
+              │          prompt        │
+              │   (dev-story)          │
+              └───────────┬────────────┘
+                          ▼
                   ┌──────────────┐
                   │  Git Commit  │
                   │  (WIP)       │
                   └──────┬───────┘
                          ▼
-              ┌─────────────────────┐
-              │  CR Code Review     │
-              │  (code-review)      │
-              └──────┬──────────────┘
+              ┌────────────────────────┐
+              │  SM Generates CR       │
+              │  Prompt (based on git  │
+              │  diff + Story —        │
+              │  review instructions)  │
+              └───────────┬────────────┘
+                          ▼
+              ┌────────────────────────┐
+              │  CR Code Review        │
+              │  Input: Story + CR     │
+              │   prompt + git diff    │
+              │  (code-review)         │
+              └──────┬─────────────────┘
                      ▼
               ┌──────────────┐     ┌─────────────────┐
               │  Review      │─NO─▶│  Dev Fixes      │
@@ -195,29 +224,52 @@ Three feasible approaches were evaluated before arriving at the final solution:
                      │             │ (≤3 rounds, else │
                      ▼             │  abort)          │
               ┌──────────────┐     └──────────────────┘
-              │  SM Accept   │
-              │  (optional   │
-              │  checkpoint) │
+              │  SM Accept   │  ← Mandatory stage (not optional)
+              │  (story      │
+              │  acceptance) │
               └──────┬───────┘
+                     ▼
+              ┌──────────────┐     ┌───────────────────┐
+              │  Accepted?   │─NO─▶│ Dev Fix → CR → SM │
+              └──────┬───────┘     │ (back to fix loop)│
+                     │             └───────────────────┘
+                    YES
                      ▼
               ┌──────────────┐
               │  Git Push    │
               └──────┬───────┘
                      ▼
               ┌──────────────┐
-              │    Done       │
+              │  CI Verify   │  ← Poll GitHub Actions
+              └──────┬───────┘
+                     ▼
+              ┌──────────────┐     ┌───────────────────┐
+              │  CI Passed?  │─NO─▶│ Dev Fix → CR → SM │
+              └──────┬───────┘     │ → Push → CI again │
+                     │             └───────────────────┘
+                    YES
+                     ▼
+              ┌──────────────┐
+              │   Done ✅     │
               └──────────────┘
 ```
+
+> (*) Dev prompt can be generated by the SM Agent alongside Story creation, or as an independent step where the SM Agent generates it based on an existing Story file.
 
 ### 4.2 Phase Details
 
 | Phase | Agent Used | Workflow | Input | Output |
 |-------|-----------|----------|-------|--------|
 | SM Create Story | Bob (SM) | `create-story` | Sprint plan, Epics, sprint-status.yaml | Story file (`.md`) |
-| Dev Implement | Amelia (Dev) | `dev-story` | Story file, project codebase | Code changes, tests, updated Story file |
-| CR Review | Murat/Tea (CR) | `code-review` | Git diff, Story file, architecture docs | Review report (APPROVED / CHANGES_REQUESTED) |
+| **SM Generate Dev Prompt** | **Bob (SM)** | **custom** | **Story file, project code structure** | **dev prompt (`.md`)** — detailed per-file, per-line dev instructions |
+| Dev Implement | Amelia (Dev) | `dev-story` | **Story file + dev prompt**, project codebase | Code changes, tests, updated Story file |
+| **SM Generate CR Prompt** | **Bob (SM)** | **custom** | **Story file, git diff, commit SHA** | **CR prompt (`.md`)** — segmented diff commands and review focus areas |
+| CR Review | Murat/Tea (CR) | `code-review` | **Story file + CR prompt** + git diff, architecture docs | Review report (APPROVED / CHANGES_REQUESTED) |
 | Dev Fix | Amelia (Dev) | `dev-story` (fix mode) | Review report, original Story | Fixed code changes |
-| SM Accept | Bob (SM) | — (custom acceptance logic) | Story file, final code | Acceptance result |
+| **SM Accept** | **Bob (SM)** | **custom acceptance logic** | **Story file, final code, CR approval report** | **Acceptance result (ACCEPTED / REJECTED)** |
+| **CI Verify** | **— (automation)** | **— (GitHub Actions)** | **pushed code** | **CI status (PASS / FAIL)** |
+
+> **Agent Intermediate Artifacts (v0.2.0):** Dev prompts and CR prompts are key intermediate artifacts in the pipeline, automatically generated by the SM Agent and passed to Dev/CR Agents. These prompts contain a level of precision (specific file paths, line numbers, categorized decisions) that would be difficult to write manually, but Agents can produce them automatically from Story files and project code.
 
 ### 4.3 State Machine Definition
 
@@ -226,14 +278,24 @@ enum PipelineState {
   IDLE = 'IDLE',
   SM_CREATING_STORY = 'SM_CREATING_STORY',
   SM_STORY_CREATED = 'SM_STORY_CREATED',
+  SM_GENERATING_DEV_PROMPT = 'SM_GENERATING_DEV_PROMPT',    // v0.2.0
+  DEV_PROMPT_READY = 'DEV_PROMPT_READY',                   // v0.2.0
   DEV_IMPLEMENTING = 'DEV_IMPLEMENTING',
   DEV_COMPLETE = 'DEV_COMPLETE',
+  SM_GENERATING_CR_PROMPT = 'SM_GENERATING_CR_PROMPT',      // v0.2.0
+  CR_PROMPT_READY = 'CR_PROMPT_READY',                     // v0.2.0
   CR_REVIEWING = 'CR_REVIEWING',
   CR_APPROVED = 'CR_APPROVED',
   CR_CHANGES_REQUESTED = 'CR_CHANGES_REQUESTED',
   DEV_FIXING = 'DEV_FIXING',
   DEV_FIX_COMPLETE = 'DEV_FIX_COMPLETE',
-  SM_ACCEPTING = 'SM_ACCEPTING',
+  SM_ACCEPTING = 'SM_ACCEPTING',                           // mandatory stage
+  SM_ACCEPTED = 'SM_ACCEPTED',                             // v0.2.0
+  SM_REJECTED = 'SM_REJECTED',                             // v0.2.0
+  GIT_PUSHING = 'GIT_PUSHING',                             // v0.2.0
+  CI_WAITING = 'CI_WAITING',                               // v0.2.0
+  CI_PASSED = 'CI_PASSED',                                 // v0.2.0
+  CI_FAILED = 'CI_FAILED',                                 // v0.2.0
   PIPELINE_COMPLETE = 'PIPELINE_COMPLETE',
   PIPELINE_FAILED = 'PIPELINE_FAILED',
 }
@@ -259,21 +321,50 @@ CR Review → CHANGES_REQUESTED → Dev Fix → CR Review (Round 3)
 CR Review → CHANGES_REQUESTED → ⛔ Abort (exceeds max_cr_rounds)
 ```
 
-### 5.2 Manual Checkpoints
+### 5.2 SM Acceptance (Mandatory Stage)
 
-By default, the pipeline runs **fully automatically** with no VS Code UI interaction required. The pipeline reads from and writes to the file system directly, bypassing the VS Code Chat UI.
+SM acceptance has been upgraded from an optional checkpoint to a **mandatory stage**:
+
+- After CR approval, the SM Agent automatically performs Story acceptance
+- Verifies that all Acceptance Criteria are satisfied
+- Outputs `ACCEPTED` or `REJECTED`
+- **On REJECTED**: loops back to Dev → CR → SM, consistent with CR rejection handling
+- **On ACCEPTED**: proceeds to git squash + push
+
+```
+CR APPROVED → SM Accept
+    ├── ACCEPTED → git squash → git push → CI
+    └── REJECTED → Dev Fix → CR Review → SM Accept (≤3 rounds)
+```
+
+### 5.3 CI Verification Closed Loop (v0.2.0)
+
+The pipeline does NOT end immediately after push. Instead, it enters a **CI verification stage**:
+
+- Polls GitHub Actions API for CI results
+- CI PASS → `PIPELINE_COMPLETE` ✅
+- CI FAIL → pulls failure logs and passes them to Dev Agent → loops back to Dev → CR → SM → Push → CI
+
+**CI-only checks** (not covered by local pre-push hooks):
+- Chinese character source code check
+- E2E tests (requires PostgreSQL container)
+- Linux environment differences (path case sensitivity, `npm ci` strict install)
+
+### 5.4 Manual Checkpoints
+
+By default, the pipeline runs **fully automatically** (including SM acceptance and CI verification), with no VS Code UI interaction required.
 
 **3 optional business checkpoints** are available (disabled by default), configurable as needed:
 
 | Checkpoint | Trigger Point | Config Key |
 |------------|--------------|------------|
-| Story Confirmation | After SM creates Story, before Dev implements | `checkpoints.after_story_creation` |
+| Story Confirmation | After SM creates Story + dev prompt, before Dev implements | `checkpoints.after_story_creation` |
 | Implementation Confirmation | After Dev completes, before CR reviews | `checkpoints.after_dev_implementation` |
-| Acceptance Confirmation | After CR approves, before Git Push | `checkpoints.after_cr_approval` |
+| Push Confirmation | After SM accepts, before Git Push | `checkpoints.after_sm_acceptance` |
 
 When a checkpoint is enabled, the pipeline pauses and shows a VS Code notification, waiting for the user to click "Continue" or "Abort".
 
-### 5.3 Git Strategy
+### 5.5 Git Strategy
 
 ```
 Timeline:
@@ -293,18 +384,48 @@ Key rules:
 - **Push only after SM acceptance**: Ensures remote only receives fully reviewed and accepted code
 - **Branch strategy**: Automatically creates `feature/story-{id}` branches
 
-### 5.4 Single Story vs. Batch Mode
+### 5.6 Multi-Story Execution Modes
 
-The current design focuses on **single Story execution** to ensure the core pipeline is stable and reliable.
+Four execution modes are supported, selectable via configuration:
 
-Future extension roadmap:
+| Mode | Trigger | Git Strategy | CI Timing | Priority |
+|------|---------|-------------|-----------|----------|
+| **single** | Specify 1 story | Single branch, push after story completes | Immediately after push | ✅ V1.0 |
+| **batch** | Specify N stories | One commit per story | Configurable: per-story or batch-end | 🔜 V1.1 |
+| **wave** | Specify wave number | Same branch, one commit per story | After wave completes | 📋 V1.5 |
+| **sprint** | Specify sprint number | Auto-group by wave | After each wave completes | 📋 V2.0 |
 
-| Mode | Description | Priority |
-|------|-------------|----------|
-| Single Story | Execute one Story through the full pipeline | ✅ V1.0 |
-| Batch | Execute multiple Stories sequentially | 🔜 V1.1 |
-| Wave | Execute Stories in grouped waves (Sprint 11 pattern) | 📋 V2.0 |
-| Sprint | Auto-discover and execute all Stories in a Sprint | 📋 V2.0 |
+**Multi-Story Pipeline Flow (Sprint Mode Example):**
+
+```
+Read backlog.md → Parse wave structure
+    ↓
+Wave 1: [15.1, 15.2]
+    ↓
+Story 15.1: SM→Dev→CR→SM→✅
+Story 15.2: SM→Dev→CR→SM→✅
+    ↓
+git push wave 1 → CI_WAITING → CI_PASS
+    ↓
+Wave 2: [15.3, 15.4, 15.5]
+    ↓
+Story 15.3: SM→Dev→CR→SM→✅
+Story 15.4: SM→Dev→CR→SM→✅  (depends on 15.3 → sequential)
+Story 15.5: SM→Dev→CR→SM→✅
+    ↓
+git push wave 2 → CI_WAITING → CI_PASS
+    ↓
+Sprint COMPLETE
+```
+
+**Key Design Decisions:**
+
+| Design Point | Strategy |
+|-------------|----------|
+| **Dependencies** | Parsed from backlog's `Depends On` column; dependent stories run sequentially |
+| **Story failure** | Skip failed story and continue; add to retry queue; summarize at wave end |
+| **CI failure impact** | Pause entire pipeline; resume from failed story after fix |
+| **Progress persistence** | Pipeline state written to `.vscode/bmad-pipeline-state.json`; recoverable after VS Code restart |
 
 ---
 
@@ -378,14 +499,24 @@ Configurations automatically inherited from `_bmad/bmm/config.yaml`:
   },
   "pipeline": {
     "max_cr_rounds": 3,
+    "max_sm_rejection_rounds": 3,
+    "max_ci_retry_rounds": 2,
     "auto_commit": true,
     "auto_push_after_accept": true,
     "branch_prefix": "feature/story-"
   },
+  "execution": {
+    "mode": "single",
+    "stories": [],
+    "wave": null,
+    "sprint": null,
+    "ci_strategy": "per_story",
+    "git_strategy": "branch_per_story"
+  },
   "checkpoints": {
     "after_story_creation": false,
     "after_dev_implementation": false,
-    "after_cr_approval": true
+    "after_sm_acceptance": true
   },
   "agents": {
     "sm": {
@@ -447,11 +578,14 @@ The following questions need to be resolved before implementation:
 - [ ] **Extension name**: Tentatively `bmad-workflow-pilot` — to be confirmed
 - [ ] **Distribution method**: Local `.vsix` install only, or publish to VS Code Marketplace
 - [ ] **Multi-project support**: Current design assumes single workspace — multi-root workspace support needed?
-- [ ] **Error recovery**: Recovery strategy for mid-pipeline failures (resume from checkpoint vs. restart)
-- [ ] **Log persistence**: Should pipeline run history be persistently stored?
+- [x] ~~**Error recovery**: Recovery strategy for mid-pipeline failures~~ → Resolved: state persisted to `.vscode/bmad-pipeline-state.json`, supports checkpoint recovery
+- [x] ~~**Log persistence**~~ → Resolved: must persist, recording each Agent's input/output (including dev prompt and CR prompt)
 - [ ] **`vscode.lm` API stability validation**: Prototype needed to verify actual API behavior and limitations
 - [ ] **Dev Agent code execution**: How does LLM-generated code get written to the file system (direct file write vs. VS Code Edit API)
 - [ ] **Test execution integration**: Should the Dev phase automatically run test suites and feed results back to the Agent?
+- [ ] **GitHub Actions API integration**: Authentication method and polling frequency strategy for CI result retrieval
+- [ ] **Dev prompt generation timing**: Generated alongside Story creation, or as an independent step?
+- [ ] **CR prompt git diff token management**: How to chunk large diffs for CR Agent consumption
 
 ---
 

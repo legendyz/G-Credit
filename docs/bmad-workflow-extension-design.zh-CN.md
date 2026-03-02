@@ -1,10 +1,18 @@
 # BMAD 工作流自动化 VS Code 扩展 — 技术设计文档
 
 > **文档类型**: Technical Design Document  
-> **版本**: 0.1.0 (草案)  
+> **版本**: 0.2.0 (草案)  
 > **创建日期**: 2026-03-01  
+> **最后更新**: 2026-03-02  
 > **作者**: LegendZhu  
 > **状态**: 设计探索阶段，尚未实施
+
+### 修订历史
+
+| 版本 | 日期 | 变更 |
+|------|------|------|
+| 0.1.0 | 2026-03-01 | 初始设计文档 |
+| 0.2.0 | 2026-03-02 | 可行性修正：全自动管道可行（dev prompt / CR prompt 由 Agent 生成，非人工编写）；SM 验收改为必经阶段；新增 CI 验证闭环；新增 Agent 中间产物（dev prompt / CR prompt）传递机制；完善多 Story 执行模式（single/batch/wave/sprint） |
 
 ---
 
@@ -23,6 +31,8 @@
 ```
 
 每次切换需要人工复制上下文、加载 Agent 模板、粘贴指令，整个流程既繁琐又容易出错。
+
+> **关键发现 (v0.2.0):** 实际开发过程中，dev prompt 和 CR prompt **均由 Agent 自动生成**（例如 SM Agent 在创建 Story 时同时生成详细的 dev prompt——包含逐文件、逐行号的精确指令，可达 400+ 行）。开发者的角色仅仅是在 3 个窗口之间**手动搬运**这些 Agent 生成的产物。这意味着全自动化管道完全可行——扩展只需替代人工搬运步骤。
 
 ### 1.2 目标
 
@@ -155,25 +165,43 @@
                     │   开始       │
                     └──────┬──────┘
                            ▼
-                  ┌────────────────┐
-                  │  SM 创建 Story  │
-                  │  (create-story) │
-                  └───────┬────────┘
+              ┌────────────────────────┐
+              │  SM 创建 Story          │
+              │  (create-story)        │
+              │  输出: Story 文件       │
+              │      + dev prompt (*)  │
+              └───────────┬────────────┘
                           ▼
-                 ┌─────────────────┐
-                 │  Dev 实现 Story  │
-                 │   (dev-story)    │
-                 └───────┬─────────┘
-                         ▼
+              ┌────────────────────────┐
+              │  SM 生成 Dev Prompt     │
+              │  (基于 Story 的详细     │
+              │   开发指令, 可达400+行) │
+              └───────────┬────────────┘
+                          ▼
+              ┌────────────────────────┐
+              │  Dev 实现 Story         │
+              │   输入: Story + dev    │
+              │         prompt         │
+              │   (dev-story)          │
+              └───────────┬────────────┘
+                          ▼
                   ┌──────────────┐
                   │  Git Commit  │
                   │  (WIP 提交)  │
                   └──────┬───────┘
                          ▼
-              ┌─────────────────────┐
-              │  CR 代码审查         │
-              │  (code-review)      │
-              └──────┬──────────────┘
+              ┌────────────────────────┐
+              │  SM 生成 CR Prompt      │
+              │  (基于 git diff + Story │
+              │   的审查指令)           │
+              └───────────┬────────────┘
+                          ▼
+              ┌────────────────────────┐
+              │  CR 代码审查            │
+              │  输入: Story + CR      │
+              │   prompt + git diff    │
+              │  (code-review)         │
+              └──────┬─────────────────┘
                      ▼
               ┌──────────────┐     ┌─────────────────┐
               │  审查通过？    │─否─▶│  Dev 修复问题    │
@@ -189,28 +217,51 @@
                      │             │ (≤3 轮, 否则中止) │
                      ▼             └──────────────────┘
               ┌──────────────┐
-              │  SM 验收      │
-              │  (可选检查点)  │
+              │  SM 验收      │  ← 必经阶段 (非可选)
+              │  (story验收)  │
               └──────┬───────┘
+                     ▼
+              ┌──────────────┐     ┌───────────────────┐
+              │  验收通过？    │─否─▶│ Dev 修复 → CR → SM │
+              └──────┬───────┘     │ (回到修复循环)      │
+                     │             └───────────────────┘
+                    是
                      ▼
               ┌──────────────┐
               │  Git Push    │
               └──────┬───────┘
                      ▼
               ┌──────────────┐
-              │    完成       │
+              │  CI 验证      │  ← 轮询 GitHub Actions
+              └──────┬───────┘
+                     ▼
+              ┌──────────────┐     ┌───────────────────┐
+              │  CI 通过？    │─否─▶│ Dev 修复 → CR → SM │
+              └──────┬───────┘     │ → Push → CI 再验   │
+                     │             └───────────────────┘
+                    是
+                     ▼
+              ┌──────────────┐
+              │   完成 ✅     │
               └──────────────┘
 ```
+
+> (*) dev prompt 可由 SM Agent 在创建 Story 时一并生成，也可作为独立步骤由 SM Agent 基于已有 Story 文件生成。
 
 ### 4.2 阶段详解
 
 | 阶段 | 使用的 Agent | 使用的 Workflow | 输入 | 输出 |
 |------|-------------|----------------|------|------|
 | SM 创建 Story | Bob (SM) | `create-story` | Sprint 计划、Epics、sprint-status.yaml | Story 文件 (`.md`) |
-| Dev 实现 | Amelia (Dev) | `dev-story` | Story 文件、项目代码 | 代码变更、测试、更新的 Story 文件 |
-| CR 审查 | Murat/Tea (CR) | `code-review` | Git diff、Story 文件、架构文档 | 审查报告 (APPROVED / CHANGES_REQUESTED) |
+| **SM 生成 Dev Prompt** | **Bob (SM)** | **自定义** | **Story 文件、项目代码结构** | **dev prompt (`.md`)** — 包含逐文件、逐行号的详细开发指令 |
+| Dev 实现 | Amelia (Dev) | `dev-story` | **Story 文件 + dev prompt**、项目代码 | 代码变更、测试、更新的 Story 文件 |
+| **SM 生成 CR Prompt** | **Bob (SM)** | **自定义** | **Story 文件、git diff、commit SHA** | **CR prompt (`.md`)** — 包含分段 diff 命令和审查重点 |
+| CR 审查 | Murat/Tea (CR) | `code-review` | **Story 文件 + CR prompt** + git diff、架构文档 | 审查报告 (APPROVED / CHANGES_REQUESTED) |
 | Dev 修复 | Amelia (Dev) | `dev-story` (修复模式) | 审查报告、原始 Story | 修复后的代码变更 |
-| SM 验收 | Bob (SM) | — (自定义验收逻辑) | Story 文件、最终代码 | 验收结果 |
+| **SM 验收** | **Bob (SM)** | **自定义验收逻辑** | **Story 文件、最终代码、CR 通过报告** | **验收结果 (ACCEPTED / REJECTED)** |
+| **CI 验证** | **— (自动化)** | **— (GitHub Actions)** | **push 后的代码** | **CI 状态 (PASS / FAIL)** |
+
+> **Agent 中间产物 (v0.2.0 新增):** dev prompt 和 CR prompt 是管道中的关键中间产物，由 SM Agent 自动生成并传递给 Dev/CR Agent。这些 prompt 包含人类难以手工编写的精确度（具体文件路径、行号、分类决策），但 Agent 能基于 Story 文件和项目代码自动产出。
 
 ### 4.3 状态机定义
 
@@ -219,14 +270,24 @@ enum PipelineState {
   IDLE = 'IDLE',
   SM_CREATING_STORY = 'SM_CREATING_STORY',
   SM_STORY_CREATED = 'SM_STORY_CREATED',
+  SM_GENERATING_DEV_PROMPT = 'SM_GENERATING_DEV_PROMPT',    // v0.2.0
+  DEV_PROMPT_READY = 'DEV_PROMPT_READY',                   // v0.2.0
   DEV_IMPLEMENTING = 'DEV_IMPLEMENTING',
   DEV_COMPLETE = 'DEV_COMPLETE',
+  SM_GENERATING_CR_PROMPT = 'SM_GENERATING_CR_PROMPT',      // v0.2.0
+  CR_PROMPT_READY = 'CR_PROMPT_READY',                     // v0.2.0
   CR_REVIEWING = 'CR_REVIEWING',
   CR_APPROVED = 'CR_APPROVED',
   CR_CHANGES_REQUESTED = 'CR_CHANGES_REQUESTED',
   DEV_FIXING = 'DEV_FIXING',
   DEV_FIX_COMPLETE = 'DEV_FIX_COMPLETE',
-  SM_ACCEPTING = 'SM_ACCEPTING',
+  SM_ACCEPTING = 'SM_ACCEPTING',                           // 必经阶段
+  SM_ACCEPTED = 'SM_ACCEPTED',                             // v0.2.0
+  SM_REJECTED = 'SM_REJECTED',                             // v0.2.0
+  GIT_PUSHING = 'GIT_PUSHING',                             // v0.2.0
+  CI_WAITING = 'CI_WAITING',                               // v0.2.0
+  CI_PASSED = 'CI_PASSED',                                 // v0.2.0
+  CI_FAILED = 'CI_FAILED',                                 // v0.2.0
   PIPELINE_COMPLETE = 'PIPELINE_COMPLETE',
   PIPELINE_FAILED = 'PIPELINE_FAILED',
 }
@@ -252,21 +313,50 @@ CR Review → CHANGES_REQUESTED → Dev Fix → CR Review (第3轮)
 CR Review → CHANGES_REQUESTED → ⛔ 中止 (超过 max_cr_rounds)
 ```
 
-### 5.2 手工确认点
+### 5.2 SM 验收 (必经阶段)
 
-默认情况下，管道**全自动运行**，无需 VS Code UI 交互。管道直接读写文件系统，不通过 VS Code Chat UI。
+SM 验收从原设计中的可选检查点升级为**必经阶段**：
+
+- CR 通过后，SM Agent 自动对 Story 进行验收
+- 验证验收标准 (Acceptance Criteria) 是否全部满足
+- 输出 `ACCEPTED` 或 `REJECTED`
+- **REJECTED 时**：回到 Dev → CR → SM 循环，与 CR 驳回处理方式一致
+- **ACCEPTED 后**：执行 git squash + push
+
+```
+CR APPROVED → SM 验收
+    ├── ACCEPTED → git squash → git push → CI
+    └── REJECTED → Dev Fix → CR Review → SM 验收 (≤3 轮)
+```
+
+### 5.3 CI 验证闭环 (v0.2.0 新增)
+
+Push 后管道并不立即结束，而是进入 **CI 验证阶段**：
+
+- 轮询 GitHub Actions API 等待 CI 结果
+- CI PASS → `PIPELINE_COMPLETE` ✅
+- CI FAIL → 拉取失败日志交给 Dev Agent → 回到 Dev → CR → SM → Push → CI 循环
+
+**CI 独有的检查项**（本地 pre-push 不覆盖）：
+- 中文字符源码检查
+- E2E 测试（需 PostgreSQL 容器）
+- Linux 环境差异（路径大小写、`npm ci` 严格安装）
+
+### 5.4 手工确认点
+
+默认情况下，管道**全自动运行**（含 SM 验收和 CI 验证），无需 VS Code UI 交互。
 
 提供 **3 个可选的业务检查点** (默认关闭)，可在配置中按需开启：
 
 | 检查点 | 触发时机 | 配置项 |
 |--------|---------|--------|
-| Story 确认 | SM 创建 Story 后，Dev 实现前 | `checkpoints.after_story_creation` |
+| Story 确认 | SM 创建 Story + dev prompt 后，Dev 实现前 | `checkpoints.after_story_creation` |
 | 实现确认 | Dev 实现后，CR 审查前 | `checkpoints.after_dev_implementation` |
-| 验收确认 | CR 通过后，Git Push 前 | `checkpoints.after_cr_approval` |
+| Push 确认 | SM 验收通过后，Git Push 前 | `checkpoints.after_sm_acceptance` |
 
 当检查点开启时，管道暂停并在 VS Code 中弹出通知，等待用户点击 "Continue" 或 "Abort"。
 
-### 5.3 Git 策略
+### 5.5 Git 策略
 
 ```
 时间线:
@@ -286,18 +376,48 @@ CR Review → CHANGES_REQUESTED → ⛔ 中止 (超过 max_cr_rounds)
 - **Push 仅在 SM 验收后**：确保推送到远程的代码是完全通过审查和验收的
 - **分支策略**：自动创建 `feature/story-{id}` 分支
 
-### 5.4 单 Story vs 批量模式
+### 5.6 多 Story 执行模式
 
-当前设计聚焦**单 Story 执行**，确保核心流程稳定可靠。
+支持 4 种执行模式，通过配置文件选择：
 
-未来扩展方向：
+| 模式 | 触发方式 | Git 策略 | CI 时机 | 优先级 |
+|------|---------|---------|---------|--------|
+| **single** | 指定 1 个 story | 单分支，story 完成后 push | push 后立即 | ✅ V1.0 |
+| **batch** | 指定 N 个 story 列表 | 每个 story 一个 commit | 可配置逐个/批次结束 | 🔜 V1.1 |
+| **wave** | 指定 wave 编号 | 同一分支，每 story 一个 commit | wave 结束后 | 📋 V1.5 |
+| **sprint** | 指定 sprint 编号 | 按 wave 自动分组 | 每 wave 结束后 | 📋 V2.0 |
 
-| 模式 | 描述 | 优先级 |
-|------|------|--------|
-| 单 Story | 执行一个 Story 的完整管道 | ✅ V1.0 |
-| 批量 (Batch) | 依次执行多个 Story | 🔜 V1.1 |
-| Wave | 按波次分组执行 (Sprint 11 模式) | 📋 V2.0 |
-| Sprint | 自动发现并执行整个 Sprint 的所有 Story | 📋 V2.0 |
+**多 Story 管道流程 (Sprint 模式示例):**
+
+```
+读取 backlog.md → 解析 wave 结构
+    ↓
+Wave 1: [15.1, 15.2]
+    ↓
+Story 15.1: SM→Dev→CR→SM→✅
+Story 15.2: SM→Dev→CR→SM→✅
+    ↓
+git push wave 1 → CI_WAITING → CI_PASS
+    ↓
+Wave 2: [15.3, 15.4, 15.5]
+    ↓
+Story 15.3: SM→Dev→CR→SM→✅
+Story 15.4: SM→Dev→CR→SM→✅  (依赖 15.3 → 串行)
+Story 15.5: SM→Dev→CR→SM→✅
+    ↓
+git push wave 2 → CI_WAITING → CI_PASS
+    ↓
+Sprint COMPLETE
+```
+
+**关键设计:**
+
+| 设计点 | 策略 |
+|--------|------|
+| **依赖关系** | 从 backlog 的 `Depends On` 列自动解析，有依赖则串行 |
+| **某个 Story 失败** | 跳过该 story 继续执行，失败 story 加入重试队列，wave 结束时汇总报告 |
+| **CI 失败影响** | 暂停整个管道，修复后从失败 story 恢复 |
+| **进度持久化** | 管道状态写入 `.vscode/bmad-pipeline-state.json`，VS Code 重启后可恢复 |
 
 ---
 
@@ -371,14 +491,24 @@ class PromptLoader {
   },
   "pipeline": {
     "max_cr_rounds": 3,
+    "max_sm_rejection_rounds": 3,
+    "max_ci_retry_rounds": 2,
     "auto_commit": true,
     "auto_push_after_accept": true,
     "branch_prefix": "feature/story-"
   },
+  "execution": {
+    "mode": "single",
+    "stories": [],
+    "wave": null,
+    "sprint": null,
+    "ci_strategy": "per_story",
+    "git_strategy": "branch_per_story"
+  },
   "checkpoints": {
     "after_story_creation": false,
     "after_dev_implementation": false,
-    "after_cr_approval": true
+    "after_sm_acceptance": true
   },
   "agents": {
     "sm": {
@@ -440,11 +570,14 @@ class PromptLoader {
 - [ ] **扩展命名**: 暂定 `bmad-workflow-pilot`，待确认
 - [ ] **发布方式**: 仅本地 `.vsix` 安装，还是发布到 VS Code Marketplace
 - [ ] **多项目支持**: 当前假设单工作区，是否需要多根工作区支持
-- [ ] **错误恢复**: 管道中途失败后的恢复策略（从断点续跑 vs 重新开始）
-- [ ] **日志持久化**: 管道运行记录是否需要持久化存储
+- [x] ~~**错误恢复**: 管道中途失败后的恢复策略~~ → 已确定：状态持久化到 `.vscode/bmad-pipeline-state.json`，支持断点恢复
+- [x] ~~**日志持久化**~~ → 已确定：需要持久化，记录每个 Agent 的输入/输出（包括 dev prompt 和 CR prompt）
 - [ ] **`vscode.lm` API 稳定性验证**: 需要原型验证 API 的实际行为和限制
 - [ ] **Dev Agent 代码执行能力**: LLM 生成的代码如何实际写入文件系统（直接写入 vs 通过 VS Code Edit API）
 - [ ] **测试执行集成**: Dev 阶段是否需要自动运行测试套件并将结果反馈给 Agent
+- [ ] **GitHub Actions API 集成**: CI 结果轮询的认证方式和频率策略
+- [ ] **dev prompt 生成时机**: SM Agent 创建 Story 时一并生成，还是作为独立步骤
+- [ ] **CR prompt 中 git diff 的 token 管理**: 大型 diff 如何分块传递给 CR Agent
 
 ---
 
