@@ -45,7 +45,7 @@ const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({ activities }) =
             className="flex items-start gap-3 py-2.5 px-2 rounded-lg hover:bg-gray-50 transition-colors"
           >
             {React.createElement(getActivityIcon(activity.type), {
-              size: 18,
+              size: 16,
               className: 'flex-shrink-0 text-neutral-500 mt-0.5',
               'aria-hidden': 'true',
             })}

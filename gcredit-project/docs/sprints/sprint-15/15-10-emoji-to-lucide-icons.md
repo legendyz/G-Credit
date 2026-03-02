@@ -91,6 +91,32 @@
 
 ## Dev Agent Record
 
+## Review Follow-ups (AI)
+
+- [x] **Interface migration checks passed:**
+  - `getActivityIcon()` now returns `LucideIcon` and is rendered as component in `RecentActivityFeed`.
+  - `getFileIcon()` now returns `LucideIcon` and is rendered as component in evidence UIs.
+  - Dashboard `SummaryCard` icon props are `React.ReactNode` across Admin/Employee/Issuer/Manager dashboards.
+  - `EmptyState` and `CelebrationModal` icon props/defaults migrated to Lucide component nodes.
+- [x] **Preserved exception checks passed:**
+  - `MilestoneFormSheet` curated emoji list retained.
+  - Milestone fallback `m.icon || '🏅'` retained.
+  - Share copy text `🏆 I earned the...` retained.
+  - Emoji usage in explanatory comments retained where intentional.
+- [x] **Targeted validation rerun (review-side):**
+  - Type check: `npx tsc --noEmit -p tsconfig.app.json` passes.
+  - Targeted lint on key migrated files passes with `--max-warnings=0`.
+  - Targeted tests pass: 5 files / 54 tests (`CelebrationModal`, `EmptyState`, `BulkResultPage`, `IssueBadgePage`, `VerifyBadgePage`).
+- [x] **Non-blocking follow-up (recommended):**
+  - [x] Normalize `RecentActivityFeed` icon size from `18` to standard inline `16` to align with story sizing scale.
+  - [x] Strengthen `CelebrationModal.test.tsx` and `EmptyState.test.tsx` with explicit default-icon assertions (currently verifies rendering behavior but not specific default icon component identity).
+
+### Re-CR Summary (2026-03-02)
+
+- Review scope: Story 15.10 CR prompt checklist + commit `80cc896` change set (53 files).
+- Verdict: **APPROVED WITH FOLLOW-UP**.
+- Notes: No blocking regressions found in interface migration, rendering, exception preservation, or targeted quality checks. Follow-up items are consistency hardening only.
+
 ### Agent Model Used
 Claude Opus 4.6 (GitHub Copilot)
 

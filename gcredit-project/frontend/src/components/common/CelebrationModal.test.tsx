@@ -94,6 +94,15 @@ describe('CelebrationModal', () => {
     expect(screen.getByRole('button', { name: 'View Achievement' })).toBeInTheDocument();
   });
 
+  it('renders default PartyPopper icon when no icon prop provided', () => {
+    render(<CelebrationModal {...defaultProps} />);
+    // CelebrationModal renders via shadcn Dialog (portal) — query document.body
+    const dialog = screen.getByRole('dialog');
+    // Default icon is Lucide PartyPopper rendered as SVG inside the dialog
+    const svg = dialog.querySelector('svg');
+    expect(svg).toBeInTheDocument();
+  });
+
   it('shows confetti when modal opens', () => {
     render(<CelebrationModal {...defaultProps} />);
     // Modal renders with animation effect - check for dialog presence

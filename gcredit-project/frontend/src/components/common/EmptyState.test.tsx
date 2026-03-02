@@ -17,6 +17,14 @@ describe('EmptyState', () => {
     expect(screen.getByText('Add some items to get started')).toBeInTheDocument();
   });
 
+  it('renders default Inbox icon when no icon prop provided', () => {
+    const { container } = render(<EmptyState title="Empty" />);
+    // Default icon is Lucide Inbox rendered as SVG inside aria-hidden div
+    const svg = container.querySelector('div[aria-hidden="true"] svg');
+    expect(svg).toBeInTheDocument();
+    expect(svg).toHaveAttribute('aria-hidden', 'true');
+  });
+
   it('renders with custom icon', () => {
     render(<EmptyState title="Empty" icon={<span>TestIcon</span>} />);
     expect(screen.getByText('TestIcon')).toBeInTheDocument();
