@@ -111,3 +111,24 @@ Claude Opus 4.6 (GitHub Copilot)
 - `frontend/src/components/search/SkillsFilter.tsx` — Modified (z-20 → z-sticky)
 - `frontend/src/components/TimelineView/TimelineView.tsx` — Modified (z-10 → z-sticky)
 - `frontend/src/pages/admin/SkillManagementPage.tsx` — Modified (z-50 → z-tooltip)
+## Review Follow-ups (AI)
+
+### Story 15.11 CR Verdict (2026-03-02)
+
+**Result:** APPROVED  
+**AC Coverage:** 6/6 verified
+
+### AC Mapping
+
+- **AC#1:** Verified. 7 z-index tokens added to `@theme` block in `index.css` (`--z-base` through `--z-tooltip`).
+- **AC#2:** Verified. Scale: base(0), dropdown(10), sticky(20), sidebar(30), modal(40), toast(50), tooltip(60).
+- **AC#3:** Verified. 30 z-index usages migrated across 27 files. Zero arbitrary `z-[N]` values remain. 3 intentional `z-10` kept (internal/relative contexts within parent containers — Group H).
+- **AC#4:** Verified. Sidebar uses `z-sidebar` (30), sits between sticky(20) and modal(40).
+- **AC#5:** Verified. Sonner toast overridden via `toastOptions.style: { zIndex: 'var(--z-toast)' }` in App.tsx (z-toast=50 > z-modal=40).
+- **AC#6:** Verified. Layering: content(0) < dropdown(10) < sticky(20) < sidebar(30) < modal(40) < toast(50) < tooltip(60). Select uses `z-modal` (portaled, must exceed sidebar). No conflicts.
+
+### Validation Evidence (review-side)
+
+- Diff scope: `git diff HEAD~1 --stat` → 29 files changed (`+299/-57`)
+- Orphan check: `grep z-\[` → 0 results (all arbitrary values eliminated)
+- Commit message confirms: 0 lint errors | 0 TS errors | 844/844 tests pass
