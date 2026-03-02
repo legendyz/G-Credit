@@ -147,19 +147,19 @@ Testing + UAT: 12h (21%)
 | 15.1 | Dashboard Tabbed Composite View | CRITICAL | 8h | W2 | ✅ done |
 | 15.2 | Backend Permissions API | HIGH | 3h | W1 | ✅ done |
 | 15.3 | Sidebar Layout Migration | CRITICAL | 12h | W2 | ✅ done |
-| 15.4 | Role×Manager Test Matrix | HIGH | 4h | W4 | 🔴 backlog |
-| 15.5 | Inline Styles → Tailwind | MEDIUM | 2h | W3 | 🔴 backlog |
-| 15.6 | Forgot Password Page | MEDIUM | 2h | W3 | 🔴 backlog |
-| 15.7 | Template List Pagination | MEDIUM | 3h | W3 | 🔴 backlog |
-| 15.8 | Wallet Infinite Scroll | MEDIUM | 3h | W3 | 🔴 backlog |
-| 15.9 | Styled Delete Confirmation | LOW | 1h | W3 | 🔴 backlog |
-| 15.10 | Emoji → Lucide Icons | MEDIUM | 5h | W3 | 🔴 backlog |
-| 15.11 | z-index Scale | LOW | 1h | W3 | 🔴 backlog |
-| 15.12 | Dirty-Form Guard | MEDIUM | 2h | W3 | 🔴 backlog |
+| 15.4 | Role×Manager Test Matrix | HIGH | 4h | W4 | ✅ done |
+| 15.5 | Inline Styles → Tailwind | MEDIUM | 2h | W3 | ✅ done |
+| 15.6 | Forgot Password Page | MEDIUM | 2h | W3 | ⏸️ deferred |
+| 15.7 | Template List Pagination | MEDIUM | 3h | W3 | ✅ done |
+| 15.8 | Wallet Infinite Scroll | MEDIUM | 3h | W3 | ✅ done |
+| 15.9 | Styled Delete Confirmation | LOW | 1h | W3 | ✅ done |
+| 15.10 | Emoji → Lucide Icons | MEDIUM | 5h | W3 | ✅ done |
+| 15.11 | z-index Scale | LOW | 1h | W3 | ✅ done |
+| 15.12 | Dirty-Form Guard | MEDIUM | 2h | W3 | ✅ done |
 | 15.13 | TD-038: Configurable Rate Limits | MEDIUM | 3h | W1 | ✅ done |
-| 15.14 | Mid-Sprint UAT | HIGH | 3h | W2.5 | 🔴 backlog |
-| 15.15 | Final UAT | HIGH | 4h | W4 | 🔴 backlog |
-| **Total** | **15 stories** | | **56h** | | |
+| 15.14 | Mid-Sprint UAT | HIGH | 3h | W2.5 | ✅ done |
+| 15.15 | Final UAT | HIGH | 4h | W4 | ✅ done |
+| **Total** | **15 stories** | | **56h** | | **14/15 done, 1 deferred** |
 
 ---
 
@@ -297,7 +297,18 @@ See [version-manifest.md](version-manifest.md) for complete dependency snapshot.
 ---
 
 **Created:** 2026-02-27  
-**Updated:** 2026-03-01 — Revised to 15 stories / ~56h with staged UAT and TD-038  
+**Updated:** 2026-03-03 — All stories complete (14/15 done, 15.6 deferred). Final UAT 36/36 PASS. Bug fix: Badge Management filter pagination reset.  
 **Created By:** SM Agent (Bob)  
 **Design Spec:** ADR-016 (John/Sally/Winston)  
 **Architecture Spec:** ADR-017 (Winston)
+
+### Sprint 15 Bug Fixes (discovered during UAT)
+
+| # | Description | File | Fix |
+|---|-------------|------|-----|
+| 1 | Wallet badge cards covering sticky filter bar | TimelineView.tsx, PageTemplate.tsx | Container scroll model (overflow-hidden root + overflow-y-auto scroll area) |
+| 2 | Search input focus outline overflowing container | SearchInput.tsx | Inset box-shadow + border instead of ring/outline (ADR-018) |
+| 3 | Skills dropdown covered by scroll area | TimelineView.tsx, SkillsFilter.tsx | z-50 on search bar, z-0 on scroll area, z-modal on dropdown |
+| 4 | Skills dropdown width too narrow | SkillsFilter.tsx | w-full → w-max min-w-full |
+| 5 | Filter bar oversized and visually inconsistent | BadgeSearchBar.tsx, SkillsFilter.tsx, DateRangePicker.tsx | Compact h-9 filters, flex-wrap layout |
+| 6 | Badge Management filter doesn't reset page | BadgeManagementPage.tsx | useEffect resets currentPage to 1 on filter change |

@@ -41,8 +41,8 @@ export function DateNavigationSidebar({
   );
 
   return (
-    <div className={`sticky top-4 ${className}`}>
-      <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-[calc(100vh-8rem)] overflow-y-auto">
+    <div className={className}>
+      <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-full overflow-y-auto shadow-sm">
         <h3 className="font-semibold text-sm text-gray-700 mb-3">Date Navigation</h3>
 
         {Object.entries(yearGroups).map(([year, groups]) => (

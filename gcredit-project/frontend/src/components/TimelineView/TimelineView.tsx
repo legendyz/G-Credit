@@ -69,10 +69,17 @@ export function TimelineView() {
   });
 
   // Story 15.8: IntersectionObserver sentinel for auto-loading
+  // Scroll container ref for container-level scrolling (badges only)
+  const [scrollContainer, setScrollContainer] = useState<HTMLDivElement | null>(null);
+  const scrollContainerRef = useCallback((node: HTMLDivElement | null) => {
+    setScrollContainer(node);
+  }, []);
+
   const sentinelRef = useInfiniteScroll({
     hasNextPage: !!hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
+    root: scrollContainer,
   });
 
   // Fetch available skills for filter dropdown
@@ -284,8 +291,9 @@ export function TimelineView() {
     <PageTemplate
       title="My Badge Wallet"
       actions={<ViewToggle mode={viewMode} onChange={setViewMode} />}
+      stickyHeader={true}
     >
-      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+      <div className="flex flex-col lg:flex-row lg:gap-6 h-full">
         {/* Date Navigation Sidebar - AC 1.6 (hidden on mobile, visible on desktop) */}
         <DateNavigationSidebar
           dateGroups={dateGroups}
@@ -295,9 +303,9 @@ export function TimelineView() {
         />
 
         {/* Main Content */}
-        <div className="flex-1 min-w-0">
-          {/* Story 8.2 AC1 & AC4: Badge Search Bar with sticky positioning */}
-          <div className="sticky top-0 z-sticky bg-white pb-4 -mx-4 px-4 md:-mx-6 md:px-6 pt-2 shadow-sm">
+        <div className="flex-1 min-w-0 flex flex-col min-h-0">
+          {/* Story 8.2 AC1 & AC4: Badge Search Bar - fixed above scroll area */}
+          <div className="relative flex-shrink-0 bg-white mb-2 z-50">
             <BadgeSearchBar
               searchTerm={localSearch}
               onSearchChange={setLocalSearch}
@@ -317,134 +325,137 @@ export function TimelineView() {
             />
           </div>
 
-          {/* Search results count - Story 8.2 */}
-          {hasFilters && !showNoResults && (
-            <p className="text-sm text-neutral-500 mb-4">
-              Showing {displayBadges.length} of {total} badges
-            </p>
-          )}
-
-          {/* No results state - Story 8.2 AC1: Include query and suggestions */}
-          {showNoResults && (
-            <div className="text-center py-12">
-              <div className="mx-auto w-16 h-16 mb-4 rounded-full bg-neutral-100 flex items-center justify-center">
-                <svg
-                  className="w-8 h-8 text-neutral-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </div>
-              <p className="text-neutral-700 text-lg font-medium">
-                {localSearch
-                  ? `No badges found for "${localSearch}"`
-                  : 'No badges match your filters'}
+          {/* Scrollable content area - only badges scroll */}
+          <div ref={scrollContainerRef} className="relative z-0 flex-1 overflow-y-auto min-h-0">
+            {/* Search results count - Story 8.2 */}
+            {hasFilters && !showNoResults && (
+              <p className="text-sm text-neutral-500 mb-4">
+                Showing {displayBadges.length} of {total} badges
               </p>
-              <ul className="text-neutral-500 mt-3 space-y-1">
-                <li>• Try different keywords</li>
-                <li>• Check your spelling</li>
-                {hasFilters && <li>• Remove some filters</li>}
-              </ul>
-              <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
-                {hasFilters && (
-                  <button
-                    onClick={clearAllFilters}
-                    className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 
-                             focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
+            )}
+
+            {/* No results state - Story 8.2 AC1: Include query and suggestions */}
+            {showNoResults && (
+              <div className="text-center py-12">
+                <div className="mx-auto w-16 h-16 mb-4 rounded-full bg-neutral-100 flex items-center justify-center">
+                  <svg
+                    className="w-8 h-8 text-neutral-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    Clear all filters
-                  </button>
-                )}
-                <a
-                  href="/wallet"
-                  className="px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50
-                           focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
-                >
-                  Browse all badges
-                </a>
-              </div>
-            </div>
-          )}
-
-          {/* Timeline View - AC 1.1-1.4 */}
-          {viewMode === 'timeline' && !showNoResults && (
-            <div className="relative">
-              <TimelineLine />
-              {/* Story 12.4: Render milestone achievements at the top of the timeline */}
-              {milestoneItems.length > 0 && (
-                <div className="space-y-4 mb-8">
-                  {milestoneItems.map((milestone) => (
-                    <MilestoneTimelineCard key={milestone.milestoneId} milestone={milestone} />
-                  ))}
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
                 </div>
-              )}
-              <div className="space-y-8">
-                {dateGroups.map((group) => {
-                  const groupBadges = displayBadges.slice(
-                    group.startIndex,
-                    group.startIndex + group.count
-                  );
-
-                  return (
-                    <div key={group.label} id={`group-${group.label}`}>
-                      <DateGroupHeader label={group.label} count={group.count} />
-                      <div className="space-y-4 mt-4">
-                        {groupBadges.map((badge) => (
-                          <BadgeTimelineCard key={badge.id} badge={badge} />
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Grid View - With keyboard navigation (Story 8.3 UX-P1-005) */}
-          {viewMode === 'grid' && !showNoResults && (
-            <>
-              {milestoneItems.length > 0 && (
-                <div className="flex flex-wrap gap-3 mb-4">
-                  {milestoneItems.map((m) => (
-                    <div
-                      key={m.milestoneId}
-                      className="flex items-center gap-2 rounded-full bg-amber-50 border border-amber-200 px-3 py-1.5"
-                      title={`${m.description}\nAchieved ${new Date(m.achievedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}`}
+                <p className="text-neutral-700 text-lg font-medium">
+                  {localSearch
+                    ? `No badges found for "${localSearch}"`
+                    : 'No badges match your filters'}
+                </p>
+                <ul className="text-neutral-500 mt-3 space-y-1">
+                  <li>• Try different keywords</li>
+                  <li>• Check your spelling</li>
+                  {hasFilters && <li>• Remove some filters</li>}
+                </ul>
+                <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+                  {hasFilters && (
+                    <button
+                      onClick={clearAllFilters}
+                      className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 
+                             focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
                     >
-                      <span className="text-lg">{m.icon || '🏅'}</span>
-                      <span className="text-sm font-medium text-amber-800">{m.title}</span>
-                    </div>
-                  ))}
+                      Clear all filters
+                    </button>
+                  )}
+                  <a
+                    href="/wallet"
+                    className="px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50
+                           focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
+                  >
+                    Browse all badges
+                  </a>
                 </div>
-              )}
-              <GridView badges={gridDisplayBadges} />
-            </>
-          )}
+              </div>
+            )}
 
-          {/* Story 15.8: Infinite scroll sentinel */}
-          {!showNoResults && <div ref={sentinelRef} className="h-px" />}
+            {/* Timeline View - AC 1.1-1.4 */}
+            {viewMode === 'timeline' && !showNoResults && (
+              <div className="relative">
+                <TimelineLine />
+                {/* Story 12.4: Render milestone achievements at the top of the timeline */}
+                {milestoneItems.length > 0 && (
+                  <div className="space-y-4 mb-8">
+                    {milestoneItems.map((milestone) => (
+                      <MilestoneTimelineCard key={milestone.milestoneId} milestone={milestone} />
+                    ))}
+                  </div>
+                )}
+                <div className="space-y-8">
+                  {dateGroups.map((group) => {
+                    const groupBadges = displayBadges.slice(
+                      group.startIndex,
+                      group.startIndex + group.count
+                    );
 
-          {/* Story 15.8: Loading more indicator */}
-          {isFetchingNextPage && (
-            <div className="flex justify-center py-6">
-              <Loader2 className="h-6 w-6 animate-spin text-brand-600" />
-              <span className="sr-only">Loading more badges...</span>
-            </div>
-          )}
+                    return (
+                      <div key={group.label} id={`group-${group.label}`}>
+                        <DateGroupHeader label={group.label} count={group.count} />
+                        <div className="space-y-4 mt-4">
+                          {groupBadges.map((badge) => (
+                            <BadgeTimelineCard key={badge.id} badge={badge} />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
-          {/* Story 15.8: End of list indicator */}
-          {!hasNextPage && allItems.length > 0 && !isFetchingNextPage && (
-            <div className="text-center py-6 text-neutral-400 text-sm">
-              You've seen all your badges
-            </div>
-          )}
+            {/* Grid View - With keyboard navigation (Story 8.3 UX-P1-005) */}
+            {viewMode === 'grid' && !showNoResults && (
+              <>
+                {milestoneItems.length > 0 && (
+                  <div className="flex flex-wrap gap-3 mb-4">
+                    {milestoneItems.map((m) => (
+                      <div
+                        key={m.milestoneId}
+                        className="flex items-center gap-2 rounded-full bg-amber-50 border border-amber-200 px-3 py-1.5"
+                        title={`${m.description}\nAchieved ${new Date(m.achievedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}`}
+                      >
+                        <span className="text-lg">{m.icon || '🏅'}</span>
+                        <span className="text-sm font-medium text-amber-800">{m.title}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <GridView badges={gridDisplayBadges} />
+              </>
+            )}
+
+            {/* Story 15.8: Infinite scroll sentinel */}
+            {!showNoResults && <div ref={sentinelRef} className="h-px" />}
+
+            {/* Story 15.8: Loading more indicator */}
+            {isFetchingNextPage && (
+              <div className="flex justify-center py-6">
+                <Loader2 className="h-6 w-6 animate-spin text-brand-600" />
+                <span className="sr-only">Loading more badges...</span>
+              </div>
+            )}
+
+            {/* Story 15.8: End of list indicator */}
+            {!hasNextPage && allItems.length > 0 && !isFetchingNextPage && (
+              <div className="text-center py-6 text-neutral-400 text-sm">
+                You've seen all your badges
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Badge Detail Modal - renders via Portal to document.body */}

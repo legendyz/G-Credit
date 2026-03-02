@@ -448,7 +448,7 @@ export function SkillsFilter({
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
           className={`
-            flex-1 h-11 px-3
+            flex-1 h-9 px-3
             flex items-center justify-between
             bg-white dark:bg-gray-800
             border rounded-lg
@@ -480,7 +480,7 @@ export function SkillsFilter({
           <button
             type="button"
             onClick={clearAll}
-            className="h-11 px-2 text-gray-400 hover:text-gray-600 
+            className="h-9 px-2 text-gray-400 hover:text-gray-600 
                        dark:hover:text-gray-300
                        focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg"
             aria-label="Clear selection"
@@ -494,7 +494,7 @@ export function SkillsFilter({
           <button
             type="button"
             onClick={clearAll}
-            className="h-11 px-3 text-sm text-gray-500 hover:text-gray-700 
+            className="h-9 px-3 text-sm text-gray-500 hover:text-gray-700 
                        dark:text-gray-400 dark:hover:text-gray-200
                        focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg"
             aria-label="Clear skill selection"
@@ -508,7 +508,7 @@ export function SkillsFilter({
       {isOpen && (
         <div
           className="
-            absolute z-sticky mt-1 w-full
+            absolute z-modal mt-1 w-max min-w-full
             bg-white dark:bg-gray-800
             border border-gray-200 dark:border-gray-700
             rounded-lg shadow-lg

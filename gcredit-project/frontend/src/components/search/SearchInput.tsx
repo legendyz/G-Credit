@@ -141,7 +141,7 @@ export function SearchInput({
       : '';
 
   const focusClasses = isFocused
-    ? 'ring-2 ring-blue-500 border-transparent'
+    ? 'border-blue-500 shadow-[inset_0_0_0_1px_rgb(59,130,246)]'
     : 'border-gray-300 dark:border-gray-600';
 
   return (
@@ -158,7 +158,7 @@ export function SearchInput({
         className={`
           relative flex items-center min-h-[44px] h-12 
           bg-white dark:bg-gray-800 
-          border rounded-lg 
+          border rounded-lg overflow-hidden
           transition-all duration-200
           ${focusClasses}
           ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
@@ -181,13 +181,16 @@ export function SearchInput({
           placeholder={placeholder}
           disabled={disabled}
           aria-label={ariaLabel}
+          style={{ outline: 'none', WebkitAppearance: 'none' }}
           className="
             flex-1 h-full bg-transparent
             text-gray-900 dark:text-white
             placeholder-gray-400 dark:placeholder-gray-500
-            focus:outline-none
+            outline-none
             text-base
             pr-2
+            [&::-webkit-search-cancel-button]:hidden
+            [&::-webkit-search-decoration]:hidden
           "
           autoComplete="off"
           autoCorrect="off"

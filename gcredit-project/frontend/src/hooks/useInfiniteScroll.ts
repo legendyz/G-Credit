@@ -17,6 +17,8 @@ interface UseInfiniteScrollOptions {
   fetchNextPage: () => void;
   /** IntersectionObserver rootMargin (default: '200px' for pre-fetching) */
   rootMargin?: string;
+  /** Scroll container element to observe within (default: viewport) */
+  root?: Element | null;
 }
 
 export function useInfiniteScroll({
@@ -24,6 +26,7 @@ export function useInfiniteScroll({
   isFetchingNextPage,
   fetchNextPage,
   rootMargin = '200px',
+  root,
 }: UseInfiniteScrollOptions) {
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -41,12 +44,13 @@ export function useInfiniteScroll({
     if (!sentinel) return;
 
     const observer = new IntersectionObserver(handleIntersect, {
+      root: root ?? null,
       rootMargin,
     });
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [handleIntersect, rootMargin]);
+  }, [handleIntersect, rootMargin, root]);
 
   return sentinelRef;
 }
