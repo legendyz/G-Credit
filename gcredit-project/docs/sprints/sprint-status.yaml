@@ -192,14 +192,14 @@ sprint-15: active
 15-1-dashboard-composite-view: done                # TD-035-A: role switch → permission-stacked tabs — CR passed 2026-03-02
 
 # --- Wave 2.5: Mid-Sprint UAT (3h) ---
-15-14-mid-sprint-uat: backlog                      # 56 test cases: sidebar + dashboard + routes + responsive
+15-14-mid-sprint-uat: done                         # 37/37 PASS — 10 findings, 5 hotfixed, 3 deferred, 2 accepted
 
 # --- Wave 3: UI Polish (19h) ---
-15-10-emoji-to-lucide-icons: backlog               # P2-7: full site emoji → Lucide React
-15-7-template-list-pagination: backlog             # P2-1: server-side pagination + page controls
-15-8-wallet-infinite-scroll: backlog               # P2-2: cursor-based + IntersectionObserver
-15-5-inline-styles-to-tailwind: backlog            # P1-1: style={{}} → Tailwind classes
-15-6-forgot-password-page: backlog                 # P1-7: ForgotPasswordPage + ResetPasswordPage
+15-10-emoji-to-lucide-icons: done                  # P2-7: full site emoji → Lucide React — Done 2026-03-02
+15-7-template-list-pagination: done                # P2-1: server-side pagination + page controls — Done 2026-03-02
+15-8-wallet-infinite-scroll: done                  # P2-2: cursor-based + IntersectionObserver — Done 2026-03-02
+15-5-inline-styles-to-tailwind: done               # P1-1: style={{}} → Tailwind classes + FINDING fixes — Done 2026-03-02
+15-6-forgot-password-page: deferred               # P1-7: deferred to backlog as tech debt (2026-03-02)
 15-12-dirty-form-guard: backlog                    # P2-11: beforeunload + useBlocker
 15-9-styled-delete-confirmation: backlog           # P2-5: window.confirm() → shadcn AlertDialog
 15-11-zindex-scale: backlog                        # P2-8: standardized z-index in @theme {}

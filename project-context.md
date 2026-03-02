@@ -1723,6 +1723,7 @@ Sprint 0-2 established this pattern:
      - P2-8: z-index scale (1h)
      - P2-11: Dirty-form guard (2h)
    - **Deferred from Sprint 15:** P2-12 (Template preview modes) → Sprint 16+
+   - **Deferred from Sprint 15:** P1-7 (Forgot Password page, 3h) → backlog as tech debt (2026-03-02, no dependencies)
    - **Absorbed into Sidebar:** P2-10 (Mobile nav Issue Badge) — no separate estimate
 
 26. 🔜 **Sprint 16: Pilot Readiness — Fine-Grained RBAC + Pilot Validation** (Planned)

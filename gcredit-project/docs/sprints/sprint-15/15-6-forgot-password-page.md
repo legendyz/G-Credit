@@ -1,9 +1,10 @@
 # Story 15.6: Forgot Password Page (P1-7)
 
-**Status:** backlog  
+**Status:** deferred  
 **Priority:** MEDIUM  
 **Estimate:** 3h  
 **Wave:** 3 — UI Polish  
+**Deferred:** 2026-03-02 — moved to backlog as tech debt; no sprint dependencies  
 **Source:** P1-7 (Post-MVP UI Audit)  
 **Dependencies:** None (backend already has password reset endpoints)
 
