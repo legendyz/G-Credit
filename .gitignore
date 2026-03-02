@@ -67,7 +67,8 @@ gcredit-project/scripts/*.txt
 
 # Output directories
 *.bak
-_bmad-output/playwright-sessions/
+_bmad-output/
+gcredit-project/_bmad-output/
 
 # Claude Code files
 .claude/
