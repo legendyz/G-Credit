@@ -5,7 +5,7 @@
 **Project Type:** Enterprise Internal Platform (Greenfield)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
 **License:** MIT License (Open Source)  
-**Status:** ✅ Sprint 15 COMPLETE — 14/15 stories (1 deferred), v1.5.0  
+**Status:** 🟡 Sprint 16 IN PLANNING — F-1 RBAC + Pilot Readiness, ~12h  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, committed 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, committed 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, committed 2026-01-26)  
@@ -23,7 +23,8 @@
 **Sprint 13:** ✅ Complete (8/8 stories, 4 waves, branch: sprint-13/sso-session-management, 1,708 tests, v1.3.0)
 **Sprint 14:** ✅ Complete (9/9 stories, 4 waves, branch: sprint-14/role-model-refactor, 1,757 tests, v1.4.0)
 **Sprint 15:** ✅ Complete (14/15 stories, 4 waves, branch: sprint-15/ui-overhaul-dashboard, 1,835 tests, UAT 36/36 PASS, v1.5.0)
-**Last Updated:** 2026-03-03 (Sprint 15 COMPLETE — UI Overhaul + Dashboard Composite View, v1.5.0)
+**Sprint 16:** 🟡 Planning Complete (5 stories, 4 waves, branch: sprint-16/f1-rbac-pilot-readiness, ~12h)
+**Last Updated:** 2026-03-02 (Sprint 16 PLANNING COMPLETE — F-1 Issuer Template Ownership + Pilot Readiness)
 ---
 
 ## 🚨 Maintenance Protocol - How to Keep This Document Current
@@ -435,7 +436,7 @@ _bmad-output/
 | **Pre-Pilot Hardening** | **~3 sprints** | **Role Refactor + UI Polish + RBAC** | **🔜 Planning** |
 | → Sprint 14 | 2 days | Dual-Dimension Role Model Refactor | ✅ COMPLETE (2026-02-28, 9/9 stories, 1,757 tests, v1.4.0) |
 | → Sprint 15 | 3 days | UI Overhaul + Dashboard Composite View (~56h) | ✅ COMPLETE (2026-03-03, 14/15 stories, 1,835 tests, UAT 36/36 PASS, v1.5.0) |
-| → Sprint 16 | TBD | Fine-Grained RBAC L1 + Pilot Readiness (~12h) | 🔜 Planned |
+| → Sprint 16 | 2 days | F-1 Issuer Template Ownership + Pilot Readiness (~12h) | 🟡 Planning Complete |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ After Sprint 16 |
 | ⚙️ BMAD Workflow Extension *(independent project)* | ~30-50h | VS Code extension — automate SM→Dev→CR pipeline. **⚠️ NOT a G-Credit sprint item — separate repo, separate backlog.** Developed in parallel during Pilot downtime. Design doc: `docs/bmad-workflow-extension-design.md` | 📋 Planned (Pilot period) |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
@@ -1736,19 +1737,30 @@ Sprint 0-2 established this pattern:
    - **Deferred from Sprint 15:** P2-12 (Template preview modes) → Sprint 16+
    - **Deferred from Sprint 15:** P1-7 (Forgot Password page, 2h) → backlog as tech debt (no dependencies)
 
-26. 🔜 **Sprint 16: Pilot Readiness — Fine-Grained RBAC + Pilot Validation** (Planned)
+26. � **Sprint 16: F-1 Issuer Template Ownership + Pilot Readiness** (Planning Complete)
    
-   **Sprint Goal:** Permission fine-tuning + pilot validation — last sprint before Phase 4 Pilot.
-   **Estimated Effort:** ~12h (+ optional P2-12 template preview, 4h)
+   **Sprint Goal:** Enforce issuer-level template ownership isolation + pilot readiness validation.
+   **Branch:** `sprint-16/f1-rbac-pilot-readiness`
+   **Estimated Effort:** ~12h (5 stories, 4 waves)
    
-   **Stories:**
-   - F-1 Level 1: Fine-Grained RBAC — Issuer template ownership on issuance (~8h)
-     - Issuer can only issue badges using templates they created
-     - Admin unrestricted (can use any template)
-     - Backend guard + frontend template list filtering
-   - Pilot Readiness Validation (~4h)
-     - Smoke test with pilot scenario
-     - Pilot seed data preparation
+   **Wave 1 — Backend Ownership Guards (6h, parallel):**
+   - Story 16.1: Backend Issuer Template Ownership Guard (4h) — issueBadge + bulkIssuance
+   - Story 16.3: Template Edit/Update Ownership Guard (2h) — extends ARCH-P1-004
+   
+   **Wave 2 — Frontend Filter (2h):**
+   - Story 16.2: Frontend Template Ownership Filter — IssueBadgePage/BulkIssuancePage
+   
+   **Wave 3 — Pilot Readiness (2h):**
+   - Story 16.4: Pilot Seed Data + Smoke Test — seed-pilot.ts
+   
+   **Wave 4 — UAT (2h):**
+   - Story 16.5: Sprint 16 UAT — 20 test scenarios (12 F-1 + 6 regression + 2 pilot)
+   
+   **Planning Artifacts:**
+   - Backlog: `docs/sprints/sprint-16/backlog.md`
+   - Story files: `docs/sprints/sprint-16/16-1` through `16-5`
+   - Version manifest: `docs/sprints/sprint-16/version-manifest.md`
+   - Kickoff readiness: `docs/sprints/sprint-16/kickoff-readiness.md`
    
    **FEAT-009 (Invite-to-Claim) deferred to Post-Pilot** — See ADR-014 for GUEST role architecture decision.
    

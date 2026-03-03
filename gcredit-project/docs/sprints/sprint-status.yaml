@@ -181,7 +181,7 @@ sprint-14: done
 # Stories: 15.1-15.15 (~56h) — 5 Waves (W1→W2→W2.5→W3→W4)
 # Staged UAT: Mid-Sprint (W2.5) + Final (W4)
 # ============================================
-sprint-15: active
+sprint-15: done
 
 # --- Wave 1: Backend Prep (6h) ---
 15-2-backend-permissions-api: done                  # TD-035-B: GET /api/users/me/permissions  — Started 2026-03-01, CR passed
@@ -206,4 +206,27 @@ sprint-15: active
 
 # --- Wave 4: Testing + Final UAT (8h) ---
 15-4-role-manager-test-matrix: done                 # TD-035-D: 6-combo E2E matrix
-15-15-final-uat: backlog                           # 40 test cases: regression + pagination + forms + visual + technical
+15-15-final-uat: done                              # 36/36 PASS — v1.5.0 released
+
+# ============================================
+# Sprint 16: Issuer Template Ownership (F-1) + Pilot Readiness
+# Goal: Enforce issuer-level template ownership isolation + pilot seed/smoke
+# Target: v1.6.0
+# Branch: sprint-16/f1-rbac-pilot-readiness
+# Planning: 2026-03-02
+# Stories: 16.1-16.5 (~12h) — 4 Waves
+# ============================================
+sprint-16: active
+
+# --- Wave 1: Backend Ownership Guards (6h, parallel) ---
+16-1-issuer-template-ownership-guard: ready-for-dev  # issueBadge + bulkIssuance ownership check
+16-3-template-edit-ownership-guard: ready-for-dev    # update/status ownership check (extends ARCH-P1-004)
+
+# --- Wave 2: Frontend Filter (2h) ---
+16-2-frontend-template-ownership-filter: backlog     # IssueBadgePage/BulkIssuancePage → own templates only
+
+# --- Wave 3: Pilot Readiness (2h) ---
+16-4-pilot-seed-smoke-test: backlog                  # seed-pilot.ts + smoke test
+
+# --- Wave 4: UAT (2h) ---
+16-5-sprint-16-uat: backlog                          # 20 test scenarios (12 F-1 + 6 regression + 2 pilot)
