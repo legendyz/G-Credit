@@ -26,12 +26,20 @@ import {
   BarChart3,
   PlusCircle,
   AlertTriangle,
+  AlertOctagon,
+  CheckCircle,
+  ClipboardList,
   Info,
   RefreshCw,
 } from 'lucide-react';
 
-export const AdminDashboard: React.FC = () => {
-  const { data, isLoading, error, refetch } = useAdminDashboard();
+interface AdminDashboardProps {
+  /** When false, React Query is disabled — no API calls (DEC-15-03) */
+  enabled?: boolean;
+}
+
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({ enabled = true }) => {
+  const { data, isLoading, error, refetch } = useAdminDashboard({ enabled });
   const navigate = useNavigate();
 
   if (isLoading) {
@@ -112,7 +120,7 @@ export const AdminDashboard: React.FC = () => {
         <CardContent>
           {recentActivity.length === 0 ? (
             <EmptyState
-              icon="📋"
+              icon={<ClipboardList size={48} aria-hidden="true" />}
               title="No recent activity"
               description="System activity will appear here."
             />
@@ -179,21 +187,21 @@ const SystemHealthBanner: React.FC<{ health: 'healthy' | 'degraded' | 'critical'
       bg: 'bg-green-50 dark:bg-green-900/20',
       border: 'border-green-200 dark:border-green-800',
       text: 'text-green-800 dark:text-green-200',
-      icon: '✅',
+      icon: <CheckCircle size={24} aria-hidden="true" className="text-green-600" />,
       message: 'All systems operational',
     },
     degraded: {
       bg: 'bg-yellow-50 dark:bg-yellow-900/20',
       border: 'border-yellow-200 dark:border-yellow-800',
       text: 'text-yellow-800 dark:text-yellow-200',
-      icon: '⚠️',
+      icon: <AlertTriangle size={24} aria-hidden="true" className="text-yellow-600" />,
       message: 'Some services experiencing issues',
     },
     critical: {
       bg: 'bg-red-50 dark:bg-red-900/20',
       border: 'border-red-200 dark:border-red-800',
       text: 'text-red-800 dark:text-red-200',
-      icon: '🚨',
+      icon: <AlertOctagon size={24} aria-hidden="true" className="text-red-600" />,
       message: 'Critical system issues detected',
     },
   };
@@ -203,7 +211,7 @@ const SystemHealthBanner: React.FC<{ health: 'healthy' | 'degraded' | 'critical'
   return (
     <div className={cn('p-4 rounded-lg border', bg, border)} role="status" aria-live="polite">
       <div className="flex items-center gap-3">
-        <span className="text-2xl" aria-hidden="true">
+        <span className="flex-shrink-0" aria-hidden="true">
           {icon}
         </span>
         <div>
@@ -260,11 +268,14 @@ interface ActivityItemProps {
 }
 
 const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
+  const ActivityIcon = getActivityIcon(activity.type);
   return (
     <div className="flex items-start gap-3 p-3 rounded-lg border bg-card">
-      <span className="text-xl" aria-hidden="true">
-        {getActivityIcon(activity.type)}
-      </span>
+      {React.createElement(ActivityIcon, {
+        size: 20,
+        className: 'flex-shrink-0 text-neutral-500 mt-0.5',
+        'aria-hidden': 'true',
+      })}
       <div className="flex-1 min-w-0">
         <p className="text-sm text-gray-800 leading-snug">{activity.description}</p>
         <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">

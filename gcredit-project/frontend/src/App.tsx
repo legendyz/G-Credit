@@ -56,7 +56,13 @@ function LoadingFallback() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Toaster richColors position="top-right" />
+      <Toaster
+        richColors
+        position="top-right"
+        toastOptions={{
+          style: { zIndex: 'var(--z-toast)' },
+        }}
+      />
       <BrowserRouter>
         <IdleTimeoutProvider />
         <Suspense fallback={<LoadingFallback />}>

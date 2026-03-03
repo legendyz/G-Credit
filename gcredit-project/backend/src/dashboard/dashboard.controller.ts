@@ -91,7 +91,7 @@ export class DashboardController {
    * GET /api/dashboard/manager
    */
   @Get('manager')
-  @Roles(UserRole.EMPLOYEE, UserRole.ADMIN)
+  @Roles(UserRole.EMPLOYEE, UserRole.ISSUER, UserRole.ADMIN)
   @RequireManager()
   @UseGuards(ManagerGuard)
   @HttpCode(HttpStatus.OK)

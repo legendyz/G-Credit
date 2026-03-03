@@ -19,7 +19,7 @@ vi.mock('../lib/evidenceApi', () => ({
   getEvidenceDownloadUrl: vi.fn(),
   formatFileSize: (bytes: number) =>
     bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(1)} KB`,
-  getFileIcon: () => '📄',
+  getFileIcon: () => () => null,
   truncateUrl: (url: string) => (url.length > 50 ? url.slice(0, 50) + '…' : url),
 }));
 

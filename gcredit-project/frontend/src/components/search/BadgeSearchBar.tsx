@@ -106,94 +106,84 @@ export function BadgeSearchBar({
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   const containerClasses = sticky
-    ? 'sticky top-0 z-10 bg-white shadow-sm pb-3 pt-2 -mx-4 px-4 md:-mx-6 md:px-6'
+    ? 'sticky top-0 z-sticky bg-white shadow-sm pb-3 pt-2 -mx-4 px-4 md:-mx-6 md:px-6'
     : '';
 
   return (
     <div className={`space-y-3 ${containerClasses} ${className}`} data-testid="badge-search-bar">
       {/* Search & Filters Row */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        {/* Search Input - Story 8.2 AC1: Mobile focus behavior */}
-        <div className="flex-1 min-w-0">
-          <SearchInput
-            value={searchTerm}
-            onChange={onSearchChange}
-            onClear={onSearchClear}
-            placeholder={placeholder}
-            isLoading={isSearchLoading}
-            minSearchLength={2}
-            debounceMs={500}
-            ariaLabel="Search badges by name or description"
-            onFocusChange={setIsSearchFocused}
-            expandOnMobileFocus
-          />
-        </div>
+      <div className="flex flex-col gap-2">
+        {/* Search Input - full width, prominent */}
+        <SearchInput
+          value={searchTerm}
+          onChange={onSearchChange}
+          onClear={onSearchClear}
+          placeholder={placeholder}
+          isLoading={isSearchLoading}
+          minSearchLength={2}
+          debounceMs={500}
+          ariaLabel="Search badges by name or description"
+          onFocusChange={setIsSearchFocused}
+          expandOnMobileFocus
+        />
 
-        {/* Filters - responsive layout, hidden on mobile when search focused */}
+        {/* Compact Filter Bar - hidden on mobile when search focused */}
         <div
-          className={`flex flex-wrap gap-2 sm:flex-nowrap ${isSearchFocused ? 'hidden sm:flex' : ''}`}
+          className={`flex flex-wrap items-center gap-2 ${isSearchFocused ? 'hidden sm:flex' : ''}`}
         >
           {/* Skills Filter */}
           {skills.length > 0 && (
-            <div className="w-full sm:w-40 md:w-48">
-              <SkillsFilter
-                skills={skills}
-                selectedSkills={selectedSkills}
-                onChange={onSkillsChange}
-                placeholder="Skills"
-                searchable
-                groupByCategory
-              />
-            </div>
+            <SkillsFilter
+              skills={skills}
+              selectedSkills={selectedSkills}
+              onChange={onSkillsChange}
+              placeholder="Skills"
+              searchable
+              groupByCategory
+            />
           )}
 
           {/* Date Range Picker */}
-          <div className="w-full sm:w-auto">
-            <DateRangePicker
-              value={dateRange}
-              onChange={onDateRangeChange}
-              compact
-              disableFutureDates
-            />
-          </div>
+          <DateRangePicker
+            value={dateRange}
+            onChange={onDateRangeChange}
+            compact
+            disableFutureDates
+          />
 
           {/* Status Filter */}
-          <div className="w-full sm:w-32">
-            <select
-              value={statusFilter}
-              onChange={(e) => onStatusChange(e.target.value)}
-              className="w-full h-11 px-3 py-2 border border-gray-300 rounded-lg text-sm
-                         bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                         cursor-pointer"
-              aria-label="Filter by status"
-            >
-              {statusOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => onStatusChange(e.target.value)}
+            className="h-9 px-3 border border-gray-300 rounded-lg text-sm
+                       bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                       cursor-pointer"
+            aria-label="Filter by status"
+          >
+            {statusOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
 
           {/* Story 8.2 AC2: Issuer Filter (Admin only) */}
           {issuers.length > 0 && onIssuerChange && (
-            <div className="w-full sm:w-40">
-              <select
-                value={selectedIssuer || ''}
-                onChange={(e) => onIssuerChange(e.target.value || undefined)}
-                className="w-full h-11 px-3 py-2 border border-gray-300 rounded-lg text-sm
-                           bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                           cursor-pointer"
-                aria-label="Filter by issuer"
-              >
-                <option value="">All Issuers</option>
-                {issuers.map((issuer) => (
-                  <option key={issuer.id} value={issuer.id}>
-                    {issuer.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <select
+              value={selectedIssuer || ''}
+              onChange={(e) => onIssuerChange(e.target.value || undefined)}
+              className="h-9 px-3 border border-gray-300 rounded-lg text-sm
+                         bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                         cursor-pointer"
+              aria-label="Filter by issuer"
+            >
+              <option value="">All Issuers</option>
+              {issuers.map((issuer) => (
+                <option key={issuer.id} value={issuer.id}>
+                  {issuer.name}
+                </option>
+              ))}
+            </select>
           )}
         </div>
       </div>

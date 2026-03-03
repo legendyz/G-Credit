@@ -6,9 +6,10 @@
  */
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
+import { PartyPopper, Award, Medal } from 'lucide-react';
 
 export interface CelebrationModalProps {
   /** Whether the modal is open */
@@ -56,7 +57,7 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({
   onClose,
   title,
   description,
-  icon = '🎉',
+  icon = <PartyPopper size={48} aria-hidden="true" />,
   badgeImageUrl,
   achievementName,
   ctaText = 'Continue',
@@ -138,13 +139,20 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({
           {/* Title */}
           <DialogTitle className="text-2xl font-bold text-foreground mb-2">{title}</DialogTitle>
 
+          {description ? (
+            <DialogDescription className="text-muted-foreground mb-6">
+              {description}
+            </DialogDescription>
+          ) : (
+            <DialogDescription className="sr-only">
+              Celebration dialog for achievement feedback.
+            </DialogDescription>
+          )}
+
           {/* Achievement Name */}
           {achievementName && (
             <p className="text-lg font-semibold text-primary mb-2">{achievementName}</p>
           )}
-
-          {/* Description */}
-          {description && <p className="text-muted-foreground mb-6">{description}</p>}
 
           {/* CTA Button */}
           <Button onClick={handleCta} className="w-full sm:w-auto min-w-[120px]" size="lg">
@@ -169,11 +177,11 @@ export const BadgeEarnedCelebration: React.FC<{
   <CelebrationModal
     isOpen={isOpen}
     onClose={onClose}
-    title="Congratulations! 🎉"
+    title="Congratulations!"
     achievementName={badgeName}
     description="You've earned a new badge! Share your achievement with colleagues."
     badgeImageUrl={badgeImageUrl}
-    icon="🏆"
+    icon={<Award size={48} aria-hidden="true" />}
     type="badge"
     ctaText={onViewBadge ? 'View Badge' : 'Continue'}
     onCtaClick={onViewBadge}
@@ -192,10 +200,10 @@ export const MilestoneReachedCelebration: React.FC<{
   <CelebrationModal
     isOpen={isOpen}
     onClose={onClose}
-    title="Milestone Achieved! 🌟"
+    title="Milestone Achieved!"
     achievementName={milestoneName}
     description={description || "You've reached an important milestone on your journey!"}
-    icon="🏅"
+    icon={<Medal size={48} aria-hidden="true" />}
     type="milestone"
   />
 );

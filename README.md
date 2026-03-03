@@ -18,8 +18,9 @@
 [![Sprint12.5](https://img.shields.io/badge/Sprint%2012.5-Complete%20(100%25)-brightgreen)]()
 [![Sprint13](https://img.shields.io/badge/Sprint%2013-Complete%20(100%25)-brightgreen)]()
 [![Sprint14](https://img.shields.io/badge/Sprint%2014-Complete%20(100%25)-brightgreen)]()
-[![Version](https://img.shields.io/badge/Version-v1.4.0-blue)]()
-[![Tests](https://img.shields.io/badge/Tests-1757%20Total%2C%201757%20Passing-success)]() 
+[![Sprint15](https://img.shields.io/badge/Sprint%2015-Complete%20(93%25)-brightgreen)]()
+[![Version](https://img.shields.io/badge/Version-v1.5.0-blue)]()
+[![Tests](https://img.shields.io/badge/Tests-1835%20Total%2C%201835%20Passing-success)]()
 
 > **G-Credit** is an enterprise-grade internal digital badging platform designed to securely recognize, verify, and analyze employee skills and achievements. Compliant with Open Badges 2.0 standards, it aims to replace fragmented certificate management and reduce dependency on external platforms.
 
@@ -30,7 +31,7 @@
 **Project Name:** G-Credit  
 **Project Type:** Enterprise Internal Platform (Greenfield Development)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
-**Current Status:** ✅ v1.4.0 Released — Dual-Dimension Role Model Refactor (15 Sprints, 1,757 tests)  
+**Current Status:** ✅ v1.5.0 Released — UI Overhaul + Dashboard Composite View (16 Sprints, 1,835 tests)  
 **Sprint 0:** ✅ Complete (100%, actual 9.5h / estimated 10h, 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, actual 21h / estimated 21h, 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, actual 29h / estimated 32h, 2026-01-26)  
@@ -47,7 +48,8 @@
 **Sprint 12.5:** ✅ Complete (2/2 stories, 1,593 tests, 2026-02-25, v1.2.1)  
 **Sprint 13:** ✅ Complete (8/8 stories, 4 waves, 1,708 tests, 2026-02-25 to 2026-02-27, v1.3.0)  
 **Sprint 14:** ✅ Complete (9/9 stories, 4 waves, 1,757 tests, 2026-02-27 to 2026-02-28, v1.4.0)  
-**Version:** v1.4.0 (Dual-Dimension Role Model Refactor, 1,757 tests, 100% passing)
+**Sprint 15:** ✅ Complete (14/15 stories, 4 waves, 1,835 tests, UAT 36/36 PASS, 2026-03-01 to 2026-03-03, v1.5.0)  
+**Version:** v1.5.0 (UI Overhaul + Dashboard Composite View, 1,835 tests, 100% passing)
 
 ### Key Capabilities (v1.4.0)
 - **Badge Lifecycle:** Template management, issuance, claiming, revocation, verification (Open Badges 2.0)
@@ -291,6 +293,29 @@
 - **Branch:** sprint-13/sso-session-management (merged to main via PR #9)
 - **Git Tag:** v1.3.0
 - **GitHub Release:** [v1.3.0](https://github.com/legendyz/G-Credit/releases/tag/v1.3.0)
+
+**✅ Sprint 14 Complete (2026-02-28, v1.4.0):**
+- ✅ 9/9 stories delivered across 4 waves (Dual-Dimension Role Model Refactor)
+- ✅ Wave 2: MANAGER removed from UserRole enum, `isManager` JWT claim, ManagerGuard
+- ✅ Wave 4: 31 E2E tests — 6 role×manager combination matrix
+- ✅ 11 CSS design tokens in `@theme` blocks (ADR-009)
+- ✅ Tech Debt Resolved: TD-034, TD-036. Created: TD-038
+- **Testing:** 1,757 tests (BE 932 + FE 794 + E2E 31), 100% pass rate (+49 from v1.3.0)
+- **Branch:** sprint-14/role-model-refactor
+- **Git Tag:** v1.4.0
+
+**✅ Sprint 15 Complete (2026-03-03, v1.5.0):**
+- ✅ 14/15 stories delivered across 4 waves (UI Overhaul + Dashboard Composite View)
+- ✅ Wave 1: Permissions API, configurable rate limits (TD-038 resolved)
+- ✅ Wave 2: Sidebar layout migration (shadcn/ui), dashboard tabbed composite view
+- ✅ Wave 2.5: Mid-Sprint UAT — 56/56 PASS
+- ✅ Wave 3: Emoji→Lucide, pagination, infinite scroll, dirty-form guard, styled delete, z-index scale, inline→Tailwind
+- ✅ Wave 4: Final UAT — 36/36 PASS (6 bugs found & fixed)
+- ✅ ADR-016 (5 UI decisions), ADR-018 (search input focus pattern)
+- **Total: 14/15 stories, 4 waves, 1 deferred (Forgot Password)**
+- **Testing:** 1,835 tests (BE 991 + FE 844), 100% pass rate (+78 from v1.4.0)
+- **Branch:** sprint-15/ui-overhaul-dashboard
+- **Git Tag:** v1.5.0
 
 ---
 
@@ -583,9 +608,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Last Updated:** 2026-02-27
-**Status:** ✅ v1.3.0 Released — Azure AD SSO + Session Management Complete
-**Version:** v1.3.0 (Released 2026-02-27, 1,708 tests, 20 controllers, 100 endpoints)
+**Last Updated:** 2026-03-03
+**Status:** ✅ v1.5.0 Released — UI Overhaul + Dashboard Composite View Complete
+**Version:** v1.5.0 (Released 2026-03-03, 1,835 tests, 100% passing)
 **Sprint 0:** ✅ Complete (actual 9.5h / estimated 10h, 95%) - [Retrospective](./_bmad-output/implementation-artifacts/sprint-0-retrospective.md)  
 **Sprint 1:** ✅ Complete (actual 21h / estimated 21h, 100%) - [Retrospective](./_bmad-output/implementation-artifacts/sprint-1-retrospective.md)  
 **Sprint 2:** ✅ Complete (actual 29h / estimated 32h, 110%) - [Final Report](./gcredit-project/backend/docs/sprints/sprint-2/final-report.md) | [Retrospective](./gcredit-project/backend/docs/sprints/sprint-2/retrospective.md)  
@@ -601,4 +626,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Sprint 12:** ✅ Complete (8/8 stories, 3 waves, v1.2.0) - [Summary](./gcredit-project/docs/sprints/sprint-12/summary.md) | [Retrospective](./gcredit-project/docs/sprints/sprint-12/retrospective.md)  
 **Sprint 12.5:** ✅ Complete (2/2 stories, v1.2.1) - [Backlog](./gcredit-project/docs/sprints/sprint-12.5/backlog.md)  
 **Sprint 13:** ✅ Complete (8/8 stories, 4 waves, v1.3.0) - [Status](./gcredit-project/docs/sprints/sprint-13/sprint-status.md) | [Retrospective](./gcredit-project/docs/sprints/sprint-13/retrospective.md)  
-**Release:** [v1.3.0 on GitHub](https://github.com/legendyz/G-Credit/releases/tag/v1.3.0)
+**Sprint 14:** ✅ Complete (9/9 stories, 4 waves, v1.4.0) - [Summary](./gcredit-project/docs/sprints/sprint-14/summary.md) | [Retrospective](./gcredit-project/docs/sprints/sprint-14/retrospective.md)  
+**Sprint 15:** ✅ Complete (14/15 stories, 4 waves, v1.5.0) - [Summary](./gcredit-project/docs/sprints/sprint-15/summary.md) | [Retrospective](./gcredit-project/docs/sprints/sprint-15/retrospective.md)  
+**Next:** Sprint 16 — Fine-Grained RBAC L1 + Pilot Readiness (~12h)

@@ -6,7 +6,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { Globe, Lock, Loader2 } from 'lucide-react';
+import { Globe, Lock, Loader2, Eye, ArrowDownToLine, Ban, AlarmClock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Badge } from '../../hooks/useWallet';
@@ -185,7 +185,7 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
                   openModal(badge.id);
                 }}
               >
-                👁️
+                <Eye size={20} className="text-gray-600" aria-hidden="true" />
               </button>
               <button
                 className="p-2 hover:bg-gray-100 rounded"
@@ -193,7 +193,7 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
                 title="Download"
                 onClick={(e) => e.stopPropagation()}
               >
-                ⬇️
+                <ArrowDownToLine size={20} className="text-gray-600" aria-hidden="true" />
               </button>
               <button
                 className="p-2 hover:bg-gray-100 rounded min-w-[44px] min-h-[44px] flex items-center justify-center"
@@ -217,14 +217,14 @@ export function BadgeTimelineCard({ badge }: BadgeTimelineCardProps) {
         {/* Story 9.3 AC1: Red "REVOKED" banner overlay */}
         {isRevoked && (
           <div className="absolute top-2 right-2 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md">
-            🚫 REVOKED
+            <Ban size={14} className="inline" aria-hidden="true" /> REVOKED
           </div>
         )}
 
         {/* Gray "EXPIRED" banner overlay — UX Decision 2026-02-17: neutral gray for expired */}
         {isExpired && (
           <div className="absolute top-2 right-2 bg-gray-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md">
-            ⏰ EXPIRED
+            <AlarmClock size={14} className="inline" aria-hidden="true" /> EXPIRED
           </div>
         )}
       </div>

@@ -7,6 +7,7 @@
 
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { PartyPopper } from 'lucide-react';
 
 interface ClaimSuccessModalProps {
   isOpen: boolean;
@@ -35,24 +36,18 @@ export function ClaimSuccessModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 z-[10001] flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/60 z-modal flex items-center justify-center p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
       role="dialog"
       aria-modal="true"
       aria-labelledby="claim-success-title"
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center"
-        // inline style retained: CSS @keyframes animation not expressible in Tailwind
-        style={{ animation: 'fadeInScale 0.3s ease-out' }}
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center animate-[fadeInScale_0.3s_ease-out]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Animated Checkmark */}
-        <div
-          className="w-20 h-20 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center"
-          // inline style retained: CSS @keyframes animation not expressible in Tailwind
-          style={{ animation: 'bounceIn 0.5s ease-out' }}
-        >
+        <div className="w-20 h-20 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center animate-[bounceIn_0.5s_ease-out]">
           <svg
             className="w-12 h-12 text-green-600"
             fill="none"
@@ -65,19 +60,19 @@ export function ClaimSuccessModal({
               strokeLinejoin="round"
               strokeWidth={3}
               d="M5 13l4 4L19 7"
-              /* inline style retained: CSS animation computed values (strokeDasharray/offset) */
+              /* Inline style retained: strokeDasharray/offset are SVG-specific computed values */
               style={{
                 strokeDasharray: 24,
                 strokeDashoffset: 24,
-                animation: 'drawCheck 0.4s ease-out 0.3s forwards',
               }}
+              className="animate-[drawCheck_0.4s_ease-out_0.3s_forwards]"
             />
           </svg>
         </div>
 
         {/* Congratulations Message */}
         <h2 id="claim-success-title" className="text-2xl font-bold text-gray-900 mb-2">
-          🎉 Congratulations!
+          <PartyPopper size={24} className="inline" aria-hidden="true" /> Congratulations!
         </h2>
 
         <p className="text-base text-gray-600 mb-4">
@@ -113,38 +108,6 @@ export function ClaimSuccessModal({
           </button>
         </div>
       </div>
-
-      {/* CSS Animations */}
-      <style>{`
-        @keyframes fadeInScale {
-          from {
-            opacity: 0;
-            transform: scale(0.9);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-        
-        @keyframes bounceIn {
-          0% {
-            transform: scale(0);
-          }
-          50% {
-            transform: scale(1.2);
-          }
-          100% {
-            transform: scale(1);
-          }
-        }
-        
-        @keyframes drawCheck {
-          to {
-            stroke-dashoffset: 0;
-          }
-        }
-      `}</style>
     </div>
   );
 }

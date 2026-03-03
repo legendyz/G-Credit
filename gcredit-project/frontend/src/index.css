@@ -139,6 +139,15 @@
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
+
+  /* === z-index Scale === */
+  --z-base: 0;
+  --z-dropdown: 10;
+  --z-sticky: 20;
+  --z-sidebar: 30;
+  --z-modal: 40;
+  --z-toast: 50;
+  --z-tooltip: 60;
 }
 
 :root {
@@ -246,4 +255,74 @@
 
 .animate-bounce-slow {
   animation: bounce-slow 2s ease-in-out infinite;
+}
+
+/* === Scrollbar Hide Utility — for horizontal scroll containers === */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* === Sidebar Active State — Story 15.3 (REC-15.3-003) === */
+[data-sidebar="menu-button"][data-active="true"] {
+  border-left: 3px solid var(--primary);
+  background-color: var(--accent);
+}
+
+/* === Sidebar Collapse Animation — Story 15.3 (CRITICAL-15.3-002) === */
+[data-sidebar="sidebar"] {
+  transition: width 200ms ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-sidebar="sidebar"] {
+    transition: none;
+  }
+}
+
+/* === Dashboard Tabs Mobile Scroll — Story 15.1 (REC-15.1-003) === */
+@media (max-width: 767px) {
+  [data-dashboard-tabs] {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    /* Fade indicator for scroll affordance (AC#7) */
+    mask-image: linear-gradient(to right, transparent 0, black 8px, black calc(100% - 24px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0, black 8px, black calc(100% - 24px), transparent 100%);
+  }
+  [data-dashboard-tabs]::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* === ClaimSuccessModal Animations — Story 15.5 (moved from inline <style>) === */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes drawCheck {
+  to {
+    stroke-dashoffset: 0;
+  }
 }

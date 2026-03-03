@@ -6,30 +6,42 @@
  */
 
 import type { ActivityType } from '../types/analytics';
+import type { LucideIcon } from 'lucide-react';
+import {
+  Medal,
+  CheckCircle,
+  Ban,
+  Upload,
+  FilePen,
+  PenLine,
+  User,
+  Wrench,
+  ClipboardList,
+} from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // 1. Activity configuration (icon + verb per type)
 // ---------------------------------------------------------------------------
 
 export interface ActivityConfig {
-  icon: string;
+  icon: LucideIcon;
   verb: string;
 }
 
 export const ACTIVITY_CONFIG: Record<ActivityType, ActivityConfig> = {
-  BADGE_ISSUED: { icon: '🏅', verb: 'issued' },
-  BADGE_CLAIMED: { icon: '✅', verb: 'claimed' },
-  BADGE_REVOKED: { icon: '🚫', verb: 'revoked' },
-  BADGE_SHARED: { icon: '📤', verb: 'shared' },
-  TEMPLATE_CREATED: { icon: '📝', verb: 'created template' },
-  TEMPLATE_UPDATED: { icon: '✏️', verb: 'updated template' },
-  USER_REGISTERED: { icon: '👤', verb: 'registered' },
-  USER_UPDATED: { icon: '🔧', verb: 'updated user' },
+  BADGE_ISSUED: { icon: Medal, verb: 'issued' },
+  BADGE_CLAIMED: { icon: CheckCircle, verb: 'claimed' },
+  BADGE_REVOKED: { icon: Ban, verb: 'revoked' },
+  BADGE_SHARED: { icon: Upload, verb: 'shared' },
+  TEMPLATE_CREATED: { icon: FilePen, verb: 'created template' },
+  TEMPLATE_UPDATED: { icon: PenLine, verb: 'updated template' },
+  USER_REGISTERED: { icon: User, verb: 'registered' },
+  USER_UPDATED: { icon: Wrench, verb: 'updated user' },
 };
 
-/** Return the icon for a given activity type, with a fallback for unknown types. */
-export function getActivityIcon(type: string): string {
-  return (ACTIVITY_CONFIG as Record<string, ActivityConfig>)[type]?.icon ?? '📋';
+/** Return the Lucide icon component for a given activity type, with a fallback for unknown types. */
+export function getActivityIcon(type: string): LucideIcon {
+  return (ACTIVITY_CONFIG as Record<string, ActivityConfig>)[type]?.icon ?? ClipboardList;
 }
 
 // ---------------------------------------------------------------------------

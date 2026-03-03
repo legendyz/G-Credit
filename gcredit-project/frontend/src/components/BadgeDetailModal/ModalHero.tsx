@@ -1,5 +1,6 @@
 import React from 'react';
 import type { BadgeStatus } from '../../types/badge';
+import { CheckCircle, Circle, Lock, AlarmClock, Award, Globe } from 'lucide-react';
 
 interface ModalHeroProps {
   badgeImage: string | null;
@@ -23,13 +24,41 @@ const ModalHero: React.FC<ModalHeroProps> = ({
   const getStatusConfig = (status: BadgeStatus) => {
     switch (status) {
       case 'CLAIMED':
-        return { label: '✅ Claimed', color: 'bg-green-100 text-green-800' };
+        return {
+          label: (
+            <>
+              <CheckCircle size={16} className="inline" aria-hidden="true" /> Claimed
+            </>
+          ),
+          color: 'bg-green-100 text-green-800',
+        };
       case 'PENDING':
-        return { label: '🟡 Pending', color: 'bg-amber-100 text-amber-800' };
+        return {
+          label: (
+            <>
+              <Circle size={16} className="inline text-amber-500" aria-hidden="true" /> Pending
+            </>
+          ),
+          color: 'bg-amber-100 text-amber-800',
+        };
       case 'REVOKED':
-        return { label: '🔒 Revoked', color: 'bg-red-100 text-red-800' };
+        return {
+          label: (
+            <>
+              <Lock size={16} className="inline" aria-hidden="true" /> Revoked
+            </>
+          ),
+          color: 'bg-red-100 text-red-800',
+        };
       case 'EXPIRED':
-        return { label: '⏰ Expired', color: 'bg-gray-100 text-gray-800' };
+        return {
+          label: (
+            <>
+              <AlarmClock size={16} className="inline" aria-hidden="true" /> Expired
+            </>
+          ),
+          color: 'bg-gray-100 text-gray-800',
+        };
       default:
         return { label: status, color: 'bg-gray-100 text-gray-800' };
     }
@@ -55,7 +84,7 @@ const ModalHero: React.FC<ModalHeroProps> = ({
             />
           ) : (
             <div className="w-64 h-64 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg shadow-lg flex items-center justify-center">
-              <span className="text-white text-8xl">🏆</span>
+              <Award size={64} className="text-white" aria-hidden="true" />
             </div>
           )}
         </div>
@@ -76,7 +105,15 @@ const ModalHero: React.FC<ModalHeroProps> = ({
                 visibility === 'PUBLIC' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'
               }`}
             >
-              {visibility === 'PUBLIC' ? '🌐 Public' : '🔒 Private'}
+              {visibility === 'PUBLIC' ? (
+                <>
+                  <Globe size={16} className="inline" aria-hidden="true" /> Public
+                </>
+              ) : (
+                <>
+                  <Lock size={16} className="inline" aria-hidden="true" /> Private
+                </>
+              )}
             </span>
           </div>
 

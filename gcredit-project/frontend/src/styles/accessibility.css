@@ -12,7 +12,7 @@
   top: -100%;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 9999;
+  z-index: var(--z-tooltip);
   padding: 1rem 2rem;
   background-color: #1f2937;
   color: #ffffff;

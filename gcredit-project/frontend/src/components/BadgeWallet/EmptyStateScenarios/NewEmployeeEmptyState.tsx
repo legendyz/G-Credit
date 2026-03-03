@@ -1,4 +1,5 @@
 import React from 'react';
+import { Search, BookOpen, Lightbulb } from 'lucide-react';
 
 interface NewEmployeeEmptyStateProps {
   onExploreCatalog: () => void;
@@ -52,22 +53,25 @@ const NewEmployeeEmptyState: React.FC<NewEmployeeEmptyStateProps> = ({
           onClick={onExploreCatalog}
           className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-md hover:shadow-lg"
         >
-          🔍 Explore Badge Catalog
+          <Search size={16} className="inline mr-1" aria-hidden="true" /> Explore Badge Catalog
         </button>
         <button
           onClick={onLearnMore}
           className="px-6 py-3 bg-white text-gray-700 font-semibold rounded-lg border-2 border-gray-300 hover:border-blue-500 hover:text-blue-600 transition-colors"
         >
-          📚 Learn How to Earn
+          <BookOpen size={16} className="inline mr-1" aria-hidden="true" /> Learn How to Earn
         </button>
       </div>
 
       {/* Additional helpful info */}
       <div className="mt-12 p-6 bg-blue-50 rounded-lg max-w-2xl">
         <p className="text-sm text-blue-800">
-          <strong>💡 Getting Started:</strong> Badges are awarded by completing training programs,
-          achieving milestones, or demonstrating specific skills. Check with your manager or visit
-          the badge catalog to see available opportunities.
+          <strong>
+            <Lightbulb size={16} className="inline" aria-hidden="true" /> Getting Started:
+          </strong>{' '}
+          Badges are awarded by completing training programs, achieving milestones, or demonstrating
+          specific skills. Check with your manager or visit the badge catalog to see available
+          opportunities.
         </p>
       </div>
     </div>

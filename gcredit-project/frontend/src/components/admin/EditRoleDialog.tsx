@@ -204,7 +204,7 @@ export function EditRoleDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      className="fixed inset-0 z-modal flex items-center justify-center bg-black/50"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -331,9 +331,7 @@ export function EditRoleDialog({
               <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
               <div>
                 <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                  {selectedRole === 'ADMIN'
-                    ? '⚠️ Admin Promotion Warning'
-                    : '⚠️ Admin Demotion Warning'}
+                  {selectedRole === 'ADMIN' ? 'Admin Promotion Warning' : 'Admin Demotion Warning'}
                 </p>
                 <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
                   {selectedRole === 'ADMIN'

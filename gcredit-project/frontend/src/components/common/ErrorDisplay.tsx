@@ -9,6 +9,7 @@ import React from 'react';
 import { cn } from '../../lib/utils';
 import { Button } from '../ui/button';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { AlertTriangle } from 'lucide-react';
 
 export interface ErrorDisplayProps {
   /** Error title */
@@ -42,8 +43,8 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
         )}
         role="alert"
       >
-        <div className="text-5xl mb-4" aria-hidden="true">
-          ⚠️
+        <div className="mb-4" aria-hidden="true">
+          <AlertTriangle size={48} className="text-destructive" />
         </div>
         <h2 className="text-xl font-semibold text-foreground mb-2">{title}</h2>
         <p className="text-muted-foreground max-w-md mb-6">{message}</p>
@@ -63,9 +64,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
         role="alert"
       >
         <div className="flex items-start gap-3">
-          <span className="text-destructive text-xl" aria-hidden="true">
-            ⚠️
-          </span>
+          <AlertTriangle size={20} className="text-destructive flex-shrink-0" aria-hidden="true" />
           <div className="flex-1">
             <p className="font-medium text-destructive">{title}</p>
             <p className="text-sm text-muted-foreground mt-1">{message}</p>

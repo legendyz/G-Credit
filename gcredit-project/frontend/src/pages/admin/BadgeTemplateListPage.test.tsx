@@ -1,8 +1,10 @@
 /**
  * BadgeTemplateListPage.test.tsx
  * Story 10.8 BUG-003: Badge Template List Page Tests
+ * Story 15.7: Updated for server-side pagination
  *
- * Tests: rendering, search, status filter, status change, delete, error state
+ * Tests: rendering, search, status filter, status change, delete, error state,
+ *        pagination controls, page size selector, URL state sync
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -12,7 +14,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { BadgeTemplateListPage } from './BadgeTemplateListPage';
 import * as badgeTemplatesApi from '@/lib/badgeTemplatesApi';
-import type { BadgeTemplate } from '@/lib/badgeTemplatesApi';
+import type { BadgeTemplate, PaginatedTemplateResponse } from '@/lib/badgeTemplatesApi';
 import * as authStore from '@/stores/authStore';
 
 // Mock the API module
@@ -20,7 +22,7 @@ vi.mock('@/lib/badgeTemplatesApi', async () => {
   const actual = await vi.importActual('@/lib/badgeTemplatesApi');
   return {
     ...actual,
-    getAllTemplates: vi.fn(),
+    getTemplatesPaginated: vi.fn(),
     updateTemplate: vi.fn(),
     deleteTemplate: vi.fn(),
   };
@@ -53,7 +55,9 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-const mockGetAllTemplates = badgeTemplatesApi.getAllTemplates as ReturnType<typeof vi.fn>;
+const mockGetTemplatesPaginated = badgeTemplatesApi.getTemplatesPaginated as ReturnType<
+  typeof vi.fn
+>;
 const mockUpdateTemplate = badgeTemplatesApi.updateTemplate as ReturnType<typeof vi.fn>;
 const mockDeleteTemplate = badgeTemplatesApi.deleteTemplate as ReturnType<typeof vi.fn>;
 const mockUseCurrentUser = authStore.useCurrentUser as ReturnType<typeof vi.fn>;
@@ -94,6 +98,24 @@ function createMockTemplate(overrides: Partial<BadgeTemplate> = {}): BadgeTempla
   };
 }
 
+function createPaginatedResponse(
+  templates: BadgeTemplate[],
+  meta?: Partial<PaginatedTemplateResponse['meta']>
+): PaginatedTemplateResponse {
+  return {
+    data: templates,
+    meta: {
+      page: 1,
+      limit: 10,
+      total: templates.length,
+      totalPages: 1,
+      hasNextPage: false,
+      hasPreviousPage: false,
+      ...meta,
+    },
+  };
+}
+
 function renderWithProviders(ui: React.ReactElement) {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -127,14 +149,12 @@ describe('BadgeTemplateListPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetAllTemplates.mockResolvedValue(mockTemplates);
+    mockGetTemplatesPaginated.mockResolvedValue(createPaginatedResponse(mockTemplates));
     mockUseCurrentUser.mockReturnValue(adminUser);
-    // Mock window.confirm for delete tests
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
   });
 
   it('renders loading skeletons initially', () => {
-    mockGetAllTemplates.mockReturnValue(new Promise(() => {})); // never resolves
+    mockGetTemplatesPaginated.mockReturnValue(new Promise(() => {})); // never resolves
     renderWithProviders(<BadgeTemplateListPage />);
     // Skeletons are rendered
     expect(screen.getByText('Badge Templates')).toBeInTheDocument();
@@ -190,7 +210,7 @@ describe('BadgeTemplateListPage', () => {
   });
 
   describe('search filtering', () => {
-    it('filters templates by name', async () => {
+    it('passes search term to API', async () => {
       const user = userEvent.setup();
       renderWithProviders(<BadgeTemplateListPage />);
 
@@ -201,22 +221,38 @@ describe('BadgeTemplateListPage', () => {
       const searchInput = screen.getByPlaceholderText(/search templates/i);
       await user.type(searchInput, 'Leadership');
 
-      expect(screen.getByText('Leadership Badge')).toBeInTheDocument();
-      expect(screen.queryByText('Cloud Expert')).not.toBeInTheDocument();
+      // Debounced — wait for API call with search param
+      await waitFor(() => {
+        expect(mockGetTemplatesPaginated).toHaveBeenCalledWith(
+          expect.objectContaining({ search: 'Leadership', page: 1 })
+        );
+      });
     });
 
-    it('shows "No Matching Templates" when search has no results', async () => {
-      const user = userEvent.setup();
-      renderWithProviders(<BadgeTemplateListPage />);
-
+    it('shows "No Matching Templates" when search returns empty with active filter', async () => {
+      // First render with data
+      const { unmount } = renderWithProviders(<BadgeTemplateListPage />);
       await waitFor(() => {
         expect(screen.getByText('Cloud Expert')).toBeInTheDocument();
       });
+      unmount();
 
-      const searchInput = screen.getByPlaceholderText(/search templates/i);
-      await user.type(searchInput, 'zzz-nonexistent');
+      // Re-render simulating URL with search param that returns empty
+      mockGetTemplatesPaginated.mockResolvedValue(createPaginatedResponse([]));
+      const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+      });
+      render(
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter initialEntries={['?search=nonexistent']}>
+            <BadgeTemplateListPage />
+          </MemoryRouter>
+        </QueryClientProvider>
+      );
 
-      expect(screen.getByText('No Matching Templates')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('No Matching Templates')).toBeInTheDocument();
+      });
     });
   });
 
@@ -228,17 +264,15 @@ describe('BadgeTemplateListPage', () => {
         expect(screen.getByText('Cloud Expert')).toBeInTheDocument();
       });
 
-      // Filter tabs have text + count like "Draft (1)"
       const buttons = screen.getAllByRole('button');
       const tabLabels = buttons.map((b) => b.textContent?.trim());
       expect(tabLabels).toContain('All');
-      // Draft, Active, Archived tabs contain counts
-      expect(tabLabels.some((t) => t?.startsWith('Draft'))).toBe(true);
-      expect(tabLabels.some((t) => t?.startsWith('Active'))).toBe(true);
-      expect(tabLabels.some((t) => t?.startsWith('Archived'))).toBe(true);
+      expect(tabLabels).toContain('Draft');
+      expect(tabLabels).toContain('Active');
+      expect(tabLabels).toContain('Archived');
     });
 
-    it('filters by Draft status', async () => {
+    it('passes status filter to API on tab click', async () => {
       const user = userEvent.setup();
       renderWithProviders(<BadgeTemplateListPage />);
 
@@ -246,17 +280,17 @@ describe('BadgeTemplateListPage', () => {
         expect(screen.getByText('Cloud Expert')).toBeInTheDocument();
       });
 
-      // Click the Draft tab button — find by text content that starts with Draft and includes count
+      // Click the Draft tab button
       const allButtons = screen.getAllByRole('button');
-      const draftTab = allButtons.find(
-        (btn) => btn.textContent?.trim().startsWith('Draft') && btn.textContent?.includes('(')
-      );
+      const draftTab = allButtons.find((btn) => btn.textContent?.trim() === 'Draft');
       expect(draftTab).toBeTruthy();
       await user.click(draftTab!);
 
-      expect(screen.getByText('Leadership Badge')).toBeInTheDocument();
-      expect(screen.queryByText('Cloud Expert')).not.toBeInTheDocument();
-      expect(screen.queryByText('Retired Cert')).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(mockGetTemplatesPaginated).toHaveBeenCalledWith(
+          expect.objectContaining({ status: 'DRAFT', page: 1 })
+        );
+      });
     });
   });
 
@@ -303,7 +337,7 @@ describe('BadgeTemplateListPage', () => {
   });
 
   describe('delete', () => {
-    it('deletes a template after confirmation', async () => {
+    it('shows delete confirmation dialog and deletes on confirm', async () => {
       const user = userEvent.setup();
       mockDeleteTemplate.mockResolvedValue(undefined);
       renderWithProviders(<BadgeTemplateListPage />);
@@ -312,23 +346,31 @@ describe('BadgeTemplateListPage', () => {
         expect(screen.getByText('Cloud Expert')).toBeInTheDocument();
       });
 
-      // Find delete button by class
-      const trashButtons = screen.getAllByRole('button');
-      const deleteBtn = trashButtons.find(
+      // Find delete button by error text class
+      const allButtons = screen.getAllByRole('button');
+      const deleteBtn = allButtons.find(
         (btn) => btn.textContent === '' && btn.classList.contains('text-error')
       );
-      if (deleteBtn) {
-        await user.click(deleteBtn);
-      }
+      expect(deleteBtn).toBeTruthy();
+      await user.click(deleteBtn!);
+
+      // Dialog appears with title and description
+      await waitFor(() => {
+        expect(screen.getByText('Delete Template')).toBeInTheDocument();
+        expect(screen.getByText(/Are you sure you want to delete/)).toBeInTheDocument();
+      });
+
+      // Click confirm button in dialog
+      const confirmBtn = screen.getByRole('button', { name: /^delete$/i });
+      await user.click(confirmBtn);
 
       await waitFor(() => {
         expect(mockDeleteTemplate).toHaveBeenCalled();
       });
     });
 
-    it('does not delete when user cancels confirmation', async () => {
+    it('does not delete when user cancels confirmation dialog', async () => {
       const user = userEvent.setup();
-      vi.spyOn(window, 'confirm').mockReturnValue(false);
       renderWithProviders(<BadgeTemplateListPage />);
 
       await waitFor(() => {
@@ -338,17 +380,29 @@ describe('BadgeTemplateListPage', () => {
       // Find delete button by the error text class
       const allButtons = screen.getAllByRole('button');
       const deleteBtn = allButtons.find((btn) => btn.className.includes('text-error'));
-      if (deleteBtn) {
-        await user.click(deleteBtn);
-      }
+      expect(deleteBtn).toBeTruthy();
+      await user.click(deleteBtn!);
 
+      // Dialog appears
+      await waitFor(() => {
+        expect(screen.getByText('Delete Template')).toBeInTheDocument();
+      });
+
+      // Click Cancel
+      const cancelBtn = screen.getByRole('button', { name: /cancel/i });
+      await user.click(cancelBtn);
+
+      // Dialog closes, no delete called
+      await waitFor(() => {
+        expect(screen.queryByText('Delete Template')).not.toBeInTheDocument();
+      });
       expect(mockDeleteTemplate).not.toHaveBeenCalled();
     });
   });
 
   describe('error state', () => {
     it('renders error message when API fails', async () => {
-      mockGetAllTemplates.mockRejectedValue(new Error('Server error'));
+      mockGetTemplatesPaginated.mockRejectedValue(new Error('Server error'));
       renderWithProviders(<BadgeTemplateListPage />);
 
       await waitFor(() => {
@@ -358,7 +412,7 @@ describe('BadgeTemplateListPage', () => {
     });
 
     it('shows Try Again button on error', async () => {
-      mockGetAllTemplates.mockRejectedValue(new Error('Server error'));
+      mockGetTemplatesPaginated.mockRejectedValue(new Error('Server error'));
       renderWithProviders(<BadgeTemplateListPage />);
 
       await waitFor(() => {
@@ -369,7 +423,7 @@ describe('BadgeTemplateListPage', () => {
 
   describe('empty state', () => {
     it('shows empty state when no templates exist', async () => {
-      mockGetAllTemplates.mockResolvedValue([]);
+      mockGetTemplatesPaginated.mockResolvedValue(createPaginatedResponse([]));
       renderWithProviders(<BadgeTemplateListPage />);
 
       await waitFor(() => {
@@ -378,6 +432,96 @@ describe('BadgeTemplateListPage', () => {
       expect(
         screen.getByText('Create your first badge template to get started.')
       ).toBeInTheDocument();
+    });
+  });
+
+  describe('pagination', () => {
+    it('shows pagination controls when totalPages > 1', async () => {
+      mockGetTemplatesPaginated.mockResolvedValue(
+        createPaginatedResponse(mockTemplates, {
+          page: 1,
+          totalPages: 3,
+          total: 25,
+          hasNextPage: true,
+          hasPreviousPage: false,
+        })
+      );
+      renderWithProviders(<BadgeTemplateListPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Cloud Expert')).toBeInTheDocument();
+      });
+
+      expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /previous/i })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /next/i })).not.toBeDisabled();
+    });
+
+    it('hides pagination controls when totalPages = 1', async () => {
+      renderWithProviders(<BadgeTemplateListPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Cloud Expert')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText(/Page \d+ of \d+/)).not.toBeInTheDocument();
+    });
+
+    it('calls API with next page on Next click', async () => {
+      const user = userEvent.setup();
+      mockGetTemplatesPaginated.mockResolvedValue(
+        createPaginatedResponse(mockTemplates, {
+          page: 1,
+          totalPages: 3,
+          total: 25,
+          hasNextPage: true,
+          hasPreviousPage: false,
+        })
+      );
+      renderWithProviders(<BadgeTemplateListPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Cloud Expert')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('button', { name: /next/i }));
+
+      await waitFor(() => {
+        expect(mockGetTemplatesPaginated).toHaveBeenCalledWith(
+          expect.objectContaining({ page: 2 })
+        );
+      });
+    });
+
+    it('shows page size selector with default value', async () => {
+      renderWithProviders(<BadgeTemplateListPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Cloud Expert')).toBeInTheDocument();
+      });
+
+      // Page size selector trigger should show default "10 / page"
+      expect(screen.getByText('10 / page')).toBeInTheDocument();
+    });
+
+    it('shows results count from server meta', async () => {
+      mockGetTemplatesPaginated.mockResolvedValue(
+        createPaginatedResponse(mockTemplates, {
+          page: 1,
+          limit: 10,
+          total: 25,
+          totalPages: 3,
+          hasNextPage: true,
+          hasPreviousPage: false,
+        })
+      );
+      renderWithProviders(<BadgeTemplateListPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Cloud Expert')).toBeInTheDocument();
+      });
+
+      expect(screen.getByText(/Showing 1–10 of 25 templates/)).toBeInTheDocument();
     });
   });
 
@@ -399,7 +543,7 @@ describe('BadgeTemplateListPage', () => {
 
     beforeEach(() => {
       mockUseCurrentUser.mockReturnValue(issuerUser);
-      mockGetAllTemplates.mockResolvedValue(issuerTemplates);
+      mockGetTemplatesPaginated.mockResolvedValue(createPaginatedResponse(issuerTemplates));
     });
 
     it('shows "Mine" badge on owned templates', async () => {
@@ -439,7 +583,7 @@ describe('BadgeTemplateListPage', () => {
         expect(screen.getByText('Other Template')).toBeInTheDocument();
       });
 
-      // Find Archive action buttons (not the filter tab which contains count parens)
+      // Find Archive action buttons
       const allButtons = screen.getAllByRole('button');
       const archiveButtons = allButtons.filter((btn) => btn.textContent?.trim() === 'Archive');
       expect(archiveButtons).toHaveLength(2);
@@ -482,7 +626,7 @@ describe('BadgeTemplateListPage', () => {
 
     beforeEach(() => {
       mockUseCurrentUser.mockReturnValue(adminUser);
-      mockGetAllTemplates.mockResolvedValue(mixedTemplates);
+      mockGetTemplatesPaginated.mockResolvedValue(createPaginatedResponse(mixedTemplates));
     });
 
     it('does not show Mine/Read-only badges for ADMIN', async () => {

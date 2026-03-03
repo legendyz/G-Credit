@@ -1,7 +1,7 @@
 /**
- * Layout Component Tests - Story 8.5: Responsive Design
+ * Layout Component Tests — Story 15.3 (TD-035-C)
  *
- * Tests for responsive layout with mobile/desktop navigation switching.
+ * Tests for sidebar-based layout with SidebarProvider + SidebarInset.
  */
 
 import { render, screen } from '@testing-library/react';
@@ -9,21 +9,32 @@ import { describe, it, expect, vi } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import { Layout } from './Layout';
 
-// Mock child components
-vi.mock('@/components/Navbar', () => ({
-  Navbar: () => <nav data-testid="desktop-navbar">Desktop Nav</nav>,
-}));
-
-vi.mock('@/components/layout/MobileNav', () => ({
-  MobileNav: ({ className }: { className?: string }) => (
-    <nav data-testid="mobile-navbar" className={className}>
-      Mobile Nav
-    </nav>
-  ),
+// Mock AppSidebar (tested separately in AppSidebar.test.tsx)
+vi.mock('@/components/layout/AppSidebar', () => ({
+  AppSidebar: () => <nav data-testid="app-sidebar">Sidebar</nav>,
 }));
 
 vi.mock('@/components/ui/SkipLink', () => ({
   SkipLink: () => <a data-testid="skip-link">Skip to content</a>,
+}));
+
+// Mock SidebarProvider and SidebarInset to simplify testing
+vi.mock('@/components/ui/sidebar', () => ({
+  SidebarProvider: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="sidebar-provider">{children}</div>
+  ),
+  SidebarInset: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="sidebar-inset">{children}</div>
+  ),
+  SidebarTrigger: ({ className }: { className?: string }) => (
+    <button data-testid="sidebar-trigger" className={className}>
+      Toggle
+    </button>
+  ),
+}));
+
+vi.mock('@/components/ui/separator', () => ({
+  Separator: () => <div data-testid="separator" />,
 }));
 
 const renderLayout = (props = {}) => {
@@ -37,43 +48,37 @@ const renderLayout = (props = {}) => {
 };
 
 describe('Layout', () => {
-  describe('Navigation Rendering', () => {
-    it('renders both mobile and desktop navigation', () => {
+  describe('Sidebar Rendering', () => {
+    it('renders AppSidebar when showNavbar is true', () => {
       renderLayout();
-
-      expect(screen.getByTestId('mobile-navbar')).toBeInTheDocument();
-      expect(screen.getByTestId('desktop-navbar')).toBeInTheDocument();
+      expect(screen.getByTestId('app-sidebar')).toBeInTheDocument();
     });
 
-    it('mobile nav has md:hidden class for responsive hiding', () => {
-      renderLayout();
-
-      const mobileNav = screen.getByTestId('mobile-navbar');
-      expect(mobileNav).toHaveClass('md:hidden');
-    });
-
-    it('desktop nav wrapper has hidden md:block for responsive display', () => {
-      renderLayout();
-
-      const desktopNavWrapper = screen.getByTestId('desktop-navbar').parentElement;
-      expect(desktopNavWrapper).toHaveClass('hidden', 'md:block');
-    });
-
-    it('does not render navigation when showNavbar is false', () => {
+    it('does not render AppSidebar when showNavbar is false', () => {
       renderLayout({ showNavbar: false });
+      expect(screen.queryByTestId('app-sidebar')).not.toBeInTheDocument();
+    });
 
-      expect(screen.queryByTestId('mobile-navbar')).not.toBeInTheDocument();
-      expect(screen.queryByTestId('desktop-navbar')).not.toBeInTheDocument();
+    it('wraps content in SidebarProvider', () => {
+      renderLayout();
+      expect(screen.getByTestId('sidebar-provider')).toBeInTheDocument();
+    });
+
+    it('wraps main content in SidebarInset', () => {
+      renderLayout();
+      expect(screen.getByTestId('sidebar-inset')).toBeInTheDocument();
     });
   });
 
-  describe('Responsive Padding', () => {
-    it('main content has responsive padding classes', () => {
+  describe('Mobile Header', () => {
+    it('renders mobile header with SidebarTrigger', () => {
       renderLayout();
+      expect(screen.getByTestId('sidebar-trigger')).toBeInTheDocument();
+    });
 
-      const main = screen.getByRole('main');
-      // Padding now lives in PageTemplate, Layout main is clean
-      expect(main).toBeDefined();
+    it('does not render mobile header when showNavbar is false', () => {
+      renderLayout({ showNavbar: false });
+      expect(screen.queryByTestId('sidebar-trigger')).not.toBeInTheDocument();
     });
   });
 
@@ -106,8 +111,8 @@ describe('Layout', () => {
     });
   });
 
-  describe('Container Width', () => {
-    it('has max-width container for content', () => {
+  describe('Container Width (CRITICAL-15.3-ARCH-002)', () => {
+    it('has max-width container for content inside SidebarInset', () => {
       renderLayout();
 
       const container = screen.getByTestId('content').parentElement;

@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { AlertTriangle } from 'lucide-react';
 
 interface TimelineSectionProps {
   issuedAt: string;
@@ -67,7 +68,17 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({ issuedAt, claimedAt, 
                 }`}
               >
                 {formatDate(expiresAt)}
-                {isExpiringNearby && ' ⚠️ Expiring soon!'}
+                {isExpiringNearby && (
+                  <>
+                    {' '}
+                    <AlertTriangle
+                      size={16}
+                      className="inline text-yellow-600"
+                      aria-hidden="true"
+                    />{' '}
+                    Expiring soon!
+                  </>
+                )}
               </p>
             </div>
           </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { reportBadgeIssue } from '../../lib/badgesApi';
+import { AlertTriangle } from 'lucide-react';
 
 interface ReportIssueFormProps {
   badgeId: string;
@@ -63,7 +64,7 @@ const ReportIssueForm: React.FC<ReportIssueFormProps> = ({ badgeId, userEmail, o
         onClick={() => setShowForm(true)}
         className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
       >
-        ⚠️ Report Issue
+        <AlertTriangle size={16} className="inline" aria-hidden="true" /> Report Issue
       </button>
     );
   }

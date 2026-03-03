@@ -14,6 +14,7 @@ import {
 import type { Request, Response } from 'express';
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { ConfigService } from '@nestjs/config';
+import { ApiTags, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { AzureAdSsoService } from './services/azure-ad-sso.service';
 import { RegisterDto } from './dto/register.dto';
@@ -26,6 +27,7 @@ import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../../common/interfaces/request-with-user.interface';
 
+@ApiTags('Auth')
 @Controller('api/auth')
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
@@ -40,6 +42,10 @@ export class AuthController {
   @Public()
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
+  @ApiResponse({
+    status: 429,
+    description: 'Too many registration attempts. Default: 3/hour.',
+  })
   async register(
     @Body() dto: RegisterDto,
     @Res({ passthrough: true }) res: Response,
@@ -55,6 +61,10 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @ApiResponse({
+    status: 429,
+    description: 'Too many login attempts. Default: 5/min.',
+  })
   async login(
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
@@ -70,6 +80,10 @@ export class AuthController {
   @Public()
   @Post('request-reset')
   @HttpCode(HttpStatus.OK)
+  @ApiResponse({
+    status: 429,
+    description: 'Too many reset requests. Default: 3/5min.',
+  })
   async requestReset(@Body() dto: RequestResetDto) {
     return this.authService.requestPasswordReset(dto.email);
   }
@@ -79,6 +93,10 @@ export class AuthController {
   @Public()
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
+  @ApiResponse({
+    status: 429,
+    description: 'Too many reset attempts. Default: 5/5min.',
+  })
   async resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto.token, dto.newPassword);
   }
@@ -88,6 +106,10 @@ export class AuthController {
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @ApiResponse({
+    status: 429,
+    description: 'Too many refresh requests. Default: 10/min.',
+  })
   async refresh(
     @Body('refreshToken') bodyRefreshToken: string,
     @Req() req: Request,
@@ -140,6 +162,10 @@ export class AuthController {
   @Throttle({ default: { ttl: 3600000, limit: 3 } })
   @Post('change-password')
   @HttpCode(HttpStatus.OK)
+  @ApiResponse({
+    status: 429,
+    description: 'Too many password change attempts. Default: 3/hour.',
+  })
   async changePassword(
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: ChangePasswordDto,
@@ -156,6 +182,10 @@ export class AuthController {
   @Throttle({ default: { ttl: 60000, limit: 10 } })
   @Public()
   @Get('sso/login')
+  @ApiResponse({
+    status: 429,
+    description: 'Too many SSO login requests. Default: 10/min.',
+  })
   async ssoLogin(@Res() res: Response) {
     const { authUrl, codeVerifier, state } =
       await this.azureAdSsoService.generateAuthUrl();
@@ -181,6 +211,10 @@ export class AuthController {
   @Throttle({ default: { ttl: 60000, limit: 10 } })
   @Public()
   @Get('sso/callback')
+  @ApiResponse({
+    status: 429,
+    description: 'Too many SSO callback requests. Default: 10/min.',
+  })
   async ssoCallback(
     @Query('code') code: string,
     @Query('state') state: string,

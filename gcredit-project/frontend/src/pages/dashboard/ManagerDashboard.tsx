@@ -15,11 +15,16 @@ import { PageLoader } from '../../components/common/LoadingSpinner';
 import { ErrorDisplay } from '../../components/common/ErrorDisplay';
 import { EmptyState, NoTeamMembersState } from '../../components/common/EmptyState';
 import { cn } from '../../lib/utils';
-import { RefreshCw, Award, Users } from 'lucide-react';
+import { RefreshCw, Award, Users, AlertTriangle, Star, Medal, CheckCircle } from 'lucide-react';
 import { PageTemplate } from '../../components/layout/PageTemplate';
 
-export const ManagerDashboard: React.FC = () => {
-  const { data, isLoading, error, refetch, isFetching } = useManagerDashboard();
+interface ManagerDashboardProps {
+  /** When false, React Query is disabled — no API calls (DEC-15-03) */
+  enabled?: boolean;
+}
+
+export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ enabled = true }) => {
+  const { data, isLoading, error, refetch, isFetching } = useManagerDashboard({ enabled });
 
   // AC3: Manual refresh handler
   const handleRefresh = useCallback(() => {
@@ -99,19 +104,19 @@ export const ManagerDashboard: React.FC = () => {
         <SummaryCard
           title="Team Members"
           value={teamInsights.teamMembersCount}
-          icon="👥"
+          icon={<Users size={24} aria-hidden="true" />}
           description="In your department"
         />
         <SummaryCard
           title="Team Badges This Month"
           value={teamInsights.teamBadgesThisMonth}
-          icon="🏆"
+          icon={<Award size={24} aria-hidden="true" />}
           description="Earned by team"
         />
         <SummaryCard
           title="Revocation Alerts"
           value={revocationAlerts.length}
-          icon="⚠️"
+          icon={<AlertTriangle size={24} aria-hidden="true" />}
           description={revocationAlerts.length > 0 ? 'Requires attention' : 'All clear'}
           highlight={revocationAlerts.length > 0}
         />
@@ -122,14 +127,14 @@ export const ManagerDashboard: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <span>🌟</span>
+              <Star size={20} aria-hidden="true" />
               Top Performers
             </CardTitle>
           </CardHeader>
           <CardContent>
             {teamInsights.topPerformers.length === 0 ? (
               <EmptyState
-                icon="🏅"
+                icon={<Medal size={48} aria-hidden="true" />}
                 title="No data yet"
                 description="Top performers will appear once team members earn badges."
               />
@@ -173,14 +178,14 @@ export const ManagerDashboard: React.FC = () => {
         <Card className={cn(revocationAlerts.length > 0 && 'border-destructive/50')}>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <span>⚠️</span>
+              <AlertTriangle size={20} aria-hidden="true" />
               Revocation Alerts
             </CardTitle>
           </CardHeader>
           <CardContent>
             {revocationAlerts.length === 0 ? (
               <EmptyState
-                icon="✅"
+                icon={<CheckCircle size={48} aria-hidden="true" />}
                 title="No alerts"
                 description="All team badges are in good standing."
               />
@@ -216,7 +221,7 @@ export const ManagerDashboard: React.FC = () => {
 interface SummaryCardProps {
   title: string;
   value: string | number;
-  icon: string;
+  icon: React.ReactNode;
   description?: string;
   highlight?: boolean;
 }
@@ -236,9 +241,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
           <p className="text-3xl font-bold mt-1">{value}</p>
           {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
         </div>
-        <span className="text-2xl" aria-hidden="true">
-          {icon}
-        </span>
+        <div aria-hidden="true">{icon}</div>
       </div>
     </CardContent>
   </Card>

@@ -1,6 +1,14 @@
 import React, { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { Plus, Loader2, CheckCircle } from 'lucide-react';
+import {
+  Plus,
+  Loader2,
+  CheckCircle,
+  Link as LinkIcon,
+  ClipboardList,
+  FileText,
+  X,
+} from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import FileUploadZone from './FileUploadZone';
@@ -113,8 +121,8 @@ const EvidenceAttachmentPanel: React.FC<EvidenceAttachmentPanelProps> = ({
       {/* URL input */}
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">
-            🔗
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
+            <LinkIcon size={16} aria-hidden="true" />
           </span>
           <Input
             value={urlInput}
@@ -142,7 +150,8 @@ const EvidenceAttachmentPanel: React.FC<EvidenceAttachmentPanelProps> = ({
       {(pendingFiles.length > 0 || pendingUrls.length > 0) && (
         <div>
           <p className="text-xs font-medium text-neutral-600 mb-2">
-            📋 Attached Evidence ({totalCount}/{MAX_EVIDENCE_ITEMS}):
+            <ClipboardList size={14} className="inline" aria-hidden="true" /> Attached Evidence (
+            {totalCount}/{MAX_EVIDENCE_ITEMS}):
           </p>
 
           {/* Files with upload progress */}
@@ -157,7 +166,11 @@ const EvidenceAttachmentPanel: React.FC<EvidenceAttachmentPanelProps> = ({
                 ) : pf.status === 'done' ? (
                   <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
                 ) : (
-                  <span className="text-sm flex-shrink-0">📄</span>
+                  <FileText
+                    size={16}
+                    className="text-neutral-400 flex-shrink-0"
+                    aria-hidden="true"
+                  />
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-neutral-900 truncate">{pf.file.name}</p>
@@ -188,7 +201,7 @@ const EvidenceAttachmentPanel: React.FC<EvidenceAttachmentPanelProps> = ({
                   className="ml-2 p-1 text-neutral-400 hover:text-red-500 rounded cursor-pointer"
                   aria-label={`Remove ${pf.file.name}`}
                 >
-                  ✕
+                  <X size={16} aria-hidden="true" />
                 </button>
               )}
             </div>

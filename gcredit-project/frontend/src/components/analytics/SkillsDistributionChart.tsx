@@ -71,7 +71,7 @@ const SkillsDistributionChart: React.FC<SkillsDistributionChartProps> = ({
                 tick={{ fontSize: 12, fill: 'var(--color-neutral-700)' }}
               />
               <Tooltip
-                // inline style retained: Recharts library API prop
+                /* Recharts API requires style object — cannot use Tailwind classes */
                 contentStyle={{
                   borderRadius: '8px',
                   border: '1px solid var(--color-neutral-200)',

@@ -7,7 +7,7 @@
  * Implements AC1, AC2, AC4, AC5
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Badge as BadgeType } from '@/lib/badgesApi';
@@ -415,6 +415,11 @@ export function BadgeManagementPage({
     queryClient.invalidateQueries({ queryKey: ['badges'] });
     handleModalClose();
   }, [queryClient, handleModalClose]);
+
+  // Reset to page 1 when filters change the result set
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedSkills, dateRange, statusFilter, issuerFilter]);
 
   // Client-side pagination over sorted/filtered results
   const displayTotal = displayBadges.length;

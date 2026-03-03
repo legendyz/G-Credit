@@ -861,7 +861,8 @@ async function main() {
   const twoMonthsAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
   const pastExpiry = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000);
 
-  // --- Employee badges (4 CLAIMED, 1 PENDING, 1 REVOKED) ---
+  // --- Employee badges (24 CLAIMED, 1 PENDING, 1 REVOKED) ---
+  // Original 6 badges + 20 additional for infinite scroll testing
 
   // Badge 1: CLAIMED - Cloud Expert (Employee)
   await prisma.badge.create({
@@ -982,6 +983,60 @@ async function main() {
         'UAT test data: revoked badge for verification page testing',
     },
   });
+
+  // --- Additional Employee badges for infinite scroll testing (20 CLAIMED) ---
+  // Added 2026-03-03 for Story 15.15 UAT F6 (wallet infinite scroll)
+
+  const additionalBadgesData = [
+    { templateId: IDS.tmpl1, issuerId: issuer.id, daysAgo: 90 },
+    { templateId: IDS.tmpl2, issuerId: issuer.id, daysAgo: 85 },
+    { templateId: IDS.tmpl3, issuerId: admin.id, daysAgo: 80 },
+    { templateId: IDS.tmpl5, issuerId: issuer.id, daysAgo: 75 },
+    { templateId: IDS.tmpl1, issuerId: issuer.id, daysAgo: 70 },
+    { templateId: IDS.tmpl2, issuerId: admin.id, daysAgo: 65 },
+    { templateId: IDS.tmpl3, issuerId: issuer.id, daysAgo: 60 },
+    { templateId: IDS.tmpl5, issuerId: issuer.id, daysAgo: 55 },
+    { templateId: IDS.tmpl1, issuerId: issuer.id, daysAgo: 50 },
+    { templateId: IDS.tmpl2, issuerId: issuer.id, daysAgo: 45 },
+    { templateId: IDS.tmpl3, issuerId: admin.id, daysAgo: 40 },
+    { templateId: IDS.tmpl5, issuerId: issuer.id, daysAgo: 35 },
+    { templateId: IDS.tmpl1, issuerId: issuer.id, daysAgo: 32 },
+    { templateId: IDS.tmpl2, issuerId: admin.id, daysAgo: 28 },
+    { templateId: IDS.tmpl3, issuerId: issuer.id, daysAgo: 25 },
+    { templateId: IDS.tmpl5, issuerId: issuer.id, daysAgo: 22 },
+    { templateId: IDS.tmpl1, issuerId: issuer.id, daysAgo: 20 },
+    { templateId: IDS.tmpl2, issuerId: issuer.id, daysAgo: 18 },
+    { templateId: IDS.tmpl3, issuerId: admin.id, daysAgo: 16 },
+    { templateId: IDS.tmpl5, issuerId: issuer.id, daysAgo: 14 },
+  ];
+
+  for (let i = 0; i < additionalBadgesData.length; i++) {
+    const { templateId, issuerId, daysAgo } = additionalBadgesData[i];
+    const badgeNum = 7 + i; // Start from badge 7 (after the original 6)
+    const issuedDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+    const claimedDate = new Date(issuedDate.getTime() + 6 * 60 * 60 * 1000); // claimed 6 hours later
+    const verificationId = `uat-verify-extra-${badgeNum.toString().padStart(3, '0')}`;
+    
+    await prisma.badge.create({
+      data: {
+        id: `00000000-0000-4000-a000-0001000000${badgeNum.toString().padStart(2, '0')}`,
+        templateId,
+        recipientId: employee.id,
+        issuerId,
+        status: BadgeStatus.CLAIMED,
+        claimToken: `uat-claim-token-extra-${badgeNum.toString().padStart(3, '0')}`,
+        verificationId,
+        metadataHash: hashAssertion(makeAssertion(verificationId)),
+        recipientHash: hashEmail('employee@gcredit.com'),
+        assertionJson: makeAssertion(verificationId),
+        issuedAt: issuedDate,
+        claimedAt: claimedDate,
+        expiresAt: oneYearLater,
+      },
+    });
+  }
+
+  console.log(`✅ ${additionalBadgesData.length} additional employee badges created for scroll testing`);
 
   // --- Manager badges (2 CLAIMED, 1 expired) ---
 
@@ -1537,7 +1592,7 @@ async function main() {
   console.log('\n📊 Data Summary:');
   console.log('   5 users (2 linked to manager) + SSO user created by JIT on first login');
   console.log('   11 templates (9 ACTIVE + 1 DRAFT + 1 ARCHIVED)');
-  console.log('   13 badges (9 CLAIMED, 2 PENDING, 1 REVOKED, 1 expired)');
+  console.log('   33 badges (29 CLAIMED [24 employee + 2 manager + 2 admin + 1 employee2], 2 PENDING, 1 REVOKED, 1 expired)');
   console.log('   3 evidence files (2 FILE + 1 URL), 3 badge shares');
   console.log('   10 skill categories (4 L1 + 4 L2 + 1 L3 + 1 custom), 7 skills');
   console.log('   5 milestone configs (3 global + 1 category + 1 inactive), 5 achievements, 9 audit logs');

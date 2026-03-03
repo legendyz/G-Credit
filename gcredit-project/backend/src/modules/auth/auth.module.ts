@@ -3,10 +3,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
+import { PermissionsController } from './permissions.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { AzureAdConfigService } from './config/azure-ad.config';
 import { AzureAdSsoService } from './services/azure-ad-sso.service';
+import { ThrottleConfigService } from './config/throttle.config';
 import { PrismaModule } from '../../common/prisma.module';
 import type { StringValue } from 'ms';
 import { EmailModule } from '../../common/email.module';
@@ -31,13 +33,14 @@ import { M365SyncModule } from '../../m365-sync/m365-sync.module';
       }),
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, PermissionsController],
   providers: [
     AuthService,
     JwtStrategy,
     AzureAdConfigService,
     AzureAdSsoService,
+    ThrottleConfigService,
   ],
-  exports: [AuthService],
+  exports: [AuthService, ThrottleConfigService],
 })
 export class AuthModule {}

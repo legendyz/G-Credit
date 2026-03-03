@@ -1,4 +1,5 @@
 import React from 'react';
+import { PartyPopper, Gift, AlarmClock } from 'lucide-react';
 
 interface PendingBadgesEmptyStateProps {
   pendingCount: number;
@@ -58,7 +59,7 @@ const PendingBadgesEmptyState: React.FC<PendingBadgesEmptyStateProps> = ({
 
       {/* AC 6.5: Heading - Exciting tone */}
       <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-        You Have Badges Waiting! 🎉
+        You Have Badges Waiting! <PartyPopper size={24} className="inline" aria-hidden="true" />
       </h1>
 
       {/* AC 6.5: Description with dynamic count */}
@@ -73,7 +74,7 @@ const PendingBadgesEmptyState: React.FC<PendingBadgesEmptyStateProps> = ({
           onClick={onViewPending}
           className="px-8 py-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold text-lg rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
         >
-          🎁 View Pending Badges
+          <Gift size={16} className="inline mr-1" aria-hidden="true" /> View Pending Badges
         </button>
         {/* Badge count bubble */}
         <span className="absolute -top-2 -right-2 bg-red-600 text-white text-sm font-bold rounded-full w-8 h-8 flex items-center justify-center animate-pulse">
@@ -84,8 +85,11 @@ const PendingBadgesEmptyState: React.FC<PendingBadgesEmptyStateProps> = ({
       {/* Urgency indicator */}
       <div className="mt-12 p-6 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg max-w-2xl">
         <p className="text-sm text-yellow-800">
-          <strong>⏰ Don't forget:</strong> Some badges may have claim deadlines. Review your
-          pending badges soon to ensure you don't miss out!
+          <strong>
+            <AlarmClock size={16} className="inline" aria-hidden="true" /> Don't forget:
+          </strong>{' '}
+          Some badges may have claim deadlines. Review your pending badges soon to ensure you don't
+          miss out!
         </p>
       </div>
     </div>

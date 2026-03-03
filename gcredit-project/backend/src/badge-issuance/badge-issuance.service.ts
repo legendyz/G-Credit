@@ -996,7 +996,13 @@ export class BadgeIssuanceService {
     userId: string,
     query: WalletQueryDto,
   ): Promise<WalletResponse> {
-    const { page = 1, limit = 50, status, sort = 'issuedAt_desc' } = query;
+    const {
+      page = 1,
+      limit = 20,
+      status,
+      sort = 'issuedAt_desc',
+      cursor,
+    } = query;
 
     // Build where clause
     const where: Prisma.BadgeWhereInput = {
@@ -1157,9 +1163,44 @@ export class BadgeIssuanceService {
         : a.sortDate.getTime() - b.sortDate.getTime();
     });
 
-    // Apply pagination to combined items
-    const skip = (page - 1) * limit;
-    const paginatedItems = allItems.slice(skip, skip + limit);
+    // Story 15.8: Cursor-based pagination for infinite scroll
+    // When cursor is provided, find the cursor position and paginate from there
+    // When cursor is absent, start from the beginning
+    let startIndex = 0;
+    if (cursor) {
+      const [cursorDate, cursorId] = cursor.split('_');
+      const cursorTime = new Date(cursorDate).getTime();
+
+      // Find the position after the cursor item
+      let foundIndex = -1;
+      for (let i = 0; i < allItems.length; i++) {
+        const itemTime = allItems[i].sortDate.getTime();
+        const itemData = allItems[i].data as Record<string, unknown>;
+        const itemId =
+          (itemData.id as string) || (itemData.milestoneId as string);
+        if (itemTime === cursorTime && itemId === cursorId) {
+          foundIndex = i + 1; // Start after the cursor item
+          break;
+        }
+      }
+      startIndex = foundIndex === -1 ? allItems.length : foundIndex;
+    } else {
+      // No cursor: use offset-based start position (backward compat)
+      startIndex = (page - 1) * limit;
+    }
+
+    const paginatedItems = allItems.slice(startIndex, startIndex + limit);
+    const hasMore = startIndex + limit < allItems.length;
+
+    // Build nextCursor from last item (Story 15.8)
+    let nextCursor: string | null = null;
+    if (hasMore && paginatedItems.length > 0) {
+      const lastItem = paginatedItems[paginatedItems.length - 1];
+      const lastData = lastItem.data as Record<string, unknown>;
+      const lastId =
+        (lastData.id as string) || (lastData.milestoneId as string);
+      nextCursor = `${lastItem.sortDate.toISOString()}_${lastId}`;
+    }
 
     // Extract final timeline items — preserve type field for frontend discrimination (Story 11.24 AC-C3)
     const timelineItems = paginatedItems.map((item) => ({
@@ -1177,6 +1218,7 @@ export class BadgeIssuanceService {
 
     return {
       ...createPaginatedResponse(timelineItems, totalItems, page, limit),
+      nextCursor,
       dateGroups,
     };
   }

@@ -23,6 +23,7 @@ interface CategoryDropdownProps {
   editable?: boolean;
   selectedId?: string;
   onSelect?: (category: SkillCategory) => void;
+  onClearSelection?: () => void;
   onEdit?: (category: SkillCategory) => void;
   onDelete?: (category: SkillCategory) => void;
   onAddChild?: (parent: SkillCategory) => void;
@@ -71,6 +72,7 @@ export function CategoryDropdown({
   editable = false,
   selectedId,
   onSelect,
+  onClearSelection,
   onEdit,
   onDelete,
   onAddChild,
@@ -85,7 +87,10 @@ export function CategoryDropdown({
   );
 
   const handleValueChange = (value: string) => {
-    if (value === '__all__') return;
+    if (value === '__all__') {
+      onClearSelection?.();
+      return;
+    }
     const item = flatItems.find((i) => i.id === value);
     if (item && onSelect) {
       onSelect(item.original);

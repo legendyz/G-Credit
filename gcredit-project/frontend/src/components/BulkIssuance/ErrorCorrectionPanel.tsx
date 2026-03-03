@@ -5,6 +5,8 @@ interface ErrorItem {
   message: string;
 }
 
+import { AlertTriangle, Download, RotateCw } from 'lucide-react';
+
 interface ErrorCorrectionPanelProps {
   errorCount: number;
   validCount: number;
@@ -28,7 +30,8 @@ export default function ErrorCorrectionPanel({
       {/* Error Summary + Guided Workflow */}
       <div className="bg-red-50 border border-red-200 p-6 rounded-lg mb-4">
         <h3 className="text-lg font-semibold text-red-700 mb-4">
-          ⚠️ {errorCount} errors prevent badge issuance
+          <AlertTriangle size={20} className="inline mr-1" aria-hidden="true" /> {errorCount} errors
+          prevent badge issuance
         </h3>
 
         <div className="mb-4 text-gray-700">
@@ -51,13 +54,13 @@ export default function ErrorCorrectionPanel({
             onClick={onDownloadErrorReport}
             className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
           >
-            📥 Download Error Report
+            <Download size={16} className="inline mr-1" aria-hidden="true" /> Download Error Report
           </button>
           <button
             onClick={onReupload}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
           >
-            🔄 Re-upload Fixed CSV
+            <RotateCw size={16} className="inline mr-1" aria-hidden="true" /> Re-upload Fixed CSV
           </button>
         </div>
       </div>

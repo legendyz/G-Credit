@@ -43,6 +43,10 @@ export function SkillCategoryManagementPage() {
     setSelectedCategoryId(category.id);
   }, []);
 
+  const handleClearSelection = useCallback(() => {
+    setSelectedCategoryId(undefined);
+  }, []);
+
   // Handlers
   const handleCreateRoot = useCallback(() => {
     setFormMode('create');
@@ -162,6 +166,7 @@ export function SkillCategoryManagementPage() {
             editable
             selectedId={selectedCategoryId}
             onSelect={handleSelect}
+            onClearSelection={handleClearSelection}
             onEdit={handleEdit}
             onDelete={handleDeleteRequest}
             onAddChild={handleAddChild}

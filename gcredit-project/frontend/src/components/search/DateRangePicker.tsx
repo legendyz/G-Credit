@@ -112,7 +112,7 @@ export function DateRangePicker({
 
   const hasValue = value.from || value.to;
   const layoutClasses = compact
-    ? 'flex flex-col sm:flex-row items-center gap-2'
+    ? 'flex flex-row items-center gap-2'
     : layout === 'inline'
       ? 'flex flex-col sm:flex-row sm:items-end gap-2 sm:gap-3'
       : 'flex flex-col gap-2';
@@ -158,7 +158,7 @@ export function DateRangePicker({
           )}
           <div className="relative">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <Calendar className="h-4 w-4 text-gray-400" />
+              <Calendar className={`${compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} text-gray-400`} />
             </div>
             <input
               type="date"
@@ -170,7 +170,7 @@ export function DateRangePicker({
               max={value.to || effectiveMaxDate}
               aria-label={fromLabel}
               className={`
-                w-full ${compact ? 'h-10' : 'h-11'} pl-10 pr-3
+                w-full ${compact ? 'h-9' : 'h-11'} ${compact ? 'pl-8' : 'pl-10'} pr-3
                 border rounded-lg
                 text-sm text-gray-900 dark:text-white
                 bg-white dark:bg-gray-800
@@ -202,7 +202,7 @@ export function DateRangePicker({
           )}
           <div className="relative">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <Calendar className="h-4 w-4 text-gray-400" />
+              <Calendar className={`${compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} text-gray-400`} />
             </div>
             <input
               type="date"
@@ -214,7 +214,7 @@ export function DateRangePicker({
               max={effectiveMaxDate}
               aria-label={toLabel}
               className={`
-                w-full ${compact ? 'h-10' : 'h-11'} pl-10 pr-3
+                w-full ${compact ? 'h-9' : 'h-11'} ${compact ? 'pl-8' : 'pl-10'} pr-3
                 border rounded-lg
                 text-sm text-gray-900 dark:text-white
                 bg-white dark:bg-gray-800
@@ -235,7 +235,7 @@ export function DateRangePicker({
             onClick={handleClear}
             className="
               flex items-center justify-center
-              h-11 px-3
+              ${compact ? 'h-9 px-2' : 'h-11 px-3'}
               text-sm text-gray-500 dark:text-gray-400
               hover:text-gray-700 dark:hover:text-gray-200
               hover:bg-gray-100 dark:hover:bg-gray-800

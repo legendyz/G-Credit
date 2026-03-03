@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { PageTemplate } from '@/components/layout/PageTemplate';
@@ -21,6 +21,8 @@ import EvidenceAttachmentPanel, {
   type PendingFile,
 } from '@/components/evidence/EvidenceAttachmentPanel';
 import { Award, Send, Loader2 } from 'lucide-react';
+import { useFormGuard } from '@/hooks/useFormGuard';
+import { NavigationGuardDialog } from '@/components/ui/NavigationGuardDialog';
 
 interface BadgeTemplate {
   id: string;
@@ -56,6 +58,19 @@ export function IssueBadgePage() {
   const [users, setUsers] = useState<Recipient[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
+
+  // Story 15.12: Dirty = any form field has been filled
+  const isDirty = useMemo(() => {
+    return (
+      selectedTemplateId !== '' ||
+      selectedRecipientId !== '' ||
+      expiresIn !== '' ||
+      pendingFiles.length > 0 ||
+      pendingUrls.length > 0
+    );
+  }, [selectedTemplateId, selectedRecipientId, expiresIn, pendingFiles, pendingUrls]);
+
+  const { isBlocked, proceed, reset } = useFormGuard({ isDirty: isDirty && !isSubmitting });
 
   // Fetch templates on mount
   useEffect(() => {
@@ -326,6 +341,7 @@ export function IssueBadgePage() {
           </form>
         </CardContent>
       </Card>
+      <NavigationGuardDialog open={isBlocked} onStay={reset} onLeave={proceed} />
     </PageTemplate>
   );
 }

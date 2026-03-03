@@ -5,7 +5,7 @@
 **Project Type:** Enterprise Internal Platform (Greenfield)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
 **License:** MIT License (Open Source)  
-**Status:** ✅ Sprint 14 COMPLETE — 9/9 stories, v1.4.0  
+**Status:** ✅ Sprint 15 COMPLETE — 14/15 stories (1 deferred), v1.5.0  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, committed 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, committed 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, committed 2026-01-26)  
@@ -22,7 +22,8 @@
 **Sprint 12.5:** ✅ Complete (2/2 stories, branch: sprint-12.5/deferred-cleanup, 1,593 tests, v1.2.1)
 **Sprint 13:** ✅ Complete (8/8 stories, 4 waves, branch: sprint-13/sso-session-management, 1,708 tests, v1.3.0)
 **Sprint 14:** ✅ Complete (9/9 stories, 4 waves, branch: sprint-14/role-model-refactor, 1,757 tests, v1.4.0)
-**Last Updated:** 2026-02-28 (Sprint 14 COMPLETE — Dual-Dimension Role Model Refactor, v1.4.0)
+**Sprint 15:** ✅ Complete (14/15 stories, 4 waves, branch: sprint-15/ui-overhaul-dashboard, 1,835 tests, UAT 36/36 PASS, v1.5.0)
+**Last Updated:** 2026-03-03 (Sprint 15 COMPLETE — UI Overhaul + Dashboard Composite View, v1.5.0)
 ---
 
 ## 🚨 Maintenance Protocol - How to Keep This Document Current
@@ -170,6 +171,14 @@ Build an internal digital credentialing (badging) platform to securely recognize
 - **Sprint 14 Summary:** `gcredit-project/docs/sprints/sprint-14/summary.md` ✅ COMPLETE (9/9 stories, 1,757 tests)
 - **Sprint 14 Retrospective:** `gcredit-project/docs/sprints/sprint-14/retrospective.md` ✅ COMPLETE
 - **Sprint 14 Version Manifest:** `gcredit-project/docs/sprints/sprint-14/version-manifest.md` ✅ COMPLETE
+
+**Sprint 15 — UI Overhaul + Dashboard Composite View (v1.5.0, 2026-03-01 to 2026-03-03):**
+- **Sprint 15 Backlog:** `gcredit-project/docs/sprints/sprint-15/backlog.md` ✅ COMPLETE (15 stories, 4 waves, 14/15 done)
+- **Sprint 15 Summary:** `gcredit-project/docs/sprints/sprint-15/summary.md` ✅ COMPLETE (14/15 stories, 1,835 tests)
+- **Sprint 15 Retrospective:** `gcredit-project/docs/sprints/sprint-15/retrospective.md` ✅ COMPLETE (Lessons 53-55)
+- **Sprint 15 Mid-Sprint UAT:** `gcredit-project/docs/sprints/sprint-15/15-14-mid-sprint-uat.md` ✅ COMPLETE (56/56 PASS)
+- **Sprint 15 Final UAT:** `gcredit-project/docs/sprints/sprint-15/15-15-final-uat.md` ✅ COMPLETE (36/36 PASS)
+- **Sprint 15 Version Manifest:** `gcredit-project/docs/sprints/sprint-15/version-manifest.md` ✅ COMPLETE
 
 ---
 
@@ -425,14 +434,14 @@ _bmad-output/
 | → Sprint 13 | 3 days | Azure AD SSO + Session Management | ✅ COMPLETE (2026-02-27, 8/8 stories, 1,708 tests, v1.3.0) |
 | **Pre-Pilot Hardening** | **~3 sprints** | **Role Refactor + UI Polish + RBAC** | **🔜 Planning** |
 | → Sprint 14 | 2 days | Dual-Dimension Role Model Refactor | ✅ COMPLETE (2026-02-28, 9/9 stories, 1,757 tests, v1.4.0) |
-| → Sprint 15 | TBD | UI Overhaul + Dashboard Composite View (~44h) | 🔜 Planned |
+| → Sprint 15 | 3 days | UI Overhaul + Dashboard Composite View (~56h) | ✅ COMPLETE (2026-03-03, 14/15 stories, 1,835 tests, UAT 36/36 PASS, v1.5.0) |
 | → Sprint 16 | TBD | Fine-Grained RBAC L1 + Pilot Readiness (~12h) | 🔜 Planned |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ After Sprint 16 |
 | ⚙️ BMAD Workflow Extension *(independent project)* | ~30-50h | VS Code extension — automate SM→Dev→CR pipeline. **⚠️ NOT a G-Credit sprint item — separate repo, separate backlog.** Developed in parallel during Pilot downtime. Design doc: `docs/bmad-workflow-extension-design.md` | 📋 Planned (Pilot period) |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
 
-**Current Status:** ✅ Sprint 14 Complete — 9/9 stories delivered across 4 waves. Dual-dimension role model refactor (ADR-015/017): MANAGER removed from UserRole enum, `isManager` JWT claim, ManagerGuard + @RequireManager(), 6-combination test matrix (31 E2E tests), design token infrastructure (11 tokens). Total: 1,757 tests (932 BE + 794 FE + 31 E2E). 2 tech debt resolved (TD-034, TD-036), 1 created (TD-038). Branch: `sprint-14/role-model-refactor`.
+**Current Status:** ✅ Sprint 15 Complete — 14/15 stories delivered across 4 waves. UI Overhaul + Dashboard Composite View: sidebar layout migration (shadcn/ui), permission-stacked dashboard tabs (ADR-016), full site emoji→Lucide icons, template server-side pagination, wallet cursor-based infinite scroll, dirty-form guard, styled delete confirmation, z-index scale (7 tiers), inline styles→Tailwind, configurable rate limits (TD-038). ADR-018 (search input focus pattern). UAT: 56/56 mid-sprint + 36/36 final (6 bugs found & fixed). Total: 1,835 tests (991 BE + 844 FE). 2 tech debt resolved (TD-035, TD-038). Branch: `sprint-15/ui-overhaul-dashboard`.
 
 ---
 
@@ -1700,30 +1709,32 @@ Sprint 0-2 established this pattern:
    
    **Sprint Docs:** backlog.md, summary.md, retrospective.md, version-manifest.md, 9 story files, 9 dev prompts, 9 CR results
 
-25. 🔜 **Sprint 15: UI Overhaul + Dashboard Composite View** (Planned)
+25. ✅ **Sprint 15: UI Overhaul + Dashboard Composite View** (Complete, v1.5.0)
    
    **Sprint Goal:** Sidebar layout migration + Dashboard permission stacking + full UI polish.
-   **Estimated Effort:** ~44h (extended sprint — ADR-016)
-   **Dependencies:** Sprint 14 (TD-034) must be complete.
-   **Design Decisions:** ADR-016 — 5 decisions accepted 2026-02-27.
+   **Actual Effort:** ~56h estimated (extended sprint — ADR-016)
+   **Completion:** 14/15 stories (15.6 Forgot Password deferred)
+   **Design Decisions:** ADR-016 (5 UI decisions), ADR-018 (search input focus)
    
-   **Stories:**
-   - TD-035: Dashboard Composite View — Permission Stacking (~27h)
-     - TD-035-A: Dashboard tabbed composite view, default "My Badges" tab (~8h)
-     - TD-035-B: Backend permissions API `/api/users/me/permissions` (~3h)
-     - TD-035-C: Sidebar layout migration — replace top nav with collapsible sidebar (~12h)
-     - TD-035-D: Testing: all 6 role×manager combinations (~4h)
-   - UI Polish (~17h):
-     - P1-1: Inline styles → Tailwind (2h)
-     - P1-7: Forgot Password page (2h)
-     - P2-1: Template list — server-side pagination (3h)
-     - P2-2: Wallet — cursor-based infinite scroll (3h)
-     - P2-5: Styled delete confirmation (1h)
-     - P2-7: Full site emoji → Lucide icons (5h)
-     - P2-8: z-index scale (1h)
-     - P2-11: Dirty-form guard (2h)
+   **Delivered:**
+   - TD-035: Dashboard Composite View — Permission Stacking (Stories 15.1-15.4)
+     - TD-035-A: Dashboard tabbed composite view, default "My Badges" tab
+     - TD-035-B: Backend permissions API `/api/users/me/permissions`
+     - TD-035-C: Sidebar layout migration — collapsible sidebar (shadcn/ui)
+     - TD-035-D: 6 role×manager combination E2E testing
+   - UI Polish:
+     - P1-1: Inline styles → Tailwind (15.5)
+     - P2-1: Template list — server-side pagination (15.7)
+     - P2-2: Wallet — cursor-based infinite scroll (15.8)
+     - P2-5: Styled delete confirmation (15.9)
+     - P2-7: Full site emoji → Lucide icons (15.10)
+     - P2-8: z-index scale — 7-tier CSS custom properties (15.11)
+     - P2-11: Dirty-form guard (15.12)
+   - TD-038: Configurable auth rate limits (15.13)
+   - UAT: Mid-Sprint 56/56 PASS + Final 36/36 PASS (6 bugs fixed)
+   - Tests: 1,835 (BE 991 + FE 844), 100% pass rate (+78 from v1.4.0)
    - **Deferred from Sprint 15:** P2-12 (Template preview modes) → Sprint 16+
-   - **Absorbed into Sidebar:** P2-10 (Mobile nav Issue Badge) — no separate estimate
+   - **Deferred from Sprint 15:** P1-7 (Forgot Password page, 2h) → backlog as tech debt (no dependencies)
 
 26. 🔜 **Sprint 16: Pilot Readiness — Fine-Grained RBAC + Pilot Validation** (Planned)
    

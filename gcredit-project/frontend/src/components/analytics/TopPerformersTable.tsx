@@ -5,6 +5,7 @@
  */
 
 import React from 'react';
+import { Trophy } from 'lucide-react';
 import type { TopPerformer } from '../../types/analytics';
 
 interface TopPerformersTableProps {
@@ -24,7 +25,7 @@ function formatRelativeDate(isoStr: string): string {
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
 }
 
-const RANK_ICONS = ['🥇', '🥈', '🥉'];
+const RANK_COLORS = ['text-yellow-500', 'text-gray-400', 'text-amber-700'];
 
 const TopPerformersTable: React.FC<TopPerformersTableProps> = ({ performers }) => {
   if (performers.length === 0) {
@@ -54,7 +55,7 @@ const TopPerformersTable: React.FC<TopPerformersTableProps> = ({ performers }) =
             >
               <td className="py-3 px-4">
                 {idx < 3 ? (
-                  <span className="text-xl">{RANK_ICONS[idx]}</span>
+                  <Trophy size={20} className={RANK_COLORS[idx]} aria-hidden="true" />
                 ) : (
                   <span className="text-gray-500 font-medium">#{idx + 1}</span>
                 )}

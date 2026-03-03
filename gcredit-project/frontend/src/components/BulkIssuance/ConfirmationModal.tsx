@@ -1,3 +1,4 @@
+import { AlertTriangle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -29,7 +30,7 @@ export default function ConfirmationModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <span>⚠️</span>
+            <AlertTriangle size={20} className="text-yellow-600" aria-hidden="true" />
             <span>Confirm Bulk Issuance</span>
           </DialogTitle>
           <DialogDescription>

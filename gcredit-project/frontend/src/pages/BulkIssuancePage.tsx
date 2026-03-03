@@ -12,9 +12,12 @@
 import { useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { ClipboardList, Lightbulb, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import { TemplateSelector } from '../components/BulkIssuance/TemplateSelector';
 import { downloadTemplate, uploadBulkIssuance } from '../lib/bulkIssuanceApi';
 import { PageTemplate } from '../components/layout/PageTemplate';
+import { useFormGuard } from '../hooks/useFormGuard';
+import { NavigationGuardDialog } from '../components/ui/NavigationGuardDialog';
 
 /** Max file size: 100KB */
 const MAX_FILE_SIZE = 102_400;
@@ -34,6 +37,10 @@ export function BulkIssuancePage() {
     errorRows: number;
     sessionId: string;
   } | null>(null);
+
+  // Story 15.12: Dirty = file selected or upload in progress
+  const isDirty = fileSelected || isUploading;
+  const { isBlocked, proceed, reset } = useFormGuard({ isDirty });
 
   /**
    * Download CSV template from backend
@@ -101,7 +108,8 @@ export function BulkIssuancePage() {
         toast.success(`CSV uploaded: ${data.validRows} valid, ${data.errorRows} errors`);
 
         if (data.errorRows === 0) {
-          // No errors — auto-navigate to preview
+          // No errors — clear dirty state, then auto-navigate to preview
+          setFileSelected(false);
           navigate(`/admin/bulk-issuance/preview/${data.sessionId}`);
         } else {
           // Errors found — show validation summary
@@ -242,7 +250,9 @@ export function BulkIssuancePage() {
 
         {/* Instructions */}
         <div className="mt-4 bg-brand-50 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-brand-800 mb-2">📋 Instructions:</h4>
+          <h4 className="text-sm font-medium text-brand-800 mb-2">
+            <ClipboardList size={16} className="inline" aria-hidden="true" /> Instructions:
+          </h4>
           <ol className="list-decimal list-inside text-sm text-brand-700 space-y-1">
             <li>Download the CSV template above</li>
             <li>Open in Excel or Google Sheets</li>
@@ -252,10 +262,12 @@ export function BulkIssuancePage() {
           </ol>
           <div className="mt-3 space-y-1">
             <p className="text-sm text-brand-700">
-              💡 <strong>Tip:</strong> Find badge template names in the Badge Catalog page
+              <Lightbulb size={16} className="inline" aria-hidden="true" /> <strong>Tip:</strong>{' '}
+              Find badge template names in the Badge Catalog page
             </p>
             <p className="text-sm text-amber-700">
-              ⚠️ Maximum 20 badges per upload (100KB file size limit)
+              <AlertTriangle size={16} className="inline" aria-hidden="true" /> Maximum 20 badges
+              per upload (100KB file size limit)
             </p>
           </div>
         </div>
@@ -390,12 +402,15 @@ export function BulkIssuancePage() {
             data-testid="validation-summary"
           >
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-lg">⚠️</span>
+              <AlertTriangle size={20} className="text-amber-600" aria-hidden="true" />
               <h4 className="text-sm font-semibold text-amber-800">Validation Results</h4>
             </div>
             <p className="text-sm text-amber-700 mb-3">
-              ✅ {uploadResult.validRows} of {uploadResult.totalRows} badges valid
-              {' · '}❌ {uploadResult.errorRows} errors found
+              <CheckCircle size={16} className="inline text-green-600" aria-hidden="true" />{' '}
+              {uploadResult.validRows} of {uploadResult.totalRows} badges valid
+              {' · '}
+              <XCircle size={16} className="inline text-red-600" aria-hidden="true" />{' '}
+              {uploadResult.errorRows} errors found
             </p>
             <div className="flex gap-3">
               <button
@@ -429,6 +444,7 @@ export function BulkIssuancePage() {
           aria-hidden="true"
         />
       </div>
+      <NavigationGuardDialog open={isBlocked} onStay={reset} onLeave={proceed} />
     </PageTemplate>
   );
 }

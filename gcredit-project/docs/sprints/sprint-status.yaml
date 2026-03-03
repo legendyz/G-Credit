@@ -171,3 +171,39 @@ sprint-14: done
 # --- Wave 4: Testing + Design Tokens ---
 14-8-test-matrix-6-combinations: done              # 31 tests: 6 combos × 4 endpoints + JWT compat + dashboard matrix
 14-9-design-tokens-prep: done                     # P1-2: 11 new tokens, ~25 hardcoded colors replaced
+
+# ============================================
+# Sprint 15: UI Overhaul + Dashboard Composite View
+# Goal: Sidebar migration, dashboard composite view with permission stacking, UI polish
+# Target: v1.5.0
+# Branch: sprint-15/ui-overhaul-dashboard
+# Planning: 2026-03-01
+# Stories: 15.1-15.15 (~56h) — 5 Waves (W1→W2→W2.5→W3→W4)
+# Staged UAT: Mid-Sprint (W2.5) + Final (W4)
+# ============================================
+sprint-15: active
+
+# --- Wave 1: Backend Prep (6h) ---
+15-2-backend-permissions-api: done                  # TD-035-B: GET /api/users/me/permissions  — Started 2026-03-01, CR passed
+15-13-td038-configurable-rate-limits: done  # TD-038: @Throttle() runtime override via ConfigurableThrottlerGuard — CR passed
+
+# --- Wave 2: Core UI (20h) ---
+15-3-sidebar-layout-migration: done                 # TD-035-C: Navbar.tsx → AppSidebar.tsx (shadcn/ui Sidebar) — Done 2026-03-02
+15-1-dashboard-composite-view: done                # TD-035-A: role switch → permission-stacked tabs — CR passed 2026-03-02
+
+# --- Wave 2.5: Mid-Sprint UAT (3h) ---
+15-14-mid-sprint-uat: done                         # 37/37 PASS — 10 findings, 5 hotfixed, 3 deferred, 2 accepted
+
+# --- Wave 3: UI Polish (19h) ---
+15-10-emoji-to-lucide-icons: done                  # P2-7: full site emoji → Lucide React — Done 2026-03-02
+15-7-template-list-pagination: done                # P2-1: server-side pagination + page controls — Done 2026-03-02
+15-8-wallet-infinite-scroll: done                  # P2-2: cursor-based + IntersectionObserver — Done 2026-03-02
+15-5-inline-styles-to-tailwind: done               # P1-1: style={{}} → Tailwind classes + FINDING fixes — Done 2026-03-02
+15-6-forgot-password-page: deferred               # P1-7: deferred to backlog as tech debt (2026-03-02)
+15-12-dirty-form-guard: done                       # P2-11: beforeunload + useBlocker — Done 2026-03-02
+15-9-styled-delete-confirmation: done              # P2-5: window.confirm() → shadcn AlertDialog
+15-11-zindex-scale: done                           # P2-8: standardized z-index in @theme {}
+
+# --- Wave 4: Testing + Final UAT (8h) ---
+15-4-role-manager-test-matrix: done                 # TD-035-D: 6-combo E2E matrix
+15-15-final-uat: backlog                           # 40 test cases: regression + pagination + forms + visual + technical

@@ -741,7 +741,7 @@ export default function BulkResultPage({
 
       {/* Skip Confirmation Dialog */}
       {showSkipConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-modal flex items-center justify-center bg-black/50">
           <Card className="max-w-md w-full mx-4 p-6 space-y-4">
             <h3 className="text-lg font-semibold text-neutral-900">Skip remaining evidence?</h3>
             <p className="text-sm text-neutral-600">

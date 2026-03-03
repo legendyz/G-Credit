@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
+import { Check, Search } from 'lucide-react';
 
 interface VerificationSectionProps {
   verificationId: string;
@@ -45,7 +46,13 @@ const VerificationSection: React.FC<VerificationSectionProps> = ({ verificationI
             className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition-colors"
             aria-label="Copy verification URL"
           >
-            {copied ? '✓ Copied' : 'Copy'}
+            {copied ? (
+              <>
+                <Check size={16} className="inline" /> Copied
+              </>
+            ) : (
+              'Copy'
+            )}
           </button>
         </div>
       </div>
@@ -55,7 +62,7 @@ const VerificationSection: React.FC<VerificationSectionProps> = ({ verificationI
         onClick={handleVerify}
         className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-md hover:shadow-lg"
       >
-        🔍 Verify on G-Credit
+        <Search size={16} className="inline mr-1" aria-hidden="true" /> Verify on G-Credit
       </button>
 
       {/* AC 4.6: QR code (future enhancement placeholder) */}

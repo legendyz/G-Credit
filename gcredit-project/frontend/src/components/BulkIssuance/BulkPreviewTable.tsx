@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
+import { Check } from 'lucide-react';
 
 interface PreviewTableRow {
   rowNumber: number;
@@ -140,7 +141,7 @@ export default function BulkPreviewTable({ rows, validRows }: BulkPreviewTablePr
                 <td className="px-4 py-3 text-sm text-gray-600">{row.recipientEmail}</td>
                 <td className="px-4 py-3">
                   <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    ✓ Valid
+                    <Check size={16} className="inline" aria-hidden="true" /> Valid
                   </span>
                 </td>
               </tr>

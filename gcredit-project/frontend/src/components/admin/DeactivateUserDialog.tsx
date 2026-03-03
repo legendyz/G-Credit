@@ -90,7 +90,7 @@ export function DeactivateUserDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      className="fixed inset-0 z-modal flex items-center justify-center bg-black/50"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -159,7 +159,8 @@ export function DeactivateUserDialog({
         {isSelf && isDeactivating && (
           <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 dark:border-red-900 dark:bg-red-900/20">
             <p className="text-sm text-red-800 dark:text-red-200">
-              ⚠️ You cannot deactivate your own account.
+              <AlertTriangle size={16} className="inline text-red-600" aria-hidden="true" /> You
+              cannot deactivate your own account.
             </p>
           </div>
         )}

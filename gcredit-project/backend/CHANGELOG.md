@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.0] - 2026-03-03 (Sprint 15 — UI Overhaul + Dashboard Composite View)
+
+### Sprint 15 Summary — Permissions API + Configurable Rate Limits
+
+**Branch:** `sprint-15/ui-overhaul-dashboard`
+**Stories:** 14/15 complete (4 waves) | **Target Version:** v1.5.0
+**Tests:** 991 passed (100% pass rate, +59 from v1.4.0)
+
+#### Wave 1: Backend Prep (Stories 15.2, 15.13)
+
+- **Backend Permissions API (15.2):** New `GET /api/users/me/permissions` endpoint. Returns `{ role, isManager, permissions[] }` computed from dual-dimension model (ADR-017). Frontend consumes this to render permission-stacked sidebar groups and dashboard tabs. Guards: `JwtAuthGuard`. Response DTO: `PermissionsResponseDto`.
+- **Configurable Auth Rate Limits (15.13):** TD-038 resolved. All 8 `@Throttle()` decorators in auth controllers migrated from hardcoded values to `ConfigService`-based configuration. Environment variables: `AUTH_LOGIN_RATE_LIMIT`, `AUTH_REGISTER_RATE_LIMIT`, `AUTH_REFRESH_RATE_LIMIT`, etc. E2E test environments can now override rate limits.
+
+#### Wave 3: UI Polish — Backend Support (Stories 15.7, 15.8)
+
+- **Template List Server-Side Pagination (15.7):** `GET /api/badge-templates` enhanced with `page` and `pageSize` query parameters. Returns `{ data, total, page, pageSize, totalPages }`. Default: page=1, pageSize=10.
+- **Wallet Cursor-Based Infinite Scroll (15.8):** `GET /api/badges/wallet` enhanced with `cursor` and `limit` query parameters. Returns `{ data, nextCursor, hasMore }`. Cursor-based pagination avoids offset drift on dynamic datasets.
+
+#### Wave 4: Testing (Story 15.4)
+
+- **Role×Manager Combination Testing (15.4):** Extended E2E test matrix to cover new permissions endpoint. All 6 role×manager combinations verified for `/api/users/me/permissions` response correctness.
+
+#### UAT Support
+
+- **Badge UAT Seed Data:** `seed-uat.ts` enhanced with additional test badges for `employee@gcredit.com` (24+ badges) to validate pagination and infinite scroll scenarios.
+
+#### Technical Debt
+
+- **TD-035 Resolved:** Dashboard Composite View — Permission Stacking (Stories 15.1-15.4)
+- **TD-038 Resolved:** Auth Rate Limits Hardcoded → ConfigService-based (Story 15.13)
+
+---
+
 ## [1.4.0] - 2026-02-28 (Sprint 14 — Dual-Dimension Role Model Refactor)
 
 ### Sprint 14 Summary — Architecture-First Role Model Refactor

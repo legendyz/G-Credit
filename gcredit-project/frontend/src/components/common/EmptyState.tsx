@@ -8,6 +8,7 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
 import { Button } from '../ui/button';
+import { Inbox, Medal, BarChart3, Users } from 'lucide-react';
 
 export interface EmptyStateProps {
   /** Icon to display (emoji or component) */
@@ -25,7 +26,7 @@ export interface EmptyStateProps {
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
-  icon = '📭',
+  icon = <Inbox size={48} aria-hidden="true" />,
   title,
   description,
   actionText,
@@ -38,7 +39,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       role="status"
       aria-label={title}
     >
-      <div className="text-5xl mb-4" aria-hidden="true">
+      <div className="mb-4" aria-hidden="true">
         {icon}
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
@@ -57,7 +58,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
  */
 export const NoBadgesState: React.FC<{ onExplore?: () => void }> = ({ onExplore }) => (
   <EmptyState
-    icon="🏅"
+    icon={<Medal size={48} aria-hidden="true" />}
     title="No badges yet"
     description="Start earning badges by completing skills and achievements."
     actionText={onExplore ? 'Explore Badges' : undefined}
@@ -70,7 +71,7 @@ export const NoBadgesState: React.FC<{ onExplore?: () => void }> = ({ onExplore 
  */
 export const NoActivityState: React.FC = () => (
   <EmptyState
-    icon="📊"
+    icon={<BarChart3 size={48} aria-hidden="true" />}
     title="No recent activity"
     description="Activity will appear here once you start using the platform."
   />
@@ -81,7 +82,7 @@ export const NoActivityState: React.FC = () => (
  */
 export const NoTeamMembersState: React.FC = () => (
   <EmptyState
-    icon="👥"
+    icon={<Users size={48} aria-hidden="true" />}
     title="No team members"
     description="Team members will appear here once they join your department."
   />

@@ -7,6 +7,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.0] - 2026-03-03 (Sprint 15 — UI Overhaul + Dashboard Composite View)
+
+### Sprint 15 Summary — Sidebar Navigation, Dashboard Tabs, Full UI Polish
+
+**Branch:** `sprint-15/ui-overhaul-dashboard`
+**Stories:** 14/15 complete (4 waves + mid-sprint UAT) | **Target Version:** v1.5.0
+**Tests:** 844 passed (100% pass rate, +50 from v1.4.0)
+**UAT:** Mid-Sprint 56/56 PASS + Final 36/36 PASS (6 bugs found and fixed)
+
+#### Wave 2: Core UI (Stories 15.1, 15.3)
+
+- **Sidebar Layout Migration (15.3):** Top navigation replaced with collapsible sidebar (shadcn/ui `Sidebar` component). Permission-aware group visibility (base, issuer, manager, admin). Mobile drawer with hamburger toggle. Icon-only collapse mode with tooltip labels. Tailwind v4 CSS variable syntax fix for `w-[var(--sidebar-width)]` (Lesson 52).
+- **Dashboard Tabbed Composite View (15.1):** Permission-stacked tabs based on dual-dimension model (role × isManager). Default "My Badges" tab for all roles. ADMIN sees 4 tabs, ISSUER+Manager sees 3 tabs, EMPLOYEE sees 1 tab.
+
+#### Wave 3: UI Polish (Stories 15.5, 15.7–15.12)
+
+- **Template List Server-Side Pagination (15.7):** `PaginationControls` component with page size dropdown (10/20/50). URL query params for deep-linkable pagination (`?page=2&pageSize=20`).
+- **Wallet Cursor-Based Infinite Scroll (15.8):** `useInfiniteScroll` custom hook (IntersectionObserver with container `root` parameter). `scrollContainerRef` for container-scoped observation. Loading indicator + "No more badges" end state.
+- **Full Site Emoji → Lucide Icons (15.10):** All emoji literals replaced with Lucide React icon components across entire frontend. Consistent icon sizing and styling.
+- **Inline Styles → Tailwind Classes (15.5):** All static `style={{}}` attributes converted to Tailwind utility classes. Follows ADR-009 (Tailwind v4 CSS-first config).
+- **Dirty-Form Guard (15.12):** `useUnsavedChanges()` custom hook using `beforeunload` event + React Router `useBlocker()`. Warning dialog on navigation away from unsaved forms.
+- **Styled Delete Confirmation (15.9):** `AlertDialog` (shadcn/ui) replaces all native `window.confirm()` calls for delete actions.
+- **z-index Scale (15.11):** 7-tier CSS custom property scale in `@theme {}` block: `--z-base:0`, `--z-dropdown:10`, `--z-sticky:20`, `--z-sidebar:30`, `--z-modal:40`, `--z-toast:50`, `--z-tooltip:60`.
+
+#### UAT Bug Fixes (6 fixes during Final UAT)
+
+- **Wallet Z-Index (Bug #1):** Badge cards covering sticky filter bar. Fixed with container scroll model — `PageTemplate` uses `overflow-hidden` root, `TimelineView` uses `overflow-y-auto` scroll area.
+- **Search Input Focus (Bug #2):** Focus outline overflowing `overflow-hidden` container. Fixed with inset box-shadow: `shadow-[inset_0_0_0_1px_rgb(59,130,246)]` + `border-blue-500`. Documented in ADR-018.
+- **Skills Dropdown Z-Index (Bug #3):** Dropdown covered by scroll area stacking context. Fixed with z-50 on search bar container, z-0 on scroll area, z-modal on dropdown.
+- **Skills Dropdown Width (Bug #4):** Dropdown too narrow (w-full relative to trigger). Fixed with `w-max min-w-full` for content-driven width.
+- **Filter Bar Compact (Bug #5):** Controls oversized and inconsistent heights. Fixed with compact h-9 controls, flex-wrap layout, no wrapper divs.
+- **Pagination Reset (Bug #6):** `BadgeManagementPage` filter changes didn't reset `currentPage`. Fixed with `useEffect` resetting to page 1 on any filter change.
+
+#### New/Updated Components
+
+| Component | Description |
+|-----------|-------------|
+| `Sidebar` (shadcn/ui) | Collapsible navigation sidebar with permission-aware groups |
+| `PageTemplate` (updated) | `stickyHeader` prop for container scroll model |
+| `TimelineView` (updated) | Container scroll, z-layered search + scroll areas |
+| `SearchInput` (updated) | ADR-018 inset box-shadow focus pattern |
+| `BadgeSearchBar` (updated) | Compact h-9 flex-wrap layout |
+| `SkillsFilter` (updated) | h-9 trigger, z-modal dropdown, w-max min-w-full |
+| `DateRangePicker` (updated) | Compact h-9 with smaller calendar icons |
+| `PaginationControls` | Page navigation with size dropdown (10/20/50) |
+| `useInfiniteScroll` (updated) | Container `root` parameter for IntersectionObserver |
+| `useUnsavedChanges` | Dirty-form guard hook (beforeunload + useBlocker) |
+| `BadgeManagementPage` (updated) | useEffect pagination reset on filter change |
+
+#### Architecture Decisions
+
+- **ADR-016:** Sprint 15 UI Design Decisions — 5 decisions (tabs, sidebar, pagination, icons, P2-12 defer)
+- **ADR-018:** Search Input UI Pattern — inset box-shadow focus, no ring/outline/border-2
+
+---
+
 ## [1.4.0] - 2026-02-28 (Sprint 14 — Dual-Dimension Role Model Refactor)
 
 ### Sprint 14 Summary — Role Model Refactor + Design Tokens

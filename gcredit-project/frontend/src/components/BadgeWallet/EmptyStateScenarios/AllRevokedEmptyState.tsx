@@ -1,4 +1,5 @@
 import React from 'react';
+import { Mail, FileText } from 'lucide-react';
 
 interface AllRevokedEmptyStateProps {
   onContactSupport: () => void;
@@ -52,13 +53,13 @@ const AllRevokedEmptyState: React.FC<AllRevokedEmptyStateProps> = ({
           onClick={onContactSupport}
           className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-md"
         >
-          📧 Contact Support
+          <Mail size={16} className="inline mr-1" aria-hidden="true" /> Contact Support
         </button>
         <button
           onClick={onViewPolicy}
           className="px-6 py-3 bg-white text-gray-700 font-semibold rounded-lg border-2 border-gray-300 hover:border-gray-400 transition-colors"
         >
-          📄 View Revocation Policy
+          <FileText size={16} className="inline mr-1" aria-hidden="true" /> View Revocation Policy
         </button>
       </div>
 

@@ -47,8 +47,8 @@ describe('CelebrationModal', () => {
   });
 
   it('renders with custom icon', () => {
-    render(<CelebrationModal {...defaultProps} icon="🚀" />);
-    expect(screen.getByText('🚀')).toBeInTheDocument();
+    render(<CelebrationModal {...defaultProps} icon={<span>RocketIcon</span>} />);
+    expect(screen.getByText('RocketIcon')).toBeInTheDocument();
   });
 
   it('renders badge image when provided', () => {
@@ -94,6 +94,15 @@ describe('CelebrationModal', () => {
     expect(screen.getByRole('button', { name: 'View Achievement' })).toBeInTheDocument();
   });
 
+  it('renders default PartyPopper icon when no icon prop provided', () => {
+    render(<CelebrationModal {...defaultProps} />);
+    // CelebrationModal renders via shadcn Dialog (portal) — query document.body
+    const dialog = screen.getByRole('dialog');
+    // Default icon is Lucide PartyPopper rendered as SVG inside the dialog
+    const svg = dialog.querySelector('svg');
+    expect(svg).toBeInTheDocument();
+  });
+
   it('shows confetti when modal opens', () => {
     render(<CelebrationModal {...defaultProps} />);
     // Modal renders with animation effect - check for dialog presence
@@ -124,7 +133,7 @@ describe('BadgeEarnedCelebration', () => {
   it('renders with badge name', () => {
     render(<BadgeEarnedCelebration {...defaultProps} />);
     expect(screen.getByText('Achievement Badge')).toBeInTheDocument();
-    expect(screen.getByText('Congratulations! 🎉')).toBeInTheDocument();
+    expect(screen.getByText('Congratulations!')).toBeInTheDocument();
   });
 
   it('renders with badge image', () => {
@@ -153,7 +162,7 @@ describe('MilestoneReachedCelebration', () => {
   it('renders with milestone name', () => {
     render(<MilestoneReachedCelebration {...defaultProps} />);
     expect(screen.getByText('Badge Collector Level 2')).toBeInTheDocument();
-    expect(screen.getByText('Milestone Achieved! 🌟')).toBeInTheDocument();
+    expect(screen.getByText('Milestone Achieved!')).toBeInTheDocument();
   });
 
   it('renders with custom description', () => {

@@ -17,6 +17,8 @@ import type { ProfileData } from '@/lib/profileApi';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from 'sonner';
 import { Loader2, User, Lock, Eye, EyeOff, ShieldAlert } from 'lucide-react';
+import { useFormGuard } from '@/hooks/useFormGuard';
+import { NavigationGuardDialog } from '@/components/ui/NavigationGuardDialog';
 
 export function ProfilePage() {
   // Profile state
@@ -145,6 +147,11 @@ export function ProfilePage() {
 
   const hasProfileChanges =
     profile && (firstName !== profile.firstName || lastName !== profile.lastName);
+
+  // Story 15.12: Dirty detection for both profile and password forms
+  const isPasswordDirty = currentPassword !== '' || newPassword !== '' || confirmPassword !== '';
+  const isDirty = !!hasProfileChanges || isPasswordDirty;
+  const { isBlocked, proceed, reset } = useFormGuard({ isDirty });
 
   // SSO users cannot edit profile or change password — managed by Microsoft 365
   const isSsoUser = !!profile?.azureId;
@@ -417,6 +424,7 @@ export function ProfilePage() {
           </Card>
         )}
       </div>
+      <NavigationGuardDialog open={isBlocked} onStay={reset} onLeave={proceed} />
     </PageTemplate>
   );
 }

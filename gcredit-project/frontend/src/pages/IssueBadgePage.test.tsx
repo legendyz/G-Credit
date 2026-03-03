@@ -55,7 +55,7 @@ vi.mock('@/lib/evidenceApi', () => ({
   ALLOWED_MIME_TYPES: ['application/pdf', 'image/png', 'image/jpeg'],
   ALLOWED_EXTENSIONS: ['.pdf', '.png', '.jpg', '.jpeg', '.docx'],
   formatFileSize: (b: number) => `${(b / 1024 / 1024).toFixed(1)} MB`,
-  getFileIcon: () => '📄',
+  getFileIcon: () => () => null,
   truncateUrl: (u: string) => u.substring(0, 50),
 }));
 
