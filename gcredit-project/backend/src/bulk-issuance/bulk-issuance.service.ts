@@ -9,7 +9,7 @@ import { PrismaService } from '../common/prisma.service';
 import { CsvValidationService } from './csv-validation.service';
 import { BadgeIssuanceService } from '../badge-issuance/badge-issuance.service';
 import { randomUUID } from 'crypto';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 
 /**
  * Bulk Issuance Session Status
@@ -537,7 +537,7 @@ export class BulkIssuanceService {
   async confirmBulkIssuance(
     sessionId: string,
     currentUserId: string,
-    callerRole: import('@prisma/client').UserRole,
+    callerRole: UserRole,
   ): Promise<{
     success: boolean;
     processed: number;

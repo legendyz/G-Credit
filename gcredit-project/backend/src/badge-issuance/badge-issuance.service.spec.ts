@@ -606,6 +606,20 @@ describe('BadgeIssuanceService', () => {
         expect(result).toHaveProperty('id');
         expect(result.status).toBe(BadgeStatus.PENDING);
       });
+
+      it('should reject EMPLOYEE role with defensive guard (E1 future-proofing)', async () => {
+        // Arrange: EMPLOYEE should never reach here (blocked by @Roles),
+        // but service-layer guard ensures fail-safe
+        mockPrismaService.badgeTemplate.findUnique.mockResolvedValue(ownedTemplate);
+
+        // Act & Assert
+        await expect(
+          service.issueBadge(issueDto, 'employee-uuid', UserRole.EMPLOYEE),
+        ).rejects.toThrow(ForbiddenException);
+        await expect(
+          service.issueBadge(issueDto, 'employee-uuid', UserRole.EMPLOYEE),
+        ).rejects.toThrow('Insufficient permissions to issue badges');
+      });
     });
   });
 

@@ -77,6 +77,38 @@ Claude Opus 4.6 (GitHub Copilot)
 | `backend/test/badge-templates-ownership.e2e-spec.ts` | **NEW** — 12 E2E tests for ownership guard |
 | `docs/sprints/sprint-16/16-3-template-edit-ownership-guard.md` | **UPDATED** — story status, ACs, dev record |
 
+## Code Review Report
+
+**Reviewer:** Senior Security Code Reviewer (Claude Opus 4.6)
+**Date:** 2026-03-03
+**Verdict:** ✅ **APPROVE**
+
+### Security
+
+| # | Check | Result | Notes |
+|---|-------|--------|-------|
+| S1 | Ownership check for PATCH update | ✅ PASS | `badge-templates.controller.ts` lines 280-288: `if (ISSUER && createdBy !== userId) → 403` |
+| S2 | Ownership check for DELETE | ✅ PASS | Controller lines 318-328: same ARCH-P1-004 pattern |
+| S3 | Status change covered | ✅ PASS | No separate status endpoint — goes through PATCH which has ownership guard |
+| S4 | ADMIN bypass correct | ✅ PASS | Only ISSUER triggers check; ADMIN falls through without guard |
+| S5 | Error messages clear, no leaks | ✅ PASS | `'You can only update your own badge templates'` / `'You can only delete your own badge templates'` |
+
+### Test Quality
+
+| # | Check | Result | Notes |
+|---|-------|--------|-------|
+| T7 | E2E covers PATCH update + PATCH status + DELETE | ✅ PASS | 12 tests across 3 `describe` blocks: update (5 tests), status change (3 tests), delete (4 tests) |
+| T8 | Delete tests verify template is gone | ✅ PASS | Each delete test follows up with `GET /:id` expecting 404 — confirms actual deletion |
+| T-setup | Test isolation | ✅ PASS | Uses `setupE2ETest('tpl-ownership')` for schema isolation, creates fresh templates per test group |
+| T-users | Multiple issuers tested | ✅ PASS | Issuer-A and Issuer-B with cross-ownership tests in both directions |
+| T-403 | 403 message assertion | ✅ PASS | Checks `expect(body.message).toContain('You can only ...')` for exact message |
+
+### Summary
+
+**Verdict: ✅ APPROVE**
+
+All 12 E2E tests are well-structured and comprehensive. The pre-existing ownership implementation correctly follows ARCH-P1-004. No changes required.
+
 ## Retrospective Notes
 - Story was estimated at 2h but completed faster due to all implementation being pre-existing
 - The ownership guard pattern (ARCH-P1-004) was well-implemented and consistent across update/delete
