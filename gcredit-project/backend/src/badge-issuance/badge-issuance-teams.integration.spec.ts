@@ -25,7 +25,7 @@ import { MilestonesService } from '../milestones/milestones.service';
 import { StorageService } from '../common/storage.service';
 import { GraphEmailService } from '../microsoft-graph/services/graph-email.service';
 import { IssueBadgeDto } from './dto/issue-badge.dto';
-import { BadgeStatus } from '@prisma/client';
+import { BadgeStatus, UserRole } from '@prisma/client';
 
 // ADR: Tests skipped pending ChannelMessage.Send permission approval (TD-006).
 // See Post-MVP Backlog and SKIPPED-TESTS-TRACKER.md for resolution steps.
@@ -66,7 +66,7 @@ describe.skip('BadgeIssuanceService - Teams Integration', () => {
     status: 'ACTIVE',
     category: 'ACHIEVEMENT',
     skillIds: [],
-    createdBy: 'admin-123',
+    createdBy: 'issuer-456',
     createdAt: new Date(),
     updatedAt: new Date(),
     requiredEvidenceCount: 0,
@@ -224,7 +224,7 @@ describe.skip('BadgeIssuanceService - Teams Integration', () => {
 
     it('should trigger Teams notification after badge issuance', async () => {
       // Act
-      await service.issueBadge(issueDto, 'issuer-456');
+      await service.issueBadge(issueDto, 'issuer-456', UserRole.ISSUER);
 
       // Wait for async Teams notification
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -242,7 +242,7 @@ describe.skip('BadgeIssuanceService - Teams Integration', () => {
       );
 
       // Act
-      const result = await service.issueBadge(issueDto, 'issuer-456');
+      const result = await service.issueBadge(issueDto, 'issuer-456', UserRole.ISSUER);
 
       // Assert - Badge should still be created
       expect(result).toBeDefined();
@@ -260,7 +260,7 @@ describe.skip('BadgeIssuanceService - Teams Integration', () => {
 
     it('should send both email and Teams notifications', async () => {
       // Act
-      await service.issueBadge(issueDto, 'issuer-456');
+      await service.issueBadge(issueDto, 'issuer-456', UserRole.ISSUER);
 
       // Wait for async notifications
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -290,7 +290,7 @@ describe.skip('BadgeIssuanceService - Teams Integration', () => {
       );
 
       // Act
-      await service.issueBadge(issueDto, 'issuer-456');
+      await service.issueBadge(issueDto, 'issuer-456', UserRole.ISSUER);
 
       // Wait for async notification
       await new Promise((resolve) => setTimeout(resolve, 100));

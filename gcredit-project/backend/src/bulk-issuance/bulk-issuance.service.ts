@@ -537,6 +537,7 @@ export class BulkIssuanceService {
   async confirmBulkIssuance(
     sessionId: string,
     currentUserId: string,
+    callerRole: import('@prisma/client').UserRole,
   ): Promise<{
     success: boolean;
     processed: number;
@@ -623,12 +624,14 @@ export class BulkIssuanceService {
         }
 
         // Issue badge via BadgeIssuanceService
+        // Story 16.1: Pass callerRole for ownership check (ARCH-P1-004)
         const issueResult = await this.badgeIssuanceService.issueBadge(
           {
             templateId: template.id,
             recipientId: recipient.id,
           },
           currentUserId,
+          callerRole,
         );
 
         processed++;
