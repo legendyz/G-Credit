@@ -2,7 +2,7 @@
 
 This directory contains project-specific technical documentation, setup guides, sprint history, and testing resources.
 
-**Last Updated:** 2026-02-28 (Sprint 14 complete — v1.4.0 Released)
+**Last Updated:** 2026-03-03 (Sprint 15 complete — v1.5.0 Released)
 
 ---
 
@@ -53,26 +53,26 @@ Project planning documents, epics, user stories, and UX specifications.
 Historical sprint documentation organized by sprint number.
 
 **Sprint Structure:**
-- **Sprint 0-14:** Each sprint directory contains backlog, retrospective, summary, and sprint-specific docs
-- **Total Files:** 200+ files across 16 sprint directories
+- **Sprint 0-15:** Each sprint directory contains backlog, retrospective, summary, and sprint-specific docs
+- **Total Files:** 230+ files across 17 sprint directories
 - **Index:** [sprints/README.md](./sprints/README.md)
 
 **Latest Sprint Closures:**
+- Sprint 15 completed (2026-03-03). UI Overhaul + Dashboard Composite View, v1.5.0. 14/15 stories, 1,835 tests, UAT 36/36 PASS.
 - Sprint 14 completed (2026-02-28). Dual-dimension role model refactor, v1.4.0. 9/9 stories, 1,757 tests.
 - Sprint 13 completed (2026-02-27). Azure AD SSO + Session Management, v1.3.0. 8/8 stories.
-- Sprint 12 completed (2026-02-24). Management UIs + Evidence Unification, v1.2.0. 8/8 stories.
-- See [sprints/sprint-14/](./sprints/sprint-14/) for latest details.
+- See [sprints/sprint-15/](./sprints/sprint-15/) for latest details.
 
 ---
 
 ## 🧹 Documentation Hygiene (2026-02-28)
 
-- ADRs: ADR-002 through ADR-017 documented. ADR-015 (UserRole enum), ADR-017 (Dual-Dimension Identity) added in Sprint 14.
+- ADRs: ADR-002 through ADR-018 documented. ADR-016 (Sprint 15 UI decisions), ADR-018 (Search input focus pattern) added in Sprint 15.
 - Outdated/legacy files in `_bmad-output/` reviewed — excalidraw diagrams active, planning/implementation artifacts deprecated.
-- Index and project-context.md are up-to-date through Sprint 14 (v1.4.0).
+- Index and project-context.md are up-to-date through Sprint 15 (v1.5.0).
 
 **Next Steps:**
-- Sprint 15 planning (UI Overhaul + Dashboard Composite View).
+- Sprint 16 planning (Fine-Grained RBAC L1 + Pilot Readiness).
 
 
 ### 🛠️ Setup Guides (`setup/`)
@@ -217,6 +217,6 @@ When adding new documentation:
 
 ---
 
-**Document Version:** 1.3  
+**Document Version:** 1.4  
 **Created:** 2026-01-25  
-**Next Review:** After Sprint 15 completion
+**Next Review:** After Sprint 16 completion

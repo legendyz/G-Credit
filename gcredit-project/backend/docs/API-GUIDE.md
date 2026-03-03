@@ -1,8 +1,8 @@
 # API Usage Guide
 
 **G-Credit Badge Platform REST API**  
-**Version:** 1.4.0 (Sprint 14 - v1.4.0 Dual-Dimension Role Model Refactor)  
-**Last Updated:** 2026-02-28
+**Version:** 1.5.0 (Sprint 15 - v1.5.0 UI Overhaul + Dashboard Composite View)  
+**Last Updated:** 2026-03-03
 
 ---
 
@@ -20,9 +20,10 @@
 10. [M365 Sync API](#m365-sync-api)
 11. [Bulk Issuance](#bulk-issuance) ⭐ NEW
 12. [Azure AD SSO](#azure-ad-sso) ⭐ Sprint 13
-13. [Error Handling](#error-handling)
-14. [Rate Limiting](#rate-limiting)
-15. [Sprint 14 Breaking Changes](#sprint-14-breaking-changes) ⚠️
+13. [User Permissions](#user-permissions) ⭐ Sprint 15
+14. [Error Handling](#error-handling)
+15. [Rate Limiting](#rate-limiting)
+16. [Sprint 14 Breaking Changes](#sprint-14-breaking-changes) ⚠️
 
 ---
 
@@ -1752,6 +1753,37 @@ Sending `MANAGER` will return `400 Bad Request`.
 
 ---
 
+## User Permissions
+
+> ⭐ **Sprint 15 (v1.5.0):** New endpoint for frontend sidebar and dashboard visibility.
+
+### Get Current User Permissions
+
+```bash
+curl -X GET http://localhost:3000/api/users/me/permissions \
+  -b cookies.txt
+```
+
+**Response (200 OK):**
+```json
+{
+  "role": "ISSUER",
+  "isManager": true,
+  "permissions": [
+    "badge:issue",
+    "badge:revoke",
+    "template:view",
+    "dashboard:team",
+    "dashboard:personal"
+  ]
+}
+```
+
+**Auth:** JWT required (httpOnly cookie or Bearer token)  
+**Purpose:** Returns the authenticated user's role, manager status, and computed permission list. Used by the frontend to determine sidebar group visibility and dashboard tab availability.
+
+---
+
 ## Error Handling
 
 ### Standard Error Response Format
@@ -2250,8 +2282,13 @@ Project Management,34
 **Current Limits:**
 - **Default:** 100 requests per 60 seconds per IP
 - **Bulk Upload:** 10 requests per 5 minutes per user
+- **Auth Endpoints (Sprint 15):** All auth rate limits configurable via `ConfigService` (TD-038 resolved)
+  - `AUTH_LOGIN_RATE_LIMIT` — Login attempts (default: 5/min/IP)
+  - `AUTH_REGISTER_RATE_LIMIT` — Registration attempts (default: 3/min/IP)
+  - `AUTH_REFRESH_RATE_LIMIT` — Token refreshes (default: 10/min/IP)
 - Custom limits per endpoint as needed
 - Throttle responses return `429 Too Many Requests`
+- **Test environments** can override limits via environment variables for E2E testing
 
 ---
 
@@ -2291,13 +2328,13 @@ Import this collection into Postman for quick API testing:
 
 ---
 
-**Last Updated:** 2026-02-28  
-**API Version:** 1.4.0 (Sprint 14 — Dual-Dimension Role Model Refactor)  
+**Last Updated:** 2026-03-03  
+**API Version:** 1.5.0 (Sprint 15 — UI Overhaul + Dashboard Composite View)  
 **Author:** G-Credit Development Team  
-**Coverage:** Sprint 0-14 (Authentication, Templates, Issuance, Verification, Sharing, Revocation, Analytics, Admin Users, M365 Sync, Bulk Issuance, Dashboard, Evidence, Milestones, Teams, CSV Export, Skill Categories, Skills, Azure AD SSO, ManagerGuard)  
-**Total Routes:** ~100 across 19 modules  
-**Sprint 13 Changes:** Azure AD SSO (`/api/auth/sso/login`, `/api/auth/sso/callback`), JIT provisioning, login-time mini-sync, idle timeout, 401 interceptor  
-**Sprint 14 Changes:** UserRole enum (MANAGER removed), JWT `isManager` claim, ManagerGuard + @RequireManager(), 6-combination test matrix
+**Coverage:** Sprint 0-15 (Authentication, Templates, Issuance, Verification, Sharing, Revocation, Analytics, Admin Users, M365 Sync, Bulk Issuance, Dashboard, Evidence, Milestones, Teams, CSV Export, Skill Categories, Skills, Azure AD SSO, ManagerGuard, Permissions API)  
+**Total Routes:** ~101 across 20 modules  
+**Sprint 14 Changes:** UserRole enum (MANAGER removed), JWT `isManager` claim, ManagerGuard + @RequireManager(), 6-combination test matrix  
+**Sprint 15 Changes:** Permissions API (`GET /api/users/me/permissions`), configurable auth rate limits (TD-038), template list pagination (`page/pageSize`), wallet cursor-based pagination (`cursor/limit`)
 
 **See Also:**
 - [API Module Index](./api/README.md) - Quick reference table

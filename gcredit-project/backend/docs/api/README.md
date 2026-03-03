@@ -1,9 +1,9 @@
 # GCredit API Documentation
 
-**Version:** 1.2.0 (v1.2.0 Released)  
+**Version:** 1.5.0 (v1.5.0 Released)  
 **Base URL:** `http://localhost:3000`  
 **API Prefix:** `/api` (all endpoints, including `/api/auth`)  
-**Last Updated:** 2026-02-24
+**Last Updated:** 2026-03-03
 
 ## Overview
 
@@ -41,7 +41,13 @@ See [Authentication API](./authentication.md) for detailed endpoint documentatio
 - **Path:** `/api/auth`
 - **Documentation:** [authentication.md](./authentication.md)
 - **Endpoints:** Register, Login, Logout, Refresh, Profile (GET/PATCH), Password Reset, Change Password
-- **Roles:** `EMPLOYEE`, `ISSUER`, `MANAGER`, `ADMIN`
+- **Roles:** `EMPLOYEE`, `ISSUER`, `ADMIN` (Sprint 14: MANAGER removed, replaced by `isManager` JWT claim)
+
+### 1b. User Permissions (1 route) ⭐ Sprint 15
+- **Path:** `/api/users/me/permissions`
+- **Endpoints:** GET — Returns `{ role, isManager, permissions[] }` for current user
+- **Auth:** JWT required
+- **Purpose:** Frontend sidebar group visibility + dashboard tab computation
 
 ### 2. Badge Issuance & Wallet (13 routes)
 - **Path:** `/api/badges`
@@ -231,7 +237,12 @@ All errors follow a consistent structure:
 Global rate limiting is implemented via NestJS `ThrottlerGuard` (Sprint 8):
 - **Default:** 100 requests per 60 seconds per IP
 - **Bulk Upload:** 10 requests per 5 minutes per user
+- **Auth Endpoints:** Configurable via `ConfigService` (Sprint 15, TD-038 resolved)
+  - Login: `AUTH_LOGIN_RATE_LIMIT` (default: 5/min/IP)
+  - Register: `AUTH_REGISTER_RATE_LIMIT` (default: 3/min/IP)
+  - Refresh: `AUTH_REFRESH_RATE_LIMIT` (default: 10/min/IP)
 - Custom limits per endpoint as needed
+- Throttle responses return `429 Too Many Requests`
 
 ## Testing
 
@@ -286,6 +297,7 @@ Interactive API documentation available at:
 | Module | Base Path | Auth | Routes |
 |--------|-----------|------|--------|
 | Authentication | `/api/auth` | Mixed | 9 |
+| Permissions | `/api/users/me/permissions` | Yes | 1 |
 | Badge Issuance & Wallet | `/api/badges` | Mixed | 13 |
 | Badge Templates | `/api/badge-templates` | Mixed | 8 |
 | Skills | `/api/skills` | Mixed | 6 |
@@ -301,7 +313,7 @@ Interactive API documentation available at:
 | M365 Sync | `/api/admin/m365-sync` | Admin | 4 |
 | Milestones | `/api/admin/milestones` | Admin | 5 |
 | Teams Actions | `/api/teams/actions` | Yes | 1 |
-| **Total** | | | **~97** |
+| **Total** | | | **~98** |
 
 ## Support
 
@@ -312,6 +324,6 @@ For questions or issues:
 
 ---
 
-**Last Updated:** February 27, 2026  
-**Version:** 1.3.0 (Sprint 13 Complete)  
+**Last Updated:** March 3, 2026  
+**Version:** 1.5.0 (Sprint 15 Complete)  
 **Maintained By:** GCredit Development Team

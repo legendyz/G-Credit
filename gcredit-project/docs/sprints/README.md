@@ -1,8 +1,8 @@
 # Sprint Documentation Index
 
-**Last Updated:** 2026-02-28  
-**Current Sprint:** Sprint 14 Complete — v1.4.0 Released | Sprint 15-16 Planned  
-**Total Sprints:** 16 completed (Sprint 0-14 + Sprint 12.5) | 2 planned (Sprint 15-16)
+**Last Updated:** 2026-03-03  
+**Current Sprint:** Sprint 15 Complete — v1.5.0 Released | Sprint 16 Planned  
+**Total Sprints:** 17 completed (Sprint 0-15 + Sprint 12.5) | 1 planned (Sprint 16)
 
 ---
 
@@ -26,7 +26,7 @@
 | [Sprint 12.5](./sprint-12.5/) | Deferred Items Cleanup | ✅ Complete | 1 day | 2 stories | 1,593 tests | v1.2.1 |
 | [Sprint 13](./sprint-13/) | Azure AD SSO + Session Management | ✅ Complete | 3 days | 8 stories | 1,708 tests | v1.3.0 |
 | [Sprint 14](./sprint-14/) | Dual-Dimension Role Model Refactor | ✅ Complete | 2 days | 9 stories | 1,757 tests | v1.4.0 |
-| [Sprint 15](./sprint-15/) | UI Overhaul + Sidebar + Dashboard Composite | 🔜 Planned | Extended | 13 stories | — | v1.5.0 |
+| [Sprint 15](./sprint-15/) | UI Overhaul + Dashboard Composite View | ✅ Complete | 3 days | 14/15 stories | 1,835 tests | v1.5.0 |
 | Sprint 16 | Fine-Grained RBAC L1 + Pilot Readiness | 🔜 Planned | TBD | ~2-3 stories | — | v1.6.0 |
 
 ---
@@ -331,8 +331,9 @@ Sprint 12: 1,549 tests
 Sprint 12.5: 1,593 tests
 Sprint 13: 1,708 tests
 Sprint 14: 1,757 tests (932 backend + 794 frontend + 31 E2E)
+Sprint 15: 1,835 tests (991 backend + 844 frontend)
 ────────────────────────────
-Current:   1,757 automated tests (0 failures)
+Current:   1,835 automated tests (0 failures)
 ```
 
 ### Time Efficiency
@@ -393,6 +394,9 @@ Average:   ~87% efficiency ✅
 
 **Role Model & Authorization**
 → Sprint 14: Dual-dimension identity (ADR-015/017), MANAGER removed, isManager JWT claim, ManagerGuard
+
+**UI Overhaul & Dashboard**
+→ Sprint 15: Sidebar layout migration (shadcn/ui), dashboard composite tabs, server-side pagination, infinite scroll, z-index scale, emoji→Lucide icons, dirty-form guard
 
 **Infrastructure**
 → Sprint 0: Project setup, environment, standards
@@ -459,15 +463,16 @@ Looking to create sprint documentation?
 
 ## 🚀 Current Sprint
 
-Sprint 14 is complete — v1.4.0 Released:
-- Wave 1: Quick Win — CI Reliability (Story 14.1) ✅ Complete
-- Wave 2: Role Model Refactor — Backend (Stories 14.2–14.6) ✅ Complete
-- Wave 3: Role Model Refactor — Frontend (Story 14.7) ✅ Complete
-- Wave 4: Testing + Design Tokens (Stories 14.8–14.9) ✅ Complete
+Sprint 15 is complete — v1.5.0 Released:
+- Wave 1: Backend Prep — Permissions API + Configurable Rate Limits ✅ Complete
+- Wave 2: Core UI — Sidebar Migration + Dashboard Tabs ✅ Complete
+- Wave 2.5: Mid-Sprint UAT — 56/56 PASS ✅ Complete
+- Wave 3: UI Polish — Emoji→Lucide, Pagination, Infinite Scroll, Dirty-Form Guard, z-index Scale ✅ Complete
+- Wave 4: Final UAT — 36/36 PASS (6 bugs found & fixed) ✅ Complete
 
-**Key Changes:** MANAGER removed from UserRole enum. `isManager` JWT claim. ManagerGuard + @RequireManager(). 31-test E2E matrix. 11 design tokens.
+**Key Changes:** Sidebar navigation (shadcn/ui), permission-stacked dashboard tabs, server-side pagination, cursor-based infinite scroll, full emoji→Lucide migration, z-index 7-tier scale, ADR-016/018.
 
-→ [Sprint 14 Details](./sprint-14/) | [Sprint 14 Summary](./sprint-14/summary.md)
+→ [Sprint 15 Details](./sprint-15/) | [Sprint 15 Summary](./sprint-15/summary.md)
 
 ---
 
