@@ -219,8 +219,8 @@ sprint-15: done
 sprint-16: active
 
 # --- Wave 1: Backend Ownership Guards (6h, parallel) ---
-16-1-issuer-template-ownership-guard: ready-for-dev  # issueBadge + bulkIssuance ownership check
-16-3-template-edit-ownership-guard: ready-for-dev    # update/status ownership check (extends ARCH-P1-004)
+16-1-issuer-template-ownership-guard: done             # issueBadge + bulkIssuance ownership check
+16-3-template-edit-ownership-guard: done               # update/status ownership check (extends ARCH-P1-004)
 
 # --- Wave 2: Frontend Filter (2h) ---
 16-2-frontend-template-ownership-filter: backlog     # IssueBadgePage/BulkIssuancePage → own templates only

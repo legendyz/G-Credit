@@ -34,15 +34,15 @@ Enforce issuer-level template ownership so each Issuer can only issue badges, fi
 #### Story 16.1: Backend — Issuer Template Ownership Guard
 **Priority:** 🔴 High  
 **Estimate:** 4h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [16-1-issuer-template-ownership-guard.md](./16-1-issuer-template-ownership-guard.md)
 
 **Quick Summary:** As an Issuer, I want badge issuance restricted to my own templates so that organizational accountability is clear.
 
 **Key Deliverables:**
-- [ ] `issueBadge()` ownership check (ISSUER → own template only; ADMIN → any)
-- [ ] `bulkIssuance` upload/confirm ownership check
-- [ ] Unit + E2E tests: own ✅, other's ✗, admin ✅
+- [x] `issueBadge()` ownership check (ISSUER → own template only; ADMIN → any)
+- [x] `bulkIssuance` upload/confirm ownership check
+- [x] Unit + E2E tests: own ✅, other's ✗, admin ✅
 
 **Dependencies:** None
 
@@ -68,15 +68,15 @@ Enforce issuer-level template ownership so each Issuer can only issue badges, fi
 #### Story 16.3: Template Edit/Update Ownership Guard
 **Priority:** 🟡 Medium  
 **Estimate:** 2h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [16-3-template-edit-ownership-guard.md](./16-3-template-edit-ownership-guard.md)
 
 **Quick Summary:** As an Issuer, I want to only edit/update/change status on templates I created so that another Issuer cannot modify my templates.
 
 **Key Deliverables:**
-- [ ] PATCH /api/badge-templates/:id ownership check (extends ARCH-P1-004 pattern)
-- [ ] PATCH /api/badge-templates/:id/status ownership check
-- [ ] Unit + E2E tests
+- [x] PATCH /api/badge-templates/:id ownership check (extends ARCH-P1-004 pattern)
+- [x] PATCH /api/badge-templates/:id/status ownership check
+- [x] Unit + E2E tests
 
 **Dependencies:** None (parallel with 16.1)
 
