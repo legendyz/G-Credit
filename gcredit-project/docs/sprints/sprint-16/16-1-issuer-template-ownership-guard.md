@@ -1,6 +1,6 @@
 # Story 16.1: Backend — Issuer Template Ownership Guard
 
-Status: ready-for-dev
+Status: dev-complete
 
 ## Story
 As an **Issuer**,
@@ -8,26 +8,29 @@ I want **badge issuance to be restricted to templates I created**,
 So that **I cannot accidentally issue badges using another Issuer's templates, and organizational accountability is clear**.
 
 ## Acceptance Criteria
-1. [ ] `issueBadge()` checks `template.createdBy === issuerId` for ISSUER role; ADMIN bypasses
-2. [ ] `bulkIssuance` upload/confirm checks the same ownership
-3. [ ] Returns 403 Forbidden with clear message when ownership fails
-4. [ ] ADMIN can issue badges using any template (no ownership check)
-5. [ ] Existing E2E tests still pass (no regression)
-6. [ ] New E2E tests cover: Issuer own template ✅, Issuer other's template ✗, Admin any template ✅
+1. [x] `issueBadge()` checks `template.createdBy === issuerId` for ISSUER role; ADMIN bypasses
+2. [x] `bulkIssuance` upload/confirm checks the same ownership
+3. [x] Returns 403 Forbidden with clear message when ownership fails
+4. [x] ADMIN can issue badges using any template (no ownership check)
+5. [x] Existing E2E tests still pass (no regression)
+6. [x] New E2E tests cover: Issuer own template ✅, Issuer other's template ✗, Admin any template ✅
 
 ## Tasks / Subtasks
-- [ ] Task 1: Add ownership check in `badge-issuance.service.ts` `issueBadge()` (AC: #1, #3)
-  - [ ] After template validation, check `template.createdBy === issuerId` when role is ISSUER
-  - [ ] Throw `ForbiddenException('You can only issue badges using your own templates')`
-  - [ ] ADMIN role skips this check
-- [ ] Task 2: Add ownership check in `bulk-issuance.service.ts` upload/confirm (AC: #2, #3)
-  - [ ] Same pattern as Task 1 for bulk issuance flow
-- [ ] Task 3: Unit tests for ownership guard (AC: #5, #6)
-  - [ ] Test: Issuer issues own template → 201 OK
-  - [ ] Test: Issuer issues other's template → 403 Forbidden
-  - [ ] Test: Admin issues any template → 201 OK
-- [ ] Task 4: E2E tests for ownership guard (AC: #6)
-  - [ ] E2E: Create 2 Issuers, each with own template, cross-issuance blocked
+- [x] Task 1: Add ownership check in `badge-issuance.service.ts` `issueBadge()` (AC: #1, #3)
+  - [x] After template validation, check `template.createdBy === issuerId` when role is ISSUER
+  - [x] Throw `ForbiddenException('You can only issue badges using your own templates')`
+  - [x] ADMIN role skips this check
+  - [x] Defensive allowlist guard: reject non-ADMIN/non-ISSUER roles (E1 fix)
+- [x] Task 2: Add ownership check in `bulk-issuance.service.ts` upload/confirm (AC: #2, #3)
+  - [x] Same pattern as Task 1 for bulk issuance flow
+  - [x] Standard `import { UserRole }` instead of inline import (A3/C5 fix)
+- [x] Task 3: Unit tests for ownership guard (AC: #5, #6)
+  - [x] Test: Issuer issues own template → 201 OK
+  - [x] Test: Issuer issues other's template → 403 Forbidden
+  - [x] Test: Admin issues any template → 201 OK
+  - [x] Test: EMPLOYEE role rejected at service layer → 403 (E1 fix)
+- [x] Task 4: E2E tests for ownership guard (AC: #6)
+  - [x] E2E: Create 2 Issuers, each with own template, cross-issuance blocked
 
 ## Dev Notes
 ### Architecture Patterns Used
@@ -79,7 +82,7 @@ So that **I cannot accidentally issue badges using another Issuer's templates, a
 |---|-------|--------|-------|
 | A1 | Pattern consistency with template CRUD | ✅ PASS | Identical `if (callerRole === UserRole.ISSUER && template.createdBy !== userId)` pattern used in both |
 | A2 | Service vs controller layer inconsistency | ⚠️ CONCERN | Issuance ownership check is in **service layer** (good — defence in depth). Template CRUD ownership is in **controller layer** (acceptable but less defensive). This is an intentional trade-off — the issuance service is called from multiple entry points (single + bulk), making service-layer placement correct. Template CRUD only has one entry point (controller), so controller-layer is adequate. **Recommend:** Consider extracting template CRUD ownership checks to service layer in a future refactoring sprint for full consistency. |
-| A3 | `callerRole` uses `UserRole` enum | ⚠️ CONCERN | `badge-issuance.service.ts` uses `UserRole` from `@prisma/client` directly (good). However, `bulk-issuance.service.ts` uses `import('@prisma/client').UserRole` inline type import — functional but non-idiomatic. Should use a regular `import { UserRole } from '@prisma/client'` at top level for consistency. **Severity: Low** — no runtime impact. |
+| A3 | `callerRole` uses `UserRole` enum | ✅ FIXED | ~~`bulk-issuance.service.ts` used inline `import('@prisma/client').UserRole`~~ → Changed to standard `import { UserRole } from '@prisma/client'` at top level. |
 | A4 | Comment references present | ✅ PASS | All files have `ARCH-P1-004` and `Story 16.1` references in comments |
 
 ### Test Quality
@@ -103,13 +106,13 @@ So that **I cannot accidentally issue badges using another Issuer's templates, a
 | C2 | JSDoc `@param callerRole` added | ✅ PASS | `@param callerRole - Story 16.1: Caller's role for ownership check (ARCH-P1-004)` |
 | C3 | No debug artifacts | ✅ PASS | No `console.log`, `TODO`, or debug code found |
 | C4 | `ForbiddenException` imported | ✅ PASS | Already in import block at top of `badge-issuance.service.ts` |
-| C5 | Inline import type in bulk service | ⚠️ CONCERN | `callerRole: import('@prisma/client').UserRole` is functional but non-idiomatic NestJS. `UserRole` is already used elsewhere via normal imports. Recommend changing to standard import for consistency. **Severity: Low** |
+| C5 | Inline import type in bulk service | ✅ FIXED | ~~Inline `import()` type~~ → Changed to standard `import { UserRole } from '@prisma/client'`. |
 
 ### Edge Cases
 
 | # | Check | Result | Notes |
 |---|-------|--------|-------|
-| E1 | EMPLOYEE role at service layer | ⚠️ CONCERN | If `callerRole` is `EMPLOYEE`, the ownership check would **PASS** (since `EMPLOYEE !== ISSUER`, the guard doesn't trigger — same as ADMIN). However, EMPLOYEE is blocked at controller by `@Roles` guard, so this path is unreachable in production. **Recommend:** Add a defensive `else if` for unknown/unexpected roles, or an explicit allowlist check. Not a vulnerability today, but could be if a new role (e.g., `GUEST`) is added without updating guards. |
+| E1 | EMPLOYEE role at service layer | ✅ FIXED | Added defensive allowlist guard: `if (callerRole !== ADMIN && callerRole !== ISSUER) throw ForbiddenException('Insufficient permissions')`. New unit test verifies EMPLOYEE rejection. |
 | E2 | `template.createdBy` is null | ⚠️ CONCERN | If `createdBy` is null (legacy templates), comparison `null !== issuerId` would be `true`, blocking ISSUER access to orphan templates. This is the **safe default** (deny access for unowned templates) but could confuse users. **Recommend:** Add documentation noting legacy templates without `createdBy` are ADMIN-only. |
 | E3 | Bulk mixed templates | ✅ PASS | Bulk issuance processes rows individually via `for` loop. If template X is owned and Y is not, X succeeds and Y fails with 403 caught as error. Individual failures don't stop the batch. Results array reports per-row status. |
 
@@ -119,11 +122,13 @@ So that **I cannot accidentally issue badges using another Issuer's templates, a
 
 **Security: 8/8 PASS** — All critical security checks are correctly implemented. The ownership guard is at the right layer, uses correct exceptions, and propagates through bulk issuance.
 
-**Concerns (non-blocking):**
+**Concerns resolved:**
+1. ~~**A3/C5 (Code Style):**~~ ✅ FIXED — Changed to standard `import { UserRole }` in `bulk-issuance.service.ts`
+2. ~~**E1 (Edge Case):**~~ ✅ FIXED — Added defensive allowlist guard + unit test for EMPLOYEE rejection
+
+**Remaining non-blocking items (tracked for future sprints):**
 1. **A2 (Architecture):** Service vs controller layer inconsistency for ownership checks — acceptable given different call patterns, but worth tracking for future alignment
-2. **A3/C5 (Code Style):** Inline `import()` type in `bulk-issuance.service.ts` — change to standard import
-3. **E1 (Edge Case):** EMPLOYEE role would bypass ownership check at service layer (blocked at controller) — add defensive guard for future-proofing
-4. **E2 (Edge Case):** `createdBy=null` templates silently blocked for ISSUER — document this behavior
+2. **E2 (Edge Case):** `createdBy=null` templates silently blocked for ISSUER — document this behavior
 
 ## Dev Agent Record
 ### Agent Model Used
@@ -133,8 +138,10 @@ Claude Opus 4.6 (GitHub Copilot)
 - Added `callerRole: UserRole` parameter to `issueBadge()` with ARCH-P1-004 ownership check
 - Updated `badge-issuance.controller.ts` to pass `req.user.role`
 - Updated `bulk-issuance.service.ts` and controller for callerRole propagation
-- 3 new unit tests, 4 new E2E tests, all existing tests updated for new signature
-- All tests passing
+- 3 new unit tests + 1 defensive guard test (E1), 4 new E2E tests, all existing tests updated for new signature
+- Code review fixes applied: defensive role allowlist (E1), standard import (A3/C5)
+- Re-review: All fixes verified ✅ — **APPROVED**
+- All tests passing: 35 badge-issuance unit, 57 bulk-issuance unit
 
 ### File List
 | File | Action |
