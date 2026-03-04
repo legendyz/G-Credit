@@ -176,8 +176,15 @@ export function TemplateSelector({ onSelect, disabled = false }: TemplateSelecto
           className="absolute z-dropdown mt-1 w-full bg-white border border-gray-200 rounded-lg 
                         shadow-lg p-4 text-sm text-gray-500 text-center"
         >
-          No templates found matching "{searchTerm}"
+          No templates found matching &quot;{searchTerm}&quot;
         </div>
+      )}
+
+      {/* Story 16.2: Empty state when ISSUER has no templates at all */}
+      {!isLoading && templates.length === 0 && (
+        <p className="text-sm text-gray-500 mt-1">
+          No templates available. Create a template first.
+        </p>
       )}
     </div>
   );

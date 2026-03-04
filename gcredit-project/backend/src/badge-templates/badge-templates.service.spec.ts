@@ -456,6 +456,91 @@ describe('BadgeTemplatesService', () => {
         }),
       );
     });
+
+    // Story 16.2: creatorId ownership filter
+    describe('creatorId ownership filter (Story 16.2)', () => {
+      it('should filter templates by createdBy when creatorId provided', async () => {
+        prisma.badgeTemplate.findMany.mockResolvedValue([]);
+        prisma.badgeTemplate.count.mockResolvedValue(0);
+
+        await service.findAll({ page: 1, limit: 10 }, true, 'issuer-a-id');
+
+        expect(prisma.badgeTemplate.findMany).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: expect.objectContaining({
+              createdBy: 'issuer-a-id',
+              status: TemplateStatus.ACTIVE,
+            }),
+          }),
+        );
+      });
+
+      it('should NOT filter by createdBy when creatorId is undefined', async () => {
+        prisma.badgeTemplate.findMany.mockResolvedValue([]);
+        prisma.badgeTemplate.count.mockResolvedValue(0);
+
+        await service.findAll({ page: 1, limit: 10 }, true);
+
+        const call = prisma.badgeTemplate.findMany.mock.calls[0][0];
+        expect(call.where).not.toHaveProperty('createdBy');
+      });
+
+      it('should return only matching templates when creatorId provided', async () => {
+        const ownedTemplate = {
+          ...mockTemplateWithCount,
+          createdBy: 'issuer-a-id',
+        };
+        prisma.badgeTemplate.findMany.mockResolvedValue([ownedTemplate]);
+        prisma.badgeTemplate.count.mockResolvedValue(1);
+
+        const result = await service.findAll(
+          { page: 1, limit: 10 },
+          true,
+          'issuer-a-id',
+        );
+
+        expect(result.data).toHaveLength(1);
+        expect(result.meta.total).toBe(1);
+      });
+
+      it('should return empty list when creatorId matches no templates', async () => {
+        prisma.badgeTemplate.findMany.mockResolvedValue([]);
+        prisma.badgeTemplate.count.mockResolvedValue(0);
+
+        const result = await service.findAll(
+          { page: 1, limit: 10 },
+          true,
+          'new-issuer-no-templates',
+        );
+
+        expect(result.data).toEqual([]);
+        expect(result.meta.total).toBe(0);
+      });
+
+      it('should combine creatorId with search filter', async () => {
+        prisma.badgeTemplate.findMany.mockResolvedValue([]);
+        prisma.badgeTemplate.count.mockResolvedValue(0);
+
+        await service.findAll(
+          { page: 1, limit: 10, search: 'cloud' },
+          true,
+          'issuer-a-id',
+        );
+
+        expect(prisma.badgeTemplate.findMany).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: expect.objectContaining({
+              createdBy: 'issuer-a-id',
+              status: TemplateStatus.ACTIVE,
+              OR: [
+                { name: { contains: 'cloud', mode: 'insensitive' } },
+                { description: { contains: 'cloud', mode: 'insensitive' } },
+              ],
+            }),
+          }),
+        );
+      });
+    });
   });
 
   // ==================== findOne ====================

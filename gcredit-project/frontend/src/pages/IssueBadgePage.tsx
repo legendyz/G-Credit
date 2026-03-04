@@ -231,7 +231,7 @@ export function IssueBadgePage() {
               <Select
                 value={selectedTemplateId}
                 onValueChange={setSelectedTemplateId}
-                disabled={loadingTemplates}
+                disabled={loadingTemplates || templates.length === 0}
               >
                 <SelectTrigger
                   id="template"
@@ -239,7 +239,13 @@ export function IssueBadgePage() {
                   className="min-h-[44px] focus:ring-brand-500"
                 >
                   <SelectValue
-                    placeholder={loadingTemplates ? 'Loading templates...' : 'Select a template'}
+                    placeholder={
+                      loadingTemplates
+                        ? 'Loading templates...'
+                        : templates.length === 0
+                          ? 'No templates available'
+                          : 'Select a template'
+                    }
                   />
                 </SelectTrigger>
                 <SelectContent>
@@ -250,6 +256,12 @@ export function IssueBadgePage() {
                   ))}
                 </SelectContent>
               </Select>
+              {/* Story 16.2: Empty state when ISSUER has no templates */}
+              {!loadingTemplates && templates.length === 0 && (
+                <p className="text-sm text-neutral-500 mt-1">
+                  No templates found. Create a template first before issuing badges.
+                </p>
+              )}
             </div>
 
             {/* Recipient Selector */}
