@@ -23,6 +23,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed": "ts-node prisma/seed.ts",
     "seed:uat": "ts-node prisma/seed-uat.ts",
+    "seed:pilot": "ts-node prisma/seed-pilot.ts",
     "seed:reset": "npx prisma migrate reset --force --skip-seed && ts-node prisma/seed-uat.ts",
     "sync:m365": "ts-node scripts/sync-m365.ts"
   },
