@@ -75,7 +75,7 @@ So that **I am not confused by templates from other Issuers and can only use my 
 
 | # | Check | Result | Notes |
 |---|-------|--------|-------|
-| A1 | `req.user?.role` vs `req.user.role` inconsistency | ⚠️ CONCERN | Both endpoints are authenticated in runtime context; optional chain is redundant in `findAll()` and should be aligned for consistency |
+| A1 | `req.user?.role` vs `req.user.role` inconsistency | ✅ PASS | **Re-review fixed**: `findAll()` now uses `req.user.role`, consistent with `findAllAdmin()` |
 | A2 | Controller-layer injection for query filtering | ✅ PASS | Appropriate for list filtering; mutation guards remain separate by story (16.1/16.3) |
 | A3 | `creatorId` as internal optional service param | ✅ PASS | Correctly avoids exposing auth-derived filter in public DTO |
 | A4 | Story/ARCH comments accuracy | ✅ PASS | Story 16.2 and ownership-filter comments are present and aligned |
@@ -90,7 +90,7 @@ So that **I am not confused by templates from other Issuers and can only use my 
 | T4 | ADMIN sees both issuers' templates | ✅ PASS | Explicit inclusion assertions for both template IDs |
 | T5 | `/badge-templates/all` ownership behavior | ✅ PASS | Issuer-only ownership assertions included |
 | T6 | IssueBadgePage empty-state frontend test | ✅ PASS | Verifies message and disabled template selector |
-| T7 | TemplateSelector empty-state test coverage | ⚠️ CONCERN | No dedicated frontend test for new empty-state message in `TemplateSelector.tsx` |
+| T7 | TemplateSelector empty-state test coverage | ✅ PASS | **Re-review fixed**: added `TemplateSelector.test.tsx` with 4 tests (empty state, loading guard, non-empty guard, render) |
 
 ### Frontend Notes
 
@@ -98,7 +98,7 @@ So that **I am not confused by templates from other Issuers and can only use my 
 |---|-------|--------|-------|
 | F1 | Empty-state copy clarity | ✅ PASS | Messages are actionable and clear |
 | F2 | Empty state blocks invalid template selection | ✅ PASS | `IssueBadgePage` select disabled when `templates.length === 0` |
-| F3 | `text-neutral-500` vs `text-gray-500` token usage | ⚠️ CONCERN | Functional but stylistically inconsistent; recommend unify on one token family |
+| F3 | `text-neutral-500` vs `text-gray-500` token usage | ✅ PASS | **Re-review fixed**: empty-state token in `TemplateSelector.tsx` unified to `text-neutral-500` |
 | F4 | `&quot;` usage in TemplateSelector | ✅ PASS | Valid JSX render output; no functional regression risk |
 | F5 | Empty-state rendering guard | ✅ PASS | Correctly gated on `!isLoading && templates.length === 0` |
 
@@ -123,6 +123,18 @@ Core Story 16.2 objective is met: ISSUER list visibility is server-side filtered
 2. ~~Add a frontend unit test for `TemplateSelector` empty-state behavior~~ **FIXED** — added `TemplateSelector.test.tsx` with 4 tests (empty state, loading guard, non-empty guard, basic render)
 3. Confirm and document EMPLOYEE access policy for `GET /api/badge-templates` (catalog vs restricted) — deferred to Sprint 17 RBAC hardening
 4. ~~Color token inconsistency (`text-neutral-500` vs `text-gray-500`)~~ **FIXED** — unified `TemplateSelector.tsx` empty state to `text-neutral-500`
+
+### Re-review (Post-fix)
+
+**Date:** 2026-03-04  
+**Scope:** Validate fixes for A1 / F3 / T7 from initial review  
+**Result:** ✅ **PASS**
+
+- A1 verified in `badge-templates.controller.ts`: `findAll()` now uses direct `req.user.role` access
+- F3 verified in `TemplateSelector.tsx`: empty-state text uses `text-neutral-500`
+- T7 verified in `TemplateSelector.test.tsx`: 4 dedicated tests added and passing
+
+**Updated overall verdict:** ✅ **APPROVE WITH COMMENTS** (remaining non-blocking concern: S4/E1 policy clarity for EMPLOYEE access to `GET /api/badge-templates`)
 
 ## Dev Agent Record
 ### Agent Model Used
