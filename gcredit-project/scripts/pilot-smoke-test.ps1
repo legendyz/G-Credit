@@ -89,9 +89,9 @@ try {
             Write-Host "    Unexpected template: $($t.name) owned by $($t.createdBy)" -ForegroundColor Yellow
         }
     }
-    $hasCloud = ($templates | Where-Object { $_.id -eq $TmplCloud }).Count -gt 0
-    $hasAgile = ($templates | Where-Object { $_.id -eq $TmplAgile }).Count -gt 0
-    $noPrivacy = ($templates | Where-Object { $_.id -eq $TmplPrivacy }).Count -eq 0
+    $hasCloud = @($templates | Where-Object { $_.id -eq $TmplCloud }).Count -gt 0
+    $hasAgile = @($templates | Where-Object { $_.id -eq $TmplAgile }).Count -gt 0
+    $noPrivacy = @($templates | Where-Object { $_.id -eq $TmplPrivacy }).Count -eq 0
     $pass = $allOwned -and $hasCloud -and $hasAgile -and $noPrivacy
     Log-Result "Issuer-A sees only own templates" $pass "Count=$($templates.Count), AllOwned=$allOwned"
 } catch {
@@ -153,7 +153,8 @@ if ($null -ne $empSession) {
         $hasBadges = $false
         if ($wallet.data -and $wallet.data.Count -gt 0) { $hasBadges = $true }
         elseif ($wallet -is [array] -and $wallet.Count -gt 0) { $hasBadges = $true }
-        Log-Result "Employee wallet has badges" $hasBadges "Count=$($wallet.data.Count // $wallet.Count)"
+        $ct = if ($wallet.data) { $wallet.data.Count } else { $wallet.Count }
+        Log-Result "Employee wallet has badges" $hasBadges "Count=$ct"
     } catch {
         Log-Result "Employee wallet has badges" $false $_.Exception.Message
     }
@@ -167,8 +168,9 @@ try {
     $resp = Invoke-WebRequest -Uri "$BaseUrl/api/verify/$VerifyId" `
         -UseBasicParsing -ErrorAction Stop
     $verify = $resp.Content | ConvertFrom-Json
-    $isValid = ($verify.status -eq 'CLAIMED') -or ($verify.badge -and $verify.badge.status -eq 'CLAIMED')
-    Log-Result "Public badge verification" $isValid "Response contains valid badge data"
+    # OBv2 verify response uses isValid + verificationStatus
+    $isValid = ($verify.isValid -eq $true) -or ($verify.verificationStatus -eq 'valid')
+    Log-Result "Public badge verification" $isValid "isValid=$($verify.isValid), verificationStatus=$($verify.verificationStatus)"
 } catch {
     $code = 0
     if ($_.Exception.Response) { $code = [int]$_.Exception.Response.StatusCode }
@@ -185,8 +187,8 @@ try {
     # Admin should see all 5 pilot templates (and possibly UAT templates too)
     $pilotIds = @($TmplCloud, $TmplAgile, $TmplPrivacy, $TmplLeadership, '00000000-0000-4000-b000-000100000005')
     $foundPilot = 0
-    foreach ($pid in $pilotIds) {
-        if ($templates | Where-Object { $_.id -eq $pid }) { $foundPilot++ }
+    foreach ($tmplId in $pilotIds) {
+        if ($templates | Where-Object { $_.id -eq $tmplId }) { $foundPilot++ }
     }
     $pass = ($foundPilot -eq 5)
     Log-Result "Admin sees all 5 pilot templates" $pass "Found $foundPilot/5 pilot templates (total=$($templates.Count))"

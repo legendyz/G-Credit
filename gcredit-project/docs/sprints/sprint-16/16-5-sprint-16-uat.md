@@ -1,6 +1,6 @@
 # Story 16.5: Sprint 16 UAT
 
-Status: ready-for-dev
+Status: in-progress
 
 ## Story
 As a **Scrum Master**,
@@ -49,10 +49,10 @@ So that **we confirm the RBAC changes work correctly before entering Phase 4 Pil
 
 | # | 检查项 | 命令 | 预期 | 结果 |
 |---|--------|------|------|------|
-| A1 | Backend 单元测试全通过 | `cd backend && npx jest --no-coverage` | ~1,000+ tests, 0 failures | |
-| A2 | Frontend 测试全通过 | `cd frontend && npx vitest run` | ~850+ tests, 0 failures | |
-| A3 | Backend lint 无错误 | `cd backend && npx eslint src/` | 0 errors | |
-| A4 | Frontend lint 无错误 | `cd frontend && npx eslint src/` | 0 errors | |
+| A1 | Backend 单元测试全通过 | `cd backend && npx jest --no-coverage` | ~1,000+ tests, 0 failures | ✅ 54 suites, 1000 tests, 0 failures |
+| A2 | Frontend 测试全通过 | `cd frontend && npx vitest run` | ~850+ tests, 0 failures | ✅ 80 suites, 849 tests, 0 failures |
+| A3 | Backend lint 无错误 | `cd backend && npx eslint src/` | 0 errors | ✅ 0 errors |
+| A4 | Frontend lint 无错误 | `cd frontend && npx eslint src/` | 0 errors | ✅ 0 errors |
 
 **Sprint 16 新增自动化测试覆盖的场景**（已包含在 A1/A2 中，无需重复测试）：
 
@@ -82,14 +82,14 @@ So that **we confirm the RBAC changes work correctly before entering Phase 4 Pil
 
 | # | 场景 | 方法 | 端点 | 角色 | 预期 | 结果 |
 |---|------|------|------|------|------|------|
-| S1 | Issuer-A 登录 | POST | `/api/auth/login` | ISSUER | 200 + cookie | |
-| S2 | Issuer-A 查看模板列表 | GET | `/api/badge-templates` | ISSUER-A | 仅返回自己创建的模板 | |
-| S3 | Issuer-A 用自己模板颁发徽章 | POST | `/api/badges/issue` | ISSUER-A | 201 Created | |
-| S4 | Issuer-A 用 Issuer-B 模板颁发 | POST | `/api/badges/issue` | ISSUER-A | 403 Forbidden | |
-| S5 | Issuer-A 编辑自己模板 | PATCH | `/api/badge-templates/:id` | ISSUER-A | 200 OK | |
-| S6 | Issuer-A 编辑 Issuer-B 模板 | PATCH | `/api/badge-templates/:id` | ISSUER-A | 403 Forbidden | |
-| S7 | Admin 查看模板列表 | GET | `/api/badge-templates` | ADMIN | 所有模板均可见 | |
-| S8 | Admin 用任意模板颁发 | POST | `/api/badges/issue` | ADMIN | 201 Created | |
+| S1 | Issuer-A 登录 | POST | `/api/auth/login` | ISSUER | 200 + cookie | ✅ 200 |
+| S2 | Issuer-A 查看模板列表 | GET | `/api/badge-templates` | ISSUER-A | 仅返回自己创建的模板 | ✅ 2 templates, allOwned=True |
+| S3 | Issuer-A 用自己模板颁发徽章 | POST | `/api/badges` | ISSUER-A | 201 Created | ✅ 201 |
+| S4 | Issuer-A 用 Issuer-B 模板颁发 | POST | `/api/badges` | ISSUER-A | 403 Forbidden | ✅ 403 |
+| S5 | Issuer-A 编辑自己模板 | PATCH | `/api/badge-templates/:id` | ISSUER-A | 200 OK | ✅ 200 |
+| S6 | Issuer-A 编辑 Issuer-B 模板 | PATCH | `/api/badge-templates/:id` | ISSUER-A | 403 Forbidden | ✅ 403 |
+| S7 | Admin 查看模板列表 | GET | `/api/badge-templates` | ADMIN | 所有模板均可见 | ✅ 10 templates, 5/5 pilot found |
+| S8 | Admin 用任意模板颁发 | POST | `/api/badges` | ADMIN | 201 Created | ✅ 201 |
 
 ---
 
@@ -164,8 +164,8 @@ So that **we confirm the RBAC changes work correctly before entering Phase 4 Pil
 
 | # | 场景 | 类型 | 预期 | 结果 |
 |---|------|------|------|------|
-| P1 | Pilot seed 脚本运行 | 📜 脚本 | `npx ts-node prisma/seed-pilot.ts` 无错误完成 | |
-| P2 | Smoke test 全通过 | 📜 脚本 | `pilot-smoke-test.ps1` 8/8 PASS | |
+| P1 | Pilot seed 脚本运行 | 📜 脚本 | `npx ts-node prisma/seed-pilot.ts` 无错误完成 | ✅ 14 users, 5 templates, 16 badges seeded |
+| P2 | Smoke test 全通过 | 📜 脚本 | `pilot-smoke-test.ps1` 8/8 PASS | ✅ 8/8 PASS |
 
 ---
 
@@ -182,12 +182,12 @@ So that **we confirm the RBAC changes work correctly before entering Phase 4 Pil
 ---
 
 ## Tasks / Subtasks
-- [ ] Task 1: Phase 1 — 运行自动化测试 (A1-A4)
-- [ ] Task 2: Phase 2 — 执行脚本化 API 测试 (S1-S8)
-- [ ] Task 3: Phase 3 — 执行手动 UI 测试 (R1-R12)
-- [ ] Task 4: Phase 4 — Pilot 就绪验证 (P1-P2)
-- [ ] Task 5: 修复发现的问题
-- [ ] Task 6: 记录测试结果
+- [x] Task 1: Phase 1 — 运行自动化测试 (A1-A4) ✅ 1849 tests, 0 failures
+- [x] Task 2: Phase 2 — 执行脚本化 API 测试 (S1-S8) ✅ 8/8 PASS
+- [ ] Task 3: Phase 3 — 执行手动 UI 测试 (R1-R12) — 待用户执行
+- [x] Task 4: Phase 4 — Pilot 就绪验证 (P1-P2) ✅ seed + smoke 8/8 PASS
+- [x] Task 5: 修复发现的问题 — 修复 2 个 timezone 测试 bug (cf95563) + 3 个 smoke-test.ps1 脚本 bug
+- [x] Task 6: 记录测试结果
 
 ## Dev Notes
 ### References
@@ -209,7 +209,20 @@ seed-uat 只有 1 个 ISSUER，无法测试跨 Issuer 隔离场景（S2-S6, R1-R
 
 ## Dev Agent Record
 ### Agent Model Used
+Claude Opus 4.6 (GitHub Copilot)
+
 ### Completion Notes
+- **2026-03-05**: Phase 1 (A1-A4), Phase 2 (S1-S8), Phase 4 (P1-P2) 全部通过
+- A1 发现 2 个 timezone 测试 bug，已修复 (`cf95563`)
+- pilot-smoke-test.ps1 发现 3 个 PS 脚本 bug（`//` 运算符、`$pid` 保留变量、verify 响应结构），已修复
+- Phase 3 (R1-R12) 待用户手动执行
+
 ### File List
+- `backend/src/microsoft-graph/teams/adaptive-cards/badge-notification.builder.spec.ts` — timezone fix
+- `backend/src/badge-sharing/services/email-template.service.spec.ts` — timezone fix
+- `gcredit-project/scripts/pilot-smoke-test.ps1` — 3 bug fixes
+- `gcredit-project/docs/sprints/sprint-16/16-5-sprint-16-uat.md` — results recorded
 
 ## Retrospective Notes
+- 测试日期数据使用 `T12:00:00Z`（UTC 正午）可避免所有时区问题
+- PowerShell 中避免使用 `$pid`（进程 ID 保留变量）
