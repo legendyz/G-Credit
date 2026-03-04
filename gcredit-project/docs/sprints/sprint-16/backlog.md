@@ -51,15 +51,16 @@ Enforce issuer-level template ownership so each Issuer can only issue badges, fi
 #### Story 16.2: Frontend — Template Ownership Filter
 **Priority:** 🟡 Medium  
 **Estimate:** 2h  
-**Status:** 🔴 Not Started  
+**Status:** ✅ Done  
 **Story Doc:** 📄 [16-2-frontend-template-ownership-filter.md](./16-2-frontend-template-ownership-filter.md)
 
 **Quick Summary:** As an Issuer, I want the Issue Badge and Bulk Issuance pages to show only my templates so I don't see templates I can't use.
 
 **Key Deliverables:**
-- [ ] Backend `creatorId` query param on `GET /api/badge-templates`
-- [ ] Frontend IssueBadgePage / BulkIssuancePage filter by creatorId for ISSUER role
-- [ ] Frontend tests: ISSUER sees own templates, ADMIN sees all
+- [x] Backend `creatorId` query param on `GET /api/badge-templates` (server-side auto-inject)
+- [x] Frontend IssueBadgePage / BulkIssuancePage filter by creatorId for ISSUER role
+- [x] Frontend tests: ISSUER sees own templates, ADMIN sees all
+- [x] TemplateSelector.test.tsx: 4 tests for empty state coverage
 
 **Dependencies:** 16.1
 

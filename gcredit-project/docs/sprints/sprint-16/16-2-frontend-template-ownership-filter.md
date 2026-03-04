@@ -1,6 +1,6 @@
 # Story 16.2: Frontend — Template List Ownership Filter
 
-Status: dev-complete
+Status: done
 
 ## Story
 As an **Issuer**,

@@ -223,7 +223,7 @@ sprint-16: active
 16-3-template-edit-ownership-guard: done               # update/status ownership check (extends ARCH-P1-004)
 
 # --- Wave 2: Frontend Filter (2h) ---
-16-2-frontend-template-ownership-filter: backlog     # IssueBadgePage/BulkIssuancePage → own templates only
+16-2-frontend-template-ownership-filter: done       # IssueBadgePage/BulkIssuancePage → own templates only (server-side auto-filter)
 
 # --- Wave 3: Pilot Readiness (2h) ---
 16-4-pilot-seed-smoke-test: backlog                  # seed-pilot.ts + smoke test
