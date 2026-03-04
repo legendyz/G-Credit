@@ -97,6 +97,25 @@ So that **we confirm the RBAC changes work correctly before entering Phase 4 Pil
 
 需要人工在浏览器中操作验证 UI 行为。
 
+> **Pilot Seed 测试账号（密码统一：`Password123`）**
+>
+> | 角色 | 邮箱 | 拥有模板 |
+> |------|------|----------|
+> | ADMIN | `pilot-admin@gcredit.com` | 可见/操作所有模板 |
+> | ISSUER-A | `issuer-a@pilot.gcredit.com` | Cloud Architecture Fundamentals, Agile Scrum Master |
+> | ISSUER-B | `issuer-b@pilot.gcredit.com` | Data Privacy Compliance, Leadership Essentials |
+> | ISSUER-C | `issuer-c@pilot.gcredit.com` | Python for Data Science |
+> | EMPLOYEE | `emp01@pilot.gcredit.com` ~ `emp10@pilot.gcredit.com` | — |
+>
+> **原有 seed-uat 账号（也可用）：**
+>
+> | 角色 | 邮箱 | 备注 |
+> |------|------|------|
+> | ADMIN | `admin@gcredit.com` | 可见所有模板/徽章 |
+> | ISSUER | `issuer@gcredit.com` | seed-uat 中唯一 Issuer，拥有 11 个模板 |
+> | EMPLOYEE | `employee@gcredit.com` | 24 个 CLAIMED 徽章 |
+> | EMPLOYEE | `employee2@gcredit.com` | 少量徽章 |
+
 #### F-1 RBAC UI 验证（6 项）
 
 **R1 — Issuer 模板列表只显示自己的模板**
