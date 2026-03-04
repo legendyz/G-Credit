@@ -1,7 +1,5 @@
 import request from 'supertest';
 import { App } from 'supertest/types';
-import * as path from 'path';
-import * as fs from 'fs';
 import {
   TestContext,
   setupE2ETest,
@@ -117,7 +115,9 @@ describe('Template Ownership Guard (E2E) — Story 16.3', () => {
         .expect(403);
 
       const body = response.body as { message: string };
-      expect(body.message).toContain('You can only update your own badge templates');
+      expect(body.message).toContain(
+        'You can only update your own badge templates',
+      );
     });
 
     it('Issuer-B updates Issuer-A template → 403 Forbidden', async () => {
@@ -128,7 +128,9 @@ describe('Template Ownership Guard (E2E) — Story 16.3', () => {
         .expect(403);
 
       const body = response.body as { message: string };
-      expect(body.message).toContain('You can only update your own badge templates');
+      expect(body.message).toContain(
+        'You can only update your own badge templates',
+      );
     });
 
     it('Admin updates Issuer-A template → 200 OK (ownership bypass)', async () => {
@@ -176,7 +178,9 @@ describe('Template Ownership Guard (E2E) — Story 16.3', () => {
         .expect(403);
 
       const body = response.body as { message: string };
-      expect(body.message).toContain('You can only update your own badge templates');
+      expect(body.message).toContain(
+        'You can only update your own badge templates',
+      );
     });
 
     it('Admin activates Issuer-B DRAFT → 200 OK (ownership bypass)', async () => {
@@ -242,7 +246,9 @@ describe('Template Ownership Guard (E2E) — Story 16.3', () => {
         .expect(403);
 
       const body = response.body as { message: string };
-      expect(body.message).toContain('You can only delete your own badge templates');
+      expect(body.message).toContain(
+        'You can only delete your own badge templates',
+      );
     });
 
     it('Issuer-B deletes own template → 200 OK', async () => {

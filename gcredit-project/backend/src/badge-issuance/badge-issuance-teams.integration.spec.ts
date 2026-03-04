@@ -242,7 +242,11 @@ describe.skip('BadgeIssuanceService - Teams Integration', () => {
       );
 
       // Act
-      const result = await service.issueBadge(issueDto, 'issuer-456', UserRole.ISSUER);
+      const result = await service.issueBadge(
+        issueDto,
+        'issuer-456',
+        UserRole.ISSUER,
+      );
 
       // Assert - Badge should still be created
       expect(result).toBeDefined();
