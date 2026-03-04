@@ -67,7 +67,7 @@ export class BadgeTemplatesController {
   ) {
     // Story 16.2: ISSUER sees only own templates; ADMIN sees all
     const creatorId =
-      req.user?.role === UserRole.ISSUER ? req.user.userId : undefined;
+      req.user.role === UserRole.ISSUER ? req.user.userId : undefined;
     return this.badgeTemplatesService.findAll(query, true, creatorId);
   }
 

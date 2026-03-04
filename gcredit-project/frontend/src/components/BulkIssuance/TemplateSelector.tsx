@@ -182,7 +182,7 @@ export function TemplateSelector({ onSelect, disabled = false }: TemplateSelecto
 
       {/* Story 16.2: Empty state when ISSUER has no templates at all */}
       {!isLoading && templates.length === 0 && (
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm text-neutral-500 mt-1">
           No templates available. Create a template first.
         </p>
       )}
