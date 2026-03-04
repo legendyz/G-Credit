@@ -226,7 +226,11 @@ export class BulkIssuanceController {
   ) {
     const userId = req.user.userId;
     // Story 16.1: Pass callerRole for ownership check (ARCH-P1-004)
-    return this.bulkIssuanceService.confirmBulkIssuance(sessionId, userId, req.user.role);
+    return this.bulkIssuanceService.confirmBulkIssuance(
+      sessionId,
+      userId,
+      req.user.role,
+    );
   }
 
   /**

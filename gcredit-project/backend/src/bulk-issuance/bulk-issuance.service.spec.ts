@@ -320,13 +320,21 @@ template-123,user@company.com`;
       const session = await service.createSession(csvContent, 'owner-123');
 
       await expect(
-        service.confirmBulkIssuance(session.sessionId, 'attacker-456', UserRole.ADMIN),
+        service.confirmBulkIssuance(
+          session.sessionId,
+          'attacker-456',
+          UserRole.ADMIN,
+        ),
       ).rejects.toThrow(ForbiddenException);
     });
 
     it('should throw NotFoundException for non-existent session', async () => {
       await expect(
-        service.confirmBulkIssuance('non-existent-session', 'user-123', UserRole.ADMIN),
+        service.confirmBulkIssuance(
+          'non-existent-session',
+          'user-123',
+          UserRole.ADMIN,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -797,7 +805,11 @@ template-123,user3@company.com`;
         },
       ]);
 
-      const result = await service.confirmBulkIssuance(sessionId, 'owner-123', UserRole.ADMIN);
+      const result = await service.confirmBulkIssuance(
+        sessionId,
+        'owner-123',
+        UserRole.ADMIN,
+      );
 
       expect(result.success).toBe(true);
       expect(result.processed).toBe(2);
@@ -824,7 +836,11 @@ template-123,user3@company.com`;
         },
       ]);
 
-      const result = await service.confirmBulkIssuance(sessionId, 'owner-123', UserRole.ADMIN);
+      const result = await service.confirmBulkIssuance(
+        sessionId,
+        'owner-123',
+        UserRole.ADMIN,
+      );
 
       expect(result.success).toBe(false);
       expect(result.processed).toBe(1);
@@ -846,7 +862,11 @@ template-123,user3@company.com`;
         },
       ]);
 
-      const result = await service.confirmBulkIssuance(sessionId, 'owner-123', UserRole.ADMIN);
+      const result = await service.confirmBulkIssuance(
+        sessionId,
+        'owner-123',
+        UserRole.ADMIN,
+      );
 
       expect(result.success).toBe(false);
       expect(result.processed).toBe(0);
@@ -973,7 +993,11 @@ template-123,user3@company.com`;
         },
       ]);
 
-      const result = await service.confirmBulkIssuance(sessionId, 'owner-123', UserRole.ADMIN);
+      const result = await service.confirmBulkIssuance(
+        sessionId,
+        'owner-123',
+        UserRole.ADMIN,
+      );
 
       expect(result.failed).toBe(1);
       expect(result.results[0].error).toContain('not found or inactive');
@@ -989,7 +1013,11 @@ template-123,user3@company.com`;
         },
       ]);
 
-      const result = await service.confirmBulkIssuance(sessionId, 'owner-123', UserRole.ADMIN);
+      const result = await service.confirmBulkIssuance(
+        sessionId,
+        'owner-123',
+        UserRole.ADMIN,
+      );
 
       expect(result.failed).toBe(1);
       expect(result.results[0].error).toContain('No active user found');

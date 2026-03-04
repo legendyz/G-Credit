@@ -580,8 +580,16 @@ describe('Badge Issuance (e2e)', () => {
 
     beforeAll(async () => {
       // Create two issuers, each with their own template
-      issuerAUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'issuer');
-      issuerBUser = await createAndLoginUser(ctx.app, ctx.userFactory, 'issuer');
+      issuerAUser = await createAndLoginUser(
+        ctx.app,
+        ctx.userFactory,
+        'issuer',
+      );
+      issuerBUser = await createAndLoginUser(
+        ctx.app,
+        ctx.userFactory,
+        'issuer',
+      );
 
       const issuerATemplate = await ctx.templateFactory.createActive({
         createdById: issuerAUser.user.id,
