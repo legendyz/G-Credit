@@ -72,13 +72,22 @@ export function LoginPage() {
     }
   }, [reasonMessage]);
 
+  // Persist redirect URL for SSO flow (SSO does full-page redirect, losing router state)
+  const from = (location.state as { from?: string })?.from;
+  useEffect(() => {
+    if (from) {
+      sessionStorage.setItem('sso_redirect_url', from);
+    }
+  }, [from]);
+
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      const from = (location.state as { from?: string })?.from || '/';
-      navigate(from, { replace: true });
+      const target = from || '/';
+      sessionStorage.removeItem('sso_redirect_url');
+      navigate(target, { replace: true });
     }
-  }, [isAuthenticated, navigate, location]);
+  }, [isAuthenticated, navigate, from]);
 
   // Clear error on unmount
   useEffect(() => {
@@ -102,8 +111,8 @@ export function LoginPage() {
       });
 
       // Navigate to intended destination or home
-      const from = (location.state as { from?: string })?.from || '/';
-      navigate(from, { replace: true });
+      sessionStorage.removeItem('sso_redirect_url');
+      navigate(from || '/', { replace: true });
     } catch (err) {
       toast.error('Login failed', {
         description: err instanceof Error ? err.message : 'Please check your credentials',

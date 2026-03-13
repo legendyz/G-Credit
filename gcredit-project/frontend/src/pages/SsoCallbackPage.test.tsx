@@ -83,4 +83,16 @@ describe('SsoCallbackPage (Story 13.4)', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/login?error=sso_failed', { replace: true });
     vi.useRealTimers();
   });
+
+  it('restores redirect URL from sessionStorage after SSO success', async () => {
+    sessionStorage.setItem('sso_redirect_url', '/claim?token=abc123');
+    mockLoginViaSSO.mockResolvedValue(true);
+    renderCallbackPage();
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/claim?token=abc123', { replace: true });
+    });
+    // sessionStorage should be cleaned up
+    expect(sessionStorage.getItem('sso_redirect_url')).toBeNull();
+  });
 });
