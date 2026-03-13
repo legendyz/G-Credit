@@ -305,7 +305,7 @@ export function TimelineView() {
         {/* Main Content */}
         <div className="flex-1 min-w-0 flex flex-col min-h-0">
           {/* Story 8.2 AC1 & AC4: Badge Search Bar - fixed above scroll area */}
-          <div className="relative flex-shrink-0 bg-white mb-2 z-50">
+          <div className="relative flex-shrink-0 bg-white mb-2 z-sticky">
             <BadgeSearchBar
               searchTerm={localSearch}
               onSearchChange={setLocalSearch}
