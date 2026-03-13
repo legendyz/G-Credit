@@ -2,10 +2,10 @@
 
 **Project:** G-Credit Digital Credentialing System  
 **Purpose:** Capture key learnings and establish best practices for efficient development  
-**Last Updated:** 2026-03-03 (Sprint 15 v1.5.0 — UI Overhaul & Dashboard — COMPLETE)
+**Last Updated:** 2026-03-13 (Sprint 16 v1.6.0 — F-1 RBAC Ownership + Pilot Readiness — COMPLETE)
 **Status:** Living document - update after each Sprint Retrospective  
-**Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 → Sprint 6 → Sprint 7 → Sprint 8 → Sprint 9 → Sprint 10 → Sprint 11 → Sprint 12 → Sprint 13 → Sprint 14 (Complete, v1.4.0) → Sprint 15 (Complete, v1.5.0)  + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
-**Total Lessons:** 55 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 8, Sprint 7: 3, Sprint 8: 3, Sprint 9: 3, Sprint 10: 3, Sprint 11: 4, Sprint 12: 2, Sprint 13: 3, Sprint 14: 3, Sprint 15: 4)
+**Coverage:** Sprint 0 → Sprint 1 → Sprint 2 → Sprint 3 → Sprint 5 → Sprint 6 → Sprint 7 → Sprint 8 → Sprint 9 → Sprint 10 → Sprint 11 → Sprint 12 → Sprint 13 → Sprint 14 (Complete, v1.4.0) → Sprint 15 (Complete, v1.5.0) → Sprint 16 (Complete, v1.6.0)  + Documentation & Test Organization + Documentation System Maintenance + Workflow Automation  
+**Total Lessons:** 58 lessons (Sprint 0: 5, Sprint 1: 4, Sprint 2: 1, Post-Sprint 2: 4, Post-Sprint 3: 4, Post-Sprint 5: 1, Sprint 6: 8, Sprint 7: 3, Sprint 8: 3, Sprint 9: 3, Sprint 10: 3, Sprint 11: 4, Sprint 12: 2, Sprint 13: 3, Sprint 14: 3, Sprint 15: 4, Sprint 16: 3)
 
 ---
 
@@ -27,10 +27,11 @@
 | Sprint 12 | 8/8 (100%) | 72h | — | — | ~9h/story | ⭐
 | Sprint 13 | 8/8 (100%) | 50-60h | — | — | ~6.5h/story | ⭐
 | Sprint 14 | 9/9 (100%) | 24h | — | — | ~2.7h/story | ⭐
+| Sprint 16 | 5/5 (100%) | 12h | — | — | ~2.4h/story | ⭐
 
 ### Quality Metrics
-- **Test Pass Rate:** 100% (1,835/1,835 tests — BE 991 + FE 844) ⭐
-- **UAT Pass Rate:** 100% (36/36 Sprint 15 Final, 56/56 Sprint 15 Mid, 152/153 Sprint 11, 33/33 Sprint 10) ⭐
+- **Test Pass Rate:** 100% (1,849/1,849 tests — BE 1,000 + FE 849) ⭐
+- **UAT Pass Rate:** 100% (26/26 Sprint 16, 36/36 Sprint 15 Final, 56/56 Sprint 15 Mid, 152/153 Sprint 11, 33/33 Sprint 10) ⭐
 - **Documentation Accuracy:** 95%+ (comprehensive guides created)
 - **Technical Debt:** 56 items tracked (17 P1 resolved Sprint 8, 7 TD resolved Sprint 10, 4 TD resolved Sprint 12: TD-009/TD-010/TD-016/TD-017) ⭐
 - **Zero Production Bugs:** All issues caught in development/UAT
@@ -56,6 +57,7 @@
 - ✅ Well-organized test structure (1,549 tests, 100% pass rate) ⭐
 - ✅ v1.4.0 Dual-Dimension Role Refactor (9 stories, MANAGER→isManager, ManagerGuard, E2E matrix) ⭐ Sprint 14
 - ✅ v1.5.0 UI Overhaul + Dashboard (14 stories, sidebar migration, permission-stacked tabs, pagination, infinite scroll, z-index scale, 6 UAT bugs fixed) ⭐ Sprint 15
+- ✅ v1.6.0 F-1 RBAC Ownership + Pilot Readiness (5 stories, issuer template ownership isolation, pilot seed data, UAT 26/26 PASS, 4 UAT bugs fixed) ⭐ Sprint 16
 
 ---
 
@@ -114,6 +116,9 @@
   - Lesson 53: Container Scroll Model Eliminates Z-Index Wars
   - Lesson 54: Inset Box-Shadow for Input Focus in Constrained Containers
   - Lesson 55: Filter State Changes Must Reset Pagination
+  - Lesson 56: Use Noon UTC for Test Date Fixtures
+  - Lesson 57: React Router Needs PopState After History.pushState
+  - Lesson 58: PowerShell Reserved Variables in Loops
 - [Cross-Sprint Patterns](#cross-sprint-patterns) - 13 patterns
 - [Development Checklists](#development-checklists)
 - [Common Pitfalls](#common-pitfalls-to-avoid)
@@ -5529,3 +5534,58 @@ useEffect(() => {
 **Action Items:**
 1. Add "pagination reset on filter change" to code review checklist
 2. Consider creating a `usePaginatedFilters()` custom hook that bundles filter state + pagination with auto-reset
+
+---
+
+## Sprint 16: F-1 RBAC Ownership + Pilot Readiness (v1.6.0, 2026-03-13)
+
+### Sprint 16: Lesson 56 — Use Noon UTC for Test Date Fixtures
+
+**Context:** Two test files (`badge-notification.builder.spec.ts`, `email-template.service.spec.ts`) used `T00:00:00Z` (midnight UTC) for test dates. Production code uses `toLocaleDateString()` which converts to local timezone. In UTC-negative timezones (e.g., UTC-8), midnight UTC becomes the previous day.
+
+**Lesson:** Always use `T12:00:00Z` (noon UTC) for test date fixtures when production code formats dates for human display. Noon UTC is safe within ±12h of UTC, covering all world timezones.
+
+**Fix Applied:**
+```typescript
+// ❌ Bad: midnight UTC → rolls back in UTC- timezones
+new Date('2026-01-30T00:00:00Z')
+
+// ✅ Good: noon UTC → correct in all timezones
+new Date('2026-01-30T12:00:00Z')
+```
+
+### Sprint 16: Lesson 57 — React Router Needs PopState After History.pushState
+
+**Context:** `useFormGuard` intercepted navigation by overriding `history.pushState`. When the user clicked "Leave Page", `proceed()` called the original `pushState` — updating the browser URL — but React Router didn't re-render because it wasn't notified of the URL change.
+
+**Lesson:** When intercepting client-side navigation via `history.pushState` overrides, calling the original `pushState` only updates the browser URL. React Router (BrowserRouter) listens to `popstate` events to detect URL changes. You must dispatch `new PopStateEvent('popstate')` after the pushState call.
+
+**Fix Applied:**
+```typescript
+const proceed = useCallback(() => {
+  setIsBlocked(false);
+  const fn = pendingNavRef.current;
+  pendingNavRef.current = null;
+  if (fn) {
+    proceedingRef.current = true;
+    fn(); // calls originalPushState(...)
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    proceedingRef.current = false;
+  }
+}, []);
+```
+
+### Sprint 16: Lesson 58 — PowerShell Reserved Variables in Loops
+
+**Context:** `pilot-smoke-test.ps1` used `$pid` as a loop variable in `foreach ($pid in $pilotIds)`. PowerShell's `$PID` is a read-only automatic variable (current process ID), causing "Cannot overwrite variable PID because it is read-only" at runtime.
+
+**Lesson:** PowerShell has many read-only automatic variables (`$PID`, `$HOME`, `$HOST`, `$true`, `$false`, `$null`, `$Error`, `$PSVersionTable`, etc.). Never use these as loop, parameter, or local variable names. Use descriptive names like `$tmplId`, `$itemId`, etc.
+
+**Fix Applied:**
+```powershell
+# ❌ Bad: $pid is read-only (process ID)
+foreach ($pid in $pilotIds) { ... }
+
+# ✅ Good: descriptive name
+foreach ($tmplId in $pilotIds) { ... }
+```
