@@ -61,9 +61,14 @@ export class BadgeTemplatesController {
     description: 'Returns paginated badge templates list',
     type: PaginatedBadgeTemplatesResponseDto,
   })
-  async findAll(@Query() query: QueryBadgeTemplatesDto) {
-    // Auth-required (global JwtAuthGuard): only show ACTIVE templates
-    return this.badgeTemplatesService.findAll(query, true);
+  async findAll(
+    @Query() query: QueryBadgeTemplatesDto,
+    @Request() req: RequestWithUser,
+  ) {
+    // Story 16.2: ISSUER sees only own templates; ADMIN sees all
+    const creatorId =
+      req.user.role === UserRole.ISSUER ? req.user.userId : undefined;
+    return this.badgeTemplatesService.findAll(query, true, creatorId);
   }
 
   @Get('all')
@@ -82,9 +87,14 @@ export class BadgeTemplatesController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Admin/Issuer only' })
-  async findAllAdmin(@Query() query: QueryBadgeTemplatesDto) {
-    // Admin endpoint: show all statuses
-    return this.badgeTemplatesService.findAll(query, false);
+  async findAllAdmin(
+    @Query() query: QueryBadgeTemplatesDto,
+    @Request() req: RequestWithUser,
+  ) {
+    // Story 16.2: ISSUER sees only own templates; ADMIN sees all
+    const creatorId =
+      req.user.role === UserRole.ISSUER ? req.user.userId : undefined;
+    return this.badgeTemplatesService.findAll(query, false, creatorId);
   }
 
   @Public()

@@ -33,6 +33,7 @@ export function useFormGuard({
 }: UseFormGuardOptions): UseFormGuardReturn {
   const [isBlocked, setIsBlocked] = useState(false);
   const pendingNavRef = useRef<(() => void) | null>(null);
+  const proceedingRef = useRef(false);
 
   // Browser close/refresh protection
   useEffect(() => {
@@ -75,6 +76,7 @@ export function useFormGuard({
 
     // Intercept popstate (back/forward button)
     const handlePopState = () => {
+      if (proceedingRef.current) return;
       // Push the current state back to prevent navigation
       originalPushState(history.state, '', window.location.href);
       setIsBlocked(true);
@@ -95,8 +97,11 @@ export function useFormGuard({
     const fn = pendingNavRef.current;
     pendingNavRef.current = null;
     if (fn) {
-      // Temporarily disable guard for the pending navigation
+      proceedingRef.current = true;
       fn();
+      // Notify React Router about the URL change so it re-renders
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      proceedingRef.current = false;
     }
   }, []);
 

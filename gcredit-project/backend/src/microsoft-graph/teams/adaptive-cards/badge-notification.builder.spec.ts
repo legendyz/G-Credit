@@ -247,14 +247,14 @@ describe('BadgeNotificationCardBuilder - Story 7.4', () => {
     });
 
     it('should format different dates correctly', () => {
-      const date = new Date('2025-12-25T00:00:00Z');
+      const date = new Date('2025-12-25T12:00:00Z');
       const formatted = BadgeNotificationCardBuilder.formatDate(date);
 
       expect(formatted).toBe('December 25, 2025');
     });
 
     it('should handle single-digit days', () => {
-      const date = new Date('2026-03-05T00:00:00Z');
+      const date = new Date('2026-03-05T12:00:00Z');
       const formatted = BadgeNotificationCardBuilder.formatDate(date);
 
       expect(formatted).toBe('March 5, 2026');

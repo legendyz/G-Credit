@@ -129,7 +129,6 @@ export function M365SyncPanel() {
             <Button
               onClick={() => handleSync('GROUPS_ONLY')}
               disabled={triggerSync.isPending || !status?.available}
-              variant="outline"
               size="sm"
             >
               {triggerSync.isPending && triggerSync.variables === 'GROUPS_ONLY' ? (

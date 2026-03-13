@@ -8,6 +8,7 @@ import { BulkIssuanceService, SessionStatus } from './bulk-issuance.service';
 import { CsvValidationService } from './csv-validation.service';
 import { PrismaService } from '../common/prisma.service';
 import { BadgeIssuanceService } from '../badge-issuance/badge-issuance.service';
+import { UserRole } from '@prisma/client';
 
 describe('BulkIssuanceService', () => {
   let service: BulkIssuanceService;
@@ -305,6 +306,7 @@ template-123,user@company.com`;
       const result = await service.confirmBulkIssuance(
         session.sessionId,
         'owner-123',
+        UserRole.ADMIN,
       );
 
       expect(result.success).toBe(true);
@@ -318,13 +320,21 @@ template-123,user@company.com`;
       const session = await service.createSession(csvContent, 'owner-123');
 
       await expect(
-        service.confirmBulkIssuance(session.sessionId, 'attacker-456'),
+        service.confirmBulkIssuance(
+          session.sessionId,
+          'attacker-456',
+          UserRole.ADMIN,
+        ),
       ).rejects.toThrow(ForbiddenException);
     });
 
     it('should throw NotFoundException for non-existent session', async () => {
       await expect(
-        service.confirmBulkIssuance('non-existent-session', 'user-123'),
+        service.confirmBulkIssuance(
+          'non-existent-session',
+          'user-123',
+          UserRole.ADMIN,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -795,7 +805,11 @@ template-123,user3@company.com`;
         },
       ]);
 
-      const result = await service.confirmBulkIssuance(sessionId, 'owner-123');
+      const result = await service.confirmBulkIssuance(
+        sessionId,
+        'owner-123',
+        UserRole.ADMIN,
+      );
 
       expect(result.success).toBe(true);
       expect(result.processed).toBe(2);
@@ -822,7 +836,11 @@ template-123,user3@company.com`;
         },
       ]);
 
-      const result = await service.confirmBulkIssuance(sessionId, 'owner-123');
+      const result = await service.confirmBulkIssuance(
+        sessionId,
+        'owner-123',
+        UserRole.ADMIN,
+      );
 
       expect(result.success).toBe(false);
       expect(result.processed).toBe(1);
@@ -844,7 +862,11 @@ template-123,user3@company.com`;
         },
       ]);
 
-      const result = await service.confirmBulkIssuance(sessionId, 'owner-123');
+      const result = await service.confirmBulkIssuance(
+        sessionId,
+        'owner-123',
+        UserRole.ADMIN,
+      );
 
       expect(result.success).toBe(false);
       expect(result.processed).toBe(0);
@@ -862,7 +884,7 @@ template-123,user3@company.com`;
         },
       ]);
 
-      await service.confirmBulkIssuance(sessionId, 'owner-123');
+      await service.confirmBulkIssuance(sessionId, 'owner-123', UserRole.ADMIN);
 
       expect(mockPrismaService.badgeTemplate.findFirst).toHaveBeenCalledWith({
         where: {
@@ -883,7 +905,7 @@ template-123,user3@company.com`;
         },
       ]);
 
-      await service.confirmBulkIssuance(sessionId, 'owner-123');
+      await service.confirmBulkIssuance(sessionId, 'owner-123', UserRole.ADMIN);
 
       expect(mockPrismaService.badgeTemplate.findFirst).toHaveBeenCalledWith({
         where: {
@@ -901,7 +923,7 @@ template-123,user3@company.com`;
         },
       ]);
 
-      await service.confirmBulkIssuance(sessionId, 'owner-123');
+      await service.confirmBulkIssuance(sessionId, 'owner-123', UserRole.ADMIN);
 
       expect(mockPrismaService.user.findFirst).toHaveBeenCalledWith({
         where: { email: 'user@company.com', isActive: true },
@@ -916,7 +938,7 @@ template-123,user3@company.com`;
       const sessionId = createValidatedSession(manyRows);
 
       await expect(
-        service.confirmBulkIssuance(sessionId, 'owner-123'),
+        service.confirmBulkIssuance(sessionId, 'owner-123', UserRole.ADMIN),
       ).rejects.toThrow(/maximum 20 badges per batch/);
     });
 
@@ -936,7 +958,7 @@ template-123,user3@company.com`;
       };
 
       await expect(
-        service.confirmBulkIssuance(sessionId, 'owner-123'),
+        service.confirmBulkIssuance(sessionId, 'owner-123', UserRole.ADMIN),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -956,7 +978,7 @@ template-123,user3@company.com`;
         },
       ]);
 
-      await service.confirmBulkIssuance(sessionId, 'owner-123');
+      await service.confirmBulkIssuance(sessionId, 'owner-123', UserRole.ADMIN);
 
       expect(sessionStore[sessionId].status).toBe(SessionStatus.COMPLETED);
     });
@@ -971,7 +993,11 @@ template-123,user3@company.com`;
         },
       ]);
 
-      const result = await service.confirmBulkIssuance(sessionId, 'owner-123');
+      const result = await service.confirmBulkIssuance(
+        sessionId,
+        'owner-123',
+        UserRole.ADMIN,
+      );
 
       expect(result.failed).toBe(1);
       expect(result.results[0].error).toContain('not found or inactive');
@@ -987,7 +1013,11 @@ template-123,user3@company.com`;
         },
       ]);
 
-      const result = await service.confirmBulkIssuance(sessionId, 'owner-123');
+      const result = await service.confirmBulkIssuance(
+        sessionId,
+        'owner-123',
+        UserRole.ADMIN,
+      );
 
       expect(result.failed).toBe(1);
       expect(result.results[0].error).toContain('No active user found');
@@ -1001,7 +1031,7 @@ template-123,user3@company.com`;
         },
       ]);
 
-      await service.confirmBulkIssuance(sessionId, 'owner-123');
+      await service.confirmBulkIssuance(sessionId, 'owner-123', UserRole.ADMIN);
 
       expect(mockBadgeIssuanceService.issueBadge).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -1009,6 +1039,7 @@ template-123,user3@company.com`;
           recipientId: 'user-uuid-1',
         }),
         'owner-123',
+        UserRole.ADMIN,
       );
     });
   });

@@ -341,4 +341,19 @@ describe('IssueBadgePage', () => {
     const backBtn = screen.getByRole('button', { name: /Back to Badges/i });
     expect(backBtn).toBeInTheDocument();
   });
+
+  // Story 16.2: Empty state when ISSUER has no templates
+  it('shows empty state message when no templates are available', async () => {
+    mockGetActiveTemplates.mockResolvedValue([]);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText(/No templates found/i)).toBeInTheDocument();
+    });
+
+    // Template select should be disabled
+    const selects = screen.getAllByTestId('native-select');
+    expect(selects[0]).toBeDisabled();
+  });
 });

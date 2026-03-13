@@ -15,7 +15,7 @@ import {
   ForbiddenException,
   GoneException,
 } from '@nestjs/common';
-import { BadgeStatus } from '@prisma/client';
+import { BadgeStatus, UserRole } from '@prisma/client';
 import {
   anyDate,
   containing,
@@ -298,7 +298,11 @@ describe('BadgeIssuanceService', () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(mockCreatedBadge);
 
       // Act
-      const result = await service.issueBadge(issueDto, mockIssuer.id);
+      const result = await service.issueBadge(
+        issueDto,
+        mockIssuer.id,
+        UserRole.ADMIN,
+      );
 
       // Assert
       expect(result).toHaveProperty('id');
@@ -317,12 +321,12 @@ describe('BadgeIssuanceService', () => {
       mockPrismaService.badgeTemplate.findUnique.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(service.issueBadge(issueDto, mockIssuer.id)).rejects.toThrow(
-        NotFoundException,
-      );
-      await expect(service.issueBadge(issueDto, mockIssuer.id)).rejects.toThrow(
-        `Badge template ${issueDto.templateId} not found`,
-      );
+      await expect(
+        service.issueBadge(issueDto, mockIssuer.id, UserRole.ADMIN),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        service.issueBadge(issueDto, mockIssuer.id, UserRole.ADMIN),
+      ).rejects.toThrow(`Badge template ${issueDto.templateId} not found`);
     });
 
     it('should throw BadRequestException if template not ACTIVE', async () => {
@@ -333,12 +337,12 @@ describe('BadgeIssuanceService', () => {
       );
 
       // Act & Assert
-      await expect(service.issueBadge(issueDto, mockIssuer.id)).rejects.toThrow(
-        BadRequestException,
-      );
-      await expect(service.issueBadge(issueDto, mockIssuer.id)).rejects.toThrow(
-        `Badge template ${mockTemplate.name} is not active`,
-      );
+      await expect(
+        service.issueBadge(issueDto, mockIssuer.id, UserRole.ADMIN),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.issueBadge(issueDto, mockIssuer.id, UserRole.ADMIN),
+      ).rejects.toThrow(`Badge template ${mockTemplate.name} is not active`);
     });
 
     it('should throw NotFoundException if recipient not found', async () => {
@@ -349,12 +353,12 @@ describe('BadgeIssuanceService', () => {
       mockPrismaService.user.findUnique.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(service.issueBadge(issueDto, mockIssuer.id)).rejects.toThrow(
-        NotFoundException,
-      );
-      await expect(service.issueBadge(issueDto, mockIssuer.id)).rejects.toThrow(
-        `Recipient ${issueDto.recipientId} not found`,
-      );
+      await expect(
+        service.issueBadge(issueDto, mockIssuer.id, UserRole.ADMIN),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        service.issueBadge(issueDto, mockIssuer.id, UserRole.ADMIN),
+      ).rejects.toThrow(`Recipient ${issueDto.recipientId} not found`);
     });
 
     it('should generate unique claim token', async () => {
@@ -409,6 +413,7 @@ describe('BadgeIssuanceService', () => {
       const result1 = await service.issueBadge(
         { ...issueDto, expiresIn: undefined },
         mockIssuer.id,
+        UserRole.ADMIN,
       );
 
       // Reset for second call
@@ -427,6 +432,7 @@ describe('BadgeIssuanceService', () => {
       const result2 = await service.issueBadge(
         { ...issueDto, expiresIn: undefined },
         mockIssuer.id,
+        UserRole.ADMIN,
       );
 
       // Assert
@@ -483,7 +489,11 @@ describe('BadgeIssuanceService', () => {
       mockPrismaService.badge.findUnique.mockResolvedValue(mockCreatedBadge);
 
       // Act
-      const result = await service.issueBadge(issueDto, mockIssuer.id);
+      const result = await service.issueBadge(
+        issueDto,
+        mockIssuer.id,
+        UserRole.ADMIN,
+      );
 
       // Assert
       expect(result.expiresAt).toBeDefined();
@@ -492,6 +502,160 @@ describe('BadgeIssuanceService', () => {
       const actualDiff = result.expiresAt!.getTime() - now.getTime();
       const expectedDiff = 365 * 24 * 60 * 60 * 1000;
       expect(Math.abs(actualDiff - expectedDiff)).toBeLessThan(1000);
+    });
+
+    // Story 16.1: Template Ownership Guard (ARCH-P1-004)
+    describe('Template Ownership Guard', () => {
+      const ownerIssuerId = 'owner-issuer-uuid';
+      const otherIssuerId = 'other-issuer-uuid';
+      const ownedTemplate = {
+        ...mockTemplate,
+        createdBy: ownerIssuerId,
+      };
+
+      it('should allow ISSUER to issue badge using own template', async () => {
+        // Arrange: template.createdBy === issuerId
+        mockPrismaService.badgeTemplate.findUnique.mockResolvedValue(
+          ownedTemplate,
+        );
+        mockPrismaService.user.findUnique
+          .mockResolvedValueOnce(mockRecipient)
+          .mockResolvedValueOnce({ ...mockIssuer, id: ownerIssuerId });
+        mockAssertionGenerator.generateClaimToken.mockReturnValue(
+          'a'.repeat(32),
+        );
+        mockAssertionGenerator.generateAssertion.mockReturnValue(mockAssertion);
+        mockAssertionGenerator.hashEmail.mockReturnValue('sha256$hashvalue');
+        mockAssertionGenerator.getAssertionUrl.mockReturnValue(
+          'https://example.com/assertion',
+        );
+        mockAssertionGenerator.getClaimUrl.mockReturnValue(
+          'https://example.com/claim?token=aaa',
+        );
+
+        const mockCreatedBadge = {
+          id: 'badge-uuid',
+          status: BadgeStatus.PENDING,
+          claimToken: 'a'.repeat(32),
+          issuedAt: new Date(),
+          expiresAt: null,
+          template: ownedTemplate,
+          recipient: mockRecipient,
+          issuer: { ...mockIssuer, id: ownerIssuerId },
+          templateId: issueDto.templateId,
+          recipientId: issueDto.recipientId,
+          issuerId: ownerIssuerId,
+          claimedAt: null,
+          revokedAt: null,
+          revocationReason: null,
+          assertionJson: mockAssertion,
+          recipientHash: 'sha256$hashvalue',
+          evidenceFiles: [],
+        };
+
+        mockPrismaService.badge.create.mockResolvedValue(mockCreatedBadge);
+        mockPrismaService.badge.update.mockResolvedValue(mockCreatedBadge);
+        mockPrismaService.badge.findUnique.mockResolvedValue(mockCreatedBadge);
+
+        // Act
+        const result = await service.issueBadge(
+          issueDto,
+          ownerIssuerId,
+          UserRole.ISSUER,
+        );
+
+        // Assert: badge created successfully
+        expect(result).toHaveProperty('id');
+        expect(result.status).toBe(BadgeStatus.PENDING);
+      });
+
+      it("should reject ISSUER issuing badge using another Issuer's template", async () => {
+        // Arrange: template.createdBy !== issuerId
+        mockPrismaService.badgeTemplate.findUnique.mockResolvedValue(
+          ownedTemplate,
+        );
+
+        // Act & Assert
+        await expect(
+          service.issueBadge(issueDto, otherIssuerId, UserRole.ISSUER),
+        ).rejects.toThrow(ForbiddenException);
+        await expect(
+          service.issueBadge(issueDto, otherIssuerId, UserRole.ISSUER),
+        ).rejects.toThrow('You can only issue badges using your own templates');
+      });
+
+      it('should allow ADMIN to issue badge using any template (bypass ownership)', async () => {
+        // Arrange: template.createdBy !== adminId — ADMIN should bypass
+        const adminId = 'admin-uuid';
+        mockPrismaService.badgeTemplate.findUnique.mockResolvedValue(
+          ownedTemplate,
+        );
+        mockPrismaService.user.findUnique
+          .mockResolvedValueOnce(mockRecipient)
+          .mockResolvedValueOnce({ ...mockIssuer, id: adminId });
+        mockAssertionGenerator.generateClaimToken.mockReturnValue(
+          'a'.repeat(32),
+        );
+        mockAssertionGenerator.generateAssertion.mockReturnValue(mockAssertion);
+        mockAssertionGenerator.hashEmail.mockReturnValue('sha256$hashvalue');
+        mockAssertionGenerator.getAssertionUrl.mockReturnValue(
+          'https://example.com/assertion',
+        );
+        mockAssertionGenerator.getClaimUrl.mockReturnValue(
+          'https://example.com/claim?token=aaa',
+        );
+
+        const mockCreatedBadge = {
+          id: 'badge-uuid',
+          status: BadgeStatus.PENDING,
+          claimToken: 'a'.repeat(32),
+          issuedAt: new Date(),
+          expiresAt: null,
+          template: ownedTemplate,
+          recipient: mockRecipient,
+          issuer: { ...mockIssuer, id: adminId },
+          templateId: issueDto.templateId,
+          recipientId: issueDto.recipientId,
+          issuerId: adminId,
+          claimedAt: null,
+          revokedAt: null,
+          revocationReason: null,
+          assertionJson: mockAssertion,
+          recipientHash: 'sha256$hashvalue',
+          evidenceFiles: [],
+        };
+
+        mockPrismaService.badge.create.mockResolvedValue(mockCreatedBadge);
+        mockPrismaService.badge.update.mockResolvedValue(mockCreatedBadge);
+        mockPrismaService.badge.findUnique.mockResolvedValue(mockCreatedBadge);
+
+        // Act: ADMIN issues badge using another user's template
+        const result = await service.issueBadge(
+          issueDto,
+          adminId,
+          UserRole.ADMIN,
+        );
+
+        // Assert: badge created successfully (no ownership check for ADMIN)
+        expect(result).toHaveProperty('id');
+        expect(result.status).toBe(BadgeStatus.PENDING);
+      });
+
+      it('should reject EMPLOYEE role with defensive guard (E1 future-proofing)', async () => {
+        // Arrange: EMPLOYEE should never reach here (blocked by @Roles),
+        // but service-layer guard ensures fail-safe
+        mockPrismaService.badgeTemplate.findUnique.mockResolvedValue(
+          ownedTemplate,
+        );
+
+        // Act & Assert
+        await expect(
+          service.issueBadge(issueDto, 'employee-uuid', UserRole.EMPLOYEE),
+        ).rejects.toThrow(ForbiddenException);
+        await expect(
+          service.issueBadge(issueDto, 'employee-uuid', UserRole.EMPLOYEE),
+        ).rejects.toThrow('Insufficient permissions to issue badges');
+      });
     });
   });
 

@@ -14,8 +14,8 @@ import {
   TestUser,
 } from './helpers';
 
-// Increase timeout for email sending tests
-jest.setTimeout(30000);
+// Increase timeout for email sending tests and DB setup
+jest.setTimeout(60000);
 
 const SUITE_NAME = 'badge_issuance_main';
 
@@ -570,4 +570,105 @@ describe('Badge Issuance (e2e)', () => {
 
   // Legacy POST /api/badges/bulk route removed — superseded by BulkIssuanceService
   // See: test/bulk-issuance-*.e2e-spec.ts for new bulk issuance E2E tests
+
+  // Story 16.1: Template Ownership Guard (ARCH-P1-004)
+  describe('Template Ownership Guard (Story 16.1)', () => {
+    let issuerAUser: TestUser;
+    let issuerBUser: TestUser;
+    let issuerATemplateId: string;
+    let issuerBTemplateId: string;
+
+    beforeAll(async () => {
+      // Create two issuers, each with their own template
+      issuerAUser = await createAndLoginUser(
+        ctx.app,
+        ctx.userFactory,
+        'issuer',
+      );
+      issuerBUser = await createAndLoginUser(
+        ctx.app,
+        ctx.userFactory,
+        'issuer',
+      );
+
+      const issuerATemplate = await ctx.templateFactory.createActive({
+        createdById: issuerAUser.user.id,
+        name: 'Issuer A Badge',
+        description: 'Template owned by Issuer A',
+      });
+      issuerATemplateId = issuerATemplate.id;
+
+      const issuerBTemplate = await ctx.templateFactory.createActive({
+        createdById: issuerBUser.user.id,
+        name: 'Issuer B Badge',
+        description: 'Template owned by Issuer B',
+      });
+      issuerBTemplateId = issuerBTemplate.id;
+    });
+
+    it('Issuer-A issues badge using own template → 201 Created', () => {
+      return request(ctx.app.getHttpServer() as App)
+        .post('/api/badges')
+        .set('Authorization', `Bearer ${issuerAUser.token}`)
+        .send({
+          templateId: issuerATemplateId,
+          recipientId: recipientUser.user.id,
+        })
+        .expect(201)
+        .expect((res) => {
+          const body = res.body as { id: string; status: string };
+          expect(body).toHaveProperty('id');
+          expect(body.status).toBe('PENDING');
+        });
+    });
+
+    it('Issuer-A issues badge using Issuer-B template → 403 Forbidden', () => {
+      return request(ctx.app.getHttpServer() as App)
+        .post('/api/badges')
+        .set('Authorization', `Bearer ${issuerAUser.token}`)
+        .send({
+          templateId: issuerBTemplateId,
+          recipientId: recipientUser.user.id,
+        })
+        .expect(403)
+        .expect((res) => {
+          const body = res.body as { message: string };
+          expect(body.message).toBe(
+            'You can only issue badges using your own templates',
+          );
+        });
+    });
+
+    it('Admin issues badge using Issuer-A template → 201 Created (bypass)', () => {
+      return request(ctx.app.getHttpServer() as App)
+        .post('/api/badges')
+        .set('Authorization', `Bearer ${adminUser.token}`)
+        .send({
+          templateId: issuerATemplateId,
+          recipientId: recipientUser.user.id,
+        })
+        .expect(201)
+        .expect((res) => {
+          const body = res.body as { id: string; status: string };
+          expect(body).toHaveProperty('id');
+          expect(body.status).toBe('PENDING');
+        });
+    });
+
+    it('Admin issues badge using Issuer-B template → 201 Created (bypass)', () => {
+      return request(ctx.app.getHttpServer() as App)
+        .post('/api/badges')
+        .set('Authorization', `Bearer ${adminUser.token}`)
+        .send({
+          templateId: issuerBTemplateId,
+          recipientId: recipientUser.user.id,
+        })
+        .expect(201)
+        .expect((res) => {
+          const body = res.body as { id: string; status: string };
+          expect(body).toHaveProperty('id');
+          expect(body.status).toBe('PENDING');
+        });
+    });
+  });
 });

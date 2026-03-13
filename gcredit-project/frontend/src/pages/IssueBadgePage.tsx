@@ -20,7 +20,7 @@ import { uploadEvidenceFile, addUrlEvidence, MAX_EVIDENCE_ITEMS } from '@/lib/ev
 import EvidenceAttachmentPanel, {
   type PendingFile,
 } from '@/components/evidence/EvidenceAttachmentPanel';
-import { Award, Send, Loader2 } from 'lucide-react';
+import { Award, Send, Loader2, X } from 'lucide-react';
 import { useFormGuard } from '@/hooks/useFormGuard';
 import { NavigationGuardDialog } from '@/components/ui/NavigationGuardDialog';
 
@@ -228,28 +228,52 @@ export function IssueBadgePage() {
               <Label htmlFor="template" className="text-body font-medium text-neutral-700">
                 Badge Template <span className="text-error">*</span>
               </Label>
-              <Select
-                value={selectedTemplateId}
-                onValueChange={setSelectedTemplateId}
-                disabled={loadingTemplates}
-              >
-                <SelectTrigger
-                  id="template"
-                  aria-required="true"
-                  className="min-h-[44px] focus:ring-brand-500"
+              <div className="relative">
+                <Select
+                  value={selectedTemplateId}
+                  onValueChange={setSelectedTemplateId}
+                  disabled={loadingTemplates || templates.length === 0}
                 >
-                  <SelectValue
-                    placeholder={loadingTemplates ? 'Loading templates...' : 'Select a template'}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {templates.map((t) => (
-                    <SelectItem key={t.id} value={t.id}>
-                      {t.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                  <SelectTrigger
+                    id="template"
+                    aria-required="true"
+                    className="min-h-[44px] focus:ring-brand-500"
+                  >
+                    <SelectValue
+                      placeholder={
+                        loadingTemplates
+                          ? 'Loading templates...'
+                          : templates.length === 0
+                            ? 'No templates available'
+                            : 'Select a template'
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {templates.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {t.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedTemplateId && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedTemplateId('')}
+                    className="absolute right-8 top-1/2 -translate-y-1/2 p-1 rounded-full text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100"
+                    aria-label="Clear template selection"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              {/* Story 16.2: Empty state when ISSUER has no templates */}
+              {!loadingTemplates && templates.length === 0 && (
+                <p className="text-sm text-neutral-500 mt-1">
+                  No templates found. Create a template first before issuing badges.
+                </p>
+              )}
             </div>
 
             {/* Recipient Selector */}

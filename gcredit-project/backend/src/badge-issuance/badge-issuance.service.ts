@@ -75,8 +75,9 @@ export class BadgeIssuanceService {
 
   /**
    * Issue a single badge
+   * @param callerRole - Story 16.1: Caller's role for ownership check (ARCH-P1-004)
    */
-  async issueBadge(dto: IssueBadgeDto, issuerId: string) {
+  async issueBadge(dto: IssueBadgeDto, issuerId: string, callerRole: UserRole) {
     // 1. Validate template exists and is ACTIVE
     const template = await this.prisma.badgeTemplate.findUnique({
       where: { id: dto.templateId },
@@ -91,6 +92,19 @@ export class BadgeIssuanceService {
         `Badge template ${template.name} is not active`,
       );
     }
+
+    // Story 16.1: ARCH-P1-004 — Issuer can only issue badges using own templates
+    // Defensive: only ADMIN and ISSUER should reach here (controller @Roles guard).
+    // If a new role is added, fail-safe by blocking unknown roles.
+    if (callerRole !== UserRole.ADMIN && callerRole !== UserRole.ISSUER) {
+      throw new ForbiddenException('Insufficient permissions to issue badges');
+    }
+    if (callerRole === UserRole.ISSUER && template.createdBy !== issuerId) {
+      throw new ForbiddenException(
+        'You can only issue badges using your own templates',
+      );
+    }
+    // ADMIN can issue using any template (no ownership check)
 
     // 2. Validate recipient exists
     const recipient = await this.prisma.user.findUnique({

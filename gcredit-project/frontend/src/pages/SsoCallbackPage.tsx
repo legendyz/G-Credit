@@ -33,7 +33,10 @@ export function SsoCallbackPage() {
       .then((success) => {
         clearTimeout(timeoutId);
         if (success) {
-          navigate('/', { replace: true });
+          // Restore redirect URL saved before SSO (e.g. /claim?token=xxx)
+          const redirectUrl = sessionStorage.getItem('sso_redirect_url') || '/';
+          sessionStorage.removeItem('sso_redirect_url');
+          navigate(redirectUrl, { replace: true });
         } else {
           navigate('/login?error=sso_failed', { replace: true });
         }

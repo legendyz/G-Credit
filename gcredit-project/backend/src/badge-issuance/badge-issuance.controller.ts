@@ -71,7 +71,7 @@ export class BadgeIssuanceController {
     @Body() dto: IssueBadgeDto,
     @Request() req: RequestWithUser,
   ) {
-    return this.badgeService.issueBadge(dto, req.user.userId);
+    return this.badgeService.issueBadge(dto, req.user.userId, req.user.role);
   }
 
   @Post('claim')

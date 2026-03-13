@@ -5,7 +5,7 @@
 **Project Type:** Enterprise Internal Platform (Greenfield)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
 **License:** MIT License (Open Source)  
-**Status:** 🟡 Sprint 16 IN PLANNING — F-1 RBAC + Pilot Readiness, ~12h  
+**Status:** ✅ Sprint 16 COMPLETE — F-1 RBAC + Pilot Readiness, v1.6.0  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, committed 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, committed 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, committed 2026-01-26)  
@@ -23,8 +23,8 @@
 **Sprint 13:** ✅ Complete (8/8 stories, 4 waves, branch: sprint-13/sso-session-management, 1,708 tests, v1.3.0)
 **Sprint 14:** ✅ Complete (9/9 stories, 4 waves, branch: sprint-14/role-model-refactor, 1,757 tests, v1.4.0)
 **Sprint 15:** ✅ Complete (14/15 stories, 4 waves, branch: sprint-15/ui-overhaul-dashboard, 1,835 tests, UAT 36/36 PASS, v1.5.0)
-**Sprint 16:** 🟡 Planning Complete (5 stories, 4 waves, branch: sprint-16/f1-rbac-pilot-readiness, ~12h)
-**Last Updated:** 2026-03-02 (Sprint 16 PLANNING COMPLETE — F-1 Issuer Template Ownership + Pilot Readiness)
+**Sprint 16:** ✅ Complete (5/5 stories, 4 waves, branch: sprint-16/f1-rbac-pilot-readiness, 1,849 tests, UAT 26/26 PASS, v1.6.0)
+**Last Updated:** 2026-03-13 (Sprint 16 COMPLETE — F-1 Issuer Template Ownership + Pilot Readiness)
 ---
 
 ## 🚨 Maintenance Protocol - How to Keep This Document Current

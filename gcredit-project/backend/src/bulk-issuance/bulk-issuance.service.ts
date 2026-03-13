@@ -9,7 +9,7 @@ import { PrismaService } from '../common/prisma.service';
 import { CsvValidationService } from './csv-validation.service';
 import { BadgeIssuanceService } from '../badge-issuance/badge-issuance.service';
 import { randomUUID } from 'crypto';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 
 /**
  * Bulk Issuance Session Status
@@ -537,6 +537,7 @@ export class BulkIssuanceService {
   async confirmBulkIssuance(
     sessionId: string,
     currentUserId: string,
+    callerRole: UserRole,
   ): Promise<{
     success: boolean;
     processed: number;
@@ -623,12 +624,14 @@ export class BulkIssuanceService {
         }
 
         // Issue badge via BadgeIssuanceService
+        // Story 16.1: Pass callerRole for ownership check (ARCH-P1-004)
         const issueResult = await this.badgeIssuanceService.issueBadge(
           {
             templateId: template.id,
             recipientId: recipient.id,
           },
           currentUserId,
+          callerRole,
         );
 
         processed++;

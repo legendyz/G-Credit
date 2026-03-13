@@ -464,4 +464,119 @@ describe('Badge Templates E2E (Sprint 2 - Isolated)', () => {
         .expect(404);
     });
   });
+
+  // Story 16.2: Template List Ownership Filter
+  describe('Template List Ownership Filter (Story 16.2)', () => {
+    let issuerA: TestUser;
+    let issuerB: TestUser;
+    let issuerATemplateId: string;
+    let issuerBTemplateId: string;
+
+    beforeAll(async () => {
+      issuerA = await createAndLoginUser(ctx.app, ctx.userFactory, 'issuer');
+      issuerB = await createAndLoginUser(ctx.app, ctx.userFactory, 'issuer');
+
+      // Issuer-A creates a template
+      const templateA = await ctx.templateFactory.createActive({
+        name: `IssuerA Template ${Date.now()}`,
+        createdById: issuerA.user.id,
+        skillIds: [skillId],
+        category: 'achievement',
+      });
+      issuerATemplateId = templateA.id;
+
+      // Issuer-B creates a template
+      const templateB = await ctx.templateFactory.createActive({
+        name: `IssuerB Template ${Date.now()}`,
+        createdById: issuerB.user.id,
+        skillIds: [skillId],
+        category: 'achievement',
+      });
+      issuerBTemplateId = templateB.id;
+    });
+
+    it('ISSUER-A sees only own templates via GET /api/badge-templates', async () => {
+      const response = await request(ctx.app.getHttpServer() as App)
+        .get('/api/badge-templates')
+        .set('Authorization', `Bearer ${issuerA.token}`)
+        .expect(200);
+
+      const body = response.body as {
+        data: Array<{ id: string; createdBy: string }>;
+      };
+      // All returned templates should be created by issuerA
+      for (const tpl of body.data) {
+        expect(tpl.createdBy).toBe(issuerA.user.id);
+      }
+      // issuerA template should be present
+      const ids = body.data.map((t) => t.id);
+      expect(ids).toContain(issuerATemplateId);
+      // issuerB template should NOT be present
+      expect(ids).not.toContain(issuerBTemplateId);
+    });
+
+    it('ISSUER-B sees only own templates via GET /api/badge-templates', async () => {
+      const response = await request(ctx.app.getHttpServer() as App)
+        .get('/api/badge-templates')
+        .set('Authorization', `Bearer ${issuerB.token}`)
+        .expect(200);
+
+      const body = response.body as {
+        data: Array<{ id: string; createdBy: string }>;
+      };
+      for (const tpl of body.data) {
+        expect(tpl.createdBy).toBe(issuerB.user.id);
+      }
+      const ids = body.data.map((t) => t.id);
+      expect(ids).toContain(issuerBTemplateId);
+      expect(ids).not.toContain(issuerATemplateId);
+    });
+
+    it('ADMIN sees all templates (no ownership filter)', async () => {
+      const response = await request(ctx.app.getHttpServer() as App)
+        .get('/api/badge-templates')
+        .set('Authorization', `Bearer ${adminUser.token}`)
+        .expect(200);
+
+      const body = response.body as { data: Array<{ id: string }> };
+      const ids = body.data.map((t) => t.id);
+      // ADMIN should see both templates
+      expect(ids).toContain(issuerATemplateId);
+      expect(ids).toContain(issuerBTemplateId);
+    });
+
+    it('ISSUER with no templates sees empty list', async () => {
+      const issuerC = await createAndLoginUser(
+        ctx.app,
+        ctx.userFactory,
+        'issuer',
+      );
+
+      const response = await request(ctx.app.getHttpServer() as App)
+        .get('/api/badge-templates')
+        .set('Authorization', `Bearer ${issuerC.token}`)
+        .expect(200);
+
+      const body = response.body as {
+        data: unknown[];
+        meta: { total: number };
+      };
+      expect(body.data).toEqual([]);
+      expect(body.meta.total).toBe(0);
+    });
+
+    it('ISSUER-A sees only own templates via GET /api/badge-templates/all', async () => {
+      const response = await request(ctx.app.getHttpServer() as App)
+        .get('/api/badge-templates/all')
+        .set('Authorization', `Bearer ${issuerA.token}`)
+        .expect(200);
+
+      const body = response.body as {
+        data: Array<{ id: string; createdBy: string }>;
+      };
+      for (const tpl of body.data) {
+        expect(tpl.createdBy).toBe(issuerA.user.id);
+      }
+    });
+  });
 });

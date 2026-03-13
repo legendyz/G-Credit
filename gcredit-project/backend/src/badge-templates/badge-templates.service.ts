@@ -103,7 +103,11 @@ export class BadgeTemplatesService {
   /**
    * Get all badge templates with advanced filters and pagination
    */
-  async findAll(query: QueryBadgeTemplatesDto, onlyActive: boolean = false) {
+  async findAll(
+    query: QueryBadgeTemplatesDto,
+    onlyActive: boolean = false,
+    creatorId?: string,
+  ) {
     const {
       page = 1,
       limit = 10,
@@ -137,6 +141,11 @@ export class BadgeTemplatesService {
       where.skillIds = {
         has: skillId,
       };
+    }
+
+    // Story 16.2: Ownership filter — ISSUER sees only own templates
+    if (creatorId) {
+      where.createdBy = creatorId;
     }
 
     // Search filter (name or description)
