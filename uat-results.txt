@@ -1,0 +1,8 @@
+S1 PASS login=200
+S2 PASS templates=2 allOwned=True
+S3 PASS issue=201 badgeId=6b4caead-f28f-4853-8633-3952a62e69cd
+S4 PASS crossIssuer=403 (expect 403)
+S5 PASS editOwn=200
+S6 PASS editOther=403 (expect 403)
+S7 PASS adminTemplates=10 pilotFound=5/5
+S8 PASS adminIssue=201 badgeId=6731c52f-f73d-4316-9ddb-e92f309a45f6

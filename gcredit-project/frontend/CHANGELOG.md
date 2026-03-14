@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.0] - 2026-03-13 (Sprint 16 — F-1 RBAC Ownership + Pilot Readiness)
+
+### Sprint 16 Summary — Template Ownership UI + UAT Bug Fixes
+
+**Branch:** `sprint-16/f1-rbac-pilot-readiness`
+**Stories:** 5/5 complete | **Target Version:** v1.6.0
+**Tests:** 849 passed (100% pass rate, +5 from v1.5.0)
+**UAT:** 26/26 PASS (4 phases)
+
+#### Story 16.2: Template List Ownership Filter
+
+- **ISSUER Template Isolation:** `BadgeTemplateList` passes `creatorId` query param for ISSUER role users, filtering to own templates only. ADMIN sees all templates.
+
+#### Story 16.5: UAT Bug Fixes (4 fixes)
+
+- **useFormGuard Navigation (Bug #1):** `proceed()` called `originalPushState()` updating URL but React Router not re-rendering. Fixed by dispatching `PopStateEvent('popstate')` + `proceedingRef` guard to prevent re-blocking.
+- **Template Selector Clear Button (Bug #2):** No way to clear template selection on Issue Badge page. Added X button (`lucide-react X` icon) with `onClick={() => setSelectedTemplateId('')}`.
+- **Sync Roles Button Visibility (Bug #3):** `variant="outline"` too subtle/grey. Changed to default variant (primary blue) for visibility.
+- **R11 QR Code Expectation (Bug #4):** Verify page has no QR code — was never implemented. Updated UAT expectation to match actual behavior.
+
+#### Updated Components
+
+| Component | Description |
+|-----------|-------------|
+| `useFormGuard` (updated) | `proceedingRef` + `PopStateEvent` dispatch for reliable navigation |
+| `IssueBadgePage` (updated) | X clear button on template selector |
+| `M365SyncPanel` (updated) | Sync Roles button default variant |
+
+---
+
 ## [1.5.0] - 2026-03-03 (Sprint 15 — UI Overhaul + Dashboard Composite View)
 
 ### Sprint 15 Summary — Sidebar Navigation, Dashboard Tabs, Full UI Polish

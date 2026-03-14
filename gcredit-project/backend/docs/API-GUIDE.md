@@ -233,6 +233,7 @@ curl "http://localhost:3000/api/badge-templates?category=SKILL&page=2&limit=5"
 - `limit` (optional) - Items per page (default: 10, max: 100)
 - `category` (optional) - Filter by category
 - `skillId` (optional) - Filter by skill UUID
+- `creatorId` (optional) - Filter by template creator UUID. Used by ISSUER role to see only own templates. *(Added in v1.6.0)*
 
 **Response (200 OK):**
 ```json
@@ -332,7 +333,8 @@ curl -X GET "http://localhost:3000/api/badge-templates/badg-1234-5678-9abc-def01
 
 **Endpoint:** `PATCH /api/badge-templates/:id`  
 **Authentication:** Required (ADMIN/ISSUER)  
-**Content-Type:** `multipart/form-data`
+**Content-Type:** `multipart/form-data`  
+**Ownership Guard:** ISSUER can only update own templates (`creatorId === userId`). ADMIN bypasses. Returns 403 if not owner. *(Added in v1.6.0)*
 
 ```bash
 # PowerShell - Update without changing image
@@ -361,7 +363,8 @@ curl -X PATCH "http://localhost:3000/api/badge-templates/badg-1234-5678-9abc-def
 
 **Endpoint:** `DELETE /api/badge-templates/:id`  
 **Authentication:** Required (ADMIN/ISSUER)  
-**Side Effects:** Cascades deletion to Azure Blob Storage
+**Side Effects:** Cascades deletion to Azure Blob Storage  
+**Ownership Guard:** ISSUER can only delete own templates (`creatorId === userId`). ADMIN bypasses. Returns 403 if not owner. *(Added in v1.6.0)*
 
 ```bash
 # PowerShell
@@ -666,7 +669,8 @@ curl -X DELETE "http://localhost:3000/api/skill-categories/cat-soft-001" `
 
 **Endpoint:** `POST /api/badges`  
 **Authentication:** Required  
-**Authorization:** ADMIN, ISSUER
+**Authorization:** ADMIN, ISSUER  
+**Ownership Guard:** ISSUER can only issue badges using own templates (`template.creatorId === userId`). ADMIN bypasses. Returns 403 if not owner. *(Added in v1.6.0)*
 
 ```bash
 # PowerShell

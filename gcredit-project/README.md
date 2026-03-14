@@ -4,7 +4,8 @@
 
 ## 📊 Project Status
 
-**Version:** ✅ v1.5.0 Released (UI Overhaul + Dashboard Composite View)  
+**Version:** ✅ v1.6.0 Released (F-1 RBAC Ownership + Pilot Readiness)  
+**Sprint 16:** ✅ Complete (5/5 stories, 4 waves, 2026-03-03 to 2026-03-13, F-1 RBAC Ownership + Pilot Readiness, 1,849 tests, UAT 26/26 PASS, v1.6.0)  
 **Sprint 15:** ✅ Complete (14/15 stories, 4 waves, 2026-03-01 to 2026-03-03, UI Overhaul + Dashboard Composite View, 1,835 tests, UAT 36/36 PASS, v1.5.0)  
 **Sprint 14:** ✅ Complete (9/9 stories, 4 waves, 2026-02-27 to 2026-02-28, Dual-Dimension Role Model Refactor, 1,757 tests, v1.4.0)  
 **Sprint 13:** ✅ Complete (8/8 stories, 4 waves, 2026-02-25 to 2026-02-27, Azure AD SSO + Session Management, 1,708 tests, v1.3.0)  
@@ -22,7 +23,7 @@
 **Sprint 2:** ✅ Complete (100%, 29h/32h, 2026-01-26, Badge Templates)  
 **Sprint 1:** ✅ Complete (100%, 21h/21h, 2026-01-25, Authentication)  
 **Sprint 0:** ✅ Complete (100%, 9.5h/10h, 2026-01-24, Infrastructure)  
-**Tests:** 1,835 (Backend 991 + Frontend 844), 100% pass rate  
+**Tests:** 1,849 (Backend 1,000 + Frontend 849), 100% pass rate  
 **License:** MIT
 
 ## 🚀 Tech Stack
@@ -440,8 +441,8 @@ Remove-Item -Recurse -Force backend\.git
 - **Sprint 13:** ✅ v1.3.0 Release — Azure AD SSO + Session Management (8/8 stories, 4 waves, 1,708 tests)
 - **Sprint 14:** ✅ v1.4.0 Release — Dual-Dimension Role Model Refactor (9/9 stories, 4 waves, 1,757 tests, MANAGER removed, isManager JWT claim, ManagerGuard, 11 design tokens)
 - **Sprint 15:** ✅ v1.5.0 Release — UI Overhaul + Dashboard Composite View (14/15 stories, 4 waves, 1,835 tests, UAT 36/36 PASS, sidebar migration, dashboard tabs, pagination, infinite scroll, emoji→Lucide, z-index scale)
-- **Sprint 16:** 🔜 Planned — Fine-Grained RBAC L1 + Pilot Readiness (Issuer template ownership, pilot validation, ~12h). FEAT-009 deferred to Post-Pilot (ADR-014).
-- **Phase 4 Pilot** after Sprint 16 completion
+- **Sprint 16:** ✅ v1.6.0 Release — F-1 RBAC Ownership + Pilot Readiness (5/5 stories, 4 waves, 1,849 tests, UAT 26/26 PASS, issuer template ownership isolation, pilot seed data, smoke test)
+- **Phase 4 Pilot** — Ready to begin
 
 ## 📝 License
 
@@ -459,6 +460,6 @@ For issues and questions:
 
 ---
 
-**Last Updated:** 2026-03-03  
-**Version:** v1.5.0 (Released)  
-**Sprint Status:** Sprint 0-15 Complete ✅ | v1.5.0 Released 🎓
+**Last Updated:** 2026-03-13  
+**Version:** v1.6.0 (Released)  
+**Sprint Status:** Sprint 0-16 Complete ✅ | v1.6.0 Released 🎓

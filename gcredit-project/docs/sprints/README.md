@@ -1,8 +1,8 @@
 # Sprint Documentation Index
 
-**Last Updated:** 2026-03-03  
-**Current Sprint:** Sprint 15 Complete — v1.5.0 Released | Sprint 16 Planned  
-**Total Sprints:** 17 completed (Sprint 0-15 + Sprint 12.5) | 1 planned (Sprint 16)
+**Last Updated:** 2026-03-13  
+**Current Sprint:** Sprint 16 Complete — v1.6.0 Released | Phase 4 Pilot Ready  
+**Total Sprints:** 18 completed (Sprint 0-16 + Sprint 12.5) | Pilot phase next
 
 ---
 
@@ -27,7 +27,7 @@
 | [Sprint 13](./sprint-13/) | Azure AD SSO + Session Management | ✅ Complete | 3 days | 8 stories | 1,708 tests | v1.3.0 |
 | [Sprint 14](./sprint-14/) | Dual-Dimension Role Model Refactor | ✅ Complete | 2 days | 9 stories | 1,757 tests | v1.4.0 |
 | [Sprint 15](./sprint-15/) | UI Overhaul + Dashboard Composite View | ✅ Complete | 3 days | 14/15 stories | 1,835 tests | v1.5.0 |
-| Sprint 16 | Fine-Grained RBAC L1 + Pilot Readiness | 🔜 Planned | TBD | ~2-3 stories | — | v1.6.0 |
+| [Sprint 16](./sprint-16/) | F-1 RBAC Ownership + Pilot Readiness | ✅ Complete | 11 days | 5/5 stories | 1,849 tests | v1.6.0 |
 
 ---
 
@@ -463,16 +463,16 @@ Looking to create sprint documentation?
 
 ## 🚀 Current Sprint
 
-Sprint 15 is complete — v1.5.0 Released:
-- Wave 1: Backend Prep — Permissions API + Configurable Rate Limits ✅ Complete
-- Wave 2: Core UI — Sidebar Migration + Dashboard Tabs ✅ Complete
-- Wave 2.5: Mid-Sprint UAT — 56/56 PASS ✅ Complete
-- Wave 3: UI Polish — Emoji→Lucide, Pagination, Infinite Scroll, Dirty-Form Guard, z-index Scale ✅ Complete
-- Wave 4: Final UAT — 36/36 PASS (6 bugs found & fixed) ✅ Complete
+Sprint 16 is complete — v1.6.0 Released:
+- Story 16.1: Issuer template ownership guard (issuance: own 201, other 403, admin bypass) ✅ Complete
+- Story 16.2: Frontend template list ownership filter (ISSUER sees own only) ✅ Complete
+- Story 16.3: Template edit/delete ownership guard ✅ Complete
+- Story 16.4: Pilot seed data (14 users, 5 templates, 16 badges) + smoke test (8/8 PASS) ✅ Complete
+- Story 16.5: UAT 26/26 PASS (4 phases) ✅ Complete
 
-**Key Changes:** Sidebar navigation (shadcn/ui), permission-stacked dashboard tabs, server-side pagination, cursor-based infinite scroll, full emoji→Lucide migration, z-index 7-tier scale, ADR-016/018.
+**Key Changes:** Issuer template ownership isolation (ARCH-P1-004), ADMIN bypass, pilot seed data, 4-phase UAT (automated + scripted API + manual UI + pilot readiness).
 
-→ [Sprint 15 Details](./sprint-15/) | [Sprint 15 Summary](./sprint-15/summary.md)
+→ [Sprint 16 Details](./sprint-16/) | [Sprint 16 Retrospective](./sprint-16/retrospective.md)
 
 ---
 

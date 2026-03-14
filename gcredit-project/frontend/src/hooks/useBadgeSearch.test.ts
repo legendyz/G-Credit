@@ -11,7 +11,7 @@ import type { BadgeForFilter } from '@/utils/searchFilters';
 const createMockBadges = (count: number): BadgeForFilter[] => {
   return Array.from({ length: count }, (_, i) => ({
     id: `badge-${i + 1}`,
-    issuedAt: new Date(2025, 0, i + 1).toISOString(),
+    issuedAt: `2025-01-${String(i + 1).padStart(2, '0')}T12:00:00.000Z`,
     status: i % 2 === 0 ? 'active' : 'revoked',
     template: {
       id: `template-${i + 1}`,
@@ -145,10 +145,15 @@ describe('useBadgeSearch', () => {
 
       // Should only include badges issued between Jan 5-10
       expect(result.current.filteredBadges.length).toBeLessThan(30);
+      expect(result.current.filteredBadges.length).toBeGreaterThan(0);
       result.current.filteredBadges.forEach((badge) => {
-        const date = new Date(badge.issuedAt);
-        expect(date.getDate()).toBeGreaterThanOrEqual(5);
-        expect(date.getDate()).toBeLessThanOrEqual(10);
+        const badgeTime = new Date(badge.issuedAt).getTime();
+        const fromDate = new Date('2025-01-05');
+        fromDate.setHours(0, 0, 0, 0);
+        const toDate = new Date('2025-01-10');
+        toDate.setHours(23, 59, 59, 999);
+        expect(badgeTime).toBeGreaterThanOrEqual(fromDate.getTime());
+        expect(badgeTime).toBeLessThanOrEqual(toDate.getTime());
       });
     });
   });

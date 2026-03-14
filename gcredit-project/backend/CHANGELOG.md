@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.0] - 2026-03-13 (Sprint 16 — F-1 RBAC Ownership + Pilot Readiness)
+
+### Sprint 16 Summary — Issuer Template Ownership Isolation
+
+**Branch:** `sprint-16/f1-rbac-pilot-readiness`
+**Stories:** 5/5 complete (4 waves) | **Target Version:** v1.6.0
+**Tests:** 1,000 passed (100% pass rate, +9 from v1.5.0)
+**Architecture:** ARCH-P1-004 (F-1 RBAC Template Ownership)
+
+#### Stories 16.1 & 16.3: RBAC Ownership Guards
+
+- **Issuance Ownership Guard (16.1):** `POST /api/badges/issue` now enforces that ISSUER users can only issue badges using their own templates (`creatorId === userId`). ADMIN role bypasses this check. Returns 403 for unauthorized template usage.
+- **Template Edit/Delete Ownership Guard (16.3):** `PATCH /api/badge-templates/:id` and `DELETE /api/badge-templates/:id` enforce creator ownership for ISSUER role. ADMIN bypass preserved. Returns 403 for non-owner ISSUER attempts.
+
+#### Story 16.2: Template List Ownership Filter
+
+- **CreatorId Query Parameter:** `GET /api/badge-templates` enhanced with optional `creatorId` query parameter. Frontend passes `userId` for ISSUER role to filter templates to own-only. ADMIN sees all templates (no filter applied).
+
+#### Story 16.4: Pilot Seed Data & Smoke Test
+
+- **Pilot Seed Script:** `prisma/seed-pilot.ts` creates 14 pilot users across 4 roles (ADMIN×2, ISSUER×5, MANAGER×4, EMPLOYEE×3) with `isManager` variations, 5 badge templates, and 16 issued badges.
+- **Smoke Test:** `test-scripts/smoke-pilot.sh` validates 8 pilot scenarios (login, permissions, template CRUD, ownership guard, badge issuance). 8/8 PASS.
+
+#### Story 16.5: UAT
+
+- **4-Phase UAT:** 26/26 test cases PASS across automated (Jest/Vitest), scripted API, manual UI, and pilot readiness phases.
+- **4 UAT Bugs Fixed:** useFormGuard navigation, template selector clear button, Sync Roles button visibility, R11 QR code expectation.
+
+---
+
 ## [1.5.0] - 2026-03-03 (Sprint 15 — UI Overhaul + Dashboard Composite View)
 
 ### Sprint 15 Summary — Permissions API + Configurable Rate Limits

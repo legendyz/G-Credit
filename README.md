@@ -1,7 +1,7 @@
 ﻿﻿# G-Credit - Enterprise Internal Digital Credentialing System
 
-[![Status](https://img.shields.io/badge/Status-v1.4.0%20Released-brightgreen)]()
-[![Phase](https://img.shields.io/badge/Phase-3.5%20Role%20Model%20Refactor%20Complete-brightgreen)]()
+[![Status](https://img.shields.io/badge/Status-v1.6.0%20Released-brightgreen)]()
+[![Phase](https://img.shields.io/badge/Phase-3.6%20RBAC%20Ownership%20%2B%20Pilot%20Ready-brightgreen)]()
 [![Sprint0](https://img.shields.io/badge/Sprint%200-Complete%20(100%25)-success)]()
 [![Sprint1](https://img.shields.io/badge/Sprint%201-Complete%20(100%25)-brightgreen)]()
 [![Sprint2](https://img.shields.io/badge/Sprint%202-Complete%20(100%25)-brightgreen)]()
@@ -19,8 +19,9 @@
 [![Sprint13](https://img.shields.io/badge/Sprint%2013-Complete%20(100%25)-brightgreen)]()
 [![Sprint14](https://img.shields.io/badge/Sprint%2014-Complete%20(100%25)-brightgreen)]()
 [![Sprint15](https://img.shields.io/badge/Sprint%2015-Complete%20(93%25)-brightgreen)]()
-[![Version](https://img.shields.io/badge/Version-v1.5.0-blue)]()
-[![Tests](https://img.shields.io/badge/Tests-1835%20Total%2C%201835%20Passing-success)]()
+[![Sprint16](https://img.shields.io/badge/Sprint%2016-Complete%20(100%25)-brightgreen)]()
+[![Version](https://img.shields.io/badge/Version-v1.6.0-blue)]()
+[![Tests](https://img.shields.io/badge/Tests-1849%20Total%2C%201849%20Passing-success)]() 
 
 > **G-Credit** is an enterprise-grade internal digital badging platform designed to securely recognize, verify, and analyze employee skills and achievements. Compliant with Open Badges 2.0 standards, it aims to replace fragmented certificate management and reduce dependency on external platforms.
 
@@ -31,7 +32,7 @@
 **Project Name:** G-Credit  
 **Project Type:** Enterprise Internal Platform (Greenfield Development)  
 **Domain:** HR Tech / Learning & Development / Digital Credentials  
-**Current Status:** ✅ v1.5.0 Released — UI Overhaul + Dashboard Composite View (16 Sprints, 1,835 tests)  
+**Current Status:** ✅ v1.6.0 Released — F-1 RBAC Ownership + Pilot Readiness (17 Sprints, 1,849 tests)  
 **Sprint 0:** ✅ Complete (100%, actual 9.5h / estimated 10h, 2026-01-24)  
 **Sprint 1:** ✅ Complete (100%, actual 21h / estimated 21h, 2026-01-25)  
 **Sprint 2:** ✅ Complete (100%, actual 29h / estimated 32h, 2026-01-26)  
@@ -49,14 +50,17 @@
 **Sprint 13:** ✅ Complete (8/8 stories, 4 waves, 1,708 tests, 2026-02-25 to 2026-02-27, v1.3.0)  
 **Sprint 14:** ✅ Complete (9/9 stories, 4 waves, 1,757 tests, 2026-02-27 to 2026-02-28, v1.4.0)  
 **Sprint 15:** ✅ Complete (14/15 stories, 4 waves, 1,835 tests, UAT 36/36 PASS, 2026-03-01 to 2026-03-03, v1.5.0)  
-**Version:** v1.5.0 (UI Overhaul + Dashboard Composite View, 1,835 tests, 100% passing)
+**Sprint 16:** ✅ Complete (5/5 stories, 4 waves, 1,849 tests, UAT 26/26 PASS, 2026-03-03 to 2026-03-13, v1.6.0)  
+**Version:** v1.6.0 (F-1 RBAC Ownership + Pilot Readiness, 1,849 tests, 100% passing)
 
-### Key Capabilities (v1.4.0)
+### Key Capabilities (v1.6.0)
 - **Badge Lifecycle:** Template management, issuance, claiming, revocation, verification (Open Badges 2.0)
+- **RBAC Ownership:** Issuer template ownership isolation (issue/list/edit/delete), ADMIN bypass
 - **Employee Experience:** Badge wallet, timeline view, privacy controls, social sharing (LinkedIn/email)
 - **Admin & Analytics:** Dashboard, skill/category/user/milestone management, CSV export, activity feed
 - **Enterprise Auth:** Azure AD SSO (MSAL PKCE), JIT provisioning, idle timeout, dual-entry login
 - **Integrations:** M365 user sync, Graph API email, Teams notifications (pending permissions), RESTful APIs
+- **Pilot Ready:** Pilot seed data (14 users, 5 templates, 16 badges), smoke test script
 
 ---
 
@@ -317,6 +321,19 @@
 - **Branch:** sprint-15/ui-overhaul-dashboard
 - **Git Tag:** v1.5.0
 
+**✅ Sprint 16 Complete (2026-03-13, v1.6.0):**
+- ✅ 5/5 stories delivered across 4 waves (F-1 RBAC Ownership + Pilot Readiness)
+- ✅ Story 16.1: Issuer template ownership guard (issuance: own 201, other 403, admin bypass)
+- ✅ Story 16.2: Frontend template list ownership filter (ISSUER sees own only, ADMIN sees all)
+- ✅ Story 16.3: Template edit/delete ownership guard (PATCH/DELETE: owner/other/admin)
+- ✅ Story 16.4: Pilot seed data (14 users, 5 templates, 16 badges) + smoke test (8/8 PASS)
+- ✅ Story 16.5: UAT 26/26 PASS (4 phases: automated, scripted API, manual UI, pilot readiness)
+- ✅ UAT bug fixes: useFormGuard navigation, template selector clear button, Sync Roles styling
+- **Total: 5/5 stories, 24 commits, 4 UAT bugs fixed**
+- **Testing:** 1,849 tests (BE 1,000 + FE 849), 100% pass rate (+14 from v1.5.0)
+- **Branch:** sprint-16/f1-rbac-pilot-readiness
+- **Git Tag:** v1.6.0
+
 ---
 
 ## 📁 Project Structure
@@ -466,10 +483,10 @@ This project uses the **BMAD (Business Model Agent Development) Framework** v6.0
 | → Sprint 12.5 | 1 day | Deferred Items Cleanup (2 stories) | ✅ Complete (2026-02-25, 2/2 stories, 1,593 tests, v1.2.1) |
 | **Phase 3 - SSO** | **3 days** | **Enterprise Authentication** | **✅ v1.3.0 Released** |
 | → Sprint 13 | 3 days | Azure AD SSO + Session Management (8 stories, 4 waves) | ✅ Complete (2026-02-27, 8/8 stories, 1,708 tests, v1.3.0) |
-| **Pre-Pilot Hardening** | **~3 sprints** | **Role Refactor + UI Polish + RBAC** | **� In Progress** |
+| **Pre-Pilot Hardening** | **~3 sprints** | **Role Refactor + UI Polish + RBAC** | **✅ Complete** |
 | → Sprint 14 | 2 days | Dual-Dimension Role Model Refactor (9/9 stories, 4 waves, ∼24h) | ✅ Complete (2026-02-28, 1,757 tests, v1.4.0) |
 | → Sprint 15 | 3 days | UI Overhaul + Dashboard Composite View (14/15 stories, 4 waves, ~37h) | ✅ Complete (2026-03-03, 1,835 tests, v1.5.0) |
-| → Sprint 16 | TBD | Fine-Grained RBAC L1 + Pilot Readiness (F-1, ~12h) | 🔜 Planned |
+| → Sprint 16 | 11 days | F-1 RBAC Ownership + Pilot Readiness (5/5 stories, 4 waves, ~12h) | ✅ Complete (2026-03-13, 1,849 tests, v1.6.0) |
 | Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ After Sprint 16 |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |
@@ -608,9 +625,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Last Updated:** 2026-03-03
-**Status:** ✅ v1.5.0 Released — UI Overhaul + Dashboard Composite View Complete
-**Version:** v1.5.0 (Released 2026-03-03, 1,835 tests, 100% passing)
+**Last Updated:** 2026-03-13
+**Status:** ✅ v1.6.0 Released — F-1 RBAC Ownership + Pilot Readiness Complete
+**Version:** v1.6.0 (Released 2026-03-13, 1,849 tests, 100% passing)
 **Sprint 0:** ✅ Complete (actual 9.5h / estimated 10h, 95%) - [Retrospective](./_bmad-output/implementation-artifacts/sprint-0-retrospective.md)  
 **Sprint 1:** ✅ Complete (actual 21h / estimated 21h, 100%) - [Retrospective](./_bmad-output/implementation-artifacts/sprint-1-retrospective.md)  
 **Sprint 2:** ✅ Complete (actual 29h / estimated 32h, 110%) - [Final Report](./gcredit-project/backend/docs/sprints/sprint-2/final-report.md) | [Retrospective](./gcredit-project/backend/docs/sprints/sprint-2/retrospective.md)  
@@ -628,4 +645,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Sprint 13:** ✅ Complete (8/8 stories, 4 waves, v1.3.0) - [Status](./gcredit-project/docs/sprints/sprint-13/sprint-status.md) | [Retrospective](./gcredit-project/docs/sprints/sprint-13/retrospective.md)  
 **Sprint 14:** ✅ Complete (9/9 stories, 4 waves, v1.4.0) - [Summary](./gcredit-project/docs/sprints/sprint-14/summary.md) | [Retrospective](./gcredit-project/docs/sprints/sprint-14/retrospective.md)  
 **Sprint 15:** ✅ Complete (14/15 stories, 4 waves, v1.5.0) - [Summary](./gcredit-project/docs/sprints/sprint-15/summary.md) | [Retrospective](./gcredit-project/docs/sprints/sprint-15/retrospective.md)  
-**Next:** Sprint 16 — Fine-Grained RBAC L1 + Pilot Readiness (~12h)
+**Sprint 16:** ✅ Complete (5/5 stories, 4 waves, v1.6.0) - [Retrospective](./gcredit-project/docs/sprints/sprint-16/retrospective.md)  
+**Next:** Sprint 17 Planning
