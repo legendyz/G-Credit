@@ -91,24 +91,22 @@ export function filterBadges<T extends BadgeForFilter>(
       }
     }
 
-    // Date range filter (fromDate)
+    // Date range filter (fromDate) — use UTC to avoid timezone boundary shifts
     if (filters.fromDate) {
       const badgeDate = new Date(badge.issuedAt);
       const fromDate = new Date(filters.fromDate);
-      // Set time to start of day for comparison
-      fromDate.setHours(0, 0, 0, 0);
+      fromDate.setUTCHours(0, 0, 0, 0);
 
       if (badgeDate < fromDate) {
         return false;
       }
     }
 
-    // Date range filter (toDate)
+    // Date range filter (toDate) — use UTC to avoid timezone boundary shifts
     if (filters.toDate) {
       const badgeDate = new Date(badge.issuedAt);
       const toDate = new Date(filters.toDate);
-      // Set time to end of day for comparison
-      toDate.setHours(23, 59, 59, 999);
+      toDate.setUTCHours(23, 59, 59, 999);
 
       if (badgeDate > toDate) {
         return false;
