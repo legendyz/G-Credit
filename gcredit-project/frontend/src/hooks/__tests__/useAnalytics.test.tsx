@@ -66,7 +66,7 @@ describe('useSystemOverview', () => {
       badgeTemplates: { total: 10, active: 8, draft: 1, archived: 1 },
       systemHealth: {
         status: 'healthy' as const,
-        lastSync: '2026-02-09T00:00:00Z',
+        lastSync: '2026-02-09T12:00:00Z',
         apiResponseTime: '90ms',
       },
     };

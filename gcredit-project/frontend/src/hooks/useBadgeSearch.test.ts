@@ -148,13 +148,41 @@ describe('useBadgeSearch', () => {
       expect(result.current.filteredBadges.length).toBeGreaterThan(0);
       result.current.filteredBadges.forEach((badge) => {
         const badgeTime = new Date(badge.issuedAt).getTime();
+        // Match production code: new Date(dateStr) + setHours (local-time boundaries)
         const fromDate = new Date('2025-01-05');
         fromDate.setHours(0, 0, 0, 0);
         const toDate = new Date('2025-01-10');
         toDate.setHours(23, 59, 59, 999);
+        // Use >= and <= to handle timezone boundary shifts consistently
         expect(badgeTime).toBeGreaterThanOrEqual(fromDate.getTime());
         expect(badgeTime).toBeLessThanOrEqual(toDate.getTime());
       });
+    });
+
+    it('handles date range edge cases across timezones', () => {
+      // Badge at noon UTC should always be within same-day filter regardless of timezone
+      const edgeBadges: BadgeForFilter[] = [
+        {
+          id: 'edge-1',
+          issuedAt: '2025-03-15T12:00:00.000Z',
+          status: 'active',
+          template: { id: 't1', name: 'Edge Badge', skillIds: [] },
+          issuer: {
+            id: 'i1',
+            firstName: 'Test',
+            lastName: 'Issuer',
+            email: 'test@example.com',
+          },
+        },
+      ];
+      const { result } = renderHook(() => useBadgeSearch({ allBadges: edgeBadges }));
+
+      act(() => {
+        result.current.setDateRange({ from: '2025-03-15', to: '2025-03-15' });
+      });
+
+      // Same-day filter should include a noon-UTC badge in any timezone within ±12h of UTC
+      expect(result.current.filteredBadges).toHaveLength(1);
     });
   });
 

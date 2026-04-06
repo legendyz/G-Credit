@@ -169,6 +169,33 @@ describe('filterBadges', () => {
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('2');
     });
+
+    it('includes badges issued late in the day on toDate (UTC boundary)', () => {
+      // Simulates a badge issued at 11pm UTC — in UTC-8 (PST) this is 3pm local.
+      // Before fix: setHours(23,59) used local time, so toDate boundary was
+      // 2025-01-15T07:59:59Z in PST, incorrectly excluding this badge.
+      const badges = [createMockBadge({ issuedAt: '2025-01-15T23:00:00Z' })];
+
+      const result = filterBadges(badges, { toDate: '2025-01-15' });
+
+      expect(result).toHaveLength(1);
+    });
+
+    it('excludes badges just after toDate UTC boundary', () => {
+      const badges = [createMockBadge({ issuedAt: '2025-01-16T00:00:01Z' })];
+
+      const result = filterBadges(badges, { toDate: '2025-01-15' });
+
+      expect(result).toHaveLength(0);
+    });
+
+    it('includes badges issued at midnight UTC on fromDate', () => {
+      const badges = [createMockBadge({ issuedAt: '2025-01-15T00:00:00Z' })];
+
+      const result = filterBadges(badges, { fromDate: '2025-01-15' });
+
+      expect(result).toHaveLength(1);
+    });
   });
 
   describe('status filter', () => {

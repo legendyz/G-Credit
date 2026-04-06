@@ -195,7 +195,7 @@ describe('Badge Integrity (e2e) - Story 6.5', () => {
 
       const tamperedAssertion = {
         ...(badge!.assertionJson as Record<string, unknown>),
-        issuedOn: '1999-01-01T00:00:00.000Z', // Tamper with date
+        issuedOn: '1999-01-01T12:00:00.000Z', // Tamper with date
       };
 
       await prisma.badge.update({
