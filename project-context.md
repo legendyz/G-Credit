@@ -436,8 +436,9 @@ _bmad-output/
 | **Pre-Pilot Hardening** | **~3 sprints** | **Role Refactor + UI Polish + RBAC** | **🔜 Planning** |
 | → Sprint 14 | 2 days | Dual-Dimension Role Model Refactor | ✅ COMPLETE (2026-02-28, 9/9 stories, 1,757 tests, v1.4.0) |
 | → Sprint 15 | 3 days | UI Overhaul + Dashboard Composite View (~56h) | ✅ COMPLETE (2026-03-03, 14/15 stories, 1,835 tests, UAT 36/36 PASS, v1.5.0) |
-| → Sprint 16 | 2 days | F-1 Issuer Template Ownership + Pilot Readiness (~12h) | 🟡 Planning Complete |
-| Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ After Sprint 16 |
+| → Sprint 16 | 2 days | F-1 Issuer Template Ownership + Pilot Readiness (~12h) | ✅ COMPLETE (2026-03-13, 5/5 stories, 1,849 tests, UAT 26/26 PASS, v1.6.0) |
+| → Sprint 16-HF | 0.5 day | Retrospective action items hotfix (4 tasks, ~3h) | 🟡 IN PROGRESS |
+| Phase 4 - Pilot | 4-6 weeks | Pilot with one L&D program | ⏳ After Sprint 16-HF |
 | ⚙️ BMAD Workflow Extension *(independent project)* | ~30-50h | VS Code extension — automate SM→Dev→CR pipeline. **⚠️ NOT a G-Credit sprint item — separate repo, separate backlog.** Developed in parallel during Pilot downtime. Design doc: `docs/bmad-workflow-extension-design.md` | 📋 Planned (Pilot period) |
 | Phase 5 - Iteration | 4-8 weeks | Analytics, integrations | ⏳ Pending |
 | Phase 6 - Production Rollout | Ongoing | Company-wide launch | ⏳ Pending |

@@ -3,6 +3,7 @@
 # Validates RBAC ownership isolation with pilot seed data
 # Requires: Backend running on localhost:3000 + pilot seed loaded
 # Usage:  .\pilot-smoke-test.ps1 [-BaseUrl "http://localhost:3000"]
+# Syntax check: powershell -NoProfile -Command "& { $null = [System.Management.Automation.PSParser]::Tokenize((Get-Content .\pilot-smoke-test.ps1 -Raw), [ref]$null) }"
 # ============================================================
 
 param(
