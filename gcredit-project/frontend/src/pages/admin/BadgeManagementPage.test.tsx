@@ -532,14 +532,14 @@ describe('BadgeManagementPage', () => {
           url: 'https://blob.test/report.pdf',
           size: 1024,
           mimeType: 'application/pdf',
-          uploadedAt: '2026-01-20T00:00:00Z',
+          uploadedAt: '2026-01-20T12:00:00Z',
         },
         {
           id: 'ev-2',
           type: 'URL',
           name: 'https://example.com/proof',
           url: 'https://example.com/proof',
-          uploadedAt: '2026-01-20T00:00:00Z',
+          uploadedAt: '2026-01-20T12:00:00Z',
         },
       ]);
 
@@ -568,7 +568,7 @@ describe('BadgeManagementPage', () => {
           url: 'https://blob.test/report.pdf',
           size: 1024,
           mimeType: 'application/pdf',
-          uploadedAt: '2026-01-20T00:00:00Z',
+          uploadedAt: '2026-01-20T12:00:00Z',
         },
       ]);
 

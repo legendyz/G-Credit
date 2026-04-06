@@ -92,8 +92,8 @@ function createMockTemplate(overrides: Partial<BadgeTemplate> = {}): BadgeTempla
     creator: { id: 'admin-1', email: 'admin@test.com', firstName: 'Admin', lastName: 'User' },
     updatedBy: null,
     updater: null,
-    createdAt: '2026-01-15T00:00:00Z',
-    updatedAt: '2026-01-15T00:00:00Z',
+    createdAt: '2026-01-15T12:00:00Z',
+    updatedAt: '2026-01-15T12:00:00Z',
     ...overrides,
   };
 }

@@ -61,7 +61,7 @@ describe('badgesApi', () => {
           recipientId: 'user-1',
           issuerId: 'issuer-1',
           status: 'PENDING',
-          issuedAt: '2026-02-01T00:00:00Z',
+          issuedAt: '2026-02-01T12:00:00Z',
           template: { id: 'template-1', name: 'Test Badge', description: 'Test' },
           recipient: { id: 'user-1', email: 'test@example.com' },
           issuer: { id: 'issuer-1', email: 'issuer@example.com' },
@@ -245,7 +245,7 @@ describe('badgesApi', () => {
       id: 'badge-1',
       templateId: 'template-1',
       status: 'CLAIMED',
-      issuedAt: '2026-02-01T00:00:00Z',
+      issuedAt: '2026-02-01T12:00:00Z',
       template: { id: 'template-1', name: 'Test Badge' },
       recipient: { id: 'user-1', email: 'test@example.com' },
     };

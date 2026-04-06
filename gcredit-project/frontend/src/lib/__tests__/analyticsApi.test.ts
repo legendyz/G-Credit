@@ -40,7 +40,7 @@ describe('analyticsApi', () => {
       badgeTemplates: { total: 20, active: 15, draft: 3, archived: 2 },
       systemHealth: {
         status: 'healthy',
-        lastSync: '2026-02-09T00:00:00Z',
+        lastSync: '2026-02-09T12:00:00Z',
         apiResponseTime: '120ms',
       },
     };

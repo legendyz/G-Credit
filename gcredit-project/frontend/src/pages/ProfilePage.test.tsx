@@ -59,7 +59,7 @@ const MOCK_PROFILE = {
   isActive: true,
   emailVerified: true,
   lastLoginAt: '2026-02-01T10:00:00Z',
-  createdAt: '2026-01-01T00:00:00Z',
+  createdAt: '2026-01-01T12:00:00Z',
   updatedAt: '2026-02-01T10:00:00Z',
 };
 
