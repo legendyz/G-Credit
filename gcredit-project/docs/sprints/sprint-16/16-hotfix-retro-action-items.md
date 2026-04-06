@@ -1,6 +1,6 @@
 # Story 16-HF: Sprint 16 Retrospective Action Items Hotfix
 
-Status: draft
+Status: dev-complete
 
 ## Story
 As a **developer maintaining the G-Credit test suite**,
@@ -43,9 +43,9 @@ Sprint 16 retrospective (2026-03-13) identified 4 action items. These are small,
 The mock data already uses `T12:00:00.000Z` (line 14), so this may be a date comparison issue in the `date range filter` test block (lines 139-161). The test uses `new Date('2025-01-05')` without explicit time, which defaults to midnight UTC — causing timezone-dependent failures in the date range boundary comparison.
 
 **Acceptance Criteria:**
-- [ ] Identify and fix the timezone-sensitive date comparison
-- [ ] Test passes in UTC-negative timezones (e.g., `TZ=America/New_York vitest`)
-- [ ] No regression in other tests
+- [x] Identify and fix the timezone-sensitive date comparison
+- [x] Test passes in UTC-negative timezones (e.g., `TZ=America/New_York vitest`)
+- [x] No regression in other tests
 
 ### Task 3: Create `useFormGuard.test.ts` (MEDIUM)
 **File to create:** `frontend/src/hooks/__tests__/useFormGuard.test.ts`
@@ -61,17 +61,27 @@ The mock data already uses `T12:00:00.000Z` (line 14), so this may be a date com
 **Source:** `frontend/src/hooks/useFormGuard.ts` (120 lines, Story 15.12)
 
 **Acceptance Criteria:**
-- [ ] Test file created with ≥6 test cases covering proceed/reset/popstate/beforeunload flows
-- [ ] Tests pass in CI (vitest)
-- [ ] No regression
+- [x] Test file created with 14 test cases covering proceed/reset/popstate/beforeunload flows
+- [x] Tests pass in CI (vitest)
+- [x] No regression
 
 ### Task 4: PowerShell Smoke Test Syntax Validation (MEDIUM)
 **Context:** `pilot-smoke-test.ps1` had 3 syntax bugs discovered at runtime during Sprint 16 UAT — JS `//` operator used instead of PS `#`, `$pid` reserved variable, wrong verify response assertion.
 
 **Acceptance Criteria:**
-- [ ] Verify `pilot-smoke-test.ps1` syntax bugs are already fixed (check current file)
-- [ ] If not fixed, apply fixes
-- [ ] Add a comment header documenting PS syntax check command: `powershell -NoProfile -Command "& {Get-Content script.ps1 | Out-Null}"`
+- [x] Verify `pilot-smoke-test.ps1` syntax bugs are already fixed (check current file)
+- [x] If not fixed, apply fixes — confirmed already fixed during Sprint 16 UAT
+- [x] Add a comment header documenting PS syntax check command
+
+---
+
+### Task 5: TD-039 — searchFilters UTC Date Boundary Fix (ADDED)
+**Context:** Code review discovered `searchFilters.ts` uses `setHours()` (local time) instead of `setUTCHours()` for date range filtering. In UTC-negative timezones (US: PST/CST/EST), the toDate boundary shifts backward, causing valid badges to be incorrectly excluded from filter results.
+
+**Acceptance Criteria:**
+- [x] `searchFilters.ts` fromDate/toDate use `setUTCHours()` instead of `setHours()`
+- [x] 3 UTC boundary tests added to `searchFilters.test.ts`
+- [x] All 868 frontend tests pass
 
 ---
 
@@ -82,7 +92,8 @@ The mock data already uses `T12:00:00.000Z` (line 14), so this may be a date com
 | Task 2: useBadgeSearch timezone | 0.5h |  
 | Task 3: useFormGuard tests | 1.5h |
 | Task 4: PS smoke test validation | 0.5h |
-| **Total** | **3h** |
+| Task 5: TD-039 searchFilters UTC fix | 0.5h |
+| **Total** | **3.5h** |
 
 ## Dev Notes
 
@@ -97,6 +108,7 @@ One commit per task, squash on merge:
 - `fix(test): resolve useBadgeSearch timezone failure`
 - `test: add useFormGuard hook tests`
 - `fix(scripts): validate pilot smoke test PS syntax`
+- `fix: use UTC date boundaries in searchFilters (TD-039)`
 
 ### Testing
 ```bash
@@ -113,3 +125,9 @@ cd frontend && npx vitest run src/hooks/__tests__/useFormGuard.test.ts
 
 ### Merge
 After all tasks pass: merge to `main`, tag as `v1.6.1`, update project-context.md.
+
+## Results
+- **Tests:** BE 1,000 + FE 868 = 1,868 total (100% PASS)
+- **Net new tests:** +19 (14 useFormGuard + 1 useBadgeSearch edge + 3 searchFilters boundary + 1 net from fixture changes)
+- **Production fix:** TD-039 (2 lines in searchFilters.ts)
+- **Version:** v1.6.1
